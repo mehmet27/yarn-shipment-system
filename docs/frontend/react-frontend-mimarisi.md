@@ -2,10 +2,10 @@
 
 | | |
 | --- | --- |
-| Sürüm | 1.1 (taslak, yetkilendirme kararına göre güncellendi) |
+| Sürüm | 1.2 (yetkilendirme kararı ve büyümeye uygun kararlar işlendi) |
 | Tarih | 20.10.2026 |
 | Dayanak | İplik Sevkiyat Ön Analiz Raporu v1.1 |
-| Durum | Proje sahibinin onayı bekleniyor |
+| Durum | Kararlar işlendi (bkz. Kararlar F-01…F-13) |
 
 ## Özet ve temel kararlar
 
@@ -48,52 +48,51 @@ Paket yöneticisi pnpm, Node 22 LTS. Kod kalitesi için ESLint (typescript-eslin
 
 ## Proje ve klasör yapısı
 
-Kod, teknik katmana göre değil iş modülüne göre bölünür (feature-based). Her modül backend'deki bir mikroservise denk gelir; böylece servis sınırları değiştiğinde yalnızca ilgili klasör etkilenir. Başlangıçta tek repo ve tek uygulama yeterlidir; ikinci bir frontend uygulaması gerekirse pnpm workspace ile `packages/ui` ve `packages/api` ayrılır.
+Kod, teknik katmana göre değil iş modülüne göre bölünür (feature-based). Her modül backend'deki bir mikroservise denk gelir; böylece servis sınırları değiştiğinde yalnızca ilgili klasör etkilenir. Proje büyüyebileceği için baştan pnpm workspace (monorepo) kurulur: bugün tek uygulama (`apps/web`) vardır, ama ortak bileşenler, API istemcisi ve ayarlar ayrı paketlerdedir. İleride ayrı bir uygulama (ör. fasoncu portalı, kiosk ekranı, Electron/Capacitor sarmalı) eklenirse bu paketleri olduğu gibi kullanır. Modül adları backend servis adlarıyla aynıdır (İngilizce), böylece kod, API yolu (`/api/v1/shipments`) ve servis adı birebir eşleşir.
 
 ```
-iplik-sevkiyat-web/
-  src/
-    app/              # uygulama kabuğu: provider'lar, router, tema, hata sınırı
-      router.tsx
-      providers.tsx
-      layouts/
-        PanelLayout.tsx   # masaüstü: yan menü, üst bar, geniş tablolar
-        SahaLayout.tsx    # mobil: alt gezinme, büyük butonlar, offline göstergesi
-    modules/          # iş modülleri (backend servisleriyle eşleşir)
-      auth/           # giriş, oturum, yetki hook'ları
-      tanimlar/       # fasoncu, şoför, araç, ürün, parti, kalite
-      cuval/          # Unique Key, etiket basımı
-      sevkiyat/       # sevkiyat oluşturma, çuval atama, çıkış, mühür
-      teslimat/       # şoför beyanı, fasoncu kör giriş
-      kanit/          # fotoğraf, belge, kamera, yükleme kuyruğu
-      uyusmazlik/     # uyuşmazlık ve kalite itirazı, karar
-      denetim/        # audit log görüntüleme
-      rapor/          # dashboard, risk göstergeleri
-      bildirim/       # uygulama içi bildirimler
-      yonetim/        # kullanıcı, rol, sistem ayarları (tolerans, zorunlu kanıt)
-        pages/  components/  hooks/  schemas/  routes.tsx
-    shared/
-      api/            # Orval çıktısı (generated/) + axios istemcisi, interceptor'lar
-      ui/             # ortak bileşenler: DataTable, StatusBadge, KgInput, FileCard
-      offline/        # Dexie veritabanı, gönderim kuyruğu, ağ durumu
-      lib/            # biçimlendirme (kg, %), tarih, hash, hata eşleme
-      i18n/           # tr.json
-    test/             # MSW handler'ları, test yardımcıları
-  e2e/                # Playwright senaryoları (masaüstü + mobil görünüm)
-  public/             # manifest, ikonlar
+iplik-sevkiyat-frontend/
+  apps/
+    web/                    # bugünkü tek uygulama: Yönetim Paneli + Saha PWA
+      src/
+        app/                # provider'lar, router, tema, hata sınırı
+          layouts/
+            PanelLayout.tsx # masaüstü: yan menü, üst bar, geniş tablolar
+            SahaLayout.tsx  # mobil: alt gezinme, büyük butonlar, offline göstergesi
+        modules/            # iş modülleri = backend servisleri
+          auth/             # /api/v1/me, giriş/çıkış yönlendirmesi, usePermission, <Can>
+          master-data/      # fasoncu, şoför, araç, ürün, parti, kalite
+          bag/              # Unique Key, etiket basımı
+          shipment/         # sevkiyat, çuval atama, çıkış, mühür, şoför ve teslim beyanları
+          evidence/         # fotoğraf, belge, kamera, yükleme kuyruğu
+          discrepancy/      # uyuşmazlık, kalite itirazı, karar
+          audit/            # audit log görüntüleme
+          reporting/        # dashboard, risk göstergeleri
+          notification/     # uygulama içi bildirimler (SSE)
+          admin/            # kullanıcı, rol, sistem ayarları (tolerans, zorunlu kanıt)
+            pages/  components/  hooks/  schemas/  routes.tsx  index.ts
+        offline/            # Dexie veritabanı, gönderim kuyruğu, ağ durumu
+      e2e/                  # Playwright (masaüstü + mobil görünüm)
+      public/               # manifest, ikonlar
+  packages/
+    ui/                     # tasarım sistemi: Mantine'i saran bileşenler (DataTable, KgInput, StatusBadge, CameraCapture)
+    api-client/             # Orval çıktısı + axios istemcisi (çerez, X-XSRF-TOKEN, X-Request-Id)
+    i18n/                   # tr.json, biçimlendirme (kg, %, tarih)
+    config/                 # ortak ESLint, TypeScript, Prettier, Vitest ayarları
 ```
 
 Kurallar:
 
-- Bir modül başka bir modülün içine doğrudan import yapmaz; ortak ihtiyaç `shared/` altına taşınır (ESLint `import/no-restricted-paths` ile zorlanır).
-- `shared/api/generated` elle düzenlenmez; backend OpenAPI değişince yeniden üretilir ve CI'da fark kontrol edilir.
+- Bir modül başka bir modülün içine doğrudan import yapmaz, yalnızca modülün `index.ts` dışa açtığını kullanır; ortak ihtiyaç `packages/` altına taşınır (ESLint `import/no-restricted-paths` ile zorlanır). Bu sınır, ileride bir modülü ayrı uygulamaya taşımayı mümkün kılar.
+- Uygulama kodu Mantine'i doğrudan import etmez, `packages/ui` üzerinden kullanır; UI kütüphanesi değişirse yalnızca bu paket etkilenir.
+- `packages/api-client/generated` elle düzenlenmez; backend OpenAPI değişince yeniden üretilir ve CI'da fark kontrol edilir.
 - Her sayfa lazy yüklenir; saha kullanıcısı yönetim paneli kodunu hiç indirmez.
 
 ```mermaid
 flowchart TB
   U1["Masa başı kullanıcılar<br/>Admin, Kalite, Yönetici, Depo (planlama)"] --> P["Yönetim Paneli<br/>/panel · masaüstü, geniş tablolar, sevkiyat dosyası"]
   U2["Saha kullanıcıları (telefon)<br/>Şoför, Fasoncu, Depo (kantar, yükleme)"] --> S["Saha Uygulaması (PWA)<br/>/saha · mobil, büyük butonlar, offline çalışır"]
-  subgraph SH["Ortak katman (shared/) · tek React + TypeScript kod tabanı"]
+  subgraph SH["Ortak katman (packages/ + modules/) · tek React + TypeScript kod tabanı"]
     Y["Yetki katmanı<br/>Can, usePermission"]
     Q["Sunucu verisi<br/>TanStack Query, Orval"]
     O["Offline kuyruk<br/>IndexedDB (Dexie)"]
@@ -153,7 +152,7 @@ Verinin %90'ı sunucu verisidir ve TanStack Query'de yaşar; Zustand yalnızca s
 - Hata biçimi tüm servislerde RFC 9457 Problem Details olmalı (`type`, `title`, `detail`, `errors[]`). Frontend alan hatalarını doğrudan form alanına bağlar. Bu konu backend analizleriyle ortak karar olarak önerilir.
 - Eşzamanlı düzenleme: güncelleme isteklerinde `version` (ETag / If-Match) gönderilir; 409 gelirse kullanıcıya "kayıt başkası tarafından güncellendi" gösterilir.
 - Offline'dan gelen tekrar denemeler için her mutasyon bir `Idempotency-Key` taşır; aynı beyan iki kez kaydedilmez.
-- Bildirimler: Kırmızı uyuşmazlık ve süresi geçen inceleme için Server-Sent Events ile anlık akış; SSE kurulamazsa 60 sn aralıklı sorgu.
+- Bildirimler: Kırmızı uyuşmazlık ve süresi geçen inceleme için notification-service'in gateway üzerinden yayınladığı Server-Sent Events akışı (oturum çereziyle, ek token gerekmez); SSE kurulamazsa 60 sn aralıklı sorgu.
 
 ### Formlar
 
@@ -220,7 +219,7 @@ Bir beyan ancak ona bağlı zorunlu fotoğraflar sunucuya ulaştığında "tamam
 - `vite build` çıktısı Nginx konteynerinde servis edilir ve API Gateway ile aynı alan adı altında yayınlanır (CORS gerekmez).
 - Ortama özel ayarlar (API adresi, kimlik sağlayıcı adresi) build'e gömülmez, açılışta `/config.json`'dan okunur; aynı imaj test ve canlıda kullanılır.
 - Yeni sürüm çıktığında PWA "Güncelleme var, yenile" bildirimi gösterir; offline kuyruk boşken yeniler.
-- Hata izleme: Sentry (veya kurum içi eşdeğeri), kullanıcı kişisel verisi gönderilmeden.
+- Hata izleme: Sentry SDK, sunucu tarafı kendi sunucularda (self-hosted Sentry veya GlitchTip); kullanıcı kişisel verisi gönderilmez. Sunucular şirket içinde olduğu için dış SaaS'a bağımlılık yok.
 
 ### Yol haritası (ön analiz Bölüm 17 ile hizalı)
 
@@ -232,9 +231,28 @@ Bir beyan ancak ona bağlı zorunlu fotoğraflar sunucuya ulaştığında "tamam
 | 2 | Risk skoru ekranları, Excel/PDF sevkiyat dosyası dışa aktarımı, laboratuvar sonucu formu, e-İrsaliye eşleştirme alanı |
 | 3 | Kantar, GPS ve RFID verisinin ekranlarda gösterimi (giriş alanları salt okumaya döner) |
 
+### Kararlar (proje sahibinin talimatıyla büyümeye uygun seçildi)
+
+Proje sahibi açık kalan seçimlerin, projenin çok büyüyebileceği dikkate alınarak bizim tarafımızdan yapılmasını istedi. Aşağıdakiler bu dokümanın kesin kararlarıdır; değiştirmek için bu tablo güncellenir.
+
+| # | Konu | Karar | Neden büyümeye uygun |
+| --- | --- | --- | --- |
+| F-01 | Uygulama sayısı | Tek uygulama, iki kabuk (`/panel`, `/saha`) | Kod tekrarı yok; ayrı uygulama gerekirse paketler hazır |
+| F-02 | Repo yapısı | pnpm workspace monorepo (`apps/`, `packages/`), backend reposundan ayrı | Yeni uygulama ve paket eklemek kolay; frontend ve backend bağımsız sürümlenir |
+| F-03 | Modül adları | Backend servis adlarıyla aynı, İngilizce (`shipment`, `evidence`...) | Kod, API yolu ve servis birebir eşleşir; yeni servis = yeni modül |
+| F-04 | Mikro frontend | Şimdilik yok; modül sınırları ESLint ile zorlanır | Ekip ve modül sayısı büyürse Module Federation'a geçiş bu sınırlar sayesinde mümkün |
+| F-05 | UI kütüphanesi | Mantine v7, yalnızca `packages/ui` üzerinden | Kütüphane değişirse tek paket etkilenir; kurumsal tasarım sistemi bu pakette büyür |
+| F-06 | Giriş ve oturum | Gateway BFF oturumu, `/api/v1/me` ile izinler (yetkilendirme kararı) | Token yönetimi tek yerde; yeni uygulamalar aynı oturumu kullanır |
+| F-07 | API istemcisi | OpenAPI'den Orval ile üretim, `/api/v1` versiyonlu yollar | Servis sayısı artsa da elle istemci yazılmaz; v2 yan yana yaşayabilir |
+| F-08 | Mobil | PWA; native uygulama yok | İleride mağaza gerekirse aynı kod Capacitor ile sarmalanır |
+| F-09 | Offline kuyruk ve oturum | Kuyruk kullanıcı kimliğine bağlı tutulur; oturum düşerse kayıtlar silinmez, aynı kullanıcı yeniden girince gönderilir; farklı kullanıcı girerse gönderilmez, Admin'e raporlanır | Uzun çevrim dışı süreler ve paylaşılan cihazlarda veri kaybı ve yanlış kişi adına gönderim olmaz |
+| F-10 | Bildirim kanalı | SSE (notification-service, gateway üzerinden), yedek olarak polling | WebSocket'e göre daha basit, proxy dostu; çift yönlü ihtiyaç doğarsa eklenir |
+| F-11 | Hata izleme | Self-hosted Sentry uyumlu sunucu | Kendi sunucularda çalışma kararıyla uyumlu |
+| F-12 | Dil | Başta yalnızca Türkçe, ama tüm metinler i18n anahtarıyla | Yabancı fasoncu veya ikinci dil gerekirse kod değişmez |
+| F-13 | Kod kuralları | TypeScript/React kod kuralları, Java 25 kod kuralları dokümanıyla aynı yapıda ayrı bir dokümanda yazılacak | Tüm kod tek bir kurallar setine göre yazılır |
+
 ### Diğer analizlerle netleşmesi gerekenler
 
 - Yetkilendirme: kararlaştı (Keycloak + gateway BFF oturumu, izin anahtarları `docs/yetkilendirme/` altında). Saha PWA'sında oturum süresinin offline çalışmayla uyumu (uzun süre çevrim dışı kalan cihazda oturum düşerse kuyruğun girişten sonra gönderilmesi) birlikte test edilmeli.
 - Backend mikroservisleri: Gateway yolu, OpenAPI birleştirme, Problem Details hata biçimi, `allowedActions` alanı, Idempotency-Key desteği.
 - Veritabanı / depolama: fotoğraflar için nesne depolama (S3/MinIO) ve presigned URL akışı.
-- Kod kuralları: Java 25 kod kuralları dokümanı kesinleştiğinde, frontend için de benzer bir TypeScript/React kural dokümanı hazırlanabilir.

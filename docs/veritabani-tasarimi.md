@@ -131,11 +131,14 @@ Unique Key'in tek kullanımı burada, tek veritabanı işlemiyle garanti edilir.
 
 | Tablo | Önemli kolonlar | Kısıt / not |
 | --- | --- | --- |
-| `audit_log` | id bigint, occurred\_at, source\_service, event\_id, actor\_user\_id, actor\_role, action, entity\_type, entity\_id, before jsonb, after jsonb, ip\_address, user\_agent, trace\_id, prev\_hash, row\_hash | Aylık partition; uygulama kullanıcısına yalnızca INSERT ve SELECT. row\_hash = SHA-256(prev\_hash + satır); event\_id unique (aynı olay iki kez yazılmaz) |
+| `audit_log` | id bigint, occurred\_at, recorded\_at, source\_service, event\_id, actor\_user\_id, actor\_role, client\_id (SYSTEM işlerinde çağıran servis), action, decision (ALLOWED, DENIED; yetki kararları için), entity\_type, entity\_id, before jsonb, after jsonb, ip\_address, device\_info, user\_agent, trace\_id, prev\_hash, row\_hash | Aylık partition; event\_id unique (aynı olay iki kez yazılmaz). Hash zinciri: row\_hash = SHA-256(prev\_hash + satırın kanonik JSON'u) |
+| `audit_chain_check` | checked\_at, from\_id, to\_id, ok, broken\_at\_id | Günlük zincir doğrulama işinin sonucu; bozulmada alarm |
 | `notification` | recipient\_user\_id, channel (EMAIL, IN\_APP), template\_code, payload jsonb, status (PENDING, SENT, FAILED, READ), attempts, sent\_at, read\_at | — |
 | `notification_preference` | user\_id, event\_type, channel, enabled | PK (user\_id, event\_type, channel) |
 | `shipment_view` | shipment\_id, shipment\_no, subcontractor\_id, driver\_id, status, dispatch\_net\_kg, delivery\_net\_kg, diff\_pct, band, open\_discrepancy\_count, completed\_at | Dashboard; olaylardan güncellenir |
 | `pair_daily_stats` | day, driver\_id, subcontractor\_id, shipment\_count, discrepancy\_count, total\_diff\_kg | PK (day, driver\_id, subcontractor\_id); şoför–fasoncu eşleşme raporu |
+
+**Audit yetkileri (yetkilendirme analiziyle uyumlu):** audit-service'in yazan kullanıcısı `audit_writer` tabloya yalnız INSERT yapabilir; UPDATE, DELETE ve TRUNCATE hiçbir uygulama kullanıcısında yoktur. Kayıt, `SECURITY DEFINER` bir `audit_append()` fonksiyonuyla eklenir: fonksiyon advisory lock alır, son satırın hash'ini okur ve yeni satırı zincire bağlar. Böylece yazan kullanıcının SELECT yetkisi bile gerekmez. Audit ekranı için ayrı `audit_reader` kullanıcısı yalnız SELECT yapar.
 
 ## İlişkiler ve ER diyagramı
 

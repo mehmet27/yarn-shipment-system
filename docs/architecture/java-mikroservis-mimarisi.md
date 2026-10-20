@@ -47,16 +47,18 @@ Her servis kendi verisinin tek sahibidir; başka bir servisin tablosuna doğruda
 
 | Servis                                            | Sorumluluk                                                                                                                                  | Sahip olduğu veri                                                       | Yayınladığı başlıca olaylar                                                                      | Faz             |
 |---------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|-----------------|
-| master-data-service (Tanımlar)                    | Fasoncu, şoför, araç, iplik/ürün, parti ve kalite tanımları; partinin kalite kilidi; standart dara değerleri                                | Fasoncu, Şoför, Araç, Ürün, Parti, KaliteSınıfı, DaraStandardı          | PartiKalitesiKilitlendi, FasoncuGuncellendi, SoforGuncellendi                                    | 1               |
-| bag-service (Çuval ve etiket)                     | Unique Key üretimi, etiket basımı (QR/barkod), çuval–parti bağı, anahtarın tek kullanım garantisi                                           | Çuval, EtiketBaskısı, ÇuvalRezervasyonu                                 | CuvalOlusturuldu, CuvalSevkiyataBaglandi, CuvalRezervasyonuBirakildi                             | 1               |
-| shipment-service (Sevkiyat ve teslimat)           | Sevkiyat oluşturma, şoför/araç atama, çıkış tartımı, mühür, şoför beyanları, fasoncu kör teslim girişi, durum makinesi ve kilitleme         | Sevkiyat, ÇıkışTartımı, Mühür, ŞoförBeyanı, TeslimGirişi, DüzeltmeKaydı | SevkiyatYuklendi, SevkiyatYolaCikti, TeslimGirisiYapildi, SevkiyatTamamlandi, SevkiyatKilitlendi | 1               |
-| evidence-service (Kanıt)                          | Fotoğraf ve imzalı belge yükleme, SHA-256 hash, sunucu zaman damgası, tekrar kullanım tespiti, filigran, "geçersiz" işaretleme (silme yok)  | KanıtDosyası (meta veri), dosyanın kendisi nesne deposunda              | KanitYuklendi, KanitGecersizSayildi, KanitTekrarKullanimiTespitEdildi                            | 1               |
-| discrepancy-service (Karşılaştırma ve uyuşmazlık) | Otomatik karşılaştırma (net kilo, çuval listesi, mühür, belge, zaman), tolerans bantları, uyuşmazlık yaşam döngüsü, kalite itirazı ve karar | Uyuşmazlık, KaliteItirazı, Karar, ToleransKuralı                        | KarsilastirmaTamamlandi, UyusmazlikAcildi, UyusmazlikKarariVerildi                               | 1               |
+| master-data-service (Tanımlar)                    | Lokasyon (fabrika/depo), fasoncu, şoför, araç, iplik/ürün, parti ve kalite tanımları; partinin kalite kilidi; standart dara değerleri                                | Lokasyon (Site), Fasoncu, Şoför, Araç, Ürün, Parti, KaliteSınıfı, DaraStandardı          | LotQualityLocked, SubcontractorUpdated, DriverUpdated                                    | 1               |
+| bag-service (Çuval ve etiket)                     | Unique Key üretimi, etiket basımı (QR/barkod), çuval–parti bağı, anahtarın tek kullanım garantisi                                           | Çuval, EtiketBaskısı, ÇuvalRezervasyonu                                 | BagCreated, BagAssignedToShipment, BagReservationReleased                             | 1               |
+| shipment-service (Sevkiyat ve teslimat)           | Sevkiyat oluşturma, şoför/araç atama, çıkış tartımı, mühür, şoför beyanları, fasoncu kör teslim girişi, durum makinesi ve kilitleme         | Sevkiyat, ÇıkışTartımı, Mühür, ŞoförBeyanı, TeslimGirişi, DüzeltmeKaydı | ShipmentLoaded, ShipmentDispatched, DeliveryReceived, ShipmentCompleted, ShipmentLocked | 1               |
+| evidence-service (Kanıt)                          | Fotoğraf ve imzalı belge yükleme, SHA-256 hash, sunucu zaman damgası, tekrar kullanım tespiti, filigran, "geçersiz" işaretleme (silme yok)  | KanıtDosyası (meta veri), dosyanın kendisi nesne deposunda              | EvidenceUploaded, EvidenceInvalidated, EvidenceReuseDetected                            | 1               |
+| discrepancy-service (Karşılaştırma ve uyuşmazlık) | Otomatik karşılaştırma (net kilo, çuval listesi, mühür, belge, zaman), tolerans bantları, uyuşmazlık yaşam döngüsü, kalite itirazı ve karar | Uyuşmazlık, KaliteItirazı, Karar, ToleransKuralı                        | ComparisonCompleted, DiscrepancyOpened, DiscrepancyResolved                               | 1               |
 | audit-service (Denetim izi)                       | Tüm servislerin olaylarını ve değişiklik kayıtlarını sadece-ekle (append-only) olarak saklar; kayıtlar hash zinciriyle birbirine bağlanır   | AuditKaydı                                                              | (tüketici, olay yayınlamaz)                                                                      | 1               |
-| notification-service (Bildirim)                   | Kırmızı uyuşmazlık, süresi geçen inceleme ve eksik belge için e-posta ve uygulama içi bildirim                                              | Bildirim, BildirimTercihi                                               | BildirimGonderildi                                                                               | 1               |
-| reporting-service (Rapor ve risk)                 | Dashboard, şoför/fasoncu/eşleşme bazlı göstergeler; Faz 2'de risk skoru ve rastgele kontrol seçimi                                          | Okuma modelleri (olaylardan türetilir)                                  | KontrolIcinSecildi (Faz 2)                                                                       | 1 temel, 2 risk |
+| notification-service (Bildirim)                   | Kırmızı uyuşmazlık, süresi geçen inceleme ve eksik belge için e-posta ve uygulama içi bildirim                                              | Bildirim, BildirimTercihi                                               | NotificationSent                                                                               | 1               |
+| reporting-service (Rapor ve risk)                 | Dashboard, şoför/fasoncu/eşleşme bazlı göstergeler; Faz 2'de risk skoru ve rastgele kontrol seçimi                                          | Okuma modelleri (olaylardan türetilir)                                  | ShipmentSelectedForInspection (Faz 2)                                                                       | 1 temel, 2 risk |
 
 Kimlik doğrulama Keycloak tarafından yapılır ve ayrı bir Java servisi yazılmaz; kullanıcı–fasoncu ilişkisi gibi iş kuralları yetkilendirme çalışmasının sonucuna göre master-data-service içinde ya da küçük bir user-service olarak tutulacaktır.
+
+**Çok lokasyon:** Faz 1'de tek fabrika olsa da lokasyona bağlı her kayıt (sevkiyat, çuval, parti, dara standardı) bir `SiteId` taşır. Yeni fabrika veya depo eklendiğinde servis sınırları ve şemalar değişmez; sorgular ve yetki kontrolleri `SiteId`'yi her zaman hesaba katar.
 
 **Sonraki fazlarda eklenecek servisler:** integration-service (e-İrsaliye, e-Fatura, ERP; Faz 2) ve device-gateway-service (kantar, GPS, RFID, elektronik mühür; Faz 3). İkisi de mevcut olayları tüketir ve yeni olay üretir; çekirdek servislerin kodu değişmez.
 
@@ -82,7 +84,7 @@ Tüm senkron çağrılarda Resilience4j ile zaman aşımı (2 sn), sınırlı te
 
 - **Sıralama:** Olaylar sevkiyat kimliğiyle (shipmentId) bölümlenir, böylece aynı sevkiyatın olayları sırayla işlenir.
 
-- **Olay formatı:** JSON + CloudEvents zarfı (id, type, source, time, subject); başlıkta ayrıca aktorId, aktorRolleri ve korelasyonId taşınır, böylece her olayın kimin adına üretildiği audit kaydına girer. Şemalar ortak event-contracts modülünde versiyonlanır.
+- **Olay formatı:** JSON + CloudEvents zarfı (id, type, source, time, subject); başlıkta ayrıca aktorId, aktorRolleri ve korelasyonId taşınır, böylece her olayın kimin adına üretildiği audit kaydına girer. Olay adları İngilizce ve geçmiş zamandır (DeliveryReceived gibi); type alanı `com.yarnshipment.<alan>.<olay>.v1`, konu adları `<alan>.events.v1` biçimindedir. Türkçe karşılıklar kod standartlarının Ek B sözlüğündedir. Şemalar ortak event-contracts modülünde versiyonlanır.
 
 - **Hatalı olaylar:** Tekrar denemelerden sonra işlenemeyen olay \*.DLT konusuna gider ve izleme panelinde alarm üretir.
 
@@ -90,21 +92,21 @@ Tüm senkron çağrılarda Resilience4j ile zaman aşımı (2 sn), sınırlı te
 
 1.  Depo personeli çuvalları okutur; shipment-service, bag-service üzerinden anahtarları rezerve eder.
 
-2.  Çıkış tartımı, mühür ve fotoğraflar girilir. evidence-service her dosya için KanitYuklendi yayınlar; shipment-service zorunlu kanıtların tamamlandığını bu olaylardan izler ve durumu *Yüklendi* yapar.
+2.  Çıkış tartımı, mühür ve fotoğraflar girilir. evidence-service her dosya için EvidenceUploaded yayınlar; shipment-service zorunlu kanıtların tamamlandığını bu olaylardan izler ve durumu *Yüklendi* yapar.
 
 3.  Şoför beyanlarıyla durum *Yolda* ve *Teslim Bekliyor* olur.
 
-4.  Fasoncu kör teslim girişini yapar; shipment-service TeslimGirisiYapildi olayını çıkış ve teslim verisiyle birlikte yayınlar, durum *Kontrolde* olur.
+4.  Fasoncu kör teslim girişini yapar; shipment-service DeliveryReceived olayını çıkış ve teslim verisiyle birlikte yayınlar, durum *Kontrolde* olur.
 
-5.  discrepancy-service karşılaştırmayı yapar ve KarsilastirmaTamamlandi yayınlar: temizse sevkiyat *Tamamlandı* olup kilitlenir; uyuşmazlık varsa *İncelemede* olur ve notification-service Kırmızı bantta yetkiliye bildirim gönderir.
+5.  discrepancy-service karşılaştırmayı yapar ve ComparisonCompleted yayınlar: temizse sevkiyat *Tamamlandı* olup kilitlenir; uyuşmazlık varsa *İncelemede* olur ve notification-service Kırmızı bantta yetkiliye bildirim gönderir.
 
-6.  Kalite yetkilisi karar verdikçe UyusmazlikKarariVerildi yayınlanır; son açık uyuşmazlık kapandığında sevkiyat *Tamamlandı* olur ve kilitlenir.
+6.  Kalite yetkilisi karar verdikçe DiscrepancyResolved yayınlanır; son açık uyuşmazlık kapandığında sevkiyat *Tamamlandı* olur ve kilitlenir.
 
 7.  audit-service ve reporting-service tüm bu olayları dinler; hiçbir servis onları beklemez.
 
-Bir adımın geri alınması gerektiğinde (örneğin *İptal*) telafi olayı yayınlanır: SevkiyatIptalEdildi gelince bag-service rezervasyonları serbest bırakır.
+Bir adımın geri alınması gerektiğinde (örneğin *İptal*) telafi olayı yayınlanır: ShipmentCancelled gelince bag-service rezervasyonları serbest bırakır.
 
-**Kör giriş kuralı:** Çıkış kilosu ve çuval sayısı TeslimGirisiYapildi olayında yalnızca discrepancy-service'e gider. shipment-service'in fasoncuya ve şoföre dönen API yanıtları bu alanları karşılaştırma bitene kadar içermez; bu, ayrı DTO'larla ve sözleşme testleriyle güvence altına alınır.
+**Kör giriş kuralı:** Çıkış kilosu ve çuval sayısı DeliveryReceived olayında yalnızca discrepancy-service'e gider. shipment-service'in fasoncuya ve şoföre dönen API yanıtları bu alanları karşılaştırma bitene kadar içermez; bu, ayrı DTO'larla ve sözleşme testleriyle güvence altına alınır.
 
 ## API Gateway, service discovery ve konfigürasyon
 
@@ -210,7 +212,7 @@ iplik-sevkiyat-backend/
 
 ### Servis içi yapı
 
-Her servis aynı altıgen (ports and adapters) düzeni izler: domain (iş kuralları, framework bağımsız), application (kullanım senaryoları), adapter.in.web, adapter.in.messaging, adapter.out.persistence, adapter.out.messaging. ArchUnit testleri, domain katmanının Spring veya JPA'ya bağımlı olmasını engeller.
+Kök paket `com.yarnshipment`'tir ve her servis kendi alt paketindedir (`com.yarnshipment.shipment` gibi). Her servis aynı altıgen (ports and adapters) düzeni izler: domain (iş kuralları, framework bağımsız), application (kullanım senaryoları), adapter.in.web, adapter.in.messaging, adapter.out.persistence, adapter.out.messaging. ArchUnit testleri, domain katmanının Spring veya JPA'ya bağımlı olmasını engeller.
 
 ### Ortak kurallar
 

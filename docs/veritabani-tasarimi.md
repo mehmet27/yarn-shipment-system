@@ -84,7 +84,7 @@ Tüm servislerdeki `created_by`, `assignee_id` gibi kullanıcı alanları Keyclo
 
 | Tablo | Önemli kolonlar | Kısıt / not |
 | --- | --- | --- |
-| `bag` (çuval) | unique\_key, lot\_id, lot\_no, product\_id, quality\_grade\_code, status (CREATED, RESERVED, SHIPPED, DELIVERED, VOID) | unique\_key unique; kalite partiden kopyalanır, elle girilmez; parti kalitesi kilitli değilse çuval oluşturulamaz |
+| `bag` (çuval) | unique\_key, package\_type (BAG, BOX, PALLET, BOBBIN), parent\_bag\_id (palet içindeki çuvallar için), lot\_id, lot\_no, product\_id, quality\_grade\_code, status (CREATED, RESERVED, SHIPPED, DELIVERED, VOID) | unique\_key unique; kalite partiden kopyalanır, elle girilmez; parti kalitesi kilitli değilse çuval oluşturulamaz |
 | `label_print` (etiket baskısı) | bag\_id, printed\_at, printed\_by, reprint\_reason | yeniden baskıda gerekçe zorunlu |
 | `bag_reservation` | bag\_id, shipment\_id, reserved\_at, reserved\_by, released\_at, release\_reason | **kısmi unique (bag\_id) WHERE released\_at IS NULL**: bir çuval aynı anda tek sevkiyatta. SevkiyatIptalEdildi gelince rezervasyon bırakılır |
 
@@ -172,9 +172,11 @@ Veri hacmi küçük-orta ölçekte; büyüyen tek tablolar `audit_log` ve `evide
 
 Performans notları:
 
-- `audit_log` ay bazında partition'lanır (`pg_partman`); eski partition'lar silinmez, gerekirse ucuz depolamaya taşınır.
+- **Yüksek hacme hazır partition:** hızlı büyüyen tablolar ilk günden aylık range partition ile açılır ve `pg_partman` gelecek ayları otomatik oluşturur: `audit_log`, `evidence_file`, `shipment_status_history`, `delivery_scan`, `discrepancy_activity`, `outbox_event`. Partition anahtarı oluşturma zamanıdır; UUIDv7 zaman sıralı olduğu için indeksler değil, yalnız son partition ısınır.
+- **Arşivleme:** 2 yıldan eski partition'lar ana tablodan ayırılır (`DETACH PARTITION`) ve aynı veritabanında `archive` şemasına taşınır; okunabilir kalır ama günlük sorguları yavaşlatmaz. Saklama süresi (varsayılan 10 yıl) dolan partition'lar dışa aktarılıp MinIO'da saklı tutulur, kişisel veriler anonimleştirilir. Audit ve kanıt kayıtları saklama süresi dolmadan arşivden de silinmez.
+- **Okuma yükü:** raporlar canlı tablolara değil `reporting_db`'ye gider. Yük artarsa PostgreSQL okuma kopyası (read replica) eklenir; servis kodu değişmez.
+- **Sonraki adım gerekirse:** tek sunucu yetmezse en büyük veritabanı (örn. `audit_db` veya `evidence_db`) kendi PostgreSQL kümesine taşınır. Servis başına veritabanı ayrımı bu taşımayı yalnız bağlantı adresi değişikliği haline getirir.
 - Sevkiyat dosyasının "birkaç saniyede" açılması (rapor Bölüm 14) için fotoğraflar MinIO'dan kısa ömürlü imzalı URL ile doğrudan tarayıcıya gelir, küçük önizleme (thumbnail) ayrıca saklanır.
-- Şoför–fasoncu eşleşmesi raporları için reporting-service'te günlük yenilenen özet tablo (`pair_daily_stats`) tutulur; canlı tablolar raporlarla yüklenmez.
 - Bağlantı havuzu: HikariCP, servis başına 10–20 bağlantı; PostgreSQL önünde PgBouncer.
 
 ## Ortak konular
@@ -189,7 +191,7 @@ Performans notları:
 
 **Kullanıcılar ve yetkiler (veritabanı seviyesi).** Her servisin iki rolü olur: `<servis>_migrator` (DDL, yalnızca Flyway) ve `<servis>_app` (DML). Raporlama için ayrıca salt okuma `<servis>_readonly` rolü açılır.
 
-**Dosya saklama.** Fotoğraf ve belgeler MinIO'da `evidence/{yıl}/{ay}/{shipment_id}/{evidence_id}` anahtarıyla saklanır. Bucket'ta versiyonlama ve Object Lock (compliance modu) açıktır; saklama süresi dolmadan dosya silinemez. Orijinal ve filigranlı kopya ayrı nesnelerdir, hash orijinalden alınır. Kapasite için kaba hesap: sevkiyat başına 15 fotoğraf × yaklaşık 1,5 MB (sıkıştırılmış) ≈ 23 MB.
+**Dosya saklama.** Fotoğraf ve belgeler MinIO'da `evidence/{yıl}/{ay}/{shipment_id}/{evidence_id}` anahtarıyla saklanır. Bucket'ta versiyonlama ve Object Lock (compliance modu) açıktır; saklama süresi dolmadan dosya silinemez. Varsayılan saklama süresi 10 yıldır ve \`system\_setting\` üzerinden değiştirilebilir; yeni değer yalnız bundan sonra yüklenen dosyalara uygulanır. Orijinal ve filigranlı kopya ayrı nesnelerdir, hash orijinalden alınır. Kapasite için kaba hesap: sevkiyat başına 15 fotoğraf × yaklaşık 1,5 MB (sıkıştırılmış) ≈ 23 MB.
 
 **Yerel geliştirme (şimdi).** `docker-compose.yml` içinde tek bir `postgres:17` konteyneri çalışır. `docker-entrypoint-initdb.d/01-databases.sql` script'i 9 veritabanını ve her servisin `_migrator` / `_app` kullanıcılarını oluşturur; tabloları servisler açılışta Flyway ile kurar. MinIO, Kafka ve Keycloak aynı Compose dosyasındadır. Her geliştirici aynı kurulumu `docker compose up` ile alır.
 
@@ -199,10 +201,16 @@ Performans notları:
 
 **KVKK.** TCKN ve telefon gibi alanlar pgcrypto ile şifrelenir; konum yalnızca `geo_consent = true` ise yazılır. Saklama süresi dolan kişisel veriler anonimleştirilir, sevkiyat kaydı korunur.
 
-## Açık sorular
+## Alınan kararlar
 
-- [ ] Günlük kaç sevkiyat ve kaç fasoncu bekleniyor? Disk ve partition planı buna göre kesinleşir.
-- [ ] Ambalaj birimi her zaman çuval mı, yoksa koli/palet/bobin de olacak mı? Olacaksa `bag` tablosu `package` olarak genelleştirilir.
-- [ ] Yasal saklama süresi kaç yıl (rapor karar #12)? MinIO Object Lock süresi buna göre ayarlanır.
-- [ ] Kullanıcı–fasoncu bağı master-data-service'te mi kalacak, ayrı user-service mi olacak? Yetkilendirme çalışmasının kararı `user_profile` tablosunun yerini belirler.
-- [ ] Tolerans bantları ürün bazında mı tek oran mı (rapor karar #6)? Tablo ikisini de destekliyor; varsayılan olarak genel kural kullanılır.
+Proje büyümeye açık olacağı için açık sorular aşağıdaki gibi kapatıldı. Her biri sonradan veri taşımadan değiştirilebilir.
+
+| Konu | Karar | Neden |
+| --- | --- | --- |
+| Tablo ve kolon adları | İngilizce `snake_case` | Java entity'leri ve kütüphanelerle uyumlu |
+| Günlük sevkiyat hacmi | Bilinmiyor; yüksek hacme göre tasarlandı | Aylık partition, arşivleme ve okuma kopyası hazır (İndeksler ve performans) |
+| Ambalaj birimi | `bag` tablosunda `package_type` (BAG, BOX, PALLET, BOBBIN) ve palet için `parent_bag_id` | Koli/palet/bobin geldiğinde yeni tablo gerekmez; dara standardı zaten ambalaj tipine göre |
+| Saklama süresi | Varsayılan 10 yıl, Admin ayarından değiştirilebilir | Yasal süre netleşince yalnız ayar değişir |
+| Mesajlaşma | Kafka, transactional outbox ile | Mimari dokümanla aynı; olaylar tekrar oynatılabilir |
+| Kullanıcı–fasoncu bağı | Şimdilik `masterdata_db.user_profile` | Ayrı user-service gerekirse tablo olduğu gibi taşınır |
+| Tolerans bantları | Genel kural varsayılan, ürün bazında kural eklenebilir | Pilotta kalibre edilir; tablo iki durumu da destekliyor |

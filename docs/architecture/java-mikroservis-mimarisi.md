@@ -16,7 +16,7 @@ Backend, iş alanına göre ayrılmış 8 Spring Boot servisinden, önlerinde te
 | API Gateway         | Spring Cloud Gateway                                        | Tek giriş noktası, JWT doğrulama, hız sınırı, CORS                                   |
 | Service discovery   | Kubernetes Service DNS (Eureka yok)                         | Platform zaten sağlıyor; ek bileşen işletmeye gerek yok                              |
 | Konfigürasyon       | Kubernetes ConfigMap/Secret + Spring profilleri             | Ortam bazlı ayar tek yerde; Config Server yalnızca K8s dışı kurulumda                |
-| Kimlik              | Keycloak (OIDC/JWT)                                         | Detayı yetkilendirme çalışmasında netleşecek                                         |
+| Kimlik              | Keycloak (OIDC/JWT)                                         | Giriş gateway'de BFF oturumu ile; kullanıcısız işler için servis başına SYSTEM rollü client credentials (PR #4)                                         |
 | Dosyalar            | S3 uyumlu nesne deposu (MinIO)                              | Fotoğraf ve belgeler veritabanına değil nesne deposuna yazılır                       |
 
 Veritabanı seçimi, yetki modeli ve React frontend ayrı çalışmalarda ele alınıyor; bu doküman onlarla kesiştiği yerleri yalnızca arayüz düzeyinde tanımlar.
@@ -72,7 +72,7 @@ Kural basit: kullanıcı bir cevap bekliyorsa ve sonuç hemen gerekiyorsa REST, 
 | shipment-service | master-data-service | Sevkiyat oluştururken fasoncu, şoför ve araç geçerliliğini doğrulamak                 | Geçersiz kayıtla sevkiyat açılmamalı                                  |
 | evidence-service | shipment-service    | Yükleme isteğinin ait olduğu sevkiyatın var olduğunu ve kilitli olmadığını doğrulamak | Kilitli sevkiyata kanıt eklenmemeli                                   |
 
-Tüm senkron çağrılarda Resilience4j ile zaman aşımı (2 sn), sınırlı tekrar ve devre kesici kullanılır. Hata modeli RFC 9457 ProblemDetail formatındadır.
+Tüm senkron çağrılarda Resilience4j ile zaman aşımı (2 sn), sınırlı tekrar ve devre kesici kullanılır. Hata modeli RFC 9457 ProblemDetail formatındadır. Servisler arası çağrılarda kullanıcının JWT'si iletilir; kullanıcısız işler (zamanlanmış görevler, olay tüketicilerinin yaptığı çağrılar) her servis için ayrı tanımlanan, SYSTEM rolü taşıyan client credentials client'ıyla token alır.
 
 ### Asenkron olaylar (Kafka)
 
@@ -82,7 +82,7 @@ Tüm senkron çağrılarda Resilience4j ile zaman aşımı (2 sn), sınırlı te
 
 - **Sıralama:** Olaylar sevkiyat kimliğiyle (shipmentId) bölümlenir, böylece aynı sevkiyatın olayları sırayla işlenir.
 
-- **Olay formatı:** JSON + CloudEvents zarfı (id, type, source, time, subject). Şemalar ortak event-contracts modülünde versiyonlanır.
+- **Olay formatı:** JSON + CloudEvents zarfı (id, type, source, time, subject); başlıkta ayrıca aktorId, aktorRolleri ve korelasyonId taşınır, böylece her olayın kimin adına üretildiği audit kaydına girer. Şemalar ortak event-contracts modülünde versiyonlanır.
 
 - **Hatalı olaylar:** Tekrar denemelerden sonra işlenemeyen olay \*.DLT konusuna gider ve izleme panelinde alarm üretir.
 
@@ -114,7 +114,7 @@ React uygulaması ve mobil tarayıcılar yalnızca gateway ile konuşur; servisl
 
 - **Yönlendirme:** /api/v1/shipments/\*\* → shipment-service, /api/v1/evidence/\*\* → evidence-service gibi yol bazlı kurallar.
 
-- **Kimlik doğrulama:** Keycloak'tan gelen JWT gateway'de doğrulanır ve servislere iletilir (token relay). Servisler de token'ı tekrar doğrular (sıfır güven); rol ve kapsam kontrolü servis içinde yapılır.
+- **Kimlik doğrulama:** Kullanıcı girişi gateway'de BFF oturumu ile yapılır: gateway Keycloak ile OIDC akışını yürütür, token'ları sunucu tarafında tutar ve tarayıcıya yalnızca HttpOnly oturum çerezi verir. Servislere giden isteklere JWT eklenir (token relay). Servisler de token'ı tekrar doğrular (sıfır güven); rol ve kapsam kontrolü servis içinde yapılır.
 
 - **Hız sınırı:** Redis tabanlı kullanıcı başına limit; özellikle giriş ve yükleme uçları için.
 
@@ -124,7 +124,7 @@ React uygulaması ve mobil tarayıcılar yalnızca gateway ile konuşur; servisl
 
 - **Büyük dosyalar gateway'den geçmez:** evidence-service kısa ömürlü (ör. 10 dk) imzalı yükleme adresi (pre-signed URL) verir, telefon dosyayı doğrudan nesne deposuna gönderir, ardından servis hash'i sunucuda yeniden hesaplayıp kaydı onaylar. Bu, zayıf bağlantıda yarım kalan yüklemelerin tekrar denenmesini de kolaylaştırır.
 
-Frontend için ayrı bir BFF katmanı Faz 1'de gerekmiyor; gateway bu rolü yeterince karşılıyor. Token'ın tarayıcıda mı yoksa gateway oturumunda mı tutulacağı yetkilendirme çalışmasıyla birlikte kesinleşecek.
+Gateway aynı zamanda frontend'in BFF katmanıdır; ayrı bir BFF servisi yazılmaz. Token tarayıcıda tutulmaz (yetkilendirme kararı, PR #4).
 
 ### Service discovery: Kubernetes DNS
 

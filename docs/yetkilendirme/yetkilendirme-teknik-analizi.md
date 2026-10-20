@@ -1,8 +1,10 @@
 # Yetkilendirme Teknik Analizi – İplik Sevkiyat Sistemi
 
-Sürüm 1.0 · 20.10.2026 · Mehmet Çelek
+Sürüm 1.1 · 20.10.2026 · Mehmet Çelek
 
 Kaynak: İplik Sevkiyat Ön Analiz Raporu v1.1 (Bölüm 6, 7, 11, 13, 14, 16) ve Java Mikroservis Mimarisi v1.
+
+Değişiklik (1.1): Açık kararlar Y1–Y8 karara bağlandı, büyüme için Y9 (çok tesis / çok firma) eklendi.
 
 ## Özet
 
@@ -59,7 +61,7 @@ Roller: `ADMIN`, `DEPO`, `SOFOR`, `FASONCU`, `KALITE`, `YONETICI` (+ yalnız ser
 | `SEVKIYAT_OLUSTUR` (çuval atama, şoför/araç atama) | ✓ | ✓ |  |  |  |  |
 | `SEVKIYAT_IPTAL` | ✓ |  |  |  |  |  |
 | `CIKIS_GIR` (çıkış kilosu, mühür no) |  | ✓ |  |  |  |  |
-| `CIKIS_GORUNTULE` | ✓ | ✓ | kendi | sonra | ✓ | ✓ |
+| `CIKIS_GORUNTULE` | ✓ | ✓ | yalnız çuval sayısı + mühür no | sonra | ✓ | ✓ |
 | `SOFOR_BEYAN_GIR` |  |  | kendi |  |  |  |
 | `SOFOR_BEYAN_GORUNTULE` | ✓ | ✓ | kendi |  | ✓ | ✓ |
 | `TESLIM_GIR` (teslim kilosu, çuval listesi) |  |  |  | kendi |  |  |
@@ -73,12 +75,12 @@ Roller: `ADMIN`, `DEPO`, `SOFOR`, `FASONCU`, `KALITE`, `YONETICI` (+ yalnız ser
 | `UYUSMAZLIK_KARAR` | ✓ |  |  |  | ✓ |  |
 | `AUDIT_GORUNTULE`, `RAPOR_GORUNTULE` | ✓ |  |  |  | ✓ | ✓ |
 
-**Matristen farklılaşan veya eklenen noktalar** (son bölümde karara sunuldu):
+**Matristen farklılaşan veya eklenen noktalar** (son bölümde karara bağlandı):
 
 - `PARTI_KALITE_BELIRLE` matriste yoktu; ön analiz Bölüm 10'daki "kalite parti bazında belirlenir ve kilitlenir" kuralı için Kalite ve Admin'e eklendi.
 - `SEVKIYAT_OLUSTUR` Admin'e de verildi, çünkü süreç tablosunda (7.1, adım 1) sorumlu "Depo / Admin".
 - Kanıt görüntüleme kör girişe bağlandı: çıkış kantar fotoğrafı kiloyu gösterdiği için fasoncu onu karşılaştırmadan önce göremez; depo da teslim kantar fotoğrafını göremez.
-- Yönetici hiçbir yazma izni almaz; kodda bunu doğrulayan bir test var.
+- Yönetici hiçbir yazma izni almaz; kodda bunu doğrulayan bir test olacak. Şoför çıkış kilosunu görmez, yalnız çuval sayısı ve mühür numarasını görür (Y1).
 
 ## Veri seviyesi kurallar
 
@@ -88,7 +90,7 @@ Rolün izni olması yetmez; her istekte sevkiyatın kime ait olduğuna ve hangi 
 
 - Token'da `sofor_id` ve `fasoncu_id` claim'leri bulunur (Keycloak kullanıcı özniteliğinden mapper ile). Bir fasoncu firmasının birden çok kullanıcısı aynı `fasoncu_id`'yi taşır.
 - Şoför yalnızca `sevkiyat.soforId = token.sofor_id` olan, fasoncu yalnızca `sevkiyat.fasoncuId = token.fasoncu_id` olan sevkiyatı görür.
-- Liste sorguları bu filtreyi veritabanı sorgusuna ekler; sonradan bellekte eleme yapılmaz.
+- Liste sorguları bu filtreyi veritabanı sorgusuna ekler; sonradan bellekte eleme yapılmaz. Aynı filtre token'daki `tesisler` claim'iyle tesis kapsamını da uygular (Y9).
 - Başkasının sevkiyatı istenirse 403 değil **404** döner, böylece sevkiyat numaraları tahmin edilerek varlığı yoklanamaz.
 
 **2. Kör giriş**
@@ -168,17 +170,26 @@ Kod, Java 25 kod kuralları dokümanı onaylandıktan sonra yazılacak. Kurallar
 4. Her servis için: endpoint başına izin, sorgularda sahiplik filtresi, cevapta kör alan kırpma ve bunların testleri.
 5. Ortak yetki testi: matristeki her satır için "izinli rol 2xx, diğerleri 403/404" testi, CI'da zorunlu.
 
-## Açık kararlar
+## Kararlar
 
-Aşağıdaki maddeler için öneri yazıldı; onayın gelene kadar analiz bu önerilerle ilerliyor.
+Tüm maddeler 20.10.2026'da **karar verildi**. Proje sahibi seçimi büyümeye uygun olacak şekilde analize bıraktı; Y1 açıkça onaylandı. Amaç, bugün tek fabrikayla sade başlayıp yarın çok tesis ve çok firmaya kod yeniden yazılmadan geçebilmek.
 
-| # | Konu | Öneri | Neden |
+| # | Konu | Karar | Neden |
 | --- | --- | --- | --- |
-| Y1 | Şoför çıkış kilosunu görsün mü? (matriste G) | **Görmesin**, yalnız çuval sayısı ve mühür no görsün | Şoför kiloyu fasoncuya söylerse kör giriş boşa çıkar (şoför–fasoncu anlaşması senaryosu) |
-| Y2 | Admin sevkiyat oluşturabilsin mi? | Evet (süreç tablosu adım 1) | Matris ile süreç tablosu çelişiyordu |
-| Y3 | Parti kalitesini kim belirler/kilitler? | Kalite, Admin | Matriste satır yoktu; Bölüm 10 gereği |
-| Y4 | Fasoncu ve şoför kullanıcılarını kim açar? | Faz 1'de Admin, Keycloak konsolundan; Faz 2'de master-data ekranından Keycloak Admin API ile | Faz 1'i küçük tutar |
-| Y5 | Admin ve Kalite dışında MFA | Depo için de açılabilir; şoför/fasoncu için yok | Sahada telefon ve hız önemli |
-| Y6 | Şoför ve fasoncu oturum süresi | 8 saat (vardiya), erişim token'ı 5 dk | Sahada sık giriş istememek |
-| Y7 | Kalite ihtilafında yüksek tutarlı karar (karar noktası 8) | Kalite karar verir, eşik üstünde Admin onayı ikinci adım | Eşik tutarı belirlenmeli |
-| Y8 | Kurum içi kullanıcılar için Active Directory | Varsa Keycloak'a LDAP olarak bağlansın | Tek parola, merkezi hesap kapatma |
+| Y1 | Şoför çıkış kilosunu görsün mü? | **Görmez.** Yalnız çuval sayısı ve mühür no görür | Şoför kiloyu fasoncuya söylerse kör giriş boşa çıkar |
+| Y2 | Admin sevkiyat oluşturabilir mi? | **Evet** | Süreç tablosu adım 1 |
+| Y3 | Parti kalitesini kim belirler ve kilitler? | **Kalite ve Admin** | Bölüm 10 |
+| Y4 | Kullanıcıları kim açar? | **Faz 1:** Admin, Keycloak konsolundan. **Faz 2:** master-data ekranından Keycloak Admin API ile. Fasoncu firmaları Keycloak **Organizations** olarak tanımlanır; `fasoncu_id` organizasyon üyeliğinden gelir | Yeni firma eklemek kod değişikliği gerektirmez; firma kendi kullanıcılarını ileride kendisi yönetebilir |
+| Y5 | MFA kimde? | **Admin, Kalite zorunlu; Depo için açık bırakılabilir ayar.** Şoför ve fasoncuda yok | Liste ayar dosyasında (`mfa-zorunlu-roller`), kod değişmeden genişler |
+| Y6 | Şoför ve fasoncu oturum süresi | **8 saat oturum, 5 dk erişim token'ı** | Vardiya boyu tek giriş |
+| Y7 | Yüksek tutarlı kalite kararı | **Kalite karar verir, eşik üstünde Admin ikinci onay verir.** Eşik tutarı Admin ayarıdır (başlangıç değeri pilotta belirlenir) | İki adımlı onay genel bir "onay adımı" olarak tasarlanır, başka kararlara da uygulanabilir |
+| Y8 | Active Directory | **Varsa Keycloak'a LDAP olarak bağlanır; yoksa Keycloak'ın kendi kullanıcıları** | Uygulama kodu iki durumda da aynı kalır |
+| Y9 | Çok tesis ve çok firma büyümesi | **Tek Keycloak realm'i; her kayıtta ve token'da `tesis_id` hazır.** Token `tesisler` claim'i taşır (Keycloak grubu), sahiplik filtresi fasoncu/şoför yanında tesis kapsamını da uygular. Bugün tek tesis olduğu için claim tek değer taşır | Yeni fabrika veya depo eklemek veri taşımadan ve kod değişmeden olur; ayrı şirket gerekirse ileride ayrı realm aynı kodla çalışır |
+
+**Büyümeye hazırlık için tasarım kuralları**
+
+- Endpoint'ler rol değil izin ister; yeni rol eklemek (ör. Planlama, Muhasebe) yalnız matrise satır eklemektir.
+- Rol → izin matrisi Faz 1'de kodda tutulur. Rol sayısı artarsa veya müşteri bazında farklılaşırsa matris Keycloak "client role"lerine taşınır; uygulama kodu değişmez, çünkü izin adları aynı kalır.
+- Veri kuralları tek bir politika katmanında toplanır ve sorgu kapsamı nesnesiyle veritabanına iner. Tesis, bölge veya firma gibi yeni bir kapsam bu nesneye alan eklenerek gelir.
+- Servisler arası olaylar aktör ve tesis bilgisini taşır; raporlama ve audit ileride tesis bazında bölünebilir.
+- Keycloak, OIDC standardı dışında özel bir özelliğiyle kodun içine girmez; gerekirse başka bir OIDC sağlayıcıya geçmek yalnız claim eşlemesini değiştirir.

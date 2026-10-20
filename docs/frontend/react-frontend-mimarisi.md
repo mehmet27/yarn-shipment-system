@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| Sürüm | 1.0 (taslak) |
+| Sürüm | 1.1 (taslak, yetkilendirme kararına göre güncellendi) |
 | Tarih | 20.10.2026 |
 | Dayanak | İplik Sevkiyat Ön Analiz Raporu v1.1 |
 | Durum | Proje sahibinin onayı bekleniyor |
@@ -17,11 +17,11 @@
 | Uygulama tipi | SPA + PWA (vite-plugin-pwa) | Mağaza gerekmez, ana ekrana eklenir, zayıf bağlantıda çalışır |
 | Routing | React Router v7, lazy route'lar | Rol bazlı route koruma, kod bölme |
 | Sunucu verisi | TanStack Query v5 | Önbellek, yeniden deneme, offline mutation desteği |
-| İstemci durumu | Zustand (küçük, sınırlı) | Oturum, offline kuyruk durumu, UI tercihleri |
+| İstemci durumu | Zustand (küçük, sınırlı) | Offline kuyruk durumu, UI tercihleri |
 | UI kütüphanesi | Mantine v7 + TanStack Table | Hem masaüstü tablo hem büyük butonlu mobil ekran, Türkçe tarih/sayı desteği |
 | Formlar | React Hook Form + Zod | Performanslı, tek şemayla doğrulama ve tip |
 | API katmanı | OpenAPI'den otomatik üretilen istemci (Orval) | Java servisleriyle sözleşme tek kaynaktan, elle tip yazılmaz |
-| Kimlik doğrulama | OIDC Authorization Code + PKCE | Yetkilendirme analizinde seçilecek kimlik sağlayıcıyla (ör. Keycloak) uyumlu |
+| Kimlik doğrulama | Gateway oturumu (BFF), Keycloak | Token tarayıcıya inmez; React token kodu yazmaz, yalnızca oturum çerezi ve CSRF başlığı kullanır (bkz. `docs/yetkilendirme/`) |
 | Offline ve fotoğraf | IndexedDB (Dexie) kuyruğu + uygulama içi kamera | Çekim ve gönderim zamanı ayrı tutulur, galeri yüklemesi işaretlenir |
 | Test | Vitest, Testing Library, MSW, Playwright | Backend hazır olmadan sahte API ile paralel geliştirme |
 
@@ -101,7 +101,7 @@ flowchart TB
   end
   P --> SH
   S --> SH
-  SH -- "JSON + OIDC token" --> G["API Gateway (/api)<br/>tek adres, birleşik OpenAPI, token doğrulama"]
+  SH -- "JSON + oturum çerezi + X-XSRF-TOKEN" --> G["API Gateway (/api, BFF)<br/>giriş, oturum (Redis), TokenRelay, birleşik OpenAPI"]
   SH -- "fotoğraf, presigned URL" --> N["Nesne depolama<br/>S3 / MinIO, orijinal dosyalar"]
   G --> J["Java mikroservisleri<br/>sevkiyat, teslimat, kanıt, uyuşmazlık, rapor, kimlik"]
 ```
@@ -127,10 +127,10 @@ Yönetici ve Kalite için merkez ekran `/panel/sevkiyat/:id`'dir ve Bölüm 19'd
 
 ### Yetki modeli frontend'de nasıl kullanılır
 
-- Token'daki rol yerine ince taneli yetki anahtarları kullanılır (ör. `sevkiyat:olustur`, `teslim:kilo:gir`, `uyusmazlik:karar`). Anahtar listesi yetkilendirme analiziyle ortak tutulur.
-- `usePermission('uyusmazlik:karar')` hook'u ve `<Can permission="...">` bileşeni menü, buton ve sekmeleri yönetir.
+- Kullanıcı ve izin listesi açılışta `GET /api/v1/me` ile alınır ve TanStack Query'de tutulur. Rol yerine yetkilendirme analizindeki izin anahtarları kullanılır (ör. `SEVKIYAT_OLUSTUR`, `TESLIM_GIR`, `UYUSMAZLIK_KARAR`). Bu yalnızca görünüş içindir; asıl kontrol backend'dedir.
+- `usePermission('UYUSMAZLIK_KARAR')` hook'u ve `<Can permission="...">` bileşeni menü, buton ve sekmeleri yönetir.
 - Durum geçişleri frontend'de tekrar kodlanmaz. Sevkiyat yanıtı `allowedActions` listesi taşır (ör. `["SOFOR_TESLIM_ALDI"]`); buton yalnızca listede varsa görünür. Durum makinesi tek yerde, backend'de kalır.
-- Kör giriş: fasoncunun teslim ekranına giden API yanıtında çıkış kilosu ve çuval sayısı alan olarak hiç yoktur. Karşılaştırma bittikten sonra sonuç ayrı bir uçtan gelir. Frontend'de "alanı gizle" yaklaşımı kabul edilmez, çünkü tarayıcı araçlarıyla görülebilir.
+- Kör giriş: fasoncunun teslim ekranına giden JSON'da çıkış alanları (çıkış kilosu, çuval sayısı, mühür no vb.) hiç yoktur (yetkilendirme analizi ile kararlaştı). Karşılaştırma bittikten sonra sonuç ayrı bir uçtan gelir. Frontend'de "alanı gizle" yaklaşımı kabul edilmez, çünkü tarayıcı araçlarıyla görülebilir.
 - Kilitli alanlar backend'den `locked: true` ile gelir ve salt okuma gösterilir; Admin için yanında "Gerekçeli düzeltme" aksiyonu çıkar.
 
 ## State yönetimi, API katmanı ve formlar
@@ -140,7 +140,7 @@ Verinin %90'ı sunucu verisidir ve TanStack Query'de yaşar; Zustand yalnızca s
 | Durum türü | Nerede | Örnek |
 | --- | --- | --- |
 | Sunucu verisi | TanStack Query | Sevkiyat listesi, sevkiyat dosyası, uyuşmazlıklar, tanımlar |
-| Oturum | Zustand (bellekte) | Kullanıcı, yetki anahtarları, access token |
+| Oturum | Tarayıcı çerezi (HttpOnly, gateway yönetir) + `/api/v1/me` sorgusu | Kullanıcı ve izin listesi; frontend'de token tutulmaz |
 | Offline kuyruk | Dexie (IndexedDB) + Zustand özeti | Bekleyen fotoğraf ve beyan sayısı, son senkron zamanı |
 | Form taslakları | React Hook Form + IndexedDB | Yarım kalan kör teslim girişi, uygulama kapanırsa kaybolmaz |
 | Liste filtreleri | URL query parametreleri | `?durum=INCELEMEDE&fasoncu=12`, paylaşılabilir link |
@@ -149,7 +149,7 @@ Verinin %90'ı sunucu verisidir ve TanStack Query'de yaşar; Zustand yalnızca s
 
 - Tüm istekler API Gateway üzerinden tek adrese gider (`/api/...`). Frontend mikroservis adreslerini bilmez; servis bölünmesi değişse de frontend etkilenmez.
 - Her Java servisi springdoc ile OpenAPI yayınlar. Gateway bunları birleştirir; Orval bu şemadan TypeScript tiplerini, axios fonksiyonlarını ve TanStack Query hook'larını üretir. Zod şemaları da aynı kaynaktan üretilebilir.
-- Axios interceptor'ı: token ekler, 401'de sessiz yenileme dener, `X-Request-Id` ve cihaz bilgisi başlığı gönderir (audit log'daki "hangi cihazdan" bilgisi için).
+- Axios istemcisi `withCredentials` ile oturum çerezini gönderir; durum değiştiren isteklerde (POST/PUT/PATCH/DELETE) `XSRF-TOKEN` çerezindeki değeri `X-XSRF-TOKEN` başlığına koyar. 401 gelirse kullanıcı `/oauth2/authorization/keycloak` adresine yönlendirilir (offline kuyrukta bekleyen kayıt varsa önce uyarı gösterilir). Ayrıca `X-Request-Id` ve cihaz bilgisi başlığı gönderir (audit log'daki "hangi cihazdan" bilgisi için).
 - Hata biçimi tüm servislerde RFC 9457 Problem Details olmalı (`type`, `title`, `detail`, `errors[]`). Frontend alan hatalarını doğrudan form alanına bağlar. Bu konu backend analizleriyle ortak karar olarak önerilir.
 - Eşzamanlı düzenleme: güncelleme isteklerinde `version` (ETag / If-Match) gönderilir; 409 gelirse kullanıcıya "kayıt başkası tarafından güncellendi" gösterilir.
 - Offline'dan gelen tekrar denemeler için her mutasyon bir `Idempotency-Key` taşır; aynı beyan iki kez kaydedilmez.
@@ -210,8 +210,9 @@ Bir beyan ancak ona bağlı zorunlu fotoğraflar sunucuya ulaştığında "tamam
 
 ### Güvenlik
 
-- Access token yalnızca bellekte tutulur, localStorage kullanılmaz. Yenileme, kimlik sağlayıcının önerdiği yöntemle yapılır (refresh token rotasyonu veya BFF ile httpOnly çerez); seçim yetkilendirme analiziyle birlikte kesinleşir.
-- Admin ve Kalite için iki adımlı doğrulama kimlik sağlayıcının giriş ekranında yapılır; frontend kendi giriş formunu yazmaz.
+- Giriş BFF desenindedir: Authorization Code + PKCE akışını Spring Cloud Gateway yürütür, token'lar gateway'in Redis oturumunda kalır. Tarayıcı yalnızca `HttpOnly`, `Secure`, `SameSite=Lax` oturum çerezi taşır; React token okumaz, saklamaz, yenilemez.
+- Giriş `/oauth2/authorization/keycloak`, çıkış `/logout` (CSRF başlığıyla POST). Kullanıcı bilgisi ve izinler `/api/v1/me` ucundan gelir.
+- Admin ve Kalite için iki adımlı doğrulama Keycloak giriş ekranında yapılır; frontend kendi giriş formunu yazmaz.
 - Content-Security-Policy, yalnızca HTTPS, ortak hesap yok. IndexedDB'deki bekleyen kayıtlar oturum kapanınca (gönderildikten sonra) silinir.
 
 ### Yayına alma
@@ -233,7 +234,7 @@ Bir beyan ancak ona bağlı zorunlu fotoğraflar sunucuya ulaştığında "tamam
 
 ### Diğer analizlerle netleşmesi gerekenler
 
-- Yetkilendirme: kimlik sağlayıcı seçimi, token mu BFF mi, yetki anahtarı listesi.
+- Yetkilendirme: kararlaştı (Keycloak + gateway BFF oturumu, izin anahtarları `docs/yetkilendirme/` altında). Saha PWA'sında oturum süresinin offline çalışmayla uyumu (uzun süre çevrim dışı kalan cihazda oturum düşerse kuyruğun girişten sonra gönderilmesi) birlikte test edilmeli.
 - Backend mikroservisleri: Gateway yolu, OpenAPI birleştirme, Problem Details hata biçimi, `allowedActions` alanı, Idempotency-Key desteği.
 - Veritabanı / depolama: fotoğraflar için nesne depolama (S3/MinIO) ve presigned URL akışı.
 - Kod kuralları: Java 25 kod kuralları dokümanı kesinleştiğinde, frontend için de benzer bir TypeScript/React kural dokümanı hazırlanabilir.

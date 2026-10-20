@@ -240,14 +240,12 @@ Her servis aynı altıgen (ports and adapters) düzeni izler: domain (iş kurall
 
 Audit ve outbox altyapısı 1. adımda kurulur; böylece ilk servisten itibaren her değişiklik kayıt altındadır.
 
-### Açık sorular
+### Kararlar ve açık sorular
 
-- [x] Sunucular nerede olacak? Yanıt: şimdilik yerel makinede (Docker Compose), sonra şirketin kendi sunucularında (Kubernetes/k3s, MinIO kendi sunucuda).
+Proje büyüyebileceği için kalan sorular, ileride genişletmeye en uygun seçenekle kapatıldı.
 
-- [x] Geliştirme ekibi kaç kişi? Yanıt: 3'ten fazla; mikroservisle başlanır.
-
-- [ ] Kafka'yı işletecek bir ekip var mı? Yoksa RabbitMQ daha az bakım ister; outbox katmanı sayesinde geçiş kodu etkilemez.
-
-- [ ] Yasal saklama süresi kaç yıl? Nesne deposu kapasitesi ve Object Lock süresi buna bağlı.
-
-- [ ] Veritabanı çalışması ilişkisel dışı bir seçim yaparsa veri erişim katmanı yeniden değerlendirilmeli.
+- [x] Sunucular nerede olacak? Karar: şimdilik yerel makinede (Docker Compose), sonra şirketin kendi sunucularında (Kubernetes/k3s, MinIO kendi sunucuda).
+- [x] Geliştirme ekibi kaç kişi? Karar: 3'ten fazla; doğrudan mikroservisle başlanır.
+- [x] Mesajlaşma: Kafka kalır. Ölçeklenme ve olay geçmişinin tekrar oynatılabilmesi için RabbitMQ'ya tercih edildi. Konular baştan 12 bölümle (partition) açılır, böylece tüketici sayısı konu yeniden oluşturulmadan artırılabilir. Yerelde tek düğüm, kendi sunucularda en az 3 düğüm.
+- [x] Saklama süresi: varsayılan 10 yıl (TTK ticari defter ve belge saklama süresi). Süre belge türü bazında Admin ayarıdır; MinIO Object Lock ve veritabanı arşivleme kuralları bu ayardan beslenir.
+- [x] Veri erişimi: ilişkisel veritabanı varsayımı korunur ve her servis kendi şemasına sahip olur; servis büyüyünce kendi veritabanı sunucusuna taşınabilir. Kesin ürün seçimi veritabanı çalışmasından gelir.

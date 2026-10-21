@@ -1,6 +1,7 @@
 import type { Kilogram } from '@iplik/units';
 import { isKilogram } from '@iplik/units';
 import type {
+  DispatchWeighingRequest as GeneratedDispatchWeighingRequest,
   DeliveryDocument as GeneratedDeliveryDocument,
   DeliveryReceiptRequest as GeneratedDeliveryReceiptRequest,
   DriverShipmentView as GeneratedDriverView,
@@ -20,6 +21,7 @@ import {
   confirmPickup,
   getShipment as getGeneratedShipment,
   listShipments,
+  recordDispatchWeighing,
   SealCondition as SealConditionValues,
   ShipmentStatus as ShipmentStatusValues,
   submitDeliveryReceipt,
@@ -109,4 +111,12 @@ export type DeliveryReceiptRequest = Omit<
   'grossKg' | 'tareKg' | 'document'
 > & { grossKg: Kilogram; tareKg: Kilogram; document?: DeliveryDocument };
 
-export { confirmPickup, listShipments, submitDeliveryReceipt };
+export type DispatchWeighingRequest = Omit<
+  GeneratedDispatchWeighingRequest,
+  'grossKg' | 'tareKg'
+> & {
+  grossKg: Kilogram;
+  tareKg: Kilogram;
+};
+
+export { confirmPickup, listShipments, recordDispatchWeighing, submitDeliveryReceipt };

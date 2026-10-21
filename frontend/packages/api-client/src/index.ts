@@ -7,6 +7,7 @@ export {
   confirmPickup,
   getShipment,
   listShipments,
+  recordDispatchWeighing,
   SEAL_CONDITIONS,
   SHIPMENT_STATUSES,
   SHIPMENTS_PATH,
@@ -15,6 +16,7 @@ export {
 export type {
   DeliveryDocument,
   DeliveryReceiptRequest,
+  DispatchWeighingRequest,
   DriverShipmentView,
   InternalShipmentView,
   ListShipmentsParams,

@@ -63,7 +63,8 @@
       "gross": "Brüt",
       "tare": "Dara",
       "net": "Net",
-      "difference": "Fark"
+      "difference": "Fark",
+      "recordDispatch": "Çıkış tartısını gir"
     }
   },
   "field": {
@@ -132,5 +133,26 @@
       "tareExceedsGross": "Dara brütten büyük olamaz.",
       "invalidBagCount": "Çuval sayısı 1 veya daha büyük bir tam sayı olmalı."
     }
+  },
+  "dispatch": {
+    "title": "Çıkış tartısı",
+    "hint": "Kantar fişindeki değerleri ve araca vurulan mührü girin. Kayıtla sevkiyat yüklendi sayılır.",
+    "bagCount": "Çuval sayısı",
+    "scaleTicketNo": "Kantar fişi no (isteğe bağlı)",
+    "sealNo": "Mühür numarası",
+    "net": "Net: {{net}}",
+    "submit": "Kaydet",
+    "back": "Sevkiyata dön",
+    "submitFailed": "Çıkış tartısı kaydedilemedi. Lütfen tekrar deneyin.",
+    "sealAlreadyUsed": "Bu mühür numarası başka bir sevkiyatta kullanılmış.",
+    "notDraft": "Bu sevkiyatın çıkış tartısı artık girilemez.",
+    "errors": {
+      "invalidKg": "Kiloyu 1.982,5 biçiminde girin.",
+      "tareExceedsGross": "Dara brütten büyük olamaz.",
+      "invalidBagCount": "Çuval sayısı 1 veya daha büyük bir tam sayı olmalı.",
+      "sealNoRequired": "Mühür numarasını girin."
+    },
+    "grossKg": "Brüt (kg)",
+    "tareKg": "Dara (kg)"
   }
 }

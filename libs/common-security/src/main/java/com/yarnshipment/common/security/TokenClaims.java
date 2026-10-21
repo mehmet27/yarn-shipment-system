@@ -8,6 +8,7 @@ public final class TokenClaims {
     public static final String DRIVER_ID = "driver_id";
     public static final String SITE_IDS = "site_ids";
     public static final String PREFERRED_USERNAME = "preferred_username";
+    public static final String NAME = "name";
     public static final String AMR = "amr";
     public static final String ACR = "acr";
 

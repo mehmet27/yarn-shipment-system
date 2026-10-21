@@ -24,7 +24,8 @@ import tools.jackson.databind.json.JsonMapper;
  */
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
-@EnableMethodSecurity
+// Controller'lar OpenAPI'den üretilen arayüzleri uygular; JDK proxy'si @RestController'ı gizleyeceği için CGLIB.
+@EnableMethodSecurity(proxyTargetClass = true)
 @EnableConfigurationProperties(SecurityProperties.class)
 public final class YarnShipmentSecurityConfiguration {
 

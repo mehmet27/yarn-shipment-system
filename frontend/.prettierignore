@@ -2,3 +2,4 @@ pnpm-lock.yaml
 dist
 coverage
 **/generated/**
+apps/web/public/mockServiceWorker.js

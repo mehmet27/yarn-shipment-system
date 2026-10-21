@@ -35,6 +35,7 @@ function toSubcontractorView(shipment: InternalShipmentView): SubcontractorShipm
   const { driverName, deliveryWeighing, deliverySealCondition } = shipment;
   return {
     ...toBase(shipment),
+    allowedActions: shipment.status === 'AWAITING_DELIVERY' ? ['RECORD_DELIVERY'] : [],
     audience: 'SUBCONTRACTOR',
     ...(driverName === undefined ? {} : { driverName }),
     ...(deliveryWeighing === undefined ? {} : { deliveryWeighing }),

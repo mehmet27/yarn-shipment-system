@@ -74,11 +74,29 @@ const confirmPickupHandler = http.post(
   },
 );
 
+/** Kör teslim tutanağı; AWAITING_DELIVERY → CHECKING, aksi halde 409 INVALID_SHIPMENT_STATUS. */
+const deliveryReceiptHandler = http.post(
+  `${SHIPMENTS_PATH}/:shipmentId/delivery-receipt`,
+  ({ params }) => {
+    const shipment = findMockShipment(params.shipmentId);
+    if (shipment === undefined) return notFound();
+    if (shipment.status !== 'AWAITING_DELIVERY') {
+      return HttpResponse.json(
+        { status: 409, code: 'INVALID_SHIPMENT_STATUS', title: 'Geçersiz durum' },
+        { status: 409 },
+      );
+    }
+    updateMockShipmentStatus(shipment.shipmentId, 'CHECKING');
+    return new HttpResponse(null, { status: 204 });
+  },
+);
+
 export function createHandlers(role: Role) {
   return [
     createMeHandler(role),
     createListShipmentsHandler(role),
     createGetShipmentHandler(role),
     confirmPickupHandler,
+    deliveryReceiptHandler,
   ];
 }

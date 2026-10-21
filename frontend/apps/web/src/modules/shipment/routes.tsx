@@ -1,4 +1,5 @@
 import type { RouteObject } from 'react-router';
+import { DeliveryReceiptPage } from './pages/DeliveryReceiptPage';
 import { FieldShipmentListPage } from './pages/FieldShipmentListPage';
 import { FieldShipmentPage } from './pages/FieldShipmentPage';
 import { ShipmentFilePage } from './pages/ShipmentFilePage';
@@ -14,4 +15,5 @@ export const shipmentPanelRoutes: RouteObject[] = [
 export const shipmentFieldRoutes: RouteObject[] = [
   { index: true, element: <FieldShipmentListPage /> },
   { path: 'sevkiyat/:shipmentId', element: <FieldShipmentPage /> },
+  { path: 'sevkiyat/:shipmentId/teslim', element: <DeliveryReceiptPage /> },
 ];

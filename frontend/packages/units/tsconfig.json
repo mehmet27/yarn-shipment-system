@@ -1,0 +1,4 @@
+{
+  "extends": "@iplik/config/tsconfig.base.json",
+  "include": ["src"]
+}

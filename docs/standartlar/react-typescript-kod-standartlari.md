@@ -106,7 +106,7 @@ type UploadState =
 | Öğe | Biçim | Örnek | Denetleyen |
 | --- | --- | --- | --- |
 | Klasör | `kebab-case` | `master-data/`, `delivery-receipt/` | `check-file/folder-naming-convention` |
-| Bileşen dosyası | `PascalCase.tsx`, içindeki bileşenle aynı ad | `ShipmentList.tsx` | `check-file/filename-naming-convention` |
+| Bileşen dosyası | `PascalCase.tsx`, içindeki bileşenle aynı ad; bileşen olmayan `.tsx` (`router.tsx`, `main.tsx`) `camelCase` | `ShipmentList.tsx` | `check-file/filename-naming-convention` (ad eşleşmesi review) |
 | Hook dosyası | `useCamelCase.ts` | `usePermission.ts` | aynı |
 | Diğer dosyalar | `camelCase.ts` | `shipmentSchema.ts`, `kilogram.ts` | aynı |
 | Test dosyası | test edilen dosya + `.test.ts(x)`, yanında | `ShipmentList.test.tsx` | aynı |
@@ -173,7 +173,7 @@ export function ShipmentList({ filter }: ShipmentListProps) {
 | Kural | Ne | Denetleyen |
 | --- | --- | --- |
 | **FE-STRUC-01** | Biçim tartışılmaz: Prettier (tek tırnak, noktalı virgül, `printWidth: 100`, `trailingComma: all`). | `prettier --check` |
-| **FE-STRUC-02** | Süslü parantez zorunludur, tek satırlık `if` dahil (FE-CPLX-08'deki erken `return` satırları hariç değildir; Prettier aynı satıra alır). | `curly: all` |
+| **FE-STRUC-02** | Birden çok satıra yayılan her `if`, `else`, `for`, `while` gövdesi süslü parantezlidir. Parantezsiz gövde yalnızca koşulla aynı satırdaki tek ifadede serbesttir (FE-CPLX-08'deki erken `return`). | `curly: multi-line` |
 | **FE-STRUC-03** | Varsayılan dışa aktarım (`export default`) yasaktır; yalnızca araç ayar dosyaları (`vite.config.ts` vb.) hariçtir. Lazy route'lar adlandırılmış `Component` dışa aktarımını kullanır. | `import-x/no-default-export` |
 | **FE-STRUC-04** | Sihirli sayı yasaktır; `-1, 0, 1, 2, 100` dışındaki sayılar adlandırılmış sabittir. Testler, CSS benzeri stil değerleri ve dizi indeksleri hariçtir. | `no-magic-numbers` |
 | **FE-STRUC-05** | `public` API'de boolean bayrak parametresi yazılmaz (`save(true)` değil `saveDraft()`); bileşenlerde boolean prop serbesttir. | review |
@@ -190,8 +190,8 @@ Klasör yapısı mimari dokümandadır (`apps/web/src/app`, `modules/*`, `offlin
 
 | Kural | Ne | Denetleyen |
 | --- | --- | --- |
-| **FE-MOD-01** | Bir modül başka modülün yalnızca `index.ts`'ini import eder; iç dosyalara (`modules/shipment/components/...`) dışarıdan erişilmez. | `boundaries/entry-point` |
-| **FE-MOD-02** | İzinli bağımlılık yönü: `app → modules → packages`; `modules → offline → packages`. Ters yön ve `packages → apps` yasaktır. | `boundaries/element-types` |
+| **FE-MOD-01** | Bir modül başka modülün yalnızca `index.ts`'ini import eder; iç dosyalara (`modules/shipment/components/...`) dışarıdan erişilmez. | `boundaries/dependencies` |
+| **FE-MOD-02** | İzinli bağımlılık yönü: `app → modules → packages`; `modules → offline → packages`; sahte API (`mocks/`) yalnızca modüllerin `index.ts`'ini kullanır. Ters yön ve `packages → apps` yasaktır. Test dosyaları bu kuralın dışındadır. | `boundaries/dependencies` |
 | **FE-MOD-03** | Döngüsel import yasaktır. | `import-x/no-cycle` |
 | **FE-MOD-04** | `@mantine/*` yalnızca `packages/ui` içinde import edilir; uygulama kodu `@iplik/ui` kullanır (F-05). | `no-restricted-imports` |
 | **FE-MOD-05** | `axios` yalnızca `packages/api-client` içinde import edilir; `fetch` doğrudan çağrılmaz. | `no-restricted-imports`, `no-restricted-globals` |
@@ -266,7 +266,7 @@ Klasör yapısı mimari dokümandadır (`apps/web/src/app`, `modules/*`, `offlin
 - **FE-UI-02** Renk, boşluk ve yazı boyutu tema token'larından gelir; bileşen içinde `#hex`, `rgb()` ve piksel değeri yazılmaz (`no-restricted-syntax` renk deseni).
 - **FE-UI-03** Durum bilgisi yalnızca renkle verilmez; renk + metin (+ ikon) birlikte kullanılır (A/B kalite, Yeşil/Sarı/Kırmızı bant).
 - **FE-UI-04** Erişilebilirlik kuralları hata seviyesindedir (`jsx-a11y/recommended`): her form alanının etiketi, her ikon butonun `aria-label`'ı vardır; saha ekranlarında dokunma hedefi en az 48 px'tir.
-- **FE-UI-05** Kullanıcıya görünen hiçbir metin JSX'e veya koda gömülmez; `t('shipment.list.title')` ile `packages/i18n/src/locales/tr.json`'dan gelir (F-12). Anahtarlar `modül.ekran.öğe` biçimindedir, İngilizce ve `camelCase` segmentlidir.
+- **FE-UI-05** Kullanıcıya görünen hiçbir metin JSX'e veya koda gömülmez (test dosyaları hariç); `t('shipment.list.title')` ile `packages/i18n/src/locales/tr.json`'dan gelir (F-12). Anahtarlar `modül.ekran.öğe` biçimindedir, İngilizce ve `camelCase` segmentlidir.
 - **FE-UI-06** Saha (`/saha`) ekranlarında bir ekranda tek ana aksiyon bulunur; masaüstü bileşenleri (geniş tablo) saha kabuğunda kullanılmaz. ÖNERİLEN.
 
 ---
@@ -289,7 +289,7 @@ Klasör yapısı mimari dokümandadır (`apps/web/src/app`, `modules/*`, `offlin
 
 ## 12. Araç zinciri ve bağımlılıklar
 
-- **FE-BUILD-01** Node 22 LTS ve pnpm (sürüm `packageManager` alanında sabit). `npm` ve `yarn` kilit dosyası commit edilmez.
+- **FE-BUILD-01** Node 22 LTS ve pnpm (sürüm `packageManager` alanında sabit). `npm` ve `yarn` kilit dosyası commit edilmez. TypeScript 6.0 ve ESLint 9 kullanılır: `typescript-eslint` henüz TypeScript 7'yi, `eslint-plugin-react` ve `eslint-plugin-jsx-a11y` henüz ESLint 10'u desteklemiyor. Destek gelince yükseltilir.
 - **FE-BUILD-02** Bağımlılık sürümleri `pnpm-lock.yaml` ile sabittir; CI `pnpm install --frozen-lockfile` çalıştırır.
 - **FE-BUILD-03** Yeni bağımlılık PR açıklamasında gerekçelendirilir: ne işe yaradığı, lisansı (MIT/Apache/BSD; GPL yasak) ve paket boyutu. Aynı işi yapan ikinci kütüphane eklenmez (iki tarih kütüphanesi, iki HTTP istemcisi vb.).
 - **FE-BUILD-04** Ortak ESLint, TypeScript, Prettier ve Vitest ayarları `packages/config`'tedir; uygulamalar ve paketler bunları genişletir, kural kapatmaz.

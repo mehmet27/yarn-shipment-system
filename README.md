@@ -38,7 +38,29 @@ docker compose -f deploy/docker-compose.yml up -d
 ```
 
 Ayrıca Keycloak `http://localhost:8180` adresinde açılır (yönetici: `admin` / `KEYCLOAK_ADMIN_PASSWORD`).
-`yarnshipment` realm'i, rolleri ve claim mapper'ları sonraki adımda içe aktarılacak.
+`yarnshipment` realm'i (roller, claim mapper'ları, test kullanıcıları) ilk açılışta
+`deploy/keycloak/yarnshipment-realm-local.json` dosyasından kendiliğinden içe aktarılır. Realm zaten varsa
+yeniden aktarılmaz; sıfırlamak için `docker compose -f deploy/docker-compose.yml down -v` çalıştırın.
+
+Test kullanıcıları (hepsinin şifresi `deploy/.env` içindeki `KEYCLOAK_TEST_USER_PASSWORD`):
+
+| Kullanıcı | Rol | Kapsam |
+|---|---|---|
+| `admin` | admin | iki lokasyon |
+| `depo` | warehouse | A lokasyonu |
+| `kalite` | quality | iki lokasyon |
+| `mudur` | manager | iki lokasyon |
+| `sofor` | driver | A lokasyonu, kendi şoför kimliği |
+| `fasoncu` | subcontractor | A lokasyonu, kendi fasoncu kimliği |
+
+Token'ların servislerin beklediği claim'leri taşıdığını doğrulamak için (Node 22):
+
+```bash
+KEYCLOAK_TEST_USER_PASSWORD=<deploy/.env değeri> node tools/keycloak/verify-realm.mjs
+```
+
+Yerel Keycloak'ta ikinci faktör kurulu değildir; `admin` ve `kalite` rolleri MFA'sız oturumda düşürüldüğü için
+shipment-service'i `--spring.profiles.active=local` ile başlatın (yalnızca yerelde MFA şartını kapatır).
 
 Compose, tek bir PostgreSQL 17 konteynerinde 8 servis veritabanını ve Keycloak veritabanını, her servis için
 `<servis>_migrator`, `<servis>_app` ve `<servis>_readonly` rolleriyle açar. Tabloları servisler açılışta Flyway
@@ -58,7 +80,7 @@ PostgreSQL'i ayrıca kurmanız gerekmez; yukarıdaki Compose yeterlidir. Servis 
 ```bash
 export SHIPMENT_DB_APP_PASSWORD=<LOCAL_DB_PASSWORD>
 export SHIPMENT_DB_MIGRATOR_PASSWORD=<LOCAL_DB_PASSWORD>
-./mvnw -pl services/shipment-service spring-boot:run
+./mvnw -pl services/shipment-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 | Değişken | Varsayılan |

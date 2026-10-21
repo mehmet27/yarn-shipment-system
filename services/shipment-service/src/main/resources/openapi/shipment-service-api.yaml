@@ -17,6 +17,7 @@ servers:
   - url: /
 tags:
   - name: Shipments
+  - name: ShipmentCreation
   - name: CurrentUser
 security:
   - bearerAuth: []
@@ -36,6 +37,36 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
   /api/v1/shipments:
+    post:
+      tags: [ShipmentCreation]
+      operationId: createShipment
+      summary: Sevkiyat taslağı oluşturur (DRAFT)
+      description: |
+        Çıkış lokasyonu ve fasoncu ile taslak sevkiyat açar; numara sunucuda üretilir. Lokasyon kullanıcının
+        yetkili olduğu lokasyonlardan biri olmalıdır. Şoför ve araç henüz belli değilse hiç gönderilmez; şoför
+        kimliği ile adı, araç kimliği ile plakası birlikte gönderilir. Aynı `Idempotency-Key` ile tekrar gönderilen
+        istek yeni sevkiyat açmaz, ilk yanıtı döner.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShipmentRequest'
+      responses:
+        '201':
+          description: Taslak oluşturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateShipmentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     get:
       tags: [Shipments]
       operationId: listShipments
@@ -488,6 +519,43 @@ components:
           $ref: '#/components/schemas/ScanMethod'
         document:
           $ref: '#/components/schemas/DeliveryDocument'
+    CreateShipmentRequest:
+      type: object
+      required: [siteId, subcontractorId, subcontractorTitle]
+      properties:
+        siteId:
+          type: string
+          format: uuid
+        subcontractorId:
+          type: string
+          format: uuid
+        subcontractorTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        driverId:
+          type: string
+          format: uuid
+        driverName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        vehicleId:
+          type: string
+          format: uuid
+        plateNo:
+          type: string
+          minLength: 1
+          maxLength: 20
+    CreateShipmentResponse:
+      type: object
+      required: [id, shipmentNo]
+      properties:
+        id:
+          type: string
+          format: uuid
+        shipmentNo:
+          type: string
     DispatchWeighingRequest:
       type: object
       required: [grossKg, tareKg, bagCount, sealNo]

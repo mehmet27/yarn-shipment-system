@@ -233,6 +233,28 @@ export interface DeliveryReceiptRequest {
   document?: DeliveryDocument;
 }
 
+export interface DispatchWeighingRequest {
+  grossKg: Kg;
+  tareKg: Kg;
+  /**
+     * Tartılan çuval sayısı
+     * @minimum 1
+     */
+  bagCount: number;
+  /**
+     * Kantar fişi numarası
+     * @minLength 1
+     * @maxLength 64
+     */
+  scaleTicketNo?: string;
+  /**
+     * Araca vurulan mühür numarası
+     * @minLength 1
+     * @maxLength 64
+     */
+  sealNo: string;
+}
+
 export type InternalShipmentViewAudience = typeof InternalShipmentViewAudience[keyof typeof InternalShipmentViewAudience];
 
 
@@ -470,6 +492,25 @@ export const submitDeliveryReceipt = (
       );
     }
 
+/**
+ * Depo çalışanı kantar fişindeki brüt, dara ve çuval sayısını ile araca vurulan mühür numarasını girer.
+ * Net kilo brüt ile daradan hesaplanır. Mühür numarası tek kullanımlıktır: başka bir sevkiyatın çıkışında
+ * kullanılmışsa 409 döner. Kayıtla birlikte sevkiyat yüklendi sayılır. Aynı sevkiyat için tekrar gönderilen
+ * istek yeni kayıt oluşturmaz ve yine 204 döner.
+ * @summary Depo çıkış tartımını ve mührü kaydeder (DRAFT → LOADED)
+ */
+export const recordDispatchWeighing = (
+    shipmentId: string,
+    dispatchWeighingRequest: DispatchWeighingRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/dispatch-weighing`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: dispatchWeighingRequest
+    },
+      );
+    }
+
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -480,3 +521,4 @@ export type ListShipmentsResult = NonNullable<Awaited<ReturnType<typeof listShip
 export type GetShipmentResult = NonNullable<Awaited<ReturnType<typeof getShipment>>>
 export type ConfirmPickupResult = NonNullable<Awaited<ReturnType<typeof confirmPickup>>>
 export type SubmitDeliveryReceiptResult = NonNullable<Awaited<ReturnType<typeof submitDeliveryReceipt>>>
+export type RecordDispatchWeighingResult = NonNullable<Awaited<ReturnType<typeof recordDispatchWeighing>>>

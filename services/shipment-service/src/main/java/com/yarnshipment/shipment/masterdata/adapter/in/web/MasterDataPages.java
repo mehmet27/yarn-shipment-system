@@ -1,0 +1,36 @@
+package com.yarnshipment.shipment.masterdata.adapter.in.web;
+
+import com.yarnshipment.shipment.adapter.in.web.api.model.DriverPageResponse;
+import com.yarnshipment.shipment.adapter.in.web.api.model.DriverView;
+import com.yarnshipment.shipment.adapter.in.web.api.model.PageMetadata;
+import com.yarnshipment.shipment.adapter.in.web.api.model.SubcontractorPageResponse;
+import com.yarnshipment.shipment.adapter.in.web.api.model.SubcontractorView;
+import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
+import com.yarnshipment.shipment.masterdata.domain.model.Driver;
+import com.yarnshipment.shipment.masterdata.domain.model.Subcontractor;
+
+/** Ana veri sayfalarının web modeli. */
+final class MasterDataPages {
+
+    private MasterDataPages() {}
+
+    static SubcontractorPageResponse subcontractors(MasterDataPage<Subcontractor> page) {
+        return new SubcontractorPageResponse(
+                page.items().stream()
+                        .map(item -> new SubcontractorView(item.id(), item.title()))
+                        .toList(),
+                metadata(page));
+    }
+
+    static DriverPageResponse drivers(MasterDataPage<Driver> page) {
+        return new DriverPageResponse(
+                page.items().stream()
+                        .map(item -> new DriverView(item.id(), item.fullName()).subcontractorId(item.subcontractorId()))
+                        .toList(),
+                metadata(page));
+    }
+
+    static PageMetadata metadata(MasterDataPage<?> page) {
+        return new PageMetadata(page.number(), page.size(), page.totalElements(), page.totalPages());
+    }
+}

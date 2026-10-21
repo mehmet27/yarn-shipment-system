@@ -1,10 +1,9 @@
-import { logout, LOGIN_PATH } from '@iplik/api-client';
+import { logout } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Button } from '@iplik/ui';
 
 async function logoutAndRedirect(): Promise<void> {
-  await logout();
-  window.location.assign(LOGIN_PATH);
+  window.location.assign(await logout());
 }
 
 export function LogoutButton() {

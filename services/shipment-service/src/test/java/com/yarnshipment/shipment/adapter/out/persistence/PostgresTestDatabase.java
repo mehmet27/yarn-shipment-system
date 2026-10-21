@@ -34,6 +34,13 @@ public final class PostgresTestDatabase {
         return new PostgresTestDatabase(container);
     }
 
+    /** Şema sahibi rolle bağlanan şablon; uygulama rolünün yazamadığı tablolarda test verisi hazırlamak içindir. */
+    public org.springframework.jdbc.core.JdbcTemplate migratorJdbc() {
+        return new org.springframework.jdbc.core.JdbcTemplate(
+                new org.springframework.jdbc.datasource.DriverManagerDataSource(
+                        postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword()));
+    }
+
     public static void register(DynamicPropertyRegistry registry) {
         SHARED.registerIn(registry);
     }

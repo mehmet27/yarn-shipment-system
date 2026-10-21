@@ -106,7 +106,7 @@ export GATEWAY_CLIENT_SECRET=<deploy/.env içindeki GATEWAY_CLIENT_SECRET>
 
 | Uç | Davranış |
 |---|---|
-| `GET /oauth2/authorization/keycloak` | Keycloak girişini başlatır; giriş bitince tarayıcı `http://localhost:5173/` adresine döner |
+| `GET /oauth2/authorization/keycloak?returnTo=<adres>` | Keycloak girişini başlatır; giriş bitince tarayıcı `returnTo` adresine (yalnızca SPA ile aynı kökene ya da köke göreli yola izin verilir), yoksa `http://localhost:5173/` adresine döner |
 | `GET /api/**` oturumsuz | `401` Problem Details, `code: AUTHENTICATION_REQUIRED` (yönlendirme yok) |
 | `POST /logout` (`X-XSRF-TOKEN` ile) | Gateway oturumunu kapatır, `200 {"logoutUrl": "..."}` döner; tarayıcı bu adrese giderek Keycloak oturumunu da kapatır |
 | `XSRF-TOKEN` çerezi | JS tarafından okunur; durum değiştiren her istekte `X-XSRF-TOKEN` başlığı olarak geri gönderilir |

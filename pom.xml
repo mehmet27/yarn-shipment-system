@@ -26,6 +26,7 @@
         <module>libs/common-test</module>
         <module>libs/common-security</module>
         <module>services/shipment-service</module>
+        <module>services/gateway</module>
     </modules>
 
     <properties>

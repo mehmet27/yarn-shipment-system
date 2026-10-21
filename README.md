@@ -91,3 +91,29 @@ export SHIPMENT_DB_MIGRATOR_PASSWORD=<LOCAL_DB_PASSWORD>
 | `SERVER_PORT` | `8083` |
 
 Persistence testleri Testcontainers ile gerçek PostgreSQL'e karşı çalışır; `./mvnw verify` için Docker açık olmalıdır.
+
+## Gateway (BFF)'i çalıştırma
+
+Tarayıcı yalnızca gateway ile konuşur (`http://localhost:8080`). Giriş Keycloak'ta yapılır, token tarayıcıya inmez;
+gateway oturum çerezini tutar ve `/api/v1/shipments/**` ile `/api/v1/me` isteklerini access token'ı `Authorization:
+Bearer` olarak ekleyip shipment-service'e (`8083`) iletir. Keycloak açık olmalıdır; gateway açılışta Keycloak'tan
+yapılandırmayı okur.
+
+```bash
+export GATEWAY_CLIENT_SECRET=<deploy/.env içindeki GATEWAY_CLIENT_SECRET>
+./mvnw -pl services/gateway spring-boot:run
+```
+
+| Uç | Davranış |
+|---|---|
+| `GET /oauth2/authorization/keycloak` | Keycloak girişini başlatır; giriş bitince tarayıcı `http://localhost:5173/` adresine döner |
+| `GET /api/**` oturumsuz | `401` Problem Details, `code: AUTHENTICATION_REQUIRED` (yönlendirme yok) |
+| `POST /logout` (`X-XSRF-TOKEN` ile) | Gateway oturumunu kapatır, `200 {"logoutUrl": "..."}` döner; tarayıcı bu adrese giderek Keycloak oturumunu da kapatır |
+| `XSRF-TOKEN` çerezi | JS tarafından okunur; durum değiştiren her istekte `X-XSRF-TOKEN` başlığı olarak geri gönderilir |
+
+| Değişken | Varsayılan |
+|---|---|
+| `KEYCLOAK_ISSUER_URI` | `http://localhost:8180/realms/yarnshipment` |
+| `GATEWAY_PUBLIC_URL` | `http://localhost:8080` (Keycloak'taki yönlendirme adresi; realm dosyasındakiyle aynı olmalı) |
+| `GATEWAY_POST_LOGIN_URL` / `GATEWAY_POST_LOGOUT_URL` | `http://localhost:5173/` |
+| `SHIPMENT_SERVICE_URL` | `http://localhost:8083` |

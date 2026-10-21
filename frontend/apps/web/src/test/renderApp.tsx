@@ -9,7 +9,7 @@ export function renderApp(path: string) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const router = createMemoryRouter(appRoutes, { initialEntries: [path] });
   render(
-    <UiProvider>
+    <UiProvider env="test">
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>

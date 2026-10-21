@@ -1,10 +1,10 @@
 import { RequireAuth, RequirePermission } from '@/modules/auth';
+import { shipmentFieldRoutes, shipmentPanelRoutes } from '@/modules/shipment';
 import { createBrowserRouter } from 'react-router';
 import type { RouteObject } from 'react-router';
 import { FieldLayout } from './layouts/FieldLayout';
 import { PanelLayout } from './layouts/PanelLayout';
 import { ErrorPage } from './pages/ErrorPage';
-import { FieldHomePage } from './pages/FieldHomePage';
 import { HomeRedirectPage } from './pages/HomeRedirectPage';
 import { PanelHomePage } from './pages/PanelHomePage';
 
@@ -22,12 +22,12 @@ export const appRoutes: RouteObject[] = [
     path: '/panel',
     element: (
       <RequireAuth errorFallback={<ErrorPage reason="unexpected" />}>
-        <RequirePermission permission="SEVKIYAT_GORUNTULE">
+        <RequirePermission permission="SHIPMENT_VIEW">
           <PanelLayout />
         </RequirePermission>
       </RequireAuth>
     ),
-    children: [{ index: true, element: <PanelHomePage /> }],
+    children: [{ index: true, element: <PanelHomePage /> }, ...shipmentPanelRoutes],
   },
   {
     path: '/saha',
@@ -36,7 +36,7 @@ export const appRoutes: RouteObject[] = [
         <FieldLayout />
       </RequireAuth>
     ),
-    children: [{ index: true, element: <FieldHomePage /> }],
+    children: shipmentFieldRoutes,
   },
   { path: '/403', element: <ErrorPage reason="forbidden" /> },
   { path: '*', element: <ErrorPage reason="notFound" /> },

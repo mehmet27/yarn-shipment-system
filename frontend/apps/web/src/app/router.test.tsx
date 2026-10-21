@@ -8,9 +8,9 @@ import { renderApp } from '../test/renderApp';
 describe('appRoutes', () => {
   it.each<[Role, string]>([
     ['ADMIN', '/panel'],
-    ['YONETICI', '/panel'],
-    ['SOFOR', '/saha'],
-    ['FASONCU', '/saha'],
+    ['MANAGER', '/panel'],
+    ['DRIVER', '/saha'],
+    ['SUBCONTRACTOR', '/saha'],
   ])('%s rolü ana sayfadan %s kabuğuna yönlenir', async (role, expectedPath) => {
     server.use(createMeHandler(role));
     const { router } = renderApp('/');

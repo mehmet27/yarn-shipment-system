@@ -3,6 +3,7 @@ import { initI18n } from '@iplik/i18n';
 // eslint-disable-next-line testing-library/no-manual-cleanup -- Vitest globals kapalı, otomatik temizlik yok
 import { cleanup } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll } from 'vitest';
+import { resetMockStore } from '../mocks/mockStore';
 import { server } from '../mocks/server';
 
 // jsdom'da olmayan tarayıcı API'leri; Mantine bunları kullanır.
@@ -32,6 +33,7 @@ beforeAll(async () => {
 afterEach(() => {
   cleanup();
   server.resetHandlers();
+  resetMockStore();
 });
 afterAll(() => {
   server.close();

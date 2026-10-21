@@ -1,0 +1,43 @@
+# CONF-01: ortamdan gelen değerler ortam değişkeniyle verilir; gizli bilgi bu dosyaya yazılmaz (SEC-14).
+spring:
+  application:
+    name: gateway
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/yarnshipment}
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: yarnshipment-gateway
+            client-secret: ${GATEWAY_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            scope: openid,profile
+            # Tarayıcı gateway'e geliştirme proxy'si üzerinden (5173) de gelse Keycloak'a kayıtlı adres sabit kalır.
+            redirect-uri: ${GATEWAY_PUBLIC_URL:http://localhost:8080}/login/oauth2/code/keycloak
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: shipment-service
+              uri: ${SHIPMENT_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/v1/shipments/**,/api/v1/me
+              filters:
+                # Oturum çerezi servise gitmez; servis yalnızca Bearer token görür.
+                - RemoveRequestHeader=Cookie
+                - TokenRelay=
+yarnshipment:
+  gateway:
+    post-login-url: ${GATEWAY_POST_LOGIN_URL:http://localhost:5173/}
+    post-logout-url: ${GATEWAY_POST_LOGOUT_URL:http://localhost:5173/}
+server:
+  port: ${SERVER_PORT:8080}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

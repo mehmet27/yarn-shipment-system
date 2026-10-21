@@ -10,3 +10,12 @@ export type {
   CreateShipmentResponse,
   ListDriversParams,
 } from './generated/shipmentService';
+
+export { getShipmentBags, getShipmentHistory } from './generated/shipmentService';
+export type {
+  DeliveryScanView,
+  DispatchBagView,
+  ShipmentBagsResponse,
+  ShipmentHistoryResponse,
+  StatusChangeView,
+} from './generated/shipmentService';

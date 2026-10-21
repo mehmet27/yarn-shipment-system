@@ -43,3 +43,11 @@ export type {
   CreateShipmentResponse,
   ListDriversParams,
 } from './masterData';
+export { getShipmentBags, getShipmentHistory } from './masterData';
+export type {
+  DeliveryScanView,
+  DispatchBagView,
+  ShipmentBagsResponse,
+  ShipmentHistoryResponse,
+  StatusChangeView,
+} from './masterData';

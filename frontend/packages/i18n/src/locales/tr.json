@@ -65,6 +65,16 @@
       "net": "Net",
       "difference": "Fark",
       "recordDispatch": "Çıkış tartısını gir"
+    },
+    "history": {
+      "empty": "Henüz durum geçişi yok."
+    },
+    "bags": {
+      "dispatch": "Çıkıştaki çuvallar ({{count}})",
+      "delivery": "Teslimde okutulanlar ({{count}})",
+      "lot": "Lot",
+      "matched": "Eşleşti",
+      "unmatched": "Eşleşmedi"
     }
   },
   "field": {

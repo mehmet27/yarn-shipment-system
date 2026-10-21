@@ -1,4 +1,4 @@
-import type { Role, Weighing } from '@iplik/api-client';
+import type { InternalShipmentView, Role, Weighing } from '@iplik/api-client';
 import { ME_PATH, SHIPMENTS_PATH } from '@iplik/api-client';
 import type { Kilogram } from '@iplik/units';
 import { calculateNetKg, isKilogram } from '@iplik/units';
@@ -18,6 +18,7 @@ import {
   MOCK_SUBCONTRACTORS,
   MOCK_VEHICLES,
 } from './masterData';
+import { toBagsView, toHistory } from './shipmentTabs';
 import { isInScope, toDetailView, toSummary } from './shipmentViews';
 import { createMockUser } from './users';
 
@@ -107,6 +108,23 @@ function createGetShipmentHandler(role: Role) {
     if (!isInScope(shipment, user)) return outOfScope();
     return HttpResponse.json(toDetailView(shipment, role));
   });
+}
+
+function createTabHandlers(role: Role) {
+  const user = createMockUser(role);
+  const withShipment = (shipmentId: unknown, respond: (s: InternalShipmentView) => Response) => {
+    const shipment = findMockShipment(shipmentId);
+    if (shipment === undefined) return notFound();
+    return isInScope(shipment, user) ? respond(shipment) : outOfScope();
+  };
+  return [
+    http.get(`${SHIPMENTS_PATH}/:shipmentId/history`, ({ params }) =>
+      withShipment(params.shipmentId, (s) => HttpResponse.json({ items: toHistory(s) })),
+    ),
+    http.get(`${SHIPMENTS_PATH}/:shipmentId/bags`, ({ params }) =>
+      withShipment(params.shipmentId, (s) => HttpResponse.json(toBagsView(s, role))),
+    ),
+  ];
 }
 
 /** Geçici uç: şoförün "yükü teslim aldım" beyanı; LOADED → IN_TRANSIT. */
@@ -241,6 +259,7 @@ export function createHandlers(role: Role) {
     confirmPickupHandler,
     deliveryReceiptHandler,
     dispatchWeighingHandler,
+    ...createTabHandlers(role),
     createShipmentHandler,
     ...masterDataHandlers,
     logoutHandler,

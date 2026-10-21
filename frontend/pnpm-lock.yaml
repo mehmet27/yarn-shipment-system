@@ -87,6 +87,9 @@ importers:
 
   packages/api-client:
     dependencies:
+      '@iplik/units':
+        specifier: workspace:*
+        version: link:../units
       axios:
         specifier: 1.20.0
         version: 1.20.0

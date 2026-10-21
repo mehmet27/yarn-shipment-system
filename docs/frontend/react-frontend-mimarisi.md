@@ -126,8 +126,8 @@ Yönetici ve Kalite için merkez ekran `/panel/sevkiyat/:id`'dir ve Bölüm 19'd
 
 ### Yetki modeli frontend'de nasıl kullanılır
 
-- Kullanıcı ve izin listesi açılışta `GET /api/v1/me` ile alınır ve TanStack Query'de tutulur. Rol yerine yetkilendirme analizindeki izin anahtarları kullanılır (ör. `SEVKIYAT_OLUSTUR`, `TESLIM_GIR`, `UYUSMAZLIK_KARAR`). Bu yalnızca görünüş içindir; asıl kontrol backend'dedir.
-- `usePermission('UYUSMAZLIK_KARAR')` hook'u ve `<Can permission="...">` bileşeni menü, buton ve sekmeleri yönetir.
+- Kullanıcı ve izin listesi açılışta `GET /api/v1/me` ile alınır ve TanStack Query'de tutulur. Rol yerine yetkilendirme analizindeki izin anahtarları kullanılır (ör. `SHIPMENT_CREATE`, `DELIVERY_RECORD`, `DISCREPANCY_RESOLVE`). Bu yalnızca görünüş içindir; asıl kontrol backend'dedir.
+- `usePermission('DISCREPANCY_RESOLVE')` hook'u ve `<Can permission="...">` bileşeni menü, buton ve sekmeleri yönetir.
 - Durum geçişleri frontend'de tekrar kodlanmaz. Sevkiyat yanıtı `allowedActions` listesi taşır (ör. `["SOFOR_TESLIM_ALDI"]`); buton yalnızca listede varsa görünür. Durum makinesi tek yerde, backend'de kalır.
 - Kör giriş: fasoncunun teslim ekranına giden JSON'da çıkış alanları (çıkış kilosu, çuval sayısı, mühür no vb.) hiç yoktur (yetkilendirme analizi ile kararlaştı). Karşılaştırma bittikten sonra sonuç ayrı bir uçtan gelir. Frontend'de "alanı gizle" yaklaşımı kabul edilmez, çünkü tarayıcı araçlarıyla görülebilir.
 - Kilitli alanlar backend'den `locked: true` ile gelir ve salt okuma gösterilir; Admin için yanında "Gerekçeli düzeltme" aksiyonu çıkar.

@@ -3,6 +3,7 @@ import { Stack, Tabs, Text } from '@iplik/ui';
 import { useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
 import { ShipmentHeader } from '../components/ShipmentHeader';
+import { toWeighings } from '../components/shipmentViews';
 import { WeightComparison } from '../components/WeightComparison';
 import { useShipment } from '../hooks/useShipment';
 
@@ -28,7 +29,7 @@ export function ShipmentFilePage() {
               ))}
             </Tabs.List>
             <Tabs.Panel value="weights" pt="md">
-              <WeightComparison shipment={shipment} />
+              <WeightComparison weighings={toWeighings(shipment)} />
             </Tabs.Panel>
             {PENDING_TABS.map((tab) => (
               <Tabs.Panel key={tab} value={tab} pt="md">

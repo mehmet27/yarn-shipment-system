@@ -100,5 +100,6 @@ export function createMockUser(role: Role): CurrentUser {
     roles: [role],
     permissions: PERMISSIONS_BY_ROLE[role],
     siteIds: ['site-merkez'],
+    mfaVerified: true,
   };
 }

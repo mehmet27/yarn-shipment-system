@@ -40,6 +40,9 @@ export type CurrentUser = {
   roles: readonly Role[];
   permissions: readonly Permission[];
   siteIds: readonly string[];
+  subcontractorId?: string;
+  driverId?: string;
+  mfaVerified: boolean;
 };
 
 export const ME_PATH = '/api/v1/me';

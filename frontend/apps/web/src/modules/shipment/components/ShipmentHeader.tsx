@@ -1,6 +1,7 @@
 import type { ShipmentDetail } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Group, Paper, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
+import { findDriverName, findSealNo } from './shipmentViews';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
 
 export type ShipmentHeaderProps = {
@@ -10,11 +11,12 @@ export type ShipmentHeaderProps = {
 /** Bölüm 19: sevkiyat dosyasının üst kartı; fasoncu, şoför, araç ve durum. */
 export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
   const { t } = useTranslation();
+  const notRecorded = t('common.notRecorded');
   const facts = [
     { labelKey: 'shipment.field.subcontractor', value: shipment.subcontractorTitle },
-    { labelKey: 'shipment.field.driver', value: shipment.driverName },
-    { labelKey: 'shipment.field.plate', value: shipment.plateNo },
-    { labelKey: 'shipment.field.sealNo', value: shipment.sealNo ?? t('common.notRecorded') },
+    { labelKey: 'shipment.field.driver', value: findDriverName(shipment) ?? notRecorded },
+    { labelKey: 'shipment.field.plate', value: shipment.plateNo ?? notRecorded },
+    { labelKey: 'shipment.field.sealNo', value: findSealNo(shipment) ?? notRecorded },
   ];
   return (
     <Paper withBorder p="md">

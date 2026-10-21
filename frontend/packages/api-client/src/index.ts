@@ -5,12 +5,17 @@ export { classifyProblem, toProblem } from './problem';
 export type { FieldError, Problem, ProblemKind } from './problem';
 export { getShipment, listShipments, SHIPMENT_STATUSES, SHIPMENTS_PATH } from './shipments';
 export type {
+  DriverShipmentView,
+  InternalShipmentView,
   ListShipmentsParams,
   Page,
   PageInfo,
+  SealCondition,
   ShipmentAction,
   ShipmentDetail,
   ShipmentStatus,
   ShipmentSummary,
+  SubcontractorShipmentView,
+  WarehouseShipmentView,
   Weighing,
 } from './shipments';

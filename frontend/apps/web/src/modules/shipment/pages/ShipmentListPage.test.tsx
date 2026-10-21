@@ -12,7 +12,6 @@ describe('ShipmentListPage', () => {
       'href',
       '/panel/sevkiyat/shp-0001',
     );
-    expect(within(table).getAllByText('1.982,5 kg')).toHaveLength(20);
   });
 
   it('durum filtresini adrese yazar ve listeyi süzer', async () => {

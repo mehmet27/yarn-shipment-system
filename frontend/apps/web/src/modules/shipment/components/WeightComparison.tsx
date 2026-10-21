@@ -1,11 +1,12 @@
-import type { ShipmentDetail, Weighing } from '@iplik/api-client';
+import type { Weighing } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Table, Text } from '@iplik/ui';
 import type { Kilogram } from '@iplik/units';
 import { calculateDifferencePct, formatKg, formatPct } from '@iplik/units';
+import type { ShipmentWeighings } from './shipmentViews';
 
 export type WeightComparisonProps = {
-  shipment: ShipmentDetail;
+  weighings: ShipmentWeighings;
 };
 
 type WeightField = 'grossKg' | 'tareKg' | 'netKg';
@@ -25,9 +26,9 @@ function differencePct(dispatchNetKg?: Kilogram, deliveryNetKg?: Kilogram): stri
   return formatPct(calculateDifferencePct(dispatchNetKg, deliveryNetKg));
 }
 
-export function WeightComparison({ shipment }: WeightComparisonProps) {
+export function WeightComparison({ weighings }: WeightComparisonProps) {
   const { t } = useTranslation();
-  const { dispatchWeighing, deliveryWeighing } = shipment;
+  const { dispatchWeighing, deliveryWeighing } = weighings;
   const notRecorded = t('common.notRecorded');
   const difference = differencePct(dispatchWeighing?.netKg, deliveryWeighing?.netKg);
   return (

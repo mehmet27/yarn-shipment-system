@@ -29,18 +29,30 @@ describe('ShipmentFilePage', () => {
 });
 
 describe('sahte API kör giriş kuralı', () => {
-  it('fasoncuya karşılaştırma bitmeden çıkış alanlarını hiç döndürmez', async () => {
-    server.use(...createHandlers('SUBCONTRACTOR'));
-    const shipment = await getShipment('shp-0004');
-    expect(shipment.status).toBe('AWAITING_DELIVERY');
-    expect(shipment).not.toHaveProperty('dispatchWeighing');
-    expect(shipment).not.toHaveProperty('sealNo');
-  });
-
-  it('karşılaştırma bitince fasoncuya iki tarafı da döndürür', async () => {
+  it('fasoncuya çıkış alanlarını hiç döndürmez', async () => {
     server.use(...createHandlers('SUBCONTRACTOR'));
     const shipment = await getShipment('shp-0007');
-    expect(shipment.status).toBe('COMPLETED');
-    expect(shipment.dispatchWeighing?.netKg).toBe('1982.500');
+    expect(shipment.audience).toBe('SUBCONTRACTOR');
+    expect(shipment).not.toHaveProperty('dispatchWeighing');
+    expect(shipment).not.toHaveProperty('dispatchSealNo');
+    expect(shipment).not.toHaveProperty('plannedNetKg');
+  });
+
+  it('şoföre kilo döndürmez, yalnızca çuval sayısı ve mühür no döndürür', async () => {
+    server.use(...createHandlers('DRIVER'));
+    const shipment = await getShipment('shp-0004');
+    expect(shipment).toMatchObject({
+      audience: 'DRIVER',
+      dispatchBagCount: 40,
+      dispatchSealNo: 'M-0004',
+    });
+    expect(JSON.stringify(shipment)).not.toMatch(/Kg"/);
+  });
+
+  it('depoya teslim alanlarını döndürmez', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    const shipment = await getShipment('shp-0007');
+    expect(shipment.audience).toBe('WAREHOUSE');
+    expect(shipment).not.toHaveProperty('deliveryWeighing');
   });
 });

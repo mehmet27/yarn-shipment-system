@@ -56,5 +56,5 @@ export function ShipmentListPage() {
 
 /** exactOptionalPropertyTypes: filtre yoksa alan hiç gönderilmez. */
 function statusParam(status: ReturnType<typeof useShipmentListFilter>['status']) {
-  return status === undefined ? {} : { status };
+  return status === undefined ? {} : { status: [status] };
 }

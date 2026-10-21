@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.adapter.in.web;
 import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.shipment.adapter.in.web.api.ShipmentsApi;
 import com.yarnshipment.shipment.adapter.in.web.api.model.DeliveryReceiptRequest;
+import com.yarnshipment.shipment.adapter.in.web.api.model.DispatchWeighingRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentDetailResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentPageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentStatus;
@@ -12,6 +13,8 @@ import com.yarnshipment.shipment.application.port.in.GetShipmentQuery;
 import com.yarnshipment.shipment.application.port.in.GetShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsQuery;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsUseCase;
+import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
+import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
 import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptCommand;
 import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptUseCase;
 import java.util.List;
@@ -30,6 +33,7 @@ public class ShipmentController implements ShipmentsApi {
     private final ListShipmentsUseCase listShipmentsUseCase;
     private final GetShipmentUseCase getShipmentUseCase;
     private final ConfirmPickupUseCase confirmPickupUseCase;
+    private final RecordDispatchUseCase recordDispatchUseCase;
     private final SubmitDeliveryReceiptUseCase submitDeliveryReceiptUseCase;
     private final CurrentActorProvider currentActorProvider;
 
@@ -37,11 +41,13 @@ public class ShipmentController implements ShipmentsApi {
             ListShipmentsUseCase listShipmentsUseCase,
             GetShipmentUseCase getShipmentUseCase,
             ConfirmPickupUseCase confirmPickupUseCase,
+            RecordDispatchUseCase recordDispatchUseCase,
             SubmitDeliveryReceiptUseCase submitDeliveryReceiptUseCase,
             CurrentActorProvider currentActorProvider) {
         this.listShipmentsUseCase = listShipmentsUseCase;
         this.getShipmentUseCase = getShipmentUseCase;
         this.confirmPickupUseCase = confirmPickupUseCase;
+        this.recordDispatchUseCase = recordDispatchUseCase;
         this.submitDeliveryReceiptUseCase = submitDeliveryReceiptUseCase;
         this.currentActorProvider = currentActorProvider;
     }
@@ -60,6 +66,18 @@ public class ShipmentController implements ShipmentsApi {
     public ResponseEntity<ShipmentDetailResponse> getShipment(UUID shipmentId) {
         GetShipmentQuery query = new GetShipmentQuery(currentActorProvider.getCurrentActor(), shipmentId);
         return ResponseEntity.ok(ShipmentViews.toDetail(getShipmentUseCase.getShipment(query)));
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('DISPATCH_RECORD')")
+    public ResponseEntity<Void> recordDispatchWeighing(
+            UUID shipmentId, UUID idempotencyKey, DispatchWeighingRequest dispatchWeighingRequest) {
+        recordDispatchUseCase.recordDispatch(new RecordDispatchCommand(
+                currentActorProvider.getCurrentActor(),
+                shipmentId,
+                idempotencyKey,
+                DispatchRequests.toMeasurement(dispatchWeighingRequest)));
+        return ResponseEntity.noContent().build();
     }
 
     @Override

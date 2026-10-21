@@ -51,6 +51,17 @@ public record Shipment(
         return parties.driverId();
     }
 
+    /** Depo çıkış tartımını ve mührü kaydetti (DRAFT → LOADED). */
+    public DispatchRecording recordDispatch(DispatchMeasurement measurement, Instant recordedAt) {
+        if (status != ShipmentStatus.DRAFT) {
+            throw new InvalidShipmentStatusException(id, status, ShipmentStatus.LOADED);
+        }
+        Weighing weighing =
+                new Weighing(measurement.grossKg(), measurement.tareKg(), measurement.bagCount(), recordedAt);
+        return new DispatchRecording(
+                id, siteId, weighing, measurement.scaleTicketNo(), measurement.sealNo(), recordedAt);
+    }
+
     /**
      * Şoför yükü teslim aldı (LOADED → IN_TRANSIT). Onaylanan çuval sayısı çıkış tartısından, yoksa beklenen yükten
      * alınır.

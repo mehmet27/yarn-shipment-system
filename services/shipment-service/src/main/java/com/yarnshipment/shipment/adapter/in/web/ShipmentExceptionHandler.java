@@ -3,7 +3,9 @@ package com.yarnshipment.shipment.adapter.in.web;
 import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.domain.model.InvalidDeliveryException;
+import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
+import com.yarnshipment.shipment.domain.model.SealAlreadyUsedException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +46,18 @@ public final class ShipmentExceptionHandler {
         ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_DELIVERY");
         problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
         return problem;
+    }
+
+    @ExceptionHandler(InvalidDispatchException.class)
+    public ProblemDetail handleInvalidDispatch(InvalidDispatchException exception, HttpServletRequest request) {
+        ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_DISPATCH");
+        problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
+        return problem;
+    }
+
+    @ExceptionHandler(SealAlreadyUsedException.class)
+    public ProblemDetail handleSealAlreadyUsed(HttpServletRequest request) {
+        return problem(request, HttpStatus.CONFLICT, "SEAL_ALREADY_USED");
     }
 
     private ProblemDetail problem(HttpServletRequest request, HttpStatus status, String code) {

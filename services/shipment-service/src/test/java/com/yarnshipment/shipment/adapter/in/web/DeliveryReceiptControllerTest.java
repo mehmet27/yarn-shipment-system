@@ -10,6 +10,7 @@ import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.ConfirmPickupUseCase;
 import com.yarnshipment.shipment.application.port.in.GetShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsUseCase;
+import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
 import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptCommand;
 import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptUseCase;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
@@ -47,6 +48,9 @@ class DeliveryReceiptControllerTest {
 
     @MockitoBean
     private ConfirmPickupUseCase confirmPickupUseCase;
+
+    @MockitoBean
+    private RecordDispatchUseCase recordDispatchUseCase;
 
     @MockitoBean
     private SubmitDeliveryReceiptUseCase submitDeliveryReceiptUseCase;

@@ -160,6 +160,43 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+  /api/v1/shipments/{shipmentId}/dispatch-weighing:
+    post:
+      tags: [Shipments]
+      operationId: recordDispatchWeighing
+      summary: Depo çıkış tartımını ve mührü kaydeder (DRAFT → LOADED)
+      description: |
+        Depo çalışanı kantar fişindeki brüt, dara ve çuval sayısını ile araca vurulan mühür numarasını girer.
+        Net kilo brüt ile daradan hesaplanır. Mühür numarası tek kullanımlıktır: başka bir sevkiyatın çıkışında
+        kullanılmışsa 409 döner. Kayıtla birlikte sevkiyat yüklendi sayılır. Aynı sevkiyat için tekrar gönderilen
+        istek yeni kayıt oluşturmaz ve yine 204 döner.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DispatchWeighingRequest'
+      responses:
+        '204':
+          description: Tartım ve mühür kaydedildi, sevkiyat yüklendi
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
 components:
   securitySchemes:
     bearerAuth:
@@ -451,6 +488,29 @@ components:
           $ref: '#/components/schemas/ScanMethod'
         document:
           $ref: '#/components/schemas/DeliveryDocument'
+    DispatchWeighingRequest:
+      type: object
+      required: [grossKg, tareKg, bagCount, sealNo]
+      properties:
+        grossKg:
+          $ref: '#/components/schemas/Kg'
+        tareKg:
+          $ref: '#/components/schemas/Kg'
+        bagCount:
+          description: Tartılan çuval sayısı
+          type: integer
+          format: int32
+          minimum: 1
+        scaleTicketNo:
+          description: Kantar fişi numarası
+          type: string
+          minLength: 1
+          maxLength: 64
+        sealNo:
+          description: Araca vurulan mühür numarası
+          type: string
+          minLength: 1
+          maxLength: 64
     DeliveryDocument:
       description: İrsaliye üzerindeki değerler (fasoncunun okuduğu haliyle)
       type: object

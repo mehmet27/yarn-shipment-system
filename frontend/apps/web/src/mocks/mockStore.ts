@@ -1,4 +1,9 @@
-import type { InternalShipmentView, ShipmentStatus, Weighing } from '@iplik/api-client';
+import type {
+  CreateShipmentRequest,
+  InternalShipmentView,
+  ShipmentStatus,
+  Weighing,
+} from '@iplik/api-client';
 import { MOCK_SHIPMENTS } from './shipments';
 
 /** Sahte API'nin değişebilir durumu; testler arasında resetMockStore ile sıfırlanır. */
@@ -36,6 +41,27 @@ export function isMockSealUsed(sealNo: string, exceptShipmentId: string): boolea
   return shipments.some(
     (shipment) => shipment.dispatchSealNo === sealNo && shipment.shipmentId !== exceptShipmentId,
   );
+}
+
+/** Sevkiyat oluşturma: yeni kayıt DRAFT durumunda ve en başa eklenir. */
+export function addMockShipment(request: CreateShipmentRequest): InternalShipmentView {
+  const no = String(shipments.length + 1).padStart(4, '0');
+  const created: InternalShipmentView = {
+    audience: 'INTERNAL',
+    randomCheckSelected: false,
+    shipmentId: `shp-${no}`,
+    shipmentNo: `SVK-2026-${no}`,
+    siteId: request.siteId,
+    status: 'DRAFT',
+    subcontractorId: request.subcontractorId,
+    subcontractorTitle: request.subcontractorTitle,
+    ...(request.driverName === undefined ? {} : { driverName: request.driverName }),
+    ...(request.plateNo === undefined ? {} : { plateNo: request.plateNo }),
+    createdAt: new Date().toISOString(),
+    allowedActions: ['ASSIGN_BAGS', 'RECORD_DISPATCH', 'CANCEL'],
+  };
+  shipments = [created, ...shipments];
+  return created;
 }
 
 export function resetMockStore(): void {

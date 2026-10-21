@@ -31,3 +31,15 @@ export type {
   WarehouseShipmentView,
   Weighing,
 } from './shipments';
+export {
+  createShipment,
+  listDrivers,
+  listSites,
+  listSubcontractors,
+  listVehicles,
+} from './masterData';
+export type {
+  CreateShipmentRequest,
+  CreateShipmentResponse,
+  ListDriversParams,
+} from './masterData';

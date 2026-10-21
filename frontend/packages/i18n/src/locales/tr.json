@@ -155,5 +155,22 @@
     },
     "grossKg": "Brüt (kg)",
     "tareKg": "Dara (kg)"
+  },
+  "create": {
+    "open": "Yeni sevkiyat",
+    "title": "Yeni sevkiyat",
+    "hint": "Lokasyon ve fasoncuyu seçin; şoför ve araç sonradan da atanabilir.",
+    "site": "Lokasyon",
+    "subcontractor": "Fasoncu",
+    "driver": "Şoför (isteğe bağlı)",
+    "vehicle": "Araç (isteğe bağlı)",
+    "submit": "Taslak oluştur",
+    "back": "Sevkiyatlara dön",
+    "failed": "Sevkiyat oluşturulamadı. Lütfen tekrar deneyin.",
+    "invalid": "Seçimler geçersiz. Lütfen kontrol edin.",
+    "errors": {
+      "siteRequired": "Lokasyon seçin.",
+      "subcontractorRequired": "Fasoncu seçin."
+    }
   }
 }

@@ -25,6 +25,7 @@
     <modules>
         <module>libs/common-test</module>
         <module>libs/common-security</module>
+        <module>libs/common-web</module>
         <module>services/shipment-service</module>
         <module>services/gateway</module>
     </modules>
@@ -69,6 +70,11 @@
             <dependency>
                 <groupId>com.yarnshipment</groupId>
                 <artifactId>common-security</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yarnshipment</groupId>
+                <artifactId>common-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

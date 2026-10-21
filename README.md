@@ -117,3 +117,11 @@ export GATEWAY_CLIENT_SECRET=<deploy/.env içindeki GATEWAY_CLIENT_SECRET>
 | `GATEWAY_PUBLIC_URL` | `http://localhost:8080` (Keycloak'taki yönlendirme adresi; realm dosyasındakiyle aynı olmalı) |
 | `GATEWAY_POST_LOGIN_URL` / `GATEWAY_POST_LOGOUT_URL` | `http://localhost:5173/` |
 | `SHIPMENT_SERVICE_URL` | `http://localhost:8083` |
+
+## common-web (ortak web altyapısı)
+
+Servis ana sınıfına `@EnableYarnShipmentWeb` eklenir; şunları verir:
+
+- **Hata yanıtı (ERR-06/07):** `ProblemFactory` ve ortak advice (`MISSING_HEADER`, `VALIDATION_FAILED`, `MALFORMED_REQUEST`). Servise özgü hatalar kendi advice'ında aynı fabrikayı kullanır.
+- **İstek kimliği:** her isteğe `X-Request-Id` (istemcinin güvenli değeri korunur, yoksa üretilir); log bağlamında `requestId`, hata gövdesinde `requestId` alanı.
+- **Idempotency-Key (API-04):** servis `JdbcClient` kullanıyorsa kendiliğinden devreye girer. `POST/PUT/PATCH` isteğinde `Idempotency-Key` varsa: aynı anahtar ve aynı gövde ilk başarılı (2xx) yanıtı tekrar döner (`Idempotency-Replayed: true`), aynı anahtar farklı gövde `422 IDEMPOTENCY_KEY_REUSED`, hâlâ işlenen istek `409 IDEMPOTENCY_IN_PROGRESS`. Başarısız istek anahtarı bırakır. Anahtar kullanıcıya özeldir; kayıtlar 24 saat tutulur (`yarnshipment.idempotency.*`). Servisin migration'ında `idempotency_record` tablosu gerekir (referans şema: `libs/common-web/src/main/resources/idempotency/idempotency_record.sql`).

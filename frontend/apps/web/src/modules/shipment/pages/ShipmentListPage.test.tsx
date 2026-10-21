@@ -1,7 +1,31 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderApp } from '@/test/renderApp';
+
+describe('ShipmentListPage dar ekran', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('360 px genişlikte tablo yerine dokunulabilir kartlar gösterir', async () => {
+    const narrow = (query: string) => ({
+      matches: !query.includes('min-width'),
+      media: query,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+    });
+    vi.stubGlobal('matchMedia', narrow);
+    renderApp('/panel/sevkiyat');
+    expect(await screen.findByRole('link', { name: 'SVK-2026-0001' })).toHaveAttribute(
+      'href',
+      '/panel/sevkiyat/shp-0001',
+    );
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+});
 
 describe('ShipmentListPage', () => {
   it('ilk sayfada en yeni 20 sevkiyatı listeler', async () => {

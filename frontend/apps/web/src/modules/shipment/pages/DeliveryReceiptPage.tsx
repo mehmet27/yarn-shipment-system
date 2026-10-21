@@ -20,7 +20,10 @@ export function DeliveryReceiptPage() {
       <QueryState query={query}>
         {(shipment) => (
           <Stack>
-            <Title order={3}>{`${t('delivery.title')} · ${shipment.shipmentNo}`}</Title>
+            <Stack gap={2}>
+              <Title order={3}>{t('delivery.title')}</Title>
+              <Text c="dimmed">{shipment.shipmentNo}</Text>
+            </Stack>
             <Text size="sm" c="dimmed">
               {t('delivery.blindHint')}
             </Text>

@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Anchor, Stack, Title } from '@iplik/ui';
+import { Alert, Anchor, Stack, Text, Title } from '@iplik/ui';
 import { Link, useNavigate, useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
 import { DispatchForm } from '../dispatch/DispatchForm';
@@ -20,7 +20,10 @@ export function DispatchWeighingPage() {
       <QueryState query={query}>
         {(shipment) => (
           <Stack>
-            <Title order={3}>{`${t('dispatch.title')} · ${shipment.shipmentNo}`}</Title>
+            <Stack gap={2}>
+              <Title order={3}>{t('dispatch.title')}</Title>
+              <Text c="dimmed">{shipment.shipmentNo}</Text>
+            </Stack>
             {shipment.allowedActions.includes('RECORD_DISPATCH') ? (
               <DispatchForm
                 shipmentId={shipment.shipmentId}

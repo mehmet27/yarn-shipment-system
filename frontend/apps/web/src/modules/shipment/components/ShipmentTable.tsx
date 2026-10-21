@@ -1,15 +1,33 @@
 import type { ShipmentSummary } from '@iplik/api-client';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Anchor, Table } from '@iplik/ui';
+import { Anchor, Stack, Table, useMediaQuery } from '@iplik/ui';
 import { Link } from 'react-router';
+import { ShipmentCard } from './ShipmentCard';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
+
+const DESKTOP_QUERY = '(min-width: 48em)';
 
 export type ShipmentTableProps = {
   shipments: readonly ShipmentSummary[];
 };
 
+/** Mobil öncelikli (FE-UI-07): dar ekranda kartlar, geniş ekranda tablo. */
 export function ShipmentTable({ shipments }: ShipmentTableProps) {
   const { t } = useTranslation();
+  const isDesktop = useMediaQuery(DESKTOP_QUERY, true, { getInitialValueInEffect: false });
+  if (!isDesktop) {
+    return (
+      <Stack gap="sm">
+        {shipments.map((shipment) => (
+          <ShipmentCard
+            key={shipment.shipmentId}
+            shipment={shipment}
+            to={`/panel/sevkiyat/${shipment.shipmentId}`}
+          />
+        ))}
+      </Stack>
+    );
+  }
   return (
     <Table.ScrollContainer minWidth={720}>
       <Table striped highlightOnHover>

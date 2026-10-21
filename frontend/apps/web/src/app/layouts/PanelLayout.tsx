@@ -19,7 +19,7 @@ export function PanelLayout() {
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
           <Group>
-            <Burger opened={isNavOpen} onClick={toggle} hiddenFrom="sm" size="sm" />
+            <Burger opened={isNavOpen} onClick={toggle} hiddenFrom="sm" />
             <Title order={4}>{t('app.name')}</Title>
           </Group>
           <LogoutButton />

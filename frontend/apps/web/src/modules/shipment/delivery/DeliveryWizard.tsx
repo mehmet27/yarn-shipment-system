@@ -1,6 +1,6 @@
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Stack, Stepper } from '@iplik/ui';
+import { Alert, Button, Group, Stack, Stepper, Text } from '@iplik/ui';
 import { useState } from 'react';
 import { useSubmitDelivery } from '../hooks/useSubmitDelivery';
 import type { DeliveryDraft, DraftError } from './deliveryDraft';
@@ -31,11 +31,18 @@ export function DeliveryWizard({ shipmentId, onSubmitted }: DeliveryWizardProps)
     code === 'INVALID_SHIPMENT_STATUS' ? 'delivery.invalidStatus' : 'delivery.submitFailed';
   return (
     <Stack>
-      <Stepper active={active} size="xs">
+      <Stepper active={active} size="xs" wrap={false}>
         {DELIVERY_STEPS.map((item) => (
-          <Stepper.Step key={item} label={t(`delivery.steps.${item}`)} />
+          <Stepper.Step key={item} aria-label={t(`delivery.steps.${item}`)} />
         ))}
       </Stepper>
+      <Text fw={700}>
+        {t('delivery.stepOf', {
+          current: active + 1,
+          total: DELIVERY_STEPS.length,
+          name: t(`delivery.steps.${step}`),
+        })}
+      </Text>
       <StepContent
         step={step}
         draft={draft}

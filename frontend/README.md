@@ -23,6 +23,10 @@ pnpm dev            # http://localhost:5173, sahte API (MSW) açık
 
 Sahte API'de rol, sayfa ilk açılırken adres çubuğundan seçilir: `/?mockRole=SUBCONTRACTOR` (`ADMIN`, `WAREHOUSE`, `DRIVER`, `SUBCONTRACTOR`, `QUALITY`, `MANAGER`). Gerçek gateway ile çalışmak için `VITE_USE_MOCK_API=false pnpm dev`; istekler `localhost:8080`'e yönlenir. Önce kökteki README'deki yerel ortamı (Postgres, Keycloak, gateway) başlatın; `deploy/.env` dosyanız eskiyse `deploy/.env.example` içindeki yeni değişkenleri (`KEYCLOAK_TEST_USER_PASSWORD`, `GATEWAY_CLIENT_SECRET`) ekleyin, yoksa compose başlamaz. Oturum yoksa uygulama `/oauth2/authorization/keycloak` adresine gider (gateway girişi yönetir); oturum sonradan düşerse ilk 401'de kullanıcı sorgusu yenilenir ve yine girişe yönlenir. Tarayıcıda token tutulmaz.
 
+## Duyarlılık denetimi (FE-UI-07)
+
+Yeni ekranlar mobil öncelikli yazılır. `pnpm dev` açıkken `pnpm check:responsive` her ekranı 360/768/1280 px'te açıp yatay taşma ve 44 px'ten küçük dokunma hedefi arar (`--shots klasör` ekran görüntüsü de alır; Chrome gerekir, yolu `CHROMIUM_PATH` ile verilebilir).
+
 ## Kontroller (CI ile aynı sıra, FE-BUILD-05)
 
 ```bash

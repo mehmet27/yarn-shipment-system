@@ -268,6 +268,7 @@ Klasör yapısı mimari dokümandadır (`apps/web/src/app`, `modules/*`, `offlin
 - **FE-UI-04** Erişilebilirlik kuralları hata seviyesindedir (`jsx-a11y/recommended`): her form alanının etiketi, her ikon butonun `aria-label`'ı vardır; saha ekranlarında dokunma hedefi en az 48 px'tir.
 - **FE-UI-05** Kullanıcıya görünen hiçbir metin JSX'e veya koda gömülmez (test dosyaları hariç); `t('shipment.list.title')` ile `packages/i18n/src/locales/tr.json`'dan gelir (F-12). Anahtarlar `modül.ekran.öğe` biçimindedir, İngilizce ve `camelCase` segmentlidir.
 - **FE-UI-06** Saha (`/saha`) ekranlarında bir ekranda tek ana aksiyon bulunur; masaüstü bileşenleri (geniş tablo) saha kabuğunda kullanılmaz. ÖNERİLEN.
+- **FE-UI-07** Tüm ekranlar mobil öncelikli tasarlanır (kullanıcıların çoğu telefondan girer): önce 360 px genişlik düşünülür, geniş ekran `min-width` ile genişletilir. 360, 768 ve 1280 px'te sayfa yatay kaydırmaz; dokunmatik genişlikte (< 768 px) her etkileşimli öğe en az 44 × 44 px'tir (varsayılan bileşen boyutları tema ile bunu sağlar, `size="sm"` gibi küçültmeler kullanılmaz); geniş tablolar dar ekranda kartlara dönüşür (`useMediaQuery`); form ve sihirbaz adımları tek elle kullanılır (tek sütun, büyük alanlar, ana eylem altta) ve ekran klavyesi alanı örtmez (`interactive-widget=resizes-content`). Yeni ekranın PR'ı `pnpm check:responsive` çıktısının temiz olduğunu belirtir; denetim 360/768/1280 px'te yatay taşmayı ve küçük dokunma hedeflerini arar (`tools/responsive-check.mjs`).
 
 ---
 
@@ -323,6 +324,7 @@ Java standartları bölüm 16 (GIT-01…10) frontend için de aynen geçerlidir.
 | FE-REACT-01…04, FE-HOOK-01 | `eslint-plugin-react`, `eslint-plugin-react-hooks` |
 | FE-SEC-02, 05…07, 09, FE-UI-02 | ESLint `no-restricted-syntax` / `no-restricted-globals`, `eslint-plugin-react` |
 | FE-UI-04 | `eslint-plugin-jsx-a11y` |
+| FE-UI-07 | `pnpm check:responsive` (`tools/responsive-check.mjs`; yatay taşma, 44 px hedef) |
 | FE-UI-05 | `eslint-plugin-i18next` (`no-literal-string`, JSX metinleri) |
 | FE-TEST-03, 06 | `eslint-plugin-testing-library`, `@vitest/eslint-plugin` |
 | FE-TEST-07 | Vitest `coverage.thresholds` |

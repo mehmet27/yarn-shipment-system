@@ -4,21 +4,15 @@ import { Group, Paper, Stack, Text } from '@iplik/ui';
 import { Link } from 'react-router';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
 
-export type FieldShipmentCardProps = {
+export type ShipmentCardProps = {
   shipment: ShipmentSummary;
+  to: string;
 };
 
-/** Saha listesinde tek dokunuşla açılan büyük kart (en az 48 px dokunma hedefi). */
-export function FieldShipmentCard({ shipment }: FieldShipmentCardProps) {
+/** Dar ekranda liste satırı: tek dokunuşla açılan büyük kart (FE-UI-07, en az 44 px hedef). */
+export function ShipmentCard({ shipment, to }: ShipmentCardProps) {
   return (
-    <Paper
-      component={Link}
-      to={`/saha/sevkiyat/${shipment.shipmentId}`}
-      withBorder
-      p="md"
-      mih={72}
-      aria-label={shipment.shipmentNo}
-    >
+    <Paper component={Link} to={to} withBorder p="md" mih={72} aria-label={shipment.shipmentNo}>
       <Stack gap={4}>
         <Group justify="space-between">
           <Text fw={700} size="lg">

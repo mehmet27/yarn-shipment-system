@@ -13,7 +13,8 @@
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "check:responsive": "node tools/responsive-check.mjs"
   },
   "devDependencies": {
     "@iplik/config": "workspace:*",
@@ -21,6 +22,7 @@
     "eslint": "9.39.5",
     "prettier": "3.9.10",
     "typescript": "6.0.3",
-    "vitest": "5.0.5"
+    "vitest": "5.0.5",
+    "playwright-core": "1.55.0"
   }
 }

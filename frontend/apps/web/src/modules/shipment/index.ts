@@ -1,1 +1,1 @@
-export { shipmentPanelRoutes } from './routes';
+export { shipmentFieldRoutes, shipmentPanelRoutes } from './routes';

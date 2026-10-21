@@ -65,5 +65,16 @@
       "net": "Net",
       "difference": "Fark"
     }
+  },
+  "field": {
+    "myShipments": "Bana atanan sevkiyatlar",
+    "empty": "Size atanmış sevkiyat yok.",
+    "bagCount": "Çuval sayısı",
+    "sealNo": "Mühür no",
+    "confirmPickup": "Yükü teslim aldım",
+    "confirmPickupHint": "Çuval sayısını ve mühür numarasını kontrol ettikten sonra onaylayın.",
+    "pickupConfirmed": "Teslim alma kaydedildi.",
+    "actionFailed": "İşlem kaydedilemedi. Lütfen tekrar deneyin.",
+    "back": "Listeye dön"
   }
 }

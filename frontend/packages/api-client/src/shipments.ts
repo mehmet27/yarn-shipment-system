@@ -142,3 +142,11 @@ export async function getShipment(shipmentId: string): Promise<ShipmentDetail> {
   );
   return response.data;
 }
+
+/**
+ * Geçici: şoför beyan ucu shipment-service sözleşmesine eklenince Orval çıktısıyla değişir.
+ * Idempotency-Key httpClient tarafından eklenir (FE-API-07).
+ */
+export async function confirmPickup(shipmentId: string): Promise<void> {
+  await httpClient.post(`${SHIPMENTS_PATH}/${encodeURIComponent(shipmentId)}/pickup-confirmation`);
+}

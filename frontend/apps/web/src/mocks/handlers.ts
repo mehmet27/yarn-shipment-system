@@ -1,8 +1,8 @@
 import type { Role } from '@iplik/api-client';
 import { ME_PATH, SHIPMENTS_PATH } from '@iplik/api-client';
 import { http, HttpResponse } from 'msw';
-import { toDetailView, toSummary } from './shipmentViews';
-import { MOCK_SHIPMENTS } from './shipments';
+import { findMockShipment, listMockShipments, updateMockShipmentStatus } from './mockStore';
+import { isInScope, toDetailView, toSummary } from './shipmentViews';
 import { createMockUser } from './users';
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -24,32 +24,61 @@ export const unauthenticatedMeHandler = http.get(ME_PATH, () =>
   ),
 );
 
-const listShipmentsHandler = http.get(SHIPMENTS_PATH, ({ request }) => {
-  const params = new URL(request.url).searchParams;
-  const page = Number(params.get('page') ?? '0');
-  const size = Number(params.get('size') ?? String(DEFAULT_PAGE_SIZE));
-  const statuses = params.getAll('status');
-  const matching = MOCK_SHIPMENTS.filter(
-    (shipment) => statuses.length === 0 || statuses.includes(shipment.status),
-  );
-  return HttpResponse.json({
-    items: matching.slice(page * size, (page + 1) * size).map(toSummary),
-    page: {
-      number: page,
-      size,
-      totalElements: matching.length,
-      totalPages: Math.ceil(matching.length / size),
-    },
-  });
-});
-
-function createGetShipmentHandler(role: Role) {
-  return http.get(`${SHIPMENTS_PATH}/:shipmentId`, ({ params }) => {
-    const shipment = MOCK_SHIPMENTS.find((candidate) => candidate.shipmentId === params.shipmentId);
-    return shipment === undefined ? notFound() : HttpResponse.json(toDetailView(shipment, role));
+function createListShipmentsHandler(role: Role) {
+  const user = createMockUser(role);
+  return http.get(SHIPMENTS_PATH, ({ request }) => {
+    const params = new URL(request.url).searchParams;
+    const page = Number(params.get('page') ?? '0');
+    const size = Number(params.get('size') ?? String(DEFAULT_PAGE_SIZE));
+    const statuses = params.getAll('status');
+    const matching = listMockShipments().filter(
+      (shipment) =>
+        isInScope(shipment, user) && (statuses.length === 0 || statuses.includes(shipment.status)),
+    );
+    return HttpResponse.json({
+      items: matching.slice(page * size, (page + 1) * size).map(toSummary),
+      page: {
+        number: page,
+        size,
+        totalElements: matching.length,
+        totalPages: Math.ceil(matching.length / size),
+      },
+    });
   });
 }
 
+const outOfScope = () =>
+  HttpResponse.json(
+    { status: 403, code: 'OUT_OF_SCOPE', title: 'Erişim dışı kayıt' },
+    { status: 403 },
+  );
+
+function createGetShipmentHandler(role: Role) {
+  const user = createMockUser(role);
+  return http.get(`${SHIPMENTS_PATH}/:shipmentId`, ({ params }) => {
+    const shipment = findMockShipment(params.shipmentId);
+    if (shipment === undefined) return notFound();
+    if (!isInScope(shipment, user)) return outOfScope();
+    return HttpResponse.json(toDetailView(shipment, role));
+  });
+}
+
+/** Geçici uç: şoförün "yükü teslim aldım" beyanı; LOADED → IN_TRANSIT. */
+const confirmPickupHandler = http.post(
+  `${SHIPMENTS_PATH}/:shipmentId/pickup-confirmation`,
+  ({ params }) => {
+    const shipment = findMockShipment(params.shipmentId);
+    if (shipment === undefined) return notFound();
+    updateMockShipmentStatus(shipment.shipmentId, 'IN_TRANSIT');
+    return new HttpResponse(null, { status: 204 });
+  },
+);
+
 export function createHandlers(role: Role) {
-  return [createMeHandler(role), listShipmentsHandler, createGetShipmentHandler(role)];
+  return [
+    createMeHandler(role),
+    createListShipmentsHandler(role),
+    createGetShipmentHandler(role),
+    confirmPickupHandler,
+  ];
 }

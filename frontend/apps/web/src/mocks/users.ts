@@ -89,6 +89,13 @@ const FULL_NAMES: Readonly<Record<Role, string>> = {
   MANAGER: 'Yusuf Müdür',
 };
 
+const SCOPE_BY_ROLE: Readonly<
+  Partial<Record<Role, Pick<CurrentUser, 'driverId' | 'subcontractorId'>>>
+> = {
+  DRIVER: { driverId: 'drv-0' },
+  SUBCONTRACTOR: { subcontractorId: 'sub-0' },
+};
+
 export const MOCK_ROLES = Object.keys(PERMISSIONS_BY_ROLE).filter(
   (key): key is Role => key in PERMISSIONS_BY_ROLE,
 );
@@ -101,5 +108,6 @@ export function createMockUser(role: Role): CurrentUser {
     permissions: PERMISSIONS_BY_ROLE[role],
     siteIds: ['site-merkez'],
     mfaVerified: true,
+    ...SCOPE_BY_ROLE[role],
   };
 }

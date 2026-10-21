@@ -7,10 +7,14 @@ export {
   confirmPickup,
   getShipment,
   listShipments,
+  SEAL_CONDITIONS,
   SHIPMENT_STATUSES,
   SHIPMENTS_PATH,
+  submitDeliveryReceipt,
 } from './shipments';
 export type {
+  DeliveryDocument,
+  DeliveryReceiptRequest,
   DriverShipmentView,
   InternalShipmentView,
   ListShipmentsParams,

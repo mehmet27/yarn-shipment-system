@@ -1,6 +1,8 @@
 import type { Kilogram } from '@iplik/units';
 import { isKilogram } from '@iplik/units';
 import type {
+  DeliveryDocument as GeneratedDeliveryDocument,
+  DeliveryReceiptRequest as GeneratedDeliveryReceiptRequest,
   DriverShipmentView as GeneratedDriverView,
   InternalShipmentView as GeneratedInternalView,
   ListShipmentsParams,
@@ -18,7 +20,9 @@ import {
   confirmPickup,
   getShipment as getGeneratedShipment,
   listShipments,
+  SealCondition as SealConditionValues,
   ShipmentStatus as ShipmentStatusValues,
+  submitDeliveryReceipt,
 } from './generated/shipmentService';
 
 /**
@@ -55,6 +59,7 @@ export type PageInfo = ShipmentPageResponse['page'];
 export type { ListShipmentsParams, SealCondition, ShipmentAction, ShipmentStatus };
 
 export const SHIPMENTS_PATH = '/api/v1/shipments';
+export const SEAL_CONDITIONS: readonly SealCondition[] = Object.values(SealConditionValues);
 export const SHIPMENT_STATUSES: readonly ShipmentStatus[] = Object.values(ShipmentStatusValues);
 
 function isWeighing(weighing: WeighingView): weighing is Weighing {
@@ -98,4 +103,10 @@ export async function getShipment(shipmentId: string): Promise<ShipmentDetail> {
   return shipment;
 }
 
-export { confirmPickup, listShipments };
+export type DeliveryDocument = Omit<GeneratedDeliveryDocument, 'netKg'> & { netKg?: Kilogram };
+export type DeliveryReceiptRequest = Omit<
+  GeneratedDeliveryReceiptRequest,
+  'grossKg' | 'tareKg' | 'document'
+> & { grossKg: Kilogram; tareKg: Kilogram; document?: DeliveryDocument };
+
+export { confirmPickup, listShipments, submitDeliveryReceipt };

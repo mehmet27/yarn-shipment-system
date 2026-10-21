@@ -3,7 +3,7 @@ info:
   title: shipment-service API
   version: 1.0.0
   description: |
-    Sevkiyat okuma uçları ve oturumdaki kullanıcı (API-01). Controller arayüzleri ve frontend istemcisi bu
+    Sevkiyat okuma ve durum geçişi uçları ve oturumdaki kullanıcı (API-01). Controller arayüzleri ve frontend istemcisi bu
     dosyadan üretilir; elle tip yazılmaz.
 
     Kurallar:
@@ -93,6 +93,36 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /api/v1/shipments/{shipmentId}/pickup-confirmation:
+    post:
+      tags: [Shipments]
+      operationId: confirmPickup
+      summary: Şoför yükü teslim aldığını beyan eder (LOADED → IN_TRANSIT)
+      description: |
+        Gövde yoktur; şoför çıkışta kaydedilen çuval sayısını ve mühür numarasını onaylar. Yalnızca sevkiyata
+        atanmış şoför çağırabilir (`allowedActions` içinde `CONFIRM_PICKUP`). Aynı sevkiyat için tekrar gönderilen
+        istek (zayıf bağlantıda yeniden deneme) yeni kayıt oluşturmaz ve yine 204 döner.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '204':
+          description: Beyan kaydedildi, sevkiyat yolda
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
 components:
   securitySchemes:
     bearerAuth:
@@ -119,7 +149,21 @@ components:
         minimum: 1
         maximum: 100
         default: 20
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: İşlem kaydedildiği anda istemcide üretilir, yeniden denemede aynı kalır (API-04)
+      schema:
+        type: string
+        format: uuid
   responses:
+    Conflict:
+      description: Sevkiyatın durumu bu işleme izin vermiyor (code INVALID_SHIPMENT_STATUS)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
     BadRequest:
       description: İstek biçimi hatalı
       content:

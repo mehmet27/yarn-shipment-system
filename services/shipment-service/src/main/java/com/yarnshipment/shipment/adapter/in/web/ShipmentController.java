@@ -7,6 +7,8 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentDetailResponse
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentPageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentStatus;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentSummaryView;
+import com.yarnshipment.shipment.application.port.in.ConfirmPickupCommand;
+import com.yarnshipment.shipment.application.port.in.ConfirmPickupUseCase;
 import com.yarnshipment.shipment.application.port.in.GetShipmentQuery;
 import com.yarnshipment.shipment.application.port.in.GetShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsQuery;
@@ -23,20 +25,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Sevkiyat okuma uçları. Method security proxy'si gerektirdiği için final değildir (SEC-02). */
+/** Sevkiyat okuma ve durum geçişi uçları. Method security proxy'si gerektirdiği için final değildir (SEC-02). */
 @RestController
 public class ShipmentController implements ShipmentsApi {
 
     private final ListShipmentsUseCase listShipmentsUseCase;
     private final GetShipmentUseCase getShipmentUseCase;
+    private final ConfirmPickupUseCase confirmPickupUseCase;
     private final CurrentActorProvider currentActorProvider;
 
     public ShipmentController(
             ListShipmentsUseCase listShipmentsUseCase,
             GetShipmentUseCase getShipmentUseCase,
+            ConfirmPickupUseCase confirmPickupUseCase,
             CurrentActorProvider currentActorProvider) {
         this.listShipmentsUseCase = listShipmentsUseCase;
         this.getShipmentUseCase = getShipmentUseCase;
+        this.confirmPickupUseCase = confirmPickupUseCase;
         this.currentActorProvider = currentActorProvider;
     }
 
@@ -54,6 +59,14 @@ public class ShipmentController implements ShipmentsApi {
     public ResponseEntity<ShipmentDetailResponse> getShipment(UUID shipmentId) {
         GetShipmentQuery query = new GetShipmentQuery(currentActorProvider.getCurrentActor(), shipmentId);
         return ResponseEntity.ok(ShipmentViews.toDetail(getShipmentUseCase.getShipment(query)));
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('DRIVER_DECLARATION_RECORD')")
+    public ResponseEntity<Void> confirmPickup(UUID shipmentId, UUID idempotencyKey) {
+        confirmPickupUseCase.confirmPickup(
+                new ConfirmPickupCommand(currentActorProvider.getCurrentActor(), shipmentId, idempotencyKey));
+        return ResponseEntity.noContent().build();
     }
 
     private static Set<com.yarnshipment.shipment.domain.model.ShipmentStatus> statuses(

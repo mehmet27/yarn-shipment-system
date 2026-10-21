@@ -2,6 +2,7 @@ package com.yarnshipment.shipment.adapter.in.web;
 
 import com.yarnshipment.common.security.web.SecurityProblemResponses;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
+import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.net.URI;
@@ -9,8 +10,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.springframework.context.MessageSource;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -18,6 +22,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * Servise özgü hataların ERR-07 cevabı. {@code common-web} gelince ortak advice'a taşınır (ERR-06); güvenlik
  * hataları (401/403) {@code common-security} tarafından yazılır.
  */
+/* Spring Boot'un genel ProblemDetail işleyicisinden önce çalışır; aksi halde eksik başlık code alanı olmadan döner. */
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
 public final class ShipmentExceptionHandler {
 
@@ -33,6 +39,18 @@ public final class ShipmentExceptionHandler {
     @ExceptionHandler(ShipmentNotFoundException.class)
     public ProblemDetail handleNotFound(HttpServletRequest request) {
         return problem(request, HttpStatus.NOT_FOUND, "SHIPMENT_NOT_FOUND");
+    }
+
+    @ExceptionHandler(InvalidShipmentStatusException.class)
+    public ProblemDetail handleInvalidStatus(HttpServletRequest request) {
+        return problem(request, HttpStatus.CONFLICT, "INVALID_SHIPMENT_STATUS");
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ProblemDetail handleMissingHeader(MissingRequestHeaderException exception, HttpServletRequest request) {
+        ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "MISSING_HEADER");
+        problem.setProperty("errors", List.of(Map.of("field", exception.getHeaderName(), "message", "required")));
+        return problem;
     }
 
     /** Sözleşmedeki sınırlar (ör. {@code size <= 100}) {@code @Validated} arayüzde denetlenir (API-07). */

@@ -91,14 +91,32 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Teslim: kontrol aşamasındaki sevkiyatta fasoncunun gönderdiği alıcı kaydı, tartımı ve mührü.
 INSERT INTO delivery_receipt (id, shipment_id, received_by, received_at, doc_shipment_no, doc_date, doc_net_kg,
-                              doc_bag_count, submitted_at, created_at, created_by)
+                              doc_bag_count, created_at, created_by)
 SELECT ('0192f0a0-0000-7000-8000-0000000a' || lpad(n::text, 4, '0'))::uuid, id,
        '0192f0a0-0000-7000-8000-00000000c101', created_at + interval '6 hours', shipment_no,
-       (created_at + interval '6 hours')::date, 249.000, 5, created_at + interval '6 hours',
+       (created_at + interval '6 hours')::date, 249.000, 5,
        created_at + interval '6 hours', '0192f0a0-0000-7000-8000-00000000c101'
 FROM seed_shipment
 WHERE status = 'CHECKING'
 ON CONFLICT (id) DO NOTHING;
+
+-- Okutmalar: dört anahtar çıkış listesindeki çuvallarla eşleşir, biri listede yoktur. Teslim gönderilince okutma
+-- eklenemez; bu yüzden önce okutmalar, sonra gönderim. Gönderilmiş kayıt yeniden çalıştırmada atlanır.
+INSERT INTO delivery_scan (id, delivery_receipt_id, scanned_key, matched, scan_method, scanned_at, created_at,
+                           created_by)
+SELECT ('0192f0a0-0000-7000-8000-0000002f' || lpad(s.n::text, 2, '0') || lpad(k::text, 2, '0'))::uuid,
+       r.id, CASE WHEN k <= 4 THEN 'BAG-' || s.n || '-' || k ELSE 'BAG-X-9' END, k <= 4, 'SCAN',
+       s.created_at + interval '6 hours' + (k * interval '1 minute'),
+       s.created_at + interval '6 hours', '0192f0a0-0000-7000-8000-00000000c101'
+FROM seed_shipment s
+JOIN delivery_receipt r ON r.shipment_id = s.id AND r.submitted_at IS NULL
+CROSS JOIN generate_series(1, 5) AS k
+WHERE s.status = 'CHECKING'
+ON CONFLICT (id) DO NOTHING;
+
+UPDATE delivery_receipt r SET submitted_at = r.received_at
+FROM seed_shipment s
+WHERE r.shipment_id = s.id AND s.status = 'CHECKING' AND r.submitted_at IS NULL;
 
 INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, weighed_at, entered_by, created_at,
                       created_by)

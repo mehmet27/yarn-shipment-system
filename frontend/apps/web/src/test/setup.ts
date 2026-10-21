@@ -10,7 +10,8 @@ import { server } from '../mocks/server';
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: (query: string) => ({
-    matches: false,
+    // Testler masaüstü genişliğinde çalışır; dar ekran testleri matchMedia'yı kendisi değiştirir.
+    matches: query.includes('min-width'),
     media: query,
     onchange: null,
     addListener: () => undefined,

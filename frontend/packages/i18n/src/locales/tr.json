@@ -132,7 +132,8 @@
       "invalidKg": "Kiloyu 1.982,5 biçiminde girin.",
       "tareExceedsGross": "Dara brütten büyük olamaz.",
       "invalidBagCount": "Çuval sayısı 1 veya daha büyük bir tam sayı olmalı."
-    }
+    },
+    "stepOf": "Adım {{current}}/{{total}}: {{name}}"
   },
   "dispatch": {
     "title": "Çıkış tartısı",

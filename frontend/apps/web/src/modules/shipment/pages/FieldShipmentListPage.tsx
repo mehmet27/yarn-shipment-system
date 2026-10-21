@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Stack, Text, Title } from '@iplik/ui';
-import { FieldShipmentCard } from '../components/FieldShipmentCard';
 import { QueryState } from '../components/QueryState';
+import { ShipmentCard } from '../components/ShipmentCard';
 import { useShipments } from '../hooks/useShipments';
 
 const FIELD_PAGE_SIZE = 50;
@@ -20,7 +20,11 @@ export function FieldShipmentListPage() {
           ) : (
             <Stack gap="sm">
               {page.items.map((shipment) => (
-                <FieldShipmentCard key={shipment.shipmentId} shipment={shipment} />
+                <ShipmentCard
+                  key={shipment.shipmentId}
+                  shipment={shipment}
+                  to={`/saha/sevkiyat/${shipment.shipmentId}`}
+                />
               ))}
             </Stack>
           )

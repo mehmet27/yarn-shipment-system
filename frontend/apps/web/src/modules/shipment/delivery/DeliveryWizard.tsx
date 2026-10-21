@@ -1,11 +1,12 @@
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Stack, Stepper } from '@iplik/ui';
+import { Alert, Button, Group, Stack } from '@iplik/ui';
 import { useState } from 'react';
 import { useSubmitDelivery } from '../hooks/useSubmitDelivery';
 import type { DeliveryDraft, DraftError } from './deliveryDraft';
 import { DELIVERY_STEPS, EMPTY_DRAFT, toDeliveryRequest, validateStep } from './deliveryDraft';
 import { StepContent } from './StepContent';
+import { WizardProgress } from './WizardProgress';
 
 export type DeliveryWizardProps = { shipmentId: string; onSubmitted: () => void };
 
@@ -31,11 +32,7 @@ export function DeliveryWizard({ shipmentId, onSubmitted }: DeliveryWizardProps)
     code === 'INVALID_SHIPMENT_STATUS' ? 'delivery.invalidStatus' : 'delivery.submitFailed';
   return (
     <Stack>
-      <Stepper active={active} size="xs">
-        {DELIVERY_STEPS.map((item) => (
-          <Stepper.Step key={item} label={t(`delivery.steps.${item}`)} />
-        ))}
-      </Stepper>
+      <WizardProgress active={active} />
       <StepContent
         step={step}
         draft={draft}

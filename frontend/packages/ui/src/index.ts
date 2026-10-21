@@ -26,7 +26,7 @@ export {
   TextInput,
   Title,
 } from '@mantine/core';
-export { useDisclosure } from '@mantine/hooks';
+export { useDisclosure, useMediaQuery } from '@mantine/hooks';
 export { ErrorBoundary } from './ErrorBoundary';
 export type { ErrorBoundaryProps } from './ErrorBoundary';
 export { reportError } from './reportError';

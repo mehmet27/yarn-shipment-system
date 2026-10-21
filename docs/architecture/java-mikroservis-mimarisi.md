@@ -74,7 +74,9 @@ Kural basit: kullanıcı bir cevap bekliyorsa ve sonuç hemen gerekiyorsa REST, 
 | shipment-service | master-data-service | Sevkiyat oluştururken fasoncu, şoför ve araç geçerliliğini doğrulamak                 | Geçersiz kayıtla sevkiyat açılmamalı                                  |
 | evidence-service | shipment-service    | Yükleme isteğinin ait olduğu sevkiyatın var olduğunu ve kilitli olmadığını doğrulamak | Kilitli sevkiyata kanıt eklenmemeli                                   |
 
-Tüm senkron çağrılarda Resilience4j ile zaman aşımı (2 sn), sınırlı tekrar ve devre kesici kullanılır. Hata modeli RFC 9457 ProblemDetail formatındadır. Servisler arası çağrılarda kullanıcının JWT'si iletilir; kullanıcısız işler (zamanlanmış görevler, olay tüketicilerinin yaptığı çağrılar) her servis için ayrı tanımlanan, SYSTEM rolü taşıyan client credentials client'ıyla token alır.
+Tüm senkron çağrılarda Resilience4j ile zaman aşımı (2 sn), sınırlı tekrar ve devre kesici kullanılır. Hata modeli RFC 9457 ProblemDetail formatındadır.
+
+- **API-12** Servisler arası senkron çağrılar yalnızca mimari dokümanda listelenen üç çağrıdır. Yeni bir senkron çağrı eklemek ADR gerektirir. Servisler arası çağrılarda kullanıcının JWT'si iletilir; kullanıcısız işler (zamanlanmış görevler, olay tüketicilerinin yaptığı çağrılar) her servis için ayrı tanımlanan, SYSTEM rolü taşıyan client credentials client'ıyla token alır.
 
 ### Asenkron olaylar (Kafka)
 
@@ -84,9 +86,29 @@ Tüm senkron çağrılarda Resilience4j ile zaman aşımı (2 sn), sınırlı te
 
 - **Sıralama:** Olaylar sevkiyat kimliğiyle (shipmentId) bölümlenir, böylece aynı sevkiyatın olayları sırayla işlenir.
 
-- **Olay formatı:** JSON + CloudEvents zarfı (id, type, source, time, subject); başlıkta ayrıca aktorId, aktorRolleri ve korelasyonId taşınır, böylece her olayın kimin adına üretildiği audit kaydına girer. Olay adları İngilizce ve geçmiş zamandır (DeliveryReceived gibi); type alanı `com.yarnshipment.<alan>.<olay>.v1`, konu adları `<alan>.events.v1` biçimindedir. Türkçe karşılıklar kod standartlarının Ek B sözlüğündedir. Şemalar ortak event-contracts modülünde versiyonlanır.
+- **Olay formatı:** JSON + CloudEvents zarfı (id, type, source, time, subject); başlıkta ayrıca aktorId, aktorRolleri ve korelasyonId taşınır, böylece her olayın kimin adına üretildiği audit kaydına girer. Olay adları İngilizce ve geçmiş zamandır (DeliveryReceived gibi); type alanı `com.yarnshipment.<alan>.<olay>.v1`, konu adları `<alan>.events.v1` biçimindedir. Türkçe karşılıklar bu dokümanın sonundaki olay kataloğundadır. Şemalar ortak event-contracts modülünde versiyonlanır.
 
 - **Hatalı olaylar:** Tekrar denemelerden sonra işlenemeyen olay \*.DLT konusuna gider ve izleme panelinde alarm üretir.
+
+#### Olay sözleşmesi kuralları
+
+- **EVT-02** Zarf CloudEvents'tir (mimari doküman). Alanlar:
+
+| Alan | Kural | Örnek |
+| --- | --- | --- |
+| `id` | UUIDv7, olay başına benzersiz; idempotency anahtarı | `0192b5d0-...` |
+| `source` | `/yarn-shipment/<servis-adı>` | `/yarn-shipment/shipment-service` |
+| `type` | `com.yarnshipment.<alan>.<olay-kebab>.v<n>` | `com.yarnshipment.shipment.delivery-received.v1` |
+| `subject` | Bölümleme kimliği (çoğunlukla `shipmentId`) | `0192b5c1-...` |
+| `time` | Olayın gerçekleştiği sunucu zamanı (UTC) | `2026-10-20T08:15:30Z` |
+| `datacontenttype` | `application/json` | |
+| `data` | Olay record'u | |
+
+- **EVT-03 Transactional outbox zorunludur.** Olay, iş verisiyle aynı transaction'da `outbox_event` tablosuna yazılır; Kafka'ya `common-outbox` yayıncısı iletir. Servis kodu Kafka'ya doğrudan yazmaz (ARCH-07).
+- **EVT-04 Konu adları** `<alan>.events.v<n>` biçimindedir: `shipment.events.v1`, `evidence.events.v1`, `discrepancy.events.v1`. Hatalı olay konusu `<konu>.DLT`. Mesaj anahtarı bölümleme kimliğidir (sevkiyat olaylarında `shipmentId`); aynı sevkiyatın olayları sıralı işlenir.
+- **EVT-05 İdempotent tüketici zorunludur.** Her tüketici olayın `id`'sini `processed_event` tablosuna işlemle **aynı transaction**'da yazar. Unique ihlali "zaten işlendi" anlamına gelir ve olay sessizce onaylanır.
+- **EVT-06 Şema evrimi.** Bir olay sürümüne yalnızca **isteğe bağlı yeni alan** eklenebilir. Alan silme, yeniden adlandırma, tip veya anlam değişikliği yeni sürüm (`.v2`) gerektirir; eski sürüm tüm tüketiciler geçene kadar paralel yayınlanır. Tüketiciler bilinmeyen alanları yok sayar (`FAIL_ON_UNKNOWN_PROPERTIES=false` yalnızca olay okuyucusunda).
+- **EVT-09** Tüketici hata politikası: geçici hatalarda üstel bekleme ile en fazla 3 tekrar, sonra `.DLT`. Kalıcı hatalar (seri kaldırma, doğrulama) tekrar edilmeden doğrudan `.DLT`'ye gider. DLT'ye düşen her olay alarm üretir.
 
 ### Sevkiyat akışı (koreografi saga)
 
@@ -108,6 +130,8 @@ Bir adımın geri alınması gerektiğinde (örneğin *İptal*) telafi olayı ya
 
 **Kör giriş kuralı:** Çıkış kilosu ve çuval sayısı DeliveryReceived olayında yalnızca discrepancy-service'e gider. shipment-service'in fasoncuya ve şoföre dönen API yanıtları bu alanları karşılaştırma bitene kadar içermez; bu, ayrı DTO'larla ve sözleşme testleriyle güvence altına alınır.
 
+- **SEC-06 Olay seviyesi.** Çıkış verisini taşıyan olaylar (`DeliveryReceived`) yalnızca discrepancy-service ve audit-service tarafından tüketilir. Bu iki servis dışında bu alanları bir API yanıtına koyan kod yazılmaz; Kafka ACL'leri buna göre tanımlanır.
+
 ## API Gateway, service discovery ve konfigürasyon
 
 React uygulaması ve mobil tarayıcılar yalnızca gateway ile konuşur; servisler dışarıya kapalıdır.
@@ -116,7 +140,7 @@ React uygulaması ve mobil tarayıcılar yalnızca gateway ile konuşur; servisl
 
 - **Yönlendirme:** /api/v1/shipments/\*\* → shipment-service, /api/v1/evidence/\*\* → evidence-service gibi yol bazlı kurallar.
 
-- **Kimlik doğrulama:** Kullanıcı girişi gateway'de BFF oturumu ile yapılır: gateway Keycloak ile OIDC akışını yürütür, token'ları sunucu tarafında tutar ve tarayıcıya yalnızca HttpOnly oturum çerezi verir. Servislere giden isteklere JWT eklenir (token relay). Servisler de token'ı tekrar doğrular (sıfır güven); rol ve kapsam kontrolü servis içinde yapılır.
+- **Kimlik doğrulama:** Kullanıcı girişi gateway'de BFF oturumu ile yapılır: gateway Keycloak ile OIDC akışını yürütür, token'ları sunucu tarafında tutar ve tarayıcıya yalnızca HttpOnly oturum çerezi verir. Servislere giden isteklere JWT eklenir (token relay). Servisler de token'ı tekrar doğrular (sıfır güven); rol ve kapsam kontrolü servis içinde yapılır. **SEC-01** Her servis OAuth2 Resource Server olarak JWT'yi kendisi de doğrular (sıfır güven). Gateway'den geldi diye istek güvenilir sayılmaz.
 
 - **Hız sınırı:** Redis tabanlı kullanıcı başına limit; özellikle giriş ve yükleme uçları için.
 
@@ -138,7 +162,7 @@ Servisler Kubernetes üzerinde çalışır ve birbirini http://bag-service:8080 
 
 - Gizli bilgiler (veritabanı şifresi, Kafka ve MinIO anahtarları) Kubernetes Secret'ta, tercihen Vault veya Sealed Secrets ile tutulur; repoya girmez.
 
-- **İş ayarları konfigürasyon değildir:** Tolerans bantları, zorunlu fotoğraf listesi, itiraz süresi ve rastgele kontrol oranı Admin ekranından değiştirilir. Bu yüzden ilgili servisin veritabanında, değişiklik geçmişiyle ve audit kaydıyla tutulur.
+- **İş ayarları konfigürasyon değildir:** Tolerans bantları, zorunlu fotoğraf listesi, itiraz süresi ve rastgele kontrol oranı Admin ekranından değiştirilir. Bu yüzden ilgili servisin veritabanında, değişiklik geçmişiyle ve audit kaydıyla tutulur (CONF-04).
 
 ## Teknoloji yığını
 
@@ -163,6 +187,12 @@ Sürümler projenin başladığı günün güncel kararlı sürümleriyle kesinl
 | Test                   | JUnit 5, Testcontainers (veritabanı, Kafka, MinIO), Spring Cloud Contract, ArchUnit | Gerçek altyapıyla entegrasyon testi; servisler arası sözleşme testi                                           |
 | Derleme                | Maven (çok modüllü), Jib ile container imajı                                        | Dockerfile yazmadan tekrarlanabilir imaj                                                                      |
 
+### Çalışma zamanı
+
+- **CONC-01** Tüm servislerde `spring.threads.virtual.enabled=true`. Web istekleri, Kafka dinleyicileri ve `@Async`/zamanlanmış işler sanal thread'lerde çalışır. Kod bloklayan, düz, okunabilir G/Ç yazar.
+- **CONC-02 Reaktif programlama kullanılmaz** (WebFlux, Reactor, RxJava). Tek istisna API Gateway'dir (karar D-3); reaktif kod yalnızca `platform/api-gateway` içinde kalır.
+- **BUILD-07** Container imajı Jib ile üretilir; temel imaj Eclipse Temurin 25 JRE'dir. JVM parametreleri: `-XX:MaxRAMPercentage=75 -XX:+UseCompactObjectHeaders -XX:+ExitOnOutOfMemoryError` ve NAME-10'daki yerel ayarlar. Çöp toplayıcı varsayılan G1'dir; değiştirmek ölçüm ve ADR gerektirir.
+
 ## Gözlemlenebilirlik, güvenlik ve dağıtım
 
 Bir sevkiyatın tüm servislerdeki izi tek bir trace kimliğiyle takip edilebilmelidir; bir uyuşmazlık incelenirken "bu olay ne zaman, hangi servisten geçti" sorusu dakikalar içinde cevaplanmalıdır.
@@ -185,10 +215,16 @@ Faz 1 için kaba kaynak tahmini: 8 servis + gateway, servis başına 0,5 vCPU ve
 
 ## Proje yapısı, standartlar ve yol haritası
 
-### Repo yapısı (tek repo, Maven çok modüllü)
+### Repo, modül ve paket yapısı
+
+#### Repo yapısı
+
+Tek repo, çok modüllü Maven yapısı:
 
 ```
-iplik-sevkiyat-backend/
+yarn-shipment-system/
+  pom.xml                     # kök: parent + BOM, sürümler tek yerde
+  build-tools/                # Spotless, Checkstyle, Error Prone ayar dosyaları
   platform/
     api-gateway/
   services/
@@ -201,30 +237,86 @@ iplik-sevkiyat-backend/
     notification-service/
     reporting-service/
   libs/
-    event-contracts/     # olay şemaları ve versiyonları
-    common-web/          # ProblemDetail hata modeli, request id, sayfalama
-    common-security/     # JWT, rol ve fasoncu kapsamı yardımcıları
-    common-outbox/       # outbox yayıncısı ve idempotent tüketici
+    event-contracts/          # olay record'ları, CloudEvents zarfı, şema sürümleri
+    common-web/               # ProblemDetail, request id, sayfalama, Idempotency-Key
+    common-security/          # JWT, rol, fasoncu/şoför kapsam kontrolü
+    common-outbox/            # outbox yayıncısı, idempotent tüketici
+    common-test/              # Testcontainers tabanlı test destekleri, ArchUnit kuralları
   deploy/
+    docker-compose.yml
     helm/
-    docker-compose.yml   # yerel geliştirme: DB, Kafka, MinIO, Keycloak, Redis
+  docs/
+    standartlar/              # Java kod standartları
+    adr/                      # mimari karar kayıtları
+  tools/                      # tek dosyalık yardımcı betikler
 ```
 
-### Servis içi yapı
+- **STR-01** Servis modülleri birbirine Maven bağımlılığı **eklemez**. Bir servis başka servisi yalnızca REST sözleşmesi (OpenAPI'den üretilen istemci) veya `event-contracts` üzerinden tanır.
+- **STR-02** `libs/*` modülleri iş kuralı içermez. "İki serviste aynı iş kodu var, lib'e taşıyalım" gerekçesi kabul edilmez; iş kuralı tek servise aittir.
+- **STR-03** `common-*` kütüphaneleri `services/*` modüllerine bağımlı olamaz (döngü yasağı, Maven Enforcer ile).
 
-Kök paket `com.yarnshipment`'tir ve her servis kendi alt paketindedir (`com.yarnshipment.shipment` gibi). Her servis aynı altıgen (ports and adapters) düzeni izler: domain (iş kuralları, framework bağımsız), application (kullanım senaryoları), adapter.in.web, adapter.in.messaging, adapter.out.persistence, adapter.out.messaging. ArchUnit testleri, domain katmanının Spring veya JPA'ya bağımlı olmasını engeller.
+#### Kök paket ve servis içi paket yapısı
+
+- **STR-04** Kök paket `com.yarnshipment`'tir. Her servis kendi alt paketindedir: `com.yarnshipment.shipment`, `com.yarnshipment.bag`, `com.yarnshipment.masterdata`, `com.yarnshipment.evidence`, `com.yarnshipment.discrepancy`, `com.yarnshipment.audit`, `com.yarnshipment.notification`, `com.yarnshipment.reporting`, `com.yarnshipment.gateway`. Ortak kütüphaneler `com.yarnshipment.common.<ad>` ve `com.yarnshipment.events`.
+- **STR-05** Her servis aynı altıgen (ports and adapters) düzenini izler; ArchUnit testleri domain katmanının Spring veya JPA'ya bağımlı olmasını engeller:
+
+```
+com.yarnshipment.shipment
+  ShipmentServiceApplication.java
+  domain/
+    model/          # aggregate, entity, value object, enum, domain olayları
+    service/        # birden fazla aggregate'e yayılan saf domain mantığı (gerekirse)
+    exception/      # sealed DomainException hiyerarşisi
+  application/
+    port/in/        # UseCase arayüzleri, Command/Query record'ları
+    port/out/       # Repository ve dış servis portları
+    service/        # UseCase uygulamaları (@Transactional burada)
+  adapter/
+    in/web/         # controller, web DTO, DTO eşleyici
+    in/messaging/   # Kafka dinleyicileri
+    out/persistence/# JPA entity, Spring Data repository, port uygulaması
+    out/messaging/  # outbox'a yazan olay yayıncısı
+    out/client/     # diğer servislerin HTTP istemcileri
+  config/           # Spring @Configuration sınıfları
+```
+
+
+---
+
+### Altıgen mimari katman kuralları
+
+Bağımlılık yönü dışarıdan içeriye doğrudur: `adapter → application → domain`. Bu kurallar `common-test` içindeki ortak ArchUnit test seti ile **her servisin derlemesinde** çalışır.
+
+- **ARCH-01** `domain` paketi yalnızca JDK'ya, `org.jspecify` anotasyonlarına ve aynı servisin `domain` paketine bağımlı olabilir. Spring, Jakarta (JPA, Validation), Jackson, Hibernate, Kafka, SLF4J dahil hiçbir framework import edilemez.
+- **ARCH-02** `application` paketi `domain`'e ve kendi `port` paketlerine bağımlıdır. Spring'den yalnızca `@Service` benzeri stereotype anotasyonlar ve `org.springframework.transaction.annotation.Transactional` kullanılabilir. `adapter` paketine bağımlılık yasaktır.
+- **ARCH-03** Adapter'lar birbirine bağımlı olamaz: `adapter.in.web` sınıfları `adapter.out.persistence`'ı göremez. İletişim her zaman bir port üzerinden geçer.
+- **ARCH-04** Controller'lar yalnızca `port.in` arayüzlerini çağırır; repository veya domain servisini doğrudan çağırmaz.
+- **ARCH-05** JPA entity'leri (`*JpaEntity`) yalnızca `adapter.out.persistence` içinde yaşar ve bu paketin dışına sızmaz. Domain modeli ile kalıcılık modeli ayrıdır; aralarındaki dönüşüm paket içindeki bir eşleyiciyle yapılır.
+- **ARCH-06** Web DTO'ları yalnızca `adapter.in.web` içinde yaşar. Bir DTO hem istek hem yanıt olarak paylaşılmaz; domain nesnesi asla doğrudan JSON'a serileştirilmez (kör giriş güvencesinin teknik temeli, bkz. SEC-05).
+- **ARCH-07** `KafkaTemplate` yalnızca `common-outbox` yayıncısında kullanılır. Servis kodu olayı her zaman outbox'a yazar (bkz. EVT-03).
+- **ARCH-08** Döngüsel paket bağımlılığı yasaktır (ArchUnit `slices().should().beFreeOfCycles()`).
+
+```java
+// common-test içindeki ortak kural setinden kesit
+public final class HexagonalArchitectureRules {
+
+    public static final ArchRule DOMAIN_IS_FRAMEWORK_FREE = noClasses()
+            .that().resideInAPackage("..domain..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "org.springframework..", "jakarta..", "org.hibernate..",
+                    "tools.jackson..", "com.fasterxml..", "org.apache.kafka..", "org.slf4j..")
+            .because("ARCH-01: domain katmanı framework bağımsızdır");
+
+    private HexagonalArchitectureRules() {}
+}
+```
+
 
 ### Ortak kurallar
 
-- REST adresleri çoğul ve versiyonlu: /api/v1/shipments/{id}/delivery.
+REST adresleri, Idempotency-Key, 409/`/corrections`, zaman alanları ve iyimser kilitleme kuralları [Java kod standartları](../standartlar/java-kod-standartlari.md) dokümanındadır (API-02…05, DOM-09…11, PERS-07).
 
-- Durum değiştiren uçlar Idempotency-Key başlığı kabul eder; zayıf bağlantıda tekrar gönderilen istek çift kayıt üretmez.
-
-- Kilitli kayıtta güncelleme uçları 409 Conflict döner; düzeltme yalnızca ayrı /corrections uçuyla, gerekçeyle yapılır.
-
-- Zaman alanları UTC ve ISO 8601; istemcinin çekim zamanı (capturedAt) ile sunucu zamanı (receivedAt) ayrı saklanır.
-
-- İyimser kilitleme (version alanı) ile aynı sevkiyatın eşzamanlı güncellenmesi engellenir.
+- **PERS-15** Bir servis başka servisin veritabanına migration yazmaz.
 
 ### Geliştirme sırası (Faz 1)
 
@@ -251,3 +343,46 @@ Proje büyüyebileceği için kalan sorular, ileride genişletmeye en uygun seç
 - [x] Mesajlaşma: Kafka kalır. Ölçeklenme ve olay geçmişinin tekrar oynatılabilmesi için RabbitMQ'ya tercih edildi. Konular baştan 12 bölümle (partition) açılır, böylece tüketici sayısı konu yeniden oluşturulmadan artırılabilir. Yerelde tek düğüm, kendi sunucularda en az 3 düğüm.
 - [x] Saklama süresi: varsayılan 10 yıl (TTK ticari defter ve belge saklama süresi). Süre belge türü bazında Admin ayarıdır; MinIO Object Lock ve veritabanı arşivleme kuralları bu ayardan beslenir.
 - [x] Veri erişimi: ilişkisel veritabanı varsayımı korunur ve her servis kendi şemasına sahip olur; servis büyüyünce kendi veritabanı sunucusuna taşınabilir. Kesin ürün seçimi veritabanı çalışmasından gelir.
+
+### Uygulama mimarisi kararları (D-1…D-9)
+
+Proje sahibi, başlangıçtaki açık konularda büyümeye uygun ve sonradan geliştirilebilir tercihlerin yapılmasını istedi. Aşağıdaki konular bu yüzden açık bırakılmadı, karara bağlandı. Her biri gerekirse ADR ile değiştirilebilir; değişikliğin etkisi sınırlı tutulacak şekilde seçildi.
+
+| # | Konu | Karar | Gerekçe ve büyüme etkisi |
+| --- | --- | --- | --- |
+| D-1 | Kök paket adı | `com.yarnshipment` | Ürün adına bağlı, şirket yapısı değişse de sabit kalır. Kod yazılmadan önce değiştirmek bedavadır, sonra pahalıdır; bu yüzden şimdi sabitlendi. |
+| D-2 | Mesaj kuyruğu | **Apache Kafka (KRaft)** | Olayların kalıcı ve tekrar oynatılabilir olması audit, raporlama ve Faz 2–3 entegrasyonlarının (ERP, e-İrsaliye, kantar, GPS) aynı akıştan beslenmesini sağlar. Yerelde ve pilotta tek düğüm, prod'da 3 düğüm. Outbox katmanı sayesinde servis kodu kuyruk teknolojisine bağlı değildir. |
+| D-3 | API Gateway | **Spring Cloud Gateway (reaktif sürüm)**, yalnızca yapılandırma ve filtre kodu | En olgun varyanttır, Redis tabanlı hız sınırlayıcısı ve token relay hazırdır. Reaktif kod yalnızca `platform/api-gateway` içinde kalır, iş kodu içermez (CONC-02). |
+| D-4 | Kimlik ve kapsam taşıma | Keycloak realm rolleri JWT'de `roles`, fasoncu ve şoför kapsamı `subcontractor_id` / `driver_id` claim'leriyle gelir; `common-security` bunları tipli `Actor` record'una çevirir | Kapsam kontrolü (kod standartları SEC-03) tek yerde ve token'dan beslenir. Yetkilendirme çalışması yeni rol eklerse yalnızca `Actor` ve rol enum'u genişler. |
+| D-5 | Çok lokasyon hazırlığı | Kod "tek fabrika / tek depo" varsayımını sabit değer olarak gömmez. Lokasyon kavramı `SiteId` ile modellenir; sevkiyat, çuval ve parti kendi `SiteId`'sini taşır. Faz 1'de tek kayıt bulunur. | Projenin büyümesi büyük olasılıkla yeni fabrika ve depolar demektir. Sonradan bu kolonu tüm tablolara eklemek ve geçmiş veriyi doldurmak pahalıdır; şimdi eklemek neredeyse bedavadır. Kod kuralı: kod standartları GEN-07. |
+| D-6 | API ve olay sürümleme | Yol sürümlü REST (`/api/v1`) ve sürümlü olay tipi (`.v1`) korunur; geriye uyumsuz değişiklikte yeni sürüm açılır, eski sürüm en az bir sürüm döngüsü boyunca paralel yaşar | Çok sayıda istemci (web, mobil tarayıcı, ileride ERP ve fasoncu entegrasyonları) bağımsız güncellendiğinde kırılma olmaz. |
+| D-7 | Sürüm yönetimi | Tüm kütüphane sürümleri kök `pom.xml`'de sabittir; iskelet kurulurken o günün güncel kararlı sürümleri seçilir. Renovate (veya Dependabot) haftalık güncelleme PR'ı açar; Java ve Spring Boot ana sürüm geçişleri ADR ile yapılır. | Servis sayısı artınca sürüm sapması en büyük bakım maliyetidir; tek kaynak bunu önler. |
+| D-8 | Yeni servis ekleme | Yeni servis yalnızca `services/` altındaki şablon servisten kopyalanarak açılır; şablon kod standartlarındaki tüm araç ayarlarını (Error Prone, ArchUnit, Spotless, JaCoCo, Jib) hazır içerir | Ekip ve servis sayısı büyüdükçe kuralların her yeni serviste kendiliğinden geçerli olmasını sağlar. |
+| D-9 | Kod sahipliği | Repo kökünde `CODEOWNERS` bulunur; her servis ve her `libs/*` modülünün sahibi tanımlanır (kod standartları GIT-06 bunu kullanır) | Ekip büyüdüğünde review sorumluluğu belirsiz kalmaz. |
+
+## Olay kataloğu
+
+Ön analizde olaylar Türkçe adlarla anılmıştır. Kod standartlarındaki NAME-01 gereği kodda ve Kafka'da aşağıdaki İngilizce adlar kullanılır; dokümanlar arası eşleme bu tablodur.
+
+| Türkçe ad | Kod adı (record) | CloudEvents `type` | Yayınlayan |
+| --- | --- | --- | --- |
+| PartiKalitesiKilitlendi | `LotQualityLocked` | `com.yarnshipment.masterdata.lot-quality-locked.v1` | master-data |
+| FasoncuGuncellendi | `SubcontractorUpdated` | `com.yarnshipment.masterdata.subcontractor-updated.v1` | master-data |
+| SoforGuncellendi | `DriverUpdated` | `com.yarnshipment.masterdata.driver-updated.v1` | master-data |
+| CuvalOlusturuldu | `BagCreated` | `com.yarnshipment.bag.bag-created.v1` | bag |
+| CuvalSevkiyataBaglandi | `BagAssignedToShipment` | `com.yarnshipment.bag.bag-assigned-to-shipment.v1` | bag |
+| CuvalRezervasyonuBirakildi | `BagReservationReleased` | `com.yarnshipment.bag.bag-reservation-released.v1` | bag |
+| SevkiyatYuklendi | `ShipmentLoaded` | `com.yarnshipment.shipment.shipment-loaded.v1` | shipment |
+| SevkiyatYolaCikti | `ShipmentDispatched` | `com.yarnshipment.shipment.shipment-dispatched.v1` | shipment |
+| TeslimGirisiYapildi | `DeliveryReceived` | `com.yarnshipment.shipment.delivery-received.v1` | shipment |
+| SevkiyatTamamlandi | `ShipmentCompleted` | `com.yarnshipment.shipment.shipment-completed.v1` | shipment |
+| SevkiyatKilitlendi | `ShipmentLocked` | `com.yarnshipment.shipment.shipment-locked.v1` | shipment |
+| SevkiyatIptalEdildi | `ShipmentCancelled` | `com.yarnshipment.shipment.shipment-cancelled.v1` | shipment |
+| KanitYuklendi | `EvidenceUploaded` | `com.yarnshipment.evidence.evidence-uploaded.v1` | evidence |
+| KanitGecersizSayildi | `EvidenceInvalidated` | `com.yarnshipment.evidence.evidence-invalidated.v1` | evidence |
+| KanitTekrarKullanimiTespitEdildi | `EvidenceReuseDetected` | `com.yarnshipment.evidence.evidence-reuse-detected.v1` | evidence |
+| KarsilastirmaTamamlandi | `ComparisonCompleted` | `com.yarnshipment.discrepancy.comparison-completed.v1` | discrepancy |
+| UyusmazlikAcildi | `DiscrepancyOpened` | `com.yarnshipment.discrepancy.discrepancy-opened.v1` | discrepancy |
+| UyusmazlikKarariVerildi | `DiscrepancyResolved` | `com.yarnshipment.discrepancy.discrepancy-resolved.v1` | discrepancy |
+| BildirimGonderildi | `NotificationSent` | `com.yarnshipment.notification.notification-sent.v1` | notification |
+| KontrolIcinSecildi (Faz 2) | `ShipmentSelectedForInspection` | `com.yarnshipment.reporting.shipment-selected-for-inspection.v1` | reporting |

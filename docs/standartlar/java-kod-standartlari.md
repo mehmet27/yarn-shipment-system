@@ -8,9 +8,11 @@
 | Dayandığı dokümanlar | Ön analiz raporu v1.1, Java mikroservis mimarisi v1, Veritabanı tasarımı |
 | Bağlayıcılık | **Projede yazılan her Java satırı bu dokümana uyar.** Kurala aykırı kod birleştirilmez. |
 
+Bu doküman yalnızca **kod yazım standartlarını** içerir. Repo ve modül yapısı, katman düzeni, olay sözleşmesi, servisler arası iletişim, çalışma zamanı ve mimari kararlar [Java mikroservis mimarisi](../architecture/java-mikroservis-mimarisi.md) dokümanındadır; oradaki kural kimlikleri (STR, ARCH, EVT-02…06/09 vb.) code review'da aynı şekilde kullanılır.
+
 Bu doküman projenin temel taşıdır. Kod yazmaya başlamadan önce okunur, code review'da kural kimlikleriyle (ör. `DOM-04`) atıf yapılır. Kurallar iki seviyededir:
 
-- **ZORUNLU**: İstisnası yoktur ya da yalnızca bölüm 18'deki istisna süreciyle delinebilir. Çoğu derlemede otomatik denetlenir.
+- **ZORUNLU**: İstisnası yoktur ya da yalnızca bölüm 16'daki istisna süreciyle delinebilir. Çoğu derlemede otomatik denetlenir.
 - **ÖNERİLEN**: Varsayılan davranıştır; uymamak için PR açıklamasında kısa gerekçe yeterlidir.
 
 Kural belirtilmeden yazılan her madde ZORUNLU kabul edilir.
@@ -23,25 +25,21 @@ Kural belirtilmeden yazılan her madde ZORUNLU kabul edilir.
 2. [Java 25 dil kullanımı](#2-java-25-dil-kullanımı)
 3. [Adlandırma ve dil](#3-adlandırma-ve-dil)
 4. [Kod boyutu, karmaşıklık ve yapı sınırları](#4-kod-boyutu-karmaşıklık-ve-yapı-sınırları)
-5. [Repo, modül ve paket yapısı](#5-repo-modül-ve-paket-yapısı)
-6. [Altıgen mimari katman kuralları](#6-altıgen-mimari-katman-kuralları)
-7. [Domain modelleme](#7-domain-modelleme)
-8. [Null güvenliği, hata ve istisna yönetimi](#8-null-güvenliği-hata-ve-istisna-yönetimi)
-9. [Kalıcılık: JPA, Flyway, transaction](#9-kalıcılık-jpa-flyway-transaction)
-10. [REST API kuralları](#10-rest-api-kuralları)
-11. [Olaylar, Kafka ve outbox](#11-olaylar-kafka-ve-outbox)
-12. [Eşzamanlılık ve sanal thread'ler](#12-eşzamanlılık-ve-sanal-threadler)
-13. [Güvenlik, kör giriş ve KVKK](#13-güvenlik-kör-giriş-ve-kvkk)
-14. [Loglama ve gözlemlenebilirlik](#14-loglama-ve-gözlemlenebilirlik)
-15. [Konfigürasyon](#15-konfigürasyon)
-16. [Test kuralları](#16-test-kuralları)
-17. [Derleme, bağımlılık ve araç zinciri](#17-derleme-bağımlılık-ve-araç-zinciri)
-18. [Git, PR, code review ve istisna süreci](#18-git-pr-code-review-ve-istisna-süreci)
-19. [Ek A: Domain sözlüğü (Türkçe → kod)](#ek-a-domain-sözlüğü-türkçe--kod)
-20. [Ek B: Olay adları sözlüğü](#ek-b-olay-adları-sözlüğü)
-21. [Ek C: Otomatik denetim özeti](#ek-c-otomatik-denetim-özeti)
-22. [Ek D: Bu dokümanda alınan kararlar](#ek-d-bu-dokümanda-alınan-kararlar)
-23. [Ek E: Araç ayarları (derlemede zorlanan kurallar)](#ek-e-araç-ayarları-derlemede-zorlanan-kurallar)
+5. [Domain modelleme](#5-domain-modelleme)
+6. [Null güvenliği, hata ve istisna yönetimi](#6-null-güvenliği-hata-ve-istisna-yönetimi)
+7. [Kalıcılık: JPA, Flyway, transaction](#7-kalıcılık-jpa-flyway-transaction)
+8. [REST API kuralları](#8-rest-api-kuralları)
+9. [Olaylar, Kafka ve outbox](#9-olaylar-kafka-ve-outbox)
+10. [Eşzamanlılık ve sanal thread'ler](#10-eşzamanlılık-ve-sanal-threadler)
+11. [Güvenlik, kör giriş ve KVKK](#11-güvenlik-kör-giriş-ve-kvkk)
+12. [Loglama ve gözlemlenebilirlik](#12-loglama-ve-gözlemlenebilirlik)
+13. [Konfigürasyon](#13-konfigürasyon)
+14. [Test kuralları](#14-test-kuralları)
+15. [Derleme, bağımlılık ve araç zinciri](#15-derleme-bağımlılık-ve-araç-zinciri)
+16. [Git, PR, code review ve istisna süreci](#16-git-pr-code-review-ve-istisna-süreci)
+17. [Ek A: Domain sözlüğü (Türkçe → kod)](#ek-a-domain-sözlüğü-türkçe--kod)
+18. [Ek B: Otomatik denetim özeti](#ek-b-otomatik-denetim-özeti)
+19. [Ek C: Araç ayarları (derlemede zorlanan kurallar)](#ek-c-araç-ayarları-derlemede-zorlanan-kurallar)
 
 ---
 
@@ -49,12 +47,13 @@ Kural belirtilmeden yazılan her madde ZORUNLU kabul edilir.
 
 Bu sistemin değeri **kanıt bütünlüğünden** gelir: kör giriş, değiştirilemezlik, tam iz. Kod kuralları bu yüzden "güzel kod" kadar "yanlış kodu yazılamaz hale getirmek" üzerine kuruludur.
 
-- **GEN-01 Derleyici ve araç önce gelir.** Bir kural otomatik denetlenebiliyorsa (derleyici, Error Prone, ArchUnit, test) denetlenir; review'a bırakılmaz. Ek C hangi kuralın nerede denetlendiğini, Ek E araç ayarlarını listeler.
+- **GEN-01 Derleyici ve araç önce gelir.** Bir kural otomatik denetlenebiliyorsa (derleyici, Error Prone, ArchUnit, test) denetlenir; review'a bırakılmaz. Ek B hangi kuralın nerede denetlendiğini, Ek C araç ayarlarını listeler.
 - **GEN-02 Geçersiz durum temsil edilemez.** Domain nesneleri oluşturulduğu anda geçerlidir. "Önce oluştur, sonra `validate()` çağır" deseni yasaktır.
 - **GEN-03 Değişmezlik varsayılandır.** Alanlar `final`, koleksiyonlar değiştirilemez, değer nesneleri `record`. Değişebilir durum yalnızca aggregate kökünde ve kontrollü metotlarla değişir.
 - **GEN-04 Silme yok, düzeltme kaydı var.** Hiçbir iş verisi fiziksel olarak silinmez ya da üzerine yazılmaz (rapor Bölüm 3, 11; veritabanı tasarımı "Silme yok"). Kod bu varsayımı bozan bir yol açmaz.
 - **GEN-05 Açık olan örtük olandan iyidir.** Sihirli davranış (Lombok, çalışma zamanı proxy hileleri, `@Autowired` alan enjeksiyonu, reflection ile alan erişimi) kullanılmaz.
-- **GEN-06 Basitlik, ama büyümeye kapalı değil.** Faz 1 düşük yüklü, güvenilirlik odaklıdır. Reaktif programlama, genel amaçlı "framework içinde framework" soyutlamaları ve ihtiyaç doğmadan önbellek yazılmaz. Buna karşılık sonradan değiştirmesi pahalı olan temel kararlar (servis sınırları, sürümlü sözleşmeler, tipli kimlikler, lokasyon kavramı) baştan büyümeye uygun alınır; bkz. Ek D.
+- **GEN-06 Basitlik, ama büyümeye kapalı değil.** Faz 1 düşük yüklü, güvenilirlik odaklıdır. Reaktif programlama, genel amaçlı "framework içinde framework" soyutlamaları ve ihtiyaç doğmadan önbellek yazılmaz. Buna karşılık sonradan değiştirmesi pahalı olan temel kararlar (servis sınırları, sürümlü sözleşmeler, tipli kimlikler, lokasyon kavramı) baştan büyümeye uygun alınır; bu kararlar mimari dokümandadır.
+- **GEN-07** Lokasyona bağlı her aggregate (`Shipment`, `Bag`, `ProductionLot`, `TareStandard` ve ileride eklenecekler) bir `SiteId` taşır. Sorgular, listeler ve yetki kontrolleri `SiteId`'yi göz ardı edemez; "tek lokasyon var" varsayımıyla `findAll()` yazılmaz. Faz 1'de tek lokasyon kaydı bulunur ve kullanıcı arayüzünde seçim gösterilmeyebilir, ama kod bu alanı her zaman taşır.
 
 ---
 
@@ -234,7 +233,7 @@ public final class ShipmentLockedException extends DomainException {
 
 ## 4. Kod boyutu, karmaşıklık ve yapı sınırları
 
-Bu bölümdeki sayılar **pazarlık konusu değildir**. Hepsi derleme sırasında Checkstyle, PMD veya ArchUnit ile **hata** seviyesinde denetlenir; sınırı aşan kod derlenmez, dolayısıyla birleştirilemez. Uyarı seviyesi ve "baseline" (eski ihlalleri görmezden gelme) kullanılmaz: proje sıfırdan başladığı için ilk satırdan itibaren tüm kurallar geçerlidir. Araç ayarlarının tamamı Ek E'dedir.
+Bu bölümdeki sayılar **pazarlık konusu değildir**. Hepsi derleme sırasında Checkstyle, PMD veya ArchUnit ile **hata** seviyesinde denetlenir; sınırı aşan kod derlenmez, dolayısıyla birleştirilemez. Uyarı seviyesi ve "baseline" (eski ihlalleri görmezden gelme) kullanılmaz: proje sıfırdan başladığı için ilk satırdan itibaren tüm kurallar geçerlidir. Araç ayarlarının tamamı Ek C'dedir.
 
 Sınırı aşan kodun çözümü sınırı esnetmek değil, kodu bölmektir: uzun metot küçük metotlara, büyük sınıf ayrı sorumluluklara, çok parametreli metot bir parametre record'una ayrılır.
 
@@ -320,6 +319,9 @@ public void submitDeliveryReceipt(DeliveryReceipt receipt) {
 | **STRUC-13** | Kullanılmayan import, değişken, parametre (arayüz uygulaması hariç) ve `private` metot bırakılmaz. | Checkstyle `UnusedImports`, `UnusedLocalVariable`; PMD `UnusedPrivateMethod`, `UnusedFormalParameter` |
 | **STRUC-14** | Joker import yasak; statik import yalnızca izinli listede (AssertJ, Mockito, ArchUnit, `Objects.requireNonNull`). Import sırası Spotless'a aittir. | Checkstyle `AvoidStarImport`, `AvoidStaticImport` |
 
+- **STR-06** Her pakette `package-info.java` bulunur ve en az `@NullMarked` taşır (bkz. NULL-01).
+- **STR-07** Bir sınıf `public` olmak zorunda değilse paket-özel bırakılır. Adapter ve config sınıflarının çoğu paket-özel olabilir.
+
 ### 4.4 Yorum kuralları
 
 - **COMM-01** Yorum **neden**i anlatır, **ne**yi değil. Kodu tekrar eden yorum (`// sayacı artır`) yazılmaz.
@@ -337,109 +339,9 @@ public void submitDeliveryReceipt(DeliveryReceipt receipt) {
 
 ---
 
-## 5. Repo, modül ve paket yapısı
+## 5. Domain modelleme
 
-### 5.1 Repo yapısı
-
-Mimari dokümandaki çok modüllü Maven yapısı esas alınır:
-
-```
-yarn-shipment-system/
-  pom.xml                     # kök: parent + BOM, sürümler tek yerde
-  build-tools/                # Spotless, Checkstyle, Error Prone ayar dosyaları
-  platform/
-    api-gateway/
-  services/
-    master-data-service/
-    bag-service/
-    shipment-service/
-    evidence-service/
-    discrepancy-service/
-    audit-service/
-    notification-service/
-    reporting-service/
-  libs/
-    event-contracts/          # olay record'ları, CloudEvents zarfı, şema sürümleri
-    common-web/               # ProblemDetail, request id, sayfalama, Idempotency-Key
-    common-security/          # JWT, rol, fasoncu/şoför kapsam kontrolü
-    common-outbox/            # outbox yayıncısı, idempotent tüketici
-    common-test/              # Testcontainers tabanlı test destekleri, ArchUnit kuralları
-  deploy/
-    docker-compose.yml
-    helm/
-  docs/
-    standartlar/              # bu doküman
-    adr/                      # mimari karar kayıtları
-  tools/                      # tek dosyalık yardımcı betikler
-```
-
-- **STR-01** Servis modülleri birbirine Maven bağımlılığı **eklemez**. Bir servis başka servisi yalnızca REST sözleşmesi (OpenAPI'den üretilen istemci) veya `event-contracts` üzerinden tanır.
-- **STR-02** `libs/*` modülleri iş kuralı içermez. "İki serviste aynı iş kodu var, lib'e taşıyalım" gerekçesi kabul edilmez; iş kuralı tek servise aittir.
-- **STR-03** `common-*` kütüphaneleri `services/*` modüllerine bağımlı olamaz (döngü yasağı, Maven Enforcer ile).
-
-### 5.2 Kök paket ve servis içi paket yapısı
-
-- **STR-04** Kök paket `com.yarnshipment`'tir. Her servis kendi alt paketindedir: `com.yarnshipment.shipment`, `com.yarnshipment.bag`, `com.yarnshipment.masterdata`, `com.yarnshipment.evidence`, `com.yarnshipment.discrepancy`, `com.yarnshipment.audit`, `com.yarnshipment.notification`, `com.yarnshipment.reporting`, `com.yarnshipment.gateway`. Ortak kütüphaneler `com.yarnshipment.common.<ad>` ve `com.yarnshipment.events`.
-- **STR-05** Servis içi yapı mimari dokümandaki altıgen düzenin birebir karşılığıdır:
-
-```
-com.yarnshipment.shipment
-  ShipmentServiceApplication.java
-  domain/
-    model/          # aggregate, entity, value object, enum, domain olayları
-    service/        # birden fazla aggregate'e yayılan saf domain mantığı (gerekirse)
-    exception/      # sealed DomainException hiyerarşisi
-  application/
-    port/in/        # UseCase arayüzleri, Command/Query record'ları
-    port/out/       # Repository ve dış servis portları
-    service/        # UseCase uygulamaları (@Transactional burada)
-  adapter/
-    in/web/         # controller, web DTO, DTO eşleyici
-    in/messaging/   # Kafka dinleyicileri
-    out/persistence/# JPA entity, Spring Data repository, port uygulaması
-    out/messaging/  # outbox'a yazan olay yayıncısı
-    out/client/     # diğer servislerin HTTP istemcileri
-  config/           # Spring @Configuration sınıfları
-```
-
-- **STR-06** Her pakette `package-info.java` bulunur ve en az `@NullMarked` taşır (bkz. NULL-01).
-- **STR-07** Bir sınıf `public` olmak zorunda değilse paket-özel bırakılır. Adapter ve config sınıflarının çoğu paket-özel olabilir.
-
----
-
-## 6. Altıgen mimari katman kuralları
-
-Bağımlılık yönü dışarıdan içeriye doğrudur: `adapter → application → domain`. Bu kurallar `common-test` içindeki ortak ArchUnit test seti ile **her servisin derlemesinde** çalışır.
-
-- **ARCH-01** `domain` paketi yalnızca JDK'ya, `org.jspecify` anotasyonlarına ve aynı servisin `domain` paketine bağımlı olabilir. Spring, Jakarta (JPA, Validation), Jackson, Hibernate, Kafka, SLF4J dahil hiçbir framework import edilemez.
-- **ARCH-02** `application` paketi `domain`'e ve kendi `port` paketlerine bağımlıdır. Spring'den yalnızca `@Service` benzeri stereotype anotasyonlar ve `org.springframework.transaction.annotation.Transactional` kullanılabilir. `adapter` paketine bağımlılık yasaktır.
-- **ARCH-03** Adapter'lar birbirine bağımlı olamaz: `adapter.in.web` sınıfları `adapter.out.persistence`'ı göremez. İletişim her zaman bir port üzerinden geçer.
-- **ARCH-04** Controller'lar yalnızca `port.in` arayüzlerini çağırır; repository veya domain servisini doğrudan çağırmaz.
-- **ARCH-05** JPA entity'leri (`*JpaEntity`) yalnızca `adapter.out.persistence` içinde yaşar ve bu paketin dışına sızmaz. Domain modeli ile kalıcılık modeli ayrıdır; aralarındaki dönüşüm paket içindeki bir eşleyiciyle yapılır.
-- **ARCH-06** Web DTO'ları yalnızca `adapter.in.web` içinde yaşar. Bir DTO hem istek hem yanıt olarak paylaşılmaz; domain nesnesi asla doğrudan JSON'a serileştirilmez (kör giriş güvencesinin teknik temeli, bkz. SEC-05).
-- **ARCH-07** `KafkaTemplate` yalnızca `common-outbox` yayıncısında kullanılır. Servis kodu olayı her zaman outbox'a yazar (bkz. EVT-03).
-- **ARCH-08** Döngüsel paket bağımlılığı yasaktır (ArchUnit `slices().should().beFreeOfCycles()`).
-
-```java
-// common-test içindeki ortak kural setinden kesit
-public final class HexagonalArchitectureRules {
-
-    public static final ArchRule DOMAIN_IS_FRAMEWORK_FREE = noClasses()
-            .that().resideInAPackage("..domain..")
-            .should().dependOnClassesThat().resideInAnyPackage(
-                    "org.springframework..", "jakarta..", "org.hibernate..",
-                    "tools.jackson..", "com.fasterxml..", "org.apache.kafka..", "org.slf4j..")
-            .because("ARCH-01: domain katmanı framework bağımsızdır");
-
-    private HexagonalArchitectureRules() {}
-}
-```
-
----
-
-## 7. Domain modelleme
-
-### 7.1 Aggregate ve kimlik
+### 5.1 Aggregate ve kimlik
 
 - **DOM-01** Her aggregate kökü kendi tutarlılığından sorumludur. Durum değişikliği yalnızca aggregate'in iş metotlarıyla yapılır (`shipment.recordDispatchWeighing(...)`). Public setter yasaktır.
 - **DOM-02** Kimlikler tipli record'dur: `ShipmentId`, `BagId`, `SubcontractorId`. Metot imzalarında çıplak `UUID` veya `String` kimlik dolaşmaz. Bu sayede `assign(BagId, ShipmentId)` çağrısında argümanların yeri karışamaz.
@@ -454,7 +356,7 @@ public record ShipmentId(UUID value) {
 }
 ```
 
-### 7.2 Değer nesneleri: kilo, yüzde, zaman
+### 5.2 Değer nesneleri: kilo, yüzde, zaman
 
 - **DOM-05 Kilo `double` veya `float` ile tutulmaz.** Ağırlıklar `Kilogram` değer nesnesidir: `BigDecimal`, ölçek 3 (veritabanı `numeric(12,3)`). Ham `BigDecimal` metot imzalarında dolaşmaz.
 - **DOM-06** `BigDecimal` karşılaştırması `compareTo` ile yapılır; `equals` ölçeği de karşılaştırdığı için (`1.0` ≠ `1.00`) iş mantığında kullanılmaz. `new BigDecimal(double)` yasaktır; `new BigDecimal("12.5")` veya `BigDecimal.valueOf(long, scale)` kullanılır.
@@ -533,7 +435,7 @@ public static Percentage calculateDifferencePercentage(Kilogram dispatchNet, Kil
 - **DOM-11** İstemcinin çekim zamanı (`capturedAt`) ile sunucunun alış zamanı (`receivedAt`/`uploadedAt`) ayrı alanlardır ve asla birbirinin yerine kullanılmaz. Karar veren kurallar (zaman anomalisi, itiraz süresi) yalnızca sunucu zamanına dayanır.
 - **DOM-12** "3 iş günü" gibi takvim kuralları tek bir `BusinessCalendar` portu üzerinden hesaplanır; kod içinde `plusDays(3)` yazılmaz.
 
-### 7.3 Durum makineleri
+### 5.3 Durum makineleri
 
 - **DOM-13** Sevkiyat, uyuşmazlık, kanıt ve çuval durumları `enum` olarak modellenir; izin verilen geçişler enum'un kendisinde, `default` dalı olmayan bir `switch` ifadesiyle tanımlanır. Durum alanı yalnızca bu tabloyu kullanan aggregate metodu ile değişir.
 - **DOM-14** Her durum geçişi bir domain olayı üretir ve `shipment_status_history` tablosuna yazılır. Olay üretmeyen durum değişikliği hatadır.
@@ -561,22 +463,22 @@ public enum ShipmentStatus {
 }
 ```
 
-### 7.4 Değiştirilemezlik ve düzeltme kaydı
+### 5.4 Değiştirilemezlik ve düzeltme kaydı
 
 - **DOM-15** Kilitli (`COMPLETED`) bir aggregate üzerinde değişiklik metodu çağrıldığında `ShipmentLockedException` fırlatılır (REST'te 409). Bu kontrol aggregate içindedir, controller'da değil.
 - **DOM-16** Kritik ölçüm kayıtları (tartım, mühür, şoför beyanı, teslim girişi) güncellenmez. Düzeltme `CorrectionRecord` ile yapılır: yeni değer yeni kayıt olarak eklenir, eski kayıt `supersededBy` ile işaretlenir, gerekçe zorunludur ve yalnızca Admin onaylar (rapor karar #9).
 - **DOM-17** Kanıt dosyaları silinmez; `invalidate(reason)` ile `INVALIDATED` olur. Kodda `delete` adlı iş metodu bulunmaz.
 
-### 7.5 Domain olayları
+### 5.5 Domain olayları
 
 - **DOM-18** Aggregate, ürettiği domain olaylarını kendi içinde biriktirir (`List<DomainEvent>`), application servisi kaydettikten sonra `pullDomainEvents()` ile alır ve outbox'a yazar. Domain katmanı Kafka'yı veya outbox'ı bilmez.
 - **DOM-19** Domain olayları ile entegrasyon olayları (`event-contracts`) ayrı tiplerdir. Dönüşüm `adapter.out.messaging` içinde yapılır; böylece iç model değişikliği dış sözleşmeyi kırmaz.
 
 ---
 
-## 8. Null güvenliği, hata ve istisna yönetimi
+## 6. Null güvenliği, hata ve istisna yönetimi
 
-### 8.1 Null
+### 6.1 Null
 
 - **NULL-01** Tüm paketler `@org.jspecify.annotations.NullMarked` ile işaretlenir; varsayılan "null olamaz"dır. Null alabilecek her parametre, dönüş ve alan `@Nullable` ile açıkça işaretlenir. Spring Framework 7 de JSpecify kullandığı için framework sınırında da tutarlıdır.
 - **NULL-02** NullAway (Error Prone eklentisi) derlemede **hata** seviyesinde çalışır. Null uyarısı ile birleştirme yapılmaz.
@@ -584,7 +486,7 @@ public enum ShipmentStatus {
 - **NULL-04** Koleksiyon dönen metotlar `null` değil boş koleksiyon döner.
 - **NULL-05** Public yapıcı ve fabrika metotları zorunlu argümanları `Objects.requireNonNull(x, "x")` ile doğrular (record kompakt yapıcısında).
 
-### 8.2 İstisna hiyerarşisi
+### 6.2 İstisna hiyerarşisi
 
 - **ERR-01** İş kuralı ihlalleri domain istisnasıdır ve tek bir `sealed` hiyerarşiden türer. Her istisna bir `ErrorCode` taşır; REST eşlemesi bu koda göre yapılır.
 
@@ -622,7 +524,7 @@ public sealed interface BagReservationResult {
 }
 ```
 
-### 8.3 Hata yanıtı
+### 6.3 Hata yanıtı
 
 - **ERR-06** Tüm REST hataları RFC 9457 `ProblemDetail` formatındadır ve `common-web` içindeki tek `@RestControllerAdvice` tarafından üretilir. Servisler kendi hata gövdesini icat etmez.
 - **ERR-07** `ProblemDetail` alanları: `type` (`https://errors.yarnshipment.com/<error-code>`; adres sabittir, erişilebilir olması gerekmez), `title`, `status`, `detail`, `instance`, ek olarak `code` (makine tarafından okunur, ör. `SHIPMENT_LOCKED`), `requestId`, doğrulama hatalarında `errors[]`.
@@ -641,9 +543,9 @@ public sealed interface BagReservationResult {
 
 ---
 
-## 9. Kalıcılık: JPA, Flyway, transaction
+## 7. Kalıcılık: JPA, Flyway, transaction
 
-### 9.1 JPA
+### 7.1 JPA
 
 - **PERS-01** `spring.jpa.open-in-view=false` tüm servislerde zorunludur.
 - **PERS-02** `spring.jpa.hibernate.ddl-auto=validate`. Şemayı yalnızca Flyway yönetir.
@@ -657,15 +559,14 @@ public sealed interface BagReservationResult {
 - **PERS-10** Dize birleştirmeyle SQL/JPQL oluşturulmaz. Dinamik sorgu gerekiyorsa parametreli Criteria API veya Spring Data `Specification` kullanılır.
 - **PERS-11** Uygulamadan fiziksel `DELETE` çalıştırılmaz; repository'lerde `delete*` metotları açılmaz (veritabanında da `<servis>_app` rolünün DELETE yetkisi yoktur).
 
-### 9.2 Flyway
+### 7.2 Flyway
 
 - **PERS-12** Migration dosyaları `src/main/resources/db/migration` altındadır ve `V<yyyyMMddHHmm>__<ingilizce_aciklama>.sql` biçiminde adlandırılır (ör. `V202610211030__create_shipment_tables.sql`). Zaman damgası, paralel çalışan geliştiricilerin sürüm çakışmasını önler.
 - **PERS-13** `main`'e birleştirilmiş bir migration **asla değiştirilmez**; düzeltme yeni migration ile yapılır.
 - **PERS-14** Geriye uyumsuz şema değişikliği (kolon silme, yeniden adlandırma) "genişlet ve daralt" ile en az iki sürümde yapılır: önce yeni kolon eklenir ve iki yere yazılır, sonraki sürümde eski kolon kaldırılır.
-- **PERS-15** Bir servis başka servisin veritabanına migration yazmaz.
 - **PERS-16** Kısıtlar (FK, CHECK, kısmi unique indeks, trigger) veritabanı tasarımındaki gibi veritabanında da tanımlanır. Kod içi doğrulama veritabanı kısıtının yerine geçmez; ikisi birlikte bulunur.
 
-### 9.3 Transaction
+### 7.3 Transaction
 
 - **PERS-17** `@Transactional` yalnızca `application.service` sınıflarının public metotlarında kullanılır. Controller, adapter ve domain'de kullanılmaz.
 - **PERS-18** Okuma senaryoları `@Transactional(readOnly = true)` ile işaretlenir.
@@ -675,7 +576,7 @@ public sealed interface BagReservationResult {
 
 ---
 
-## 10. REST API kuralları
+## 8. REST API kuralları
 
 - **API-01 API-first.** Her servisin sözleşmesi `src/main/resources/openapi/<servis>-api.yaml` dosyasıdır. Controller arayüzleri bu dosyadan `openapi-generator` (`spring` üreteci, `interfaceOnly=true`, `useJakartaEe=true`) ile üretilir ve controller bunları uygular. Sözleşme kodla birlikte aynı PR'da değişir; frontend TypeScript istemcisi aynı dosyadan üretilir. Springdoc yalnızca çalışan servisin sözleşmesini Swagger UI'da göstermek için kullanılır.
 - **API-02** Yollar çoğul isim, küçük harf, kebab-case ve sürümlüdür: `/api/v1/shipments/{shipmentId}/delivery-receipt`. Fiil yoldaki son segmentte yalnızca durum geçişi eylemlerinde kullanılır: `POST /api/v1/shipments/{id}/dispatch`, `POST /api/v1/shipments/{id}/lock`.
@@ -688,34 +589,17 @@ public sealed interface BagReservationResult {
 - **API-09** Yanıt DTO'su hedef kitleye göre ayrıdır: fasoncuya, şoföre ve iç kullanıcılara dönen sevkiyat görünümleri **farklı record'lardır** (bkz. SEC-05). Ortak alanlar için kalıtım kullanılmaz; her görünüm kendi alanlarını açıkça listeler.
 - **API-10** Controller metotları ince tutulur: DTO → Command dönüşümü, use case çağrısı, sonuç → DTO dönüşümü. Controller metodu en fazla 15 satırdır (SIZE-02'deki genel 30 satır sınırından daha sıkı; review'da denetlenir); aşıyorsa iş mantığı sızmıştır.
 - **API-11** DTO eşleme `adapter.in.web` içinde MapStruct ile veya elle yazılan statik fabrika metoduyla (`ShipmentAdminResponse.from(shipment)`) yapılır. MapStruct'ta `unmappedTargetPolicy = ReportingPolicy.ERROR` zorunludur; yeni alan eklendiğinde unutulan eşleme derlemeyi kırar.
-- **API-12** Servisler arası senkron çağrılar yalnızca mimari dokümanda listelenen üç çağrıdır. Yeni bir senkron çağrı eklemek ADR gerektirir.
 - **API-13** Servis istemcileri Spring HTTP Interface (`@HttpExchange` arayüzleri, `RestClient` tabanlı) ile yazılır; `RestTemplate` ve `WebClient` kullanılmaz. Her istemcide 2 sn zaman aşımı, Resilience4j `CircuitBreaker` ve sınırlı `Retry` (en fazla 2 tekrar, yalnızca idempotent çağrılar) yapılandırılır.
 - **API-14** Tekrar deneme tek mekanizmayla yapılır: Resilience4j. Spring Framework 7'nin `@Retryable`'ı ve Spring Retry kullanılmaz; iki katmanlı tekrar yük çarpanı oluşturur.
 
 ---
 
-## 11. Olaylar, Kafka ve outbox
+## 9. Olaylar, Kafka ve outbox
 
 - **EVT-01** Tüm entegrasyon olayları `libs/event-contracts` içinde record olarak tanımlanır. Bir servis başka servisin olay sınıfını kendisi yeniden tanımlamaz.
-- **EVT-02** Zarf CloudEvents'tir (mimari doküman). Alanlar:
 
-| Alan | Kural | Örnek |
-| --- | --- | --- |
-| `id` | UUIDv7, olay başına benzersiz; idempotency anahtarı | `0192b5d0-...` |
-| `source` | `/yarn-shipment/<servis-adı>` | `/yarn-shipment/shipment-service` |
-| `type` | `com.yarnshipment.<alan>.<olay-kebab>.v<n>` | `com.yarnshipment.shipment.delivery-received.v1` |
-| `subject` | Bölümleme kimliği (çoğunlukla `shipmentId`) | `0192b5c1-...` |
-| `time` | Olayın gerçekleştiği sunucu zamanı (UTC) | `2026-10-20T08:15:30Z` |
-| `datacontenttype` | `application/json` | |
-| `data` | Olay record'u | |
-
-- **EVT-03 Transactional outbox zorunludur.** Olay, iş verisiyle aynı transaction'da `outbox_event` tablosuna yazılır; Kafka'ya `common-outbox` yayıncısı iletir. Servis kodu Kafka'ya doğrudan yazmaz (ARCH-07).
-- **EVT-04 Konu adları** `<alan>.events.v<n>` biçimindedir: `shipment.events.v1`, `evidence.events.v1`, `discrepancy.events.v1`. Hatalı olay konusu `<konu>.DLT`. Mesaj anahtarı bölümleme kimliğidir (sevkiyat olaylarında `shipmentId`); aynı sevkiyatın olayları sıralı işlenir.
-- **EVT-05 İdempotent tüketici zorunludur.** Her tüketici olayın `id`'sini `processed_event` tablosuna işlemle **aynı transaction**'da yazar. Unique ihlali "zaten işlendi" anlamına gelir ve olay sessizce onaylanır.
-- **EVT-06 Şema evrimi.** Bir olay sürümüne yalnızca **isteğe bağlı yeni alan** eklenebilir. Alan silme, yeniden adlandırma, tip veya anlam değişikliği yeni sürüm (`.v2`) gerektirir; eski sürüm tüm tüketiciler geçene kadar paralel yayınlanır. Tüketiciler bilinmeyen alanları yok sayar (`FAIL_ON_UNKNOWN_PROPERTIES=false` yalnızca olay okuyucusunda).
-- **EVT-07** Olay yükü "ne oldu"yu taşır, alıcıya komut vermez. Adı geçmiş zamandır (Ek B). `ProcessShipment` gibi komut adlı olay yazılmaz.
+- **EVT-07** Olay yükü "ne oldu"yu taşır, alıcıya komut vermez. Adı geçmiş zamandır (olay kataloğu mimari dokümanda). `ProcessShipment` gibi komut adlı olay yazılmaz.
 - **EVT-08** Olay yükünde kişisel veri (TCKN, telefon, e-posta, konum) taşınmaz; kimlik taşınır, gerekiyorsa sahibi servisten sorgulanır.
-- **EVT-09** Tüketici hata politikası: geçici hatalarda üstel bekleme ile en fazla 3 tekrar, sonra `.DLT`. Kalıcı hatalar (seri kaldırma, doğrulama) tekrar edilmeden doğrudan `.DLT`'ye gider. DLT'ye düşen her olay alarm üretir.
 - **EVT-10** Kafka dinleyicileri `adapter.in.messaging` içindedir, olayı Command'a çevirip use case çağırır; iş mantığı içermez.
 - **EVT-11** Olay sözleşmeleri Spring Cloud Contract ile test edilir: üretici servis, olayın sözleşmeye uyduğunu; tüketici servis, sözleşmedeki örneği işleyebildiğini kanıtlar.
 
@@ -743,10 +627,8 @@ public record DeliveryReceived(
 
 ---
 
-## 12. Eşzamanlılık ve sanal thread'ler
+## 10. Eşzamanlılık ve sanal thread'ler
 
-- **CONC-01** Tüm servislerde `spring.threads.virtual.enabled=true`. Web istekleri, Kafka dinleyicileri ve `@Async`/zamanlanmış işler sanal thread'lerde çalışır. Kod bloklayan, düz, okunabilir G/Ç yazar.
-- **CONC-02 Reaktif programlama kullanılmaz** (WebFlux, Reactor, RxJava). Tek istisna API Gateway'dir (karar D-3); reaktif kod yalnızca `platform/api-gateway` içinde kalır.
 - **CONC-03** Sanal thread havuzlanmaz. `Executors.newFixedThreadPool` ile sanal thread sınırlandırılmaz; G/Ç işleri için `Executors.newVirtualThreadPerTaskExecutor()` kullanılır (try-with-resources ile kapatılır).
 - **CONC-04** Sınırlı bir kaynağa (başka servis, veritabanı bağlantısı) eşzamanlılık sınırı gerekiyorsa thread havuzu değil `Semaphore` veya Resilience4j `Bulkhead` kullanılır.
 - **CONC-05** Kendi `ThreadLocal`'ımızı tanımlamayız. Uygulama kodunda istek bağlamı (kullanıcı, kapsam) metot parametresiyle taşınır; bu mümkün değilse `ScopedValue` kullanılır. Framework'ün yönettiği `ThreadLocal`'lar (Spring Security `SecurityContextHolder`, MDC, transaction senkronizasyonu) bu kuralın dışındadır.
@@ -757,31 +639,29 @@ public record DeliveryReceived(
 
 ---
 
-## 13. Güvenlik, kör giriş ve KVKK
+## 11. Güvenlik, kör giriş ve KVKK
 
-### 13.1 Kimlik ve yetki
+### 11.1 Kimlik ve yetki
 
-- **SEC-01** Her servis OAuth2 Resource Server olarak JWT'yi kendisi de doğrular (sıfır güven). Gateway'den geldi diye istek güvenilir sayılmaz.
 - **SEC-02** Rol kontrolü method seviyesinde `@PreAuthorize` ile application servisinde veya controller'da yapılır; URL kalıbı tabanlı yetkilendirme tek başına yeterli değildir. Varsayılan "reddet"tir: yetki tanımı olmayan uç erişilemez.
 - **SEC-03 Kapsam kontrolü.** Fasoncu yalnızca kendi `subcontractorId`'sine, şoför yalnızca kendisine atanmış sevkiyatlara erişir. Bu kontrol, kaydı yükledikten sonra `common-security` içindeki `ScopeGuard` ile yapılır ve atlanması ArchUnit + test ile engellenir. Kapsam dışı erişim 404 değil 403 döner ve audit'e yazılır.
 - **SEC-04** İşlemi yapan kullanıcı (`actor`) her zaman JWT'den alınır; istek gövdesinde `createdBy`, `userId` gibi alanlar kabul edilmez.
 
-### 13.2 Kör giriş
+### 11.2 Kör giriş
 
-Kör giriş projenin en önemli kontrolüdür (rapor Bölüm 3). Kod seviyesinde üç katmanla korunur:
+Kör giriş projenin en önemli kontrolüdür (rapor Bölüm 3). Olay seviyesindeki koruma (SEC-06) mimari dokümandadır; kod seviyesinde şu kurallar geçerlidir:
 
 - **SEC-05 Tip seviyesi.** Fasoncu ve şoför görünümleri (`SubcontractorShipmentView`, `DriverShipmentView`) çıkış kilosu ve çuval sayısı **alanlarını hiç içermez**. Alanı `@JsonIgnore` ile gizlemek veya `null` dönmek yasaktır; alan record'da yoksa sızamaz.
-- **SEC-06 Olay seviyesi.** Çıkış verisini taşıyan olaylar (`DeliveryReceived`) yalnızca discrepancy-service ve audit-service tarafından tüketilir. Bu iki servis dışında bu alanları bir API yanıtına koyan kod yazılmaz; Kafka ACL'leri buna göre tanımlanır.
 - **SEC-07 Test seviyesi.** Her kör giriş görünümü için sözleşme testi bulunur: fasoncu ve şoför rolüyle yapılan isteklerin yanıtında yasaklı alan adlarının (`dispatchNetKg`, `dispatchGrossKg`, `dispatchBagCount`, ...) bulunmadığı, karşılaştırma tamamlanana kadar doğrulanır. Bu test listesi `common-test` içindeki `BlindEntryFields` sabitinden gelir.
 - **SEC-08** Rastgele kontrol seçimi (`randomCheckSelected`) de aynı şekilde sevkiyat yola çıkana kadar şoför ve fasoncu görünümlerinde bulunmaz (rapor 13.1).
 
-### 13.3 Kanıt ve bütünlük
+### 11.3 Kanıt ve bütünlük
 
 - **SEC-09** Dosya hash'i (SHA-256) istemcinin bildirdiği değer değil, sunucunun nesne deposundan okuyarak yeniden hesapladığı değerdir. Hash hesaplama `MessageDigest` ile akış (stream) üzerinden yapılır; dosya belleğe tümüyle alınmaz.
 - **SEC-10** Pre-signed URL süreleri koda gömülmez, konfigürasyondan gelir (varsayılan 10 dk).
 - **SEC-11** Güvenlik amaçlı rastgele değerler (`UniqueKey`, token) `SecureRandom` ile üretilir; `Random`/`Math.random()` yasaktır.
 
-### 13.4 KVKK ve gizli bilgiler
+### 11.4 KVKK ve gizli bilgiler
 
 - **SEC-12** Kişisel veri (TCKN, telefon, e-posta, ad-soyad, konum, IP) loglanmaz, istisna mesajına yazılmaz, olay yüküne konmaz. Gerekli yerlerde kimlik (`driverId`) kullanılır.
 - **SEC-13** Kişisel veri taşıyan record'lar `toString()`'i ezer ve hassas alanları maskeler. Record'un otomatik `toString()`'i tüm alanları yazdığı için bu kural record'lar için özellikle önemlidir.
@@ -800,7 +680,7 @@ public record DriverContact(DriverId driverId, String fullName, String phone) {
 
 ---
 
-## 14. Loglama ve gözlemlenebilirlik
+## 12. Loglama ve gözlemlenebilirlik
 
 - **LOG-01** Loglama yalnızca SLF4J üzerinden yapılır (`private static final Logger log = LoggerFactory.getLogger(X.class);`). `System.out`, `System.err`, `printStackTrace()` yasaktır.
 - **LOG-02** Log çıktısı JSON'dur (Spring Boot yapılandırılmış loglama, `logging.structured.format.console=ecs`). Her satırda `traceId`, `spanId`, `requestId` bulunur; sevkiyat bağlamında `shipmentId` MDC'ye eklenir.
@@ -822,12 +702,11 @@ public record DriverContact(DriverId driverId, String fullName, String phone) {
 
 ---
 
-## 15. Konfigürasyon
+## 13. Konfigürasyon
 
 - **CONF-01** Konfigürasyon `@ConfigurationProperties` record'larıyla, `@Validated` ve Bean Validation anotasyonlarıyla okunur. Dağınık `@Value` kullanılmaz.
 - **CONF-02** Özellik önekleri `yarnshipment.<servis>.<alan>` biçimindedir (`yarnshipment.evidence.upload.url-ttl=10m`). Süreler `Duration`, boyutlar `DataSize` tipindedir.
 - **CONF-03** Profiller: `local` (Docker Compose), `test`, `prod`. Profil adına göre kod içinde `if` yazılmaz; fark konfigürasyonla veya `@Profile` ile yönetilir.
-- **CONF-04** İş ayarları (tolerans bantları, zorunlu fotoğraf listesi, itiraz süresi, rastgele kontrol oranı) konfigürasyon dosyasında değil, sahibi servisin veritabanında, değişiklik geçmişi ve audit kaydıyla tutulur (mimari doküman).
 - **CONF-05** Bağımlılık enjeksiyonu yalnızca yapıcı (constructor) ile yapılır; tek yapıcı varsa `@Autowired` yazılmaz. Alan ve setter enjeksiyonu yasaktır.
 
 ```java
@@ -841,9 +720,9 @@ public record UploadProperties(
 
 ---
 
-## 16. Test kuralları
+## 14. Test kuralları
 
-### 16.1 Test türleri
+### 14.1 Test türleri
 
 | Tür | Kapsam | Araç | Sınıf soneki | Ne zaman çalışır |
 | --- | --- | --- | --- | --- |
@@ -882,30 +761,29 @@ void shouldRejectBagAlreadyAssignedToAnotherShipment() {
 
 ---
 
-## 17. Derleme, bağımlılık ve araç zinciri
+## 15. Derleme, bağımlılık ve araç zinciri
 
 - **BUILD-01** Maven Wrapper (`./mvnw`) kullanılır. Tüm sürümler kök `pom.xml` içindeki `dependencyManagement` ve Spring Boot BOM'undan gelir; alt modüllerde sürüm numarası yazılmaz.
 - **BUILD-02** Maven Enforcer: Java sürümü `[25,)`, Maven sürümü alt sınırı, `dependencyConvergence`, `banDuplicatePomDependencyVersions`, yasaklı bağımlılık listesi.
 - **BUILD-03 Yasaklı bağımlılıklar:** Lombok, H2/HSQLDB (test dahil), `spring-boot-starter-webflux` (gateway hariç), `commons-lang` 2.x, Guava (JDK karşılığı olan işler için gereksiz; gerekçeyle istisna alınabilir), JUnit 4, log4j 1.x.
 - **BUILD-04** Derleyici: `-parameters -Xlint:all -Werror`. Error Prone + NullAway hata seviyesinde (NULL-02). Bilinçli bastırma `@SuppressWarnings("Kontrol")` ile en dar kapsamda ve yanında yorumla yapılır.
 - **BUILD-05 Biçimlendirme otomatiktir.** Spotless + Palantir Java Format. `./mvnw spotless:apply` biçimi düzeltir, CI'da `spotless:check` biçimsiz kodu reddeder. Biçim tartışması review konusu değildir. Satır uzunluğu 120, girinti 4 boşluk, dosya kodlaması UTF-8, satır sonu LF.
-- **BUILD-06** Checkstyle ve PMD, Ek E'deki ayarlarla **hata** seviyesinde çalışır; Bölüm 3 ve 4'teki adlandırma, boyut, karmaşıklık ve yapı kurallarını derlemede zorlar. Uyarı seviyesi ve baseline kullanılmaz.
-- **BUILD-07** Container imajı Jib ile üretilir; temel imaj Eclipse Temurin 25 JRE'dir. JVM parametreleri: `-XX:MaxRAMPercentage=75 -XX:+UseCompactObjectHeaders -XX:+ExitOnOutOfMemoryError` ve NAME-10'daki yerel ayarlar. Çöp toplayıcı varsayılan G1'dir; değiştirmek ölçüm ve ADR gerektirir.
+- **BUILD-06** Checkstyle ve PMD, Ek C'deki ayarlarla **hata** seviyesinde çalışır; Bölüm 3 ve 4'teki adlandırma, boyut, karmaşıklık ve yapı kurallarını derlemede zorlar. Uyarı seviyesi ve baseline kullanılmaz.
 - **BUILD-08** CI her PR'da sırasıyla şunları çalıştırır: `spotless:check` → derleme (Error Prone, NullAway) → birim + ArchUnit → `verify` (Testcontainers, sözleşme) → JaCoCo eşikleri → bağımlılık ve gizli bilgi taraması → imaj. Herhangi bir adım kırmızıysa birleştirme yapılmaz.
 - **BUILD-09** Yeni bağımlılık eklemek PR açıklamasında gerekçe ister: ne için, alternatifi neden yetmedi, lisansı (yalnızca Apache 2.0, MIT, BSD, EPL ve benzeri izin verici lisanslar).
 
 ---
 
-## 18. Git, PR, code review ve istisna süreci
+## 16. Git, PR, code review ve istisna süreci
 
-### 18.1 Git
+### 16.1 Git
 
 - **GIT-01** Ana dal `main`'dir ve korumalıdır. Doğrudan push yapılmaz.
 - **GIT-02** Kısa ömürlü dallar (en fazla birkaç gün): `feature/<kısa-ad>`, `fix/<kısa-ad>`, `docs/<kısa-ad>`, `chore/<kısa-ad>`.
 - **GIT-03** Commit mesajları Conventional Commits biçimindedir; tip ve kapsam İngilizce, açıklama Türkçe olabilir: `feat(shipment): kör teslim girişi uç noktası eklendi`. Kapsam servis veya kütüphane adıdır.
 - **GIT-04** PR'lar "squash merge" ile birleştirilir. PR başlığı da Conventional Commits biçimindedir.
 
-### 18.2 PR ve review
+### 16.2 PR ve review
 
 - **GIT-05** Bir PR tek bir amaca hizmet eder ve ÖNERİLEN boyutu 400 değişen satırın altıdır (üretilmiş kod ve migration hariç).
 - **GIT-06** En az bir onay gerekir. `domain`, `common-security`, `event-contracts` ve migration değişikliklerinde servis sahibinin onayı zorunludur.
@@ -918,7 +796,7 @@ void shouldRejectBagAlreadyAssignedToAnotherShipment() {
   - Kör giriş, kilit veya audit'e dokunan değişiklikte ilgili testler güncellendi.
   - Yeni iş terimi varsa Ek A güncellendi.
 
-### 18.3 Bu dokümanın değiştirilmesi ve istisnalar
+### 16.3 Bu dokümanın değiştirilmesi ve istisnalar
 
 - **GIT-09** Bu doküman `docs/standartlar/` altında sürümlenir. Kural ekleme, değiştirme veya kaldırma PR ile yapılır ve proje sahibinin onayını gerektirir. Önemli kararlar `docs/adr/` altında ADR olarak kayda geçer.
 - **GIT-10** ZORUNLU bir kuraldan tek seferlik istisna gerekiyorsa: kodda en dar kapsamda bastırma + `// İstisna: <kural-id>, <gerekçe>, <ADR veya issue bağlantısı>` yorumu yazılır ve PR açıklamasında belirtilir. Gerekçesiz istisna birleştirilmez.
@@ -967,81 +845,34 @@ void shouldRejectBagAlreadyAssignedToAnotherShipment() {
 
 Servis adları mimari dokümandaki gibidir: `master-data-service`, `bag-service`, `shipment-service`, `evidence-service`, `discrepancy-service`, `audit-service`, `notification-service`, `reporting-service`. (Veritabanı dokümanındaki `masterdata-service` yazımı bu adla hizalanmalıdır.)
 
-## Ek B: Olay adları sözlüğü
-
-Mimari dokümanda olaylar Türkçe adlarla anılmıştır. NAME-01 gereği kodda ve Kafka'da aşağıdaki İngilizce adlar kullanılır; dokümanlar arası eşleme bu tablodur.
-
-| Mimari dokümandaki ad | Kod adı (record) | CloudEvents `type` | Yayınlayan |
-| --- | --- | --- | --- |
-| PartiKalitesiKilitlendi | `LotQualityLocked` | `com.yarnshipment.masterdata.lot-quality-locked.v1` | master-data |
-| FasoncuGuncellendi | `SubcontractorUpdated` | `com.yarnshipment.masterdata.subcontractor-updated.v1` | master-data |
-| SoforGuncellendi | `DriverUpdated` | `com.yarnshipment.masterdata.driver-updated.v1` | master-data |
-| CuvalOlusturuldu | `BagCreated` | `com.yarnshipment.bag.bag-created.v1` | bag |
-| CuvalSevkiyataBaglandi | `BagAssignedToShipment` | `com.yarnshipment.bag.bag-assigned-to-shipment.v1` | bag |
-| CuvalRezervasyonuBirakildi | `BagReservationReleased` | `com.yarnshipment.bag.bag-reservation-released.v1` | bag |
-| SevkiyatYuklendi | `ShipmentLoaded` | `com.yarnshipment.shipment.shipment-loaded.v1` | shipment |
-| SevkiyatYolaCikti | `ShipmentDispatched` | `com.yarnshipment.shipment.shipment-dispatched.v1` | shipment |
-| TeslimGirisiYapildi | `DeliveryReceived` | `com.yarnshipment.shipment.delivery-received.v1` | shipment |
-| SevkiyatTamamlandi | `ShipmentCompleted` | `com.yarnshipment.shipment.shipment-completed.v1` | shipment |
-| SevkiyatKilitlendi | `ShipmentLocked` | `com.yarnshipment.shipment.shipment-locked.v1` | shipment |
-| SevkiyatIptalEdildi | `ShipmentCancelled` | `com.yarnshipment.shipment.shipment-cancelled.v1` | shipment |
-| KanitYuklendi | `EvidenceUploaded` | `com.yarnshipment.evidence.evidence-uploaded.v1` | evidence |
-| KanitGecersizSayildi | `EvidenceInvalidated` | `com.yarnshipment.evidence.evidence-invalidated.v1` | evidence |
-| KanitTekrarKullanimiTespitEdildi | `EvidenceReuseDetected` | `com.yarnshipment.evidence.evidence-reuse-detected.v1` | evidence |
-| KarsilastirmaTamamlandi | `ComparisonCompleted` | `com.yarnshipment.discrepancy.comparison-completed.v1` | discrepancy |
-| UyusmazlikAcildi | `DiscrepancyOpened` | `com.yarnshipment.discrepancy.discrepancy-opened.v1` | discrepancy |
-| UyusmazlikKarariVerildi | `DiscrepancyResolved` | `com.yarnshipment.discrepancy.discrepancy-resolved.v1` | discrepancy |
-| BildirimGonderildi | `NotificationSent` | `com.yarnshipment.notification.notification-sent.v1` | notification |
-| KontrolIcinSecildi (Faz 2) | `ShipmentSelectedForInspection` | `com.yarnshipment.reporting.shipment-selected-for-inspection.v1` | reporting |
-
-## Ek C: Otomatik denetim özeti
+## Ek B: Otomatik denetim özeti
 
 | Kural(lar) | Nerede denetlenir |
 | --- | --- |
 | LANG-02 | Maven Enforcer: `--enable-preview` bayrağı yasak |
-| LANG-11, LOG-01, BUILD-06, NAME-12…33, SIZE-01…13, CPLX-01…11, STRUC-01, 03…07, 09…14, COMM-02…05 | Checkstyle (Ek E.1) |
-| SIZE-10, CPLX-02, STRUC-13 | PMD (Ek E.2) |
-| NAME-13…17, 21, 22, 35, SIZE-12, STRUC-02, STRUC-08 | ArchUnit (Ek E.3) |
+| LANG-11, LOG-01, BUILD-06, NAME-12…33, SIZE-01…13, CPLX-01…11, STRUC-01, 03…07, 09…14, COMM-02…05 | Checkstyle (Ek C.1) |
+| SIZE-10, CPLX-02, STRUC-13 | PMD (Ek C.2) |
+| NAME-13…17, 21, 22, 35, SIZE-12, STRUC-02, STRUC-08 | ArchUnit (Ek C.3) |
 | LANG-13, BUILD-04 | `javac -Xlint:all -Werror` |
 | NAME-09, ERR-03, DOM-06 | Error Prone (`StringCaseLocaleUsage`, `EmptyCatch`, `BigDecimalEquals`, `BigDecimalLiteralDouble`) |
 | NULL-01, NULL-02 | NullAway + `package-info.java` varlık kontrolü (ArchUnit) |
-| ARCH-01…08, PERS-08, PERS-17, DOM-10, CONF-05, ARCH-07 | ArchUnit (`common-test` ortak kural seti) |
+| ARCH-01…08 (mimari doküman), PERS-08, PERS-17, DOM-10, CONF-05 | ArchUnit (`common-test` ortak kural seti) |
 | PERS-02, PERS-12, PERS-13 | Flyway `validate` + CI'da migration checksum kontrolü |
 | API-11 | MapStruct `unmappedTargetPolicy = ERROR` |
 | SEC-07, SEC-08 | Kör giriş sözleşme testleri |
-| EVT-06, EVT-11 | Spring Cloud Contract |
+| EVT-06 (mimari doküman), EVT-11 | Spring Cloud Contract |
 | SEC-14, SEC-15 | gitleaks, bağımlılık açık taraması |
 | BUILD-03 | Maven Enforcer `bannedDependencies` |
 | BUILD-05 | Spotless `check` |
 | TEST-08 | JaCoCo `check` |
 
-## Ek D: Bu dokümanda alınan kararlar
-
-Proje sahibi, başlangıçtaki açık konularda büyümeye uygun ve sonradan geliştirilebilir tercihlerin yapılmasını istedi. Aşağıdaki konular bu yüzden açık bırakılmadı, karara bağlandı. Her biri gerekirse ADR ile değiştirilebilir; değişikliğin etkisi sınırlı tutulacak şekilde seçildi.
-
-| # | Konu | Karar | Gerekçe ve büyüme etkisi |
-| --- | --- | --- | --- |
-| D-1 | Kök paket adı | `com.yarnshipment` | Ürün adına bağlı, şirket yapısı değişse de sabit kalır. Kod yazılmadan önce değiştirmek bedavadır, sonra pahalıdır; bu yüzden şimdi sabitlendi. |
-| D-2 | Mesaj kuyruğu | **Apache Kafka (KRaft)** | Olayların kalıcı ve tekrar oynatılabilir olması audit, raporlama ve Faz 2–3 entegrasyonlarının (ERP, e-İrsaliye, kantar, GPS) aynı akıştan beslenmesini sağlar. Yerelde ve pilotta tek düğüm, prod'da 3 düğüm. Outbox katmanı sayesinde servis kodu kuyruk teknolojisine bağlı değildir. |
-| D-3 | API Gateway | **Spring Cloud Gateway (reaktif sürüm)**, yalnızca yapılandırma ve filtre kodu | En olgun varyanttır, Redis tabanlı hız sınırlayıcısı ve token relay hazırdır. Reaktif kod yalnızca `platform/api-gateway` içinde kalır, iş kodu içermez (CONC-02). |
-| D-4 | Kimlik ve kapsam taşıma | Keycloak realm rolleri JWT'de `roles`, fasoncu ve şoför kapsamı `subcontractor_id` / `driver_id` claim'leriyle gelir; `common-security` bunları tipli `Actor` record'una çevirir | Kapsam kontrolü (SEC-03) tek yerde ve token'dan beslenir. Yetkilendirme çalışması yeni rol eklerse yalnızca `Actor` ve rol enum'u genişler. |
-| D-5 | Çok lokasyon hazırlığı | Kod "tek fabrika / tek depo" varsayımını sabit değer olarak gömmez. Lokasyon kavramı `SiteId` ile modellenir; sevkiyat, çuval ve parti kendi `SiteId`'sini taşır. Faz 1'de tek kayıt bulunur. | Projenin büyümesi büyük olasılıkla yeni fabrika ve depolar demektir. Sonradan bu kolonu tüm tablolara eklemek ve geçmiş veriyi doldurmak pahalıdır; şimdi eklemek neredeyse bedavadır. Veritabanı tasarımının bu kararla hizalanması gerekir. |
-| D-6 | API ve olay sürümleme | Yol sürümlü REST (`/api/v1`) ve sürümlü olay tipi (`.v1`) korunur; geriye uyumsuz değişiklikte yeni sürüm açılır, eski sürüm en az bir sürüm döngüsü boyunca paralel yaşar | Çok sayıda istemci (web, mobil tarayıcı, ileride ERP ve fasoncu entegrasyonları) bağımsız güncellendiğinde kırılma olmaz. |
-| D-7 | Sürüm yönetimi | Tüm kütüphane sürümleri kök `pom.xml`'de sabittir; iskelet kurulurken o günün güncel kararlı sürümleri seçilir. Renovate (veya Dependabot) haftalık güncelleme PR'ı açar; Java ve Spring Boot ana sürüm geçişleri ADR ile yapılır. | Servis sayısı artınca sürüm sapması en büyük bakım maliyetidir; tek kaynak bunu önler. |
-| D-8 | Yeni servis ekleme | Yeni servis yalnızca `services/` altındaki şablon servisten kopyalanarak açılır; şablon bu dokümanın tüm araç ayarlarını (Error Prone, ArchUnit, Spotless, JaCoCo, Jib) hazır içerir | Ekip ve servis sayısı büyüdükçe kuralların her yeni serviste kendiliğinden geçerli olmasını sağlar. |
-| D-9 | Kod sahipliği | Repo kökünde `CODEOWNERS` bulunur; her servis ve her `libs/*` modülünün sahibi tanımlanır (GIT-06 bunu kullanır) | Ekip büyüdüğünde review sorumluluğu belirsiz kalmaz. |
-
-### D-5 için kod kuralı
-
-- **GEN-07** Lokasyona bağlı her aggregate (`Shipment`, `Bag`, `ProductionLot`, `TareStandard` ve ileride eklenecekler) bir `SiteId` taşır. Sorgular, listeler ve yetki kontrolleri `SiteId`'yi göz ardı edemez; "tek lokasyon var" varsayımıyla `findAll()` yazılmaz. Faz 1'de tek lokasyon kaydı bulunur ve kullanıcı arayüzünde seçim gösterilmeyebilir, ama kod bu alanı her zaman taşır.
-
-## Ek E: Araç ayarları (derlemede zorlanan kurallar)
+## Ek C: Araç ayarları (derlemede zorlanan kurallar)
 
 Bu ek, Bölüm 3 ve 4'teki kuralların araç karşılığıdır. İskelet kurulurken dosyalar `build-tools/` altına **bu içerikle** konur; doküman ile ayar dosyası arasında fark olursa doküman esastır ve ayar dosyası düzeltilir. Her kuralın şiddeti `error`'dır; Maven `checkstyle:check` ve `pmd:check` hedefleri `validate`/`verify` aşamasına bağlıdır ve ihlalde derleme durur (`failOnViolation=true`, `violationSeverity=warning` ile uyarı dahi hata sayılır).
 
 Kullanılan araç sürümleri Java 25 sözdizimini (adsız değişken `_`, esnek yapıcı gövdeleri) ayrıştırabilen sürümler olmalıdır. Bir kontrol Java 25 sözdizimini henüz desteklemiyorsa, ilgili kural ArchUnit veya PMD karşılığıyla denetlenir ve bu ek güncellenir; kural kaldırılmaz.
 
-### E.1 Checkstyle (`build-tools/checkstyle/checkstyle.xml`)
+### C.1 Checkstyle (`build-tools/checkstyle/checkstyle.xml`)
 
 Üretim ve test kodu aynı dosyayla, farklı sınır değerleriyle denetlenir. Değerler Maven `checkstyle` eklentisinin iki ayrı çalıştırmasında `propertyExpansion` ile verilir:
 
@@ -1261,7 +1092,7 @@ Kullanılan araç sürümleri Java 25 sözdizimini (adsız değişken `_`, esnek
 - `IllegalCatch`: global hata işleyici, Kafka hata işleyici ve zamanlanmış görev kök sınıfları (ERR-04).
 - Üretilmiş kod (`target/generated-sources/**`): tüm kontroller.
 
-### E.2 PMD (`build-tools/pmd/ruleset.xml`)
+### C.2 PMD (`build-tools/pmd/ruleset.xml`)
 
 ```xml
 <?xml version="1.0"?>
@@ -1289,13 +1120,13 @@ Kullanılan araç sürümleri Java 25 sözdizimini (adsız değişken `_`, esnek
 </ruleset>
 ```
 
-### E.3 ArchUnit (`libs/common-test`, her serviste çalışır)
+### C.3 ArchUnit (`libs/common-test`, her serviste çalışır)
 
 Checkstyle ve PMD'nin göremediği kurallar ArchUnit ile her servisin `ArchitectureTest` sınıfında denetlenir. Ortak kural seti tüm servislerde aynıdır; servis yalnızca kök paketini verir.
 
 | Kural | ArchUnit denetimi |
 | --- | --- |
-| ARCH-01…08 | Katman bağımlılıkları, döngü yasağı (Bölüm 6) |
+| ARCH-01…08 | Katman bağımlılıkları, döngü yasağı (mimari doküman) |
 | NAME-13 | Sınıf adı `Manager`, `Helper`, `Util`, `Utils`, `Impl`, `Data`, `Info`, `Processor` ile bitemez; `Base` ile başlayamaz |
 | NAME-15 | `Throwable` alt sınıflarının adı `Exception` ile biter |
 | NAME-16 | Arayüz adı `I[A-Z]` ile başlayamaz |

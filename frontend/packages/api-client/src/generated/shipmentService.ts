@@ -260,6 +260,89 @@ export interface CreateShipmentResponse {
   shipmentNo: string;
 }
 
+export interface SubcontractorView {
+  id: string;
+  title: string;
+}
+
+export interface SubcontractorPageResponse {
+  items: SubcontractorView[];
+  page: PageMetadata;
+}
+
+export interface DriverView {
+  id: string;
+  fullName: string;
+  subcontractorId?: string;
+}
+
+export interface DriverPageResponse {
+  items: DriverView[];
+  page: PageMetadata;
+}
+
+export interface VehicleView {
+  id: string;
+  plateNo: string;
+}
+
+export interface VehiclePageResponse {
+  items: VehicleView[];
+  page: PageMetadata;
+}
+
+export interface SiteView {
+  id: string;
+  name: string;
+}
+
+export interface SitePageResponse {
+  items: SiteView[];
+  page: PageMetadata;
+}
+
+/**
+ * Bir durum geçişi; ilk satırda `fromStatus` yoktur.
+ */
+export interface StatusChangeView {
+  fromStatus?: ShipmentStatus;
+  toStatus: ShipmentStatus;
+  changedAt: string;
+  /** İşlemi yapan kullanıcının kimliği */
+  changedBy: string;
+  /** İptal ve düzeltme gerekçesi */
+  reason?: string;
+}
+
+export interface ShipmentHistoryResponse {
+  items: StatusChangeView[];
+}
+
+export interface DispatchBagView {
+  bagId: string;
+  uniqueKey: string;
+  lotNo: string;
+  qualityGradeCode: string;
+  scanMethod: ScanMethod;
+  assignedAt: string;
+}
+
+export interface DeliveryScanView {
+  scannedKey: string;
+  /** Anahtar çıkış listesinde var mıydı; yalnızca INTERNAL görünümünde dolu olur */
+  matched?: boolean;
+  scanMethod: ScanMethod;
+  scannedAt: string;
+}
+
+export interface ShipmentBagsResponse {
+  audience: Audience;
+  /** Çıkışta atanan çuvallar; yalnızca INTERNAL ve WAREHOUSE görünümünde */
+  dispatchBags?: DispatchBagView[];
+  /** Teslimde okutulan anahtarlar; yalnızca INTERNAL ve SUBCONTRACTOR görünümünde */
+  deliveryScans?: DeliveryScanView[];
+}
+
 export interface DispatchWeighingRequest {
   grossKg: Kg;
   tareKg: Kg;
@@ -427,6 +510,11 @@ export type PageParameter = number;
 export type SizeParameter = number;
 
 /**
+ * Arama metni
+ */
+export type SearchTextParameter = string;
+
+/**
  * İşlem kaydedildiği anda istemcide üretilir, yeniden denemede aynı kalır (API-04)
  */
 export type IdempotencyKeyParameter = string;
@@ -445,6 +533,79 @@ size?: SizeParameter;
  * Yalnızca bu durumlardaki sevkiyatlar
  */
 status?: ShipmentStatus[];
+};
+
+export type ListSubcontractorsParams = {
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+};
+
+export type ListDriversParams = {
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+subcontractorId?: string;
+};
+
+export type ListVehiclesParams = {
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+};
+
+export type ListSitesParams = {
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
 };
 
 /**
@@ -556,6 +717,90 @@ export const recordDispatchWeighing = (
       );
     }
 
+/**
+ * Sevkiyat oluşturma ekranında fasoncu seçimi için. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+ * @summary Fasoncu listesi
+ */
+export const listSubcontractors = (
+    params?: ListSubcontractorsParams,
+ ) => {
+      return customInstance<SubcontractorPageResponse>(
+      {url: `/api/v1/master-data/subcontractors`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * Şoför seçimi için; `subcontractorId` verilirse yalnızca o fasoncunun şoförleri gelir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+ * @summary Şoför listesi
+ */
+export const listDrivers = (
+    params?: ListDriversParams,
+ ) => {
+      return customInstance<DriverPageResponse>(
+      {url: `/api/v1/master-data/drivers`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * Araç seçimi için. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+ * @summary Araç listesi
+ */
+export const listVehicles = (
+    params?: ListVehiclesParams,
+ ) => {
+      return customInstance<VehiclePageResponse>(
+      {url: `/api/v1/master-data/vehicles`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07). Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+ * @summary Lokasyon listesi
+ */
+export const listSites = (
+    params?: ListSitesParams,
+ ) => {
+      return customInstance<SitePageResponse>(
+      {url: `/api/v1/master-data/sites`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * Kapsamdaki her kullanıcı için aynıdır; kişisel veri taşımaz, işlemi yapan yalnızca kimlikle gelir.
+ * @summary Sevkiyatın durum geçmişi, eskiden yeniye
+ */
+export const getShipmentHistory = (
+    shipmentId: string,
+ ) => {
+      return customInstance<ShipmentHistoryResponse>(
+      {url: `/api/v1/shipments/${shipmentId}/history`, method: 'GET'
+    },
+      );
+    }
+
+/**
+ * Kör giriş (SEC-05): çıkışta atanan çuval listesi (`dispatchBags`) fasoncu ve şoför görünümünde,
+ * teslimde okutulanlar (`deliveryScans`) depo ve şoför görünümünde hiç yer almaz. Teslim okutmaları teslim
+ * kaydı gönderildikten sonra oluşur; önce boştur. Listeler sayfalanmaz: bir sevkiyatın çuval sayısıyla sınırlıdır.
+ * @summary Sevkiyatın çuvalları, isteyenin görünümüyle
+ */
+export const getShipmentBags = (
+    shipmentId: string,
+ ) => {
+      return customInstance<ShipmentBagsResponse>(
+      {url: `/api/v1/shipments/${shipmentId}/bags`, method: 'GET'
+    },
+      );
+    }
+
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -568,3 +813,9 @@ export type GetShipmentResult = NonNullable<Awaited<ReturnType<typeof getShipmen
 export type ConfirmPickupResult = NonNullable<Awaited<ReturnType<typeof confirmPickup>>>
 export type SubmitDeliveryReceiptResult = NonNullable<Awaited<ReturnType<typeof submitDeliveryReceipt>>>
 export type RecordDispatchWeighingResult = NonNullable<Awaited<ReturnType<typeof recordDispatchWeighing>>>
+export type ListSubcontractorsResult = NonNullable<Awaited<ReturnType<typeof listSubcontractors>>>
+export type ListDriversResult = NonNullable<Awaited<ReturnType<typeof listDrivers>>>
+export type ListVehiclesResult = NonNullable<Awaited<ReturnType<typeof listVehicles>>>
+export type ListSitesResult = NonNullable<Awaited<ReturnType<typeof listSites>>>
+export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof getShipmentHistory>>>
+export type GetShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof getShipmentBags>>>

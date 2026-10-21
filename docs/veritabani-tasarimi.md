@@ -222,3 +222,26 @@ Proje büyümeye açık olacağı için açık sorular aşağıdaki gibi kapatı
 | Mesajlaşma | Kafka, transactional outbox ile | Mimari dokümanla aynı; olaylar tekrar oynatılabilir |
 | Kullanıcı–fasoncu bağı | Şimdilik `masterdata_db.user_profile` ve `user_site` | Ayrı user-service gerekirse tablolar olduğu gibi taşınır |
 | Tolerans bantları | Genel kural varsayılan, ürün bazında kural eklenebilir | Pilotta kalibre edilir; tablo iki durumu da destekliyor |
+
+## Uygulama notları (ilk migration'lar)
+
+Migration'lar yazılırken tasarımın PostgreSQL'de birebir uygulanamayan veya netleştirilmesi gereken yerleri aşağıdaki gibi çözüldü. Doğrulama: `tools/db/verify-migrations.sh` (CI'da `db-migrations` iş akışı).
+
+| Konu | Uygulama | Neden |
+| --- | --- | --- |
+| Tek geçerli tartım/mühür | Kısmi unique indeks yerine `EXCLUDE ... WHERE (superseded_by IS NULL) DEFERRABLE INITIALLY DEFERRED` | Düzeltmede yeni satır eklenip eskisi aynı transaction'da işaretlenir; denetim commit anında yapılır |
+| Kilit istisnası | Kilitli sevkiyata bağlı satıra ekleme/işaretleme yalnızca transaction'da `app.correction_record_id` ayarlıysa geçer | Admin onaylı düzeltme akışı (rapor karar #9) dışında kilit delinemez |
+| `delivery_scan` | Partition'lanmadı | `(delivery_receipt_id, scanned_key)` tekilliği partition'lı tabloda global zorlanamaz; hacmi `shipment_bag` ile aynı düzeyde |
+| `audit_log` tekilliği | Partition anahtarı `occurred_at`, tekillik `(event_id, occurred_at)` | Aynı olayın `occurred_at`'i her tekrarda aynıdır; böylece `event_id` tekilliği partition'lı tabloda da korunur |
+| Audit zinciri | `audit_append(jsonb)` tek ekleme yolu; zincir başı `audit_chain_head` satırı kilitlenerek sıraya konur; `audit_verify_chain()` sonucu `audit_chain_check`'e yazar | Yazan rolün tabloya hiçbir yetkisi yoktur |
+| Parti kalitesi kilidi (bag_db) | `lot_quality_lock` tablosu `LotQualityLocked` olayından dolar; `bag (lot_id, quality_grade_code)` buna FK ile bağlı | "Kilitsiz partiye çuval yok" ve "kalite partiden kopyalanır" kuralı veritabanında zorlanır |
+| Partition yönetimi | `create_monthly_partitions()` (SECURITY DEFINER) ilk 15 ayı açar; servisler zamanlanmış görevle gelecek ayları açar | Resmi `postgres:17` imajında `pg_partman` yok; sunucuda `pg_partman`'e geçilebilir |
+| Yerel iz | Kritik tablolarda `audit_local_capture()` trigger'ı `audit_local`'a yazar; `app.actor_id` oturum ayarı aktörü taşır | Kuyruk çalışmasa bile iz kaybolmaz |
+| Yetkiler | Uygulama rolüne hiçbir tabloda DELETE verilmez; outbox'ta yalnızca `published_at` kolonu güncellenebilir | GEN-04, PERS-11 |
+| Kolon adları | `condition` → `seal_condition`, `type` → `declaration_type` / `discrepancy_type`, `key/value` → `setting_key/setting_value`; `driver.phone` → `phone_enc` (KVKK) | Ayrılmış veya belirsiz kelimelerden kaçınmak |
+| `user_site` | Satır silinmez, `revoked_at` ile kapatılır; etkin yetki kısmi unique | GEN-04 |
+| `correction_record` | `shipment_id` ve `status (PENDING, APPROVED, REJECTED)` eklendi; karar bir kez verilir | Düzeltme talebinin onay/ret akışı |
+
+Uygulamanın eşlediği SQLSTATE kodları: `YS001` yalnızca ekleme yapılan tabloda değişiklik, `YS002` değiştirilemez kolon, `YS003` kilitli kayıt (REST 409), `YS004` kilitli parti kalitesi.
+
+Bekleyen: fasoncu kör girişi için Row Level Security (isteğe bağlı ek güvence) shipment-service iskeletiyle birlikte eklenecek.

@@ -9,6 +9,7 @@ import com.yarnshipment.common.security.Role;
 import com.yarnshipment.common.security.RolePermissionMatrix;
 import com.yarnshipment.common.security.SecurityProperties;
 import com.yarnshipment.common.security.TestTokens;
+import com.yarnshipment.common.security.TokenClaims;
 import com.yarnshipment.common.security.audit.AuditDecision;
 import com.yarnshipment.common.security.audit.SecurityAuditEvent;
 import java.time.Clock;
@@ -69,6 +70,23 @@ class ScopeGuardTest {
         assertThat(scopeGuard.isInScope(actor, shipment(UUID.randomUUID(), null)))
                 .isTrue();
         assertThat(scopeGuard.isInScope(actor, otherSite)).isFalse();
+    }
+
+    @Test
+    @DisplayName("site_ids claim'i boş iç kullanıcı hiçbir kayda erişemez, kapsamı kısıtsız sayılmaz")
+    void shouldDenyInternalUserWithoutSites() {
+        // given
+        Actor actor = converter.toActor(TestTokens.withRoles("warehouse")
+                .claim(TokenClaims.SITE_IDS, List.of())
+                .build());
+
+        // when
+        AccessScope scope = scopeGuard.scopeOf(actor);
+
+        // then
+        assertThat(scope.isUnrestricted()).isFalse();
+        assertThat(scopeGuard.isInScope(actor, shipment(UUID.randomUUID(), null)))
+                .isFalse();
     }
 
     @Test

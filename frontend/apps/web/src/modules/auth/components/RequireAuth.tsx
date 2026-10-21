@@ -1,4 +1,4 @@
-import { classifyProblem, LOGIN_PATH, toProblem } from '@iplik/api-client';
+import { classifyProblem, loginUrl, toProblem } from '@iplik/api-client';
 import { Center, Loader } from '@iplik/ui';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
@@ -17,7 +17,7 @@ export function RequireAuth({ children, errorFallback }: RequireAuthProps) {
 
   useEffect(() => {
     if (isUnauthenticated) {
-      window.location.assign(LOGIN_PATH);
+      window.location.assign(loginUrl(window.location.pathname + window.location.search));
     }
   }, [isUnauthenticated]);
 

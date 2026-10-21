@@ -8,6 +8,17 @@ export type { Permission, Role };
 export const ME_PATH = '/api/v1/me';
 export const LOGIN_PATH = '/oauth2/authorization/keycloak';
 
+/**
+ * Giriş adresi; gateway girişten sonra `returnTo` ile verilen uygulama içi yola döner. Yol göreli
+ * olmalıdır (`/` ile başlar, `//` ile değil); aksi halde kök kullanılır, gateway zaten reddeder.
+ */
+export function loginUrl(returnTo: string): string {
+  const isLocalPath = returnTo.startsWith('/') && !returnTo.startsWith('//');
+  return isLocalPath && returnTo !== '/'
+    ? `${LOGIN_PATH}?returnTo=${encodeURIComponent(returnTo)}`
+    : LOGIN_PATH;
+}
+
 export { getCurrentUser };
 
 /**

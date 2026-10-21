@@ -4,6 +4,7 @@ import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.domain.model.InvalidDeliveryException;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
+import com.yarnshipment.shipment.domain.model.InvalidNewShipmentException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.SealAlreadyUsedException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,6 +52,13 @@ public final class ShipmentExceptionHandler {
     @ExceptionHandler(InvalidDispatchException.class)
     public ProblemDetail handleInvalidDispatch(InvalidDispatchException exception, HttpServletRequest request) {
         ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_DISPATCH");
+        problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
+        return problem;
+    }
+
+    @ExceptionHandler(InvalidNewShipmentException.class)
+    public ProblemDetail handleInvalidNewShipment(InvalidNewShipmentException exception, HttpServletRequest request) {
+        ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_SHIPMENT");
         problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
         return problem;
     }

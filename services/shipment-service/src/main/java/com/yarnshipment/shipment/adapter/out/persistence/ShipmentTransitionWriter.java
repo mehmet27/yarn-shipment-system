@@ -3,8 +3,10 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
@@ -59,8 +61,19 @@ final class ShipmentTransitionWriter {
         if (updated == 0) {
             throw new InvalidShipmentStatusException(transition.shipmentId(), transition.from(), transition.to());
         }
+        appendHistory(transition.shipmentId(), from, transition);
+    }
+
+    /** İlk durum satırı: yeni sevkiyatın geçmişi önceki durum olmadan başlar. */
+    void appendInitialHistory(Transition creation) {
+        appendHistory(creation.shipmentId(), null, creation);
+    }
+
+    private void appendHistory(UUID shipmentId, @Nullable String from, Transition transition) {
+        Timestamp at = transition.at();
         jdbc.sql(INSERT_HISTORY)
-                .params(ids.next(), at, transition.shipmentId(), from, to, transition.actorUserId(), at)
+                .params(Arrays.asList(
+                        ids.next(), at, shipmentId, from, transition.to().name(), transition.actorUserId(), at))
                 .update();
     }
 

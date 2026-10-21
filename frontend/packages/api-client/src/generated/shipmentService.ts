@@ -233,6 +233,55 @@ export interface DeliveryReceiptRequest {
   document?: DeliveryDocument;
 }
 
+export interface CreateShipmentRequest {
+  siteId: string;
+  subcontractorId: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  subcontractorTitle: string;
+  driverId?: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  driverName?: string;
+  vehicleId?: string;
+  /**
+     * @minLength 1
+     * @maxLength 20
+     */
+  plateNo?: string;
+}
+
+export interface CreateShipmentResponse {
+  id: string;
+  shipmentNo: string;
+}
+
+export interface DispatchWeighingRequest {
+  grossKg: Kg;
+  tareKg: Kg;
+  /**
+     * Tartılan çuval sayısı
+     * @minimum 1
+     */
+  bagCount: number;
+  /**
+     * Kantar fişi numarası
+     * @minLength 1
+     * @maxLength 64
+     */
+  scaleTicketNo?: string;
+  /**
+     * Araca vurulan mühür numarası
+     * @minLength 1
+     * @maxLength 64
+     */
+  sealNo: string;
+}
+
 export type InternalShipmentViewAudience = typeof InternalShipmentViewAudience[keyof typeof InternalShipmentViewAudience];
 
 
@@ -411,6 +460,24 @@ export const getCurrentUser = (
     }
 
 /**
+ * Çıkış lokasyonu ve fasoncu ile taslak sevkiyat açar; numara sunucuda üretilir. Lokasyon kullanıcının
+ * yetkili olduğu lokasyonlardan biri olmalıdır. Şoför ve araç henüz belli değilse hiç gönderilmez; şoför
+ * kimliği ile adı, araç kimliği ile plakası birlikte gönderilir. Aynı `Idempotency-Key` ile tekrar gönderilen
+ * istek yeni sevkiyat açmaz, ilk yanıtı döner.
+ * @summary Sevkiyat taslağı oluşturur (DRAFT)
+ */
+export const createShipment = (
+    createShipmentRequest: CreateShipmentRequest,
+ ) => {
+      return customInstance<CreateShipmentResponse>(
+      {url: `/api/v1/shipments`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: createShipmentRequest
+    },
+      );
+    }
+
+/**
  * Fasoncu yalnızca kendi, şoför yalnızca kendisine atanmış, iç kullanıcılar yalnızca yetkili oldukları lokasyonlardaki sevkiyatları görür. Filtre sorguya eklenir (SEC-03).
  * @summary Kapsamdaki sevkiyatlar, en yeni önce
  */
@@ -470,13 +537,34 @@ export const submitDeliveryReceipt = (
       );
     }
 
+/**
+ * Depo çalışanı kantar fişindeki brüt, dara ve çuval sayısını ile araca vurulan mühür numarasını girer.
+ * Net kilo brüt ile daradan hesaplanır. Mühür numarası tek kullanımlıktır: başka bir sevkiyatın çıkışında
+ * kullanılmışsa 409 döner. Kayıtla birlikte sevkiyat yüklendi sayılır. Aynı sevkiyat için tekrar gönderilen
+ * istek yeni kayıt oluşturmaz ve yine 204 döner.
+ * @summary Depo çıkış tartımını ve mührü kaydeder (DRAFT → LOADED)
+ */
+export const recordDispatchWeighing = (
+    shipmentId: string,
+    dispatchWeighingRequest: DispatchWeighingRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/dispatch-weighing`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: dispatchWeighingRequest
+    },
+      );
+    }
+
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
     type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 export type GetCurrentUserResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
+export type CreateShipmentResult = NonNullable<Awaited<ReturnType<typeof createShipment>>>
 export type ListShipmentsResult = NonNullable<Awaited<ReturnType<typeof listShipments>>>
 export type GetShipmentResult = NonNullable<Awaited<ReturnType<typeof getShipment>>>
 export type ConfirmPickupResult = NonNullable<Awaited<ReturnType<typeof confirmPickup>>>
 export type SubmitDeliveryReceiptResult = NonNullable<Awaited<ReturnType<typeof submitDeliveryReceipt>>>
+export type RecordDispatchWeighingResult = NonNullable<Awaited<ReturnType<typeof recordDispatchWeighing>>>

@@ -1,7 +1,8 @@
 import { createTheme, rem } from '@mantine/core';
 
 /** FE-UI-07: dokunmatik ekranlarda her etkileşimli öğe en az 44 px yüksekliğindedir. */
-const TOUCH_TARGET = rem(44);
+const TOUCH_TARGET_PX = 44;
+const TOUCH_TARGET = rem(TOUCH_TARGET_PX);
 
 /**
  * Mobil öncelikli tema: varsayılan boyutlar zaten dokunma hedefi sınırını geçer, böylece telefonda

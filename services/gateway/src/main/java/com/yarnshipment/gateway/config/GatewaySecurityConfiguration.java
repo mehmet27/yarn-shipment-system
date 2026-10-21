@@ -3,14 +3,16 @@ package com.yarnshipment.gateway.config;
 import com.yarnshipment.gateway.web.BrowserEntryPoint;
 import com.yarnshipment.gateway.web.CsrfCookieFilter;
 import com.yarnshipment.gateway.web.JsonLogoutSuccessHandler;
+import com.yarnshipment.gateway.web.ReturnToFilter;
+import com.yarnshipment.gateway.web.ReturnToSuccessHandler;
 import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -42,12 +44,13 @@ public class GatewaySecurityConfiguration {
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-                .oauth2Login(login ->
-                        login.successHandler(new SimpleUrlAuthenticationSuccessHandler(properties.postLoginUrl())))
+                .oauth2Login(login -> login.successHandler(new ReturnToSuccessHandler(properties.postLoginUrl())))
                 .logout(configurer -> configurer.logoutSuccessHandler(logout))
                 .csrf(csrf -> csrf.csrfTokenRepository(csrfTokens)
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 .addFilterAfter(new CsrfCookieFilter(csrfTokens), CsrfFilter.class)
+                .addFilterBefore(
+                        new ReturnToFilter(properties.postLoginUrl()), OAuth2AuthorizationRequestRedirectFilter.class)
                 .exceptionHandling(
                         handling -> handling.authenticationEntryPoint(new BrowserEntryPoint(LOGIN_PATH, jsonMapper)));
         return http.build();

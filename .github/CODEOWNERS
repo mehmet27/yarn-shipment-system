@@ -1,0 +1,5 @@
+# D-9, GIT-06: her servis ve libs/* modülünün sahibi. Ekip büyüdükçe satırlar modül bazında ayrılır.
+*                               @mehmet27
+/libs/common-security/          @mehmet27
+/libs/event-contracts/          @mehmet27
+/services/*/src/main/resources/db/migration/  @mehmet27

@@ -1,0 +1,24 @@
+name: db-migrations
+
+on:
+  pull_request:
+    paths:
+      - "services/*/src/main/resources/db/migration/**"
+      - "deploy/postgres/**"
+      - "tools/db/**"
+      - ".github/workflows/db-migrations.yml"
+  push:
+    branches: [main]
+    paths:
+      - "services/*/src/main/resources/db/migration/**"
+      - "deploy/postgres/**"
+      - "tools/db/**"
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Migration'ları PostgreSQL 17 üzerinde uygula ve kısıt testlerini çalıştır
+        run: tools/db/verify-migrations.sh

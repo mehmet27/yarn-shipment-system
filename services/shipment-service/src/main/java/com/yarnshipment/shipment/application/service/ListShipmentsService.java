@@ -11,10 +11,11 @@ import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort.PageRequ
 import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort.ShipmentSlice;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Aktörün kapsamını sorguya ekleyerek sevkiyatları listeler (SEC-03). */
 @Service
-public final class ListShipmentsService implements ListShipmentsUseCase {
+public class ListShipmentsService implements ListShipmentsUseCase {
 
     private final ShipmentQueryPort shipmentQueryPort;
     private final ScopeGuard scopeGuard;
@@ -28,6 +29,7 @@ public final class ListShipmentsService implements ListShipmentsUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ShipmentPage listShipments(ListShipmentsQuery query) {
         Actor actor = query.actor();
         ShipmentSlice slice = shipmentQueryPort.findShipments(

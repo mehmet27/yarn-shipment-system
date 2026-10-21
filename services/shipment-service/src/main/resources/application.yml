@@ -2,6 +2,25 @@
 spring:
   application:
     name: shipment-service
+  datasource:
+    # Uygulama yalnızca DML yetkili rol ile bağlanır; DDL Flyway'in migrator rolüyle yapılır.
+    url: ${SHIPMENT_DB_URL:jdbc:postgresql://localhost:5432/shipment_db}
+    username: ${SHIPMENT_DB_APP_USER:shipment_app}
+    password: ${SHIPMENT_DB_APP_PASSWORD}
+  flyway:
+    user: ${SHIPMENT_DB_MIGRATOR_USER:shipment_migrator}
+    password: ${SHIPMENT_DB_MIGRATOR_PASSWORD}
+    placeholders:
+      app_role: ${SHIPMENT_DB_APP_USER:shipment_app}
+      readonly_role: ${SHIPMENT_DB_READONLY_USER:shipment_readonly}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
   messages:
     basename: messages
     encoding: UTF-8

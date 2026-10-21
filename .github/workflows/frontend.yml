@@ -2,10 +2,10 @@ name: frontend
 
 on:
   pull_request:
-    paths: ['frontend/**', '.github/workflows/frontend.yml']
+    paths: ['frontend/**', 'services/shipment-service/src/main/resources/openapi/**', '.github/workflows/frontend.yml']
   push:
     branches: [main]
-    paths: ['frontend/**', '.github/workflows/frontend.yml']
+    paths: ['frontend/**', 'services/shipment-service/src/main/resources/openapi/**', '.github/workflows/frontend.yml']
 
 defaults:
   run:
@@ -26,6 +26,8 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       # FE-BUILD-05: sıra kod standartlarıyla aynı
       - run: pnpm install --frozen-lockfile
+      # FE-MOD-06: üretilmiş istemci OpenAPI ile senkron olmalı
+      - run: pnpm --filter @iplik/api-client api:generate && git diff --exit-code -- packages/api-client/src/generated
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck

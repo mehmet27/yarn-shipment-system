@@ -13,6 +13,8 @@ export const httpClient = axios.create({
   withXSRFToken: true,
   xsrfCookieName: 'XSRF-TOKEN',
   xsrfHeaderName: 'X-XSRF-TOKEN',
+  // Dizi parametreleri tekrarlanır: ?status=A&status=B (OpenAPI explode: true).
+  paramsSerializer: { indexes: null },
 });
 
 function addTraceHeaders(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {

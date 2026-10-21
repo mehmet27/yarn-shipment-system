@@ -1,152 +1,112 @@
 import type { Kilogram } from '@iplik/units';
-import { httpClient } from './httpClient';
+import { isKilogram } from '@iplik/units';
+import type {
+  DeliveryDocument as GeneratedDeliveryDocument,
+  DeliveryReceiptRequest as GeneratedDeliveryReceiptRequest,
+  DriverShipmentView as GeneratedDriverView,
+  InternalShipmentView as GeneratedInternalView,
+  ListShipmentsParams,
+  SealCondition,
+  ShipmentAction,
+  ShipmentDetailResponse,
+  ShipmentPageResponse,
+  ShipmentStatus,
+  ShipmentSummaryView,
+  SubcontractorShipmentView as GeneratedSubcontractorView,
+  WarehouseShipmentView as GeneratedWarehouseView,
+  WeighingView,
+} from './generated/shipmentService';
+import {
+  confirmPickup,
+  getShipment as getGeneratedShipment,
+  listShipments,
+  SealCondition as SealConditionValues,
+  ShipmentStatus as ShipmentStatusValues,
+  submitDeliveryReceipt,
+} from './generated/shipmentService';
 
 /**
- * Geçici sözleşme: shipment-service OpenAPI dosyası yayınlanınca bu dosya Orval çıktısıyla
- * değiştirilir (FE-API-01). Durumlar veritabanı CHECK değerleriyle birebir aynıdır.
+ * Üretilmiş sözleşme tipleri (FE-API-01). Tek fark: kilo alanları doğrulanmış `Kilogram` tipine
+ * daraltılır, böylece `@iplik/units` dışında aritmetik yapılamaz (FE-NUM-01).
  */
-export type ShipmentStatus =
-  | 'DRAFT'
-  | 'LOADED'
-  | 'IN_TRANSIT'
-  | 'AWAITING_DELIVERY'
-  | 'CHECKING'
-  | 'IN_REVIEW'
-  | 'COMPLETED'
-  | 'CANCELLED';
-
-export const SHIPMENT_STATUSES: readonly ShipmentStatus[] = [
-  'DRAFT',
-  'LOADED',
-  'IN_TRANSIT',
-  'AWAITING_DELIVERY',
-  'CHECKING',
-  'IN_REVIEW',
-  'COMPLETED',
-  'CANCELLED',
-];
-
-export type ShipmentAction =
-  | 'ASSIGN_BAGS'
-  | 'RECORD_DISPATCH'
-  | 'CANCEL'
-  | 'CONFIRM_PICKUP'
-  | 'DECLARE_ARRIVAL'
-  | 'RECORD_DELIVERY'
-  | 'OPEN_QUALITY_CLAIM'
-  | 'CREATE_CORRECTION';
-
-/** Liste satırı her rol için aynıdır; beklenen yük kör giriş nedeniyle listede yoktur. */
-export type ShipmentSummary = {
-  shipmentId: string;
-  shipmentNo: string;
-  siteId: string;
-  status: ShipmentStatus;
-  subcontractorId: string;
-  subcontractorTitle: string;
-  driverName?: string;
-  plateNo?: string;
-  createdAt: string;
-  allowedActions: readonly ShipmentAction[];
-};
-
-export type Weighing = {
+export type Weighing = Omit<WeighingView, 'grossKg' | 'tareKg' | 'netKg'> & {
   grossKg: Kilogram;
   tareKg: Kilogram;
   netKg: Kilogram;
-  bagCount: number;
-  weighedAt: string;
 };
 
-export type SealCondition = 'INTACT' | 'DAMAGED' | 'MISSING';
+type WithWeighings<T, K extends keyof T> = Omit<T, K> & Partial<Record<K, Weighing>>;
 
-type ShipmentViewBase = {
-  shipmentId: string;
-  shipmentNo: string;
-  siteId: string;
-  status: ShipmentStatus;
-  subcontractorTitle: string;
-  plateNo?: string;
-  createdAt: string;
-  allowedActions: readonly ShipmentAction[];
-};
-
-export type InternalShipmentView = ShipmentViewBase & {
-  audience: 'INTERNAL';
-  subcontractorId: string;
-  driverName?: string;
-  plannedBagCount?: number;
-  plannedNetKg?: Kilogram;
-  dispatchWeighing?: Weighing;
-  dispatchSealNo?: string;
-  deliveryWeighing?: Weighing;
-  deliverySealCondition?: SealCondition;
-  randomCheckSelected: boolean;
-  lockedAt?: string;
-};
-
-/** Depo teslim alanlarını görmez. */
-export type WarehouseShipmentView = ShipmentViewBase & {
-  audience: 'WAREHOUSE';
-  subcontractorId: string;
-  driverName?: string;
-  plannedBagCount?: number;
-  plannedNetKg?: Kilogram;
-  dispatchWeighing?: Weighing;
-  dispatchSealNo?: string;
-  randomCheckSelected: boolean;
-};
-
-/** Kör giriş: fasoncu çıkış alanlarını ve beklenen yükü hiç almaz. */
-export type SubcontractorShipmentView = ShipmentViewBase & {
-  audience: 'SUBCONTRACTOR';
-  driverName?: string;
-  deliveryWeighing?: Weighing;
-  deliverySealCondition?: SealCondition;
-};
-
-/** Şoför kilo görmez; yalnızca çuval sayısı ve mühür no. */
-export type DriverShipmentView = ShipmentViewBase & {
-  audience: 'DRIVER';
-  dispatchBagCount?: number;
-  dispatchSealNo?: string;
-};
-
-/** getShipment yanıtı: `audience` ile ayrılan oneOf (shipment-service OpenAPI). */
+export type InternalShipmentView = Omit<
+  WithWeighings<GeneratedInternalView, 'dispatchWeighing' | 'deliveryWeighing'>,
+  'plannedNetKg'
+> & { plannedNetKg?: Kilogram };
+export type WarehouseShipmentView = Omit<
+  WithWeighings<GeneratedWarehouseView, 'dispatchWeighing'>,
+  'plannedNetKg'
+> & { plannedNetKg?: Kilogram };
+export type SubcontractorShipmentView = WithWeighings<
+  GeneratedSubcontractorView,
+  'deliveryWeighing'
+>;
+export type DriverShipmentView = GeneratedDriverView;
 export type ShipmentDetail =
   InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView | DriverShipmentView;
 
-export type PageInfo = { number: number; size: number; totalElements: number; totalPages: number };
-export type Page<T> = { items: readonly T[]; page: PageInfo };
-
-export type ListShipmentsParams = {
-  page: number;
-  size: number;
-  status?: readonly ShipmentStatus[];
-};
+export type ShipmentSummary = ShipmentSummaryView;
+export type Page<T> = { items: readonly T[]; page: ShipmentPageResponse['page'] };
+export type PageInfo = ShipmentPageResponse['page'];
+export type { ListShipmentsParams, SealCondition, ShipmentAction, ShipmentStatus };
 
 export const SHIPMENTS_PATH = '/api/v1/shipments';
+export const SEAL_CONDITIONS: readonly SealCondition[] = Object.values(SealConditionValues);
+export const SHIPMENT_STATUSES: readonly ShipmentStatus[] = Object.values(ShipmentStatusValues);
 
-export async function listShipments(params: ListShipmentsParams): Promise<Page<ShipmentSummary>> {
-  // status dizi olarak tekrarlanan parametredir (?status=A&status=B, OpenAPI explode: true).
-  const response = await httpClient.get<Page<ShipmentSummary>>(SHIPMENTS_PATH, {
-    params,
-    paramsSerializer: { indexes: null },
-  });
-  return response.data;
+function isWeighing(weighing: WeighingView): weighing is Weighing {
+  return isKilogram(weighing.grossKg) && isKilogram(weighing.tareKg) && isKilogram(weighing.netKg);
 }
 
+function isValidOptionalKg(value: string | undefined): boolean {
+  return value === undefined || isKilogram(value);
+}
+
+function isValidOptionalWeighing(weighing: WeighingView | undefined): boolean {
+  return weighing === undefined || isWeighing(weighing);
+}
+
+function hasValidKilograms(shipment: ShipmentDetailResponse): shipment is ShipmentDetail {
+  switch (shipment.audience) {
+    case 'INTERNAL':
+      return (
+        isValidOptionalKg(shipment.plannedNetKg) &&
+        isValidOptionalWeighing(shipment.dispatchWeighing) &&
+        isValidOptionalWeighing(shipment.deliveryWeighing)
+      );
+    case 'WAREHOUSE':
+      return (
+        isValidOptionalKg(shipment.plannedNetKg) &&
+        isValidOptionalWeighing(shipment.dispatchWeighing)
+      );
+    case 'SUBCONTRACTOR':
+      return isValidOptionalWeighing(shipment.deliveryWeighing);
+    case 'DRIVER':
+      return true;
+  }
+}
+
+/** Sözleşme dışı kilo biçimi gelirse ekrana yanlış sayı basmak yerine hata verilir. */
 export async function getShipment(shipmentId: string): Promise<ShipmentDetail> {
-  const response = await httpClient.get<ShipmentDetail>(
-    `${SHIPMENTS_PATH}/${encodeURIComponent(shipmentId)}`,
-  );
-  return response.data;
+  const shipment = await getGeneratedShipment(encodeURIComponent(shipmentId));
+  if (!hasValidKilograms(shipment)) {
+    throw new TypeError(`Invalid kilogram format shipmentId=${shipmentId}`);
+  }
+  return shipment;
 }
 
-/**
- * Geçici: şoför beyan ucu shipment-service sözleşmesine eklenince Orval çıktısıyla değişir.
- * Idempotency-Key httpClient tarafından eklenir (FE-API-07).
- */
-export async function confirmPickup(shipmentId: string): Promise<void> {
-  await httpClient.post(`${SHIPMENTS_PATH}/${encodeURIComponent(shipmentId)}/pickup-confirmation`);
-}
+export type DeliveryDocument = Omit<GeneratedDeliveryDocument, 'netKg'> & { netKg?: Kilogram };
+export type DeliveryReceiptRequest = Omit<
+  GeneratedDeliveryReceiptRequest,
+  'grossKg' | 'tareKg' | 'document'
+> & { grossKg: Kilogram; tareKg: Kilogram; document?: DeliveryDocument };
+
+export { confirmPickup, listShipments, submitDeliveryReceipt };

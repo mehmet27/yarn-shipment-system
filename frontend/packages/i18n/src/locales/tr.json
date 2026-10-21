@@ -75,6 +75,62 @@
     "confirmPickupHint": "Çuval sayısını ve mühür numarasını kontrol ettikten sonra onaylayın.",
     "pickupConfirmed": "Teslim alma kaydedildi.",
     "actionFailed": "İşlem kaydedilemedi. Lütfen tekrar deneyin.",
-    "back": "Listeye dön"
+    "back": "Listeye dön",
+    "recordDelivery": "Teslim tutanağını doldur"
+  },
+  "delivery": {
+    "title": "Teslim tutanağı",
+    "blindHint": "Kendi ölçümünüzü girin; gönderilen değerler size gösterilmez.",
+    "steps": {
+      "seal": "Mühür",
+      "bags": "Çuvallar",
+      "weighing": "Tartı",
+      "document": "İrsaliye",
+      "summary": "Özet"
+    },
+    "seal": {
+      "condition": "Mühür durumu",
+      "number": "Mühür numarası",
+      "INTACT": "Sağlam",
+      "DAMAGED": "Hasarlı",
+      "MISSING": "Yok"
+    },
+    "bags": {
+      "key": "Çuval barkodu",
+      "add": "Ekle",
+      "scanned": "Okutulan çuval: {{count}}",
+      "remove": "{{key}} çuvalını çıkar"
+    },
+    "weighing": {
+      "gross": "Brüt (kg)",
+      "tare": "Dara (kg)",
+      "bagCount": "Tartılan çuval sayısı",
+      "net": "Net: {{net}}"
+    },
+    "document": {
+      "hint": "İrsaliyede yazanları girin (isteğe bağlı).",
+      "shipmentNo": "İrsaliyedeki sevkiyat no",
+      "date": "İrsaliye tarihi",
+      "netKg": "İrsaliyedeki net (kg)",
+      "bagCount": "İrsaliyedeki çuval sayısı"
+    },
+    "summary": {
+      "scannedBags": "Okutulan çuval",
+      "net": "Net"
+    },
+    "back": "Geri",
+    "next": "İleri",
+    "submit": "Tutanağı gönder",
+    "submitted": "Teslim tutanağı gönderildi.",
+    "submitFailed": "Tutanak gönderilemedi. Lütfen tekrar deneyin.",
+    "invalidStatus": "Bu sevkiyat artık teslim tutanağı beklemiyor.",
+    "errors": {
+      "sealConditionRequired": "Mühür durumunu seçin.",
+      "sealNoRequired": "Mühür numarasını girin.",
+      "bagKeysRequired": "En az bir çuval okutun.",
+      "invalidKg": "Kiloyu 1.982,5 biçiminde girin.",
+      "tareExceedsGross": "Dara brütten büyük olamaz.",
+      "invalidBagCount": "Çuval sayısı 1 veya daha büyük bir tam sayı olmalı."
+    }
   }
 }

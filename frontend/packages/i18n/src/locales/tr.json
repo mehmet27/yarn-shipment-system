@@ -1,0 +1,21 @@
+{
+  "app": {
+    "name": "İplik Sevkiyat",
+    "loading": "Yükleniyor…",
+    "logout": "Çıkış yap"
+  },
+  "error": {
+    "forbidden": "Bu sayfayı görme yetkiniz yok.",
+    "notFound": "Aradığınız sayfa bulunamadı.",
+    "unexpected": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
+    "backHome": "Ana sayfaya dön"
+  },
+  "nav": {
+    "panel": "Yönetim Paneli",
+    "field": "Saha",
+    "shipments": "Sevkiyatlar"
+  },
+  "home": {
+    "welcome": "Hoş geldiniz, {{name}}"
+  }
+}

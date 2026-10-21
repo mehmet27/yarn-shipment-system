@@ -1,0 +1,38 @@
+import '@testing-library/jest-dom/vitest';
+import { initI18n } from '@iplik/i18n';
+// eslint-disable-next-line testing-library/no-manual-cleanup -- Vitest globals kapalı, otomatik temizlik yok
+import { cleanup } from '@testing-library/react';
+import { afterAll, afterEach, beforeAll } from 'vitest';
+import { server } from '../mocks/server';
+
+// jsdom'da olmayan tarayıcı API'leri; Mantine bunları kullanır.
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    dispatchEvent: () => false,
+  }),
+});
+window.ResizeObserver = class {
+  observe = () => undefined;
+  unobserve = () => undefined;
+  disconnect = () => undefined;
+};
+
+beforeAll(async () => {
+  server.listen({ onUnhandledRequest: 'error' }); // FE-TEST-04
+  await initI18n();
+});
+afterEach(() => {
+  cleanup();
+  server.resetHandlers();
+});
+afterAll(() => {
+  server.close();
+});

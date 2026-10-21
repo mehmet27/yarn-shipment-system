@@ -85,6 +85,8 @@ export SHIPMENT_DB_MIGRATOR_PASSWORD=<LOCAL_DB_PASSWORD>
 ./mvnw -pl services/shipment-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
+`local` profilinde ayrıca yerel örnek veri yüklenir (`db/seed-local/R__local_sample_shipments.sql`): iki lokasyonda, taslaktan kontrole kadar her durumda yedi sevkiyat; kimlikler yerel Keycloak kullanıcılarıyla eşleşir (fasoncu ve şoför kendi sevkiyatlarını görür). Dosya tekrarlanabilir migration'dır, kayıtlar iki kez eklenmez. Üretim profilinde bu konum yoktur.
+
 | Değişken | Varsayılan |
 |---|---|
 | `SHIPMENT_DB_URL` | `jdbc:postgresql://localhost:5432/shipment_db` |

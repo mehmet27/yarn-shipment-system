@@ -1,0 +1,15 @@
+# Derleme çıktıları
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Yerel gizli bilgiler (SEC-14)
+.env
+deploy/.env
+
+# İşletim sistemi
+.DS_Store

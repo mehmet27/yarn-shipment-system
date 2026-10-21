@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+<!-- Kod standartları Ek C.1: bu dosyaya yalnızca aşağıdaki durumlar girer; başka satır GIT-10 istisna sürecine tabidir. -->
+<suppressions>
+    <!-- COMM-02: Javadoc yalnızca port.in, libs/* public API'si ve aggregate köklerinde zorunlu.
+         Servis ve platform kodunda port.in dışı paketler ile test kodu kapsam dışıdır. -->
+    <suppress checks="MissingJavadocType"
+              files="^(?!.*[\\/]port[\\/]in[\\/]).*[\\/](services|platform)[\\/].*\.java$"/>
+    <suppress checks="MissingJavadocType" files=".*[\\/]src[\\/]test[\\/].*\.java$"/>
+
+    <!-- Üretilmiş kod (openapi-generator, MapStruct): tüm kontroller -->
+    <suppress checks=".*" files=".*[\\/]target[\\/]generated-(test-)?sources[\\/].*"/>
+</suppressions>

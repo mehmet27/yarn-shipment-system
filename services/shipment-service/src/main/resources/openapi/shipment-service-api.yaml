@@ -1,0 +1,515 @@
+openapi: 3.0.3
+info:
+  title: shipment-service API
+  version: 1.0.0
+  description: |
+    Sevkiyat okuma uçları ve oturumdaki kullanıcı (API-01). Controller arayüzleri ve frontend istemcisi bu
+    dosyadan üretilir; elle tip yazılmaz.
+
+    Kurallar:
+    - Kilo değerleri ondalık dize olarak taşınır, ör. `"1982.500"` (API-03).
+    - Zamanlar ISO 8601 UTC (API-03).
+    - Liste uçları sayfalıdır, `page` 0'dan başlar (API-06).
+    - Kör giriş (SEC-05): fasoncu ve şoför görünümlerinde karşı tarafın tartı alanları ve beklenen çuval
+      sayısı hiç yer almaz; depo görünümünde teslim alanları yer almaz. Görünüm `audience` alanıyla ayrılır.
+    - Butonlar yalnızca `allowedActions` listesine göre gösterilir (FE-SEC-03).
+servers:
+  - url: /
+tags:
+  - name: Shipments
+  - name: CurrentUser
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/me:
+    get:
+      tags: [CurrentUser]
+      operationId: getCurrentUser
+      summary: Oturumdaki kullanıcı, rolleri, izinleri ve kapsamı
+      responses:
+        '200':
+          description: Kullanıcı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/v1/shipments:
+    get:
+      tags: [Shipments]
+      operationId: listShipments
+      summary: Kapsamdaki sevkiyatlar, en yeni önce
+      description: Fasoncu yalnızca kendi, şoför yalnızca kendisine atanmış, iç kullanıcılar yalnızca yetkili
+        oldukları lokasyonlardaki sevkiyatları görür. Filtre sorguya eklenir (SEC-03).
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - name: status
+          in: query
+          required: false
+          description: Yalnızca bu durumlardaki sevkiyatlar
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ShipmentStatus'
+          style: form
+          explode: true
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShipmentPageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/shipments/{shipmentId}:
+    get:
+      tags: [Shipments]
+      operationId: getShipment
+      summary: Sevkiyat ayrıntısı, isteyenin görünümüyle
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sevkiyat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShipmentDetailResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        default: 0
+    Size:
+      name: size
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
+  responses:
+    BadRequest:
+      description: İstek biçimi hatalı
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unauthorized:
+      description: Oturum yok veya token geçersiz (code AUTHENTICATION_REQUIRED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: İzin yok (ACCESS_DENIED) veya kayıt kapsam dışı (OUT_OF_SCOPE)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: Kayıt yok (SHIPMENT_NOT_FOUND)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    Problem:
+      description: RFC 9457 hata gövdesi (ERR-07). Frontend kararını `code` alanına göre verir.
+      type: object
+      required: [type, title, status, code]
+      properties:
+        type:
+          type: string
+          example: https://errors.yarnshipment.com/out-of-scope
+        title:
+          type: string
+          example: Erişim dışı kayıt
+        status:
+          type: integer
+          format: int32
+          example: 403
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+          example: OUT_OF_SCOPE
+        requestId:
+          type: string
+    Kg:
+      description: Üç ondalıklı kilo, dize olarak (API-03)
+      type: string
+      pattern: '^\d{1,9}\.\d{3}$'
+      example: '1982.500'
+    Role:
+      type: string
+      enum: [ADMIN, WAREHOUSE, DRIVER, SUBCONTRACTOR, QUALITY, MANAGER]
+    Permission:
+      type: string
+      enum:
+        - MASTER_DATA_VIEW
+        - MASTER_DATA_MANAGE
+        - USER_MANAGE
+        - SETTINGS_MANAGE
+        - LOT_QUALITY_LOCK
+        - SHIPMENT_VIEW
+        - SHIPMENT_CREATE
+        - SHIPMENT_CANCEL
+        - DISPATCH_RECORD
+        - DISPATCH_VIEW
+        - DRIVER_DECLARATION_RECORD
+        - DRIVER_DECLARATION_VIEW
+        - DELIVERY_RECORD
+        - DELIVERY_VIEW
+        - EVIDENCE_UPLOAD_DISPATCH
+        - EVIDENCE_UPLOAD_DRIVER
+        - EVIDENCE_UPLOAD_DELIVERY
+        - EVIDENCE_UPLOAD_CLAIM
+        - EVIDENCE_VIEW
+        - EVIDENCE_INVALIDATE
+        - CORRECTION_CREATE
+        - QUALITY_CLAIM_OPEN
+        - DISCREPANCY_VIEW
+        - DISCREPANCY_RESOLVE
+        - AUDIT_VIEW
+        - REPORT_VIEW
+    CurrentUserResponse:
+      type: object
+      required: [userId, fullName, roles, permissions, siteIds, mfaVerified]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
+        siteIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        subcontractorId:
+          description: Yalnızca fasoncu kullanıcılarında
+          type: string
+          format: uuid
+        driverId:
+          description: Yalnızca şoför kullanıcılarında
+          type: string
+          format: uuid
+        mfaVerified:
+          type: boolean
+    ShipmentStatus:
+      type: string
+      enum: [DRAFT, LOADED, IN_TRANSIT, AWAITING_DELIVERY, CHECKING, IN_REVIEW, COMPLETED, CANCELLED]
+    ShipmentAction:
+      description: Kullanıcının bu sevkiyatta şu an yapabileceği işlem; buton yalnızca listede varsa gösterilir.
+      type: string
+      enum:
+        - ASSIGN_BAGS
+        - RECORD_DISPATCH
+        - CANCEL
+        - CONFIRM_PICKUP
+        - DECLARE_ARRIVAL
+        - RECORD_DELIVERY
+        - OPEN_QUALITY_CLAIM
+        - CREATE_CORRECTION
+    PageMetadata:
+      type: object
+      required: [number, size, totalElements, totalPages]
+      properties:
+        number:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    ShipmentPageResponse:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShipmentSummaryView'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+    ShipmentSummaryView:
+      description: Liste satırı. Kör girişe tabi alan taşımaz, bu yüzden tüm rollerde aynıdır.
+      type: object
+      required: [shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle, createdAt, allowedActions]
+      properties:
+        shipmentId:
+          type: string
+          format: uuid
+        shipmentNo:
+          type: string
+          example: SV-2026-000123
+        siteId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ShipmentStatus'
+        subcontractorId:
+          type: string
+          format: uuid
+        subcontractorTitle:
+          type: string
+        driverName:
+          type: string
+        plateNo:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        allowedActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShipmentAction'
+    Audience:
+      description: Görünüm türü; hangi alanların bulunacağını belirler.
+      type: string
+      enum: [INTERNAL, WAREHOUSE, SUBCONTRACTOR, DRIVER]
+    WeighingView:
+      type: object
+      required: [grossKg, tareKg, netKg, bagCount, weighedAt]
+      properties:
+        grossKg:
+          $ref: '#/components/schemas/Kg'
+        tareKg:
+          $ref: '#/components/schemas/Kg'
+        netKg:
+          $ref: '#/components/schemas/Kg'
+        bagCount:
+          type: integer
+          format: int32
+        weighedAt:
+          type: string
+          format: date-time
+    SealCondition:
+      type: string
+      enum: [INTACT, DAMAGED, MISSING]
+    ShipmentDetailResponse:
+      description: İsteyenin rolüne göre dört görünümden biri (API-09, SEC-05).
+      oneOf:
+        - $ref: '#/components/schemas/InternalShipmentView'
+        - $ref: '#/components/schemas/WarehouseShipmentView'
+        - $ref: '#/components/schemas/SubcontractorShipmentView'
+        - $ref: '#/components/schemas/DriverShipmentView'
+      discriminator:
+        propertyName: audience
+        mapping:
+          INTERNAL: '#/components/schemas/InternalShipmentView'
+          WAREHOUSE: '#/components/schemas/WarehouseShipmentView'
+          SUBCONTRACTOR: '#/components/schemas/SubcontractorShipmentView'
+          DRIVER: '#/components/schemas/DriverShipmentView'
+    InternalShipmentView:
+      description: Admin, kalite ve yönetici. Her iki tarafın verisini içerir.
+      type: object
+      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle,
+                 randomCheckSelected, createdAt, allowedActions]
+      properties:
+        audience:
+          $ref: '#/components/schemas/Audience'
+        shipmentId:
+          type: string
+          format: uuid
+        shipmentNo:
+          type: string
+        siteId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ShipmentStatus'
+        subcontractorId:
+          type: string
+          format: uuid
+        subcontractorTitle:
+          type: string
+        driverName:
+          type: string
+        plateNo:
+          type: string
+        plannedBagCount:
+          type: integer
+          format: int32
+        plannedNetKg:
+          $ref: '#/components/schemas/Kg'
+        dispatchWeighing:
+          $ref: '#/components/schemas/WeighingView'
+        dispatchSealNo:
+          type: string
+        deliveryWeighing:
+          $ref: '#/components/schemas/WeighingView'
+        deliverySealCondition:
+          $ref: '#/components/schemas/SealCondition'
+        randomCheckSelected:
+          type: boolean
+        lockedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        allowedActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShipmentAction'
+    WarehouseShipmentView:
+      description: Depo. Teslim tarafının alanlarını hiç içermez (kör giriş).
+      type: object
+      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle,
+                 randomCheckSelected, createdAt, allowedActions]
+      properties:
+        audience:
+          $ref: '#/components/schemas/Audience'
+        shipmentId:
+          type: string
+          format: uuid
+        shipmentNo:
+          type: string
+        siteId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ShipmentStatus'
+        subcontractorId:
+          type: string
+          format: uuid
+        subcontractorTitle:
+          type: string
+        driverName:
+          type: string
+        plateNo:
+          type: string
+        plannedBagCount:
+          type: integer
+          format: int32
+        plannedNetKg:
+          $ref: '#/components/schemas/Kg'
+        dispatchWeighing:
+          $ref: '#/components/schemas/WeighingView'
+        dispatchSealNo:
+          type: string
+        randomCheckSelected:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        allowedActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShipmentAction'
+    SubcontractorShipmentView:
+      description: Fasoncu. Çıkış tartısı, beklenen çuval sayısı ve rastgele kontrol seçimi alanlarını hiç içermez
+        (SEC-05, SEC-08). Karşılaştırma sonucu discrepancy-service'ten okunur.
+      type: object
+      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorTitle, createdAt, allowedActions]
+      properties:
+        audience:
+          $ref: '#/components/schemas/Audience'
+        shipmentId:
+          type: string
+          format: uuid
+        shipmentNo:
+          type: string
+        siteId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ShipmentStatus'
+        subcontractorTitle:
+          type: string
+        driverName:
+          type: string
+        plateNo:
+          type: string
+        deliveryWeighing:
+          $ref: '#/components/schemas/WeighingView'
+        deliverySealCondition:
+          $ref: '#/components/schemas/SealCondition'
+        createdAt:
+          type: string
+          format: date-time
+        allowedActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShipmentAction'
+    DriverShipmentView:
+      description: Şoför. Kilo alanı içermez; yalnızca çıkıştaki çuval sayısı ve mühür numarası (karar Y1, SEC-05).
+      type: object
+      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorTitle, createdAt, allowedActions]
+      properties:
+        audience:
+          $ref: '#/components/schemas/Audience'
+        shipmentId:
+          type: string
+          format: uuid
+        shipmentNo:
+          type: string
+        siteId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ShipmentStatus'
+        subcontractorTitle:
+          type: string
+        plateNo:
+          type: string
+        dispatchBagCount:
+          type: integer
+          format: int32
+        dispatchSealNo:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        allowedActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShipmentAction'

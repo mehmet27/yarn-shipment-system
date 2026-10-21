@@ -1,0 +1,31 @@
+name: backend
+
+on:
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "frontend/**"
+      - "**/*.md"
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "frontend/**"
+      - "**/*.md"
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+      # BUILD-08: biçim → derleme (Error Prone, NullAway) → Checkstyle → birim + ArchUnit → PMD → JaCoCo
+      - name: Biçim denetimi (Spotless)
+        run: ./mvnw -B -ntp spotless:check
+      - name: Derleme, statik analiz ve testler
+        run: ./mvnw -B -ntp verify

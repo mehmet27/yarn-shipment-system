@@ -10,6 +10,7 @@ const TOUCH_MAX_WIDTH_PX = 768;
 const WIDTHS = [360, 768, 1280];
 const SCREENS = [
   ['WAREHOUSE', '/panel/sevkiyat'],
+  ['WAREHOUSE', '/panel/sevkiyat/yeni'],
   ['WAREHOUSE', '/panel/sevkiyat/shp-0001'],
   ['WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis'],
   ['QUALITY', '/panel/sevkiyat/shp-0007'],

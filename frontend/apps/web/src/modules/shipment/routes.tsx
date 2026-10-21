@@ -1,5 +1,6 @@
 import { RequirePermission } from '@/modules/auth';
 import type { RouteObject } from 'react-router';
+import { CreateShipmentPage } from './pages/CreateShipmentPage';
 import { DeliveryReceiptPage } from './pages/DeliveryReceiptPage';
 import { DispatchWeighingPage } from './pages/DispatchWeighingPage';
 import { FieldShipmentListPage } from './pages/FieldShipmentListPage';
@@ -10,6 +11,14 @@ import { ShipmentListPage } from './pages/ShipmentListPage';
 /** /panel altındaki sevkiyat route'ları. */
 export const shipmentPanelRoutes: RouteObject[] = [
   { path: 'sevkiyat', element: <ShipmentListPage /> },
+  {
+    path: 'sevkiyat/yeni',
+    element: (
+      <RequirePermission permission="SHIPMENT_CREATE">
+        <CreateShipmentPage />
+      </RequirePermission>
+    ),
+  },
   { path: 'sevkiyat/:shipmentId', element: <ShipmentFilePage /> },
   {
     path: 'sevkiyat/:shipmentId/cikis',

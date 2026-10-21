@@ -14,6 +14,7 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.jwt.Jwt;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -30,6 +31,15 @@ class KeycloakRealmFileTest {
     private final RealmFile realm = JsonMapper.shared().readValue(REALM_FILE.toFile(), RealmFile.class);
     private final KeycloakJwtConverter converter =
             new KeycloakJwtConverter(new SecurityProperties(Set.of(), Set.of("otp"), Set.of("2"), List.of()));
+
+    @Test
+    @DisplayName("Giriş sayfası varsayılan olarak Türkçedir")
+    void shouldDefaultToTurkishLoginPage() {
+        JsonNode raw = JsonMapper.shared().readTree(REALM_FILE.toFile());
+
+        assertThat(raw.path("internationalizationEnabled").asBoolean(false)).isTrue();
+        assertThat(raw.path("defaultLocale").asString("")).isEqualTo("tr");
+    }
 
     @Test
     @DisplayName("Realm rolleri Role enum'uyla birebir aynıdır")

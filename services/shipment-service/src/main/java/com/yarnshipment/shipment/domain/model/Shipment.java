@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Sevkiyatın okunan hali. Durum değiştiren davranışlar sonraki adımda bu aggregate'e eklenecek.
+ * Sevkiyat aggregate'i. Durum yalnızca bu tipin metotlarıyla değişir (DOM-13).
  *
  * @param id sevkiyat kimliği (UUIDv7)
  * @param shipmentNo insan okunur numara
@@ -49,5 +49,25 @@ public record Shipment(
 
     public @Nullable UUID driverId() {
         return parties.driverId();
+    }
+
+    /**
+     * Şoför yükü teslim aldı (LOADED → IN_TRANSIT). Onaylanan çuval sayısı çıkış tartısından, yoksa beklenen yükten
+     * alınır.
+     */
+    public PickupConfirmation confirmPickup(UUID declaringDriverId, Instant declaredAt) {
+        if (status != ShipmentStatus.LOADED) {
+            throw new InvalidShipmentStatusException(id, status, ShipmentStatus.IN_TRANSIT);
+        }
+        return new PickupConfirmation(id, siteId, declaringDriverId, loadedBagCount(), dispatch.sealNo(), declaredAt);
+    }
+
+    private int loadedBagCount() {
+        Weighing weighing = dispatch.weighing();
+        if (weighing != null) {
+            return weighing.bagCount();
+        }
+        Integer plannedBags = planned.bagCount();
+        return plannedBags == null ? 0 : plannedBags;
     }
 }

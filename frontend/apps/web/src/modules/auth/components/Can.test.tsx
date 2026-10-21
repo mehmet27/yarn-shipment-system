@@ -9,7 +9,7 @@ function renderCan() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={queryClient}>
-      <Can permission="UYUSMAZLIK_KARAR" fallback={<span>yetkisiz</span>}>
+      <Can permission="DISCREPANCY_RESOLVE" fallback={<span>yetkisiz</span>}>
         <button type="button">Karar ver</button>
       </Can>
     </QueryClientProvider>,
@@ -18,13 +18,13 @@ function renderCan() {
 
 describe('Can', () => {
   it('izni olan kullanıcıya içeriği gösterir', async () => {
-    server.use(createMeHandler('KALITE'));
+    server.use(createMeHandler('QUALITY'));
     renderCan();
     expect(await screen.findByRole('button', { name: 'Karar ver' })).toBeInTheDocument();
   });
 
   it('izni olmayan kullanıcıya yedek içeriği gösterir', async () => {
-    server.use(createMeHandler('YONETICI'));
+    server.use(createMeHandler('MANAGER'));
     renderCan();
     expect(await screen.findByText('yetkisiz')).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();

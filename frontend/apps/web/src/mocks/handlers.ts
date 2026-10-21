@@ -15,7 +15,7 @@ const notFound = () =>
 
 /** FE-TEST-05: kör giriş; fasoncu karşılaştırma bitene kadar çıkış alanlarını hiç almaz. */
 function toRoleView(shipment: ShipmentDetail, role: Role): ShipmentDetail {
-  const isSubcontractor = createMockUser(role).permissions.includes('TESLIM_GIR');
+  const isSubcontractor = createMockUser(role).permissions.includes('DELIVERY_RECORD');
   if (!isSubcontractor || COMPARED_STATUSES.has(shipment.status)) return shipment;
   const { dispatchWeighing, sealNo, ...blindView } = shipment;
   return blindView;

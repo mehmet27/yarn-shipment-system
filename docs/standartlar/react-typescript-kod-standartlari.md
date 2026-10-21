@@ -98,7 +98,7 @@ type UploadState =
 - **FE-NAME-01** Kod tanımlayıcıları, dosya ve klasör adları İngilizcedir ve yalnızca ASCII karakter içerir (Java NAME-01, NAME-03 ile aynı).
 - **FE-NAME-02** Domain terimleri Java standartları **Ek A** sözlüğünden alınır (`Subcontractor`, `DeliveryReceipt`, `Discrepancy`...). Sözlükte olmayan terim önce oraya eklenir.
 - **FE-NAME-03** Yorumlar, test açıklamaları ve commit açıklamaları Türkçedir. Kullanıcıya gösterilen metinler yalnızca i18n dosyasındadır (FE-UI-05).
-- **FE-NAME-04** API sözleşmesinden gelen değerler (izin anahtarları `SEVKIYAT_OLUSTUR`, durumlar `AWAITING_DELIVERY`) olduğu gibi kullanılır, frontend'de çevrilmez veya yeniden adlandırılmaz.
+- **FE-NAME-04** API sözleşmesinden gelen değerler (izin anahtarları `SHIPMENT_CREATE`, durumlar `AWAITING_DELIVERY`) olduğu gibi kullanılır, frontend'de çevrilmez veya yeniden adlandırılmaz.
 - **FE-NAME-05** Büyük/küçük harf dönüşümünde Türkçe yerel ayar tuzağına dikkat edilir: teknik metinlerde `toUpperCase()`/`toLowerCase()` kullanılır (JavaScript bunları yerel ayardan bağımsız çalıştırır); `toLocaleUpperCase()` yalnızca kullanıcıya gösterilen metinde ve `'tr-TR'` argümanıyla çağrılır. Türkçe sıralama `Intl.Collator('tr-TR')` ile yapılır.
 
 ### 3.2 Biçim kuralları
@@ -249,7 +249,7 @@ Klasör yapısı mimari dokümandadır (`apps/web/src/app`, `modules/*`, `offlin
 ## 9. Yetki, kör giriş ve güvenlik
 
 - **FE-SEC-01 Token tarayıcıya inmez.** Frontend token okumaz, saklamaz, yenilemez; `Authorization` başlığı yazmaz. Oturum gateway'in `HttpOnly` çerezidir (yetkilendirme analizi, BFF). `jwt-decode` vb. kütüphaneler bağımlılık listesine giremez.
-- **FE-SEC-02** Görünürlük yalnızca izin anahtarıyla karar verilir: `usePermission('UYUSMAZLIK_KARAR')` veya `<Can permission="...">`. Rol adına göre dallanma (`if (role === 'ADMIN')`) yasaktır (`no-restricted-syntax`, rol dizesi deseni).
+- **FE-SEC-02** Görünürlük yalnızca izin anahtarıyla karar verilir: `usePermission('DISCREPANCY_RESOLVE')` veya `<Can permission="...">`. Rol adına göre dallanma (`if (role === 'ADMIN')`) yasaktır (`no-restricted-syntax`, rol dizesi deseni).
 - **FE-SEC-03** Aksiyon butonları yalnızca kaydın `allowedActions` listesinde ilgili aksiyon varsa gösterilir; durumdan aksiyon türetilmez (`status === 'LOADED'` → buton göster yazılmaz).
 - **FE-SEC-04 Kör giriş alanı gizlenmez, istenmez.** Fasoncu ve depo ekranları kör alanları içermeyen görünüm uçlarını kullanır; çıkış kilosu gibi bir alan yanıtta varsa "CSS ile gizle" veya "render etme" çözümü kabul edilmez, backend'e hata kaydı açılır. MSW sahte yanıtları da aynı kurala uyar (FE-TEST-05).
 - **FE-SEC-05** `localStorage` ve `sessionStorage` yalnızca UI tercihleri için kullanılır (tema, tablo kolon düzeni). Kişisel veri, sevkiyat verisi ve kanıt dosyası yalnızca offline kuyruk için IndexedDB'de (Dexie) tutulur ve gönderildikten sonra silinir (`no-restricted-globals` yalnızca `packages/ui/preferences` içinde serbest).

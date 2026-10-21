@@ -23,7 +23,7 @@ export const appRoutes: RouteObject[] = [
     path: '/panel',
     element: (
       <RequireAuth errorFallback={<ErrorPage reason="unexpected" />}>
-        <RequirePermission permission="SEVKIYAT_GORUNTULE">
+        <RequirePermission permission="SHIPMENT_VIEW">
           <PanelLayout />
         </RequirePermission>
       </RequireAuth>

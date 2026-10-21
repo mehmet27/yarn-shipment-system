@@ -30,7 +30,7 @@ describe('ShipmentFilePage', () => {
 
 describe('sahte API kör giriş kuralı', () => {
   it('fasoncuya karşılaştırma bitmeden çıkış alanlarını hiç döndürmez', async () => {
-    server.use(...createHandlers('FASONCU'));
+    server.use(...createHandlers('SUBCONTRACTOR'));
     const shipment = await getShipment('shp-0004');
     expect(shipment.status).toBe('AWAITING_DELIVERY');
     expect(shipment).not.toHaveProperty('dispatchWeighing');
@@ -38,7 +38,7 @@ describe('sahte API kör giriş kuralı', () => {
   });
 
   it('karşılaştırma bitince fasoncuya iki tarafı da döndürür', async () => {
-    server.use(...createHandlers('FASONCU'));
+    server.use(...createHandlers('SUBCONTRACTOR'));
     const shipment = await getShipment('shp-0007');
     expect(shipment.status).toBe('COMPLETED');
     expect(shipment.dispatchWeighing?.netKg).toBe('1982.500');

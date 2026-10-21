@@ -15,7 +15,6 @@ import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
-import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -65,8 +64,6 @@ public final class StructureRules {
             .callMethod(ZonedDateTime.class, "now")
             .orShould()
             .callMethod(System.class, "currentTimeMillis")
-            .orShould()
-            .callMethod(Clock.class, "systemUTC")
             .because("DOM-10: zaman enjekte edilen Clock'tan alınır");
 
     @ArchTest

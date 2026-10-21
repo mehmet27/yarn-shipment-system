@@ -181,6 +181,58 @@ export const SealCondition = {
   MISSING: 'MISSING',
 } as const;
 
+/**
+ * Çuval anahtarının nasıl girildiği
+ */
+export type ScanMethod = typeof ScanMethod[keyof typeof ScanMethod];
+
+
+export const ScanMethod = {
+  SCAN: 'SCAN',
+  LIST: 'LIST',
+  MANUAL: 'MANUAL',
+} as const;
+
+/**
+ * İrsaliye üzerindeki değerler (fasoncunun okuduğu haliyle)
+ */
+export interface DeliveryDocument {
+  /** @maxLength 64 */
+  shipmentNo?: string;
+  date?: string;
+  netKg?: Kg;
+  /** @minimum 0 */
+  bagCount?: number;
+  /** evidence-service'e yüklenmiş imzalı irsaliye fotoğrafı */
+  signedDocumentEvidenceId?: string;
+}
+
+export interface DeliveryReceiptRequest {
+  grossKg: Kg;
+  tareKg: Kg;
+  /**
+     * Tartılan çuval sayısı
+     * @minimum 1
+     */
+  bagCount: number;
+  sealCondition: SealCondition;
+  /**
+     * Mühür üzerindeki numara; mühür yoksa (MISSING) boş bırakılır
+     * @minLength 1
+     * @maxLength 64
+     */
+  sealNo?: string;
+  /**
+     * Okutulan çuval anahtarları; tekrar edenler bir kez sayılır
+     * @maxItems 2000
+     * @items.minLength 1
+     * @items.maxLength 64
+     */
+  bagUniqueKeys: string[];
+  scanMethod?: ScanMethod;
+  document?: DeliveryDocument;
+}
+
 export type InternalShipmentViewAudience = typeof InternalShipmentViewAudience[keyof typeof InternalShipmentViewAudience];
 
 
@@ -399,6 +451,25 @@ export const confirmPickup = (
       );
     }
 
+/**
+ * Fasoncu çıkış tartısını, beklenen yükü ve çıkış mühür numarasını görmeden kendi ölçümünü girer (SEC-05).
+ * Gönderilen tutanak kilitlenir, değişiklik yalnızca düzeltme talebiyle yapılır. Okutulan anahtar listede
+ * yoksa da saklanır; eşleşme karşılaştırması discrepancy-service'tedir. Aynı sevkiyat için tekrar gönderilen
+ * istek yeni kayıt oluşturmaz ve yine 204 döner.
+ * @summary Fasoncu kör teslim girişini gönderir (AWAITING_DELIVERY → CHECKING)
+ */
+export const submitDeliveryReceipt = (
+    shipmentId: string,
+    deliveryReceiptRequest: DeliveryReceiptRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/delivery-receipt`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: deliveryReceiptRequest
+    },
+      );
+    }
+
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -408,3 +479,4 @@ export type GetCurrentUserResult = NonNullable<Awaited<ReturnType<typeof getCurr
 export type ListShipmentsResult = NonNullable<Awaited<ReturnType<typeof listShipments>>>
 export type GetShipmentResult = NonNullable<Awaited<ReturnType<typeof getShipment>>>
 export type ConfirmPickupResult = NonNullable<Awaited<ReturnType<typeof confirmPickup>>>
+export type SubmitDeliveryReceiptResult = NonNullable<Awaited<ReturnType<typeof submitDeliveryReceipt>>>

@@ -1,0 +1,394 @@
+{
+  "realm": "yarnshipment",
+  "displayName": "İplik Sevkiyat (yerel geliştirme)",
+  "enabled": true,
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "loginWithEmailAllowed": false,
+  "duplicateEmailsAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Rol: admin"
+      },
+      {
+        "name": "warehouse",
+        "description": "Rol: warehouse"
+      },
+      {
+        "name": "driver",
+        "description": "Rol: driver"
+      },
+      {
+        "name": "subcontractor",
+        "description": "Rol: subcontractor"
+      },
+      {
+        "name": "quality",
+        "description": "Rol: quality"
+      },
+      {
+        "name": "manager",
+        "description": "Rol: manager"
+      },
+      {
+        "name": "system",
+        "description": "Rol: system"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "yarnshipment-api",
+      "name": "Servis API'leri",
+      "enabled": true,
+      "bearerOnly": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "yarnshipment-gateway",
+      "name": "Gateway (BFF)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "${GATEWAY_CLIENT_SECRET}",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:8080/login/oauth2/code/keycloak"
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "http://localhost:8080"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:5173/*",
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true"
+          }
+        },
+        {
+          "name": "audience-yarnshipment-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false",
+            "included.client.audience": "yarnshipment-api"
+          }
+        },
+        {
+          "name": "subcontractor_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "subcontractor_id",
+            "claim.name": "subcontractor_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "driver_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "driver_id",
+            "claim.name": "driver_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "site_ids",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "site_ids",
+            "claim.name": "site_ids",
+            "jsonType.label": "String",
+            "multivalued": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "yarnshipment-dev-tools",
+      "name": "Yalnızca yerel doğrulama betiği (parola akışı)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true"
+          }
+        },
+        {
+          "name": "audience-yarnshipment-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false",
+            "included.client.audience": "yarnshipment-api"
+          }
+        },
+        {
+          "name": "subcontractor_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "subcontractor_id",
+            "claim.name": "subcontractor_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "driver_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "driver_id",
+            "claim.name": "driver_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "site_ids",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "site_ids",
+            "claim.name": "site_ids",
+            "jsonType.label": "String",
+            "multivalued": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "0192f0a0-0000-7000-8000-000000000101",
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Ayşe",
+      "lastName": "Yönetici",
+      "email": "admin@yarnshipment.local",
+      "attributes": {
+        "site_ids": [
+          "0192f0a0-0000-7000-8000-000000000001",
+          "0192f0a0-0000-7000-8000-000000000002"
+        ]
+      },
+      "realmRoles": [
+        "admin"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_TEST_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "0192f0a0-0000-7000-8000-000000000102",
+      "username": "depo",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Davut",
+      "lastName": "Depocu",
+      "email": "depo@yarnshipment.local",
+      "attributes": {
+        "site_ids": [
+          "0192f0a0-0000-7000-8000-000000000001"
+        ]
+      },
+      "realmRoles": [
+        "warehouse"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_TEST_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "0192f0a0-0000-7000-8000-000000000103",
+      "username": "kalite",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Kerem",
+      "lastName": "Kalite",
+      "email": "kalite@yarnshipment.local",
+      "attributes": {
+        "site_ids": [
+          "0192f0a0-0000-7000-8000-000000000001",
+          "0192f0a0-0000-7000-8000-000000000002"
+        ]
+      },
+      "realmRoles": [
+        "quality"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_TEST_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "0192f0a0-0000-7000-8000-000000000104",
+      "username": "mudur",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Melek",
+      "lastName": "Müdür",
+      "email": "mudur@yarnshipment.local",
+      "attributes": {
+        "site_ids": [
+          "0192f0a0-0000-7000-8000-000000000001",
+          "0192f0a0-0000-7000-8000-000000000002"
+        ]
+      },
+      "realmRoles": [
+        "manager"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_TEST_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "0192f0a0-0000-7000-8000-000000000105",
+      "username": "sofor",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Şener",
+      "lastName": "Şoför",
+      "email": "sofor@yarnshipment.local",
+      "attributes": {
+        "driver_id": [
+          "0192f0a0-0000-7000-8000-000000000004"
+        ],
+        "site_ids": [
+          "0192f0a0-0000-7000-8000-000000000001"
+        ]
+      },
+      "realmRoles": [
+        "driver"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_TEST_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "0192f0a0-0000-7000-8000-000000000106",
+      "username": "fasoncu",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Fatma",
+      "lastName": "Fasoncu",
+      "email": "fasoncu@yarnshipment.local",
+      "attributes": {
+        "subcontractor_id": [
+          "0192f0a0-0000-7000-8000-000000000003"
+        ],
+        "site_ids": [
+          "0192f0a0-0000-7000-8000-000000000001"
+        ]
+      },
+      "realmRoles": [
+        "subcontractor"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_TEST_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    }
+  ],
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"unmanagedAttributePolicy\": \"ENABLED\", \"attributes\": [{\"name\": \"username\", \"displayName\": \"${username}\", \"validations\": {\"length\": {\"min\": 3, \"max\": 255}, \"username-prohibited-characters\": {}, \"up-username-not-idn-homograph\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"email\", \"displayName\": \"${email}\", \"validations\": {\"email\": {}, \"length\": {\"max\": 255}}, \"required\": {\"roles\": [\"user\"]}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"firstName\", \"displayName\": \"${firstName}\", \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"required\": {\"roles\": [\"user\"]}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"lastName\", \"displayName\": \"${lastName}\", \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"required\": {\"roles\": [\"user\"]}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}]}"
+          ]
+        }
+      }
+    ]
+  }
+}

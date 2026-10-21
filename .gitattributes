@@ -1,0 +1,5 @@
+# Satır sonları: depodaki ve çalışma klasöründeki metin dosyaları LF olur. Windows'ta core.autocrlf=true ile
+# inen CRLF'li kabuk betikleri Docker konteynerinde "bash\r: No such file" ile çöker.
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf

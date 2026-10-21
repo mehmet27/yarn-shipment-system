@@ -1,6 +1,6 @@
 # Yerel geliştirme ortamı (veritabanı tasarımı, "Yerel geliştirme").
 # Kullanım: cp deploy/.env.example deploy/.env && docker compose -f deploy/docker-compose.yml up -d
-# Kafka ve MinIO sonraki adımlarda eklenecek. Keycloak realm'i (roller, claim mapper'ları) ayrı PR'da içe aktarılacak.
+# Kafka ve MinIO sonraki adımlarda eklenecek. Keycloak `yarnshipment` realm'i deploy/keycloak altından açılışta içe aktarılır.
 name: yarn-shipment
 
 services:
@@ -25,7 +25,7 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.4
-    command: ["start-dev", "--http-port=8180"]
+    command: ["start-dev", "--http-port=8180", "--import-realm"]
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
@@ -33,8 +33,14 @@ services:
       KC_DB_PASSWORD: ${LOCAL_DB_PASSWORD}
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?deploy/.env içinde KEYCLOAK_ADMIN_PASSWORD tanımlayın}
+      # Realm dosyasındaki ${...} yer tutucuları Keycloak tarafından bu ortam değişkenlerinden doldurulur.
+      KEYCLOAK_TEST_USER_PASSWORD: ${KEYCLOAK_TEST_USER_PASSWORD:?deploy/.env içinde KEYCLOAK_TEST_USER_PASSWORD tanımlayın}
+      GATEWAY_CLIENT_SECRET: ${GATEWAY_CLIENT_SECRET:?deploy/.env içinde GATEWAY_CLIENT_SECRET tanımlayın}
     ports:
       - "8180:8180"
+    volumes:
+      # Yalnızca realm yoksa içe aktarılır; yeniden aktarmak için konsoldan realm'i silin veya `down -v` yapın.
+      - ./keycloak/yarnshipment-realm-local.json:/opt/keycloak/data/import/yarnshipment-realm.json:ro
     depends_on:
       postgres:
         condition: service_healthy

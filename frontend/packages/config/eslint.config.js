@@ -56,6 +56,7 @@ const typescriptRules = {
   '@typescript-eslint/no-floating-promises': 'error', // FE-TS-10
   '@typescript-eslint/no-misused-promises': 'error', // FE-TS-10
   eqeqeq: ['error', 'always'], // FE-TS-12
+  '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }], // FE-STRUC-06
   '@typescript-eslint/naming-convention': [
     'error',
     { selector: 'typeLike', format: ['PascalCase'] },

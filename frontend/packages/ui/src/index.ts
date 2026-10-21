@@ -11,8 +11,13 @@ export {
   Group,
   Loader,
   NavLink,
+  Pagination,
   Paper,
+  Select,
+  SimpleGrid,
   Stack,
+  Table,
+  Tabs,
   Text,
   Title,
 } from '@mantine/core';

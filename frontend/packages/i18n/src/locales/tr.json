@@ -17,5 +17,53 @@
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}"
+  },
+  "common": {
+    "notRecorded": "Kaydedilmedi",
+    "hiddenUntilComparison": "Karşılaştırma bitince görünür"
+  },
+  "shipment": {
+    "status": {
+      "DRAFT": "Taslak",
+      "LOADED": "Yüklendi",
+      "IN_TRANSIT": "Yolda",
+      "AWAITING_DELIVERY": "Teslim bekliyor",
+      "CHECKING": "Kontrolde",
+      "IN_REVIEW": "İncelemede",
+      "COMPLETED": "Tamamlandı",
+      "CANCELLED": "İptal"
+    },
+    "list": {
+      "title": "Sevkiyatlar",
+      "empty": "Bu filtreye uyan sevkiyat yok.",
+      "statusFilter": "Durum",
+      "allStatuses": "Tüm durumlar"
+    },
+    "field": {
+      "shipmentNo": "Sevkiyat no",
+      "subcontractor": "Fasoncu",
+      "driver": "Şoför",
+      "plate": "Plaka",
+      "bagCount": "Çuval",
+      "plannedNetKg": "Planlanan net",
+      "createdAt": "Oluşturma",
+      "status": "Durum",
+      "sealNo": "Mühür no"
+    },
+    "file": {
+      "tabs": {
+        "weights": "Kilolar",
+        "bags": "Çuvallar",
+        "evidence": "Kanıtlar",
+        "history": "Geçmiş"
+      },
+      "comingSoon": "Bu sekme sonraki adımda eklenecek.",
+      "dispatch": "Çıkış",
+      "delivery": "Teslim",
+      "gross": "Brüt",
+      "tare": "Dara",
+      "net": "Net",
+      "difference": "Fark"
+    }
   }
 }

@@ -26,7 +26,7 @@ export function PanelLayout() {
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="xs">
-        <NavLink component={RouterNavLink} to="/panel" end label={t('nav.shipments')} />
+        <NavLink component={RouterNavLink} to="/panel/sevkiyat" label={t('nav.shipments')} />
       </AppShell.Navbar>
       <AppShell.Main>
         <Outlet />

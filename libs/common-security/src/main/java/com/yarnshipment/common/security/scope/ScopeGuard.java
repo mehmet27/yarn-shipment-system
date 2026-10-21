@@ -30,7 +30,7 @@ public final class ScopeGuard {
         }
         UUID subcontractorId = actor.hasRole(Role.SUBCONTRACTOR) ? actor.subcontractorId() : null;
         UUID driverId = actor.hasRole(Role.DRIVER) ? actor.driverId() : null;
-        return new AccessScope(actor.siteIds(), subcontractorId, driverId);
+        return AccessScope.restrictedTo(actor.siteIds(), subcontractorId, driverId);
     }
 
     public boolean isInScope(Actor actor, ScopedResource resource) {

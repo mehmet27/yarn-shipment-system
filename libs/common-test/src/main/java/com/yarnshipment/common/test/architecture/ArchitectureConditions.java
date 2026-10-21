@@ -20,6 +20,10 @@ public final class ArchitectureConditions {
     private static final String CONFIGURATION = "org.springframework.context.annotation.Configuration";
     private static final String ENTITY = "jakarta.persistence.Entity";
     private static final String TRANSACTIONAL = "org.springframework.transaction.annotation.Transactional";
+    private static final String PRE_AUTHORIZE = "org.springframework.security.access.prepost.PreAuthorize";
+
+    /** Metot seviyesinde konduğunda sınıfın CGLIB proxy'si gerektiren anotasyonlar (SEC-02, @Transactional). */
+    private static final List<String> PROXYING_METHOD_ANNOTATIONS = List.of(TRANSACTIONAL, PRE_AUTHORIZE);
 
     private static final List<Predicate<JavaClass>> NOT_FINAL_CANDIDATES = List.of(
             JavaClass::isInterface,
@@ -115,7 +119,12 @@ public final class ArchitectureConditions {
         return javaClass.isMetaAnnotatedWith(CONFIGURATION)
                 || javaClass.isAnnotatedWith(ENTITY)
                 || javaClass.isAnnotatedWith(TRANSACTIONAL)
-                || javaClass.getMethods().stream().anyMatch(method -> method.isAnnotatedWith(TRANSACTIONAL));
+                || hasProxyingMethod(javaClass);
+    }
+
+    private static boolean hasProxyingMethod(JavaClass javaClass) {
+        return javaClass.getMethods().stream()
+                .anyMatch(method -> PROXYING_METHOD_ANNOTATIONS.stream().anyMatch(method::isAnnotatedWith));
     }
 
     private static Stream<JavaClass> supertypesOf(JavaClass javaClass) {

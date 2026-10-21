@@ -25,6 +25,7 @@
     <modules>
         <module>libs/common-test</module>
         <module>libs/common-security</module>
+        <module>services/shipment-service</module>
     </modules>
 
     <properties>
@@ -48,6 +49,7 @@
         <palantir-java-format.version>2.102.0</palantir-java-format.version>
         <maven-enforcer-plugin.version>3.6.3</maven-enforcer-plugin.version>
         <jacoco.version>0.8.15</jacoco.version>
+        <openapi-generator.version>7.26.0</openapi-generator.version>
 
         <!-- TEST-08: satır kapsamı eşikleri -->
         <coverage.line.minimum>0.80</coverage.line.minimum>
@@ -224,6 +226,40 @@
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.openapitools</groupId>
+                    <artifactId>openapi-generator-maven-plugin</artifactId>
+                    <version>${openapi-generator.version}</version>
+                    <!-- API-01: spring üreteci, yalnızca arayüz; Boot 4 ve Jackson 3 ile. -->
+                    <configuration>
+                        <generatorName>spring</generatorName>
+                        <library>spring-boot</library>
+                        <generateApiTests>false</generateApiTests>
+                        <generateModelTests>false</generateModelTests>
+                        <generateApiDocumentation>false</generateApiDocumentation>
+                        <generateModelDocumentation>false</generateModelDocumentation>
+                        <generateSupportingFiles>false</generateSupportingFiles>
+                        <configOptions>
+                            <interfaceOnly>true</interfaceOnly>
+                            <useJakartaEe>true</useJakartaEe>
+                            <useSpringBoot4>true</useSpringBoot4>
+                            <useJackson3>true</useJackson3>
+                            <useTags>true</useTags>
+                            <skipDefaultInterface>true</skipDefaultInterface>
+                            <useBeanValidation>true</useBeanValidation>
+                            <performBeanValidation>false</performBeanValidation>
+                            <openApiNullable>false</openApiNullable>
+                            <documentationProvider>none</documentationProvider>
+                            <annotationLibrary>none</annotationLibrary>
+                            <useOneOfInterfaces>true</useOneOfInterfaces>
+                            <dateLibrary>java8</dateLibrary>
+                            <useJspecify>true</useJspecify>
+                            <generateJsonIncludeAnnotations>false</generateJsonIncludeAnnotations>
+                            <generateJsonSetterNullsAnnotations>false</generateJsonSetterNullsAnnotations>
+                            <sourceFolder>src/main/java</sourceFolder>
+                        </configOptions>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -330,6 +366,12 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <!-- API-01: sözleşmeden üretilen kod kapsam hesabına girmez. -->
+                    <excludes>
+                        <exclude>**/adapter/in/web/api/**</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>

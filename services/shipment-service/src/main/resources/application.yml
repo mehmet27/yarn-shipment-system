@@ -1,0 +1,22 @@
+# CONF-01: ortamdan gelen değerler ortam değişkeniyle verilir; gizli bilgi bu dosyaya yazılmaz (SEC-14).
+spring:
+  application:
+    name: shipment-service
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+  jackson:
+    # API-03 ve SEC-05: henüz girilmemiş değerler JSON'da yer almaz.
+    default-property-inclusion: non_null
+  mvc:
+    problemdetails:
+      enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/yarnshipment}
+          audiences: yarnshipment-api
+server:
+  port: ${SERVER_PORT:8083}

@@ -11,10 +11,11 @@ import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Sevkiyatı yükler, kapsamı doğrular (SEC-03) ve isteyenin görünümünü seçer. */
 @Service
-public final class GetShipmentService implements GetShipmentUseCase {
+public class GetShipmentService implements GetShipmentUseCase {
 
     private static final String RESOURCE_TYPE = "Shipment";
 
@@ -30,6 +31,7 @@ public final class GetShipmentService implements GetShipmentUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ShipmentDetails getShipment(GetShipmentQuery query) {
         Shipment shipment = shipmentQueryPort
                 .findShipment(query.shipmentId())

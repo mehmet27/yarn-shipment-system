@@ -18,6 +18,8 @@ servers:
 tags:
   - name: Shipments
   - name: ShipmentCreation
+  - name: ShipmentFile
+  - name: MasterData
   - name: CurrentUser
 security:
   - bearerAuth: []
@@ -228,6 +230,165 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+  # Ana veri okuma uçları. Ayrı master-data servisi gelene kadar shipment-service içinde, kendi paketinde ve etiketiyle
+  # durur; taşınırken yol ve sözleşme değişmez. İzin: MASTER_DATA_VIEW.
+  /api/v1/master-data/subcontractors:
+    get:
+      tags: [MasterData]
+      operationId: listSubcontractors
+      summary: Fasoncu listesi
+      description: |
+        Sevkiyat oluşturma ekranında fasoncu seçimi için. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/SearchText'
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcontractorPageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/master-data/drivers:
+    get:
+      tags: [MasterData]
+      operationId: listDrivers
+      summary: Şoför listesi
+      description: |
+        Şoför seçimi için; `subcontractorId` verilirse yalnızca o fasoncunun şoförleri gelir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/SearchText'
+        - name: subcontractorId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverPageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/master-data/vehicles:
+    get:
+      tags: [MasterData]
+      operationId: listVehicles
+      summary: Araç listesi
+      description: |
+        Araç seçimi için. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/SearchText'
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehiclePageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/master-data/sites:
+    get:
+      tags: [MasterData]
+      operationId: listSites
+      summary: Lokasyon listesi
+      description: |
+        Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07). Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/SearchText'
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SitePageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/shipments/{shipmentId}/history:
+    get:
+      tags: [ShipmentFile]
+      operationId: getShipmentHistory
+      summary: Sevkiyatın durum geçmişi, eskiden yeniye
+      description: Kapsamdaki her kullanıcı için aynıdır; kişisel veri taşımaz, işlemi yapan yalnızca kimlikle gelir.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Geçmiş
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShipmentHistoryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/shipments/{shipmentId}/bags:
+    get:
+      tags: [ShipmentFile]
+      operationId: getShipmentBags
+      summary: Sevkiyatın çuvalları, isteyenin görünümüyle
+      description: |
+        Kör giriş (SEC-05): çıkışta atanan çuval listesi (`dispatchBags`) fasoncu ve şoför görünümünde,
+        teslimde okutulanlar (`deliveryScans`) depo ve şoför görünümünde hiç yer almaz. Teslim okutmaları teslim
+        kaydı gönderildikten sonra oluşur; önce boştur. Listeler sayfalanmaz: bir sevkiyatın çuval sayısıyla sınırlıdır.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Çuvallar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShipmentBagsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   securitySchemes:
     bearerAuth:
@@ -254,6 +415,15 @@ components:
         minimum: 1
         maximum: 100
         default: 20
+    SearchText:
+      name: q
+      in: query
+      required: false
+      description: Arama metni
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 100
     IdempotencyKey:
       name: Idempotency-Key
       in: header
@@ -556,6 +726,160 @@ components:
           format: uuid
         shipmentNo:
           type: string
+    SubcontractorPageResponse:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubcontractorView'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+    SubcontractorView:
+      type: object
+      required: [id, title]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+    DriverPageResponse:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DriverView'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+    DriverView:
+      type: object
+      required: [id, fullName]
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        subcontractorId:
+          type: string
+          format: uuid
+    VehiclePageResponse:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleView'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+    VehicleView:
+      type: object
+      required: [id, plateNo]
+      properties:
+        id:
+          type: string
+          format: uuid
+        plateNo:
+          type: string
+    SitePageResponse:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SiteView'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+    SiteView:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    ShipmentHistoryResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatusChangeView'
+    StatusChangeView:
+      description: Bir durum geçişi; ilk satırda `fromStatus` yoktur.
+      type: object
+      required: [toStatus, changedAt, changedBy]
+      properties:
+        fromStatus:
+          $ref: '#/components/schemas/ShipmentStatus'
+        toStatus:
+          $ref: '#/components/schemas/ShipmentStatus'
+        changedAt:
+          type: string
+          format: date-time
+        changedBy:
+          description: İşlemi yapan kullanıcının kimliği
+          type: string
+          format: uuid
+        reason:
+          description: İptal ve düzeltme gerekçesi
+          type: string
+    ShipmentBagsResponse:
+      type: object
+      required: [audience]
+      properties:
+        audience:
+          $ref: '#/components/schemas/Audience'
+        dispatchBags:
+          description: Çıkışta atanan çuvallar; yalnızca INTERNAL ve WAREHOUSE görünümünde
+          type: array
+          items:
+            $ref: '#/components/schemas/DispatchBagView'
+        deliveryScans:
+          description: Teslimde okutulan anahtarlar; yalnızca INTERNAL ve SUBCONTRACTOR görünümünde
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryScanView'
+    DispatchBagView:
+      type: object
+      required: [bagId, uniqueKey, lotNo, qualityGradeCode, scanMethod, assignedAt]
+      properties:
+        bagId:
+          type: string
+          format: uuid
+        uniqueKey:
+          type: string
+        lotNo:
+          type: string
+        qualityGradeCode:
+          type: string
+        scanMethod:
+          $ref: '#/components/schemas/ScanMethod'
+        assignedAt:
+          type: string
+          format: date-time
+    DeliveryScanView:
+      type: object
+      required: [scannedKey, scanMethod, scannedAt]
+      properties:
+        scannedKey:
+          type: string
+        matched:
+          description: Anahtar çıkış listesinde var mıydı; yalnızca INTERNAL görünümünde dolu olur
+          type: boolean
+        scanMethod:
+          $ref: '#/components/schemas/ScanMethod'
+        scannedAt:
+          type: string
+          format: date-time
     DispatchWeighingRequest:
       type: object
       required: [grossKg, tareKg, bagCount, sealNo]

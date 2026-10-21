@@ -42,7 +42,9 @@ Ayrıca Keycloak `http://localhost:8180` adresinde açılır (yönetici: `admin`
 `deploy/keycloak/yarnshipment-realm-local.json` dosyasından kendiliğinden içe aktarılır. Realm zaten varsa
 yeniden aktarılmaz; sıfırlamak için `docker compose -f deploy/docker-compose.yml down -v` çalıştırın.
 
-Test kullanıcıları (hepsinin şifresi `deploy/.env` içindeki `KEYCLOAK_TEST_USER_PASSWORD`):
+`deploy/.env` içinde iki değer zorunludur (örnekleri `deploy/.env.example` içinde): `KEYCLOAK_TEST_USER_PASSWORD` test kullanıcılarının ortak şifresidir, `GATEWAY_CLIENT_SECRET` gateway'in Keycloak'taki istemci sırrıdır (gateway'i başlatırken aynı değer verilir). Giriş sayfası Türkçe açılır.
+
+Test kullanıcıları (hepsinin şifresi `KEYCLOAK_TEST_USER_PASSWORD`):
 
 | Kullanıcı | Rol | Kapsam |
 |---|---|---|

@@ -24,7 +24,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Yazma adapter'ı gerçek tetikleyiciler ve uygulama rolünün yetkileriyle çalışır. */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({ShipmentCommandAdapter.class, UuidV7Generator.class})
+@Import({ShipmentCommandAdapter.class, ShipmentTransitionWriter.class, UuidV7Generator.class})
 @org.springframework.boot.autoconfigure.ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class ShipmentCommandAdapterTest {
 

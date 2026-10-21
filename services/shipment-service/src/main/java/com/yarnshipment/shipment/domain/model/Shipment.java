@@ -70,4 +70,14 @@ public record Shipment(
         Integer plannedBags = planned.bagCount();
         return plannedBags == null ? 0 : plannedBags;
     }
+
+    /** Fasoncu kör teslim girişini gönderdi (AWAITING_DELIVERY → CHECKING). */
+    public DeliveryReceipt receiveDelivery(UUID receivedBy, DeliveryMeasurement measurement, Instant receivedAt) {
+        if (status != ShipmentStatus.AWAITING_DELIVERY) {
+            throw new InvalidShipmentStatusException(id, status, ShipmentStatus.CHECKING);
+        }
+        Weighing weighing =
+                new Weighing(measurement.grossKg(), measurement.tareKg(), measurement.bagCount(), receivedAt);
+        return new DeliveryReceipt(id, receivedBy, receivedAt, weighing, measurement, dispatch);
+    }
 }

@@ -15,6 +15,7 @@ import com.yarnshipment.shipment.application.port.in.ShipmentDetails;
 import com.yarnshipment.shipment.application.port.in.ShipmentListItem;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.in.ShipmentPage;
+import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptUseCase;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.util.List;
 import java.util.Set;
@@ -51,6 +52,9 @@ class ShipmentControllerTest {
 
     @MockitoBean
     private ConfirmPickupUseCase confirmPickupUseCase;
+
+    @MockitoBean
+    private SubmitDeliveryReceiptUseCase submitDeliveryReceiptUseCase;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

@@ -27,8 +27,8 @@ class ConfirmPickupServiceTest {
     private final InMemoryShipmentQueryPort queryPort = new InMemoryShipmentQueryPort();
     private final RecordingShipmentCommandPort commandPort = new RecordingShipmentCommandPort();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
-    private final ConfirmPickupService service =
-            new ConfirmPickupService(queryPort, commandPort, new ScopeGuard(event -> {}, clock), clock);
+    private final ConfirmPickupService service = new ConfirmPickupService(
+            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), commandPort, clock);
     private final Actor driver = TestTokens.CONVERTER.toActor(TestTokens.driverToken());
 
     @Test

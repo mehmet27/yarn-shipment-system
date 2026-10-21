@@ -123,6 +123,43 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+  /api/v1/shipments/{shipmentId}/delivery-receipt:
+    post:
+      tags: [Shipments]
+      operationId: submitDeliveryReceipt
+      summary: Fasoncu kör teslim girişini gönderir (AWAITING_DELIVERY → CHECKING)
+      description: |
+        Fasoncu çıkış tartısını, beklenen yükü ve çıkış mühür numarasını görmeden kendi ölçümünü girer (SEC-05).
+        Gönderilen tutanak kilitlenir, değişiklik yalnızca düzeltme talebiyle yapılır. Okutulan anahtar listede
+        yoksa da saklanır; eşleşme karşılaştırması discrepancy-service'tedir. Aynı sevkiyat için tekrar gönderilen
+        istek yeni kayıt oluşturmaz ve yine 204 döner.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryReceiptRequest'
+      responses:
+        '204':
+          description: Tutanak kaydedildi, sevkiyat kontrolde
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
 components:
   securitySchemes:
     bearerAuth:
@@ -378,6 +415,62 @@ components:
     SealCondition:
       type: string
       enum: [INTACT, DAMAGED, MISSING]
+    ScanMethod:
+      description: Çuval anahtarının nasıl girildiği
+      type: string
+      enum: [SCAN, LIST, MANUAL]
+    DeliveryReceiptRequest:
+      type: object
+      required: [grossKg, tareKg, bagCount, sealCondition, bagUniqueKeys]
+      properties:
+        grossKg:
+          $ref: '#/components/schemas/Kg'
+        tareKg:
+          $ref: '#/components/schemas/Kg'
+        bagCount:
+          description: Tartılan çuval sayısı
+          type: integer
+          format: int32
+          minimum: 1
+        sealCondition:
+          $ref: '#/components/schemas/SealCondition'
+        sealNo:
+          description: Mühür üzerindeki numara; mühür yoksa (MISSING) boş bırakılır
+          type: string
+          minLength: 1
+          maxLength: 64
+        bagUniqueKeys:
+          description: Okutulan çuval anahtarları; tekrar edenler bir kez sayılır
+          type: array
+          maxItems: 2000
+          items:
+            type: string
+            minLength: 1
+            maxLength: 64
+        scanMethod:
+          $ref: '#/components/schemas/ScanMethod'
+        document:
+          $ref: '#/components/schemas/DeliveryDocument'
+    DeliveryDocument:
+      description: İrsaliye üzerindeki değerler (fasoncunun okuduğu haliyle)
+      type: object
+      properties:
+        shipmentNo:
+          type: string
+          maxLength: 64
+        date:
+          type: string
+          format: date
+        netKg:
+          $ref: '#/components/schemas/Kg'
+        bagCount:
+          type: integer
+          format: int32
+          minimum: 0
+        signedDocumentEvidenceId:
+          description: evidence-service'e yüklenmiş imzalı irsaliye fotoğrafı
+          type: string
+          format: uuid
     ShipmentDetailResponse:
       description: İsteyenin rolüne göre dört görünümden biri (API-09, SEC-05).
       oneOf:

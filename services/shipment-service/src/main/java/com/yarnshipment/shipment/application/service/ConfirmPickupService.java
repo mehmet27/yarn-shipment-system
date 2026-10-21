@@ -2,13 +2,9 @@ package com.yarnshipment.shipment.application.service;
 
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.common.security.Permission;
-import com.yarnshipment.common.security.scope.ScopeGuard;
-import com.yarnshipment.common.security.scope.ScopedResource;
 import com.yarnshipment.shipment.application.port.in.ConfirmPickupCommand;
 import com.yarnshipment.shipment.application.port.in.ConfirmPickupUseCase;
-import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.out.ShipmentCommandPort;
-import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.time.Clock;
@@ -24,40 +20,21 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ConfirmPickupService implements ConfirmPickupUseCase {
 
-    private static final String RESOURCE_TYPE = "Shipment";
-
-    private final ShipmentQueryPort shipmentQueryPort;
+    private final ScopedShipmentLoader shipments;
     private final ShipmentCommandPort shipmentCommandPort;
-    private final ScopeGuard scopeGuard;
     private final Clock clock;
 
-    public ConfirmPickupService(
-            ShipmentQueryPort shipmentQueryPort,
-            ShipmentCommandPort shipmentCommandPort,
-            ScopeGuard scopeGuard,
-            Clock clock) {
-        this.shipmentQueryPort = shipmentQueryPort;
+    public ConfirmPickupService(ScopedShipmentLoader shipments, ShipmentCommandPort shipmentCommandPort, Clock clock) {
+        this.shipments = shipments;
         this.shipmentCommandPort = shipmentCommandPort;
-        this.scopeGuard = scopeGuard;
         this.clock = clock;
     }
 
     @Override
     @Transactional
     public void confirmPickup(ConfirmPickupCommand command) {
-        Shipment shipment = shipmentQueryPort
-                .findShipment(command.shipmentId())
-                .orElseThrow(() -> new ShipmentNotFoundException(command.shipmentId()));
         Actor actor = command.actor();
-        scopeGuard.validateInScope(
-                actor,
-                new ScopedResource(
-                        RESOURCE_TYPE,
-                        shipment.id(),
-                        shipment.siteId(),
-                        shipment.subcontractorId(),
-                        shipment.driverId()),
-                Permission.DRIVER_DECLARATION_RECORD.name());
+        Shipment shipment = shipments.load(actor, command.shipmentId(), Permission.DRIVER_DECLARATION_RECORD);
         if (isRepeatedRequest(shipment)) {
             return;
         }

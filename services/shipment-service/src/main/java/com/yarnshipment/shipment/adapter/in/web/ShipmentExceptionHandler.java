@@ -2,6 +2,7 @@ package com.yarnshipment.shipment.adapter.in.web;
 
 import com.yarnshipment.common.security.web.SecurityProblemResponses;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
+import com.yarnshipment.shipment.domain.model.InvalidDeliveryException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -44,6 +45,13 @@ public final class ShipmentExceptionHandler {
     @ExceptionHandler(InvalidShipmentStatusException.class)
     public ProblemDetail handleInvalidStatus(HttpServletRequest request) {
         return problem(request, HttpStatus.CONFLICT, "INVALID_SHIPMENT_STATUS");
+    }
+
+    @ExceptionHandler(InvalidDeliveryException.class)
+    public ProblemDetail handleInvalidDelivery(InvalidDeliveryException exception, HttpServletRequest request) {
+        ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_DELIVERY");
+        problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
+        return problem;
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)

@@ -12,6 +12,7 @@ import com.yarnshipment.shipment.application.port.in.ConfirmPickupCommand;
 import com.yarnshipment.shipment.application.port.in.ConfirmPickupUseCase;
 import com.yarnshipment.shipment.application.port.in.GetShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsUseCase;
+import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptUseCase;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.util.UUID;
@@ -45,6 +46,9 @@ class ShipmentTransitionControllerTest {
 
     @MockitoBean
     private ConfirmPickupUseCase confirmPickupUseCase;
+
+    @MockitoBean
+    private SubmitDeliveryReceiptUseCase submitDeliveryReceiptUseCase;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

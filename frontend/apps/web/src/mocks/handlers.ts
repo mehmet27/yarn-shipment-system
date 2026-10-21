@@ -91,6 +91,9 @@ const deliveryReceiptHandler = http.post(
   },
 );
 
+/** Gateway çıkışı: gerçek yanıt Keycloak çıkış adresidir; sahte API ana sayfaya döner. */
+const logoutHandler = http.post('/logout', () => HttpResponse.json({ logoutUrl: '/' }));
+
 export function createHandlers(role: Role) {
   return [
     createMeHandler(role),
@@ -98,5 +101,6 @@ export function createHandlers(role: Role) {
     createGetShipmentHandler(role),
     confirmPickupHandler,
     deliveryReceiptHandler,
+    logoutHandler,
   ];
 }

@@ -19,7 +19,7 @@ pnpm install
 pnpm dev            # http://localhost:5173, sahte API (MSW) açık
 ```
 
-Sahte API'de rol, sayfa ilk açılırken adres çubuğundan seçilir: `/?mockRole=SUBCONTRACTOR` (`ADMIN`, `WAREHOUSE`, `DRIVER`, `SUBCONTRACTOR`, `QUALITY`, `MANAGER`). Gerçek gateway ile çalışmak için `VITE_USE_MOCK_API=false pnpm dev`; istekler `localhost:8080`'e yönlenir.
+Sahte API'de rol, sayfa ilk açılırken adres çubuğundan seçilir: `/?mockRole=SUBCONTRACTOR` (`ADMIN`, `WAREHOUSE`, `DRIVER`, `SUBCONTRACTOR`, `QUALITY`, `MANAGER`). Gerçek gateway ile çalışmak için `VITE_USE_MOCK_API=false pnpm dev`; istekler `localhost:8080`'e yönlenir. Oturum yoksa uygulama `/oauth2/authorization/keycloak` adresine gider (gateway girişi yönetir); oturum sonradan düşerse ilk 401'de kullanıcı sorgusu yenilenir ve yine girişe yönlenir. Tarayıcıda token tutulmaz.
 
 ## Kontroller (CI ile aynı sıra, FE-BUILD-05)
 

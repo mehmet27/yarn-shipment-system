@@ -34,7 +34,7 @@ final class ShipmentSides {
         }
         return new ShipmentSide(
                 weighing == null ? null : toWeighing(weighing),
-                seal == null ? null : seal.getSealNo(),
+                seal == null || seal.getSealNo().isEmpty() ? null : seal.getSealNo(),
                 seal == null ? null : SealCondition.valueOf(seal.getSealCondition()));
     }
 

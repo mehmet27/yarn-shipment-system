@@ -1,4 +1,4 @@
 {
   "extends": "@iplik/config/tsconfig.base.json",
-  "include": ["src"]
+  "include": ["src", "orval.config.ts"]
 }

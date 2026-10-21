@@ -105,7 +105,7 @@ export function createMockUser(role: Role): CurrentUser {
     userId: `user-${role.toLowerCase()}`,
     fullName: FULL_NAMES[role],
     roles: [role],
-    permissions: PERMISSIONS_BY_ROLE[role],
+    permissions: [...PERMISSIONS_BY_ROLE[role]],
     siteIds: ['site-merkez'],
     mfaVerified: true,
     ...SCOPE_BY_ROLE[role],

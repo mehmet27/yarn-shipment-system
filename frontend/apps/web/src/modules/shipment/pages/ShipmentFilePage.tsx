@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Tabs, Text } from '@iplik/ui';
-import { useParams } from 'react-router';
+import { Button, Stack, Tabs, Text } from '@iplik/ui';
+import { Link, useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
 import { ShipmentHeader } from '../components/ShipmentHeader';
 import { toWeighings } from '../components/shipmentViews';
@@ -19,6 +19,11 @@ export function ShipmentFilePage() {
       {(shipment) => (
         <Stack>
           <ShipmentHeader shipment={shipment} />
+          {shipment.allowedActions.includes('RECORD_DISPATCH') && (
+            <Button component={Link} to="cikis" relative="path" w="fit-content">
+              {t('shipment.file.recordDispatch')}
+            </Button>
+          )}
           <Tabs defaultValue="weights">
             <Tabs.List>
               <Tabs.Tab value="weights">{t('shipment.file.tabs.weights')}</Tabs.Tab>

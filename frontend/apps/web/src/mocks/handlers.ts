@@ -1,11 +1,49 @@
-import type { Role } from '@iplik/api-client';
+import type { Role, Weighing } from '@iplik/api-client';
 import { ME_PATH, SHIPMENTS_PATH } from '@iplik/api-client';
+import type { Kilogram } from '@iplik/units';
+import { calculateNetKg, isKilogram } from '@iplik/units';
 import { http, HttpResponse } from 'msw';
-import { findMockShipment, listMockShipments, updateMockShipmentStatus } from './mockStore';
+import {
+  findMockShipment,
+  isMockSealUsed,
+  listMockShipments,
+  recordMockDispatch,
+  updateMockShipmentStatus,
+} from './mockStore';
 import { isInScope, toDetailView, toSummary } from './shipmentViews';
 import { createMockUser } from './users';
 
 const DEFAULT_PAGE_SIZE = 20;
+
+const problem = (status: number, code: string, title: string) =>
+  HttpResponse.json({ status, code, title }, { status });
+
+type DispatchBody = { grossKg: Kilogram; tareKg: Kilogram; bagCount: number; sealNo: string };
+
+/** İstek gövdesini sözleşmeye göre daraltır; sahte API gerçek backend gibi 400 döner. */
+const isKg = (value: unknown): value is Kilogram => typeof value === 'string' && isKilogram(value);
+const isPositiveInt = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isInteger(value) && value >= 1;
+const isNonEmpty = (value: unknown): value is string => typeof value === 'string' && value !== '';
+
+function readDispatchBody(json: unknown): DispatchBody | undefined {
+  if (typeof json !== 'object' || json === null) return undefined;
+  const { grossKg, tareKg, bagCount, sealNo } = json as Record<string, unknown>;
+  if (!isKg(grossKg) || !isKg(tareKg)) return undefined;
+  return isPositiveInt(bagCount) && isNonEmpty(sealNo)
+    ? { grossKg, tareKg, bagCount, sealNo }
+    : undefined;
+}
+
+function toMockWeighing({ grossKg, tareKg, bagCount }: DispatchBody): Weighing {
+  return {
+    grossKg,
+    tareKg,
+    netKg: calculateNetKg(grossKg, tareKg) ?? grossKg,
+    bagCount,
+    weighedAt: new Date().toISOString(),
+  };
+}
 
 const notFound = () =>
   HttpResponse.json(
@@ -91,6 +129,25 @@ const deliveryReceiptHandler = http.post(
   },
 );
 
+/** Depo çıkış tartısı: DRAFT → LOADED; mühür başka sevkiyatta kullanılmışsa 409 SEAL_ALREADY_USED. */
+const dispatchWeighingHandler = http.post(
+  `${SHIPMENTS_PATH}/:shipmentId/dispatch-weighing`,
+  async ({ params, request }) => {
+    const shipment = findMockShipment(params.shipmentId);
+    if (shipment === undefined) return notFound();
+    const body = readDispatchBody(await request.json());
+    if (body === undefined) return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
+    if (shipment.status !== 'DRAFT') {
+      return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
+    }
+    if (isMockSealUsed(body.sealNo, shipment.shipmentId)) {
+      return problem(409, 'SEAL_ALREADY_USED', 'Mühür kullanılmış');
+    }
+    recordMockDispatch(shipment.shipmentId, toMockWeighing(body), body.sealNo);
+    return new HttpResponse(null, { status: 204 });
+  },
+);
+
 /** Gateway çıkışı: gerçek yanıt Keycloak çıkış adresidir; sahte API ana sayfaya döner. */
 const logoutHandler = http.post('/logout', () => HttpResponse.json({ logoutUrl: '/' }));
 
@@ -101,6 +158,7 @@ export function createHandlers(role: Role) {
     createGetShipmentHandler(role),
     confirmPickupHandler,
     deliveryReceiptHandler,
+    dispatchWeighingHandler,
     logoutHandler,
   ];
 }

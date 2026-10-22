@@ -289,6 +289,24 @@ export interface SubcontractorPageResponse {
   page: PageMetadata;
 }
 
+export interface SubcontractorRequest {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  title: string;
+}
+
+export interface DriverRequest {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  fullName: string;
+  /** Fasonculuk şoförü ise bağlı olduğu etkin fasoncu; kendi şoförü ise boş */
+  subcontractorId?: string;
+}
+
 export interface DriverView {
   id: string;
   fullName: string;
@@ -525,7 +543,7 @@ export type ForbiddenResponse = Problem;
 export type BadGatewayResponse = Problem;
 
 /**
- * Kayıt yok (SHIPMENT_NOT_FOUND ya da BAG_NOT_FOUND)
+ * Kayıt yok (SHIPMENT_NOT_FOUND, BAG_NOT_FOUND ya da MASTER_DATA_NOT_FOUND)
  */
 export type NotFoundResponse = Problem;
 
@@ -756,6 +774,63 @@ export const listSubcontractors = (
     }
 
 /**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Ünvan boş olamaz. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * @summary Fasoncu ekler
+ */
+export const createSubcontractor = (
+    subcontractorRequest: SubcontractorRequest,
+ ) => {
+      return customInstance<SubcontractorView>(
+      {url: `/api/v1/master-data/subcontractors`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: subcontractorRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+ * @summary Fasoncu günceller
+ */
+export const updateSubcontractor = (
+    subcontractorId: string,
+    subcontractorRequest: SubcontractorRequest,
+ ) => {
+      return customInstance<SubcontractorView>(
+      {url: `/api/v1/master-data/subcontractors/${subcontractorId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: subcontractorRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+ * @summary Fasoncu pasife alır
+ */
+export const deactivateSubcontractor = (
+    subcontractorId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/subcontractors/${subcontractorId}/deactivate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * @summary Fasoncu yeniden etkinleştirir
+ */
+export const activateSubcontractor = (
+    subcontractorId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/subcontractors/${subcontractorId}/activate`, method: 'POST'
+    },
+      );
+    }
+
+/**
  * Şoför seçimi için; `subcontractorId` verilirse yalnızca o fasoncunun şoförleri gelir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
  * @summary Şoför listesi
  */
@@ -765,6 +840,63 @@ export const listDrivers = (
       return customInstance<DriverPageResponse>(
       {url: `/api/v1/master-data/drivers`, method: 'GET',
         params
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Fasoncu verilirse etkin bir fasoncu olmalıdır. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * @summary Şoför ekler
+ */
+export const createDriver = (
+    driverRequest: DriverRequest,
+ ) => {
+      return customInstance<DriverView>(
+      {url: `/api/v1/master-data/drivers`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: driverRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+ * @summary Şoför günceller
+ */
+export const updateDriver = (
+    driverId: string,
+    driverRequest: DriverRequest,
+ ) => {
+      return customInstance<DriverView>(
+      {url: `/api/v1/master-data/drivers/${driverId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: driverRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+ * @summary Şoför pasife alır
+ */
+export const deactivateDriver = (
+    driverId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/drivers/${driverId}/deactivate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * @summary Şoför yeniden etkinleştirir
+ */
+export const activateDriver = (
+    driverId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/drivers/${driverId}/activate`, method: 'POST'
     },
       );
     }
@@ -858,7 +990,15 @@ export type ConfirmPickupResult = NonNullable<Awaited<ReturnType<typeof confirmP
 export type SubmitDeliveryReceiptResult = NonNullable<Awaited<ReturnType<typeof submitDeliveryReceipt>>>
 export type RecordDispatchWeighingResult = NonNullable<Awaited<ReturnType<typeof recordDispatchWeighing>>>
 export type ListSubcontractorsResult = NonNullable<Awaited<ReturnType<typeof listSubcontractors>>>
+export type CreateSubcontractorResult = NonNullable<Awaited<ReturnType<typeof createSubcontractor>>>
+export type UpdateSubcontractorResult = NonNullable<Awaited<ReturnType<typeof updateSubcontractor>>>
+export type DeactivateSubcontractorResult = NonNullable<Awaited<ReturnType<typeof deactivateSubcontractor>>>
+export type ActivateSubcontractorResult = NonNullable<Awaited<ReturnType<typeof activateSubcontractor>>>
 export type ListDriversResult = NonNullable<Awaited<ReturnType<typeof listDrivers>>>
+export type CreateDriverResult = NonNullable<Awaited<ReturnType<typeof createDriver>>>
+export type UpdateDriverResult = NonNullable<Awaited<ReturnType<typeof updateDriver>>>
+export type DeactivateDriverResult = NonNullable<Awaited<ReturnType<typeof deactivateDriver>>>
+export type ActivateDriverResult = NonNullable<Awaited<ReturnType<typeof activateDriver>>>
 export type ListVehiclesResult = NonNullable<Awaited<ReturnType<typeof listVehicles>>>
 export type ListSitesResult = NonNullable<Awaited<ReturnType<typeof listSites>>>
 export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof getShipmentHistory>>>

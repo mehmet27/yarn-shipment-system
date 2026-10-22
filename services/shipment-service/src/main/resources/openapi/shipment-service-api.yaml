@@ -21,6 +21,8 @@ tags:
   - name: ShipmentFile
   - name: ShipmentBags
   - name: MasterData
+  - name: SubcontractorManagement
+  - name: DriverManagement
   - name: CurrentUser
 security:
   - bearerAuth: []
@@ -257,6 +259,114 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [SubcontractorManagement]
+      operationId: createSubcontractor
+      summary: Fasoncu ekler
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Ünvan boş olamaz. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubcontractorRequest'
+      responses:
+        '201':
+          description: Eklendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcontractorView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/master-data/subcontractors/{subcontractorId}:
+    put:
+      tags: [SubcontractorManagement]
+      operationId: updateSubcontractor
+      summary: Fasoncu günceller
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+      parameters:
+        - name: subcontractorId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubcontractorRequest'
+      responses:
+        '200':
+          description: Güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcontractorView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/subcontractors/{subcontractorId}/deactivate:
+    post:
+      tags: [SubcontractorManagement]
+      operationId: deactivateSubcontractor
+      summary: Fasoncu pasife alır
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+      parameters:
+        - name: subcontractorId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/subcontractors/{subcontractorId}/activate:
+    post:
+      tags: [SubcontractorManagement]
+      operationId: activateSubcontractor
+      summary: Fasoncu yeniden etkinleştirir
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+      parameters:
+        - name: subcontractorId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /api/v1/master-data/drivers:
     get:
       tags: [MasterData]
@@ -287,6 +397,114 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [DriverManagement]
+      operationId: createDriver
+      summary: Şoför ekler
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Fasoncu verilirse etkin bir fasoncu olmalıdır. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+      responses:
+        '201':
+          description: Eklendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/master-data/drivers/{driverId}:
+    put:
+      tags: [DriverManagement]
+      operationId: updateDriver
+      summary: Şoför günceller
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+      parameters:
+        - name: driverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+      responses:
+        '200':
+          description: Güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/drivers/{driverId}/deactivate:
+    post:
+      tags: [DriverManagement]
+      operationId: deactivateDriver
+      summary: Şoför pasife alır
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+      parameters:
+        - name: driverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/drivers/{driverId}/activate:
+    post:
+      tags: [DriverManagement]
+      operationId: activateDriver
+      summary: Şoför yeniden etkinleştirir
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+      parameters:
+        - name: driverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /api/v1/master-data/vehicles:
     get:
       tags: [MasterData]
@@ -509,7 +727,7 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
     NotFound:
-      description: Kayıt yok (SHIPMENT_NOT_FOUND ya da BAG_NOT_FOUND)
+      description: Kayıt yok (SHIPMENT_NOT_FOUND, BAG_NOT_FOUND ya da MASTER_DATA_NOT_FOUND)
       content:
         application/problem+json:
           schema:
@@ -811,6 +1029,26 @@ components:
             $ref: '#/components/schemas/SubcontractorView'
         page:
           $ref: '#/components/schemas/PageMetadata'
+    SubcontractorRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+    DriverRequest:
+      type: object
+      required: [fullName]
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        subcontractorId:
+          type: string
+          format: uuid
+          description: Fasonculuk şoförü ise bağlı olduğu etkin fasoncu; kendi şoförü ise boş
     SubcontractorView:
       type: object
       required: [id, title]

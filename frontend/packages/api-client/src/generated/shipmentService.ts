@@ -280,6 +280,8 @@ export interface CreateShipmentResponse {
 }
 
 export interface SubcontractorView {
+  /** Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir */
+  active?: boolean;
   id: string;
   title: string;
 }
@@ -288,6 +290,14 @@ export interface SubcontractorPageResponse {
   items: SubcontractorView[];
   page: PageMetadata;
 }
+
+export type MasterDataStatusFilter = typeof MasterDataStatusFilter[keyof typeof MasterDataStatusFilter];
+
+
+export const MasterDataStatusFilter = {
+  ACTIVE: 'ACTIVE',
+  ALL: 'ALL',
+} as const;
 
 export interface SubcontractorRequest {
   /**
@@ -308,6 +318,8 @@ export interface DriverRequest {
 }
 
 export interface DriverView {
+  /** Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir */
+  active?: boolean;
   id: string;
   fullName: string;
   subcontractorId?: string;
@@ -319,6 +331,8 @@ export interface DriverPageResponse {
 }
 
 export interface VehicleView {
+  /** Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir */
+  active?: boolean;
   id: string;
   plateNo: string;
 }
@@ -345,6 +359,8 @@ export interface SiteRequest {
 }
 
 export interface SiteView {
+  /** Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir */
+  active?: boolean;
   id: string;
   name: string;
 }
@@ -567,6 +583,8 @@ export type PageParameter = number;
 
 export type SizeParameter = number;
 
+export type StatusFilterParameter = MasterDataStatusFilter;
+
 /**
  * Arama metni
  */
@@ -609,6 +627,10 @@ size?: SizeParameter;
  * @maxLength 100
  */
 q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
 };
 
 export type ListDriversParams = {
@@ -627,6 +649,10 @@ size?: SizeParameter;
  * @maxLength 100
  */
 q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
 subcontractorId?: string;
 };
 
@@ -646,6 +672,10 @@ size?: SizeParameter;
  * @maxLength 100
  */
 q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
 };
 
 export type ListSitesParams = {
@@ -664,6 +694,10 @@ size?: SizeParameter;
  * @maxLength 100
  */
 q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
 };
 
 /**

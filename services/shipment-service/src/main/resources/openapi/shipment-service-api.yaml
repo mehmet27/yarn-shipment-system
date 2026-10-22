@@ -248,6 +248,7 @@ paths:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
         - $ref: '#/components/parameters/SearchText'
+        - $ref: '#/components/parameters/StatusFilter'
       responses:
         '200':
           description: Sayfa
@@ -380,6 +381,7 @@ paths:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
         - $ref: '#/components/parameters/SearchText'
+        - $ref: '#/components/parameters/StatusFilter'
         - name: subcontractorId
           in: query
           required: false
@@ -518,6 +520,7 @@ paths:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
         - $ref: '#/components/parameters/SearchText'
+        - $ref: '#/components/parameters/StatusFilter'
       responses:
         '200':
           description: Sayfa
@@ -654,6 +657,7 @@ paths:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
         - $ref: '#/components/parameters/SearchText'
+        - $ref: '#/components/parameters/StatusFilter'
       responses:
         '200':
           description: Sayfa
@@ -902,6 +906,13 @@ components:
         minimum: 1
         maximum: 100
         default: 20
+    StatusFilter:
+      name: status
+      in: query
+      required: false
+      description: ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+      schema:
+        $ref: '#/components/schemas/MasterDataStatusFilter'
     SearchText:
       name: q
       in: query
@@ -1255,6 +1266,10 @@ components:
             $ref: '#/components/schemas/SubcontractorView'
         page:
           $ref: '#/components/schemas/PageMetadata'
+    MasterDataStatusFilter:
+      type: string
+      enum: [ACTIVE, ALL]
+      default: ACTIVE
     SubcontractorRequest:
       type: object
       required: [title]
@@ -1279,6 +1294,9 @@ components:
       type: object
       required: [id, title]
       properties:
+        active:
+          type: boolean
+          description: Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir
         id:
           type: string
           format: uuid
@@ -1298,6 +1316,9 @@ components:
       type: object
       required: [id, fullName]
       properties:
+        active:
+          type: boolean
+          description: Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir
         id:
           type: string
           format: uuid
@@ -1336,6 +1357,9 @@ components:
       type: object
       required: [id, plateNo]
       properties:
+        active:
+          type: boolean
+          description: Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir
         id:
           type: string
           format: uuid
@@ -1355,6 +1379,9 @@ components:
       type: object
       required: [id, name]
       properties:
+        active:
+          type: boolean
+          description: Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir
         id:
           type: string
           format: uuid

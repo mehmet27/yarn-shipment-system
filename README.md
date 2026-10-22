@@ -98,6 +98,21 @@ Ana veri listeleri (`GET /api/v1/master-data/{sites,subcontractors,drivers,vehic
 
 Persistence testleri Testcontainers ile gerçek PostgreSQL'e karşı çalışır; `./mvnw verify` için Docker açık olmalıdır.
 
+## bag-service'i çalıştırma
+
+Çuval kaydı, tek kullanım garantisi ve sevkiyat rezervasyonu `bag_db` veritabanındadır. Compose'un `bag_app` ve
+`bag_migrator` rolleriyle çalışır; `local` profilinde yerel örnek çuvallar (`BAG-0001`…`BAG-0005`) yüklenir.
+
+```bash
+export BAG_DB_APP_PASSWORD=<LOCAL_DB_PASSWORD>
+export BAG_DB_MIGRATOR_PASSWORD=<LOCAL_DB_PASSWORD>
+./mvnw -pl services/bag-service spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+Uçlar (port `8084`, gateway üzerinden `/api/v1/bags/**`): `GET /api/v1/bags/{uniqueKey}`, `POST /api/v1/bags/reservations`
+(çuvalları sevkiyata ayırır; hepsi ya da hiçbiri) ve `POST /api/v1/bags/reservations/release` (sevkiyat iptalinde bırakır).
+Çuval oluşturma ve etiket baskısı sonraki adımlardır.
+
 ## Gateway (BFF)'i çalıştırma
 
 Tarayıcı yalnızca gateway ile konuşur (`http://localhost:8080`). Giriş Keycloak'ta yapılır, token tarayıcıya inmez;
@@ -124,6 +139,7 @@ export REDIS_PASSWORD=<deploy/.env içindeki REDIS_PASSWORD>
 | `GATEWAY_PUBLIC_URL` | `http://localhost:8080` (Keycloak'taki yönlendirme adresi; realm dosyasındakiyle aynı olmalı) |
 | `GATEWAY_POST_LOGIN_URL` / `GATEWAY_POST_LOGOUT_URL` | `http://localhost:5173/` |
 | `SHIPMENT_SERVICE_URL` | `http://localhost:8083` |
+| `BAG_SERVICE_URL` | `http://localhost:8084` |
 | `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` | `localhost` / `6379` / boş (oturumlar Redis'te tutulur; gateway yeniden başlasa da oturum düşmez) |
 
 ## common-web (ortak web altyapısı)

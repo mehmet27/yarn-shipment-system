@@ -9,6 +9,8 @@ import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidNewShipmentException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.SealAlreadyUsedException;
+import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
+import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +84,18 @@ public final class ShipmentExceptionHandler {
     @ExceptionHandler(BagServiceUnavailableException.class)
     public ProblemDetail handleBagServiceUnavailable(HttpServletRequest request) {
         return problem(request, HttpStatus.BAD_GATEWAY, "BAG_SERVICE_UNAVAILABLE");
+    }
+
+    @ExceptionHandler(InvalidMasterDataException.class)
+    public ProblemDetail handleInvalidMasterData(InvalidMasterDataException exception, HttpServletRequest request) {
+        ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_MASTER_DATA");
+        problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
+        return problem;
+    }
+
+    @ExceptionHandler(MasterDataNotFoundException.class)
+    public ProblemDetail handleMasterDataNotFound(HttpServletRequest request) {
+        return problem(request, HttpStatus.NOT_FOUND, "MASTER_DATA_NOT_FOUND");
     }
 
     private ProblemDetail problem(HttpServletRequest request, HttpStatus status, String code) {

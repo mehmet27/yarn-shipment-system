@@ -1,3 +1,4 @@
+import { Can } from '@/modules/auth';
 import { useTranslation } from '@iplik/i18n';
 import { AppShell, Burger, Group, NavLink, Title, useDisclosure } from '@iplik/ui';
 import { NavLink as RouterNavLink, Outlet, useLocation } from 'react-router';
@@ -33,6 +34,14 @@ export function PanelLayout() {
           label={t('nav.shipments')}
           active={pathname.startsWith('/panel/sevkiyat')}
         />
+        <Can permission="MASTER_DATA_MANAGE">
+          <NavLink
+            component={RouterNavLink}
+            to="/panel/tanimlar"
+            label={t('nav.masterData')}
+            active={pathname.startsWith('/panel/tanimlar')}
+          />
+        </Can>
       </AppShell.Navbar>
       <AppShell.Main>
         <Outlet />

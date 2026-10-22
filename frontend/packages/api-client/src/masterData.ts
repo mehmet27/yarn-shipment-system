@@ -19,3 +19,32 @@ export type {
   ShipmentHistoryResponse,
   StatusChangeView,
 } from './generated/shipmentService';
+
+export {
+  activateDriver,
+  activateSite,
+  activateSubcontractor,
+  activateVehicle,
+  createDriver,
+  createSite,
+  createSubcontractor,
+  createVehicle,
+  deactivateDriver,
+  deactivateSite,
+  deactivateSubcontractor,
+  deactivateVehicle,
+  updateDriver,
+  updateSite,
+  updateSubcontractor,
+  updateVehicle,
+} from './generated/shipmentService';
+export type {
+  DriverRequest,
+  DriverView,
+  SiteRequest,
+  SiteView,
+  SubcontractorRequest,
+  SubcontractorView,
+  VehicleRequest,
+  VehicleView,
+} from './generated/shipmentService';

@@ -8,11 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
@@ -23,11 +26,29 @@ class GatewayBrowserSessionTest {
 
     private final MockMvcTester mvc;
     private final ClientRegistrationRepository registrations;
+    private final StringRedisTemplate redis;
 
     @Autowired
-    GatewayBrowserSessionTest(MockMvcTester mvc, ClientRegistrationRepository registrations) {
+    GatewayBrowserSessionTest(
+            MockMvcTester mvc, ClientRegistrationRepository registrations, StringRedisTemplate redis) {
         this.mvc = mvc;
+        this.redis = redis;
         this.registrations = registrations;
+    }
+
+    @DynamicPropertySource
+    static void redisProperties(DynamicPropertyRegistry registry) {
+        TestRedis.register(registry);
+    }
+
+    @Test
+    @DisplayName("Oturum çerezi verilen istekte oturum Redis'e yazılır")
+    void shouldStoreSessionInRedis() {
+        MvcTestResult result = mvc.get().uri("/").exchange();
+
+        assertThat(result.getResponse().getHeaders(HttpHeaders.SET_COOKIE))
+                .anySatisfy(header -> assertThat(header).startsWith("SESSION="));
+        assertThat(redis.keys("yarnshipment:gateway:session:sessions:*")).isNotEmpty();
     }
 
     @Test

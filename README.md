@@ -42,7 +42,7 @@ Ayrıca Keycloak `http://localhost:8180` adresinde açılır (yönetici: `admin`
 `deploy/keycloak/yarnshipment-realm-local.json` dosyasından kendiliğinden içe aktarılır. Realm zaten varsa
 yeniden aktarılmaz; sıfırlamak için `docker compose -f deploy/docker-compose.yml down -v` çalıştırın.
 
-`deploy/.env` içinde iki değer zorunludur (örnekleri `deploy/.env.example` içinde): `KEYCLOAK_TEST_USER_PASSWORD` test kullanıcılarının ortak şifresidir, `GATEWAY_CLIENT_SECRET` gateway'in Keycloak'taki istemci sırrıdır (gateway'i başlatırken aynı değer verilir). Giriş sayfası Türkçe açılır.
+`deploy/.env` içinde üç değer zorunludur (örnekleri `deploy/.env.example` içinde): `KEYCLOAK_TEST_USER_PASSWORD` test kullanıcılarının ortak şifresidir, `GATEWAY_CLIENT_SECRET` gateway'in Keycloak'taki istemci sırrıdır, `REDIS_PASSWORD` gateway oturumlarını tutan Redis'in şifresidir (ikisi de gateway'i başlatırken aynı değerle verilir). Giriş sayfası Türkçe açılır.
 
 Test kullanıcıları (hepsinin şifresi `KEYCLOAK_TEST_USER_PASSWORD`):
 
@@ -107,6 +107,7 @@ yapılandırmayı okur.
 
 ```bash
 export GATEWAY_CLIENT_SECRET=<deploy/.env içindeki GATEWAY_CLIENT_SECRET>
+export REDIS_PASSWORD=<deploy/.env içindeki REDIS_PASSWORD>
 ./mvnw -pl services/gateway spring-boot:run
 ```
 
@@ -123,6 +124,7 @@ export GATEWAY_CLIENT_SECRET=<deploy/.env içindeki GATEWAY_CLIENT_SECRET>
 | `GATEWAY_PUBLIC_URL` | `http://localhost:8080` (Keycloak'taki yönlendirme adresi; realm dosyasındakiyle aynı olmalı) |
 | `GATEWAY_POST_LOGIN_URL` / `GATEWAY_POST_LOGOUT_URL` | `http://localhost:5173/` |
 | `SHIPMENT_SERVICE_URL` | `http://localhost:8083` |
+| `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` | `localhost` / `6379` / boş (oturumlar Redis'te tutulur; gateway yeniden başlasa da oturum düşmez) |
 
 ## common-web (ortak web altyapısı)
 

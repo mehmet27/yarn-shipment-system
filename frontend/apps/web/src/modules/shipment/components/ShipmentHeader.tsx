@@ -3,6 +3,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Group, Paper, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
 import { findDriverName, findSealNo } from './shipmentViews';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
+import { toStatusColor } from './statusColor';
 
 export type ShipmentHeaderProps = {
   shipment: ShipmentDetail;
@@ -19,7 +20,11 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
     { labelKey: 'shipment.field.sealNo', value: findSealNo(shipment) ?? notRecorded },
   ];
   return (
-    <Paper withBorder p="md">
+    <Paper
+      withBorder
+      p="md"
+      style={{ borderTop: `4px solid var(--mantine-color-${toStatusColor(shipment.status)}-5)` }}
+    >
       <Stack>
         <Group>
           <Title order={2}>{shipment.shipmentNo}</Title>
@@ -31,7 +36,7 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
               <Text size="sm" c="dimmed">
                 {t(labelKey)}
               </Text>
-              <Text>{value}</Text>
+              <Text fw={500}>{value}</Text>
             </Stack>
           ))}
         </SimpleGrid>

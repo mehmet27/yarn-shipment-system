@@ -8,7 +8,7 @@ export function SealStep({ draft, onChange }: StepProps) {
   const { t } = useTranslation();
   return (
     <Stack>
-      <Text fw={500}>{t('delivery.seal.condition')}</Text>
+      <Text fw={600}>{t('delivery.seal.condition')}</Text>
       <SegmentedControl
         fullWidth
         aria-label={t('delivery.seal.condition')}

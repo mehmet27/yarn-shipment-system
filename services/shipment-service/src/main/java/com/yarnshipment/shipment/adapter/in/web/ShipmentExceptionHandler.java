@@ -9,6 +9,7 @@ import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidNewShipmentException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.SealAlreadyUsedException;
+import com.yarnshipment.shipment.masterdata.domain.model.DuplicatePlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -96,6 +97,11 @@ public final class ShipmentExceptionHandler {
     @ExceptionHandler(MasterDataNotFoundException.class)
     public ProblemDetail handleMasterDataNotFound(HttpServletRequest request) {
         return problem(request, HttpStatus.NOT_FOUND, "MASTER_DATA_NOT_FOUND");
+    }
+
+    @ExceptionHandler(DuplicatePlateException.class)
+    public ProblemDetail handleDuplicatePlate(HttpServletRequest request) {
+        return problem(request, HttpStatus.CONFLICT, "DUPLICATE_PLATE");
     }
 
     private ProblemDetail problem(HttpServletRequest request, HttpStatus status, String code) {

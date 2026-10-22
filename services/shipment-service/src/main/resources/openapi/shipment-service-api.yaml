@@ -23,6 +23,8 @@ tags:
   - name: MasterData
   - name: SubcontractorManagement
   - name: DriverManagement
+  - name: VehicleManagement
+  - name: SiteManagement
   - name: CurrentUser
 security:
   - bearerAuth: []
@@ -529,6 +531,118 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [VehicleManagement]
+      operationId: createVehicle
+      summary: Araç ekler
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir; başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleRequest'
+      responses:
+        '201':
+          description: Eklendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/master-data/vehicles/{vehicleId}:
+    put:
+      tags: [VehicleManagement]
+      operationId: updateVehicle
+      summary: Araç günceller
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleRequest'
+      responses:
+        '200':
+          description: Güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/master-data/vehicles/{vehicleId}/deactivate:
+    post:
+      tags: [VehicleManagement]
+      operationId: deactivateVehicle
+      summary: Araç pasife alır
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/vehicles/{vehicleId}/activate:
+    post:
+      tags: [VehicleManagement]
+      operationId: activateVehicle
+      summary: Araç yeniden etkinleştirir
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /api/v1/master-data/sites:
     get:
       tags: [MasterData]
@@ -553,6 +667,118 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [SiteManagement]
+      operationId: createSite
+      summary: Lokasyon ekler
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Ad boş olamaz. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteRequest'
+      responses:
+        '201':
+          description: Eklendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/master-data/sites/{siteId}:
+    put:
+      tags: [SiteManagement]
+      operationId: updateSite
+      summary: Lokasyon günceller
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+      parameters:
+        - name: siteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteRequest'
+      responses:
+        '200':
+          description: Güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/master-data/sites/{siteId}/deactivate:
+    post:
+      tags: [SiteManagement]
+      operationId: deactivateSite
+      summary: Lokasyon pasife alır
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+      parameters:
+        - name: siteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/sites/{siteId}/activate:
+    post:
+      tags: [SiteManagement]
+      operationId: activateSite
+      summary: Lokasyon yeniden etkinleştirir
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+      parameters:
+        - name: siteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /api/v1/shipments/{shipmentId}/history:
     get:
       tags: [ShipmentFile]
@@ -697,7 +923,7 @@ components:
     Conflict:
       description: >-
         Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor
-        (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED)
+        (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE)
       content:
         application/problem+json:
           schema:
@@ -1090,6 +1316,22 @@ components:
             $ref: '#/components/schemas/VehicleView'
         page:
           $ref: '#/components/schemas/PageMetadata'
+    VehicleRequest:
+      type: object
+      required: [plateNo]
+      properties:
+        plateNo:
+          type: string
+          minLength: 1
+          maxLength: 20
+    SiteRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
     VehicleView:
       type: object
       required: [id, plateNo]

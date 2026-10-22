@@ -328,6 +328,22 @@ export interface VehiclePageResponse {
   page: PageMetadata;
 }
 
+export interface VehicleRequest {
+  /**
+     * @minLength 1
+     * @maxLength 20
+     */
+  plateNo: string;
+}
+
+export interface SiteRequest {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+}
+
 export interface SiteView {
   id: string;
   name: string;
@@ -518,7 +534,7 @@ export interface DriverShipmentView {
 export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView | DriverShipmentView;
 
 /**
- * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED)
+ * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE)
  */
 export type ConflictResponse = Problem;
 
@@ -916,6 +932,63 @@ export const listVehicles = (
     }
 
 /**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir; başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * @summary Araç ekler
+ */
+export const createVehicle = (
+    vehicleRequest: VehicleRequest,
+ ) => {
+      return customInstance<VehicleView>(
+      {url: `/api/v1/master-data/vehicles`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: vehicleRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+ * @summary Araç günceller
+ */
+export const updateVehicle = (
+    vehicleId: string,
+    vehicleRequest: VehicleRequest,
+ ) => {
+      return customInstance<VehicleView>(
+      {url: `/api/v1/master-data/vehicles/${vehicleId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: vehicleRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+ * @summary Araç pasife alır
+ */
+export const deactivateVehicle = (
+    vehicleId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/vehicles/${vehicleId}/deactivate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * @summary Araç yeniden etkinleştirir
+ */
+export const activateVehicle = (
+    vehicleId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/vehicles/${vehicleId}/activate`, method: 'POST'
+    },
+      );
+    }
+
+/**
  * Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07). Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
  * @summary Lokasyon listesi
  */
@@ -925,6 +998,63 @@ export const listSites = (
       return customInstance<SitePageResponse>(
       {url: `/api/v1/master-data/sites`, method: 'GET',
         params
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Ad boş olamaz. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * @summary Lokasyon ekler
+ */
+export const createSite = (
+    siteRequest: SiteRequest,
+ ) => {
+      return customInstance<SiteView>(
+      {url: `/api/v1/master-data/sites`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: siteRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+ * @summary Lokasyon günceller
+ */
+export const updateSite = (
+    siteId: string,
+    siteRequest: SiteRequest,
+ ) => {
+      return customInstance<SiteView>(
+      {url: `/api/v1/master-data/sites/${siteId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: siteRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+ * @summary Lokasyon pasife alır
+ */
+export const deactivateSite = (
+    siteId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/sites/${siteId}/deactivate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * @summary Lokasyon yeniden etkinleştirir
+ */
+export const activateSite = (
+    siteId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/sites/${siteId}/activate`, method: 'POST'
     },
       );
     }
@@ -1000,7 +1130,15 @@ export type UpdateDriverResult = NonNullable<Awaited<ReturnType<typeof updateDri
 export type DeactivateDriverResult = NonNullable<Awaited<ReturnType<typeof deactivateDriver>>>
 export type ActivateDriverResult = NonNullable<Awaited<ReturnType<typeof activateDriver>>>
 export type ListVehiclesResult = NonNullable<Awaited<ReturnType<typeof listVehicles>>>
+export type CreateVehicleResult = NonNullable<Awaited<ReturnType<typeof createVehicle>>>
+export type UpdateVehicleResult = NonNullable<Awaited<ReturnType<typeof updateVehicle>>>
+export type DeactivateVehicleResult = NonNullable<Awaited<ReturnType<typeof deactivateVehicle>>>
+export type ActivateVehicleResult = NonNullable<Awaited<ReturnType<typeof activateVehicle>>>
 export type ListSitesResult = NonNullable<Awaited<ReturnType<typeof listSites>>>
+export type CreateSiteResult = NonNullable<Awaited<ReturnType<typeof createSite>>>
+export type UpdateSiteResult = NonNullable<Awaited<ReturnType<typeof updateSite>>>
+export type DeactivateSiteResult = NonNullable<Awaited<ReturnType<typeof deactivateSite>>>
+export type ActivateSiteResult = NonNullable<Awaited<ReturnType<typeof activateSite>>>
 export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof getShipmentHistory>>>
 export type AssignShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof assignShipmentBags>>>
 export type GetShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof getShipmentBags>>>

@@ -17,6 +17,16 @@ spring:
             scope: openid,profile
             # Tarayıcı gateway'e geliştirme proxy'si üzerinden (5173) de gelse Keycloak'a kayıtlı adres sabit kalır.
             redirect-uri: ${GATEWAY_PUBLIC_URL:http://localhost:8080}/login/oauth2/code/keycloak
+  # Oturumlar Redis'te tutulur: gateway yeniden başlasa ya da birden çok kopya çalışsa da kullanıcı oturumda kalır.
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  session:
+    data:
+      redis:
+        namespace: yarnshipment:gateway:session
   cloud:
     gateway:
       server:

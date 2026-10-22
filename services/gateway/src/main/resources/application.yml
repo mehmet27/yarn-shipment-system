@@ -40,6 +40,13 @@ spring:
                 # Oturum çerezi servise gitmez; servis yalnızca Bearer token görür.
                 - RemoveRequestHeader=Cookie
                 - TokenRelay=
+            - id: bag-service
+              uri: ${BAG_SERVICE_URL:http://localhost:8084}
+              predicates:
+                - Path=/api/v1/bags/**
+              filters:
+                - RemoveRequestHeader=Cookie
+                - TokenRelay=
 yarnshipment:
   gateway:
     post-login-url: ${GATEWAY_POST_LOGIN_URL:http://localhost:5173/}

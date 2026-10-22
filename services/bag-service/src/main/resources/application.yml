@@ -1,0 +1,40 @@
+# CONF-01: ortamdan gelen değerler ortam değişkeniyle verilir; gizli bilgi bu dosyaya yazılmaz (SEC-14).
+spring:
+  application:
+    name: bag-service
+  datasource:
+    # Uygulama yalnızca DML yetkili rol ile bağlanır; DDL Flyway'in migrator rolüyle yapılır.
+    url: ${BAG_DB_URL:jdbc:postgresql://localhost:5432/bag_db}
+    username: ${BAG_DB_APP_USER:bag_app}
+    password: ${BAG_DB_APP_PASSWORD}
+  flyway:
+    user: ${BAG_DB_MIGRATOR_USER:bag_migrator}
+    password: ${BAG_DB_MIGRATOR_PASSWORD}
+    placeholders:
+      app_role: ${BAG_DB_APP_USER:bag_app}
+      readonly_role: ${BAG_DB_READONLY_USER:bag_readonly}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+  jackson:
+    default-property-inclusion: non_null
+  mvc:
+    problemdetails:
+      enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/yarnshipment}
+          audiences: yarnshipment-api
+server:
+  port: ${SERVER_PORT:8084}

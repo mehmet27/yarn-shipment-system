@@ -1,0 +1,229 @@
+openapi: 3.0.3
+info:
+  title: bag-service API
+  version: 1.0.0
+  description: |
+    Çuval sorgusu ve sevkiyat rezervasyonu (API-01). Bir çuval aynı anda yalnızca bir sevkiyatta olabilir; tek kullanım
+    garantisi bu serviste, tek veritabanı işlemiyle verilir. Rezervasyon aynı sevkiyat için tekrarlanırsa değişiklik
+    yapmaz (idempotent).
+servers:
+  - url: /
+tags:
+  - name: Bags
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/bags/{uniqueKey}:
+    get:
+      tags: [Bags]
+      operationId: getBag
+      summary: Unique Key ile çuval
+      parameters:
+        - $ref: '#/components/parameters/UniqueKey'
+      responses:
+        '200':
+          description: Çuval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BagView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/bags/reservations:
+    post:
+      tags: [Bags]
+      operationId: reserveBags
+      summary: Çuvalları sevkiyata ayırır
+      description: |
+        Hepsi ya da hiçbiri: bir çuval bulunamazsa, kullanılamaz durumdaysa ya da başka sevkiyattaysa hiçbiri
+        ayrılmaz. Aynı sevkiyata zaten ayrılmış çuval hata vermez.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReserveBagsRequest'
+      responses:
+        '200':
+          description: Çuvallar sevkiyata ayrıldı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReserveBagsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/bags/reservations/release:
+    post:
+      tags: [Bags]
+      operationId: releaseBags
+      summary: Sevkiyatın tüm rezervasyonlarını bırakır
+      description: Sevkiyat iptal edilince çağrılır; çuvallar yeniden kullanılabilir olur. Bırakılacak rezervasyon yoksa `releasedCount` 0 döner.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseBagsRequest'
+      responses:
+        '200':
+          description: Rezervasyonlar bırakıldı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseBagsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    UniqueKey:
+      name: uniqueKey
+      in: path
+      required: true
+      description: Etikete basılan çuval anahtarı
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 100
+  responses:
+    BadRequest:
+      description: İstek biçimi hatalı
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unauthorized:
+      description: Oturum yok veya token geçersiz (code AUTHENTICATION_REQUIRED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: İzin yok (ACCESS_DENIED) veya çuval kapsam dışı (OUT_OF_SCOPE)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: Çuval yok (BAG_NOT_FOUND)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Conflict:
+      description: Çuval kullanılamaz (BAG_NOT_AVAILABLE) ya da başka sevkiyatta (BAG_ALREADY_RESERVED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    Problem:
+      description: RFC 9457 hata gövdesi (ERR-07). İstemci kararını `code` alanına göre verir.
+      type: object
+      required: [type, title, status, code]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+        requestId:
+          type: string
+    PackageType:
+      type: string
+      enum: [BAG, BOX, PALLET, BOBBIN]
+    BagStatus:
+      type: string
+      enum: [CREATED, RESERVED, SHIPPED, DELIVERED, VOID]
+    BagView:
+      type: object
+      required: [id, uniqueKey, packageType, lotNo, qualityGradeCode, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        uniqueKey:
+          type: string
+        packageType:
+          $ref: '#/components/schemas/PackageType'
+        lotNo:
+          type: string
+        qualityGradeCode:
+          type: string
+        status:
+          $ref: '#/components/schemas/BagStatus'
+        reservedShipmentId:
+          type: string
+          format: uuid
+          description: Çuval bir sevkiyata ayrılmışsa o sevkiyat
+    ReserveBagsRequest:
+      type: object
+      required: [shipmentId, uniqueKeys]
+      properties:
+        shipmentId:
+          type: string
+          format: uuid
+        uniqueKeys:
+          type: array
+          minItems: 1
+          maxItems: 500
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+    ReserveBagsResponse:
+      type: object
+      required: [bags]
+      properties:
+        bags:
+          type: array
+          items:
+            $ref: '#/components/schemas/BagView'
+    ReleaseBagsRequest:
+      type: object
+      required: [shipmentId, reason]
+      properties:
+        shipmentId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    ReleaseBagsResponse:
+      type: object
+      required: [releasedCount]
+      properties:
+        releasedCount:
+          type: integer
+          format: int32
+          minimum: 0

@@ -10,8 +10,14 @@ import org.jspecify.annotations.Nullable;
  * @param id kimlik
  * @param fullName ad soyad
  * @param subcontractorId bağlı olduğu fasoncu
+ * @param active listelerde görünür mü; pasif kayıt yalnızca yönetici sorgusunda gelir
  */
-public record Driver(UUID id, String fullName, @Nullable UUID subcontractorId) {
+public record Driver(UUID id, String fullName, @Nullable UUID subcontractorId, boolean active) {
+
+    /** Etkin kayıt. */
+    public Driver(UUID id, String fullName, @Nullable UUID subcontractorId) {
+        this(id, fullName, subcontractorId, true);
+    }
 
     public Driver {
         Objects.requireNonNull(id, "id");

@@ -77,6 +77,9 @@ class MasterDataAdapterTest {
         owner.update("UPDATE md_vehicle SET active = false WHERE plate_no = '34ABC123'");
         try {
             assertThat(adapter.findVehicles(query("34ABC")).items()).isEmpty();
+            var withInactive = adapter.findVehicles(new MasterDataQuery("34ABC", 0, PAGE_SIZE, true));
+            assertThat(withInactive.items()).hasSize(1);
+            assertThat(withInactive.items().getFirst().active()).isFalse();
         } finally {
             owner.update("UPDATE md_vehicle SET active = true WHERE plate_no = '34ABC123'");
         }

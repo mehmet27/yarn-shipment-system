@@ -27,12 +27,12 @@ final class PagedQuery {
 
     <T> MasterDataPage<T> page(Select select, MasterDataQuery query, Filters filters, Mapper<T> mapper) {
         String pattern = pattern(query.text());
-        long total = bind(jdbc.sql("SELECT count(*) " + select.from()), pattern, filters)
+        long total = bind(jdbc.sql("SELECT count(*) " + select.from()), pattern, filters, query.includeInactive())
                 .query(Long.class)
                 .single();
         String sql = "SELECT " + select.columns() + " " + select.from() + " ORDER BY " + select.orderBy()
                 + ", id LIMIT :limit OFFSET :offset";
-        List<T> items = bind(jdbc.sql(sql), pattern, filters)
+        List<T> items = bind(jdbc.sql(sql), pattern, filters, query.includeInactive())
                 .param("limit", query.size())
                 .param("offset", (long) query.page() * query.size())
                 .query((rs, rowNumber) -> mapper.apply(rs))
@@ -41,8 +41,9 @@ final class PagedQuery {
     }
 
     private static JdbcClient.StatementSpec bind(
-            JdbcClient.StatementSpec spec, @Nullable String pattern, Filters filters) {
+            JdbcClient.StatementSpec spec, @Nullable String pattern, Filters filters, boolean includeInactive) {
         return spec.param("pattern", pattern)
+                .param("includeInactive", includeInactive)
                 .param("subcontractorId", filters.subcontractorId())
                 .param("allSites", filters.allSites())
                 .param("siteIds", filters.siteIds());

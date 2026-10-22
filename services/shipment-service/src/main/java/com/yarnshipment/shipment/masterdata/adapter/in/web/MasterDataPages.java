@@ -16,12 +16,12 @@ final class MasterDataPages {
 
     static SubcontractorPageResponse subcontractors(MasterDataPage<Subcontractor> page) {
         return new SubcontractorPageResponse(
-                page.items().stream().map(MasterDataPages::view).toList(), metadata(page));
+                page.items().stream().map(MasterDataPages::row).toList(), metadata(page));
     }
 
     static DriverPageResponse drivers(MasterDataPage<Driver> page) {
         return new DriverPageResponse(
-                page.items().stream().map(MasterDataPages::view).toList(), metadata(page));
+                page.items().stream().map(MasterDataPages::row).toList(), metadata(page));
     }
 
     static SubcontractorView view(Subcontractor item) {
@@ -30,6 +30,14 @@ final class MasterDataPages {
 
     static DriverView view(Driver item) {
         return new DriverView(item.id(), item.fullName()).subcontractorId(item.subcontractorId());
+    }
+
+    private static SubcontractorView row(Subcontractor item) {
+        return view(item).active(item.active());
+    }
+
+    private static DriverView row(Driver item) {
+        return view(item).active(item.active());
     }
 
     static PageMetadata metadata(MasterDataPage<?> page) {

@@ -21,13 +21,21 @@ final class VehicleSitePages {
         return new SiteView(item.id(), item.name());
     }
 
+    private static VehicleView row(Vehicle item) {
+        return view(item).active(item.active());
+    }
+
+    private static SiteView row(Site item) {
+        return view(item).active(item.active());
+    }
+
     static VehiclePageResponse vehicles(MasterDataPage<Vehicle> page) {
         return new VehiclePageResponse(
-                page.items().stream().map(VehicleSitePages::view).toList(), MasterDataPages.metadata(page));
+                page.items().stream().map(VehicleSitePages::row).toList(), MasterDataPages.metadata(page));
     }
 
     static SitePageResponse sites(MasterDataPage<Site> page) {
         return new SitePageResponse(
-                page.items().stream().map(VehicleSitePages::view).toList(), MasterDataPages.metadata(page));
+                page.items().stream().map(VehicleSitePages::row).toList(), MasterDataPages.metadata(page));
     }
 }

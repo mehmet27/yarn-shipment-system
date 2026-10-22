@@ -8,8 +8,14 @@ import java.util.UUID;
  *
  * @param id kimlik
  * @param name ad
+ * @param active listelerde görünür mü; pasif kayıt yalnızca yönetici sorgusunda gelir
  */
-public record Site(UUID id, String name) {
+public record Site(UUID id, String name, boolean active) {
+
+    /** Etkin kayıt. */
+    public Site(UUID id, String name) {
+        this(id, name, true);
+    }
 
     public Site {
         Objects.requireNonNull(id, "id");

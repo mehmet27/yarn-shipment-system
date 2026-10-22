@@ -117,6 +117,29 @@ class MasterDataControllerTest {
     }
 
     @Test
+    @DisplayName("Pasif kayıtları yalnızca yönetici isteyebilir; yönetici istediğinde sorguya iletilir")
+    void shouldAllowInactiveOnlyForAdmin() {
+        // given
+        when(vehicles.listVehicles(any())).thenReturn(new MasterDataPage<>(List.of(), 0, SIZE, 0));
+        String uri = "/api/v1/master-data/vehicles?status=ALL";
+
+        // when
+        MvcTestResult denied = get(uri);
+        MvcTestResult allowed = mvc.get()
+                .uri(uri)
+                .with(SecurityMockMvcRequestPostProcessors.authentication(
+                        TestTokens.CONVERTER.convert(TestTokens.token("admin").build())))
+                .exchange();
+
+        // then
+        assertThat(denied).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(allowed).hasStatusOk();
+        ArgumentCaptor<MasterDataQuery> query = ArgumentCaptor.forClass(MasterDataQuery.class);
+        verify(vehicles).listVehicles(query.capture());
+        assertThat(query.getValue().includeInactive()).isTrue();
+    }
+
+    @Test
     @DisplayName("Sayfa boyu 100'ü geçerse 400 döner")
     void shouldRejectTooLargePageSize() {
         assertThat(get("/api/v1/master-data/vehicles?size=101")).hasStatus(HttpStatus.BAD_REQUEST);

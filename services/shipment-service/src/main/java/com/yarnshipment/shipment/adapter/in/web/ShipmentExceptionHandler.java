@@ -2,6 +2,8 @@ package com.yarnshipment.shipment.adapter.in.web;
 
 import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
+import com.yarnshipment.shipment.domain.bag.BagReservationException;
+import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
 import com.yarnshipment.shipment.domain.model.InvalidDeliveryException;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidNewShipmentException;
@@ -66,6 +68,20 @@ public final class ShipmentExceptionHandler {
     @ExceptionHandler(SealAlreadyUsedException.class)
     public ProblemDetail handleSealAlreadyUsed(HttpServletRequest request) {
         return problem(request, HttpStatus.CONFLICT, "SEAL_ALREADY_USED");
+    }
+
+    @ExceptionHandler(BagReservationException.class)
+    public ProblemDetail handleBagReservation(BagReservationException exception, HttpServletRequest request) {
+        return switch (exception.reason()) {
+            case NOT_FOUND -> problem(request, HttpStatus.NOT_FOUND, "BAG_NOT_FOUND");
+            case NOT_AVAILABLE -> problem(request, HttpStatus.CONFLICT, "BAG_NOT_AVAILABLE");
+            case ALREADY_RESERVED -> problem(request, HttpStatus.CONFLICT, "BAG_ALREADY_RESERVED");
+        };
+    }
+
+    @ExceptionHandler(BagServiceUnavailableException.class)
+    public ProblemDetail handleBagServiceUnavailable(HttpServletRequest request) {
+        return problem(request, HttpStatus.BAD_GATEWAY, "BAG_SERVICE_UNAVAILABLE");
     }
 
     private ProblemDetail problem(HttpServletRequest request, HttpStatus status, String code) {

@@ -19,6 +19,7 @@ tags:
   - name: Shipments
   - name: ShipmentCreation
   - name: ShipmentFile
+  - name: ShipmentBags
   - name: MasterData
   - name: CurrentUser
 security:
@@ -361,6 +362,48 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
   /api/v1/shipments/{shipmentId}/bags:
+    post:
+      tags: [ShipmentBags]
+      operationId: assignShipmentBags
+      summary: Çuvalları taslak sevkiyata atar
+      description: |
+        Depo personeli çuvalları okutur ya da listeden seçer; her çuval bag-service'te bu sevkiyata ayrılır ve
+        sevkiyatın çuval listesine yazılır. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Hepsi ya da hiçbiri:
+        bir çuval bulunamazsa (`BAG_NOT_FOUND`), kullanılamaz durumdaysa (`BAG_NOT_AVAILABLE`) ya da başka
+        sevkiyattaysa (`BAG_ALREADY_RESERVED`) hiçbiri atanmaz. Aynı çuvalı tekrar göndermek hata vermez;
+        `assignedCount` yalnızca yeni atananları sayar. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignShipmentBagsRequest'
+      responses:
+        '200':
+          description: Çuvallar atandı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssignShipmentBagsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     get:
       tags: [ShipmentFile]
       operationId: getShipmentBags
@@ -434,7 +477,9 @@ components:
         format: uuid
   responses:
     Conflict:
-      description: Sevkiyatın durumu bu işleme izin vermiyor (code INVALID_SHIPMENT_STATUS)
+      description: >-
+        Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor
+        (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED)
       content:
         application/problem+json:
           schema:
@@ -457,8 +502,14 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
+    BadGateway:
+      description: Çuval servisine ulaşılamadı (code BAG_SERVICE_UNAVAILABLE)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
     NotFound:
-      description: Kayıt yok (SHIPMENT_NOT_FOUND)
+      description: Kayıt yok (SHIPMENT_NOT_FOUND ya da BAG_NOT_FOUND)
       content:
         application/problem+json:
           schema:
@@ -689,6 +740,30 @@ components:
           $ref: '#/components/schemas/ScanMethod'
         document:
           $ref: '#/components/schemas/DeliveryDocument'
+    AssignShipmentBagsRequest:
+      type: object
+      required: [uniqueKeys, scanMethod]
+      properties:
+        uniqueKeys:
+          type: array
+          minItems: 1
+          maxItems: 500
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+        scanMethod:
+          $ref: '#/components/schemas/ScanMethod'
+    AssignShipmentBagsResponse:
+      type: object
+      required: [assignedCount]
+      properties:
+        assignedCount:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Bu istekle yeni atanan çuval sayısı
     CreateShipmentRequest:
       type: object
       required: [siteId, subcontractorId, subcontractorTitle]

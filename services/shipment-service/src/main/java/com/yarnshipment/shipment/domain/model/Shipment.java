@@ -51,6 +51,13 @@ public record Shipment(
         return parties.driverId();
     }
 
+    /** Çuvallar yalnızca çıkış tartımından önce (DRAFT) atanabilir. */
+    public void requireBagsAssignable() {
+        if (status != ShipmentStatus.DRAFT) {
+            throw new InvalidShipmentStatusException(id, status, ShipmentStatus.LOADED);
+        }
+    }
+
     /** Depo çıkış tartımını ve mührü kaydetti (DRAFT → LOADED). */
     public DispatchRecording recordDispatch(DispatchMeasurement measurement, Instant recordedAt) {
         if (status != ShipmentStatus.DRAFT) {

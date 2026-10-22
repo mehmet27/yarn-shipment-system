@@ -233,6 +233,25 @@ export interface DeliveryReceiptRequest {
   document?: DeliveryDocument;
 }
 
+export interface AssignShipmentBagsRequest {
+  /**
+     * @minItems 1
+     * @maxItems 500
+     * @items.minLength 1
+     * @items.maxLength 100
+     */
+  uniqueKeys: string[];
+  scanMethod: ScanMethod;
+}
+
+export interface AssignShipmentBagsResponse {
+  /**
+     * Bu istekle yeni atanan çuval sayısı
+     * @minimum 0
+     */
+  assignedCount: number;
+}
+
 export interface CreateShipmentRequest {
   siteId: string;
   subcontractorId: string;
@@ -481,7 +500,7 @@ export interface DriverShipmentView {
 export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView | DriverShipmentView;
 
 /**
- * Sevkiyatın durumu bu işleme izin vermiyor (code INVALID_SHIPMENT_STATUS)
+ * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED)
  */
 export type ConflictResponse = Problem;
 
@@ -501,7 +520,12 @@ export type UnauthorizedResponse = Problem;
 export type ForbiddenResponse = Problem;
 
 /**
- * Kayıt yok (SHIPMENT_NOT_FOUND)
+ * Çuval servisine ulaşılamadı (code BAG_SERVICE_UNAVAILABLE)
+ */
+export type BadGatewayResponse = Problem;
+
+/**
+ * Kayıt yok (SHIPMENT_NOT_FOUND ya da BAG_NOT_FOUND)
  */
 export type NotFoundResponse = Problem;
 
@@ -787,6 +811,26 @@ export const getShipmentHistory = (
     }
 
 /**
+ * Depo personeli çuvalları okutur ya da listeden seçer; her çuval bag-service'te bu sevkiyata ayrılır ve
+ * sevkiyatın çuval listesine yazılır. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Hepsi ya da hiçbiri:
+ * bir çuval bulunamazsa (`BAG_NOT_FOUND`), kullanılamaz durumdaysa (`BAG_NOT_AVAILABLE`) ya da başka
+ * sevkiyattaysa (`BAG_ALREADY_RESERVED`) hiçbiri atanmaz. Aynı çuvalı tekrar göndermek hata vermez;
+ * `assignedCount` yalnızca yeni atananları sayar. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
+ * @summary Çuvalları taslak sevkiyata atar
+ */
+export const assignShipmentBags = (
+    shipmentId: string,
+    assignShipmentBagsRequest: AssignShipmentBagsRequest,
+ ) => {
+      return customInstance<AssignShipmentBagsResponse>(
+      {url: `/api/v1/shipments/${shipmentId}/bags`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: assignShipmentBagsRequest
+    },
+      );
+    }
+
+/**
  * Kör giriş (SEC-05): çıkışta atanan çuval listesi (`dispatchBags`) fasoncu ve şoför görünümünde,
  * teslimde okutulanlar (`deliveryScans`) depo ve şoför görünümünde hiç yer almaz. Teslim okutmaları teslim
  * kaydı gönderildikten sonra oluşur; önce boştur. Listeler sayfalanmaz: bir sevkiyatın çuval sayısıyla sınırlıdır.
@@ -818,4 +862,5 @@ export type ListDriversResult = NonNullable<Awaited<ReturnType<typeof listDriver
 export type ListVehiclesResult = NonNullable<Awaited<ReturnType<typeof listVehicles>>>
 export type ListSitesResult = NonNullable<Awaited<ReturnType<typeof listSites>>>
 export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof getShipmentHistory>>>
+export type AssignShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof assignShipmentBags>>>
 export type GetShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof getShipmentBags>>>

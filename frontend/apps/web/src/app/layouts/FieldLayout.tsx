@@ -10,7 +10,7 @@ export function FieldLayout() {
   const { t } = useTranslation();
   return (
     <AppShell header={{ height: HEADER_HEIGHT_PX }} padding="sm">
-      <AppShell.Header>
+      <AppShell.Header bg="brand.7" c="white">
         <Group h="100%" px="sm" justify="space-between">
           <Title order={5}>{t('nav.field')}</Title>
           <LogoutButton />

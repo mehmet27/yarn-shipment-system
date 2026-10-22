@@ -1,1 +1,7 @@
+@import '@fontsource-variable/inter/index.css';
 @import '@mantine/core/styles.css';
+
+/* Hafif gri zemin: beyaz kartlar ve girdiler zeminden net ayrılır (özellikle dış mekân/güneş altında). */
+body {
+  background: var(--mantine-color-gray-0);
+}

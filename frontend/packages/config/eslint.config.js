@@ -119,6 +119,8 @@ function restrictImports({ allowAxios = false, allowMantine = false } = {}) {
   ];
 }
 
+const COLOR_LITERAL_SELECTOR = 'Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgba?\\(/]';
+
 const restrictedImports = {
   'no-restricted-imports': restrictImports(),
   'no-restricted-globals': [
@@ -137,7 +139,7 @@ const restrictedImports = {
       message: 'FE-SEC-02: rol yerine izin anahtarı (usePermission / <Can>).',
     },
     {
-      selector: 'Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgba?\\(/]',
+      selector: COLOR_LITERAL_SELECTOR,
       message: 'FE-UI-02: renkler tema token’larından gelir.',
     },
   ],
@@ -265,6 +267,18 @@ export function createConfig({ tsconfigRootDir }) {
     {
       files: ['packages/ui/src/**'],
       rules: { 'no-restricted-imports': restrictImports({ allowMantine: true }) },
+    },
+    {
+      // Tema dosyası renk token'larının tanımlandığı tek yerdir (FE-UI-02'nin kaynağı).
+      files: ['packages/ui/src/theme.ts'],
+      rules: {
+        'no-restricted-syntax': [
+          'error',
+          ...restrictedImports['no-restricted-syntax']
+            .slice(1)
+            .filter((rule) => rule.selector !== COLOR_LITERAL_SELECTOR),
+        ],
+      },
     },
     {
       files: ['packages/api-client/src/**'],

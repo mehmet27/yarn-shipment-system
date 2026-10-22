@@ -9,7 +9,7 @@ async function logoutAndRedirect(): Promise<void> {
 export function LogoutButton() {
   const { t } = useTranslation();
   return (
-    <Button variant="subtle" onClick={() => void logoutAndRedirect()}>
+    <Button variant="subtle" color="white" onClick={() => void logoutAndRedirect()}>
       {t('app.logout')}
     </Button>
   );

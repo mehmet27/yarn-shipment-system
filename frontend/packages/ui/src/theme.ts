@@ -33,6 +33,10 @@ export const theme = createTheme({
   fontFamily: '"Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
   headings: { fontWeight: '700' },
   components: {
+    InputWrapper: {
+      styles: { label: { fontWeight: 600, marginBottom: 'var(--mantine-spacing-xs)' } },
+    },
+    Input: { styles: { input: { borderColor: 'var(--mantine-color-gray-5)' } } },
     Paper: { defaultProps: { radius: 'lg', shadow: 'xs' } },
     Badge: { defaultProps: { radius: 'sm', variant: 'light' } },
     Alert: { defaultProps: { radius: 'md', variant: 'light' } },

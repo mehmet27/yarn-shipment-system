@@ -95,6 +95,7 @@ Ana veri listeleri (`GET /api/v1/master-data/{sites,subcontractors,drivers,vehic
 | `SHIPMENT_DB_APP_USER` / `SHIPMENT_DB_MIGRATOR_USER` | `shipment_app` / `shipment_migrator` |
 | `KEYCLOAK_ISSUER_URI` | `http://localhost:8180/realms/yarnshipment` |
 | `SERVER_PORT` | `8083` |
+| `YARNSHIPMENT_BAG_SERVICE_URL` | `http://localhost:8084` (çuval atama için bag-service; istek sahibinin token'ı iletilir, bu yüzden bag-service de çalışıyor olmalı) |
 
 Persistence testleri Testcontainers ile gerçek PostgreSQL'e karşı çalışır; `./mvnw verify` için Docker açık olmalıdır.
 

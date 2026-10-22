@@ -4,6 +4,7 @@ import type {
   ShipmentStatus,
   Weighing,
 } from '@iplik/api-client';
+import { resetMasterData } from './masterData';
 import { MOCK_SHIPMENTS } from './shipments';
 
 /** Sahte API'nin değişebilir durumu; testler arasında resetMockStore ile sıfırlanır. */
@@ -65,5 +66,6 @@ export function addMockShipment(request: CreateShipmentRequest): InternalShipmen
 }
 
 export function resetMockStore(): void {
+  resetMasterData();
   shipments = [...MOCK_SHIPMENTS];
 }

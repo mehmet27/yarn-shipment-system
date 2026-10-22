@@ -11,13 +11,7 @@ import {
   recordMockDispatch,
   updateMockShipmentStatus,
 } from './mockStore';
-import {
-  matchesQuery,
-  MOCK_DRIVERS,
-  MOCK_SITES,
-  MOCK_SUBCONTRACTORS,
-  MOCK_VEHICLES,
-} from './masterData';
+import { createMasterDataHandlers } from './masterDataHandlers';
 import { toBagsView, toHistory } from './shipmentTabs';
 import { isInScope, toDetailView, toSummary } from './shipmentViews';
 import { createMockUser } from './users';
@@ -174,58 +168,6 @@ const dispatchWeighingHandler = http.post(
   },
 );
 
-/** Ana veri liste uçları: `q` araması ve sayfalama gerçek sözleşmeyle aynıdır. */
-type MasterDataSource<T> = {
-  path: string;
-  rows: readonly T[];
-  searchText: (row: T) => string;
-  isInScopeRow?: (row: T, params: URLSearchParams) => boolean;
-};
-
-function masterDataHandler<T>({
-  path,
-  rows,
-  searchText,
-  isInScopeRow = () => true,
-}: MasterDataSource<T>) {
-  return http.get(`/api/v1/master-data/${path}`, ({ request }) => {
-    const params = new URL(request.url).searchParams;
-    const page = Number(params.get('page') ?? '0');
-    const size = Number(params.get('size') ?? String(DEFAULT_PAGE_SIZE));
-    const matching = rows.filter(
-      (row) => matchesQuery(searchText(row), params.get('q')) && isInScopeRow(row, params),
-    );
-    return HttpResponse.json({
-      items: matching.slice(page * size, (page + 1) * size),
-      page: {
-        number: page,
-        size,
-        totalElements: matching.length,
-        totalPages: Math.ceil(matching.length / size),
-      },
-    });
-  });
-}
-
-const masterDataHandlers = [
-  masterDataHandler({
-    path: 'subcontractors',
-    rows: MOCK_SUBCONTRACTORS,
-    searchText: (row) => row.title,
-  }),
-  masterDataHandler({
-    path: 'drivers',
-    rows: MOCK_DRIVERS,
-    searchText: (row) => row.fullName,
-    isInScopeRow: (row, params) => {
-      const subcontractorId = params.get('subcontractorId');
-      return subcontractorId === null || row.subcontractorId === subcontractorId;
-    },
-  }),
-  masterDataHandler({ path: 'vehicles', rows: MOCK_VEHICLES, searchText: (row) => row.plateNo }),
-  masterDataHandler({ path: 'sites', rows: MOCK_SITES, searchText: (row) => row.name }),
-];
-
 /** Sevkiyat oluşturma: zorunlu alanlar eksikse 400, aksi halde 201 ve yeni numara. */
 const createShipmentHandler = http.post(SHIPMENTS_PATH, async ({ request }) => {
   const json: unknown = await request.json();
@@ -261,7 +203,7 @@ export function createHandlers(role: Role) {
     dispatchWeighingHandler,
     ...createTabHandlers(role),
     createShipmentHandler,
-    ...masterDataHandlers,
+    ...createMasterDataHandlers(createMockUser(role).permissions),
     logoutHandler,
   ];
 }

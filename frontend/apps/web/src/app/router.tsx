@@ -1,4 +1,5 @@
 import { RequireAuth, RequirePermission } from '@/modules/auth';
+import { masterDataPanelRoutes } from '@/modules/masterdata';
 import { shipmentFieldRoutes, shipmentPanelRoutes } from '@/modules/shipment';
 import { createBrowserRouter } from 'react-router';
 import type { RouteObject } from 'react-router';
@@ -27,7 +28,11 @@ export const appRoutes: RouteObject[] = [
         </RequirePermission>
       </RequireAuth>
     ),
-    children: [{ index: true, element: <PanelHomePage /> }, ...shipmentPanelRoutes],
+    children: [
+      { index: true, element: <PanelHomePage /> },
+      ...shipmentPanelRoutes,
+      ...masterDataPanelRoutes,
+    ],
   },
   {
     path: '/saha',

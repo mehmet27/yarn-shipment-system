@@ -49,6 +49,12 @@ export const theme = createTheme({
       defaultProps: { size: 'md' },
       styles: { root: { minWidth: TOUCH_TARGET, minHeight: TOUCH_TARGET } },
     },
+    Switch: {
+      styles: {
+        body: { minHeight: TOUCH_TARGET, alignItems: 'center' },
+        root: { minHeight: TOUCH_TARGET },
+      },
+    },
     NavLink: {
       styles: { root: { minHeight: TOUCH_TARGET, borderRadius: 'var(--mantine-radius-md)' } },
     },

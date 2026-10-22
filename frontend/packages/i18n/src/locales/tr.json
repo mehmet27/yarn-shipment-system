@@ -13,7 +13,8 @@
   "nav": {
     "panel": "Yönetim Paneli",
     "field": "Saha",
-    "shipments": "Sevkiyatlar"
+    "shipments": "Sevkiyatlar",
+    "masterData": "Tanımlar"
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}"
@@ -181,6 +182,44 @@
     "errors": {
       "siteRequired": "Lokasyon seçin.",
       "subcontractorRequired": "Fasoncu seçin."
+    }
+  },
+  "masterData": {
+    "title": "Tanımlar",
+    "add": "Ekle",
+    "edit": "Düzenle",
+    "save": "Kaydet",
+    "search": "Ara",
+    "deactivate": "Pasife al",
+    "activate": "Aktifleştir",
+    "inactive": "Pasif",
+    "showInactive": "Pasifleri göster",
+    "empty": "Kayıt yok.",
+    "owner": "Fasoncu (isteğe bağlı)",
+    "ownerHint": "Boş bırakırsanız kendi şoförümüzdür.",
+    "saveFailed": "Kayıt kaydedilemedi. Lütfen tekrar deneyin.",
+    "duplicatePlate": "Bu plaka başka bir araçta kullanılıyor.",
+    "errors": {
+      "labelRequired": "Bu alan boş olamaz.",
+      "labelTooLong": "Metin çok uzun."
+    },
+    "kinds": {
+      "subcontractor": {
+        "tab": "Fasoncular",
+        "field": "Fasoncu ünvanı"
+      },
+      "driver": {
+        "tab": "Şoförler",
+        "field": "Ad soyad"
+      },
+      "vehicle": {
+        "tab": "Araçlar",
+        "field": "Plaka"
+      },
+      "site": {
+        "tab": "Lokasyonlar",
+        "field": "Lokasyon adı"
+      }
     }
   }
 }

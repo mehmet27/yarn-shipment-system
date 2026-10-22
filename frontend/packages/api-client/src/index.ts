@@ -51,3 +51,31 @@ export type {
   ShipmentHistoryResponse,
   StatusChangeView,
 } from './masterData';
+export {
+  activateDriver,
+  activateSite,
+  activateSubcontractor,
+  activateVehicle,
+  createDriver,
+  createSite,
+  createSubcontractor,
+  createVehicle,
+  deactivateDriver,
+  deactivateSite,
+  deactivateSubcontractor,
+  deactivateVehicle,
+  updateDriver,
+  updateSite,
+  updateSubcontractor,
+  updateVehicle,
+} from './masterData';
+export type {
+  DriverRequest,
+  DriverView,
+  SiteRequest,
+  SiteView,
+  SubcontractorRequest,
+  SubcontractorView,
+  VehicleRequest,
+  VehicleView,
+} from './masterData';

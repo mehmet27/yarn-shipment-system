@@ -1,0 +1,1 @@
+export { masterDataPanelRoutes } from './routes';

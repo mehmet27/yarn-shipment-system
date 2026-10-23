@@ -51,14 +51,19 @@ final class MasterDataAdapter implements MasterDataQueryPort {
     @Override
     public MasterDataPage<Driver> findDrivers(MasterDataQuery query, @Nullable UUID subcontractorId) {
         return paged.page(
-                new PagedQuery.Select(DRIVERS, "full_name", "id, full_name, subcontractor_id, active"),
+                new PagedQuery.Select(
+                        DRIVERS,
+                        "full_name",
+                        "id, full_name, subcontractor_id, active, (SELECT s.title FROM md_subcontractor s"
+                                + " WHERE s.id = md_driver.subcontractor_id) AS subcontractor_title"),
                 query,
                 new PagedQuery.Filters(subcontractorId, true, PagedQuery.NO_SITES),
                 rs -> new Driver(
                         rs.getObject("id", UUID.class),
                         rs.getString("full_name"),
                         rs.getObject("subcontractor_id", UUID.class),
-                        rs.getBoolean("active")));
+                        rs.getBoolean("active"),
+                        rs.getString("subcontractor_title")));
     }
 
     @Override

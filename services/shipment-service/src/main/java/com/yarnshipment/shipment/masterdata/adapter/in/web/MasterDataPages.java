@@ -37,7 +37,7 @@ final class MasterDataPages {
     }
 
     private static DriverView row(Driver item) {
-        return view(item).active(item.active());
+        return view(item).active(item.active()).subcontractorTitle(item.subcontractorTitle());
     }
 
     static PageMetadata metadata(MasterDataPage<?> page) {

@@ -331,6 +331,8 @@ export interface DriverView {
   id: string;
   fullName: string;
   subcontractorId?: string;
+  /** Bağlı fasoncunun unvanı; yalnızca liste yanıtında dolar */
+  subcontractorTitle?: string;
 }
 
 export interface DriverPageResponse {

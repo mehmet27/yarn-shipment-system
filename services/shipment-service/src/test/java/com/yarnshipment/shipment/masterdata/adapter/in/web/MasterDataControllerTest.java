@@ -66,7 +66,7 @@ class MasterDataControllerTest {
         when(drivers.listDrivers(any(), any()))
                 .thenReturn(new MasterDataPage<>(
                         List.of(
-                                new Driver(DRIVER_ID, "Ali Yılmaz", SUBCONTRACTOR_ID),
+                                new Driver(DRIVER_ID, "Ali Yılmaz", SUBCONTRACTOR_ID, true, "Örnek Tekstil"),
                                 new Driver(UUID.randomUUID(), "Serbest", null)),
                         0,
                         SIZE,
@@ -82,7 +82,12 @@ class MasterDataControllerTest {
                 .bodyJson()
                 .extractingPath("$.items[0].subcontractorId")
                 .isEqualTo(SUBCONTRACTOR_ID.toString());
+        assertThat(result)
+                .bodyJson()
+                .extractingPath("$.items[0].subcontractorTitle")
+                .isEqualTo("Örnek Tekstil");
         assertThat(result).bodyJson().doesNotHavePath("$.items[1].subcontractorId");
+        assertThat(result).bodyJson().doesNotHavePath("$.items[1].subcontractorTitle");
         assertThat(result).bodyJson().extractingPath("$.page.totalPages").isEqualTo(1);
         ArgumentCaptor<MasterDataQuery> query = ArgumentCaptor.forClass(MasterDataQuery.class);
         verify(drivers).listDrivers(query.capture(), any());

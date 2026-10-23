@@ -64,16 +64,28 @@ const subcontractor: Adapter = {
     discard(isActive ? activateSubcontractor(id) : deactivateSubcontractor(id)),
 };
 
+/** Şoför satırında fasoncu ünvanı için fasoncu listesi tek sayfada okunur. */
+const OWNER_LOOKUP_SIZE = 100;
+
 const driver: Adapter = {
   async list(params) {
-    const page = await listDrivers(toQuery(params));
+    const [page, owners] = await Promise.all([
+      listDrivers(toQuery(params)),
+      listSubcontractors({ page: 0, size: OWNER_LOOKUP_SIZE, status: 'ALL' }),
+    ]);
+    const titles = new Map(owners.items.map((owner) => [owner.id, owner.title]));
     return {
-      rows: page.items.map((row) => ({
-        id: row.id,
-        label: row.fullName,
-        isActive: row.active ?? true,
-        ...(row.subcontractorId === undefined ? {} : { subcontractorId: row.subcontractorId }),
-      })),
+      rows: page.items.map((row) => {
+        const ownerTitle =
+          row.subcontractorId === undefined ? undefined : titles.get(row.subcontractorId);
+        return {
+          id: row.id,
+          label: row.fullName,
+          isActive: row.active ?? true,
+          ...(row.subcontractorId === undefined ? {} : { subcontractorId: row.subcontractorId }),
+          ...(ownerTitle === undefined ? {} : { ownerTitle }),
+        };
+      }),
       totalPages: page.page.totalPages,
     };
   },

@@ -22,6 +22,13 @@ export function RecordCard({ kind, record, onEdit }: RecordCardProps) {
           </Text>
           {!record.isActive && <Badge color="gray">{t('masterData.inactive')}</Badge>}
         </Group>
+        {kind === 'driver' && (
+          <Text size="sm" c="dimmed">
+            {record.ownerTitle === undefined
+              ? t('masterData.noOwner')
+              : t('masterData.ownerOf', { title: record.ownerTitle })}
+          </Text>
+        )}
         <Group grow>
           <Button
             variant="default"

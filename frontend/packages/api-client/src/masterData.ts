@@ -54,3 +54,6 @@ export type {
   AssignShipmentBagsRequest,
   AssignShipmentBagsResponse,
 } from './generated/shipmentService';
+
+export { cancelShipment } from './generated/shipmentService';
+export type { CancelShipmentRequest } from './generated/shipmentService';

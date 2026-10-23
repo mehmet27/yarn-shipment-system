@@ -2,6 +2,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Button, Stack, Tabs, Text } from '@iplik/ui';
 import { Link, useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
+import { CancelShipmentForm } from '../components/CancelShipmentForm';
 import { BagsTab } from '../components/BagsTab';
 import { HistoryTab } from '../components/HistoryTab';
 import { ShipmentHeader } from '../components/ShipmentHeader';
@@ -25,6 +26,9 @@ export function ShipmentFilePage() {
             <Button component={Link} to="cikis" relative="path" w="fit-content">
               {t('shipment.file.recordDispatch')}
             </Button>
+          )}
+          {shipment.allowedActions.includes('CANCEL') && (
+            <CancelShipmentForm shipmentId={shipmentId} />
           )}
           <Tabs defaultValue="weights" keepMounted={false}>
             <Tabs.List>

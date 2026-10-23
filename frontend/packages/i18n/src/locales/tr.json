@@ -51,6 +51,17 @@
       "status": "Durum",
       "sealNo": "Mühür no"
     },
+    "cancel": {
+      "open": "İptal et",
+      "reason": "İptal gerekçesi",
+      "confirm": "Sevkiyatı iptal et",
+      "dismiss": "Vazgeç",
+      "errors": {
+        "INVALID_SHIPMENT_STATUS": "Yola çıkmış sevkiyat iptal edilemez.",
+        "BAG_SERVICE_UNAVAILABLE": "Çuval servisi yanıt vermiyor; iptal yapılmadı. Lütfen tekrar deneyin.",
+        "unknown": "Sevkiyat iptal edilemedi. Lütfen tekrar deneyin."
+      }
+    },
     "file": {
       "tabs": {
         "weights": "Kilolar",

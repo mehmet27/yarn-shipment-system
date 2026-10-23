@@ -1,53 +1,51 @@
 # Şoför ve fasoncuya giriş hesabı açma
 
-Şoför ve fasoncu kaydı uygulamada (`POST /api/v1/master-data/drivers` ve `/subcontractors`) açılır; **giriş hesabı** ise
-Keycloak'ta ayrıca açılır. Uygulama henüz Keycloak'ta kullanıcı oluşturmaz. İki adım bilinçli olarak ayrıdır: kayıt
-açmak yönetici işidir (`MASTER_DATA_MANAGE`), hesap açmak Keycloak yöneticisi işidir. Otomatik hesap açma (Keycloak
-Admin API'si ile) sonraki iştir.
+Şoför ve fasoncu kaydı uygulamada (`POST /api/v1/master-data/drivers` ve `/subcontractors`) açılır; **giriş hesabı**
+Keycloak'ta tutulur. Hesabı yönetici uygulamadan açar, Keycloak adımlarını sistem yapar:
 
-> Not: Bu adımlar realm dosyasındaki (`deploy/keycloak/yarnshipment-realm-local.json`) örnek kullanıcılardan
-> (`sofor`, `fasoncu`) türetilmiştir. Gerçek Keycloak üzerinde uçtan uca denenmemiştir; ilk uygulamada bir test
-> hesabıyla doğrulayın.
-
-## 1. Kaydı uygulamada aç
-
-Yönetici olarak şoförü ya da fasoncuyu ekleyin ve dönen `id` değerini not edin. Şoför fasoncuya bağlıysa önce fasoncu
-kaydı açılmış olmalıdır.
-
-## 2. Keycloak'ta kullanıcıyı oluştur
-
-Yönetim konsolunda (`http://localhost:8180`, `yarnshipment` realm'i) **Users → Add user**:
-
-| Alan | Değer |
+| Kayıt | Uç |
 |---|---|
-| Username | Kişinin giriş adı (ör. `ali.yilmaz`) |
-| Required user actions | `Update Password` (ilk girişte şifre değiştirsin) |
+| Şoför | `POST /api/v1/master-data/drivers/{driverId}/login-account` |
+| Fasoncu | `POST /api/v1/master-data/subcontractors/{subcontractorId}/login-account` |
 
-Ardından **Credentials** sekmesinde geçici şifre verin.
+İstek gövdesi: `username` (3-64 karakter; küçük harf, rakam, `.`, `_`, `-`), isteğe bağlı `email` ve `siteIds`
+(kişinin sevkiyatlarını göreceği etkin lokasyonlar, en az bir tane). Yalnızca `MASTER_DATA_MANAGE` yetkisi olan
+yönetici çağırabilir. Yanıt (201) giriş adını ve **geçici şifreyi** döner; şifre başka hiçbir yerde saklanmaz ya da
+loglanmaz, yöneticinin kişiye iletmesi gerekir. Kişi ilk girişte şifresini değiştirmek zorundadır.
 
-## 3. Rolü ver
+Sistem Keycloak'ta şunları yapar: kullanıcıyı açar (geçici şifre + `UPDATE_PASSWORD`), şoför için `driver`, fasoncu için
+`subcontractor` rolünü verir, kayıt kimliğini (`driver_id` / `subcontractor_id`) ve `site_ids` özniteliklerini yazar.
+Rol verilemezse açılan kullanıcı silinir; yarım hesap kalmaz.
 
-**Role mapping → Assign role**: şoför için `driver`, fasoncu için `subcontractor`.
+| Durum | Yanıt |
+|---|---|
+| Kayıt yok ya da pasif | 404 `MASTER_DATA_NOT_FOUND` |
+| Lokasyon boş, yok ya da pasif | 400 `INVALID_MASTER_DATA` (`errors[0].field` = `siteIds`) |
+| Kayıt için hesap zaten var ya da giriş adı alınmış | 409 `LOGIN_ACCOUNT_EXISTS` |
+| Keycloak'a ulaşılamadı ya da hesap açma yapılandırılmamış | 502 `LOGIN_ACCOUNT_UNAVAILABLE` |
 
-## 4. Kimlik ve lokasyon özniteliklerini ekle
+## Kurulum: servis hesabı istemcisi
 
-**Attributes** sekmesinde (değerler ilk adımdaki kayıt kimlikleridir; claim adları tam böyle yazılmalıdır):
+shipment-service Keycloak'a `yarnshipment-admin` servis hesabıyla bağlanır (yalnızca `manage-users`, `view-users`,
+`view-realm` yetkisi). Sırrı `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET` ortam değişkeniyle verilir; boşsa uçlar
+502 döner.
 
-| Kullanıcı | Öznitelik | Değer |
-|---|---|---|
-| Şoför | `driver_id` | Şoför kaydının `id`'si |
-| Fasoncu | `subcontractor_id` | Fasoncu kaydının `id`'si |
-| İkisi de | `site_ids` | Görebileceği lokasyon `id`'leri (her biri ayrı değer) |
+- **Yeni kurulum**: istemci `deploy/keycloak/yarnshipment-realm-local.json` ile gelir. Sır `deploy/.env` içindeki
+  `KEYCLOAK_ADMIN_CLIENT_SECRET` değeridir (yoksa `local-admin-client-secret`).
+- **Daha önce kurulmuş Keycloak**: realm dosyası yalnızca realm yokken içe aktarıldığı için istemciyi şu betikle ekleyin:
 
-Şoför fasoncuya bağlı çalışıyorsa yalnızca `driver_id` yeter; sevkiyat görünürlüğü şoförün kendi kimliğine göre
-verilir. `site_ids` boşsa kişi hiçbir lokasyonun sevkiyatını göremez (GEN-07).
+  ```
+  KEYCLOAK_ADMIN_PASSWORD=<deploy/.env değeri> KEYCLOAK_ADMIN_CLIENT_SECRET=<seçtiğiniz sır> \
+    node tools/keycloak/setup-admin-client.mjs
+  ```
 
-## 5. Doğrula
+  Ardından shipment-service'i aynı sırla başlatın:
+  `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET=<aynı sır>`.
 
-Kullanıcıyla `http://localhost:5173` adresinden giriş yapın; kendi sevkiyatlarını görmeli, başkalarınınkini
-görmemelidir. Token'daki claim'leri görmek için `tools/keycloak/verify-realm.mjs` betiğini kullanabilirsiniz.
+## Sonradan
 
-## Kayıt pasife alınınca
-
-Kaydı uygulamada pasife almak giriş hesabını kapatmaz. Kişi artık çalışmıyorsa Keycloak'ta kullanıcıyı da
-**devre dışı bırakın** (`Enabled` kapalı).
+- Kaydı uygulamada pasife almak giriş hesabını **kapatmaz**; kişi artık çalışmıyorsa Keycloak'ta kullanıcıyı
+  devre dışı bırakın (`Enabled` kapalı). Bunun otomatikleştirilmesi sonraki iştir.
+- Hesap açıldıktan sonra şifre sıfırlama ve lokasyon değiştirme Keycloak konsolundan yapılır.
+- Doğrulama: kullanıcıyla `http://localhost:5173` adresinden giriş yapın; kendi sevkiyatlarını görmeli, başkalarınınkini
+  görmemelidir. Token'daki claim'leri `tools/keycloak/verify-realm.mjs` ile görebilirsiniz.

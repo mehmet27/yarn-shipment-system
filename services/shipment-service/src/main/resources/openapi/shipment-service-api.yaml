@@ -487,6 +487,92 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/drivers/{driverId}/login-account:
+    post:
+      tags: [DriverManagement]
+      operationId: createDriverLoginAccount
+      summary: Şoför için giriş hesabı açar
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Keycloak'ta kullanıcıyı geçici şifre, rol ve kimlik/lokasyon
+        öznitelikleriyle açar; kişi ilk girişte şifresini değiştirir. Geçici şifre yalnızca bu yanıtta döner,
+        saklanmaz. Kayıt etkin olmalı, `siteIds` etkin lokasyonlardan oluşmalıdır (`INVALID_MASTER_DATA`). Kayıt için
+        hesap zaten varsa ya da giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak'a ulaşılamazsa ya da
+        yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
+      parameters:
+        - name: driverId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginAccountRequest'
+      responses:
+        '201':
+          description: Hesap açıldı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginAccountResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+  /api/v1/master-data/subcontractors/{subcontractorId}/login-account:
+    post:
+      tags: [SubcontractorManagement]
+      operationId: createSubcontractorLoginAccount
+      summary: Fasoncu için giriş hesabı açar
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Keycloak'ta kullanıcıyı geçici şifre, rol ve kimlik/lokasyon
+        öznitelikleriyle açar; kişi ilk girişte şifresini değiştirir. Geçici şifre yalnızca bu yanıtta döner,
+        saklanmaz. Kayıt etkin olmalı, `siteIds` etkin lokasyonlardan oluşmalıdır (`INVALID_MASTER_DATA`). Kayıt için
+        hesap zaten varsa ya da giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak'a ulaşılamazsa ya da
+        yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
+      parameters:
+        - name: subcontractorId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginAccountRequest'
+      responses:
+        '201':
+          description: Hesap açıldı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginAccountResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   /api/v1/master-data/drivers/{driverId}/activate:
     post:
       tags: [DriverManagement]
@@ -1415,6 +1501,36 @@ components:
         subcontractorTitle:
           type: string
           description: Bağlı fasoncunun unvanı; yalnızca liste yanıtında dolar
+    LoginAccountRequest:
+      type: object
+      required: [username, siteIds]
+      properties:
+        username:
+          type: string
+          pattern: '^[a-z0-9][a-z0-9._-]{2,63}$'
+          description: Giriş adı; küçük harf, rakam, nokta, alt çizgi ve tire
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        siteIds:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          description: Kişinin sevkiyatlarını göreceği etkin lokasyonlar
+          items:
+            type: string
+            format: uuid
+    LoginAccountResponse:
+      type: object
+      required: [username, temporaryPassword]
+      properties:
+        username:
+          type: string
+        temporaryPassword:
+          type: string
+          description: Geçici şifre; yalnızca bu yanıtta görünür, ilk girişte değiştirilir
     VehiclePageResponse:
       type: object
       required: [items, page]

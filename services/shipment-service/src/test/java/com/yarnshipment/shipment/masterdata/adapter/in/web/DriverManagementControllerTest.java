@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.ChangeDriverStatusUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.CreateDriverLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateDriverUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.UpdateDriverUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.Driver;
@@ -49,6 +50,9 @@ class DriverManagementControllerTest {
 
     @MockitoBean
     private ChangeDriverStatusUseCase driverStatus;
+
+    @MockitoBean
+    private CreateDriverLoginAccountUseCase driverLoginAccount;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

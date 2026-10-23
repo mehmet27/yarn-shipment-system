@@ -102,6 +102,8 @@ Fasoncu ve şoför yönetimi yalnızca yöneticidedir (`MASTER_DATA_MANAGE`): `P
 | `KEYCLOAK_ISSUER_URI` | `http://localhost:8180/realms/yarnshipment` |
 | `SERVER_PORT` | `8083` |
 | `YARNSHIPMENT_BAG_SERVICE_URL` | `http://localhost:8084` (çuval atama için bag-service; istek sahibinin token'ı iletilir, bu yüzden bag-service de çalışıyor olmalı) |
+| `YARNSHIPMENT_KEYCLOAK_ADMIN_URL` / `YARNSHIPMENT_KEYCLOAK_ADMIN_REALM` / `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_ID` | `http://localhost:8180` / `yarnshipment` / `yarnshipment-admin` (şoför ve fasoncuya giriş hesabı açan servis hesabı) |
+| `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET` | boş (boşsa hesap açma uçları 502 `LOGIN_ACCOUNT_UNAVAILABLE` döner); yerel değer `deploy/.env` içindeki `KEYCLOAK_ADMIN_CLIENT_SECRET` (varsayılan `local-admin-client-secret`) |
 
 Persistence testleri Testcontainers ile gerçek PostgreSQL'e karşı çalışır; `./mvnw verify` için Docker açık olmalıdır.
 

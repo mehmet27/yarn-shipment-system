@@ -87,6 +87,8 @@
       "lot": "Lot",
       "matched": "Eşleşti",
       "unmatched": "Eşleşmedi",
+      "removeFromShipment": "Sevkiyattan çıkar",
+      "removeFailed": "Çuval çıkarılamadı. Lütfen tekrar deneyin.",
       "assign": {
         "key": "Çuval anahtarı",
         "add": "Listeye ekle",

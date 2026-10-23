@@ -71,11 +71,20 @@ final class BagServiceClient implements BagReservationPort {
 
     @Override
     public void release(UUID shipmentId, String reason) {
+        postRelease(Map.of("shipmentId", shipmentId, "reason", reason));
+    }
+
+    @Override
+    public void releaseBag(UUID shipmentId, String uniqueKey, String reason) {
+        postRelease(Map.of("shipmentId", shipmentId, "uniqueKeys", List.of(uniqueKey), "reason", reason));
+    }
+
+    private void postRelease(Map<String, Object> body) {
         try {
             client.post()
                     .uri(RELEASE_PATH)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of("shipmentId", shipmentId, "reason", reason))
+                    .body(body)
                     .retrieve()
                     .toBodilessEntity();
         } catch (RestClientResponseException exception) {

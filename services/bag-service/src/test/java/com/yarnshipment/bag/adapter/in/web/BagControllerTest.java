@@ -131,8 +131,8 @@ class BagControllerTest {
     }
 
     @Test
-    @DisplayName("Bırakma yalnızca SHIPMENT_CANCEL iznine açıktır")
-    void shouldReleaseOnlyWithCancelPermission() {
+    @DisplayName("Sevkiyatın tamamını bırakmak SHIPMENT_CANCEL ister; tek çuvalı depo da bırakabilir, şoför bırakamaz")
+    void shouldReleaseWithCancelOrDispatchPermission() {
         when(releaseBagsUseCase.releaseBags(any())).thenReturn(2);
         String body = "{\"shipmentId\":\"" + SHIPMENT_ID + "\",\"reason\":\"iptal\"}";
 
@@ -145,6 +145,13 @@ class BagControllerTest {
         assertThat(allowed).hasStatusOk();
         assertThat(allowed).bodyJson().extractingPath("$.releasedCount").isEqualTo(2);
         assertThat(denied).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(
+                        "/api/v1/bags/reservations/release",
+                        "{\"shipmentId\":\"" + SHIPMENT_ID + "\",\"uniqueKeys\":[\"BAG-0001\"],\"reason\":\"yanlış\"}",
+                        warehouse()))
+                .hasStatusOk();
+        assertThat(post("/api/v1/bags/reservations/release", body, TestTokens.driverToken()))
+                .hasStatus(HttpStatus.FORBIDDEN);
     }
 
     @Test

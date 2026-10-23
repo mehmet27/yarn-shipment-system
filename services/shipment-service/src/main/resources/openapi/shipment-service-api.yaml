@@ -921,6 +921,42 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /api/v1/shipments/{shipmentId}/bags/{uniqueKey}:
+    delete:
+      tags: [ShipmentBags]
+      operationId: removeShipmentBag
+      summary: Çuvalı taslak sevkiyattan çıkarır
+      description: |
+        Yanlış okutulan çuvalı sevkiyat listesinden çıkarır ve bag-service'te rezervasyonunu bırakır; çuval başka bir
+        sevkiyata atanabilir olur. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Çuval sevkiyatta değilse de
+        204 döner, böylece istek güvenle tekrarlanır. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: uniqueKey
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+      responses:
+        '204':
+          description: Çuval sevkiyattan çıkarıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
 components:
   securitySchemes:
     bearerAuth:

@@ -14,12 +14,17 @@ import com.yarnshipment.bag.application.port.in.ReserveBagsCommand;
 import com.yarnshipment.bag.application.port.in.ReserveBagsUseCase;
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.common.security.CurrentActorProvider;
+import com.yarnshipment.common.security.Permission;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Çuval uçları. Method security proxy'si gerektirdiği için final değildir (SEC-02). */
+/**
+ * Çuval uçları. Sevkiyatın tamamını bırakmak SHIPMENT_CANCEL ister; tek çuval bırakmak depo işidir. Method security
+ * proxy'si gerektirdiği için final değildir (SEC-02).
+ */
 @RestController
 public class BagController implements BagsApi {
 
@@ -58,10 +63,15 @@ public class BagController implements BagsApi {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('SHIPMENT_CANCEL')")
+    @PreAuthorize("hasAnyAuthority('SHIPMENT_CANCEL', 'DISPATCH_RECORD')")
     public ResponseEntity<ReleaseBagsResponse> releaseBags(ReleaseBagsRequest request) {
         Actor actor = currentActorProvider.getCurrentActor();
-        ReleaseBagsCommand command = new ReleaseBagsCommand(actor, request.getShipmentId(), request.getReason());
+        List<String> uniqueKeys = List.copyOf(request.getUniqueKeys());
+        if (uniqueKeys.isEmpty() && !actor.hasPermission(Permission.SHIPMENT_CANCEL)) {
+            throw new AccessDeniedException("Releasing a whole shipment requires SHIPMENT_CANCEL");
+        }
+        ReleaseBagsCommand command =
+                new ReleaseBagsCommand(actor, request.getShipmentId(), uniqueKeys, request.getReason());
         return ResponseEntity.ok(new ReleaseBagsResponse(releaseBagsUseCase.releaseBags(command)));
     }
 }

@@ -1,6 +1,9 @@
 package com.yarnshipment.shipment.application.port.in;
 
+import com.yarnshipment.shipment.domain.model.Shipment;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Sayfalı sevkiyat listesi (API-06).
@@ -18,5 +21,19 @@ public record ShipmentPage(List<ShipmentListItem> items, int number, int size, l
 
     public int totalPages() {
         return (int) ((totalElements + size - 1) / size);
+    }
+
+    /**
+     * Liste satırı.
+     *
+     * @param shipment sevkiyat
+     * @param allowedActions isteyenin şu an yapabileceği işlemler
+     */
+    public record ShipmentListItem(Shipment shipment, Set<ShipmentAction> allowedActions) {
+
+        public ShipmentListItem {
+            Objects.requireNonNull(shipment, "shipment");
+            allowedActions = Set.copyOf(allowedActions);
+        }
     }
 }

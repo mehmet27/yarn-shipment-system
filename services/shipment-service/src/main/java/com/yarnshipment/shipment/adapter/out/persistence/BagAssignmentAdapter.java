@@ -17,7 +17,7 @@ final class BagAssignmentAdapter implements BagAssignmentPort {
             INSERT INTO shipment_bag (id, shipment_id, bag_id, unique_key, lot_no, quality_grade_code, scan_method,
                                       assigned_at, assigned_by, created_at, created_by)
             VALUES (:id, :shipmentId, :bagId, :uniqueKey, :lotNo, :grade, :method, :at, :actor, :at, :actor)
-            ON CONFLICT (shipment_id, bag_id) DO NOTHING""";
+            ON CONFLICT (shipment_id, bag_id) WHERE removed_at IS NULL DO NOTHING""";
 
     private final JdbcClient jdbc;
     private final ShipmentTransitionWriter transitions;

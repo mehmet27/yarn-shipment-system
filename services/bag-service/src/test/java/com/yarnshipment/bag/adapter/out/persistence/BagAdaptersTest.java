@@ -3,6 +3,7 @@ package com.yarnshipment.bag.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.yarnshipment.bag.application.port.out.BagReservationPort;
 import com.yarnshipment.bag.domain.model.Bag;
 import com.yarnshipment.bag.domain.model.BagAlreadyReservedException;
 import com.yarnshipment.bag.domain.model.BagNotAvailableException;
@@ -115,5 +116,26 @@ class BagAdaptersTest {
         assertThat(queries.findReservedFor(SHIPMENT)).isEmpty();
         assertThat(queries.findReservedFor(OTHER_SHIPMENT)).hasSize(1);
         assertThat(reservations.release(SHIPMENT, "tekrar", ACTOR, NOW)).isZero();
+    }
+
+    @Test
+    @DisplayName("Seçili bırakma yalnızca verilen çuvalı serbest bırakır, diğerleri rezerve kalır")
+    void shouldReleaseOnlySelectedBags() {
+        List<Bag> bags = queries.findByUniqueKeys(List.of("BAG-0001", "BAG-0002"));
+        reservations.reserve(SHIPMENT, bags, ACTOR, NOW);
+
+        int released = reservations.releaseBags(
+                new BagReservationPort.SelectedRelease(
+                        SHIPMENT, List.of(bags.getFirst().id()), "yanlış"),
+                ACTOR,
+                NOW);
+
+        assertThat(released).isEqualTo(1);
+        assertThat(queries.findReservedFor(SHIPMENT))
+                .extracting(Bag::id)
+                .containsExactly(bags.getLast().id());
+        assertThat(reservations.releaseBags(
+                        new BagReservationPort.SelectedRelease(SHIPMENT, List.of(), "boş"), ACTOR, NOW))
+                .isZero();
     }
 }

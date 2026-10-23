@@ -76,6 +76,20 @@ class BagServiceClientTest {
     }
 
     @Test
+    @DisplayName("Bırakma isteği sevkiyat ve gerekçeyi taşır; hata yanıtı çuval servisi hatası olur")
+    void shouldReleaseReservations() throws Exception {
+        BagServiceClient client = clientAnswering(OK, "{\"releasedCount\":2}");
+
+        client.release(SHIPMENT, "Yanlış sevkiyat");
+
+        assertThat(requestBody.get()).contains(SHIPMENT.toString()).contains("Yanlış sevkiyat");
+        stopServer();
+        BagServiceClient failing = clientAnswering(SERVER_ERROR, "{}");
+        assertThatThrownBy(() -> failing.release(SHIPMENT, "Gerekçe"))
+                .isInstanceOf(BagServiceUnavailableException.class);
+    }
+
+    @Test
     @DisplayName("Servise ulaşılamazsa çuval servisi hatası olur")
     void shouldFailWhenServiceIsDown() throws Exception {
         BagServiceClient client = clientAnswering(OK, "{}");

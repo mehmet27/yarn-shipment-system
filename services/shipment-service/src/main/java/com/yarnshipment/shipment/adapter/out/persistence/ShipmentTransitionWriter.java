@@ -25,8 +25,8 @@ final class ShipmentTransitionWriter {
             WHERE id = ? AND status = ?""";
     private static final String INSERT_HISTORY = """
             INSERT INTO shipment_status_history (id, created_at, shipment_id, from_status, to_status, changed_by,
-                                                 changed_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)""";
+                                                 changed_at, reason)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""";
     private static final String INSERT_OUTBOX = """
             INSERT INTO outbox_event (id, created_at, aggregate_type, aggregate_id, event_type, payload, headers,
                                       occurred_at)
@@ -73,7 +73,14 @@ final class ShipmentTransitionWriter {
         Timestamp at = transition.at();
         jdbc.sql(INSERT_HISTORY)
                 .params(Arrays.asList(
-                        ids.next(), at, shipmentId, from, transition.to().name(), transition.actorUserId(), at))
+                        ids.next(),
+                        at,
+                        shipmentId,
+                        from,
+                        transition.to().name(),
+                        transition.actorUserId(),
+                        at,
+                        transition.reason()))
                 .update();
     }
 
@@ -101,6 +108,18 @@ final class ShipmentTransitionWriter {
      * @param to yeni durum
      * @param actorUserId işlemi yapan
      * @param at geçiş zamanı
+     * @param reason geçmişe yazılan gerekçe; yalnızca iptalde dolu
      */
-    record Transition(UUID shipmentId, ShipmentStatus from, ShipmentStatus to, UUID actorUserId, Timestamp at) {}
+    record Transition(
+            UUID shipmentId,
+            ShipmentStatus from,
+            ShipmentStatus to,
+            UUID actorUserId,
+            Timestamp at,
+            @Nullable String reason) {
+
+        Transition(UUID shipmentId, ShipmentStatus from, ShipmentStatus to, UUID actorUserId, Timestamp at) {
+            this(shipmentId, from, to, actorUserId, at, null);
+        }
+    }
 }

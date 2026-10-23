@@ -20,6 +20,7 @@ tags:
   - name: ShipmentCreation
   - name: ShipmentFile
   - name: ShipmentBags
+  - name: ShipmentCancellation
   - name: MasterData
   - name: SubcontractorManagement
   - name: DriverManagement
@@ -809,6 +810,46 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /api/v1/shipments/{shipmentId}/cancel:
+    post:
+      tags: [ShipmentCancellation]
+      operationId: cancelShipment
+      summary: Yola çıkmamış sevkiyatı iptal eder
+      description: |
+        Yalnızca yönetici (SHIPMENT_CANCEL). Taslak (DRAFT) ya da çıkış tartımı yapılmış (LOADED) sevkiyat iptal
+        edilir; gerekçe zorunludur. Sevkiyata atanmış çuvallar bag-service'te serbest bırakılır ve yeniden
+        kullanılabilir olur. Çuval servisi yanıt vermezse iptal de yapılmaz (`BAG_SERVICE_UNAVAILABLE`) ve istek
+        güvenle tekrarlanır. Zaten iptal edilmiş sevkiyata gelen istek başarılı döner. Yola çıkmış sevkiyat
+        iptal edilemez (`INVALID_SHIPMENT_STATUS`).
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelShipmentRequest'
+      responses:
+        '204':
+          description: İptal edildi
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   /api/v1/shipments/{shipmentId}/bags:
     post:
       tags: [ShipmentBags]
@@ -1195,6 +1236,14 @@ components:
           $ref: '#/components/schemas/ScanMethod'
         document:
           $ref: '#/components/schemas/DeliveryDocument'
+    CancelShipmentRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
     AssignShipmentBagsRequest:
       type: object
       required: [uniqueKeys, scanMethod]

@@ -59,6 +59,10 @@ class MasterDataAdapterTest {
 
         assertThat(all.totalElements()).isEqualTo(SAMPLE_DRIVERS);
         assertThat(all.items()).extracting(Driver::fullName).isSorted();
+        assertThat(all.items())
+                .filteredOn(driver -> driver.subcontractorId() != null)
+                .isNotEmpty()
+                .allMatch(driver -> driver.subcontractorTitle() != null);
         assertThat(filtered.items()).isNotEmpty().allMatch(driver -> subcontractor.equals(driver.subcontractorId()));
     }
 

@@ -1412,6 +1412,9 @@ components:
         subcontractorId:
           type: string
           format: uuid
+        subcontractorTitle:
+          type: string
+          description: Bağlı fasoncunun unvanı; yalnızca liste yanıtında dolar
     VehiclePageResponse:
       type: object
       required: [items, page]

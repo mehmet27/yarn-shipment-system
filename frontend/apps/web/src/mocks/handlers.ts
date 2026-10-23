@@ -132,6 +132,9 @@ function createTabHandlers(role: Role) {
         HttpResponse.json({ assignedCount: keys.length }),
       );
     }),
+    http.delete(`${SHIPMENTS_PATH}/:shipmentId/bags/:uniqueKey`, ({ params }) =>
+      withShipment(params.shipmentId, () => new HttpResponse(null, { status: 204 })),
+    ),
   ];
 }
 

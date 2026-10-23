@@ -1,10 +1,16 @@
 import type { ShipmentBagsResponse } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Badge, Paper, Stack, Text, Title } from '@iplik/ui';
+import { Badge, Button, Group, Paper, Stack, Text, Title } from '@iplik/ui';
 import { formatDateTime } from './formatDateTime';
 
 /** Backend'in verdiği listeler çizilir; hangisinin geleceğine rol değil yanıt karar verir. */
-export function BagSections({ bags }: { bags: ShipmentBagsResponse }) {
+export function BagSections({
+  bags,
+  onRemove,
+}: {
+  bags: ShipmentBagsResponse;
+  onRemove?: ((uniqueKey: string) => void) | undefined;
+}) {
   const { t } = useTranslation();
   const { dispatchBags, deliveryScans } = bags;
   return (
@@ -14,10 +20,25 @@ export function BagSections({ bags }: { bags: ShipmentBagsResponse }) {
           <Title order={5}>{t('shipment.bags.dispatch', { count: dispatchBags.length })}</Title>
           {dispatchBags.map((bag) => (
             <Paper key={bag.bagId} withBorder p="sm">
-              <Text fw={600}>{bag.uniqueKey}</Text>
-              <Text size="sm" c="dimmed">
-                {t('shipment.bags.lot')} {bag.lotNo} · {bag.qualityGradeCode}
-              </Text>
+              <Group justify="space-between" wrap="nowrap">
+                <div>
+                  <Text fw={600}>{bag.uniqueKey}</Text>
+                  <Text size="sm" c="dimmed">
+                    {t('shipment.bags.lot')} {bag.lotNo} · {bag.qualityGradeCode}
+                  </Text>
+                </div>
+                {onRemove !== undefined && (
+                  <Button
+                    color="red"
+                    variant="subtle"
+                    onClick={() => {
+                      onRemove(bag.uniqueKey);
+                    }}
+                  >
+                    {t('shipment.bags.removeFromShipment')}
+                  </Button>
+                )}
+              </Group>
             </Paper>
           ))}
         </Stack>

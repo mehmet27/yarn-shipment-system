@@ -79,5 +79,5 @@ export type {
   VehicleRequest,
   VehicleView,
 } from './masterData';
-export { assignShipmentBags, cancelShipment } from './masterData';
+export { assignShipmentBags, cancelShipment, removeShipmentBag } from './masterData';
 export type { AssignShipmentBagsRequest, AssignShipmentBagsResponse } from './masterData';

@@ -57,3 +57,5 @@ export type {
 
 export { cancelShipment } from './generated/shipmentService';
 export type { CancelShipmentRequest } from './generated/shipmentService';
+
+export { removeShipmentBag } from './generated/shipmentService';

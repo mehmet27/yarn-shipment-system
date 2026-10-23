@@ -15,7 +15,13 @@ export function calculateDifferencePct(dispatchNetKg: Kilogram, deliveryNetKg: K
   if (dispatch.eq(0)) {
     throw new RangeError('Dispatch net kilogram is zero');
   }
-  return subtractKg(deliveryNetKg, dispatchNetKg).div(dispatch).times(100).toFixed(PCT_SCALE);
+  const pct = subtractKg(deliveryNetKg, dispatchNetKg).div(dispatch).times(100).toFixed(PCT_SCALE);
+  return isNegativeZero(pct) ? pct.slice(1) : pct;
+}
+
+/** Yuvarlanınca sıfır olan küçük eksi fark "-0.00" çıkar; gösterimde yanlış eksi işareti olmasın. */
+function isNegativeZero(pct: string): boolean {
+  return pct.startsWith('-') && new Big(pct).eq(0);
 }
 
 function toNumericString(value: string): `${number}` {
@@ -31,5 +37,6 @@ function isNumericString(value: string): value is `${number}` {
 
 /** "-0.90" → "%-0,9" (Türkçede yüzde işareti başa yazılır). */
 export function formatPct(pct: string): string {
-  return `%${PCT_FORMAT.format(toNumericString(pct))}`;
+  const formatted = PCT_FORMAT.format(toNumericString(pct));
+  return `%${formatted === '-0' ? '0' : formatted}`;
 }

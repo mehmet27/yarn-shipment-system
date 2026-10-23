@@ -75,7 +75,22 @@
       "delivery": "Teslimde okutulanlar ({{count}})",
       "lot": "Lot",
       "matched": "Eşleşti",
-      "unmatched": "Eşleşmedi"
+      "unmatched": "Eşleşmedi",
+      "assign": {
+        "key": "Çuval anahtarı",
+        "add": "Listeye ekle",
+        "remove": "{{key}} çuvalını listeden çıkar",
+        "submit": "{{count}} çuvalı ata",
+        "done": "{{count}} çuval atandı.",
+        "errors": {
+          "BAG_NOT_FOUND": "Bir çuval bulunamadı; hiçbiri atanmadı.",
+          "BAG_NOT_AVAILABLE": "Bir çuval kullanılabilir durumda değil; hiçbiri atanmadı.",
+          "BAG_ALREADY_RESERVED": "Bir çuval başka sevkiyata ayrılmış; hiçbiri atanmadı.",
+          "INVALID_SHIPMENT_STATUS": "Çuval yalnızca taslak sevkiyata atanabilir.",
+          "BAG_SERVICE_UNAVAILABLE": "Çuval servisi yanıt vermiyor. Lütfen biraz sonra tekrar deneyin.",
+          "unknown": "Çuvallar atanamadı. Lütfen tekrar deneyin."
+        }
+      }
     }
   },
   "field": {

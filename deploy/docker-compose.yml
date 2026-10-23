@@ -50,6 +50,8 @@ services:
       # Realm dosyasındaki ${...} yer tutucuları Keycloak tarafından bu ortam değişkenlerinden doldurulur.
       KEYCLOAK_TEST_USER_PASSWORD: ${KEYCLOAK_TEST_USER_PASSWORD:?deploy/.env içinde KEYCLOAK_TEST_USER_PASSWORD tanımlayın}
       GATEWAY_CLIENT_SECRET: ${GATEWAY_CLIENT_SECRET:?deploy/.env içinde GATEWAY_CLIENT_SECRET tanımlayın}
+      # shipment-service'in giriş hesabı açmak için kullandığı servis hesabı istemcisinin sırrı (yerel varsayılan vardır).
+      KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:-local-admin-client-secret}
     ports:
       - "8180:8180"
     volumes:

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.ChangeSubcontractorStatusUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.UpdateSubcontractorUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
@@ -46,6 +47,9 @@ class SubcontractorManagementControllerTest {
 
     @MockitoBean
     private ChangeSubcontractorStatusUseCase subcontractorStatus;
+
+    @MockitoBean
+    private CreateSubcontractorLoginAccountUseCase subcontractorLoginAccount;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

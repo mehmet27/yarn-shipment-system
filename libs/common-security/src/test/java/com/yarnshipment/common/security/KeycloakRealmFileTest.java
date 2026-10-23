@@ -79,10 +79,29 @@ class KeycloakRealmFileTest {
     }
 
     @Test
+    @DisplayName("Hesap açan servis hesabı yalnızca kullanıcı yönetimi yetkisi taşır ve girişe açık değildir")
+    void shouldKeepAdminServiceAccountNarrow() {
+        Client admin = realm.clients().stream()
+                .filter(client -> "yarnshipment-admin".equals(client.clientId()))
+                .findFirst()
+                .orElseThrow();
+        User serviceAccount = realm.users().stream()
+                .filter(user -> "yarnshipment-admin".equals(user.serviceAccountClientId()))
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(admin.serviceAccountsEnabled()).isTrue();
+        assertThat(admin.standardFlowEnabled()).isFalse();
+        assertThat(admin.directAccessGrantsEnabled()).isFalse();
+        assertThat(serviceAccount.realmRoles()).isNullOrEmpty();
+    }
+
+    @Test
     @DisplayName("Her test kullanıcısının token'ı geçerli bir aktöre çevrilir")
     void shouldConvertEveryTestUserToAnActor() {
         // when
         Map<String, Actor> actors = realm.users().stream()
+                .filter(user -> user.serviceAccountClientId() == null)
                 .collect(Collectors.toMap(User::username, user -> converter.toActor(tokenOf(user))));
 
         // then
@@ -132,7 +151,12 @@ class KeycloakRealmFileTest {
     private record Named(String name) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private record Client(String clientId, @Nullable List<Mapper> protocolMappers) {
+    private record Client(
+            String clientId,
+            @Nullable List<Mapper> protocolMappers,
+            @Nullable Boolean serviceAccountsEnabled,
+            @Nullable Boolean standardFlowEnabled,
+            @Nullable Boolean directAccessGrantsEnabled) {
 
         @Override
         public @Nullable List<Mapper> protocolMappers() {
@@ -144,5 +168,10 @@ class KeycloakRealmFileTest {
     private record Mapper(String name, Map<String, String> config) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private record User(String id, String username, Map<String, List<String>> attributes, List<String> realmRoles) {}
+    private record User(
+            String id,
+            String username,
+            @Nullable String serviceAccountClientId,
+            Map<String, List<String>> attributes,
+            List<String> realmRoles) {}
 }

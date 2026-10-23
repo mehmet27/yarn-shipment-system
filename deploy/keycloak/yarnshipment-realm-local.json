@@ -224,6 +224,18 @@
           }
         }
       ]
+    },
+    {
+      "clientId": "yarnshipment-admin",
+      "name": "Hesap yönetimi (servis hesabı)",
+      "description": "shipment-service'in şoför/fasoncu giriş hesabı açması için; yalnızca kullanıcı yönetimi yetkisi vardır.",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "${KEYCLOAK_ADMIN_CLIENT_SECRET}",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true
     }
   ],
   "users": [
@@ -379,6 +391,18 @@
           "temporary": false
         }
       ]
+    },
+    {
+      "username": "service-account-yarnshipment-admin",
+      "enabled": true,
+      "serviceAccountClientId": "yarnshipment-admin",
+      "clientRoles": {
+        "realm-management": [
+          "manage-users",
+          "view-users",
+          "view-realm"
+        ]
+      }
     }
   ],
   "components": {

@@ -12,6 +12,8 @@ import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.SealAlreadyUsedException;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicatePlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -110,6 +112,16 @@ public final class ShipmentExceptionHandler {
     @ExceptionHandler(DuplicatePlateException.class)
     public ProblemDetail handleDuplicatePlate(HttpServletRequest request) {
         return problem(request, HttpStatus.CONFLICT, "DUPLICATE_PLATE");
+    }
+
+    @ExceptionHandler(LoginAccountExistsException.class)
+    public ProblemDetail handleLoginAccountExists(HttpServletRequest request) {
+        return problem(request, HttpStatus.CONFLICT, "LOGIN_ACCOUNT_EXISTS");
+    }
+
+    @ExceptionHandler(LoginAccountUnavailableException.class)
+    public ProblemDetail handleLoginAccountUnavailable(HttpServletRequest request) {
+        return problem(request, HttpStatus.BAD_GATEWAY, "LOGIN_ACCOUNT_UNAVAILABLE");
     }
 
     private ProblemDetail problem(HttpServletRequest request, HttpStatus status, String code) {

@@ -340,6 +340,28 @@ export interface DriverPageResponse {
   page: PageMetadata;
 }
 
+export interface LoginAccountRequest {
+  /**
+     * Giriş adı; küçük harf, rakam, nokta, alt çizgi ve tire
+     * @pattern ^[a-z0-9][a-z0-9._-]{2,63}$
+     */
+  username: string;
+  /** @maxLength 255 */
+  email?: string;
+  /**
+     * Kişinin sevkiyatlarını göreceği etkin lokasyonlar
+     * @minItems 1
+     * @maxItems 100
+     */
+  siteIds: string[];
+}
+
+export interface LoginAccountResponse {
+  username: string;
+  /** Geçici şifre; yalnızca bu yanıtta görünür, ilk girişte değiştirilir */
+  temporaryPassword: string;
+}
+
 export interface VehicleView {
   /** Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir */
   active?: boolean;
@@ -949,6 +971,46 @@ export const deactivateDriver = (
     }
 
 /**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Keycloak'ta kullanıcıyı geçici şifre, rol ve kimlik/lokasyon
+ * öznitelikleriyle açar; kişi ilk girişte şifresini değiştirir. Geçici şifre yalnızca bu yanıtta döner,
+ * saklanmaz. Kayıt etkin olmalı, `siteIds` etkin lokasyonlardan oluşmalıdır (`INVALID_MASTER_DATA`). Kayıt için
+ * hesap zaten varsa ya da giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak'a ulaşılamazsa ya da
+ * yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
+ * @summary Şoför için giriş hesabı açar
+ */
+export const createDriverLoginAccount = (
+    driverId: string,
+    loginAccountRequest: LoginAccountRequest,
+ ) => {
+      return customInstance<LoginAccountResponse>(
+      {url: `/api/v1/master-data/drivers/${driverId}/login-account`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: loginAccountRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Keycloak'ta kullanıcıyı geçici şifre, rol ve kimlik/lokasyon
+ * öznitelikleriyle açar; kişi ilk girişte şifresini değiştirir. Geçici şifre yalnızca bu yanıtta döner,
+ * saklanmaz. Kayıt etkin olmalı, `siteIds` etkin lokasyonlardan oluşmalıdır (`INVALID_MASTER_DATA`). Kayıt için
+ * hesap zaten varsa ya da giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak'a ulaşılamazsa ya da
+ * yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
+ * @summary Fasoncu için giriş hesabı açar
+ */
+export const createSubcontractorLoginAccount = (
+    subcontractorId: string,
+    loginAccountRequest: LoginAccountRequest,
+ ) => {
+      return customInstance<LoginAccountResponse>(
+      {url: `/api/v1/master-data/subcontractors/${subcontractorId}/login-account`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: loginAccountRequest
+    },
+      );
+    }
+
+/**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Şoför yeniden etkinleştirir
  */
@@ -1208,6 +1270,8 @@ export type ListDriversResult = NonNullable<Awaited<ReturnType<typeof listDriver
 export type CreateDriverResult = NonNullable<Awaited<ReturnType<typeof createDriver>>>
 export type UpdateDriverResult = NonNullable<Awaited<ReturnType<typeof updateDriver>>>
 export type DeactivateDriverResult = NonNullable<Awaited<ReturnType<typeof deactivateDriver>>>
+export type CreateDriverLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createDriverLoginAccount>>>
+export type CreateSubcontractorLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createSubcontractorLoginAccount>>>
 export type ActivateDriverResult = NonNullable<Awaited<ReturnType<typeof activateDriver>>>
 export type ListVehiclesResult = NonNullable<Awaited<ReturnType<typeof listVehicles>>>
 export type CreateVehicleResult = NonNullable<Awaited<ReturnType<typeof createVehicle>>>

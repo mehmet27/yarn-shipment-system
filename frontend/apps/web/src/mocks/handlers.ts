@@ -104,6 +104,9 @@ function createGetShipmentHandler(role: Role) {
   });
 }
 
+/** Yerel örnek çuvallar: BAG-0001..BAG-0005. */
+const KNOWN_BAG_KEY = /^BAG-000[1-5]$/;
+
 function createTabHandlers(role: Role) {
   const user = createMockUser(role);
   const withShipment = (shipmentId: unknown, respond: (s: InternalShipmentView) => Response) => {
@@ -118,6 +121,17 @@ function createTabHandlers(role: Role) {
     http.get(`${SHIPMENTS_PATH}/:shipmentId/bags`, ({ params }) =>
       withShipment(params.shipmentId, (s) => HttpResponse.json(toBagsView(s, role))),
     ),
+    http.post(`${SHIPMENTS_PATH}/:shipmentId/bags`, async ({ params, request }) => {
+      const body = (await request.json()) as { uniqueKeys?: string[] };
+      const keys = body.uniqueKeys ?? [];
+      const unknown = keys.find((key) => !KNOWN_BAG_KEY.test(key));
+      if (unknown !== undefined) {
+        return HttpResponse.json({ code: 'BAG_NOT_FOUND', title: unknown }, { status: 404 });
+      }
+      return withShipment(params.shipmentId, () =>
+        HttpResponse.json({ assignedCount: keys.length }),
+      );
+    }),
   ];
 }
 

@@ -41,7 +41,10 @@ export function ShipmentFilePage() {
               <WeightComparison weighings={toWeighings(shipment)} />
             </Tabs.Panel>
             <Tabs.Panel value="bags" pt="md">
-              <BagsTab shipmentId={shipmentId} />
+              <BagsTab
+                shipmentId={shipmentId}
+                canAssign={shipment.allowedActions.includes('ASSIGN_BAGS')}
+              />
             </Tabs.Panel>
             <Tabs.Panel value="history" pt="md">
               <HistoryTab shipmentId={shipmentId} />

@@ -48,3 +48,9 @@ export type {
   VehicleRequest,
   VehicleView,
 } from './generated/shipmentService';
+
+export { assignShipmentBags } from './generated/shipmentService';
+export type {
+  AssignShipmentBagsRequest,
+  AssignShipmentBagsResponse,
+} from './generated/shipmentService';

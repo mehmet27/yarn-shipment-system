@@ -9,6 +9,7 @@ export type RecordRow = {
   label: string;
   isActive: boolean;
   subcontractorId?: string;
+  ownerTitle?: string;
 };
 
 export type RecordValues = { label: string; subcontractorId?: string };

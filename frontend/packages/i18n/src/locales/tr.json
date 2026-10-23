@@ -212,6 +212,8 @@
   },
   "masterData": {
     "title": "Tanımlar",
+    "ownerOf": "Fasoncu: {{title}}",
+    "noOwner": "Fasoncu yok (kendi şoförümüz)",
     "add": "Ekle",
     "edit": "Düzenle",
     "save": "Kaydet",

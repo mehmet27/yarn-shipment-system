@@ -6,6 +6,8 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.AssignShipmentBagsRequ
 import com.yarnshipment.shipment.adapter.in.web.api.model.AssignShipmentBagsResponse;
 import com.yarnshipment.shipment.application.port.in.AssignBagsCommand;
 import com.yarnshipment.shipment.application.port.in.AssignBagsUseCase;
+import com.yarnshipment.shipment.application.port.in.RemoveBagUseCase;
+import com.yarnshipment.shipment.application.port.in.RemoveBagUseCase.RemoveBagCommand;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
 import java.util.List;
 import java.util.UUID;
@@ -13,16 +15,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Çuval atama ucu. Method security proxy'si gerektirdiği için final değildir (SEC-02). */
+/** Çuval atama ve çıkarma uçları. Method security proxy'si gerektirdiği için final değildir (SEC-02). */
 @RestController
 public class ShipmentBagAssignmentController implements ShipmentBagsApi {
 
     private final AssignBagsUseCase assignBagsUseCase;
+    private final RemoveBagUseCase removeBagUseCase;
     private final CurrentActorProvider currentActorProvider;
 
     public ShipmentBagAssignmentController(
-            AssignBagsUseCase assignBagsUseCase, CurrentActorProvider currentActorProvider) {
+            AssignBagsUseCase assignBagsUseCase,
+            RemoveBagUseCase removeBagUseCase,
+            CurrentActorProvider currentActorProvider) {
         this.assignBagsUseCase = assignBagsUseCase;
+        this.removeBagUseCase = removeBagUseCase;
         this.currentActorProvider = currentActorProvider;
     }
 
@@ -36,5 +42,12 @@ public class ShipmentBagAssignmentController implements ShipmentBagsApi {
                 List.copyOf(request.getUniqueKeys()),
                 ScanMethod.valueOf(request.getScanMethod().name()));
         return ResponseEntity.ok(new AssignShipmentBagsResponse(assignBagsUseCase.assignBags(command)));
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('DISPATCH_RECORD')")
+    public ResponseEntity<Void> removeShipmentBag(UUID shipmentId, String uniqueKey) {
+        removeBagUseCase.removeBag(new RemoveBagCommand(currentActorProvider.getCurrentActor(), shipmentId, uniqueKey));
+        return ResponseEntity.noContent().build();
     }
 }

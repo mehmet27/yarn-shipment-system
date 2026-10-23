@@ -82,7 +82,24 @@ class BagServicesTest {
         when(reservations.release(SHIPMENT, "iptal", actor.userId(), CLOCK.instant()))
                 .thenReturn(1);
 
-        assertThat(release.releaseBags(new ReleaseBagsCommand(actor, SHIPMENT, "iptal")))
+        assertThat(release.releaseBags(new ReleaseBagsCommand(actor, SHIPMENT, List.of(), "iptal")))
+                .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Anahtar verilirse yalnızca o çuvallar bırakılır; depo personeli bunu yapabilir")
+    void shouldReleaseOnlySelectedBags() throws Exception {
+        Actor actor = TestTokens.actor("warehouse");
+        Bag kept = bag("BAG-0001", TestTokens.SITE_ID);
+        Bag removed = bag("BAG-0002", TestTokens.SITE_ID);
+        when(queries.findReservedFor(SHIPMENT)).thenReturn(List.of(kept, removed));
+        when(reservations.releaseBags(
+                        new BagReservationPort.SelectedRelease(SHIPMENT, List.of(removed.id()), "yanlış"),
+                        actor.userId(),
+                        CLOCK.instant()))
+                .thenReturn(1);
+
+        assertThat(release.releaseBags(new ReleaseBagsCommand(actor, SHIPMENT, List.of("BAG-0002"), "yanlış")))
                 .isEqualTo(1);
     }
 

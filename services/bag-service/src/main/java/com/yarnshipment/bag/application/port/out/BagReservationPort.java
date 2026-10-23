@@ -2,6 +2,7 @@ package com.yarnshipment.bag.application.port.out;
 
 import com.yarnshipment.bag.domain.model.Bag;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,4 +14,10 @@ public interface BagReservationPort {
 
     /** Sevkiyatın açık rezervasyonlarını bırakır; bırakılan sayıyı döner. */
     int release(UUID shipmentId, String reason, UUID actorUserId, Instant at);
+
+    /** Sevkiyatın yalnızca verilen çuvallara ait açık rezervasyonlarını bırakır; bırakılan sayıyı döner. */
+    int releaseBags(SelectedRelease selected, UUID actorUserId, Instant at);
+
+    /** Sevkiyatın bırakılacak çuvalları ve gerekçesi. */
+    record SelectedRelease(UUID shipmentId, Collection<UUID> bagIds, String reason) {}
 }

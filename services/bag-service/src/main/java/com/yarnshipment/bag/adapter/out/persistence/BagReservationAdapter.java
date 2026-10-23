@@ -47,6 +47,9 @@ final class BagReservationAdapter implements BagReservationPort {
             RETURNING bag_id
             """;
 
+    private static final String RELEASE_SOME =
+            RELEASE.replace("RETURNING", "AND bag_id IN (:bagIds)\n            RETURNING");
+
     private final JdbcClient jdbc;
     private final UuidV7Generator ids;
 
@@ -96,6 +99,27 @@ final class BagReservationAdapter implements BagReservationPort {
                 .param("actor", actorUserId)
                 .param("reason", reason)
                 .param("shipmentId", shipmentId)
+                .query((rs, rowNumber) -> rs.getObject("bag_id", UUID.class))
+                .list();
+        for (UUID bagId : released) {
+            mark(bagId, BagStatus.CREATED, now, actorUserId);
+        }
+        return released.size();
+    }
+
+    @Override
+    public int releaseBags(SelectedRelease selected, UUID actorUserId, Instant at) {
+        if (selected.bagIds().isEmpty()) {
+            return 0;
+        }
+        actAs(actorUserId);
+        Timestamp now = Timestamp.from(at);
+        List<UUID> released = jdbc.sql(RELEASE_SOME)
+                .param("at", now)
+                .param("actor", actorUserId)
+                .param("reason", selected.reason())
+                .param("shipmentId", selected.shipmentId())
+                .param("bagIds", selected.bagIds())
                 .query((rs, rowNumber) -> rs.getObject("bag_id", UUID.class))
                 .list();
         for (UUID bagId : released) {

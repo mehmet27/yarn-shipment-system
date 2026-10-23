@@ -68,8 +68,11 @@ paths:
     post:
       tags: [Bags]
       operationId: releaseBags
-      summary: Sevkiyatın tüm rezervasyonlarını bırakır
-      description: Sevkiyat iptal edilince çağrılır; çuvallar yeniden kullanılabilir olur. Bırakılacak rezervasyon yoksa `releasedCount` 0 döner.
+      summary: Sevkiyatın rezervasyonlarını bırakır
+      description: |
+        `uniqueKeys` yoksa ya da boşsa sevkiyatın tüm rezervasyonları bırakılır (sevkiyat iptali; `SHIPMENT_CANCEL` gerekir).
+        Doluysa yalnızca o çuvallar bırakılır (taslaktan çuval çıkarma; `DISPATCH_RECORD` yeter). Çuvallar yeniden
+        kullanılabilir olur. Bırakılacak rezervasyon yoksa `releasedCount` 0 döner.
       requestBody:
         required: true
         content:
@@ -215,6 +218,15 @@ components:
         shipmentId:
           type: string
           format: uuid
+        uniqueKeys:
+          type: array
+          maxItems: 500
+          uniqueItems: true
+          description: Verilirse yalnızca bu çuvallar bırakılır
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
         reason:
           type: string
           minLength: 1

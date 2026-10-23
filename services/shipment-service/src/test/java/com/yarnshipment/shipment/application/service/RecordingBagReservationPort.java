@@ -16,6 +16,7 @@ final class RecordingBagReservationPort implements BagReservationPort {
 
     private final List<String> reservedKeys = new ArrayList<>();
     private final List<UUID> released = new ArrayList<>();
+    private final List<String> releasedKeys = new ArrayList<>();
     private boolean rejectReservation;
     private boolean failOnRelease;
 
@@ -25,6 +26,10 @@ final class RecordingBagReservationPort implements BagReservationPort {
 
     List<UUID> released() {
         return released;
+    }
+
+    List<String> releasedKeys() {
+        return releasedKeys;
     }
 
     void rejectReservation() {
@@ -50,5 +55,13 @@ final class RecordingBagReservationPort implements BagReservationPort {
             throw new BagServiceUnavailableException("down");
         }
         released.add(shipmentId);
+    }
+
+    @Override
+    public void releaseBag(UUID shipmentId, String uniqueKey, String reason) {
+        if (failOnRelease) {
+            throw new BagServiceUnavailableException("down");
+        }
+        releasedKeys.add(uniqueKey);
     }
 }

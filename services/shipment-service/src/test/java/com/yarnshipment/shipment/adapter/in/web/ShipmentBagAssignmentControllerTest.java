@@ -10,6 +10,8 @@ import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.AssignBagsCommand;
 import com.yarnshipment.shipment.application.port.in.AssignBagsUseCase;
+import com.yarnshipment.shipment.application.port.in.RemoveBagUseCase;
+import com.yarnshipment.shipment.application.port.in.RemoveBagUseCase.RemoveBagCommand;
 import com.yarnshipment.shipment.domain.bag.BagReservationException;
 import com.yarnshipment.shipment.domain.bag.BagReservationException.Reason;
 import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
@@ -39,6 +41,9 @@ class ShipmentBagAssignmentControllerTest {
 
     @MockitoBean
     private AssignBagsUseCase assignBagsUseCase;
+
+    @MockitoBean
+    private RemoveBagUseCase removeBagUseCase;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -116,6 +121,28 @@ class ShipmentBagAssignmentControllerTest {
     @DisplayName("DISPATCH_RECORD izni olmayan rol (şoför) 403 alır")
     void shouldForbidDriver() {
         assertThat(post(BODY, TestTokens.driverToken())).hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    @DisplayName("Çuval çıkarma 204 döner ve komut sevkiyat ile anahtarı taşır; şoför 403 alır")
+    void shouldRemoveBag() {
+        MvcTestResult removed = delete(TestTokens.token("warehouse").build());
+        MvcTestResult denied = delete(TestTokens.driverToken());
+
+        assertThat(removed).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(denied).hasStatus(HttpStatus.FORBIDDEN);
+        ArgumentCaptor<RemoveBagCommand> command = ArgumentCaptor.forClass(RemoveBagCommand.class);
+        verify(removeBagUseCase).removeBag(command.capture());
+        assertThat(command.getValue().shipmentId()).isEqualTo(TestShipments.SHIPMENT_ID);
+        assertThat(command.getValue().uniqueKey()).isEqualTo("BAG-0001");
+    }
+
+    private MvcTestResult delete(Jwt jwt) {
+        return mvc.delete()
+                .uri(URI + "/BAG-0001")
+                .with(SecurityMockMvcRequestPostProcessors.authentication(TestTokens.CONVERTER.convert(jwt)))
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                .exchange();
     }
 
     private MvcTestResult post(String body, Jwt jwt) {

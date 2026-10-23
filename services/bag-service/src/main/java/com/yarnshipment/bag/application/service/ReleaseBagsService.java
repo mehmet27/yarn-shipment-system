@@ -9,6 +9,7 @@ import com.yarnshipment.common.security.Permission;
 import com.yarnshipment.common.security.scope.ScopeGuard;
 import java.time.Clock;
 import java.util.List;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +34,19 @@ public class ReleaseBagsService implements ReleaseBagsUseCase {
     @Transactional
     public int releaseBags(ReleaseBagsCommand command) {
         List<Bag> reserved = queryPort.findReservedFor(command.shipmentId());
-        BagScopes.validateAll(scopeGuard, command.actor(), reserved, Permission.SHIPMENT_CANCEL.name());
-        return reservationPort.release(
-                command.shipmentId(), command.reason(), command.actor().userId(), clock.instant());
+        if (command.uniqueKeys().isEmpty()) {
+            BagScopes.validateAll(scopeGuard, command.actor(), reserved, Permission.SHIPMENT_CANCEL.name());
+            return reservationPort.release(
+                    command.shipmentId(), command.reason(), command.actor().userId(), clock.instant());
+        }
+        Set<String> keys = Set.copyOf(command.uniqueKeys());
+        List<Bag> selected =
+                reserved.stream().filter(bag -> keys.contains(bag.uniqueKey())).toList();
+        BagScopes.validateAll(scopeGuard, command.actor(), selected, Permission.DISPATCH_RECORD.name());
+        return reservationPort.releaseBags(
+                new BagReservationPort.SelectedRelease(
+                        command.shipmentId(), selected.stream().map(Bag::id).toList(), command.reason()),
+                command.actor().userId(),
+                clock.instant());
     }
 }

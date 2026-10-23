@@ -1169,6 +1169,22 @@ export const getShipmentBags = (
       );
     }
 
+/**
+ * Yanlış okutulan çuvalı sevkiyat listesinden çıkarır ve bag-service'te rezervasyonunu bırakır; çuval başka bir
+ * sevkiyata atanabilir olur. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Çuval sevkiyatta değilse de
+ * 204 döner, böylece istek güvenle tekrarlanır. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
+ * @summary Çuvalı taslak sevkiyattan çıkarır
+ */
+export const removeShipmentBag = (
+    shipmentId: string,
+    uniqueKey: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/bags/${uniqueKey}`, method: 'DELETE'
+    },
+      );
+    }
+
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -1205,3 +1221,4 @@ export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof get
 export type CancelShipmentResult = NonNullable<Awaited<ReturnType<typeof cancelShipment>>>
 export type AssignShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof assignShipmentBags>>>
 export type GetShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof getShipmentBags>>>
+export type RemoveShipmentBagResult = NonNullable<Awaited<ReturnType<typeof removeShipmentBag>>>

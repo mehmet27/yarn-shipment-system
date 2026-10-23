@@ -11,4 +11,7 @@ public interface BagReservationPort {
 
     /** Sevkiyatın tüm rezervasyonlarını bırakır; bırakılacak yoksa sessizce geçer. */
     void release(UUID shipmentId, String reason);
+
+    /** Sevkiyata ayrılmış tek çuvalın rezervasyonunu bırakır; çuval ayrılmış değilse sessizce geçer. */
+    void releaseBag(UUID shipmentId, String uniqueKey, String reason);
 }

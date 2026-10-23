@@ -90,6 +90,19 @@ class BagServiceClientTest {
     }
 
     @Test
+    @DisplayName("Tek çuval bırakma isteği anahtarı taşır")
+    void shouldReleaseSingleBag() throws Exception {
+        BagServiceClient client = clientAnswering(OK, "{\"releasedCount\":1}");
+
+        client.releaseBag(SHIPMENT, "BAG-0007", "Yanlış okutma");
+
+        assertThat(requestBody.get())
+                .contains(SHIPMENT.toString())
+                .contains("BAG-0007")
+                .contains("Yanlış okutma");
+    }
+
+    @Test
     @DisplayName("Servise ulaşılamazsa çuval servisi hatası olur")
     void shouldFailWhenServiceIsDown() throws Exception {
         BagServiceClient client = clientAnswering(OK, "{}");

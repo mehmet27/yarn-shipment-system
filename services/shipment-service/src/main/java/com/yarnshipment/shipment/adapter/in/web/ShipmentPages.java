@@ -3,8 +3,8 @@ package com.yarnshipment.shipment.adapter.in.web;
 import com.yarnshipment.shipment.adapter.in.web.api.model.PageMetadata;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentPageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentSummaryView;
-import com.yarnshipment.shipment.application.port.in.ShipmentListItem;
 import com.yarnshipment.shipment.application.port.in.ShipmentPage;
+import com.yarnshipment.shipment.application.port.in.ShipmentPage.ShipmentListItem;
 import com.yarnshipment.shipment.domain.model.Shipment;
 
 /** Liste sayfasının web modeli. Liste satırı kör alan taşımaz; tüm rollerde aynıdır. */

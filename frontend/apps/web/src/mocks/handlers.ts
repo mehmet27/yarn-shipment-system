@@ -135,6 +135,17 @@ function createTabHandlers(role: Role) {
   ];
 }
 
+/** İptal: yalnızca DRAFT/LOADED; yola çıkmışsa 409. */
+const cancelShipmentHandler = http.post(`${SHIPMENTS_PATH}/:shipmentId/cancel`, ({ params }) => {
+  const shipment = findMockShipment(params.shipmentId);
+  if (shipment === undefined) return notFound();
+  if (shipment.status !== 'DRAFT' && shipment.status !== 'LOADED') {
+    return HttpResponse.json({ code: 'INVALID_SHIPMENT_STATUS' }, { status: 409 });
+  }
+  updateMockShipmentStatus(shipment.shipmentId, 'CANCELLED');
+  return new HttpResponse(null, { status: 204 });
+});
+
 /** Geçici uç: şoförün "yükü teslim aldım" beyanı; LOADED → IN_TRANSIT. */
 const confirmPickupHandler = http.post(
   `${SHIPMENTS_PATH}/:shipmentId/pickup-confirmation`,
@@ -213,6 +224,7 @@ export function createHandlers(role: Role) {
     createListShipmentsHandler(role),
     createGetShipmentHandler(role),
     confirmPickupHandler,
+    cancelShipmentHandler,
     deliveryReceiptHandler,
     dispatchWeighingHandler,
     ...createTabHandlers(role),

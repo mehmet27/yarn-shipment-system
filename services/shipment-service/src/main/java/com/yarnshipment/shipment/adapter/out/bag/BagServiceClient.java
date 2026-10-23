@@ -32,6 +32,7 @@ final class BagServiceClient implements BagReservationPort {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
     private static final String RESERVE_PATH = "/api/v1/bags/reservations";
+    private static final String RELEASE_PATH = "/api/v1/bags/reservations/release";
 
     private final RestClient client;
 
@@ -63,6 +64,23 @@ final class BagServiceClient implements BagReservationPort {
                     .toList();
         } catch (RestClientResponseException exception) {
             throw translate(exception);
+        } catch (RestClientException exception) {
+            throw new BagServiceUnavailableException("Bag service call failed", exception);
+        }
+    }
+
+    @Override
+    public void release(UUID shipmentId, String reason) {
+        try {
+            client.post()
+                    .uri(RELEASE_PATH)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("shipmentId", shipmentId, "reason", reason))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientResponseException exception) {
+            throw new BagServiceUnavailableException(
+                    "Bag service rejected the release status=" + exception.getStatusCode(), exception);
         } catch (RestClientException exception) {
             throw new BagServiceUnavailableException("Bag service call failed", exception);
         }

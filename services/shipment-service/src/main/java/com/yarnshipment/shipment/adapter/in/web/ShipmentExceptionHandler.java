@@ -4,6 +4,7 @@ import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.domain.bag.BagReservationException;
 import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
+import com.yarnshipment.shipment.domain.cancellation.InvalidCancellationException;
 import com.yarnshipment.shipment.domain.model.InvalidDeliveryException;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidNewShipmentException;
@@ -45,6 +46,13 @@ public final class ShipmentExceptionHandler {
     @ExceptionHandler(InvalidShipmentStatusException.class)
     public ProblemDetail handleInvalidStatus(HttpServletRequest request) {
         return problem(request, HttpStatus.CONFLICT, "INVALID_SHIPMENT_STATUS");
+    }
+
+    @ExceptionHandler(InvalidCancellationException.class)
+    public ProblemDetail handleInvalidCancellation(HttpServletRequest request) {
+        ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_CANCELLATION");
+        problem.setProperty("errors", List.of(Map.of("field", "reason", "message", "invalid")));
+        return problem;
     }
 
     @ExceptionHandler(InvalidDeliveryException.class)

@@ -8,4 +8,7 @@ import java.util.UUID;
 public interface BagReservationPort {
 
     List<ReservedBag> reserve(UUID shipmentId, List<String> uniqueKeys);
+
+    /** Sevkiyatın tüm rezervasyonlarını bırakır; bırakılacak yoksa sessizce geçer. */
+    void release(UUID shipmentId, String reason);
 }

@@ -233,6 +233,14 @@ export interface DeliveryReceiptRequest {
   document?: DeliveryDocument;
 }
 
+export interface CancelShipmentRequest {
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  reason: string;
+}
+
 export interface AssignShipmentBagsRequest {
   /**
      * @minItems 1
@@ -1107,6 +1115,26 @@ export const getShipmentHistory = (
     }
 
 /**
+ * Yalnızca yönetici (SHIPMENT_CANCEL). Taslak (DRAFT) ya da çıkış tartımı yapılmış (LOADED) sevkiyat iptal
+ * edilir; gerekçe zorunludur. Sevkiyata atanmış çuvallar bag-service'te serbest bırakılır ve yeniden
+ * kullanılabilir olur. Çuval servisi yanıt vermezse iptal de yapılmaz (`BAG_SERVICE_UNAVAILABLE`) ve istek
+ * güvenle tekrarlanır. Zaten iptal edilmiş sevkiyata gelen istek başarılı döner. Yola çıkmış sevkiyat
+ * iptal edilemez (`INVALID_SHIPMENT_STATUS`).
+ * @summary Yola çıkmamış sevkiyatı iptal eder
+ */
+export const cancelShipment = (
+    shipmentId: string,
+    cancelShipmentRequest: CancelShipmentRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/cancel`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: cancelShipmentRequest
+    },
+      );
+    }
+
+/**
  * Depo personeli çuvalları okutur ya da listeden seçer; her çuval bag-service'te bu sevkiyata ayrılır ve
  * sevkiyatın çuval listesine yazılır. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Hepsi ya da hiçbiri:
  * bir çuval bulunamazsa (`BAG_NOT_FOUND`), kullanılamaz durumdaysa (`BAG_NOT_AVAILABLE`) ya da başka
@@ -1174,5 +1202,6 @@ export type UpdateSiteResult = NonNullable<Awaited<ReturnType<typeof updateSite>
 export type DeactivateSiteResult = NonNullable<Awaited<ReturnType<typeof deactivateSite>>>
 export type ActivateSiteResult = NonNullable<Awaited<ReturnType<typeof activateSite>>>
 export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof getShipmentHistory>>>
+export type CancelShipmentResult = NonNullable<Awaited<ReturnType<typeof cancelShipment>>>
 export type AssignShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof assignShipmentBags>>>
 export type GetShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof getShipmentBags>>>

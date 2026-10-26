@@ -219,7 +219,7 @@
       "title": "Giriş hesabı aç",
       "username": "Giriş adı",
       "usernameHint": "Küçük harf, rakam, nokta, alt çizgi ve tire; en az 3 karakter",
-      "email": "E-posta (isteğe bağlı)",
+      "email": "E-posta",
       "sites": "Görebileceği lokasyonlar",
       "submit": "Hesabı aç",
       "created": "Giriş hesabı açıldı.",

@@ -7,6 +7,7 @@ import type { LoginAccountKind } from '../hooks/useCreateLoginAccount';
 import { LoginAccountResult } from './LoginAccountResult';
 import { SiteSwitches } from './SiteSwitches';
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9._-]{2,63}$/;
 const KNOWN_CODES = ['LOGIN_ACCOUNT_EXISTS', 'LOGIN_ACCOUNT_UNAVAILABLE', 'INVALID_MASTER_DATA'];
 
@@ -33,7 +34,8 @@ export function LoginAccountForm({
   if (mutation.isSuccess) {
     return <LoginAccountResult {...mutation.data} onClose={onClose} />;
   }
-  const isValid = USERNAME_PATTERN.test(username) && siteIds.length > 0;
+  const isValid =
+    USERNAME_PATTERN.test(username) && EMAIL_PATTERN.test(email) && siteIds.length > 0;
   return (
     <Stack>
       <TextInput
@@ -48,6 +50,7 @@ export function LoginAccountForm({
       />
       <TextInput
         label={t('masterData.loginAccount.email')}
+        withAsterisk
         value={email}
         onChange={(event) => {
           setEmail(event.currentTarget.value.trim());
@@ -60,7 +63,7 @@ export function LoginAccountForm({
         disabled={!isValid}
         loading={mutation.isPending}
         onClick={() => {
-          mutation.mutate({ username, siteIds: [...siteIds], ...(email === '' ? {} : { email }) });
+          mutation.mutate({ username, email, siteIds: [...siteIds] });
         }}
       >
         {t('masterData.loginAccount.submit')}

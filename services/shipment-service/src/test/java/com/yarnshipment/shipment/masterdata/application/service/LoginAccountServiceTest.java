@@ -55,7 +55,7 @@ class LoginAccountServiceTest {
     @DisplayName("Şoför için açılan hesap şoför rolü, kayıt kimliği ve üretilen geçici şifreyle istenir")
     void shouldOpenDriverAccount() {
         LoginAccount account = service.createDriverLoginAccount(
-                admin, DRIVER, new LoginAccountRequest("ali.yilmaz", null, List.of(SITE)));
+                admin, DRIVER, new LoginAccountRequest("ali.yilmaz", "ali@ornek.com", List.of(SITE)));
 
         assertThat(account.username()).isEqualTo("ali.yilmaz");
         assertThat(account.temporaryPassword()).hasSize(PASSWORD_LENGTH);
@@ -83,7 +83,7 @@ class LoginAccountServiceTest {
     @Test
     @DisplayName("Kayıt yoksa ya da pasifse 404; Keycloak'a gidilmez")
     void shouldRejectUnknownOwner() {
-        LoginAccountRequest request = new LoginAccountRequest("x.y.z", null, List.of(SITE));
+        LoginAccountRequest request = new LoginAccountRequest("x.y.z", "x@ornek.com", List.of(SITE));
         UUID unknown = UUID.randomUUID();
 
         assertThatThrownBy(() -> service.createDriverLoginAccount(admin, unknown, request))
@@ -96,8 +96,8 @@ class LoginAccountServiceTest {
     @Test
     @DisplayName("Lokasyon boşsa ya da etkin değilse hesap açılmaz")
     void shouldRejectBadSites() {
-        LoginAccountRequest none = new LoginAccountRequest("x.y.z", null, List.of());
-        LoginAccountRequest inactive = new LoginAccountRequest("x.y.z", null, List.of(SITE, OTHER_SITE));
+        LoginAccountRequest none = new LoginAccountRequest("x.y.z", "x@ornek.com", List.of());
+        LoginAccountRequest inactive = new LoginAccountRequest("x.y.z", "x@ornek.com", List.of(SITE, OTHER_SITE));
 
         assertThatThrownBy(() -> service.createDriverLoginAccount(admin, DRIVER, none))
                 .isInstanceOf(InvalidMasterDataException.class);

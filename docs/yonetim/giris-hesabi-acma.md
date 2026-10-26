@@ -8,7 +8,7 @@ Keycloak'ta tutulur. Hesabı yönetici uygulamadan açar, Keycloak adımlarını
 | Şoför | `POST /api/v1/master-data/drivers/{driverId}/login-account` |
 | Fasoncu | `POST /api/v1/master-data/subcontractors/{subcontractorId}/login-account` |
 
-İstek gövdesi: `username` (3-64 karakter; küçük harf, rakam, `.`, `_`, `-`), isteğe bağlı `email` ve `siteIds`
+İstek gövdesi: `username` (3-64 karakter; küçük harf, rakam, `.`, `_`, `-`), `email` ve `siteIds`
 (kişinin sevkiyatlarını göreceği etkin lokasyonlar, en az bir tane). Yalnızca `MASTER_DATA_MANAGE` yetkisi olan
 yönetici çağırabilir. Yanıt (201) giriş adını ve **geçici şifreyi** döner; şifre başka hiçbir yerde saklanmaz ya da
 loglanmaz, yöneticinin kişiye iletmesi gerekir. Kişi ilk girişte şifresini değiştirmek zorundadır.

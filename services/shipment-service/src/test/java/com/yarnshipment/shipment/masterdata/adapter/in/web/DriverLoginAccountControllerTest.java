@@ -37,8 +37,8 @@ class DriverLoginAccountControllerTest {
 
     private static final UUID DRIVER = UUID.fromString("0192f0a0-0000-7000-8000-000000000004");
     private static final String DRIVER_URI = "/api/v1/master-data/drivers/" + DRIVER + "/login-account";
-    private static final String BODY =
-            "{\"username\":\"ali.yilmaz\",\"siteIds\":[\"0192f0a0-0000-7000-8000-000000000001\"]}";
+    private static final String BODY = "{\"username\":\"ali.yilmaz\",\"email\":\"ali@ornek.com\","
+            + "\"siteIds\":[\"0192f0a0-0000-7000-8000-000000000001\"]}";
 
     private final MockMvcTester mvc;
 
@@ -90,15 +90,22 @@ class DriverLoginAccountControllerTest {
     }
 
     @Test
-    @DisplayName("Biçimi bozuk giriş adı ve boş lokasyon listesi şemadan 400 alır")
+    @DisplayName("Biçimi bozuk giriş adı, eksik e-posta ve boş lokasyon listesi şemadan 400 alır")
     void shouldRejectInvalidBody() {
         Jwt admin = TestTokens.token("admin").build();
 
-        MvcTestResult badName = post(DRIVER_URI, "{\"username\":\"A B\",\"siteIds\":[\"" + DRIVER + "\"]}", admin);
-        MvcTestResult noSites = post(DRIVER_URI, "{\"username\":\"ali.yilmaz\",\"siteIds\":[]}", admin);
+        MvcTestResult badName = post(
+                DRIVER_URI,
+                "{\"username\":\"A B\",\"email\":\"ali@ornek.com\",\"siteIds\":[\"" + DRIVER + "\"]}",
+                admin);
+        MvcTestResult noEmail =
+                post(DRIVER_URI, "{\"username\":\"ali.yilmaz\",\"siteIds\":[\"" + DRIVER + "\"]}", admin);
+        MvcTestResult noSites =
+                post(DRIVER_URI, "{\"username\":\"ali.yilmaz\",\"email\":\"ali@ornek.com\",\"siteIds\":[]}", admin);
 
         assertThat(badName).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(noSites).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(noEmail).hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(driverAccount);
     }
 

@@ -214,6 +214,25 @@
   },
   "masterData": {
     "title": "Tanımlar",
+    "loginAccount": {
+      "open": "Giriş hesabı aç",
+      "title": "Giriş hesabı aç",
+      "username": "Giriş adı",
+      "usernameHint": "Küçük harf, rakam, nokta, alt çizgi ve tire; en az 3 karakter",
+      "email": "E-posta",
+      "sites": "Görebileceği lokasyonlar",
+      "submit": "Hesabı aç",
+      "created": "Giriş hesabı açıldı.",
+      "password": "Geçici şifre",
+      "showOnce": "Bu şifre yalnızca şimdi görünür; kişiye iletin. İlk girişte değiştirmesi istenecek.",
+      "close": "Tamam",
+      "errors": {
+        "LOGIN_ACCOUNT_EXISTS": "Bu kayıt için hesap zaten var ya da giriş adı alınmış.",
+        "LOGIN_ACCOUNT_UNAVAILABLE": "Giriş sistemine ulaşılamadı; hesap açılmadı. Lütfen tekrar deneyin.",
+        "INVALID_MASTER_DATA": "Bilgiler geçersiz. Kaydın ve seçilen lokasyonların etkin olduğundan emin olun.",
+        "unknown": "Hesap açılamadı. Lütfen tekrar deneyin."
+      }
+    },
     "ownerOf": "Fasoncu: {{title}}",
     "noOwner": "Fasoncu yok (kendi şoförümüz)",
     "add": "Ekle",

@@ -59,3 +59,9 @@ export { cancelShipment } from './generated/shipmentService';
 export type { CancelShipmentRequest } from './generated/shipmentService';
 
 export { removeShipmentBag } from './generated/shipmentService';
+
+export {
+  createDriverLoginAccount,
+  createSubcontractorLoginAccount,
+} from './generated/shipmentService';
+export type { LoginAccountRequest, LoginAccountResponse } from './generated/shipmentService';

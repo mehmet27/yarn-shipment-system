@@ -2,6 +2,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Badge, Button, Group, Paper, Stack, Text } from '@iplik/ui';
 import { useSetActive } from '../hooks/useSetActive';
 import type { ManagedKind, RecordRow } from '../kinds';
+import { LoginAccountButton } from './LoginAccountButton';
 
 export type RecordCardProps = {
   kind: ManagedKind;
@@ -29,6 +30,7 @@ export function RecordCard({ kind, record, onEdit }: RecordCardProps) {
               : t('masterData.ownerOf', { title: record.ownerTitle })}
           </Text>
         )}
+        <LoginAccountButton kind={kind} record={record} />
         <Group grow>
           <Button
             variant="default"

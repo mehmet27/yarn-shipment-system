@@ -87,6 +87,14 @@ function listHandler(kind: MasterKind, canManage: boolean) {
   });
 }
 
+/** Mock'ta bu giriş adı alınmış sayılır (409 yolunu denemek için). */
+const TAKEN_USERNAME = 'admin';
+const MOCK_TEMPORARY_PASSWORD = 'Gecici-Sifre-1';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
 function writeHandlers(kind: MasterKind, canManage: boolean) {
   const path = `${BASE}/${PATHS[kind]}`;
   const denied = () => problem(403, 'FORBIDDEN', 'Yetkiniz yok');
@@ -111,6 +119,19 @@ function writeHandlers(kind: MasterKind, canManage: boolean) {
       }
       const updated = updateMasterRecord(kind, id, values);
       return updated === undefined ? notFound() : HttpResponse.json(toView(kind, updated));
+    }),
+    http.post(`${path}/:id/login-account`, async ({ request }) => {
+      if (!canManage) return denied();
+      const body: unknown = await request.json();
+      const username = isRecord(body) && typeof body.username === 'string' ? body.username : '';
+      if (username === '') return problem(400, 'INVALID_MASTER_DATA', 'Geçersiz kayıt');
+      if (username === TAKEN_USERNAME) {
+        return problem(409, 'LOGIN_ACCOUNT_EXISTS', 'Giriş adı alınmış');
+      }
+      return HttpResponse.json(
+        { username, temporaryPassword: MOCK_TEMPORARY_PASSWORD },
+        { status: 201 },
+      );
     }),
     ...(['deactivate', 'activate'] as const).map((action) =>
       http.post(`${path}/:id/${action}`, ({ params }) => {

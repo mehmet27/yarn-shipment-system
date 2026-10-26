@@ -1,0 +1,392 @@
+openapi: 3.0.3
+info:
+  title: discrepancy-service API
+  version: 1.0.0
+  description: |
+    Uyuşmazlık okuma, atama ve karara bağlama uçları (API-01). Uyuşmazlıklar teslim girişi karşılaştırmasından
+    otomatik açılır; bu API onları incelemeye alır ve çözer. Bir sevkiyatın tüm uyuşmazlıkları çözülünce sevkiyat
+    tamamlanır (olayla, shipment-service tarafında).
+
+    Kurallar:
+    - Kilo ve yüzde değerleri ondalık dize olarak taşınır, ör. `"40.000"` (API-03).
+    - Zamanlar ISO 8601 UTC (API-03).
+    - Liste ucu sayfalıdır, `page` 0'dan başlar (API-06).
+    - Kullanıcı yalnızca yetkili olduğu lokasyonların uyuşmazlıklarını görür (SEC-03).
+servers:
+  - url: /
+tags:
+  - name: Discrepancies
+  - name: DiscrepancyDecisions
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/discrepancies:
+    get:
+      tags: [Discrepancies]
+      operationId: listDiscrepancies
+      summary: Uyuşmazlık listesi
+      description: Vadesi yakın olan önce gelir; aynı vadede RED, YELLOW'dan önce sıralanır.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/DiscrepancyStatus'
+        - name: severity
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Severity'
+        - name: assigneeId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: shipmentId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscrepancyPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/discrepancies/{discrepancyId}:
+    get:
+      tags: [Discrepancies]
+      operationId: getDiscrepancy
+      summary: Uyuşmazlık detayı
+      parameters:
+        - $ref: '#/components/parameters/DiscrepancyId'
+      responses:
+        '200':
+          description: Uyuşmazlık
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscrepancyView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/discrepancies/{discrepancyId}/activity:
+    get:
+      tags: [Discrepancies]
+      operationId: listDiscrepancyActivity
+      summary: Uyuşmazlık geçmişi (en eskiden yeniye)
+      parameters:
+        - $ref: '#/components/parameters/DiscrepancyId'
+      responses:
+        '200':
+          description: Etkinlikler
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiscrepancyActivityView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/discrepancies/{discrepancyId}/assign:
+    post:
+      tags: [DiscrepancyDecisions]
+      operationId: assignDiscrepancy
+      summary: Uyuşmazlığı bir sorumluya atar ve incelemeye alır
+      description: Yalnızca OPEN ve IN_REVIEW uyuşmazlıklar atanabilir; yeniden atama sorumluyu değiştirir.
+      parameters:
+        - $ref: '#/components/parameters/DiscrepancyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignDiscrepancyRequest'
+      responses:
+        '200':
+          description: Güncel uyuşmazlık
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscrepancyView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/discrepancies/{discrepancyId}/resolve:
+    post:
+      tags: [DiscrepancyDecisions]
+      operationId: resolveDiscrepancy
+      summary: Uyuşmazlığı karara bağlar
+      description: |
+        Çözüm kodu ve not zorunludur. `LIABILITY_ASSIGNED` için sorumlu taraf (`liableParty`) da gerekir.
+        Zaten çözülmüş uyuşmazlık tekrar çözülemez.
+      parameters:
+        - $ref: '#/components/parameters/DiscrepancyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveDiscrepancyRequest'
+      responses:
+        '200':
+          description: Güncel uyuşmazlık
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscrepancyView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    DiscrepancyId:
+      name: discrepancyId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    BadRequest:
+      description: İstek biçimi hatalı
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unauthorized:
+      description: Oturum yok veya token geçersiz (code AUTHENTICATION_REQUIRED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: İzin yok (ACCESS_DENIED) veya uyuşmazlık kapsam dışı (OUT_OF_SCOPE)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: Uyuşmazlık yok (DISCREPANCY_NOT_FOUND)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Conflict:
+      description: Uyuşmazlık bu işleme uygun durumda değil (DISCREPANCY_NOT_OPEN)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    Problem:
+      description: RFC 9457 hata gövdesi (ERR-07). İstemci kararını `code` alanına göre verir.
+      type: object
+      required: [type, title, status, code]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+        requestId:
+          type: string
+    DiscrepancyStatus:
+      type: string
+      enum: [OPEN, IN_REVIEW, RESOLVED, CLOSED]
+    DiscrepancyType:
+      type: string
+      enum: [QUANTITY, BAG, SEAL, QUALITY, DOCUMENT, PHOTO, TIME]
+    Severity:
+      type: string
+      enum: [YELLOW, RED]
+    Resolution:
+      type: string
+      enum: [TOLERANCE, DATA_ERROR, CLAIM_JUSTIFIED, CLAIM_UNJUSTIFIED, LIABILITY_ASSIGNED]
+    DiscrepancyView:
+      type: object
+      required: [id, discrepancyNo, siteId, shipmentId, type, severity, status, ruleCode, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        discrepancyNo:
+          type: string
+        siteId:
+          type: string
+          format: uuid
+        shipmentId:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/DiscrepancyType'
+        severity:
+          $ref: '#/components/schemas/Severity'
+        status:
+          $ref: '#/components/schemas/DiscrepancyStatus'
+        ruleCode:
+          type: string
+        expectedValue:
+          type: string
+        actualValue:
+          type: string
+        diffKg:
+          type: string
+          description: Ondalık dize, ör. `"40.000"`
+        diffPct:
+          type: string
+          description: Ondalık dize, ör. `"2.00"`
+        assigneeId:
+          type: string
+          format: uuid
+        dueAt:
+          type: string
+          format: date-time
+        resolution:
+          $ref: '#/components/schemas/Resolution'
+        resolutionNote:
+          type: string
+        liableParty:
+          type: string
+        resolvedBy:
+          type: string
+          format: uuid
+        resolvedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        allowedActions:
+          type: array
+          description: Bu kullanıcının bu uyuşmazlıkta yapabileceği eylemler (FE-SEC-03)
+          items:
+            type: string
+            enum: [ASSIGN, RESOLVE]
+    PageMetadata:
+      type: object
+      required: [number, size, totalElements, totalPages]
+      properties:
+        number:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    DiscrepancyPage:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscrepancyView'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+    DiscrepancyActivityView:
+      type: object
+      required: [id, actionType, actorId, occurredAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        actionType:
+          type: string
+          description: OPENED, ASSIGNED, RESOLVED
+        note:
+          type: string
+        evidenceId:
+          type: string
+          format: uuid
+        actorId:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+    AssignDiscrepancyRequest:
+      type: object
+      required: [assigneeId]
+      properties:
+        assigneeId:
+          type: string
+          format: uuid
+    ResolveDiscrepancyRequest:
+      type: object
+      required: [resolution, note]
+      properties:
+        resolution:
+          $ref: '#/components/schemas/Resolution'
+        note:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        liableParty:
+          type: string
+          maxLength: 200

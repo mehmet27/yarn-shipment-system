@@ -2,9 +2,6 @@
 spring:
   application:
     name: discrepancy-service
-  main:
-    # Faz 1'in bu adımında servis yalnızca olay tüketir ve yayınlar; uyuşmazlık API'si sonraki adımdır.
-    web-application-type: none
   datasource:
     # Uygulama yalnızca DML yetkili rol ile bağlanır; DDL Flyway'in migrator rolüyle yapılır.
     url: ${DISCREPANCY_DB_URL:jdbc:postgresql://localhost:5432/discrepancy_db}
@@ -16,6 +13,21 @@ spring:
     placeholders:
       app_role: ${DISCREPANCY_DB_APP_USER:discrepancy_app}
       readonly_role: ${DISCREPANCY_DB_READONLY_USER:discrepancy_readonly}
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+  jackson:
+    default-property-inclusion: non_null
+  mvc:
+    problemdetails:
+      enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/yarnshipment}
+          audiences: yarnshipment-api
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
@@ -27,6 +39,8 @@ spring:
       properties:
         enable.idempotence: true
         max.block.ms: 10000
+server:
+  port: ${SERVER_PORT:8085}
 yarnshipment:
   outbox:
     topic: discrepancy.events.v1

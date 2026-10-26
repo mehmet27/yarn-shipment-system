@@ -44,6 +44,37 @@ describe('MasterDataPage', () => {
     expect(await screen.findByText('Bu plaka başka bir araçta kullanılıyor.')).toBeInTheDocument();
   });
 
+  it('giriş hesabı formu eksik alanları düğmeye basınca gösterir', async () => {
+    server.use(...createHandlers('ADMIN'));
+    renderApp('/panel/tanimlar');
+    const card = await screen.findByRole('group', { name: 'Aydın Örme' });
+    await userEvent.click(within(card).getByRole('button', { name: 'Giriş hesabı aç' }));
+    const dialog = await screen.findByRole('dialog');
+    const submit = within(dialog).getByRole('button', { name: 'Hesabı aç' });
+    expect(submit).toBeEnabled();
+    expect(within(dialog).getByText(/Görebileceği lokasyonlar/)).toHaveTextContent(
+      'Görebileceği lokasyonlar *',
+    );
+
+    await userEvent.click(submit);
+    expect(within(dialog).getByText(/Giriş adı en az 3 karakter olmalı/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Geçerli bir e-posta girin/)).toBeInTheDocument();
+    expect(within(dialog).getByText('En az bir lokasyon seçin.')).toBeInTheDocument();
+
+    await userEvent.type(within(dialog).getByLabelText(/Giriş adı/), 'şahin');
+    await userEvent.type(within(dialog).getByLabelText(/E-posta/), 'aydin@orme.com');
+    await userEvent.click(await within(dialog).findByRole('switch', { name: 'Merkez Depo' }));
+    await userEvent.click(submit);
+    expect(within(dialog).getByText(/Giriş adı en az 3 karakter olmalı/)).toBeInTheDocument();
+    expect(within(dialog).queryByText(/Geçerli bir e-posta girin/)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('En az bir lokasyon seçin.')).not.toBeInTheDocument();
+
+    await userEvent.clear(within(dialog).getByLabelText(/Giriş adı/));
+    await userEvent.type(within(dialog).getByLabelText(/Giriş adı/), 'aydin.orme');
+    await userEvent.click(submit);
+    expect(await within(dialog).findByText('Giriş hesabı açıldı.')).toBeInTheDocument();
+  });
+
   it('MASTER_DATA_MANAGE yetkisi olmayan rol bu sayfaya giremez', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/tanimlar');

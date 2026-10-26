@@ -25,7 +25,7 @@ final class DiscrepancyQueryAdapter implements DiscrepancyQueryPort {
                    expected_value, actual_value, diff_kg, diff_pct, assignee_id, due_at, resolution, resolution_note,
                    liable_party, resolved_by, resolved_at, created_at
               FROM discrepancy""";
-    private static final String ORDER = " ORDER BY due_at NULLS LAST, severity DESC, discrepancy_no";
+    private static final String ORDER = " ORDER BY due_at NULLS LAST, (severity = 'RED') DESC, discrepancy_no";
     private static final String ACTIVITY = """
             SELECT id, action_type, note, evidence_id, actor_id, occurred_at
               FROM discrepancy_activity

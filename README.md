@@ -173,6 +173,8 @@ Servis `shipment.events.v1` konusundaki teslim girişi olayını (`delivery-rece
 
 Her bulgu bir `discrepancy` satırı (`UY-<sevkiyat no>-<sıra>`, durum `OPEN`, son tarih 5 iş günü) ve `OPENED` geçmiş kaydı açar. Girdi, uyuşmazlıklar ve `comparison-completed.v1` olayı (`discrepancy.events.v1`) aynı transaction'da yazılır. Aynı olay ya da aynı sevkiyatın ikinci teslim olayı tekrar karşılaştırılmaz. Geçici hata üç kez yeniden denenir; bozuk ya da eksik olay doğrudan `shipment.events.v1.DLT` konusuna gider.
 
+shipment-service `discrepancy.events.v1` konusunu dinler: temiz sonuç sevkiyatı `CHECKING` → `COMPLETED` yapar ve `shipment-completed.v1` yayınlar, uyuşmazlık `IN_REVIEW`'a alır. Geçiş geçmişte sistem hesabıyla (`00000000-0000-0000-0000-000000000000`) görünür. Kanıt (imzalı irsaliye fotoğrafı) yükleme henüz olmadığı için şimdilik her karşılaştırma `DOCUMENT_MISSING` (Sarı) açar ve sevkiyatlar incelemeye düşer.
+
 Servisin HTTP ucu yoktur. Çalıştırmak için `DISCREPANCY_DB_APP_PASSWORD`, `DISCREPANCY_DB_MIGRATOR_PASSWORD` ve gerekirse `KAFKA_BOOTSTRAP_SERVERS` verilir:
 
 ```bash

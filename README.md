@@ -153,6 +153,12 @@ export REDIS_PASSWORD=<deploy/.env içindeki REDIS_PASSWORD>
 | `BAG_SERVICE_URL` | `http://localhost:8084` |
 | `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` | `localhost` / `6379` / boş (oturumlar Redis'te tutulur; gateway yeniden başlasa da oturum düşmez) |
 
+## common-outbox (olay yayını)
+
+Servis iş verisiyle aynı transaction'da `outbox_event` tablosuna yazdığı olayları (EVT-03) bu kütüphanenin yoklamalı yayıncısı Kafka'ya iletir. Mesajlar CloudEvents ikili kipindedir (`ce_id`, `ce_type`, `ce_source`, `ce_subject`, `ce_time` başlıkları, gövde JSON), anahtar sevkiyat kimliğidir. Kafka onayından sonra satıra `published_at` yazılır; gönderim başarısızsa satır bir sonraki turda yeniden gönderilir (en az bir kez teslim). Birden çok servis örneği aynı satırı göndermez (`FOR UPDATE SKIP LOCKED`).
+
+Servis `yarnshipment.outbox.topic` (ör. `shipment.events.v1`) ve `yarnshipment.outbox.source` verirse yayıncı açılır; `yarnshipment.outbox.enabled=false` kapatır. Tüketen servisler `ProcessedEvents.markProcessed(eventId, type)` ile olayı işlemle aynı transaction'da kaydeder; ikinci kez gelen olay `false` döner (EVT-05). Kafka Compose ile `localhost:9092` adresinde açılır; shipment-service `KAFKA_BOOTSTRAP_SERVERS` ile başka adrese yönlendirilir.
+
 ## common-web (ortak web altyapısı)
 
 Servis ana sınıfına `@EnableYarnShipmentWeb` eklenir; şunları verir:

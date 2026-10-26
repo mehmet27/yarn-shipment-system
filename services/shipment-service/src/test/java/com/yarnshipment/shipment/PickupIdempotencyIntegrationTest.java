@@ -55,6 +55,7 @@ class PickupIdempotencyIntegrationTest {
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
         ISOLATED_DATABASE.registerIn(registry);
+        registry.add("yarnshipment.outbox.enabled", () -> "false");
     }
 
     @BeforeEach

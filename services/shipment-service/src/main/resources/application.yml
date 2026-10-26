@@ -31,6 +31,14 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      # EVT-04: aynı sevkiyatın olayları sıralı; onay tüm kopyalardan, tekrar gönderimde çift kayıt yok.
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.block.ms: 10000
   security:
     oauth2:
       resourceserver:
@@ -39,3 +47,8 @@ spring:
           audiences: yarnshipment-api
 server:
   port: ${SERVER_PORT:8083}
+yarnshipment:
+  outbox:
+    # EVT-03/04: outbox_event satırları bu konuya CloudEvents olarak yayınlanır.
+    topic: shipment.events.v1
+    source: /yarn-shipment/shipment-service

@@ -56,6 +56,7 @@ class PickupIdempotencyIntegrationTest {
     static void databaseProperties(DynamicPropertyRegistry registry) {
         ISOLATED_DATABASE.registerIn(registry);
         registry.add("yarnshipment.outbox.enabled", () -> "false");
+        registry.add("spring.kafka.listener.auto-startup", () -> "false");
     }
 
     @BeforeEach

@@ -226,6 +226,11 @@
       "password": "Geçici şifre",
       "showOnce": "Bu şifre yalnızca şimdi görünür; kişiye iletin. İlk girişte değiştirmesi istenecek.",
       "close": "Tamam",
+      "invalid": {
+        "username": "Giriş adı en az 3 karakter olmalı; küçük harf, rakam, nokta, alt çizgi ve tire kullanın (Türkçe karakter ve boşluk olmaz).",
+        "email": "Geçerli bir e-posta girin (ör. ad@firma.com).",
+        "sites": "En az bir lokasyon seçin."
+      },
       "errors": {
         "LOGIN_ACCOUNT_EXISTS": "Bu kayıt için hesap zaten var ya da giriş adı alınmış.",
         "LOGIN_ACCOUNT_UNAVAILABLE": "Giriş sistemine ulaşılamadı; hesap açılmadı. Lütfen tekrar deneyin.",

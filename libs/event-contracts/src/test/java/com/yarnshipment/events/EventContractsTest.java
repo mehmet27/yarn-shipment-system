@@ -3,6 +3,7 @@ package com.yarnshipment.events;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.events.discrepancy.ComparisonCompleted;
+import com.yarnshipment.events.discrepancy.DiscrepancyOpened;
 import com.yarnshipment.events.discrepancy.DiscrepancyResolved;
 import com.yarnshipment.events.shipment.DeliveryReceived;
 import java.math.BigDecimal;
@@ -39,6 +40,17 @@ class EventContractsTest {
 
         assertThat(read).isEqualTo(event);
         assertThat(read.clean()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Açılış olayı JSON'a yazılıp aynen okunur")
+    void shouldRoundTripDiscrepancyOpened() {
+        DiscrepancyOpened event = new DiscrepancyOpened(
+                UUID.randomUUID(), "UY-1-1", SHIPMENT, SITE, "QUANTITY", "RED", "QUANTITY_RED", AT);
+
+        DiscrepancyOpened read = JSON.readValue(JSON.writeValueAsString(event), DiscrepancyOpened.class);
+
+        assertThat(read).isEqualTo(event);
     }
 
     @Test

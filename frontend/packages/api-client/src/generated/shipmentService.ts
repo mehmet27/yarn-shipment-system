@@ -346,8 +346,11 @@ export interface LoginAccountRequest {
      * @pattern ^[a-z0-9][a-z0-9._-]{2,63}$
      */
   username: string;
-  /** @maxLength 255 */
-  email?: string;
+  /**
+     * Keycloak kullanıcı profili e-postayı zorunlu tutar; verilmezse kişi ilk girişte e-posta girmek zorunda kalır
+     * @maxLength 255
+     */
+  email: string;
   /**
      * Kişinin sevkiyatlarını göreceği etkin lokasyonlar
      * @minItems 1

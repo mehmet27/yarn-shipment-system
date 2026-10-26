@@ -3,13 +3,12 @@ package com.yarnshipment.shipment.masterdata.domain.model;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Açılacak giriş hesabı.
  *
  * @param username giriş adı
- * @param email isteğe bağlı e-posta
+ * @param email e-posta (Keycloak kullanıcı profili zorunlu tutar)
  * @param displayName şoförün adı soyadı ya da fasoncunun unvanı
  * @param role Keycloak rolü
  * @param ownerId şoför ya da fasoncu kaydının kimliği
@@ -18,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  */
 public record LoginAccountSpec(
         String username,
-        @Nullable String email,
+        String email,
         String displayName,
         LoginRole role,
         UUID ownerId,
@@ -27,6 +26,7 @@ public record LoginAccountSpec(
 
     public LoginAccountSpec {
         Objects.requireNonNull(username, "username");
+        Objects.requireNonNull(email, "email");
         Objects.requireNonNull(displayName, "displayName");
         Objects.requireNonNull(role, "role");
         Objects.requireNonNull(ownerId, "ownerId");

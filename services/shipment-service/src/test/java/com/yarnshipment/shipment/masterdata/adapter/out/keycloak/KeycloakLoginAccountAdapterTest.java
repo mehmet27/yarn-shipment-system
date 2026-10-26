@@ -33,7 +33,7 @@ class KeycloakLoginAccountAdapterTest {
     private static final int USER_CALL = 3;
     private static final String USERS = "/admin/realms/yarnshipment/users";
     private static final LoginAccountSpec SPEC = new LoginAccountSpec(
-            "ali.yilmaz", null, "Ali Yılmaz", LoginRole.DRIVER, OWNER, List.of(SITE), "Gecici-Sifre-123");
+            "ali.yilmaz", "ali@ornek.com", "Ali Yılmaz", LoginRole.DRIVER, OWNER, List.of(SITE), "Gecici-Sifre-123");
 
     private final List<String> calls = new ArrayList<>();
     private final List<String> bodies = new ArrayList<>();
@@ -67,6 +67,7 @@ class KeycloakLoginAccountAdapterTest {
         String user = bodies.get(USER_CALL);
         assertThat(user)
                 .contains("\"username\":\"ali.yilmaz\"")
+                .contains("\"email\":\"ali@ornek.com\"")
                 .contains("\"driver_id\":[\"" + OWNER + "\"]")
                 .contains("\"site_ids\":[\"" + SITE + "\"]")
                 .contains("\"temporary\":true")

@@ -33,8 +33,8 @@ class SubcontractorLoginAccountControllerTest {
     private static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000003");
     private static final String SUBCONTRACTOR_URI =
             "/api/v1/master-data/subcontractors/" + SUBCONTRACTOR + "/login-account";
-    private static final String BODY =
-            "{\"username\":\"ali.yilmaz\",\"siteIds\":[\"0192f0a0-0000-7000-8000-000000000001\"]}";
+    private static final String BODY = "{\"username\":\"ali.yilmaz\",\"email\":\"ali@ornek.com\","
+            + "\"siteIds\":[\"0192f0a0-0000-7000-8000-000000000001\"]}";
 
     private final MockMvcTester mvc;
 

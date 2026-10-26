@@ -1503,7 +1503,7 @@ components:
           description: Bağlı fasoncunun unvanı; yalnızca liste yanıtında dolar
     LoginAccountRequest:
       type: object
-      required: [username, siteIds]
+      required: [username, email, siteIds]
       properties:
         username:
           type: string
@@ -1512,6 +1512,7 @@ components:
         email:
           type: string
           format: email
+          description: Keycloak kullanıcı profili e-postayı zorunlu tutar; verilmezse kişi ilk girişte e-posta girmek zorunda kalır
           maxLength: 255
         siteIds:
           type: array

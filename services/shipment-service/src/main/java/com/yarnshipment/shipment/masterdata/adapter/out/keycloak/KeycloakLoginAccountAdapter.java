@@ -127,9 +127,7 @@ final class KeycloakLoginAccountAdapter implements LoginAccountPort {
         user.put("enabled", true);
         user.put("firstName", names[0]);
         user.put("lastName", names[1]);
-        if (spec.email() != null) {
-            user.put("email", spec.email());
-        }
+        user.put("email", spec.email());
         user.put(
                 "attributes",
                 Map.of(

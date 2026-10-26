@@ -1,0 +1,33 @@
+# CONF-01: ortamdan gelen değerler ortam değişkeniyle verilir; gizli bilgi bu dosyaya yazılmaz (SEC-14).
+spring:
+  application:
+    name: discrepancy-service
+  main:
+    # Faz 1'in bu adımında servis yalnızca olay tüketir ve yayınlar; uyuşmazlık API'si sonraki adımdır.
+    web-application-type: none
+  datasource:
+    # Uygulama yalnızca DML yetkili rol ile bağlanır; DDL Flyway'in migrator rolüyle yapılır.
+    url: ${DISCREPANCY_DB_URL:jdbc:postgresql://localhost:5432/discrepancy_db}
+    username: ${DISCREPANCY_DB_APP_USER:discrepancy_app}
+    password: ${DISCREPANCY_DB_APP_PASSWORD}
+  flyway:
+    user: ${DISCREPANCY_DB_MIGRATOR_USER:discrepancy_migrator}
+    password: ${DISCREPANCY_DB_MIGRATOR_PASSWORD}
+    placeholders:
+      app_role: ${DISCREPANCY_DB_APP_USER:discrepancy_app}
+      readonly_role: ${DISCREPANCY_DB_READONLY_USER:discrepancy_readonly}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: discrepancy-service
+      # Servis ilk açıldığında konudaki geçmiş teslim girişleri de karşılaştırılır.
+      auto-offset-reset: earliest
+    producer:
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.block.ms: 10000
+yarnshipment:
+  outbox:
+    topic: discrepancy.events.v1
+    source: /yarn-shipment/discrepancy-service

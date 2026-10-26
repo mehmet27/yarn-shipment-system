@@ -19,6 +19,7 @@ import org.jspecify.annotations.Nullable;
  * @param scannedUniqueKeys teslimde okutulan anahtarlar
  * @param dispatchSeal çıkış mührü
  * @param deliverySeal teslimdeki mühür
+ * @param context lokasyon, sevkiyat numarası ve irsaliye (v1'e sonradan eklendi, EVT-06)
  */
 public record DeliveryReceived(
         UUID shipmentId,
@@ -29,7 +30,8 @@ public record DeliveryReceived(
         List<String> expectedUniqueKeys,
         List<String> scannedUniqueKeys,
         SealState dispatchSeal,
-        SealState deliverySeal) {
+        SealState deliverySeal,
+        Context context) {
 
     public static final String TYPE = "com.yarnshipment.shipment.delivery-received.v1";
 
@@ -51,7 +53,8 @@ public record DeliveryReceived(
                 expectedKeys.stream().sorted().toList(),
                 measurement.scannedKeys().stream().sorted().toList(),
                 new SealState(receipt.dispatch().sealNo(), null),
-                new SealState(measurement.sealNo(), measurement.sealCondition()));
+                new SealState(measurement.sealNo(), measurement.sealCondition()),
+                new Context(receipt.siteId(), receipt.shipmentNo(), measurement.document()));
     }
 
     /**
@@ -77,4 +80,13 @@ public record DeliveryReceived(
      */
     public record SealState(
             @Nullable String sealNo, @Nullable SealCondition condition) {}
+
+    /**
+     * Karşılaştırmanın sevkiyata ve irsaliyeye dair bağlamı.
+     *
+     * @param siteId çıkış lokasyonu
+     * @param shipmentNo sevkiyat numarası
+     * @param document irsaliye değerleri ve imzalı belge
+     */
+    public record Context(UUID siteId, String shipmentNo, DeliveryDocument document) {}
 }

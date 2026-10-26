@@ -52,6 +52,10 @@ class DeliveryMeasurementTest {
         assertThat(event.dispatch()).isNotNull();
         assertThat(event.dispatchSeal().condition()).isNull();
         assertThat(event.deliverySeal().condition()).isEqualTo(SealCondition.INTACT);
+        assertThat(event.context().siteId()).isEqualTo(TestShipments.SITE_ID);
+        assertThat(event.context().shipmentNo()).isEqualTo("SV-2026-000123");
+        assertThat(event.context().document())
+                .isEqualTo(TestDeliveries.measurement().document());
     }
 
     @ParameterizedTest

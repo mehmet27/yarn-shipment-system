@@ -8,6 +8,8 @@ import java.util.UUID;
  * Gönderilmiş kör teslim tutanağı. Gönderildiği an kilitlenir (veritabanında {@code submitted_at}).
  *
  * @param shipmentId sevkiyat
+ * @param siteId çıkış lokasyonu
+ * @param shipmentNo sevkiyat numarası; irsaliyedeki numarayla karşılaştırılır
  * @param receivedBy tutanağı gönderen kullanıcı
  * @param receivedAt sunucunun tutanağı aldığı zaman (DOM-11)
  * @param weighing teslim tartısı
@@ -16,6 +18,8 @@ import java.util.UUID;
  */
 public record DeliveryReceipt(
         UUID shipmentId,
+        UUID siteId,
+        String shipmentNo,
         UUID receivedBy,
         Instant receivedAt,
         Weighing weighing,
@@ -24,6 +28,8 @@ public record DeliveryReceipt(
 
     public DeliveryReceipt {
         Objects.requireNonNull(shipmentId, "shipmentId");
+        Objects.requireNonNull(siteId, "siteId");
+        Objects.requireNonNull(shipmentNo, "shipmentNo");
         Objects.requireNonNull(receivedBy, "receivedBy");
         Objects.requireNonNull(receivedAt, "receivedAt");
         Objects.requireNonNull(weighing, "weighing");

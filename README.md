@@ -159,6 +159,26 @@ Servis iş verisiyle aynı transaction'da `outbox_event` tablosuna yazdığı ol
 
 Servis `yarnshipment.outbox.topic` (ör. `shipment.events.v1`) ve `yarnshipment.outbox.source` verirse yayıncı açılır; `yarnshipment.outbox.enabled=false` kapatır. Tüketen servisler `ProcessedEvents.markProcessed(eventId, type)` ile olayı işlemle aynı transaction'da kaydeder; ikinci kez gelen olay `false` döner (EVT-05). Kafka Compose ile `localhost:9092` adresinde açılır; shipment-service `KAFKA_BOOTSTRAP_SERVERS` ile başka adrese yönlendirilir.
 
+## discrepancy-service (otomatik karşılaştırma)
+
+Servis `shipment.events.v1` konusundaki teslim girişi olayını (`delivery-received.v1`) dinler ve çıkışla teslimi karşılaştırır. Olay sözleşmeleri `libs/event-contracts` altındadır; shipment-service'teki sözleşme testi yayınlanan olayın bu kayda kayıpsız okunduğunu denetler.
+
+| Kural | Tolerans | Öncelik |
+|---|---|---|
+| Net kilo farkı | `tolerance_rule` genel kuralı; yoksa Yeşil ≤ %0,5, Sarı ≤ %1,5 (mutlak fark) | Sarı / Kırmızı |
+| Çıkış tartısı yok | yok | Kırmızı |
+| Çuval sayısı, Unique Key listesi | sıfır | Kırmızı |
+| Mühür hasarlı/yok, mühür no farklı | sıfır | Kırmızı |
+| İmzalı irsaliye yok, irsaliye alanları teslimle tutmuyor | sıfır | Sarı |
+
+Her bulgu bir `discrepancy` satırı (`UY-<sevkiyat no>-<sıra>`, durum `OPEN`, son tarih 5 iş günü) ve `OPENED` geçmiş kaydı açar. Girdi, uyuşmazlıklar ve `comparison-completed.v1` olayı (`discrepancy.events.v1`) aynı transaction'da yazılır. Aynı olay ya da aynı sevkiyatın ikinci teslim olayı tekrar karşılaştırılmaz. Geçici hata üç kez yeniden denenir; bozuk ya da eksik olay doğrudan `shipment.events.v1.DLT` konusuna gider.
+
+Servisin HTTP ucu yoktur. Çalıştırmak için `DISCREPANCY_DB_APP_PASSWORD`, `DISCREPANCY_DB_MIGRATOR_PASSWORD` ve gerekirse `KAFKA_BOOTSTRAP_SERVERS` verilir:
+
+```bash
+DISCREPANCY_DB_APP_PASSWORD=... DISCREPANCY_DB_MIGRATOR_PASSWORD=... ./mvnw -pl services/discrepancy-service spring-boot:run
+```
+
 ## common-web (ortak web altyapısı)
 
 Servis ana sınıfına `@EnableYarnShipmentWeb` eklenir; şunları verir:

@@ -27,9 +27,11 @@
         <module>libs/common-security</module>
         <module>libs/common-web</module>
         <module>libs/common-outbox</module>
+        <module>libs/event-contracts</module>
         <module>services/shipment-service</module>
         <module>services/bag-service</module>
         <module>services/gateway</module>
+        <module>services/discrepancy-service</module>
     </modules>
 
     <properties>
@@ -82,6 +84,11 @@
             <dependency>
                 <groupId>com.yarnshipment</groupId>
                 <artifactId>common-outbox</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yarnshipment</groupId>
+                <artifactId>event-contracts</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

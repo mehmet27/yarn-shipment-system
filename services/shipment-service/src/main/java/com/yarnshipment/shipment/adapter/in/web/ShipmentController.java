@@ -7,8 +7,6 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.DispatchWeighingReques
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentDetailResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentPageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentStatus;
-import com.yarnshipment.shipment.application.port.in.ConfirmPickupCommand;
-import com.yarnshipment.shipment.application.port.in.ConfirmPickupUseCase;
 import com.yarnshipment.shipment.application.port.in.GetShipmentQuery;
 import com.yarnshipment.shipment.application.port.in.GetShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsQuery;
@@ -17,6 +15,8 @@ import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
 import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptCommand;
 import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptUseCase;
+import com.yarnshipment.shipment.application.port.in.driver.ConfirmPickupCommand;
+import com.yarnshipment.shipment.application.port.in.driver.ConfirmPickupUseCase;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;

@@ -1,6 +1,7 @@
 import type { Kilogram } from '@iplik/units';
 import { isKilogram } from '@iplik/units';
 import type {
+  ArrivalDeclarationRequest,
   DispatchWeighingRequest as GeneratedDispatchWeighingRequest,
   DeliveryDocument as GeneratedDeliveryDocument,
   DeliveryReceiptRequest as GeneratedDeliveryReceiptRequest,
@@ -19,6 +20,7 @@ import type {
 } from './generated/shipmentService';
 import {
   confirmPickup,
+  declareArrival,
   getShipment as getGeneratedShipment,
   listShipments,
   recordDispatchWeighing,
@@ -119,4 +121,12 @@ export type DispatchWeighingRequest = Omit<
   tareKg: Kilogram;
 };
 
-export { confirmPickup, listShipments, recordDispatchWeighing, submitDeliveryReceipt };
+export type { ArrivalDeclarationRequest };
+
+export {
+  confirmPickup,
+  declareArrival,
+  listShipments,
+  recordDispatchWeighing,
+  submitDeliveryReceipt,
+};

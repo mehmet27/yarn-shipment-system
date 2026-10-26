@@ -2,8 +2,8 @@ package com.yarnshipment.shipment.application.service;
 
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.common.security.Permission;
-import com.yarnshipment.shipment.application.port.in.ConfirmPickupCommand;
-import com.yarnshipment.shipment.application.port.in.ConfirmPickupUseCase;
+import com.yarnshipment.shipment.application.port.in.driver.ConfirmPickupCommand;
+import com.yarnshipment.shipment.application.port.in.driver.ConfirmPickupUseCase;
 import com.yarnshipment.shipment.application.port.out.ShipmentCommandPort;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;

@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.application.port.out;
 
+import com.yarnshipment.shipment.domain.arrival.ArrivalDeclaration;
 import com.yarnshipment.shipment.domain.model.PickupConfirmation;
 import java.util.UUID;
 
@@ -15,4 +16,14 @@ public interface ShipmentCommandPort {
      * @param actorUserId işlemi yapan kullanıcı (audit ve geçmiş)
      */
     void recordPickup(PickupConfirmation confirmation, UUID actorUserId);
+
+    /** Sevkiyat için varış beyanı daha önce kaydedildi mi (yeniden deneme). */
+    boolean hasArrivalDeclaration(UUID shipmentId);
+
+    /**
+     * Beyanı kaydeder ve durumu AWAITING_DELIVERY yapar. Arada durum değiştiyse {@code InvalidShipmentStatusException}.
+     *
+     * @param actorUserId işlemi yapan kullanıcı (audit ve geçmiş)
+     */
+    void recordArrival(ArrivalDeclaration declaration, UUID actorUserId);
 }

@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.yarnshipment.shipment.domain.arrival.ArrivalDeclaration;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.PickupConfirmation;
 import java.time.Instant;
@@ -35,6 +36,8 @@ class ShipmentCommandAdapterTest {
     private static final int BAG_COUNT = 40;
     private static final PickupConfirmation PICKUP =
             new PickupConfirmation(SHIPMENT, SITE, DRIVER, BAG_COUNT, "M-0001", Instant.parse("2026-10-21T09:00:00Z"));
+    private static final ArrivalDeclaration ARRIVAL = new ArrivalDeclaration(
+            SHIPMENT, SITE, DRIVER, BAG_COUNT, "M-0001", false, Instant.parse("2026-10-21T13:00:00Z"));
     private static final String INSERT_SHIPMENT = """
             INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, driver_id,
                                   driver_name, status, created_at, created_by)
@@ -94,5 +97,40 @@ class ShipmentCommandAdapterTest {
     @DisplayName("Beyanı olmayan sevkiyatta tekrar kontrolü yanlış döner")
     void shouldReportMissingPickup() {
         assertThat(adapter.hasPickupConfirmation(SHIPMENT)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Varış beyanı durumu AWAITING_DELIVERY yapar; mühür durumu ve outbox olayı yazılır")
+    void shouldRecordArrivalWithSealConditionAndOutbox() {
+        // given
+        adapter.recordPickup(PICKUP, USER);
+
+        // when
+        adapter.recordArrival(ARRIVAL, USER);
+
+        // then
+        assertThat(jdbc.queryForObject("SELECT status FROM shipment WHERE id = ?", String.class, SHIPMENT))
+                .isEqualTo("AWAITING_DELIVERY");
+        assertThat(adapter.hasArrivalDeclaration(SHIPMENT)).isTrue();
+        assertThat(jdbc.queryForObject(
+                        "SELECT seal_intact FROM driver_declaration WHERE shipment_id = ? AND declaration_type = ?",
+                        Boolean.class,
+                        SHIPMENT,
+                        "ARRIVAL"))
+                .isFalse();
+        assertThat(jdbc.queryForObject(
+                        "SELECT payload ->> 'sealIntact' FROM outbox_event WHERE aggregate_id = ? AND event_type = ?",
+                        String.class,
+                        SHIPMENT,
+                        "com.yarnshipment.shipment.shipment-arrived.v1"))
+                .isEqualTo("false");
+    }
+
+    @Test
+    @DisplayName("Yolda olmayan sevkiyatta varış yazılmaz ve 409 hatası verilir")
+    void shouldRejectArrivalBeforePickup() {
+        assertThatThrownBy(() -> adapter.recordArrival(ARRIVAL, USER))
+                .isInstanceOf(InvalidShipmentStatusException.class);
+        assertThat(adapter.hasArrivalDeclaration(SHIPMENT)).isFalse();
     }
 }

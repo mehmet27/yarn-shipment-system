@@ -89,6 +89,8 @@ export SHIPMENT_DB_MIGRATOR_PASSWORD=<LOCAL_DB_PASSWORD>
 
 Sevkiyat iptali (`POST /api/v1/shipments/{id}/cancel`, `Idempotency-Key` ve `reason` ister) yalnızca yöneticidedir (`SHIPMENT_CANCEL`) ve yalnızca taslak ya da çıkış tartımı yapılmış sevkiyatta çalışır. İptal, sevkiyattaki çuvalları bag-service'te serbest bırakır; çuval servisi yanıt vermezse iptal de yapılmaz (502 `BAG_SERVICE_UNAVAILABLE`) ve istek güvenle tekrarlanır.
 
+Şoför fasoncuya varınca `POST /api/v1/shipments/{id}/arrival-declaration` (`Idempotency-Key` ve `sealIntact` ister) ile varışını beyan eder (`DRIVER_DECLARATION_RECORD`; yalnızca yoldaki sevkiyatta). Sevkiyat teslim beklemeye geçer, fasoncunun kör teslim girişi açılır. Mühür hasarlı beyanı akışı durdurmaz, `shipment-arrived.v1` olayıyla karşılaştırmaya gider.
+
 Taslak sevkiyata yanlış okutulan çuval `DELETE /api/v1/shipments/{id}/bags/{uniqueKey}` ile çıkarılır (`DISPATCH_RECORD`; yalnızca çıkış tartımından önce). Satır silinmez, `removed_at` ile işaretlenir; bag-service'te rezervasyon bırakılır (`POST /api/v1/bags/reservations/release` içinde `uniqueKeys`) ve çuval başka sevkiyata atanabilir olur. Çuval listede yoksa da 204 döner. Sevkiyatın tamamını bırakmak (`uniqueKeys` olmadan) yine yalnızca `SHIPMENT_CANCEL` ile yapılır.
 
 Ana veri listeleri (`GET /api/v1/master-data/{sites,subcontractors,drivers,vehicles}`, `q` ile arama, sayfalı) `md_*` tablolarından okunur; yerel örnek veri iki lokasyon, üç fasoncu, üç şoför ve üç araç içerir. Lokasyon listesi isteyenin kapsamıyla süzülür. 

@@ -376,6 +376,7 @@ Proje sahibi, başlangıçtaki açık konularda büyümeye uygun ve sonradan gel
 | CuvalRezervasyonuBirakildi | `BagReservationReleased` | `com.yarnshipment.bag.bag-reservation-released.v1` | bag |
 | SevkiyatYuklendi | `ShipmentLoaded` | `com.yarnshipment.shipment.shipment-loaded.v1` | shipment |
 | SevkiyatYolaCikti | `ShipmentDispatched` | `com.yarnshipment.shipment.shipment-dispatched.v1` | shipment |
+| SevkiyatVardi | `ShipmentArrived` | `com.yarnshipment.shipment.shipment-arrived.v1` | shipment |
 | TeslimGirisiYapildi | `DeliveryReceived` | `com.yarnshipment.shipment.delivery-received.v1` | shipment |
 | SevkiyatTamamlandi | `ShipmentCompleted` | `com.yarnshipment.shipment.shipment-completed.v1` | shipment |
 | SevkiyatKilitlendi | `ShipmentLocked` | `com.yarnshipment.shipment.shipment-locked.v1` | shipment |

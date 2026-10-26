@@ -31,6 +31,17 @@ describe('FieldShipmentPage', () => {
     expect(screen.queryByRole('button', { name: 'Yükü teslim aldım' })).not.toBeInTheDocument();
   });
 
+  it('teslim aldıktan sonra varışı mühür durumuyla beyan eder; durum Teslim bekliyor olur', async () => {
+    server.use(...createHandlers('DRIVER'));
+    renderApp('/saha/sevkiyat/shp-0010');
+    await userEvent.click(await screen.findByRole('button', { name: 'Yükü teslim aldım' }));
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Vardım, mühür hasarlı veya yok' }),
+    );
+    expect(await screen.findByText('Teslim bekliyor')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Vardım, mühür sağlam' })).not.toBeInTheDocument();
+  });
+
   it('başkasının sevkiyatında yetki uyarısı gösterir', async () => {
     server.use(...createHandlers('DRIVER'));
     renderApp('/saha/sevkiyat/shp-0002');

@@ -193,6 +193,11 @@ export const ScanMethod = {
   MANUAL: 'MANUAL',
 } as const;
 
+export interface ArrivalDeclarationRequest {
+  /** Varışta mühür sağlam mı; hasarlı ya da yoksa false */
+  sealIntact: boolean;
+}
+
 /**
  * İrsaliye üzerindeki değerler (fasoncunun okuduğu haliyle)
  */
@@ -807,6 +812,25 @@ export const confirmPickup = (
     }
 
 /**
+ * Şoför varış zamanını (sunucu saati) ve mührün sağlam olup olmadığını bildirir. Yalnızca sevkiyata atanmış
+ * şoför çağırabilir (`allowedActions` içinde `DECLARE_ARRIVAL`). Mühür hasarlı beyanı sevkiyatı durdurmaz;
+ * karşılaştırma discrepancy-service'tedir. Aynı sevkiyat için tekrar gönderilen istek (zayıf bağlantıda
+ * yeniden deneme) yeni kayıt oluşturmaz ve yine 204 döner.
+ * @summary Şoför fasoncuya vardığını beyan eder (IN_TRANSIT → AWAITING_DELIVERY)
+ */
+export const declareArrival = (
+    shipmentId: string,
+    arrivalDeclarationRequest: ArrivalDeclarationRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/arrival-declaration`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: arrivalDeclarationRequest
+    },
+      );
+    }
+
+/**
  * Fasoncu çıkış tartısını, beklenen yükü ve çıkış mühür numarasını görmeden kendi ölçümünü girer (SEC-05).
  * Gönderilen tutanak kilitlenir, değişiklik yalnızca düzeltme talebiyle yapılır. Okutulan anahtar listede
  * yoksa da saklanır; eşleşme karşılaştırması discrepancy-service'tedir. Aynı sevkiyat için tekrar gönderilen
@@ -1262,6 +1286,7 @@ export type CreateShipmentResult = NonNullable<Awaited<ReturnType<typeof createS
 export type ListShipmentsResult = NonNullable<Awaited<ReturnType<typeof listShipments>>>
 export type GetShipmentResult = NonNullable<Awaited<ReturnType<typeof getShipment>>>
 export type ConfirmPickupResult = NonNullable<Awaited<ReturnType<typeof confirmPickup>>>
+export type DeclareArrivalResult = NonNullable<Awaited<ReturnType<typeof declareArrival>>>
 export type SubmitDeliveryReceiptResult = NonNullable<Awaited<ReturnType<typeof submitDeliveryReceipt>>>
 export type RecordDispatchWeighingResult = NonNullable<Awaited<ReturnType<typeof recordDispatchWeighing>>>
 export type ListSubcontractorsResult = NonNullable<Awaited<ReturnType<typeof listSubcontractors>>>

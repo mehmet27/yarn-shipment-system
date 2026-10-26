@@ -2,6 +2,7 @@ import type { ShipmentDetail } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Anchor, Button, Group, Paper, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
 import { Link, useParams } from 'react-router';
+import { ArrivalDeclaration } from '../components/ArrivalDeclaration';
 import { PickupConfirmation } from '../components/PickupConfirmation';
 import { QueryState } from '../components/QueryState';
 import { ShipmentStatusBadge } from '../components/ShipmentStatusBadge';
@@ -47,6 +48,9 @@ export function FieldShipmentPage() {
             </Paper>
             {shipment.allowedActions.includes('CONFIRM_PICKUP') && (
               <PickupConfirmation shipmentId={shipment.shipmentId} />
+            )}
+            {shipment.allowedActions.includes('DECLARE_ARRIVAL') && (
+              <ArrivalDeclaration shipmentId={shipment.shipmentId} />
             )}
             {shipment.allowedActions.includes('RECORD_DELIVERY') && (
               <Button size="xl" fullWidth component={Link} to="teslim" relative="path">

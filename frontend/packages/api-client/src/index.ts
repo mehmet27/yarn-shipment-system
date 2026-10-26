@@ -5,6 +5,7 @@ export { classifyProblem, toProblem } from './problem';
 export type { FieldError, Problem, ProblemKind } from './problem';
 export {
   confirmPickup,
+  declareArrival,
   getShipment,
   listShipments,
   recordDispatchWeighing,
@@ -14,6 +15,7 @@ export {
   submitDeliveryReceipt,
 } from './shipments';
 export type {
+  ArrivalDeclarationRequest,
   DeliveryDocument,
   DeliveryReceiptRequest,
   DispatchWeighingRequest,

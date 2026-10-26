@@ -21,6 +21,7 @@ tags:
   - name: ShipmentFile
   - name: ShipmentBags
   - name: ShipmentCancellation
+  - name: ShipmentArrival
   - name: MasterData
   - name: SubcontractorManagement
   - name: DriverManagement
@@ -152,6 +153,43 @@ paths:
       responses:
         '204':
           description: Beyan kaydedildi, sevkiyat yolda
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/shipments/{shipmentId}/arrival-declaration:
+    post:
+      tags: [ShipmentArrival]
+      operationId: declareArrival
+      summary: Şoför fasoncuya vardığını beyan eder (IN_TRANSIT → AWAITING_DELIVERY)
+      description: |
+        Şoför varış zamanını (sunucu saati) ve mührün sağlam olup olmadığını bildirir. Yalnızca sevkiyata atanmış
+        şoför çağırabilir (`allowedActions` içinde `DECLARE_ARRIVAL`). Mühür hasarlı beyanı sevkiyatı durdurmaz;
+        karşılaştırma discrepancy-service'tedir. Aynı sevkiyat için tekrar gönderilen istek (zayıf bağlantıda
+        yeniden deneme) yeni kayıt oluşturmaz ve yine 204 döner.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArrivalDeclarationRequest'
+      responses:
+        '204':
+          description: Beyan kaydedildi, sevkiyat teslim bekliyor
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1326,6 +1364,13 @@ components:
       description: Çuval anahtarının nasıl girildiği
       type: string
       enum: [SCAN, LIST, MANUAL]
+    ArrivalDeclarationRequest:
+      type: object
+      required: [sealIntact]
+      properties:
+        sealIntact:
+          type: boolean
+          description: Varışta mühür sağlam mı; hasarlı ya da yoksa false
     DeliveryReceiptRequest:
       type: object
       required: [grossKg, tareKg, bagCount, sealCondition, bagUniqueKeys]

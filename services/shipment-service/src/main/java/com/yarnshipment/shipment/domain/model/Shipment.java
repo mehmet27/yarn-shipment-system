@@ -80,7 +80,8 @@ public record Shipment(
         return new PickupConfirmation(id, siteId, declaringDriverId, loadedBagCount(), dispatch.sealNo(), declaredAt);
     }
 
-    private int loadedBagCount() {
+    /** Yola çıkışta onaylanan çuval sayısı: çıkış tartısındaki sayı, tartı yoksa beklenen yük. */
+    public int loadedBagCount() {
         Weighing weighing = dispatch.weighing();
         if (weighing != null) {
             return weighing.bagCount();

@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
-import com.yarnshipment.shipment.application.port.in.ConfirmPickupUseCase;
 import com.yarnshipment.shipment.application.port.in.GetShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsUseCase;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
@@ -17,6 +16,7 @@ import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.in.ShipmentPage;
 import com.yarnshipment.shipment.application.port.in.ShipmentPage.ShipmentListItem;
 import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptUseCase;
+import com.yarnshipment.shipment.application.port.in.driver.ConfirmPickupUseCase;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.util.List;
 import java.util.Set;

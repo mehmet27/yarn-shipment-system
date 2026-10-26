@@ -114,6 +114,9 @@
     "confirmPickup": "Yükü teslim aldım",
     "confirmPickupHint": "Çuval sayısını ve mühür numarasını kontrol ettikten sonra onaylayın.",
     "pickupConfirmed": "Teslim alma kaydedildi.",
+    "declareArrivalHint": "Fasoncuya vardığınızda mührü kontrol edin ve durumuna göre seçin.",
+    "arrivedSealIntact": "Vardım, mühür sağlam",
+    "arrivedSealBroken": "Vardım, mühür hasarlı veya yok",
     "actionFailed": "İşlem kaydedilemedi. Lütfen tekrar deneyin.",
     "back": "Listeye dön",
     "recordDelivery": "Teslim tutanağını doldur"

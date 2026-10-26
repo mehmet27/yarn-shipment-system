@@ -1,4 +1,4 @@
-package com.yarnshipment.shipment.application.port.in;
+package com.yarnshipment.shipment.application.port.in.driver;
 
 import com.yarnshipment.common.security.Actor;
 import java.util.Objects;

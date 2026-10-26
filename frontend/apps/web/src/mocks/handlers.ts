@@ -160,6 +160,23 @@ const confirmPickupHandler = http.post(
   },
 );
 
+/** Şoförün varış beyanı; IN_TRANSIT → AWAITING_DELIVERY, aksi halde 409 INVALID_SHIPMENT_STATUS. */
+const declareArrivalHandler = http.post(
+  `${SHIPMENTS_PATH}/:shipmentId/arrival-declaration`,
+  ({ params }) => {
+    const shipment = findMockShipment(params.shipmentId);
+    if (shipment === undefined) return notFound();
+    if (shipment.status !== 'IN_TRANSIT') {
+      return HttpResponse.json(
+        { status: 409, code: 'INVALID_SHIPMENT_STATUS', title: 'Geçersiz durum' },
+        { status: 409 },
+      );
+    }
+    updateMockShipmentStatus(shipment.shipmentId, 'AWAITING_DELIVERY');
+    return new HttpResponse(null, { status: 204 });
+  },
+);
+
 /** Kör teslim tutanağı; AWAITING_DELIVERY → CHECKING, aksi halde 409 INVALID_SHIPMENT_STATUS. */
 const deliveryReceiptHandler = http.post(
   `${SHIPMENTS_PATH}/:shipmentId/delivery-receipt`,
@@ -227,6 +244,7 @@ export function createHandlers(role: Role) {
     createListShipmentsHandler(role),
     createGetShipmentHandler(role),
     confirmPickupHandler,
+    declareArrivalHandler,
     cancelShipmentHandler,
     deliveryReceiptHandler,
     dispatchWeighingHandler,

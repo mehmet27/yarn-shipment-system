@@ -34,6 +34,14 @@ export function PanelLayout() {
           label={t('nav.shipments')}
           active={pathname.startsWith('/panel/sevkiyat')}
         />
+        <Can permission="DISCREPANCY_VIEW">
+          <NavLink
+            component={RouterNavLink}
+            to="/panel/uyusmazliklar"
+            label={t('nav.discrepancies')}
+            active={pathname.startsWith('/panel/uyusmazliklar')}
+          />
+        </Can>
         <Can permission="MASTER_DATA_MANAGE">
           <NavLink
             component={RouterNavLink}

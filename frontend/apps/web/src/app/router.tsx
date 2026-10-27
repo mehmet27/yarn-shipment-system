@@ -1,4 +1,5 @@
 import { RequireAuth, RequirePermission } from '@/modules/auth';
+import { discrepancyPanelRoutes } from '@/modules/discrepancy';
 import { masterDataPanelRoutes } from '@/modules/masterdata';
 import { shipmentFieldRoutes, shipmentPanelRoutes } from '@/modules/shipment';
 import { createBrowserRouter } from 'react-router';
@@ -31,6 +32,7 @@ export const appRoutes: RouteObject[] = [
     children: [
       { index: true, element: <PanelHomePage /> },
       ...shipmentPanelRoutes,
+      ...discrepancyPanelRoutes,
       ...masterDataPanelRoutes,
     ],
   },

@@ -1,0 +1,1 @@
+export { discrepancyPanelRoutes } from './routes';

@@ -108,3 +108,12 @@ export type {
   ListDiscrepanciesParams,
   ResolveDiscrepancyRequest,
 } from './discrepancies';
+export {
+  confirmEvidenceUpload,
+  EvidenceSource,
+  EvidenceType,
+  requestEvidenceUpload,
+  StorageUploadError,
+  uploadToStorage,
+} from './evidence';
+export type { EvidenceView, RequestUploadRequest, UploadTicketView } from './evidence';

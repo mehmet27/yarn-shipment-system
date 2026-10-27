@@ -1,4 +1,5 @@
 import type { ShipmentDetail } from '@iplik/api-client';
+import { EvidenceUpload } from '@/modules/evidence';
 import { useTranslation } from '@iplik/i18n';
 import { Anchor, Button, Group, Paper, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
 import { Link, useParams } from 'react-router';
@@ -52,6 +53,7 @@ export function FieldShipmentPage() {
             {shipment.allowedActions.includes('DECLARE_ARRIVAL') && (
               <ArrivalDeclaration shipmentId={shipment.shipmentId} />
             )}
+            <EvidenceUpload shipmentId={shipment.shipmentId} />
             {shipment.allowedActions.includes('RECORD_DELIVERY') && (
               <Button size="xl" fullWidth component={Link} to="teslim" relative="path">
                 {t('field.recordDelivery')}

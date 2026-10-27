@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Button, Stack, Tabs, Text } from '@iplik/ui';
+import { EvidenceUpload } from '@/modules/evidence';
 import { Link, useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
 import { CancelShipmentForm } from '../components/CancelShipmentForm';
@@ -30,6 +31,7 @@ export function ShipmentFilePage() {
           {shipment.allowedActions.includes('CANCEL') && (
             <CancelShipmentForm shipmentId={shipmentId} />
           )}
+          <EvidenceUpload shipmentId={shipmentId} />
           <Tabs defaultValue="weights" keepMounted={false}>
             <Tabs.List>
               <Tabs.Tab value="weights">{t('shipment.file.tabs.weights')}</Tabs.Tab>

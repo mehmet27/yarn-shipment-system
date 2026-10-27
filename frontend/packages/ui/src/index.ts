@@ -9,6 +9,7 @@ export {
   Button,
   Center,
   Container,
+  FileButton,
   Group,
   List,
   Loader,

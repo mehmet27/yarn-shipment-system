@@ -14,4 +14,16 @@ export default defineConfig({
       },
     },
   },
+  discrepancy: {
+    input:
+      '../../../services/discrepancy-service/src/main/resources/openapi/discrepancy-service-api.yaml',
+    output: {
+      mode: 'single',
+      target: 'src/generated/discrepancyService.ts',
+      client: 'axios-functions',
+      override: {
+        mutator: { path: 'src/customInstance.ts', name: 'customInstance' },
+      },
+    },
+  },
 });

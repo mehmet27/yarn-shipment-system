@@ -14,7 +14,8 @@
     "panel": "Yönetim Paneli",
     "field": "Saha",
     "shipments": "Sevkiyatlar",
-    "masterData": "Tanımlar"
+    "masterData": "Tanımlar",
+    "discrepancies": "Uyuşmazlıklar"
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}"
@@ -277,6 +278,74 @@
         "tab": "Lokasyonlar",
         "field": "Lokasyon adı"
       }
+    }
+  },
+  "discrepancy": {
+    "back": "Uyuşmazlık listesi",
+    "openShipment": "Sevkiyat dosyasını aç",
+    "due": "Vade",
+    "status": {
+      "OPEN": "Açık",
+      "IN_REVIEW": "İncelemede",
+      "RESOLVED": "Çözüldü",
+      "CLOSED": "Kapandı"
+    },
+    "severity": {
+      "YELLOW": "Sarı",
+      "RED": "Kırmızı"
+    },
+    "type": {
+      "QUANTITY": "Miktar",
+      "BAG": "Çuval",
+      "SEAL": "Mühür",
+      "QUALITY": "Kalite",
+      "DOCUMENT": "Belge",
+      "PHOTO": "Fotoğraf",
+      "TIME": "Süre"
+    },
+    "resolution": {
+      "TOLERANCE": "Tolerans içinde",
+      "DATA_ERROR": "Veri hatası",
+      "CLAIM_JUSTIFIED": "Talep haklı",
+      "CLAIM_UNJUSTIFIED": "Talep haksız",
+      "LIABILITY_ASSIGNED": "Sorumluluk atandı"
+    },
+    "list": {
+      "title": "Uyuşmazlıklar",
+      "statusFilter": "Durum",
+      "severityFilter": "Önem",
+      "all": "Hepsi",
+      "empty": "Uyuşmazlık yok."
+    },
+    "facts": {
+      "type": "Tür",
+      "rule": "Kural",
+      "expected": "Beklenen",
+      "actual": "Gerçek",
+      "difference": "Fark",
+      "due": "Vade",
+      "resolution": "Karar",
+      "note": "Karar notu",
+      "liableParty": "Sorumlu taraf"
+    },
+    "assign": {
+      "toMe": "Bana ata",
+      "notOpen": "Uyuşmazlık artık atanamaz.",
+      "failed": "Atama yapılamadı. Lütfen tekrar deneyin."
+    },
+    "resolve": {
+      "resolution": "Karar",
+      "note": "Not",
+      "liableParty": "Sorumlu taraf",
+      "submit": "Karara bağla",
+      "notOpen": "Uyuşmazlık artık çözülemez.",
+      "failed": "Karar kaydedilemedi. Lütfen tekrar deneyin."
+    },
+    "activity": {
+      "title": "Geçmiş",
+      "OPENED": "Açıldı",
+      "ASSIGNED": "Atandı",
+      "RESOLVED": "Çözüldü"
     }
   }
 }

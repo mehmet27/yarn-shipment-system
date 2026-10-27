@@ -90,3 +90,21 @@ export {
 } from './masterData';
 export type { LoginAccountRequest, LoginAccountResponse } from './masterData';
 export type { AssignShipmentBagsRequest, AssignShipmentBagsResponse } from './masterData';
+export {
+  assignDiscrepancy,
+  DISCREPANCIES_PATH,
+  DiscrepancyStatus,
+  getDiscrepancy,
+  listDiscrepancies,
+  listDiscrepancyActivity,
+  Resolution,
+  resolveDiscrepancy,
+  Severity,
+} from './discrepancies';
+export type {
+  DiscrepancyActivityView,
+  DiscrepancyPage,
+  DiscrepancyView,
+  ListDiscrepanciesParams,
+  ResolveDiscrepancyRequest,
+} from './discrepancies';

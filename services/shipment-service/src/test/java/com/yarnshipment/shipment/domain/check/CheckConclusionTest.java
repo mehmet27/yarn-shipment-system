@@ -44,4 +44,15 @@ class CheckConclusionTest {
                         TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY), ComparisonOutcome.CLEAN, NOW))
                 .isInstanceOf(InvalidShipmentStatusException.class);
     }
+
+    @Test
+    @DisplayName("İnceleme bitince sevkiyat IN_REVIEW'dan COMPLETED'a geçer; başka durumdan geçemez")
+    void shouldCompleteAfterReview() {
+        CheckConclusion conclusion = CheckConclusion.afterReview(TestShipments.shipment(ShipmentStatus.IN_REVIEW), NOW);
+
+        assertThat(conclusion.fromStatus()).isEqualTo(ShipmentStatus.IN_REVIEW);
+        assertThat(conclusion.toStatus()).isEqualTo(ShipmentStatus.COMPLETED);
+        assertThatThrownBy(() -> CheckConclusion.afterReview(TestShipments.shipment(ShipmentStatus.CHECKING), NOW))
+                .isInstanceOf(InvalidShipmentStatusException.class);
+    }
 }

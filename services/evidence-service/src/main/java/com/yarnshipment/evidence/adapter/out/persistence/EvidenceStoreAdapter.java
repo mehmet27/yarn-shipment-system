@@ -23,7 +23,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 /**
  * {@link EvidenceStorePort}'un JDBC uygulaması: kanıt kaydı, tekrar kullanım kayıtları ve outbox olayları aynı
- * transaction'da yazılır (EVT-03). Aynı hash başka bir sevkiyatta daha önce görüldüyse tekrar kaydı da yazılır.
+ * transaction'da yazılır (EVT-03). Aynı hash başka bir sevkiyatta daha önce görüldüyse, o sevkiyattaki ilk kopya
+ * için tekrar kaydı da yazılır.
  */
 @Component
 final class EvidenceStoreAdapter implements EvidenceStorePort {
@@ -40,8 +41,10 @@ final class EvidenceStoreAdapter implements EvidenceStorePort {
             VALUES (:id, :at, :shipmentId, :type, :storageKey, :mimeType, :sizeBytes, :sha256, :source, :capturedAt,
                     :at, :actor, 'VALID', :actor)""";
     private static final String FIND_REUSE = """
-            SELECT id, shipment_id FROM evidence_file
-             WHERE sha256 = :sha256 AND shipment_id <> :shipmentId AND status = 'VALID' AND id <> :id
+            SELECT id, shipment_id FROM (
+                SELECT DISTINCT ON (shipment_id) id, shipment_id, created_at FROM evidence_file
+                 WHERE sha256 = :sha256 AND shipment_id <> :shipmentId AND status = 'VALID' AND id <> :id
+                 ORDER BY shipment_id, created_at, id) first_per_shipment
              ORDER BY created_at, id""";
     private static final String INSERT_DUPLICATE = """
             INSERT INTO evidence_duplicate (id, evidence_id, duplicate_of_id, detected_at, created_at, created_by)

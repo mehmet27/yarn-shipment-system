@@ -9,9 +9,12 @@ import com.yarnshipment.common.outbox.CloudEventHeaders;
 import com.yarnshipment.common.outbox.OutboxEvent;
 import com.yarnshipment.events.discrepancy.ComparisonCompleted;
 import com.yarnshipment.events.discrepancy.DiscrepancyEvents;
+import com.yarnshipment.events.discrepancy.DiscrepancyResolved;
 import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.application.port.in.check.ConcludeCheckCommand;
 import com.yarnshipment.shipment.application.port.in.check.ConcludeCheckUseCase;
+import com.yarnshipment.shipment.application.port.in.check.ConcludeReviewCommand;
+import com.yarnshipment.shipment.application.port.in.check.ConcludeReviewUseCase;
 import com.yarnshipment.shipment.domain.check.ComparisonOutcome;
 import java.time.Instant;
 import java.util.Map;
@@ -34,7 +37,8 @@ class DiscrepancyEventsListenerTest {
              "futureField":1}""";
 
     private final ConcludeCheckUseCase useCase = mock(ConcludeCheckUseCase.class);
-    private final DiscrepancyEventsListener listener = new DiscrepancyEventsListener(useCase);
+    private final ConcludeReviewUseCase reviewUseCase = mock(ConcludeReviewUseCase.class);
+    private final DiscrepancyEventsListener listener = new DiscrepancyEventsListener(useCase, reviewUseCase);
 
     @Test
     @DisplayName("Karşılaştırma sonucu olayı komuta çevrilir; uyuşmazlık sonucu taşınır")
@@ -69,7 +73,27 @@ class DiscrepancyEventsListenerTest {
     void shouldIgnoreOtherEvents() {
         listener.onDiscrepancyEvent(record("com.yarnshipment.discrepancy.discrepancy-opened.v1", "{}"));
 
+        verifyNoInteractions(useCase, reviewUseCase);
+    }
+
+    @Test
+    @DisplayName("Son uyuşmazlık çözülünce inceleme biter; açık kalan varsa bitmez")
+    void shouldConcludeReviewOnlyWhenAllResolved() {
+        listener.onDiscrepancyEvent(record(DiscrepancyResolved.TYPE, resolved(1)));
+        verifyNoInteractions(reviewUseCase);
+
+        listener.onDiscrepancyEvent(record(DiscrepancyResolved.TYPE, resolved(0)));
+
+        verify(reviewUseCase)
+                .concludeReview(new ConcludeReviewCommand(EVENT, DiscrepancyResolved.TYPE, TestShipments.SHIPMENT_ID));
         verifyNoInteractions(useCase);
+    }
+
+    private static String resolved(int remainingOpen) {
+        return "{\"discrepancyId\":\"" + UUID.randomUUID() + "\",\"discrepancyNo\":\"UY-1-1\",\"shipmentId\":\""
+                + TestShipments.SHIPMENT_ID + "\",\"siteId\":\"" + TestShipments.SITE_ID
+                + "\",\"resolution\":\"TOLERANCE\",\"resolvedAt\":\"2026-10-24T09:00:00Z\",\"remainingOpen\":"
+                + remainingOpen + "}";
     }
 
     private static ConsumerRecord<String, String> record(String type, String payload) {

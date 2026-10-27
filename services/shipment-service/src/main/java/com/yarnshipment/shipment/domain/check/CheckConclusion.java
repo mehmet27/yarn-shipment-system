@@ -12,10 +12,12 @@ import java.util.UUID;
  *
  * @param shipmentId sevkiyat
  * @param siteId çıkış lokasyonu
+ * @param fromStatus {@code CHECKING} (otomatik karşılaştırma) ya da {@code IN_REVIEW} (uyuşmazlıklar çözüldü)
  * @param toStatus {@code COMPLETED} veya {@code IN_REVIEW}
  * @param concludedAt geçiş zamanı
  */
-public record CheckConclusion(UUID shipmentId, UUID siteId, ShipmentStatus toStatus, Instant concludedAt) {
+public record CheckConclusion(
+        UUID shipmentId, UUID siteId, ShipmentStatus fromStatus, ShipmentStatus toStatus, Instant concludedAt) {
 
     /** Otomatik karşılaştırmanın kişisi yoktur; geçmişte sistem hesabı olarak görünür. */
     public static final UUID SYSTEM_ACTOR = new UUID(0L, 0L);
@@ -23,6 +25,7 @@ public record CheckConclusion(UUID shipmentId, UUID siteId, ShipmentStatus toSta
     public CheckConclusion {
         Objects.requireNonNull(shipmentId, "shipmentId");
         Objects.requireNonNull(siteId, "siteId");
+        Objects.requireNonNull(fromStatus, "fromStatus");
         Objects.requireNonNull(toStatus, "toStatus");
         Objects.requireNonNull(concludedAt, "concludedAt");
     }
@@ -33,11 +36,16 @@ public record CheckConclusion(UUID shipmentId, UUID siteId, ShipmentStatus toSta
         if (shipment.status() != ShipmentStatus.CHECKING) {
             throw new InvalidShipmentStatusException(shipment.id(), shipment.status(), target);
         }
-        return new CheckConclusion(shipment.id(), shipment.siteId(), target, concludedAt);
+        return new CheckConclusion(shipment.id(), shipment.siteId(), ShipmentStatus.CHECKING, target, concludedAt);
     }
 
-    public ShipmentStatus fromStatus() {
-        return ShipmentStatus.CHECKING;
+    /** İncelemedeki sevkiyatın tüm uyuşmazlıkları çözüldü; sevkiyat tamamlanır. */
+    public static CheckConclusion afterReview(Shipment shipment, Instant concludedAt) {
+        if (shipment.status() != ShipmentStatus.IN_REVIEW) {
+            throw new InvalidShipmentStatusException(shipment.id(), shipment.status(), ShipmentStatus.COMPLETED);
+        }
+        return new CheckConclusion(
+                shipment.id(), shipment.siteId(), ShipmentStatus.IN_REVIEW, ShipmentStatus.COMPLETED, concludedAt);
     }
 
     public boolean completed() {

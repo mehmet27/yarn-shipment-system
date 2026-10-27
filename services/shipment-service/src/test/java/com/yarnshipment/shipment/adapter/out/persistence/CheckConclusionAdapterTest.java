@@ -62,7 +62,8 @@ class CheckConclusionAdapterTest {
     @Test
     @DisplayName("Temiz sonuç sevkiyatı tamamlar; geçmiş sistem hesabıyla, tamamlanma olayı outbox'a yazılır")
     void shouldCompleteShipment() {
-        adapter.recordConclusion(new CheckConclusion(SHIPMENT, SITE, ShipmentStatus.COMPLETED, NOW));
+        adapter.recordConclusion(
+                new CheckConclusion(SHIPMENT, SITE, ShipmentStatus.CHECKING, ShipmentStatus.COMPLETED, NOW));
 
         assertThat(jdbc.queryForObject("SELECT status FROM shipment WHERE id = ?", String.class, SHIPMENT))
                 .isEqualTo("COMPLETED");
@@ -80,7 +81,8 @@ class CheckConclusionAdapterTest {
     @Test
     @DisplayName("Uyuşmazlıkta sevkiyat incelemeye alınır ve olay yayınlanmaz")
     void shouldMoveToReview() {
-        adapter.recordConclusion(new CheckConclusion(SHIPMENT, SITE, ShipmentStatus.IN_REVIEW, NOW));
+        adapter.recordConclusion(
+                new CheckConclusion(SHIPMENT, SITE, ShipmentStatus.CHECKING, ShipmentStatus.IN_REVIEW, NOW));
 
         assertThat(jdbc.queryForObject("SELECT status FROM shipment WHERE id = ?", String.class, SHIPMENT))
                 .isEqualTo("IN_REVIEW");
@@ -92,7 +94,8 @@ class CheckConclusionAdapterTest {
     @Test
     @DisplayName("Durum arada değiştiyse ikinci sonuç reddedilir")
     void shouldRejectSecondConclusion() {
-        CheckConclusion conclusion = new CheckConclusion(SHIPMENT, SITE, ShipmentStatus.IN_REVIEW, NOW);
+        CheckConclusion conclusion =
+                new CheckConclusion(SHIPMENT, SITE, ShipmentStatus.CHECKING, ShipmentStatus.IN_REVIEW, NOW);
         adapter.recordConclusion(conclusion);
 
         assertThatThrownBy(() -> adapter.recordConclusion(conclusion))

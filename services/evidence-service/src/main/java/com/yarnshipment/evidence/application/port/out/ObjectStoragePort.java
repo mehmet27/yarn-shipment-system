@@ -36,4 +36,7 @@ public interface ObjectStoragePort {
 
     /** Nesneyi okuyup gerçek boyut, tür ve SHA-256'sını hesaplar; nesne yoksa boş döner. */
     Optional<StoredObject> inspect(String storageKey);
+
+    /** Nesnenin baytlarını indirir; nesne yoksa boş döner. Boyut yüklemede 20 MB ile sınırlıdır. */
+    Optional<byte[]> download(String storageKey);
 }

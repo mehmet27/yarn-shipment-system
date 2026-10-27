@@ -17,10 +17,16 @@ info:
     - Aynı dosya başka bir sevkiyatta daha önce yüklenmişse kayıt yine alınır, ama tekrar kullanım olayı üretilir
       ve ilgili uyuşmazlık otomatik açılır.
     - Zamanlar ISO 8601 UTC (API-03).
+
+    Kantar fişi okuma: `DISPATCH_SCALE` ve `DELIVERY_SCALE` kanıtları onaylandıktan sonra
+    `POST /api/v1/evidence/{evidenceId}/ticket-reading` ile okunur. Cevap `UNREADABLE` ise brüt veya dara güvenle
+    okunamamıştır ve istemci yeniden çekim ister. Okuma kapalıysa ya da modele ulaşılamazsa 503
+    `TICKET_READING_UNAVAILABLE` döner; istemci okumasız devam eder.
 servers:
   - url: /
 tags:
   - name: EvidenceUploads
+  - name: TicketReadings
 security:
   - bearerAuth: []
 paths:
@@ -89,6 +95,40 @@ paths:
           $ref: '#/components/responses/Unprocessable'
         '503':
           $ref: '#/components/responses/Unavailable'
+  /api/v1/evidence/{evidenceId}/ticket-reading:
+    post:
+      tags: [TicketReadings]
+      operationId: readEvidenceTicket
+      summary: Kantar fişini oku
+      description: |
+        Fotoğraftan brüt, dara, plaka, tarih ve fiş numarasını okur; brüt ve dara güvenle okunamazsa sonuç
+        `UNREADABLE` olur. Yalnızca kanıtı yükleyen ister; tekrar çağrılırsa kayıtlı okuma döner.
+      parameters:
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Okuma sonucu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketReadingView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/Unavailable'
 components:
   securitySchemes:
     bearerAuth:
@@ -106,7 +146,7 @@ components:
         format: uuid
   responses:
     BadRequest:
-      description: İstek hatalı (UPLOAD_NOT_ALLOWED, VALIDATION_FAILED)
+      description: İstek hatalı (UPLOAD_NOT_ALLOWED, VALIDATION_FAILED, TICKET_READING_NOT_SUPPORTED)
       content:
         application/problem+json:
           schema:
@@ -142,7 +182,7 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
     Unavailable:
-      description: Sevkiyat doğrulanamadı (SHIPMENT_SERVICE_UNAVAILABLE)
+      description: Sevkiyat doğrulanamadı (SHIPMENT_SERVICE_UNAVAILABLE) ya da fiş okunamadı (TICKET_READING_UNAVAILABLE)
       content:
         application/problem+json:
           schema:
@@ -248,5 +288,61 @@ components:
           type: string
           format: date-time
         uploadedAt:
+          type: string
+          format: date-time
+    TicketReadingStatus:
+      type: string
+      enum: [READ, UNREADABLE]
+    ReadingProblem:
+      type: string
+      description: |
+        WEIGHT_NOT_READ, WEIGHT_INCONSISTENT ve ARITHMETIC_MISMATCH yeniden çekim gerektirir; diğerleri bilgi amaçlıdır.
+      enum:
+        - WEIGHT_NOT_READ
+        - WEIGHT_INCONSISTENT
+        - ARITHMETIC_MISMATCH
+        - DATE_OUT_OF_RANGE
+        - BLURRY
+        - GLARE
+        - CROPPED
+        - NOT_A_TICKET
+        - UNSUPPORTED_FORMAT
+    TicketReadingView:
+      type: object
+      required: [evidenceId, shipmentId, evidenceType, status, problems, readAt]
+      properties:
+        evidenceId:
+          type: string
+          format: uuid
+        shipmentId:
+          type: string
+          format: uuid
+        evidenceType:
+          $ref: '#/components/schemas/EvidenceType'
+        status:
+          $ref: '#/components/schemas/TicketReadingStatus'
+        grossKg:
+          type: number
+          description: Yalnızca READ iken dolu.
+        tareKg:
+          type: number
+          description: Yalnızca READ iken dolu.
+        netKg:
+          type: number
+          description: Brüt eksi dara; yalnızca READ iken dolu.
+        plate:
+          type: string
+        weighedAt:
+          type: string
+          format: date-time
+        ticketNo:
+          type: string
+        scaleName:
+          type: string
+        problems:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReadingProblem'
+        readAt:
           type: string
           format: date-time

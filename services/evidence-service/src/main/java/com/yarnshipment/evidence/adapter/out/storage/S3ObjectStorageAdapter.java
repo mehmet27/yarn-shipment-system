@@ -89,6 +89,23 @@ final class S3ObjectStorageAdapter implements ObjectStoragePort {
         }
     }
 
+    @Override
+    public Optional<byte[]> download(String storageKey) {
+        GetObjectRequest request = GetObjectRequest.builder()
+                .bucket(properties.bucket())
+                .key(storageKey)
+                .build();
+        try (var stream = client.getObject(request, ResponseTransformer.toInputStream())) {
+            return Optional.of(stream.readAllBytes());
+        } catch (NoSuchKeyException exception) {
+            return Optional.empty();
+        } catch (IOException exception) {
+            throw new UncheckedIOException(exception);
+        } catch (SdkException exception) {
+            throw new IllegalStateException("Object storage read failed", exception);
+        }
+    }
+
     private static long drain(InputStream stream, MessageDigest digest) throws IOException {
         byte[] buffer = new byte[BUFFER_SIZE];
         long total = 0;

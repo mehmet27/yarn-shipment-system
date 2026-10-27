@@ -85,6 +85,28 @@ class S3ObjectStorageAdapterTest {
         assertThatThrownBy(() -> adapter.inspect(KEY)).isInstanceOf(IllegalStateException.class);
     }
 
+    @Test
+    @DisplayName("İndirme nesnenin baytlarını döner; nesne yoksa boş, depo hatası fırlatılır")
+    void shouldDownloadObject() {
+        byte[] bytes = "hello".getBytes(StandardCharsets.UTF_8);
+        GetObjectResponse response =
+                GetObjectResponse.builder().contentType("image/jpeg").build();
+        whenReading(call ->
+                new ResponseInputStream<>(response, AbortableInputStream.create(new ByteArrayInputStream(bytes))));
+        assertThat(adapter.download(KEY))
+                .hasValueSatisfying(content -> assertThat(content).isEqualTo(bytes));
+
+        whenReading(call -> {
+            throw NoSuchKeyException.builder().build();
+        });
+        assertThat(adapter.download(KEY)).isEmpty();
+
+        whenReading(call -> {
+            throw SdkClientException.create("down");
+        });
+        assertThatThrownBy(() -> adapter.download(KEY)).isInstanceOf(IllegalStateException.class);
+    }
+
     private void whenReading(Answer<ResponseInputStream<GetObjectResponse>> answer) {
         doAnswer(answer)
                 .when(client)

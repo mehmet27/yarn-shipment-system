@@ -51,5 +51,11 @@ yarnshipment:
       secret-key: ${EVIDENCE_STORAGE_SECRET_KEY}
       path-style: true
       upload-url-ttl: 10m
+    ticket-reading:
+      # Kantar fişi okuma; kapalıyken okuma ucu 503 döner ve akış okumasız sürer.
+      enabled: ${TICKET_READING_ENABLED:false}
+      model: ${TICKET_READING_MODEL:claude-sonnet-5-5}
+      api-key: ${ANTHROPIC_API_KEY:}
+      timeout: 30s
   shipment-service:
     url: ${SHIPMENT_SERVICE_URL:http://localhost:8083}

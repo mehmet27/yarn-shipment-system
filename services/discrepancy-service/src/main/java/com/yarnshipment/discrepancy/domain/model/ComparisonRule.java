@@ -2,7 +2,7 @@ package com.yarnshipment.discrepancy.domain.model;
 
 /**
  * Sabit öncelikli karşılaştırma kuralları; adı {@code discrepancy.rule_code} olarak saklanır. Miktar toleransı
- * önceliği banda göre değiştiği için burada değildir.
+ * ve fiş kilo kontrolleri ({@link TicketChecks}) önceliği banda göre değiştiği için burada değildir.
  */
 public enum ComparisonRule {
     QUANTITY_DISPATCH_MISSING(DiscrepancyType.QUANTITY, Severity.RED),
@@ -13,7 +13,11 @@ public enum ComparisonRule {
     DOCUMENT_MISSING(DiscrepancyType.DOCUMENT, Severity.YELLOW),
     DOCUMENT_SHIPMENT_NO_MISMATCH(DiscrepancyType.DOCUMENT, Severity.YELLOW),
     DOCUMENT_NET_KG_MISMATCH(DiscrepancyType.DOCUMENT, Severity.YELLOW),
-    DOCUMENT_BAG_COUNT_MISMATCH(DiscrepancyType.DOCUMENT, Severity.YELLOW);
+    DOCUMENT_BAG_COUNT_MISMATCH(DiscrepancyType.DOCUMENT, Severity.YELLOW),
+    TICKET_DISPATCH_PLATE_MISMATCH(DiscrepancyType.DOCUMENT, Severity.YELLOW),
+    TICKET_DELIVERY_PLATE_MISMATCH(DiscrepancyType.DOCUMENT, Severity.YELLOW),
+    TICKET_DISPATCH_REUSED(DiscrepancyType.DOCUMENT, Severity.RED),
+    TICKET_DELIVERY_REUSED(DiscrepancyType.DOCUMENT, Severity.RED);
 
     private final DiscrepancyType type;
     private final Severity severity;

@@ -12,8 +12,8 @@ import org.jspecify.annotations.Nullable;
  * @param ruleCode tetikleyen kural, ör. {@code QUANTITY_TOLERANCE}
  * @param expectedValue çıkış tarafındaki değer
  * @param actualValue teslim tarafındaki değer
- * @param diffKg yalnızca miktar uyuşmazlığında
- * @param diffPct yalnızca miktar uyuşmazlığında
+ * @param diffKg miktar uyuşmazlığında ve fiş kilo kontrollerinde net fark
+ * @param diffPct miktar uyuşmazlığında ve fiş kilo kontrollerinde net fark yüzdesi
  */
 public record Finding(
         DiscrepancyType type,

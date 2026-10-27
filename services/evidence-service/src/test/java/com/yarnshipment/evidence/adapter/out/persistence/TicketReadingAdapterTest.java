@@ -2,6 +2,7 @@ package com.yarnshipment.evidence.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.yarnshipment.events.evidence.TicketRead;
 import com.yarnshipment.evidence.TestTickets;
 import com.yarnshipment.evidence.TestTokens;
 import com.yarnshipment.evidence.TestUploads;
@@ -14,6 +15,7 @@ import com.yarnshipment.evidence.domain.ticket.TicketReadingStatus;
 import com.yarnshipment.evidence.domain.ticket.TicketScan;
 import java.util.Objects;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -45,6 +48,9 @@ class TicketReadingAdapterTest {
     @Autowired
     private TicketReadingAdapter readings;
 
+    @Autowired
+    private JdbcTemplate jdbc;
+
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
         PostgresTestDatabase.register(registry);
@@ -67,6 +73,7 @@ class TicketReadingAdapterTest {
         assertThat(found.readAt()).isEqualTo(TestUploads.NOW);
         assertThat(found.problems()).isEmpty();
         assertThat(readings.findReading(UUID.randomUUID())).isEmpty();
+        assertThat(eventGrossKg(reading.shipmentId())).isEqualTo(TestTickets.GROSS.toPlainString());
     }
 
     @Test
@@ -87,6 +94,26 @@ class TicketReadingAdapterTest {
         assertThat(found.status()).isEqualTo(TicketReadingStatus.UNREADABLE);
         assertThat(found.weights()).isNull();
         assertThat(found.problems()).containsExactly(ReadingProblem.WEIGHT_NOT_READ, ReadingProblem.UNSUPPORTED_FORMAT);
+        assertThat(eventCount(file.shipmentId())).isEqualTo(1);
+        assertThat(eventGrossKg(file.shipmentId())).isNull();
+    }
+
+    private int eventCount(UUID shipmentId) {
+        Integer count = jdbc.queryForObject(
+                "SELECT count(*) FROM outbox_event WHERE aggregate_id = ? AND event_type = ?",
+                Integer.class,
+                shipmentId,
+                TicketRead.TYPE);
+        return count == null ? 0 : count;
+    }
+
+    /** Olaydaki brüt; okunamayan fişte {@code weights} boş olduğu için {@code null}. */
+    private @Nullable String eventGrossKg(UUID shipmentId) {
+        return jdbc.queryForObject(
+                "SELECT payload -> 'weights' ->> 'grossKg' FROM outbox_event WHERE aggregate_id = ? AND event_type = ?",
+                String.class,
+                shipmentId,
+                TicketRead.TYPE);
     }
 
     private EvidenceFile savedEvidence() {

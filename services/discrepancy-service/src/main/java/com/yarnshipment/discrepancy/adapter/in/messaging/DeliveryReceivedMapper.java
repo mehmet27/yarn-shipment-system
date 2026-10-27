@@ -5,6 +5,8 @@ import com.yarnshipment.discrepancy.domain.model.DeliveryFigures;
 import com.yarnshipment.discrepancy.domain.model.DispatchFigures;
 import com.yarnshipment.discrepancy.domain.model.DocumentFigures;
 import com.yarnshipment.discrepancy.domain.model.SealCondition;
+import com.yarnshipment.discrepancy.domain.ticket.ScaleWeights;
+import com.yarnshipment.discrepancy.domain.ticket.WeighingEntries;
 import com.yarnshipment.events.shipment.DeliveryReceived;
 import java.util.Locale;
 import org.jspecify.annotations.Nullable;
@@ -38,6 +40,20 @@ final class DeliveryReceivedMapper {
                 event.expectedUniqueKeys(),
                 event.scannedUniqueKeys(),
                 document(context.document()));
+    }
+
+    /** Kantar fişleriyle karşılaştırılacak elle girişler; plakayı taşımayan eski olayda plaka kontrolü atlanır. */
+    static WeighingEntries toEntries(DeliveryReceived event) {
+        DeliveryReceived.Weighing dispatch = event.dispatch();
+        DeliveryReceived.Context context = event.context();
+        return new WeighingEntries(
+                dispatch == null ? null : weights(dispatch),
+                weights(event.delivery()),
+                context == null ? null : context.plateNo());
+    }
+
+    private static ScaleWeights weights(DeliveryReceived.Weighing weighing) {
+        return new ScaleWeights(weighing.grossKg(), weighing.tareKg(), weighing.netKg());
     }
 
     private static SealCondition sealCondition(@Nullable String condition) {

@@ -13,10 +13,12 @@ import com.yarnshipment.discrepancy.application.port.in.CompareDeliveryCommand;
 import com.yarnshipment.discrepancy.application.port.in.CompareDeliveryUseCase;
 import com.yarnshipment.discrepancy.domain.model.ComparisonInput;
 import com.yarnshipment.discrepancy.domain.model.SealCondition;
+import com.yarnshipment.discrepancy.domain.ticket.WeighingEntries;
 import com.yarnshipment.events.shipment.DeliveryReceived;
 import com.yarnshipment.events.shipment.ShipmentEvents;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -39,7 +41,7 @@ class ShipmentEventsListenerTest {
              "expectedUniqueKeys":["UK-0001","UK-0002"],"scannedUniqueKeys":["UK-0002","UK-0001"],
              "dispatchSeal":{"sealNo":"M-0001","condition":null},
              "deliverySeal":{"sealNo":"M-0001","condition":"intact"},
-             "context":{"siteId":"%s","shipmentNo":"SV-3",
+             "context":{"siteId":"%s","shipmentNo":"SV-3","plateNo":"34ABC123",
                         "document":{"shipmentNo":"SV-3","date":"2026-10-23","netKg":2000.000,"bagCount":2,
                                     "signedDocumentEvidenceId":null}},
              "futureField":true}""".formatted(TestComparisons.SHIPMENT, TestComparisons.SITE);
@@ -62,6 +64,25 @@ class ShipmentEventsListenerTest {
         assertThat(input.delivery().sealCondition()).isEqualTo(SealCondition.INTACT);
         assertThat(input.document().signedDocumentEvidenceId()).isNull();
         assertThat(input.document().bagCount()).isEqualTo(TestComparisons.BAGS);
+        WeighingEntries entries = command.getValue().entries();
+        assertThat(entries.plateNo()).isEqualTo("34ABC123");
+        assertThat(entries.delivery().tareKg()).isEqualByComparingTo("100");
+        assertThat(Objects.requireNonNull(entries.dispatch()).grossKg()).isEqualByComparingTo("2100");
+    }
+
+    @Test
+    @DisplayName("Çıkış tartısı ve plakası olmayan teslimde fiş karşılaştırması için çıkış girişi boştur")
+    void shouldMapDeliveryWithoutDispatchWeighing() {
+        String withoutDispatch =
+                DELIVERY.replaceFirst("\"dispatch\":\\{[^}]*},", "").replace("\"plateNo\":\"34ABC123\",", "");
+
+        listener.onShipmentEvent(record(DeliveryReceived.TYPE, withoutDispatch, Map.of("actorId", ACTOR)));
+
+        ArgumentCaptor<CompareDeliveryCommand> command = ArgumentCaptor.forClass(CompareDeliveryCommand.class);
+        verify(useCase).compareDelivery(command.capture());
+        assertThat(command.getValue().entries().dispatch()).isNull();
+        assertThat(command.getValue().entries().plateNo()).isNull();
+        assertThat(command.getValue().input().dispatch().netKg()).isNull();
     }
 
     @Test

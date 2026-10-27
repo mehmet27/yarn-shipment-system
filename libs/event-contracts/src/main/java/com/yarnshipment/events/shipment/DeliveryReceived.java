@@ -64,9 +64,11 @@ public record DeliveryReceived(
      *
      * @param siteId çıkış lokasyonu
      * @param shipmentNo sevkiyat numarası
+     * @param plateNo araç plakası; araç girilmediyse ya da olay eskiyse boş
      * @param document irsaliye değerleri
      */
-    public record Context(UUID siteId, String shipmentNo, Document document) {}
+    public record Context(
+            UUID siteId, String shipmentNo, @Nullable String plateNo, Document document) {}
 
     /**
      * İrsaliye üzerindeki değerler, fasoncunun okuduğu haliyle.

@@ -191,6 +191,17 @@ Dosya servisten geçmez; iki adımda doğrudan nesne deposuna (S3 uyumlu, yereld
 
 Yükleme izni kanıt türünün aşamasına bağlıdır: sevk (`EVIDENCE_UPLOAD_DISPATCH`), şoför, teslim, şikâyet. Aynı dosya (aynı hash) başka sevkiyatta daha önce yüklenmişse kayıt yine alınır ama `evidence_duplicate` satırı ve `evidence-reuse-detected.v1` olayı yazılır. Kanıt kaydı ile `evidence-uploaded.v1` olayı (`evidence.events.v1`) aynı transaction'da yazılır.
 
+**Kantar fişi okuma.** `POST /api/v1/evidence/{evidenceId}/ticket-reading` çıkış (`DISPATCH_SCALE`) ya da teslim (`DELIVERY_SCALE`) fişinin fotoğrafını Claude ile okur ve sonucu çekim ekranına hemen döner: brüt ve dara güvenle okunamazsa `UNREADABLE` ve sorunlar (bulanık, parlama, kesik), istemci yeniden çekim ister. Okuma `ticket_reading` tablosuna ve `ticket-read.v1` olayıyla tek komutta yazılır; elle girilen tartımın yerine geçmez. Bayrak kapalıyken (`TICKET_READING_ENABLED=false`, varsayılan) uç `503 TICKET_READING_UNAVAILABLE` döner; açmak için `ANTHROPIC_API_KEY` verilir, model `TICKET_READING_MODEL` ile değişir.
+
+discrepancy-service okumayı saklar ve teslim karşılaştırmasında o ana kadar okunmuş fişleri kontrol eder; okunmamış ya da geç gelen fişin kontrolü atlanır, sevkiyat durmaz:
+
+| Kontrol | Neyi neyle | Tutmazsa |
+|---|---|---|
+| K1 / K2 | Depo / fasoncu girdiği brüt ve dara ↔ çıkış / teslim fişi (±1 kg) | `TICKET_DISPATCH_WEIGHT_MISMATCH` / `TICKET_DELIVERY_WEIGHT_MISMATCH`, belge; öncelik net farkın bandından |
+| K3 | Çıkış fişi neti ↔ teslim fişi neti | `TICKET_QUANTITY_TOLERANCE`, miktar; elle karşılaştırmayla aynı bant |
+| K4 | Fişteki plaka ↔ sevkiyatın plakası (boşluk, tire, harf büyüklüğü yok sayılır) | `TICKET_*_PLATE_MISMATCH`, belge, Sarı |
+| K5 | Fiş no + kantar adı ↔ başka sevkiyatların fişleri | `TICKET_*_REUSED`, belge, Kırmızı |
+
 Yerelde MinIO `docker compose` ile açılır (`deploy/.env` içinde `EVIDENCE_STORAGE_ACCESS_KEY` ve `EVIDENCE_STORAGE_SECRET_KEY`; `evidence` kovası kendiliğinden oluşur). Servis aynı anahtarlarla, `EVIDENCE_DB_APP_PASSWORD` ve `EVIDENCE_DB_MIGRATOR_PASSWORD` ile çalıştırılır:
 
 ```bash

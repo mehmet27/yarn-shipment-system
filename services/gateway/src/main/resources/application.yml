@@ -54,6 +54,13 @@ spring:
               filters:
                 - RemoveRequestHeader=Cookie
                 - TokenRelay=
+            - id: evidence-service
+              uri: ${EVIDENCE_SERVICE_URL:http://localhost:8086}
+              predicates:
+                - Path=/api/v1/evidence/**
+              filters:
+                - RemoveRequestHeader=Cookie
+                - TokenRelay=
 yarnshipment:
   gateway:
     post-login-url: ${GATEWAY_POST_LOGIN_URL:http://localhost:5173/}

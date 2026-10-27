@@ -1,0 +1,252 @@
+openapi: 3.0.3
+info:
+  title: evidence-service API
+  version: 1.0.0
+  description: |
+    Fotoğraf ve belge yükleme uçları (API-01). Dosya sunucudan geçmez; iki adımda yüklenir:
+
+    1. `POST /api/v1/evidence/uploads` ile dosyanın türü, boyutu ve sevkiyatı bildirilir; cevapta kısa ömürlü
+       (yaklaşık 10 dk) imzalı bir adres döner.
+    2. İstemci dosyayı o adrese `PUT` ile, cevaptaki başlıklarla aynen gönderir.
+    3. `POST /api/v1/evidence/uploads/{evidenceId}/confirm` ile yükleme onaylanır. Sunucu dosyayı depodan okuyup
+       gerçek boyut, tür ve SHA-256'yı kendisi hesaplar (SEC-09); bildirilenle uyuşmazsa reddeder.
+
+    Kurallar:
+    - Boyut üst sınırı 20 MB; türler `image/jpeg`, `image/png`, `image/heic`, `application/pdf`.
+    - Kanıt türüne göre yükleme izni aşamaya bağlıdır (sevk, sürücü, teslim, şikâyet).
+    - Aynı dosya başka bir sevkiyatta daha önce yüklenmişse kayıt yine alınır, ama tekrar kullanım olayı üretilir
+      ve ilgili uyuşmazlık otomatik açılır.
+    - Zamanlar ISO 8601 UTC (API-03).
+servers:
+  - url: /
+tags:
+  - name: EvidenceUploads
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/evidence/uploads:
+    post:
+      tags: [EvidenceUploads]
+      operationId: requestEvidenceUpload
+      summary: Yükleme izni iste
+      description: Aynı `Idempotency-Key` ile tekrar gönderilen istek aynı cevabı alır (API-04).
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestUploadRequest'
+      responses:
+        '201':
+          description: İmzalı yükleme adresi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadTicketView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+  /api/v1/evidence/uploads/{evidenceId}/confirm:
+    post:
+      tags: [EvidenceUploads]
+      operationId: confirmEvidenceUpload
+      summary: Yüklemeyi onayla
+      description: Tekrar çağrılırsa aynı kanıtı döner.
+      parameters:
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Onaylanan kanıt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: İşlem kaydedildiği anda istemcide üretilir, yeniden denemede aynı kalır (API-04)
+      schema:
+        type: string
+        format: uuid
+  responses:
+    BadRequest:
+      description: İstek hatalı (UPLOAD_NOT_ALLOWED, VALIDATION_FAILED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unauthorized:
+      description: Oturum yok veya token geçersiz (AUTHENTICATION_REQUIRED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: İzin yok (ACCESS_DENIED) veya sevkiyat kapsam dışı (OUT_OF_SCOPE)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: Sevkiyat görünmüyor (SHIPMENT_NOT_FOUND) ya da yükleme isteği yok (UPLOAD_NOT_FOUND)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Conflict:
+      description: Sevkiyat kilitli (SHIPMENT_LOCKED) ya da dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unprocessable:
+      description: Yüklenen dosya bildirilenle uyuşmuyor (UPLOAD_MISMATCH)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unavailable:
+      description: Sevkiyat doğrulanamadı (SHIPMENT_SERVICE_UNAVAILABLE)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    Problem:
+      description: RFC 9457 hata gövdesi (ERR-07). İstemci kararını `code` alanına göre verir.
+      type: object
+      required: [type, title, status, code]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+        traceId:
+          type: string
+    EvidenceType:
+      type: string
+      enum:
+        - DISPATCH_SCALE
+        - BAG_OVERVIEW
+        - BAG_LABEL
+        - SEAL
+        - VEHICLE_PLATE
+        - DELIVERY_SCALE
+        - DELIVERY_BAGS
+        - SIGNED_DELIVERY_DOC
+        - QUALITY_CLAIM
+        - LAB_RESULT
+    EvidenceSource:
+      type: string
+      enum: [CAMERA, GALLERY]
+    RequestUploadRequest:
+      type: object
+      required: [shipmentId, evidenceType, mimeType, sizeBytes, source]
+      properties:
+        shipmentId:
+          type: string
+          format: uuid
+        evidenceType:
+          $ref: '#/components/schemas/EvidenceType'
+        mimeType:
+          type: string
+          example: image/jpeg
+        sizeBytes:
+          type: integer
+          format: int64
+          minimum: 1
+        source:
+          $ref: '#/components/schemas/EvidenceSource'
+        capturedAt:
+          type: string
+          format: date-time
+          description: Cihazın bildirdiği çekim zamanı; yalnızca bilgi amaçlıdır.
+    UploadTicketView:
+      type: object
+      required: [evidenceId, uploadUrl, headers, expiresAt]
+      properties:
+        evidenceId:
+          type: string
+          format: uuid
+        uploadUrl:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: PUT isteğinde aynen gönderilecek başlıklar.
+        expiresAt:
+          type: string
+          format: date-time
+    EvidenceView:
+      type: object
+      required: [id, shipmentId, evidenceType, mimeType, sizeBytes, sha256, source, uploadedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        shipmentId:
+          type: string
+          format: uuid
+        evidenceType:
+          $ref: '#/components/schemas/EvidenceType'
+        mimeType:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+        sha256:
+          type: string
+        source:
+          $ref: '#/components/schemas/EvidenceSource'
+        capturedAt:
+          type: string
+          format: date-time
+        uploadedAt:
+          type: string
+          format: date-time

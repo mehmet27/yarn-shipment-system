@@ -181,6 +181,25 @@ Servisin HTTP ucu yoktur. Çalıştırmak için `DISCREPANCY_DB_APP_PASSWORD`, `
 DISCREPANCY_DB_APP_PASSWORD=... DISCREPANCY_DB_MIGRATOR_PASSWORD=... ./mvnw -pl services/discrepancy-service spring-boot:run
 ```
 
+## evidence-service (fotoğraf ve belge yükleme)
+
+Dosya servisten geçmez; iki adımda doğrudan nesne deposuna (S3 uyumlu, yerelde MinIO) yüklenir. Uçlar `/api/v1/evidence/**` altındadır, sözleşme `services/evidence-service/src/main/resources/openapi/evidence-service-api.yaml`.
+
+1. `POST /api/v1/evidence/uploads` (`Idempotency-Key` zorunlu): sevkiyat, kanıt türü, dosya türü, boyut ve kaynak (kamera/galeri) bildirilir. Servis izni, 20 MB sınırını ve izinli türleri (`image/jpeg`, `image/png`, `image/heic`, `application/pdf`) denetler, sevkiyatı shipment-service'e isteyenin token'ıyla sorar (görünmeyen sevkiyat `404 SHIPMENT_NOT_FOUND`; tamamlanmış/iptal `409 SHIPMENT_LOCKED`) ve yaklaşık 10 dakika geçerli imzalı bir `PUT` adresi döner.
+2. İstemci dosyayı o adrese, cevaptaki başlıklarla aynen `PUT` eder.
+3. `POST /api/v1/evidence/uploads/{evidenceId}/confirm`: sunucu dosyayı depodan okuyup gerçek boyut, tür ve SHA-256'yı kendisi hesaplar (SEC-09); bildirilenle uyuşmazsa `422 UPLOAD_MISMATCH`, dosya henüz yoksa `409 UPLOAD_NOT_COMPLETED`. Onay tekrarlanabilir.
+
+Yükleme izni kanıt türünün aşamasına bağlıdır: sevk (`EVIDENCE_UPLOAD_DISPATCH`), şoför, teslim, şikâyet. Aynı dosya (aynı hash) başka sevkiyatta daha önce yüklenmişse kayıt yine alınır ama `evidence_duplicate` satırı ve `evidence-reuse-detected.v1` olayı yazılır. Kanıt kaydı ile `evidence-uploaded.v1` olayı (`evidence.events.v1`) aynı transaction'da yazılır.
+
+Yerelde MinIO `docker compose` ile açılır (`deploy/.env` içinde `EVIDENCE_STORAGE_ACCESS_KEY` ve `EVIDENCE_STORAGE_SECRET_KEY`; `evidence` kovası kendiliğinden oluşur). Servis aynı anahtarlarla, `EVIDENCE_DB_APP_PASSWORD` ve `EVIDENCE_DB_MIGRATOR_PASSWORD` ile çalıştırılır:
+
+```bash
+EVIDENCE_DB_APP_PASSWORD=... EVIDENCE_DB_MIGRATOR_PASSWORD=... \
+EVIDENCE_STORAGE_ACCESS_KEY=... EVIDENCE_STORAGE_SECRET_KEY=... ./mvnw -pl services/evidence-service spring-boot:run
+```
+
+İmzalı adres, `EVIDENCE_STORAGE_ENDPOINT` adresiyle üretilir; telefon ya da tarayıcının eriştiği adres olmalıdır. Kanıt görüntüleme, geçersiz kılma ve imzalı irsaliyenin teslim girişine bağlanması sonraki adımlardır.
+
 ## common-web (ortak web altyapısı)
 
 Servis ana sınıfına `@EnableYarnShipmentWeb` eklenir; şunları verir:

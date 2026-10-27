@@ -32,6 +32,7 @@
         <module>services/bag-service</module>
         <module>services/gateway</module>
         <module>services/discrepancy-service</module>
+        <module>services/evidence-service</module>
     </modules>
 
     <properties>
@@ -55,6 +56,7 @@
         <palantir-java-format.version>2.102.0</palantir-java-format.version>
         <maven-enforcer-plugin.version>3.6.3</maven-enforcer-plugin.version>
         <jacoco.version>0.8.15</jacoco.version>
+        <aws-sdk.version>2.31.50</aws-sdk.version>
         <openapi-generator.version>7.26.0</openapi-generator.version>
 
         <!-- TEST-08: satır kapsamı eşikleri -->
@@ -64,6 +66,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws-sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>

@@ -1,0 +1,55 @@
+# CONF-01: ortamdan gelen değerler ortam değişkeniyle verilir; gizli bilgi bu dosyaya yazılmaz (SEC-14).
+spring:
+  application:
+    name: evidence-service
+  datasource:
+    # Uygulama yalnızca DML yetkili rol ile bağlanır; DDL Flyway'in migrator rolüyle yapılır.
+    url: ${EVIDENCE_DB_URL:jdbc:postgresql://localhost:5432/evidence_db}
+    username: ${EVIDENCE_DB_APP_USER:evidence_app}
+    password: ${EVIDENCE_DB_APP_PASSWORD}
+  flyway:
+    user: ${EVIDENCE_DB_MIGRATOR_USER:evidence_migrator}
+    password: ${EVIDENCE_DB_MIGRATOR_PASSWORD}
+    placeholders:
+      app_role: ${EVIDENCE_DB_APP_USER:evidence_app}
+      readonly_role: ${EVIDENCE_DB_READONLY_USER:evidence_readonly}
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+  jackson:
+    default-property-inclusion: non_null
+  mvc:
+    problemdetails:
+      enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/yarnshipment}
+          audiences: yarnshipment-api
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.block.ms: 10000
+server:
+  port: ${SERVER_PORT:8086}
+yarnshipment:
+  outbox:
+    topic: evidence.events.v1
+    source: /yarn-shipment/evidence-service
+  evidence:
+    storage:
+      # S3 uyumlu nesne deposu (yerelde MinIO). Yükleme adresi telefonun erişebildiği adrestir.
+      endpoint: ${EVIDENCE_STORAGE_ENDPOINT:http://localhost:9000}
+      region: ${EVIDENCE_STORAGE_REGION:us-east-1}
+      bucket: ${EVIDENCE_STORAGE_BUCKET:evidence}
+      access-key: ${EVIDENCE_STORAGE_ACCESS_KEY}
+      secret-key: ${EVIDENCE_STORAGE_SECRET_KEY}
+      path-style: true
+      upload-url-ttl: 10m
+  shipment-service:
+    url: ${SHIPMENT_SERVICE_URL:http://localhost:8083}

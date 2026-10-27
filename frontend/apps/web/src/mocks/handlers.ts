@@ -12,6 +12,7 @@ import {
   updateMockShipmentStatus,
 } from './mockStore';
 import { createDiscrepancyHandlers } from './discrepancyHandlers';
+import { createEvidenceHandlers } from './evidenceHandlers';
 import { createMasterDataHandlers } from './masterDataHandlers';
 import { toBagsView, toHistory } from './shipmentTabs';
 import { isInScope, toDetailView, toSummary } from './shipmentViews';
@@ -252,6 +253,7 @@ export function createHandlers(role: Role) {
     ...createTabHandlers(role),
     createShipmentHandler,
     ...createMasterDataHandlers(createMockUser(role).permissions),
+    ...createEvidenceHandlers(createMockUser(role).permissions),
     ...createDiscrepancyHandlers(createMockUser(role).permissions, createMockUser(role).userId),
     logoutHandler,
   ];

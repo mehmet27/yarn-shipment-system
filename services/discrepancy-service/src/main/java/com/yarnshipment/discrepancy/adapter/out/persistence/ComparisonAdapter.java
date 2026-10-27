@@ -7,6 +7,7 @@ import com.yarnshipment.discrepancy.domain.model.ComparisonResult;
 import com.yarnshipment.discrepancy.domain.model.Finding;
 import com.yarnshipment.discrepancy.domain.model.Severity;
 import com.yarnshipment.events.discrepancy.ComparisonCompleted;
+import com.yarnshipment.events.discrepancy.DiscrepancyOpened;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
@@ -77,7 +78,7 @@ final class ComparisonAdapter implements ComparisonPort {
         for (int i = 0; i < findings.size(); i++) {
             insertDiscrepancy(comparison, findings.get(i), discrepancyNo(comparison.input(), i), at);
         }
-        publish(comparison, at);
+        publish(comparison);
     }
 
     private void insertInput(CompletedComparison comparison, Timestamp at) {
@@ -119,6 +120,11 @@ final class ComparisonAdapter implements ComparisonPort {
                 .param("at", at)
                 .param("actor", comparison.actorId())
                 .update();
+        insertOpenedActivity(comparison, finding, id, at);
+        publishOpened(comparison, finding, id, no);
+    }
+
+    private void insertOpenedActivity(CompletedComparison comparison, Finding finding, UUID id, Timestamp at) {
         jdbc.sql(INSERT_ACTIVITY)
                 .param("id", ids.next())
                 .param("at", at)
@@ -129,13 +135,27 @@ final class ComparisonAdapter implements ComparisonPort {
                 .update();
     }
 
+    private void publishOpened(CompletedComparison comparison, Finding finding, UUID id, String no) {
+        ComparisonInput input = comparison.input();
+        DiscrepancyOpened opened = new DiscrepancyOpened(
+                id,
+                no,
+                input.shipmentId(),
+                input.siteId(),
+                finding.type().name(),
+                finding.severity().name(),
+                finding.ruleCode(),
+                comparison.dueAt());
+        insertOutbox(comparison, DiscrepancyOpened.TYPE, opened);
+    }
+
     /** Sevkiyat numarası ve sıra: aynı sevkiyatın uyuşmazlıkları birlikte okunur, numara tekrar üretilebilir. */
     private static String discrepancyNo(ComparisonInput input, int index) {
         String shipment = input.shipmentNo() == null ? input.shipmentId().toString() : input.shipmentNo();
         return "UY-" + shipment + "-" + (index + 1);
     }
 
-    private void publish(CompletedComparison comparison, Timestamp at) {
+    private void publish(CompletedComparison comparison) {
         ComparisonResult result = comparison.result();
         ComparisonCompleted event = new ComparisonCompleted(
                 result.shipmentId(),
@@ -147,12 +167,16 @@ final class ComparisonAdapter implements ComparisonPort {
                 result.diffPct(),
                 result.findings().size(),
                 result.highestSeverity().map(Severity::name).orElse(null));
+        insertOutbox(comparison, ComparisonCompleted.TYPE, event);
+    }
+
+    private void insertOutbox(CompletedComparison comparison, String type, Object event) {
         jdbc.sql(INSERT_OUTBOX)
                 .param("id", ids.next())
-                .param("at", at)
+                .param("at", Timestamp.from(comparison.comparedAt()))
                 .param("aggregateType", AGGREGATE_TYPE)
-                .param("shipmentId", result.shipmentId())
-                .param("type", ComparisonCompleted.TYPE)
+                .param("shipmentId", comparison.input().shipmentId())
+                .param("type", type)
                 .param("payload", jsonMapper.writeValueAsString(event))
                 .param(
                         "headers",

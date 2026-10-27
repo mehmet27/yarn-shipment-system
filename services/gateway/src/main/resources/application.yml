@@ -47,6 +47,13 @@ spring:
               filters:
                 - RemoveRequestHeader=Cookie
                 - TokenRelay=
+            - id: discrepancy-service
+              uri: ${DISCREPANCY_SERVICE_URL:http://localhost:8085}
+              predicates:
+                - Path=/api/v1/discrepancies/**
+              filters:
+                - RemoveRequestHeader=Cookie
+                - TokenRelay=
 yarnshipment:
   gateway:
     post-login-url: ${GATEWAY_POST_LOGIN_URL:http://localhost:5173/}

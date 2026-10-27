@@ -347,5 +347,35 @@
       "ASSIGNED": "Atandı",
       "RESOLVED": "Çözüldü"
     }
+  },
+  "evidence": {
+    "title": "Fotoğraf ve belgeler",
+    "type": "Ne yükleniyor?",
+    "camera": "Fotoğraf çek",
+    "file": "Dosya seç",
+    "done": "Yüklendi.",
+    "types": {
+      "DISPATCH_SCALE": "Çıkış tartısı",
+      "BAG_OVERVIEW": "Çuvallara genel bakış",
+      "BAG_LABEL": "Çuval etiketi",
+      "SEAL": "Mühür",
+      "VEHICLE_PLATE": "Araç plakası",
+      "DELIVERY_SCALE": "Teslim tartısı",
+      "DELIVERY_BAGS": "Teslim edilen çuvallar",
+      "SIGNED_DELIVERY_DOC": "İmzalı teslim belgesi",
+      "QUALITY_CLAIM": "Kalite şikâyeti",
+      "LAB_RESULT": "Laboratuvar sonucu"
+    },
+    "errors": {
+      "tooLarge": "Dosya en fazla 20 MB olabilir.",
+      "UPLOAD_NOT_ALLOWED": "Bu dosya türü, boyutu ya da yükleme izni geçerli değil.",
+      "SHIPMENT_NOT_FOUND": "Sevkiyat bulunamadı.",
+      "SHIPMENT_LOCKED": "Sevkiyat kilitli; artık dosya eklenemiyor.",
+      "UPLOAD_NOT_COMPLETED": "Dosya henüz yüklenmedi. Lütfen tekrar deneyin.",
+      "UPLOAD_MISMATCH": "Yüklenen dosya bildirilenle uyuşmuyor. Lütfen yeniden seçin.",
+      "SHIPMENT_SERVICE_UNAVAILABLE": "Sevkiyat doğrulanamadı. Lütfen biraz sonra tekrar deneyin.",
+      "storage": "Dosya depoya gönderilemedi. Bağlantıyı kontrol edip tekrar deneyin.",
+      "unknown": "Dosya yüklenemedi. Lütfen tekrar deneyin."
+    }
   }
 }

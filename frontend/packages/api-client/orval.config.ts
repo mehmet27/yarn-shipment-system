@@ -1,29 +1,23 @@
 import { defineConfig } from 'orval';
 
-/** FE-API-01: istemci backend sözleşmesinden üretilir; `src/generated` elle düzenlenmez. */
+const SPEC_DIR = '../../../services';
+const MUTATOR = { path: 'src/customInstance.ts', name: 'customInstance' };
+
+function service(name: string, file: string, target: string) {
+  return {
+    input: `${SPEC_DIR}/${name}/src/main/resources/openapi/${file}`,
+    output: {
+      mode: 'single' as const,
+      target: `src/generated/${target}.ts`,
+      client: 'axios-functions' as const,
+      override: { mutator: MUTATOR },
+    },
+  };
+}
+
+/** FE-API-01: istemci backend sözleşmelerinden üretilir; `src/generated` elle düzenlenmez. */
 export default defineConfig({
-  shipment: {
-    input:
-      '../../../services/shipment-service/src/main/resources/openapi/shipment-service-api.yaml',
-    output: {
-      mode: 'single',
-      target: 'src/generated/shipmentService.ts',
-      client: 'axios-functions',
-      override: {
-        mutator: { path: 'src/customInstance.ts', name: 'customInstance' },
-      },
-    },
-  },
-  discrepancy: {
-    input:
-      '../../../services/discrepancy-service/src/main/resources/openapi/discrepancy-service-api.yaml',
-    output: {
-      mode: 'single',
-      target: 'src/generated/discrepancyService.ts',
-      client: 'axios-functions',
-      override: {
-        mutator: { path: 'src/customInstance.ts', name: 'customInstance' },
-      },
-    },
-  },
+  shipment: service('shipment-service', 'shipment-service-api.yaml', 'shipmentService'),
+  discrepancy: service('discrepancy-service', 'discrepancy-service-api.yaml', 'discrepancyService'),
+  evidence: service('evidence-service', 'evidence-service-api.yaml', 'evidenceService'),
 });

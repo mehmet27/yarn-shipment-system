@@ -4,6 +4,8 @@ import type { MasterKind, MockRecord, MockValues } from './masterData';
 import {
   createMasterRecord,
   isDuplicatePlate,
+  isDuplicateTitle,
+  isValidPlate,
   listMasterRecords,
   matchesQuery,
   setMasterActive,
@@ -95,6 +97,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+/** Backend'deki doğrulamalar: TR plaka deseni, tekil plaka ve tekil fasoncu ünvanı. */
+function conflictOf(kind: MasterKind, label: string, exceptId?: string) {
+  if (kind === 'vehicle' && !isValidPlate(label)) {
+    return problem(400, 'INVALID_PLATE', 'Plaka biçimi geçersiz');
+  }
+  if (kind === 'vehicle' && isDuplicatePlate(label, exceptId)) {
+    return problem(409, 'DUPLICATE_PLATE', 'Plaka kullanımda');
+  }
+  if (kind === 'subcontractor' && isDuplicateTitle(label, exceptId)) {
+    return problem(409, 'DUPLICATE_SUBCONTRACTOR', 'Fasoncu ünvanı kullanımda');
+  }
+  return undefined;
+}
+
 function writeHandlers(kind: MasterKind, canManage: boolean) {
   const path = `${BASE}/${PATHS[kind]}`;
   const denied = () => problem(403, 'FORBIDDEN', 'Yetkiniz yok');
@@ -104,9 +120,8 @@ function writeHandlers(kind: MasterKind, canManage: boolean) {
       if (!canManage) return denied();
       const values = readValues(kind, await request.json());
       if (values === undefined) return problem(400, 'INVALID_MASTER_DATA', 'Geçersiz kayıt');
-      if (kind === 'vehicle' && isDuplicatePlate(values.label)) {
-        return problem(409, 'DUPLICATE_PLATE', 'Plaka kullanımda');
-      }
+      const conflict = conflictOf(kind, values.label);
+      if (conflict !== undefined) return conflict;
       return HttpResponse.json(toView(kind, createMasterRecord(kind, values)), { status: 201 });
     }),
     http.put(`${path}/:id`, async ({ params, request }) => {
@@ -114,9 +129,8 @@ function writeHandlers(kind: MasterKind, canManage: boolean) {
       const values = readValues(kind, await request.json());
       if (values === undefined) return problem(400, 'INVALID_MASTER_DATA', 'Geçersiz kayıt');
       const id = String(params.id);
-      if (kind === 'vehicle' && isDuplicatePlate(values.label, id)) {
-        return problem(409, 'DUPLICATE_PLATE', 'Plaka kullanımda');
-      }
+      const conflict = conflictOf(kind, values.label, id);
+      if (conflict !== undefined) return conflict;
       const updated = updateMasterRecord(kind, id, values);
       return updated === undefined ? notFound() : HttpResponse.json(toView(kind, updated));
     }),

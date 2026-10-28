@@ -20,6 +20,7 @@ export function LoginAccountDialog({
       opened
       onClose={onClose}
       fullScreen={isNarrow}
+      closeButtonProps={{ 'aria-label': t('common.close') }}
       title={t('masterData.loginAccount.title')}
     >
       <LoginAccountForm kind={kind} recordId={recordId} onClose={onClose} />

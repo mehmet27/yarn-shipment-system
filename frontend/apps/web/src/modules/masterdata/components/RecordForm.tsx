@@ -1,11 +1,7 @@
-import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Modal, Stack, TextInput, useMediaQuery } from '@iplik/ui';
-import { useState } from 'react';
-import { useSaveRecord } from '../hooks/useSaveRecord';
-import type { ManagedKind, RecordRow, RecordValues } from '../kinds';
-import { validateLabel } from '../recordDraft';
-import type { RecordError } from '../recordDraft';
+import { useRecordDraft } from '../hooks/useRecordDraft';
+import type { ManagedKind, RecordRow } from '../kinds';
 import { OwnerSelect } from './OwnerSelect';
 
 export type RecordFormProps = {
@@ -13,53 +9,39 @@ export type RecordFormProps = {
   /** Düzenlenen kayıt; yeni kayıtta yok. */
   record: RecordRow | undefined;
   onClose: () => void;
+  /** Kayıt başarıyla kaydedilince çağrılır; pencereyi kapatmak çağırana kalır. */
+  onSaved: (isNew: boolean) => void;
 };
 
-function failureKey(error: unknown): string {
-  return toProblem(error).code === 'DUPLICATE_PLATE'
-    ? 'masterData.duplicatePlate'
-    : 'masterData.saveFailed';
-}
-
 /** Ekle/düzenle penceresi; dar ekranda tam ekran açılır (tek elle kullanım, klavye girdiyi örtmez). */
-export function RecordForm({ kind, record, onClose }: RecordFormProps) {
+export function RecordForm({ kind, record, onClose, onSaved }: RecordFormProps) {
   const { t } = useTranslation();
   const isNarrow = useMediaQuery('(max-width: 47.99em)', false);
-  const [label, setLabel] = useState(record?.label ?? '');
-  const [owner, setOwner] = useState(record?.subcontractorId);
-  const [error, setError] = useState<RecordError>();
-  const mutation = useSaveRecord(kind);
-  const submit = () => {
-    const validation = validateLabel(kind, label);
-    setError(validation);
-    if (validation !== undefined) return;
-    const values: RecordValues = {
-      label: label.trim(),
-      ...(owner === undefined ? {} : { subcontractorId: owner }),
-    };
-    mutation.mutate({ id: record?.id, values }, { onSuccess: onClose });
-  };
+  const draft = useRecordDraft(kind, record, onSaved);
+  const { field, form } = draft.errors;
   return (
     <Modal
       opened
       onClose={onClose}
       fullScreen={isNarrow}
+      closeButtonProps={{ 'aria-label': t('common.close') }}
       title={t(record === undefined ? 'masterData.add' : 'masterData.edit')}
     >
       <Stack>
         <TextInput
           label={t(`masterData.kinds.${kind}.field`)}
-          value={label}
+          value={draft.label}
           onChange={(event) => {
-            setLabel(event.currentTarget.value);
+            draft.setLabel(event.currentTarget.value);
           }}
+          {...(kind === 'vehicle' ? { description: t('masterData.plateHint') } : {})}
+          error={field === undefined ? undefined : t(field)}
           withAsterisk
           data-autofocus
         />
-        {kind === 'driver' && <OwnerSelect value={owner} onChange={setOwner} />}
-        {error !== undefined && <Alert color="red">{t(`masterData.errors.${error}`)}</Alert>}
-        {mutation.isError && <Alert color="red">{t(failureKey(mutation.error))}</Alert>}
-        <Button loading={mutation.isPending} onClick={submit}>
+        {kind === 'driver' && <OwnerSelect value={draft.owner} onChange={draft.setOwner} />}
+        {form !== undefined && <Alert color="red">{t(form)}</Alert>}
+        <Button loading={draft.isPending} onClick={draft.submit}>
           {t('masterData.save')}
         </Button>
       </Stack>

@@ -44,6 +44,47 @@ describe('MasterDataPage', () => {
     expect(await screen.findByText('Bu plaka başka bir araçta kullanılıyor.')).toBeInTheDocument();
   });
 
+  it('kayıttan sonra başarı bildirimi gösterir', async () => {
+    server.use(...createHandlers('ADMIN'));
+    renderApp('/panel/tanimlar');
+    await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
+    await userEvent.type(screen.getByLabelText(/Fasoncu ünvanı/), 'Yeni Örme Ltd.');
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Kayıt eklendi.');
+
+    const card = await screen.findByRole('group', { name: 'Yeni Örme Ltd.' });
+    await userEvent.click(within(card).getByRole('button', { name: 'Düzenle' }));
+    await userEvent.type(screen.getByLabelText(/Fasoncu ünvanı/), ' A.Ş.');
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Değişiklikler kaydedildi.');
+  });
+
+  it('aynı fasoncu ünvanını sunucu hatasıyla alanın altında gösterir', async () => {
+    server.use(...createHandlers('ADMIN'));
+    renderApp('/panel/tanimlar');
+    await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
+    await userEvent.type(screen.getByLabelText(/Fasoncu ünvanı/), ' aydın örme ');
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(
+      await screen.findByText('Bu ünvanla kayıtlı bir fasoncu zaten var.'),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText(/Fasoncu ünvanı/)).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('TR plaka desenine uymayan plakayı göndermeden reddeder', async () => {
+    server.use(...createHandlers('ADMIN'));
+    renderApp('/panel/tanimlar');
+    await userEvent.click(await screen.findByRole('tab', { name: 'Araçlar' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
+    await userEvent.type(screen.getByLabelText(/Plaka/), 'abc');
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(
+      await screen.findByText('Geçerli bir plaka girin (ör. 34 ABC 123).'),
+    ).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText(/Plaka/), 'x');
+    expect(screen.queryByText('Geçerli bir plaka girin (ör. 34 ABC 123).')).not.toBeInTheDocument();
+  });
+
   it('giriş hesabı formu eksik alanları düğmeye basınca gösterir', async () => {
     server.use(...createHandlers('ADMIN'));
     renderApp('/panel/tanimlar');

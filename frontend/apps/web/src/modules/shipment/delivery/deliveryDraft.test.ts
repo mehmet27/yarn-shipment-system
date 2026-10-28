@@ -49,9 +49,19 @@ describe('deliveryDraft', () => {
     const request = toDeliveryRequest({
       ...VALID,
       sealCondition: 'MISSING',
-      document: { shipmentNo: 'SVK-1', date: '', netKg: '1.978,25', bagCount: '' },
+      document: {
+        shipmentNo: 'SVK-1',
+        date: '',
+        netKg: '1.978,25',
+        bagCount: '',
+        signedDocumentEvidenceId: 'ev-1',
+      },
     });
     expect(request).not.toHaveProperty('sealNo');
-    expect(request?.document).toEqual({ shipmentNo: 'SVK-1', netKg: '1978.250' });
+    expect(request?.document).toEqual({
+      shipmentNo: 'SVK-1',
+      netKg: '1978.250',
+      signedDocumentEvidenceId: 'ev-1',
+    });
   });
 });

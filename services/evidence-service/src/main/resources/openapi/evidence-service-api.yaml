@@ -26,6 +26,7 @@ servers:
   - url: /
 tags:
   - name: EvidenceUploads
+  - name: Evidence
   - name: TicketReadings
 security:
   - bearerAuth: []
@@ -127,6 +128,36 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+  /api/v1/evidence/{evidenceId}:
+    get:
+      tags: [Evidence]
+      operationId: getEvidence
+      summary: Kanıt üst verisi
+      description: |
+        Dosyanın kendisini değil üst verisini döner (tür, sevkiyat, boyut, hash). Sevkiyat isteyene görünmüyorsa
+        kanıt da yoktur (EVIDENCE_NOT_FOUND).
+      parameters:
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Kanıt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '503':
           $ref: '#/components/responses/Unavailable'
 components:

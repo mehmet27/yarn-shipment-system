@@ -1,7 +1,9 @@
 package com.yarnshipment.shipment.adapter.in.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -13,7 +15,10 @@ import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
 import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptCommand;
 import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptUseCase;
 import com.yarnshipment.shipment.application.port.in.driver.ConfirmPickupUseCase;
+import com.yarnshipment.shipment.domain.evidence.EvidenceServiceUnavailableException;
+import com.yarnshipment.shipment.domain.evidence.InvalidDeliveryEvidenceException;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,6 +115,24 @@ class DeliveryReceiptControllerTest {
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("INVALID_DELIVERY");
         assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo("tareKg");
+    }
+
+    @Test
+    @DisplayName("Geçersiz imzalı irsaliye kanıtı 422, kanıt servisi kesintisi 502 alır")
+    void shouldMapEvidenceFailures() {
+        doThrow(new InvalidDeliveryEvidenceException(TestShipments.SHIPMENT_ID, UUID.randomUUID()))
+                .when(submitDeliveryReceiptUseCase)
+                .submitDeliveryReceipt(any());
+        MvcTestResult invalid = post(TestTokens.subcontractorToken(), VALID_BODY);
+        assertThat(invalid).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
+        assertThat(invalid).bodyJson().extractingPath("$.code").isEqualTo("DELIVERY_EVIDENCE_INVALID");
+
+        doThrow(new EvidenceServiceUnavailableException("down"))
+                .when(submitDeliveryReceiptUseCase)
+                .submitDeliveryReceipt(any());
+        MvcTestResult down = post(TestTokens.subcontractorToken(), VALID_BODY);
+        assertThat(down).hasStatus(HttpStatus.BAD_GATEWAY);
+        assertThat(down).bodyJson().extractingPath("$.code").isEqualTo("EVIDENCE_SERVICE_UNAVAILABLE");
     }
 
     private MvcTestResult post(Jwt jwt, String body) {

@@ -209,7 +209,9 @@ paths:
         Fasoncu çıkış tartısını, beklenen yükü ve çıkış mühür numarasını görmeden kendi ölçümünü girer (SEC-05).
         Gönderilen tutanak kilitlenir, değişiklik yalnızca düzeltme talebiyle yapılır. Okutulan anahtar listede
         yoksa da saklanır; eşleşme karşılaştırması discrepancy-service'tedir. Aynı sevkiyat için tekrar gönderilen
-        istek yeni kayıt oluşturmaz ve yine 204 döner.
+        istek yeni kayıt oluşturmaz ve yine 204 döner. `signedDocumentEvidenceId` verilirse evidence-service'te bu
+        sevkiyata ait, türü `SIGNED_DELIVERY_DOC` olan bir kanıt olmalıdır; aksi halde 422
+        `DELIVERY_EVIDENCE_INVALID` döner.
       parameters:
         - name: shipmentId
           in: path
@@ -237,6 +239,14 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '422':
+          description: İmzalı irsaliye kanıtı bulunamadı, başka sevkiyata ait ya da türü yanlış (DELIVERY_EVIDENCE_INVALID)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   /api/v1/shipments/{shipmentId}/dispatch-weighing:
     post:
       tags: [Shipments]
@@ -1159,7 +1169,7 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
     BadGateway:
-      description: Çuval servisine ulaşılamadı (code BAG_SERVICE_UNAVAILABLE)
+      description: Çuval servisine (BAG_SERVICE_UNAVAILABLE) ya da kanıt servisine (EVIDENCE_SERVICE_UNAVAILABLE) ulaşılamadı
       content:
         application/problem+json:
           schema:

@@ -4,7 +4,7 @@ import { Group, Paper, Stack, Text } from '@iplik/ui';
 import { Link } from 'react-router';
 import { DiscrepancyBadges } from './DiscrepancyBadges';
 import { toSeverityColor } from './discrepancyColor';
-import { formatDifference } from './formatDifference';
+import { summaryOf } from './discrepancyText';
 
 /** Dar ekranda liste satırı: tek dokunuşla açılan büyük kart, solda önem rengi. */
 export function DiscrepancyCard({ discrepancy }: { discrepancy: DiscrepancyView }) {
@@ -32,10 +32,14 @@ export function DiscrepancyCard({ discrepancy }: { discrepancy: DiscrepancyView 
         </Group>
         <Text fw={500}>{t(`discrepancy.type.${discrepancy.type}`)}</Text>
         <Text size="sm" c="dimmed">
-          {formatDifference(discrepancy.diffKg, discrepancy.diffPct)}
-          {discrepancy.dueAt === undefined
-            ? ''
-            : ` · ${t('discrepancy.due')}: ${formatDateTime(discrepancy.dueAt)}`}
+          {[
+            summaryOf(t, discrepancy),
+            discrepancy.dueAt === undefined
+              ? undefined
+              : `${t('discrepancy.due')}: ${formatDateTime(discrepancy.dueAt)}`,
+          ]
+            .filter((part) => part !== undefined && part !== '')
+            .join(' · ')}
         </Text>
       </Stack>
     </Paper>

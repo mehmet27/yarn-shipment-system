@@ -3,11 +3,13 @@ import { Paper, Stack, Text } from '@iplik/ui';
 import { useShipmentHistory } from '../hooks/useShipmentHistory';
 import { formatDateTime } from './formatDateTime';
 import { QueryState } from './QueryState';
+import { useActorLabel } from './useActorLabel';
 
 /** Durum geçmişi eskiden yeniye; mobilde her geçiş bir kart olarak alt alta dizilir. */
 export function HistoryTab({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
   const query = useShipmentHistory(shipmentId);
+  const actorLabel = useActorLabel();
   return (
     <QueryState query={query}>
       {({ items }) =>
@@ -23,7 +25,7 @@ export function HistoryTab({ shipmentId }: { shipmentId: string }) {
                     : `${t(`shipment.status.${change.fromStatus}`)} → ${t(`shipment.status.${change.toStatus}`)}`}
                 </Text>
                 <Text size="sm" c="dimmed">
-                  {formatDateTime(change.changedAt)} · {change.changedBy}
+                  {formatDateTime(change.changedAt)} · {actorLabel(change.changedBy)}
                 </Text>
                 {change.reason !== undefined && <Text size="sm">{change.reason}</Text>}
               </Paper>

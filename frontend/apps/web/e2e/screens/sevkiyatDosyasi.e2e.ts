@@ -30,4 +30,30 @@ test.describe('Sevkiyat dosyası', { tag: '@panel' }, () => {
     await page.getByRole('button', { name: 'Sevkiyatı iptal et' }).click();
     await expect(page.getByText('İptal', { exact: true })).toBeVisible();
   });
+
+  // H-14: depo teslim tartısını göremez; değer yokmuş gibi "Kaydedilmedi" yazılmaz.
+  test('depo teslim sütununda yetki notu görür, Kaydedilmedi görmez', async ({ page, openAs }) => {
+    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0007');
+    await expect(page.getByRole('cell', { name: '1.982,5 kg' })).toBeVisible();
+    await expect(page.getByText('Teslim tartısını görme yetkiniz yok.')).toBeVisible();
+    // Brüt, dara, net ve fark satırları.
+    await expect(page.getByRole('cell', { name: '—' })).toHaveCount(4);
+    await expect(page.getByText('Kaydedilmedi')).toHaveCount(0);
+  });
+
+  test('kalite iki tarafı da görür, yetki notu çıkmaz', async ({ page, openAs }) => {
+    await openAs('QUALITY', '/panel/sevkiyat/shp-0007');
+    await expect(page.getByRole('cell', { name: '1.968 kg' })).toBeVisible();
+    await expect(page.getByText('Teslim tartısını görme yetkiniz yok.')).toHaveCount(0);
+  });
+
+  // H-24: Geçmiş'te UUID değil; sistem adımı "Sistem", oturumdaki kullanıcı kendi adıyla görünür.
+  test('geçmişte yapan kişi UUID yerine okunur adla görünür', async ({ page, openAs }) => {
+    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0007');
+    await page.getByRole('tab', { name: 'Geçmiş' }).click();
+    const history = page.getByRole('tabpanel', { name: 'Geçmiş' });
+    await expect(history.getByText(/Deniz Depo/).first()).toBeVisible();
+    await expect(history.getByText(/Sistem/)).toHaveCount(1);
+    await expect(history.getByText(/0{8}-|user-/)).toHaveCount(0);
+  });
 });

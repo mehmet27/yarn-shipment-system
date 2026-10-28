@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Anchor, Stack, Text, Title } from '@iplik/ui';
+import { usePermission } from '@/modules/auth';
 import { Link, useNavigate, useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
 import { DeliveryWizard } from '../delivery/DeliveryWizard';
@@ -11,6 +12,7 @@ export function DeliveryReceiptPage() {
   const navigate = useNavigate();
   const { shipmentId = '' } = useParams();
   const query = useShipment(shipmentId);
+  const canRecord = usePermission('DELIVERY_RECORD');
   const back = `/saha/sevkiyat/${shipmentId}`;
   return (
     <Stack>
@@ -24,9 +26,11 @@ export function DeliveryReceiptPage() {
               <Title order={3}>{t('delivery.title')}</Title>
               <Text c="dimmed">{shipment.shipmentNo}</Text>
             </Stack>
-            <Text size="sm" c="dimmed">
-              {t('delivery.blindHint')}
-            </Text>
+            {canRecord && (
+              <Text size="sm" c="dimmed">
+                {t('delivery.blindHint')}
+              </Text>
+            )}
             {shipment.allowedActions.includes('RECORD_DELIVERY') ? (
               <DeliveryWizard
                 shipmentId={shipment.shipmentId}
@@ -35,7 +39,9 @@ export function DeliveryReceiptPage() {
                 }}
               />
             ) : (
-              <Alert color="yellow">{t('delivery.invalidStatus')}</Alert>
+              <Alert color="yellow">
+                {t(canRecord ? 'delivery.invalidStatus' : 'delivery.noPermission')}
+              </Alert>
             )}
           </Stack>
         )}

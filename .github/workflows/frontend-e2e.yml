@@ -1,0 +1,36 @@
+name: frontend-e2e
+
+# FE-TEST-08: uçtan uca testler her PR'da değil, main'e birleşmede koşar; elle de başlatılabilir.
+on:
+  push:
+    branches: [main]
+    paths: ['frontend/**', '.github/workflows/frontend-e2e.yml']
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @iplik/web exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: e2e-rapor
+          path: frontend/apps/web/e2e/rapor
+          retention-days: 14

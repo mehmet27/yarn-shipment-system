@@ -3,3 +3,6 @@ dist
 coverage
 **/generated/**
 apps/web/public/mockServiceWorker.js
+dist-e2e
+apps/web/e2e/rapor
+apps/web/e2e/sonuclar

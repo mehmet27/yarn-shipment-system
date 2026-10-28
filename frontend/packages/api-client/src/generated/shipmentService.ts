@@ -590,12 +590,12 @@ export interface DriverShipmentView {
 export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView | DriverShipmentView;
 
 /**
- * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE)
+ * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR)
  */
 export type ConflictResponse = Problem;
 
 /**
- * İstek biçimi hatalı
+ * İstek biçimi hatalı; plaka biçimi geçersizse `INVALID_PLATE`
  */
 export type BadRequestResponse = Problem;
 
@@ -885,7 +885,7 @@ export const listSubcontractors = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Ünvan boş olamaz. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Ünvan boş olamaz ve tektir (büyük/küçük harf ve baş/son boşluk yok sayılır, pasif kayıtlar dahil); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Fasoncu ekler
  */
 export const createSubcontractor = (
@@ -900,7 +900,7 @@ export const createSubcontractor = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Başka fasoncunun ünvanı 409 `DUPLICATE_SUBCONTRACTOR` verir.
  * @summary Fasoncu günceller
  */
 export const updateSubcontractor = (
@@ -1067,7 +1067,7 @@ export const listVehicles = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir; başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`); başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Araç ekler
  */
 export const createVehicle = (
@@ -1082,7 +1082,7 @@ export const createVehicle = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Plaka kuralı eklemedeki gibidir (`INVALID_PLATE`, `DUPLICATE_PLATE`).
  * @summary Araç günceller
  */
 export const updateVehicle = (

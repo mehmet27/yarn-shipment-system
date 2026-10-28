@@ -4,16 +4,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.out.VehicleSiteCommandPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
+import com.yarnshipment.shipment.masterdata.domain.model.InvalidPlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
 import com.yarnshipment.shipment.masterdata.domain.model.Site;
 import com.yarnshipment.shipment.masterdata.domain.model.Vehicle;
+import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,11 +43,28 @@ class VehicleSiteManagementServiceTest {
     }
 
     @Test
-    @DisplayName("Boş ya da 20 karakteri aşan plaka reddedilir")
+    @DisplayName("Boş plaka INVALID_MASTER_DATA, Türkiye plaka biçimine uymayan plaka INVALID_PLATE ile reddedilir")
     void shouldRejectBadPlates() throws Exception {
         assertThatThrownBy(() -> vehicles.createVehicle(actor, "  ")).isInstanceOf(InvalidMasterDataException.class);
         assertThatThrownBy(() -> vehicles.updateVehicle(actor, id, "A".repeat(TOO_LONG)))
-                .isInstanceOf(InvalidMasterDataException.class);
+                .isInstanceOf(InvalidPlateException.class);
+        for (String plate : List.of("abc", "00ABC12", "82A1234", "34ABCD12", "34A1", "34ABC12345", "34-ABC-123")) {
+            assertThatThrownBy(() -> vehicles.createVehicle(actor, plate))
+                    .as(plate)
+                    .isInstanceOf(InvalidPlateException.class);
+        }
+        verifyNoInteractions(port);
+    }
+
+    @Test
+    @DisplayName("İl kodu 01-81, 1-3 harf ve 2-4 rakamlı plakalar kabul edilir")
+    void shouldAcceptTurkishPlates() throws Exception {
+        for (String plate : List.of("01A1234", "06 k 1234", "81AB123", "34 ABC 12")) {
+            String normalized = plate.replace(" ", "").toUpperCase(Locale.ROOT);
+            when(port.insertVehicle(actor.userId(), normalized)).thenReturn(new Vehicle(id, normalized));
+
+            assertThat(vehicles.createVehicle(actor, plate).plateNo()).isEqualTo(normalized);
+        }
     }
 
     @Test

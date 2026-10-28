@@ -610,7 +610,7 @@ export type UnauthorizedResponse = Problem;
 export type ForbiddenResponse = Problem;
 
 /**
- * Çuval servisine ulaşılamadı (code BAG_SERVICE_UNAVAILABLE)
+ * Çuval servisine (BAG_SERVICE_UNAVAILABLE) ya da kanıt servisine (EVIDENCE_SERVICE_UNAVAILABLE) ulaşılamadı
  */
 export type BadGatewayResponse = Problem;
 
@@ -834,7 +834,9 @@ export const declareArrival = (
  * Fasoncu çıkış tartısını, beklenen yükü ve çıkış mühür numarasını görmeden kendi ölçümünü girer (SEC-05).
  * Gönderilen tutanak kilitlenir, değişiklik yalnızca düzeltme talebiyle yapılır. Okutulan anahtar listede
  * yoksa da saklanır; eşleşme karşılaştırması discrepancy-service'tedir. Aynı sevkiyat için tekrar gönderilen
- * istek yeni kayıt oluşturmaz ve yine 204 döner.
+ * istek yeni kayıt oluşturmaz ve yine 204 döner. `signedDocumentEvidenceId` verilirse evidence-service'te bu
+ * sevkiyata ait, türü `SIGNED_DELIVERY_DOC` olan bir kanıt olmalıdır; aksi halde 422
+ * `DELIVERY_EVIDENCE_INVALID` döner.
  * @summary Fasoncu kör teslim girişini gönderir (AWAITING_DELIVERY → CHECKING)
  */
 export const submitDeliveryReceipt = (

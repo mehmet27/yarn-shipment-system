@@ -62,7 +62,8 @@ KEYCLOAK_TEST_USER_PASSWORD=<deploy/.env değeri> node tools/keycloak/verify-rea
 ```
 
 Yerel Keycloak'ta ikinci faktör kurulu değildir; `admin` ve `kalite` rolleri MFA'sız oturumda düşürüldüğü için
-shipment-service'i `--spring.profiles.active=local` ile başlatın (yalnızca yerelde MFA şartını kapatır).
+shipment, bag, discrepancy ve evidence servislerini `--spring.profiles.active=local` ile başlatın (yalnızca yerelde
+MFA şartını kapatır; üretim ayarı değişmez). Profilsiz açılan serviste bu iki rol 403 `ACCESS_DENIED` alır.
 
 Compose, tek bir PostgreSQL 17 konteynerinde 8 servis veritabanını ve Keycloak veritabanını, her servis için
 `<servis>_migrator`, `<servis>_app` ve `<servis>_readonly` rolleriyle açar. Tabloları servisler açılışta Flyway
@@ -82,8 +83,12 @@ PostgreSQL'i ayrıca kurmanız gerekmez; yukarıdaki Compose yeterlidir. Servis 
 ```bash
 export SHIPMENT_DB_APP_PASSWORD=<LOCAL_DB_PASSWORD>
 export SHIPMENT_DB_MIGRATOR_PASSWORD=<LOCAL_DB_PASSWORD>
+export YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET=<deploy/.env içindeki KEYCLOAK_ADMIN_CLIENT_SECRET>
 ./mvnw -pl services/shipment-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
+
+`YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET` verilmezse servis yine açılır, ama Tanımlar ekranındaki "Giriş hesabı aç"
+502 `LOGIN_ACCOUNT_UNAVAILABLE` ("Giriş sistemine ulaşılamadı") döner.
 
 `local` profilinde ayrıca yerel örnek veri yüklenir (`db/seed-local/R__local_sample_shipments.sql`): iki lokasyonda, taslaktan kontrole kadar her durumda yedi sevkiyat; kimlikler yerel Keycloak kullanıcılarıyla eşleşir (fasoncu ve şoför kendi sevkiyatlarını görür). Dosya tekrarlanabilir migration'dır, kayıtlar iki kez eklenmez. Üretim profilinde bu konum yoktur.
 
@@ -178,7 +183,8 @@ shipment-service `discrepancy.events.v1` konusunu dinler: temiz sonuç sevkiyat�
 Servisin HTTP ucu yoktur. Çalıştırmak için `DISCREPANCY_DB_APP_PASSWORD`, `DISCREPANCY_DB_MIGRATOR_PASSWORD` ve gerekirse `KAFKA_BOOTSTRAP_SERVERS` verilir:
 
 ```bash
-DISCREPANCY_DB_APP_PASSWORD=... DISCREPANCY_DB_MIGRATOR_PASSWORD=... ./mvnw -pl services/discrepancy-service spring-boot:run
+DISCREPANCY_DB_APP_PASSWORD=... DISCREPANCY_DB_MIGRATOR_PASSWORD=... \
+./mvnw -pl services/discrepancy-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 ## evidence-service (fotoğraf ve belge yükleme)
@@ -206,7 +212,8 @@ Yerelde MinIO `docker compose` ile açılır (`deploy/.env` içinde `EVIDENCE_ST
 
 ```bash
 EVIDENCE_DB_APP_PASSWORD=... EVIDENCE_DB_MIGRATOR_PASSWORD=... \
-EVIDENCE_STORAGE_ACCESS_KEY=... EVIDENCE_STORAGE_SECRET_KEY=... ./mvnw -pl services/evidence-service spring-boot:run
+EVIDENCE_STORAGE_ACCESS_KEY=... EVIDENCE_STORAGE_SECRET_KEY=... \
+./mvnw -pl services/evidence-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 İmzalı adres, `EVIDENCE_STORAGE_ENDPOINT` adresiyle üretilir; telefon ya da tarayıcının eriştiği adres olmalıdır. Kanıt görüntüleme, geçersiz kılma ve imzalı irsaliyenin teslim girişine bağlanması sonraki adımlardır.

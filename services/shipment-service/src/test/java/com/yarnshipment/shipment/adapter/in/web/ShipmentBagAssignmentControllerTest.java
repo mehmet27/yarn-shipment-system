@@ -97,6 +97,20 @@ class ShipmentBagAssignmentControllerTest {
     }
 
     @Test
+    @DisplayName("Başka lokasyonun çuvalı BAG_OUT_OF_SCOPE koduyla 403 döner, 502 değil")
+    void shouldReturnForbiddenForBagOutOfScope() {
+        doThrow(new BagReservationException(Reason.OUT_OF_SCOPE))
+                .when(assignBagsUseCase)
+                .assignBags(any());
+
+        MvcTestResult result = post(BODY, TestTokens.token("warehouse").build());
+
+        assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("BAG_OUT_OF_SCOPE");
+        assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Çuval bu lokasyona ait değil");
+    }
+
+    @Test
     @DisplayName("Çuval servisine ulaşılamazsa BAG_SERVICE_UNAVAILABLE koduyla 502 döner")
     void shouldReturnBadGatewayWhenBagServiceIsDown() {
         when(assignBagsUseCase.assignBags(any())).thenThrow(new BagServiceUnavailableException("down"));

@@ -89,6 +89,7 @@ public final class ShipmentExceptionHandler {
             case NOT_FOUND -> problem(request, HttpStatus.NOT_FOUND, "BAG_NOT_FOUND");
             case NOT_AVAILABLE -> problem(request, HttpStatus.CONFLICT, "BAG_NOT_AVAILABLE");
             case ALREADY_RESERVED -> problem(request, HttpStatus.CONFLICT, "BAG_ALREADY_RESERVED");
+            case OUT_OF_SCOPE -> problem(request, HttpStatus.FORBIDDEN, "BAG_OUT_OF_SCOPE");
         };
     }
 

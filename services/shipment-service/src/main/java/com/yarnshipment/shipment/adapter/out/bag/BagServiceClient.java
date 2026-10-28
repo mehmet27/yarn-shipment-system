@@ -97,7 +97,7 @@ final class BagServiceClient implements BagReservationPort {
 
     private static RuntimeException translate(RestClientResponseException exception) {
         HttpStatus status = HttpStatus.resolve(exception.getStatusCode().value());
-        if (status == HttpStatus.NOT_FOUND || status == HttpStatus.CONFLICT) {
+        if (status == HttpStatus.NOT_FOUND || status == HttpStatus.CONFLICT || status == HttpStatus.FORBIDDEN) {
             Map<String, Object> problem = exception.getResponseBodyAs(new ParameterizedTypeReference<>() {});
             Object code = problem == null ? null : problem.get("code");
             Reason reason = reasonOf(code);
@@ -113,6 +113,7 @@ final class BagServiceClient implements BagReservationPort {
             case "BAG_NOT_FOUND" -> Reason.NOT_FOUND;
             case "BAG_NOT_AVAILABLE" -> Reason.NOT_AVAILABLE;
             case "BAG_ALREADY_RESERVED" -> Reason.ALREADY_RESERVED;
+            case "OUT_OF_SCOPE" -> Reason.OUT_OF_SCOPE;
             default -> null;
         };
     }

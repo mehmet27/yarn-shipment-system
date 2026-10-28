@@ -3,6 +3,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Stack, Text, TextInput } from '@iplik/ui';
 import { formatKg } from '@iplik/units';
 import { useState } from 'react';
+import { TicketCapture } from '@/modules/evidence';
 import { useRecordDispatch } from '../hooks/useRecordDispatch';
 import type { DispatchDraft, DispatchError } from './dispatchDraft';
 import {
@@ -18,7 +19,7 @@ const FIELDS = [
   { name: 'bagCount', inputMode: 'numeric' },
   { name: 'scaleTicketNo', inputMode: 'text' },
   { name: 'sealNo', inputMode: 'text' },
-] as const satisfies readonly { name: keyof DispatchDraft; inputMode: string }[];
+] as const satisfies readonly { name: Exclude<keyof DispatchDraft, 'ticket'>; inputMode: string }[];
 
 function failureKey(error: unknown): string {
   return toProblem(error).code === 'SEAL_ALREADY_USED'
@@ -59,6 +60,16 @@ export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
       ))}
       {typeof weighing !== 'string' && (
         <Text fw={700}>{t('dispatch.net', { net: formatKg(weighing.netKg) })}</Text>
+      )}
+      {typeof weighing !== 'string' && (
+        <TicketCapture
+          shipmentId={shipmentId}
+          evidenceType="DISPATCH_SCALE"
+          outcome={draft.ticket}
+          onOutcome={(ticket) => {
+            setDraft({ ...draft, ticket });
+          }}
+        />
       )}
       {error !== undefined && <Alert color="red">{t(`dispatch.errors.${error}`)}</Alert>}
       {mutation.isError && <Alert color="red">{t(failureKey(mutation.error))}</Alert>}

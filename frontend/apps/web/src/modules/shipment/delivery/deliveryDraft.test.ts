@@ -10,6 +10,7 @@ const VALID: DeliveryDraft = {
   grossKg: '1.995,25',
   tareKg: '17',
   bagCount: '2',
+  ticket: { kind: 'READ' },
 };
 
 describe('deliveryDraft', () => {
@@ -29,6 +30,7 @@ describe('deliveryDraft', () => {
     expect(validateStep('weighing', { ...VALID, tareKg: '3000' })).toBe('tareExceedsGross');
     expect(validateStep('weighing', { ...VALID, grossKg: '1995.25.1' })).toBe('invalidKg');
     expect(validateStep('weighing', { ...VALID, bagCount: '0' })).toBe('invalidBagCount');
+    expect(validateStep('weighing', { ...VALID, ticket: undefined })).toBe('ticketRequired');
   });
 
   it('isteği API biçiminde kurar, boş irsaliyeyi göndermez', () => {

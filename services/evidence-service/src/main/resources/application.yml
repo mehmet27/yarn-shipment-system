@@ -51,6 +51,7 @@ yarnshipment:
       secret-key: ${EVIDENCE_STORAGE_SECRET_KEY}
       path-style: true
       upload-url-ttl: 10m
+      download-url-ttl: 5m
     ticket-reading:
       # Kantar fişi okuma; kapalıyken okuma ucu 503 döner ve akış okumasız sürer.
       enabled: ${TICKET_READING_ENABLED:false}

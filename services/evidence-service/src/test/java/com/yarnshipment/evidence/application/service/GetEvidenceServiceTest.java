@@ -40,7 +40,7 @@ class GetEvidenceServiceTest {
     void shouldReturnEvidence() {
         when(store.findEvidence(file.id())).thenReturn(Optional.of(file));
         when(shipments.findAccessible(file.shipmentId()))
-                .thenReturn(new ShipmentSnapshot(file.shipmentId(), TestTokens.SITE_ID, false));
+                .thenReturn(new ShipmentSnapshot(file.shipmentId(), TestTokens.SITE_ID, false, false));
 
         assertThat(service.getEvidence(new GetEvidenceQuery(warehouse, file.id())))
                 .isEqualTo(file);
@@ -66,7 +66,7 @@ class GetEvidenceServiceTest {
     void shouldRejectOutOfScope() {
         when(store.findEvidence(file.id())).thenReturn(Optional.of(file));
         when(shipments.findAccessible(file.shipmentId()))
-                .thenReturn(new ShipmentSnapshot(file.shipmentId(), UUID.randomUUID(), false));
+                .thenReturn(new ShipmentSnapshot(file.shipmentId(), UUID.randomUUID(), false, false));
 
         assertThatThrownBy(() -> service.getEvidence(new GetEvidenceQuery(warehouse, file.id())))
                 .isInstanceOf(OutOfScopeAccessException.class);

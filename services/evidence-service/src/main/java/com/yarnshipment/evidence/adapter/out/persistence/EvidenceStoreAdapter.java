@@ -40,6 +40,10 @@ final class EvidenceStoreAdapter implements EvidenceStorePort {
                                        sha256, source, captured_at, uploaded_at, uploaded_by, status, created_by)
             VALUES (:id, :at, :shipmentId, :type, :storageKey, :mimeType, :sizeBytes, :sha256, :source, :capturedAt,
                     :at, :actor, 'VALID', :actor)""";
+    private static final String SELECT_BY_SHIPMENT = """
+            SELECT id, shipment_id, evidence_type, storage_key, mime_type, size_bytes, sha256, source, captured_at,
+                   uploaded_at, uploaded_by
+              FROM evidence_file WHERE shipment_id = :shipmentId ORDER BY uploaded_at, id""";
     private static final String FIND_REUSE = """
             SELECT id, shipment_id FROM (
                 SELECT DISTINCT ON (shipment_id) id, shipment_id, created_at FROM evidence_file
@@ -70,6 +74,14 @@ final class EvidenceStoreAdapter implements EvidenceStorePort {
                 .param("id", evidenceId)
                 .query(EvidenceStoreAdapter::map)
                 .optional();
+    }
+
+    @Override
+    public List<EvidenceFile> findByShipment(UUID shipmentId) {
+        return jdbc.sql(SELECT_BY_SHIPMENT)
+                .param("shipmentId", shipmentId)
+                .query(EvidenceStoreAdapter::map)
+                .list();
     }
 
     @Override

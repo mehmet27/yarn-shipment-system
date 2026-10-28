@@ -130,6 +130,69 @@ paths:
           $ref: '#/components/responses/Conflict'
         '503':
           $ref: '#/components/responses/Unavailable'
+  /api/v1/evidence:
+    get:
+      tags: [Evidence]
+      operationId: listEvidence
+      summary: Sevkiyatın kanıtları
+      description: |
+        Yükleme sırasıyla, isteyenin görmesine izin verilen kanıtların üst verisi. Kör giriş gereği çıkış kantar
+        fotoğrafı karşılaştırma bitene kadar fasoncuya, teslim fotoğrafları depoya listede de gösterilmez (alan yok,
+        boş değil). Şoför yalnızca plaka fotoğrafını görür.
+      parameters:
+        - name: shipmentId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Kanıtlar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceListView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+  /api/v1/evidence/{evidenceId}/download-url:
+    get:
+      tags: [Evidence]
+      operationId: getEvidenceDownloadUrl
+      summary: Kanıt dosyası için imzalı indirme adresi
+      description: |
+        Dosyayı doğrudan nesne deposundan okumak için kısa ömürlü (yaklaşık 5 dk) adres. Görme kuralları üst veri
+        ucuyla aynıdır; görünmeyen kanıt EVIDENCE_NOT_FOUND döner. Adres her çağrıda yenilenir, saklanmamalıdır.
+      parameters:
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: İmzalı adres
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceDownloadView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/Unavailable'
   /api/v1/evidence/{evidenceId}:
     get:
       tags: [Evidence]
@@ -375,5 +438,22 @@ components:
           items:
             $ref: '#/components/schemas/ReadingProblem'
         readAt:
+          type: string
+          format: date-time
+    EvidenceListView:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceView'
+    EvidenceDownloadView:
+      type: object
+      required: [url, expiresAt]
+      properties:
+        url:
+          type: string
+        expiresAt:
           type: string
           format: date-time

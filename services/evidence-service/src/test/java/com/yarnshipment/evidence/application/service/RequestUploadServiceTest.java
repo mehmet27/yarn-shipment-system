@@ -96,7 +96,7 @@ class RequestUploadServiceTest {
 
         UUID otherSite = UUID.randomUUID();
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
-                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, otherSite, false));
+                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, otherSite, false, false));
         assertThatThrownBy(() -> request.requestUpload(command(warehouse, EvidenceType.DISPATCH_SCALE)))
                 .isInstanceOf(OutOfScopeAccessException.class);
         verify(storage, never()).presignUpload(any());
@@ -116,7 +116,7 @@ class RequestUploadServiceTest {
 
     private void openShipment(boolean locked) {
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
-                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, locked));
+                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, locked, false));
     }
 
     private static RequestUploadCommand command(Actor actor, EvidenceType type) {

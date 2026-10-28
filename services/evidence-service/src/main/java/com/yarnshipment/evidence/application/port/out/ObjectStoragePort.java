@@ -31,11 +31,22 @@ public interface ObjectStoragePort {
      */
     record UploadTarget(String storageKey, String mimeType, long sizeBytes) {}
 
+    /**
+     * İmzalı indirme adresi.
+     *
+     * @param url GET adresi
+     * @param expiresAt adresin sona erdiği zaman
+     */
+    record PresignedDownload(String url, Instant expiresAt) {}
+
     /** Adres, depo ayarındaki süre kadar geçerlidir (ör. 10 dakika). */
     PresignedUpload presignUpload(UploadTarget target);
 
     /** Nesneyi okuyup gerçek boyut, tür ve SHA-256'sını hesaplar; nesne yoksa boş döner. */
     Optional<StoredObject> inspect(String storageKey);
+
+    /** Nesneyi kısa süre okuyabilecek imzalı adres; süre depo ayarındadır. */
+    PresignedDownload presignDownload(String storageKey);
 
     /** Nesnenin baytlarını indirir; nesne yoksa boş döner. Boyut yüklemede 20 MB ile sınırlıdır. */
     Optional<byte[]> download(String storageKey);

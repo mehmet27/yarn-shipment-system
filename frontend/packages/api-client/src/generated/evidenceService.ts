@@ -225,6 +225,20 @@ export const readEvidenceTicket = (
       );
     }
 
+/**
+ * Dosyanın kendisini değil üst verisini döner (tür, sevkiyat, boyut, hash). Sevkiyat isteyene görünmüyorsa
+ * kanıt da yoktur (EVIDENCE_NOT_FOUND).
+ * @summary Kanıt üst verisi
+ */
+export const getEvidence = (
+    evidenceId: string,
+ ) => {
+      return customInstance<EvidenceView>(
+      {url: `/api/v1/evidence/${evidenceId}`, method: 'GET'
+    },
+      );
+    }
+
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -233,3 +247,4 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 export type RequestEvidenceUploadResult = NonNullable<Awaited<ReturnType<typeof requestEvidenceUpload>>>
 export type ConfirmEvidenceUploadResult = NonNullable<Awaited<ReturnType<typeof confirmEvidenceUpload>>>
 export type ReadEvidenceTicketResult = NonNullable<Awaited<ReturnType<typeof readEvidenceTicket>>>
+export type GetEvidenceResult = NonNullable<Awaited<ReturnType<typeof getEvidence>>>

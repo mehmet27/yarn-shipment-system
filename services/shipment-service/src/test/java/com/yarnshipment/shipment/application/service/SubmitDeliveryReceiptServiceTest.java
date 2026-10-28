@@ -15,6 +15,7 @@ import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,10 @@ class SubmitDeliveryReceiptServiceTest {
     private final RecordingDeliveryCommandPort commandPort = new RecordingDeliveryCommandPort();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final SubmitDeliveryReceiptService service = new SubmitDeliveryReceiptService(
-            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), commandPort, clock);
+            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
+            commandPort,
+            evidenceId -> Optional.empty(),
+            clock);
     private final Actor subcontractor = TestTokens.CONVERTER.toActor(TestTokens.subcontractorToken());
 
     @Test
@@ -56,7 +60,10 @@ class SubmitDeliveryReceiptServiceTest {
         InMemoryShipmentQueryPort afterSubmit = new InMemoryShipmentQueryPort();
         afterSubmit.add(TestShipments.shipment(ShipmentStatus.CHECKING));
         SubmitDeliveryReceiptService retried = new SubmitDeliveryReceiptService(
-                new ScopedShipmentLoader(afterSubmit, new ScopeGuard(event -> {}, clock)), commandPort, clock);
+                new ScopedShipmentLoader(afterSubmit, new ScopeGuard(event -> {}, clock)),
+                commandPort,
+                evidenceId -> Optional.empty(),
+                clock);
 
         // when
         retried.submitDeliveryReceipt(command(subcontractor));

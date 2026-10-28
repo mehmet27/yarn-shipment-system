@@ -15,7 +15,7 @@ import { createDiscrepancyHandlers } from './discrepancyHandlers';
 import { createEvidenceHandlers } from './evidenceHandlers';
 import { createMasterDataHandlers } from './masterDataHandlers';
 import { toBagsView, toHistory } from './shipmentTabs';
-import { isInScope, toDetailView, toSummary } from './shipmentViews';
+import { isInScope, toDetailView, toPermittedView, toSummary } from './shipmentViews';
 import { createMockUser } from './users';
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -102,7 +102,7 @@ function createGetShipmentHandler(role: Role) {
     const shipment = findMockShipment(params.shipmentId);
     if (shipment === undefined) return notFound();
     if (!isInScope(shipment, user)) return outOfScope();
-    return HttpResponse.json(toDetailView(shipment, role));
+    return HttpResponse.json(toPermittedView(toDetailView(shipment, role), user.permissions));
   });
 }
 

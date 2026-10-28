@@ -283,7 +283,7 @@ Klasör yapısı mimari dokümandadır (`apps/web/src/app`, `modules/*`, `offlin
 | **FE-TEST-05** | MSW sahte yanıtları rol ve kör giriş kuralına uyar: fasoncuya dönen teslim görünümünde çıkış alanları yoktur. Bunu doğrulayan test zorunludur. | test |
 | **FE-TEST-06** | Testlerde `it.only`, `describe.only` ve gerekçesiz `it.skip` yasaktır. | `vitest/no-focused-tests`, `vitest/no-disabled-tests` |
 | **FE-TEST-07** | Öncelikli kapsam: `@iplik/units` (kilo/yüzde) **%100 satır ve dal**, `@iplik/api-client` hata eşlemesi ve yetki bileşenleri (`Can`, `usePermission`) **%90**, uygulama geneli **%70 satır**. Eşiğin altı CI'ı kırar. | Vitest `coverage.thresholds` |
-| **FE-TEST-08** | Uçtan uca testler Playwright ile; mimari dokümandaki zorunlu senaryolar (tam döngü, kör giriş, offline fotoğraf, Yönetici'de düzenleme butonu olmaması) her PR'da değil, `main`'e birleşmede çalışır. | CI |
+| **FE-TEST-08** | Uçtan uca testler Playwright ile `apps/web/e2e` altında, ekran başına bir `*.e2e.ts` dosyasıdır; yeni ekran `e2e/screens.ts` listesine eklenir. Mimari dokümandaki zorunlu senaryolar (tam döngü, kör giriş, offline fotoğraf, Yönetici'de düzenleme butonu olmaması) her PR'da değil, `main`'e birleşmede çalışır. Adım adım akış yazıldığı için bu dosyalarda boyut sınırları (FE-SIZE-02/03, FE-CPLX-06) ve sihirli sayı kuralı uygulanmaz. | CI (`frontend-e2e`) |
 | **FE-TEST-09** | Erişilebilirlik: sayfa testlerinde `axe` kontrolü ihlal olmadan geçer. ÖNERİLEN, Faz 1 sonunda ZORUNLU. | `vitest-axe` |
 
 ---

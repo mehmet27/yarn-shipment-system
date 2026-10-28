@@ -27,6 +27,14 @@ Sahte API'de rol, sayfa ilk açılırken adres çubuğundan seçilir: `/?mockRol
 
 Yeni ekranlar mobil öncelikli yazılır. `pnpm dev` açıkken `pnpm check:responsive` her ekranı 360/768/1280 px'te açıp yatay taşma ve 44 px'ten küçük dokunma hedefi arar (`--shots klasör` ekran görüntüsü de alır; Chrome gerekir, yolu `CHROMIUM_PATH` ile verilebilir).
 
+## Uçtan uca testler (FE-TEST-08)
+
+Elle QA turunun otomatik hali: `pnpm test:e2e` her ekranı 360/768/1280 px'te açar ve her rolün
+akışlarını gerçek tarayıcıda dener (yaklaşık bir dakika); `pnpm test:e2e:smoke` daha kısa bir tur
+koşar. Yeni ekran için `pnpm test:e2e:yeni-ekran <dosyaAdi> <ROL> <yol> "<Ekran adı>"` iskeleti üretir.
+Ayrıntı ve yeni ekran rehberi: [`apps/web/e2e/README.md`](apps/web/e2e/README.md). Duyarlılık
+denetimi bu testlerin içinde de koşar.
+
 ## Kontroller (CI ile aynı sıra, FE-BUILD-05)
 
 ```bash

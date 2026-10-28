@@ -20,6 +20,7 @@ const SOURCE = ['**/*.{ts,tsx}'];
 const TESTS = ['**/*.test.{ts,tsx}', '**/test/**/*.{ts,tsx}', '**/mocks/**/*.{ts,tsx}'];
 const TSCONFIG_PROJECTS = ['apps/*/tsconfig.json', 'packages/*/tsconfig.json'];
 const CONFIG_FILES = ['**/*.config.{ts,js}'];
+const E2E = ['apps/*/e2e/**/*.ts'];
 
 const sizeAndComplexity = {
   'max-lines': ['error', { max: 250, skipBlankLines: true, skipComments: true }], // FE-SIZE-01
@@ -262,6 +263,20 @@ export function createConfig({ tsconfigRootDir }) {
         'react/no-multi-comp': 'off',
         'i18next/no-literal-string': 'off',
         'boundaries/dependencies': 'off',
+      },
+    },
+    {
+      // Playwright senaryoları (FE-TEST-08): adım adım akış yazıldığı için boyut sınırları gevşektir.
+      files: E2E,
+      rules: {
+        'max-lines-per-function': 'off',
+        'max-statements': 'off',
+        '@typescript-eslint/no-magic-numbers': 'off',
+        'sonarjs/no-duplicate-string': 'off',
+        'i18next/no-literal-string': 'off',
+        'boundaries/dependencies': 'off',
+        // Playwright fikstürlerindeki use() React hook'u değildir.
+        'react-hooks/rules-of-hooks': 'off',
       },
     },
     {

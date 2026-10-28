@@ -2,6 +2,7 @@ import type {
   CurrentUser,
   DriverShipmentView,
   InternalShipmentView,
+  Permission,
   Role,
   ShipmentAction,
   ShipmentDetail,
@@ -85,6 +86,28 @@ export function toDetailView(shipment: InternalShipmentView, role: Role): Shipme
     case 'MANAGER':
       return shipment;
   }
+}
+
+/** ShipmentAction'daki izin eşlemesi (backend ShipmentAccessPolicy). */
+const ACTION_PERMISSION: Readonly<Record<ShipmentAction, Permission>> = {
+  ASSIGN_BAGS: 'SHIPMENT_CREATE',
+  RECORD_DISPATCH: 'DISPATCH_RECORD',
+  CANCEL: 'SHIPMENT_CANCEL',
+  CONFIRM_PICKUP: 'DRIVER_DECLARATION_RECORD',
+  DECLARE_ARRIVAL: 'DRIVER_DECLARATION_RECORD',
+  RECORD_DELIVERY: 'DELIVERY_RECORD',
+  OPEN_QUALITY_CLAIM: 'QUALITY_CLAIM_OPEN',
+  CREATE_CORRECTION: 'CORRECTION_CREATE',
+};
+
+/** Backend gibi işlemi yalnızca izni olan kullanıcıya açar; Yönetici hiç düzenleme butonu görmez. */
+export function toPermittedView(view: ShipmentDetail, permissions: readonly Permission[]) {
+  return {
+    ...view,
+    allowedActions: view.allowedActions.filter((action) =>
+      permissions.includes(ACTION_PERMISSION[action]),
+    ),
+  };
 }
 
 /** Liste satırı her rol için aynıdır; beklenen yük listede yoktur. */

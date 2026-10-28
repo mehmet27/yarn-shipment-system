@@ -1,10 +1,10 @@
-import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Group, Stack } from '@iplik/ui';
 import { useState } from 'react';
 import { useSubmitDelivery } from '../hooks/useSubmitDelivery';
 import type { DeliveryDraft, DraftError } from './deliveryDraft';
 import { DELIVERY_STEPS, EMPTY_DRAFT, toDeliveryRequest, validateStep } from './deliveryDraft';
+import { deliveryFailureKey } from './deliveryErrors';
 import { StepContent } from './StepContent';
 import { WizardProgress } from './WizardProgress';
 
@@ -27,9 +27,6 @@ export function DeliveryWizard({ shipmentId, onSubmitted }: DeliveryWizardProps)
     const request = toDeliveryRequest(draft);
     if (request !== undefined) mutation.mutate(request, { onSuccess: onSubmitted });
   };
-  const code = mutation.isError ? toProblem(mutation.error).code : undefined;
-  const failure =
-    code === 'INVALID_SHIPMENT_STATUS' ? 'delivery.invalidStatus' : 'delivery.submitFailed';
   return (
     <Stack>
       <WizardProgress active={active} />
@@ -42,7 +39,7 @@ export function DeliveryWizard({ shipmentId, onSubmitted }: DeliveryWizardProps)
         }}
       />
       {error !== undefined && <Alert color="red">{t(`delivery.errors.${error}`)}</Alert>}
-      {code !== undefined && <Alert color="red">{t(failure)}</Alert>}
+      {mutation.isError && <Alert color="red">{t(deliveryFailureKey(mutation.error))}</Alert>}
       <Group grow>
         <Button
           size="lg"

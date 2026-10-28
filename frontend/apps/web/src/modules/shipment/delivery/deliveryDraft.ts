@@ -11,6 +11,7 @@ export type DocumentDraft = {
   date: string;
   netKg: string;
   bagCount: string;
+  signedDocumentEvidenceId: string;
 };
 
 /** Sihirbazın ham girdileri; kilo alanları kullanıcının yazdığı Türkçe metin olarak tutulur. */
@@ -46,7 +47,7 @@ export const EMPTY_DRAFT: DeliveryDraft = {
   tareKg: '',
   bagCount: '',
   ticket: undefined,
-  document: { shipmentNo: '', date: '', netKg: '', bagCount: '' },
+  document: { shipmentNo: '', date: '', netKg: '', bagCount: '', signedDocumentEvidenceId: '' },
 };
 
 /** Tekrar okutulan anahtar listeye ikinci kez eklenmez; backend de tekrarları bir kez sayar. */
@@ -115,6 +116,9 @@ function toDocument(draft: DocumentDraft): DeliveryDocument | undefined {
     ...(draft.date === '' ? {} : { date: draft.date }),
     ...(netKg === undefined ? {} : { netKg }),
     ...(bagCount === undefined ? {} : { bagCount }),
+    ...(draft.signedDocumentEvidenceId === ''
+      ? {}
+      : { signedDocumentEvidenceId: draft.signedDocumentEvidenceId }),
   };
   return Object.keys(document).length === 0 ? undefined : document;
 }

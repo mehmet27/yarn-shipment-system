@@ -156,7 +156,9 @@
       "shipmentNo": "İrsaliyedeki sevkiyat no",
       "date": "İrsaliye tarihi",
       "netKg": "İrsaliyedeki net (kg)",
-      "bagCount": "İrsaliyedeki çuval sayısı"
+      "bagCount": "İrsaliyedeki çuval sayısı",
+      "signed": "İmzalı irsaliye (fotoğraf veya PDF)",
+      "signedDone": "İrsaliye yüklendi; tutanağa eklenecek."
     },
     "summary": {
       "scannedBags": "Okutulan çuval",
@@ -177,7 +179,9 @@
       "invalidBagCount": "Çuval sayısı 1 veya daha büyük bir tam sayı olmalı.",
       "ticketRequired": "Devam etmek için kantar fişinin fotoğrafı gerekli."
     },
-    "stepOf": "Adım {{current}}/{{total}}: {{name}}"
+    "stepOf": "Adım {{current}}/{{total}}: {{name}}",
+    "evidenceInvalid": "Yüklenen belge bu sevkiyatın imzalı irsaliyesi olarak doğrulanamadı. Lütfen irsaliyeyi yeniden yükleyin.",
+    "evidenceUnavailable": "İrsaliye şu an doğrulanamıyor. Lütfen biraz sonra tekrar deneyin."
   },
   "dispatch": {
     "title": "Çıkış tartısı",

@@ -39,7 +39,11 @@ final class ShipmentEventsListener {
         }
         DeliveryReceived delivery = EVENT_READER.readValue(event.data(), DeliveryReceived.class);
         compareDeliveryUseCase.compareDelivery(new CompareDeliveryCommand(
-                event.id(), event.type(), actorOf(event), DeliveryReceivedMapper.toInput(delivery)));
+                event.id(),
+                event.type(),
+                actorOf(event),
+                DeliveryReceivedMapper.toInput(delivery),
+                DeliveryReceivedMapper.toEntries(delivery)));
     }
 
     /** Teslim girişini fasoncu yapar; olay her zaman onun kimliğini taşır (ShipmentTransitionWriter). */

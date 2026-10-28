@@ -384,6 +384,7 @@ Proje sahibi, başlangıçtaki açık konularda büyümeye uygun ve sonradan gel
 | KanitYuklendi | `EvidenceUploaded` | `com.yarnshipment.evidence.evidence-uploaded.v1` | evidence |
 | KanitGecersizSayildi | `EvidenceInvalidated` | `com.yarnshipment.evidence.evidence-invalidated.v1` | evidence |
 | KanitTekrarKullanimiTespitEdildi | `EvidenceReuseDetected` | `com.yarnshipment.evidence.evidence-reuse-detected.v1` | evidence |
+| FisOkundu | `TicketRead` | `com.yarnshipment.evidence.ticket-read.v1` | evidence |
 | KarsilastirmaTamamlandi | `ComparisonCompleted` | `com.yarnshipment.discrepancy.comparison-completed.v1` | discrepancy |
 | UyusmazlikAcildi | `DiscrepancyOpened` | `com.yarnshipment.discrepancy.discrepancy-opened.v1` | discrepancy |
 | UyusmazlikKarariVerildi | `DiscrepancyResolved` | `com.yarnshipment.discrepancy.discrepancy-resolved.v1` | discrepancy |

@@ -1,6 +1,7 @@
 package com.yarnshipment.discrepancy.domain.model;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -28,6 +29,13 @@ public record ComparisonResult(
         Objects.requireNonNull(shipmentId, "shipmentId");
         Objects.requireNonNull(quantityBand, "quantityBand");
         findings = List.copyOf(findings);
+    }
+
+    /** Bu sonuca ek bulgular, ör. kantar fişi kontrolleri, eklenmiş hali. */
+    public ComparisonResult plus(List<Finding> extra) {
+        List<Finding> all = new ArrayList<>(findings);
+        all.addAll(extra);
+        return new ComparisonResult(shipmentId, quantityBand, diffKg, diffPct, all);
     }
 
     /** Uyuşmazlık yoksa sevkiyat tamamlanır. */

@@ -58,6 +58,7 @@
         <jacoco.version>0.8.15</jacoco.version>
         <aws-sdk.version>2.31.50</aws-sdk.version>
         <openapi-generator.version>7.26.0</openapi-generator.version>
+        <anthropic-java.version>3.3.0</anthropic-java.version>
 
         <!-- TEST-08: satır kapsamı eşikleri -->
         <coverage.line.minimum>0.80</coverage.line.minimum>
@@ -119,6 +120,11 @@
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
                 <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.anthropic</groupId>
+                <artifactId>anthropic-java</artifactId>
+                <version>${anthropic-java.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

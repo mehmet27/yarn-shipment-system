@@ -3,15 +3,21 @@ package com.yarnshipment.discrepancy.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.discrepancy.TestComparisons;
+import com.yarnshipment.discrepancy.TestTickets;
 import com.yarnshipment.discrepancy.application.port.in.CompareDeliveryCommand;
 import com.yarnshipment.discrepancy.application.port.out.ComparisonPort;
 import com.yarnshipment.discrepancy.application.port.out.CompletedComparison;
 import com.yarnshipment.discrepancy.application.port.out.ProcessedEventPort;
+import com.yarnshipment.discrepancy.application.port.out.TicketReadingPort;
 import com.yarnshipment.discrepancy.domain.model.Band;
 import com.yarnshipment.discrepancy.domain.model.ComparisonInput;
 import com.yarnshipment.discrepancy.domain.model.DeliveryFigures;
+import com.yarnshipment.discrepancy.domain.model.Finding;
 import com.yarnshipment.discrepancy.domain.model.SealCondition;
+import com.yarnshipment.discrepancy.domain.model.TicketChecks;
 import com.yarnshipment.discrepancy.domain.model.ToleranceBands;
+import com.yarnshipment.discrepancy.domain.ticket.ShipmentTickets;
+import com.yarnshipment.discrepancy.domain.ticket.TicketReading;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -49,8 +55,24 @@ class CompareDeliveryServiceTest {
             saved.add(comparison);
         }
     };
+    private ShipmentTickets tickets = ShipmentTickets.NONE;
+    private final TicketReadingPort ticketReadings = new TicketReadingPort() {
+        @Override
+        public void saveReading(TicketReading reading, UUID actorId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ShipmentTickets findTickets(UUID shipmentId) {
+            return tickets;
+        }
+    };
     private final CompareDeliveryService service = new CompareDeliveryService(
-            processedEvents, at -> Optional.ofNullable(rule), comparisons, Clock.fixed(NOW, ZoneOffset.UTC));
+            processedEvents,
+            at -> Optional.ofNullable(rule),
+            comparisons,
+            ticketReadings,
+            Clock.fixed(NOW, ZoneOffset.UTC));
 
     @Test
     @DisplayName("Teslim karşılaştırılır; son tarih beş iş günü sonrasıdır ve olayı yapan kişi kaydedilir")
@@ -92,7 +114,20 @@ class CompareDeliveryServiceTest {
         assertThat(processed).hasSize(2);
     }
 
+    @Test
+    @DisplayName("O ana kadar okunmuş kantar fişleri girişlerle karşılaştırılır; tutmayan fiş uyuşmazlık açar")
+    void shouldAddTicketFindings() {
+        tickets = TestTickets.both(TestTickets.weights(), TestTickets.weights("2050.000", "100.000"));
+
+        service.compareDelivery(command(EVENT, TestComparisons.clean()));
+
+        assertThat(saved.getFirst().result().findings())
+                .extracting(Finding::ruleCode)
+                .containsExactly(TicketChecks.DELIVERY_WEIGHT_MISMATCH, TicketChecks.QUANTITY_TOLERANCE);
+        assertThat(saved.getFirst().result().quantityBand()).isEqualTo(Band.GREEN);
+    }
+
     private static CompareDeliveryCommand command(UUID eventId, ComparisonInput input) {
-        return new CompareDeliveryCommand(eventId, TYPE, ACTOR, input);
+        return new CompareDeliveryCommand(eventId, TYPE, ACTOR, input, TestTickets.entries());
     }
 }

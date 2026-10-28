@@ -8,6 +8,8 @@ import com.yarnshipment.evidence.domain.model.UploadIntentNotFoundException;
 import com.yarnshipment.evidence.domain.model.UploadMismatchException;
 import com.yarnshipment.evidence.domain.model.UploadNotAllowedException;
 import com.yarnshipment.evidence.domain.model.UploadNotCompletedException;
+import com.yarnshipment.evidence.domain.ticket.TicketReaderUnavailableException;
+import com.yarnshipment.evidence.domain.ticket.TicketReadingNotSupportedException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -61,5 +63,15 @@ public final class EvidenceExceptionHandler {
     @ExceptionHandler(ShipmentServiceUnavailableException.class)
     public ProblemDetail handleShipmentUnavailable(HttpServletRequest request) {
         return problems.create(request, HttpStatus.SERVICE_UNAVAILABLE, "SHIPMENT_SERVICE_UNAVAILABLE");
+    }
+
+    @ExceptionHandler(TicketReadingNotSupportedException.class)
+    public ProblemDetail handleReadingNotSupported(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.BAD_REQUEST, "TICKET_READING_NOT_SUPPORTED");
+    }
+
+    @ExceptionHandler(TicketReaderUnavailableException.class)
+    public ProblemDetail handleReaderUnavailable(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.SERVICE_UNAVAILABLE, "TICKET_READING_UNAVAILABLE");
     }
 }

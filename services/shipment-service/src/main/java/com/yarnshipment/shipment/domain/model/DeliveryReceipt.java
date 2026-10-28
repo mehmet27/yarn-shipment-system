@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.domain.model;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Gönderilmiş kör teslim tutanağı. Gönderildiği an kilitlenir (veritabanında {@code submitted_at}).
@@ -10,6 +11,7 @@ import java.util.UUID;
  * @param shipmentId sevkiyat
  * @param siteId çıkış lokasyonu
  * @param shipmentNo sevkiyat numarası; irsaliyedeki numarayla karşılaştırılır
+ * @param plateNo sevkiyatın araç plakası; kantar fişindeki plakayla karşılaştırılır
  * @param receivedBy tutanağı gönderen kullanıcı
  * @param receivedAt sunucunun tutanağı aldığı zaman (DOM-11)
  * @param weighing teslim tartısı
@@ -20,6 +22,7 @@ public record DeliveryReceipt(
         UUID shipmentId,
         UUID siteId,
         String shipmentNo,
+        @Nullable String plateNo,
         UUID receivedBy,
         Instant receivedAt,
         Weighing weighing,

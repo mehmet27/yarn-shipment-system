@@ -58,7 +58,7 @@ public final class Comparison {
     }
 
     /** Çıkış sıfırsa teslimde herhangi bir kilo sonsuz fark sayılır; iki taraf da sıfırsa fark yoktur. */
-    private static BigDecimal percentage(BigDecimal diffKg, BigDecimal dispatch) {
+    static BigDecimal percentage(BigDecimal diffKg, BigDecimal dispatch) {
         if (dispatch.signum() == 0) {
             return diffKg.signum() == 0 ? BigDecimal.ZERO.setScale(PCT_SCALE) : HUNDRED.setScale(PCT_SCALE);
         }

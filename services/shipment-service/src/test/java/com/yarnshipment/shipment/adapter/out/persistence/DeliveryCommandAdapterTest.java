@@ -116,6 +116,6 @@ class DeliveryCommandAdapterTest {
     private static DeliveryReceipt receipt() {
         var measurement = TestDeliveries.measurement();
         Weighing weighing = new Weighing(measurement.grossKg(), measurement.tareKg(), BAGS, NOW);
-        return new DeliveryReceipt(SHIPMENT, SITE, "SV-2", USER, NOW, weighing, measurement, ShipmentSide.EMPTY);
+        return new DeliveryReceipt(SHIPMENT, SITE, "SV-2", null, USER, NOW, weighing, measurement, ShipmentSide.EMPTY);
     }
 }

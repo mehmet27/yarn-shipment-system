@@ -209,7 +209,11 @@ EVIDENCE_DB_APP_PASSWORD=... EVIDENCE_DB_MIGRATOR_PASSWORD=... \
 EVIDENCE_STORAGE_ACCESS_KEY=... EVIDENCE_STORAGE_SECRET_KEY=... ./mvnw -pl services/evidence-service spring-boot:run
 ```
 
-İmzalı adres, `EVIDENCE_STORAGE_ENDPOINT` adresiyle üretilir; telefon ya da tarayıcının eriştiği adres olmalıdır. Kanıt görüntüleme, geçersiz kılma ve imzalı irsaliyenin teslim girişine bağlanması sonraki adımlardır.
+İmzalı adres, `EVIDENCE_STORAGE_ENDPOINT` adresiyle üretilir; telefon ya da tarayıcının eriştiği adres olmalıdır.
+
+`GET /api/v1/evidence/{evidenceId}` kanıt üst verisini (dosyayı değil), `GET /api/v1/evidence?shipmentId=` sevkiyatın kanıtlarını, `GET /api/v1/evidence/{evidenceId}/download-url` dosya için yaklaşık 5 dakika geçerli imzalı indirme adresini verir. Üçü de kör girişe uyar: depo teslim fotoğraflarını, fasoncu çıkış fotoğraflarını karşılaştırma bitene kadar (sevkiyat `IN_REVIEW` ya da `COMPLETED` olana kadar) görmez, şoför yalnızca plaka fotoğrafını görür; görünmeyen kanıt listede yer almaz ve tek tek istenirse `404 EVIDENCE_NOT_FOUND` döner. Mühür fotoğrafı hangi aşamada çekildiği kayıtlı olmadığı için çıkış tarafı sayılır.
+
+shipment-service teslim girişinde `document.signedDocumentEvidenceId` verilirse kanıtı bu servisten doğrular: yoksa, başka sevkiyata aitse ya da türü `SIGNED_DELIVERY_DOC` değilse `422 DELIVERY_EVIDENCE_INVALID`, servise ulaşılamazsa `502 EVIDENCE_SERVICE_UNAVAILABLE` (adres: `yarnshipment.evidence-service.url`, varsayılan `http://localhost:8086`). Geçersiz kılma sonraki adımdır.
 
 ## common-web (ortak web altyapısı)
 

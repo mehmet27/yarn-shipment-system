@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
+import { captureTicket } from '@/test/ticket';
 import { renderApp } from '@/test/renderApp';
 
 const next = () => userEvent.click(screen.getByRole('button', { name: 'İleri' }));
@@ -27,6 +28,8 @@ describe('DeliveryReceiptPage', () => {
     await userEvent.type(screen.getByLabelText('Dara (kg)'), '17');
     await userEvent.type(screen.getByLabelText('Tartılan çuval sayısı'), '2');
     expect(screen.getByText('Net: 1.978,25 kg')).toBeInTheDocument();
+    await captureTicket();
+    expect(await screen.findByText('Fiş okundu')).toBeInTheDocument();
     await next();
     await next();
 

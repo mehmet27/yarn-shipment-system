@@ -4,11 +4,15 @@ export {
   confirmEvidenceUpload,
   EvidenceSource,
   EvidenceType,
+  ReadingProblem,
+  readEvidenceTicket,
   requestEvidenceUpload,
+  TicketReadingStatus,
 } from './generated/evidenceService';
 export type {
   EvidenceView,
   RequestUploadRequest,
+  TicketReadingView,
   UploadTicketView,
 } from './generated/evidenceService';
 

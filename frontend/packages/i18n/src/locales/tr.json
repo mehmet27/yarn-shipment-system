@@ -174,7 +174,8 @@
       "bagKeysRequired": "En az bir çuval okutun.",
       "invalidKg": "Kiloyu 1.982,5 biçiminde girin.",
       "tareExceedsGross": "Dara brütten büyük olamaz.",
-      "invalidBagCount": "Çuval sayısı 1 veya daha büyük bir tam sayı olmalı."
+      "invalidBagCount": "Çuval sayısı 1 veya daha büyük bir tam sayı olmalı.",
+      "ticketRequired": "Devam etmek için kantar fişinin fotoğrafı gerekli."
     },
     "stepOf": "Adım {{current}}/{{total}}: {{name}}"
   },
@@ -194,7 +195,8 @@
       "invalidKg": "Kiloyu 1.982,5 biçiminde girin.",
       "tareExceedsGross": "Dara brütten büyük olamaz.",
       "invalidBagCount": "Çuval sayısı 1 veya daha büyük bir tam sayı olmalı.",
-      "sealNoRequired": "Mühür numarasını girin."
+      "sealNoRequired": "Mühür numarasını girin.",
+      "ticketRequired": "Devam etmek için kantar fişinin fotoğrafı gerekli."
     },
     "grossKg": "Brüt (kg)",
     "tareKg": "Dara (kg)"
@@ -376,6 +378,47 @@
       "SHIPMENT_SERVICE_UNAVAILABLE": "Sevkiyat doğrulanamadı. Lütfen biraz sonra tekrar deneyin.",
       "storage": "Dosya depoya gönderilemedi. Bağlantıyı kontrol edip tekrar deneyin.",
       "unknown": "Dosya yüklenemedi. Lütfen tekrar deneyin."
+    }
+  },
+  "ticket": {
+    "title": "Kantar fişi",
+    "guide": "Fişi çerçeveye sığdırın, düz tutun; parlama ve gölge olmasın.",
+    "capture": "Fişin fotoğrafını çek",
+    "retake": "Yeniden çek",
+    "send": "Fotoğrafı gönder",
+    "previewAlt": "Çekilen kantar fişi",
+    "readTitle": "Fiş okundu",
+    "readValues": "Brüt {{gross}}, dara {{tare}}, net {{net}}",
+    "unreadable": "Kilo bilgisi okunamadı, lütfen tekrar çekin",
+    "skipped": "Fiş okuma servisi şu an kapalı; fotoğraf kaydedildi, devam edebilirsiniz.",
+    "displayDone": "Kantar ekranı fotoğrafı kaydedildi, devam edebilirsiniz.",
+    "unverified": "Fiş doğrulanmadan devam edilecek (K0 doğrulanamadı).",
+    "quality": {
+      "BLURRY": "Fotoğraf bulanık görünüyor; yeniden çekmeniz önerilir.",
+      "GLARE": "Fotoğrafta parlama var; yeniden çekmeniz önerilir."
+    },
+    "problems": {
+      "WEIGHT_NOT_READ": "Kilolar okunamadı.",
+      "WEIGHT_INCONSISTENT": "Okunan kilolar tutarsız.",
+      "ARITHMETIC_MISMATCH": "Brüt, dara ve net birbirini tutmuyor.",
+      "DATE_OUT_OF_RANGE": "Fişteki tarih beklenen aralığın dışında.",
+      "BLURRY": "Fotoğraf bulanık.",
+      "GLARE": "Fotoğrafta parlama var.",
+      "CROPPED": "Fiş kadraja tam sığmamış.",
+      "NOT_A_TICKET": "Bu bir kantar fişine benzemiyor.",
+      "UNSUPPORTED_FORMAT": "Fiş biçimi desteklenmiyor."
+    },
+    "fallback": {
+      "intro": "Üç denemede de okunamadı. Kantar ekranını çekin ya da gerekçeyi seçip devam edin.",
+      "display": "Kantar ekranını çek",
+      "reason": "Gerekçe",
+      "continue": "Gerekçeyle devam et",
+      "reasons": {
+        "PRINTER_BROKEN": "Yazıcı çalışmıyor",
+        "TICKET_DAMAGED": "Fiş hasarlı",
+        "NO_TICKET": "Fiş çıkmadı",
+        "OTHER": "Diğer"
+      }
     }
   }
 }

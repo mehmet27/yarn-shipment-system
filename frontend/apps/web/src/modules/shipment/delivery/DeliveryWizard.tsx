@@ -35,6 +35,7 @@ export function DeliveryWizard({ shipmentId, onSubmitted }: DeliveryWizardProps)
       <WizardProgress active={active} />
       <StepContent
         step={step}
+        shipmentId={shipmentId}
         draft={draft}
         onChange={(patch) => {
           setDraft({ ...draft, ...patch });

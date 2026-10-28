@@ -42,7 +42,14 @@ export const theme = createTheme({
     Alert: { defaultProps: { radius: 'md', variant: 'light' } },
     Table: { defaultProps: { highlightOnHover: true, verticalSpacing: 'sm' } },
     AppShell: { styles: { header: { boxShadow: 'var(--mantine-shadow-xs)', borderBottom: 0 } } },
-    Button: { defaultProps: { size: 'lg' } },
+    // Dar ekranda uzun etiketler kesilmesin: etiket satır atlar, düğme yüksekliği uzar.
+    Button: {
+      defaultProps: { size: 'lg' },
+      styles: {
+        root: { height: 'auto', minHeight: 'var(--button-height)', paddingBlock: 8 },
+        label: { whiteSpace: 'normal', textAlign: 'center' },
+      },
+    },
     TextInput: { defaultProps: { size: 'lg' } },
     Select: { defaultProps: { size: 'lg' } },
     Burger: {

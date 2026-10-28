@@ -1,4 +1,5 @@
 import type { DeliveryDocument, DeliveryReceiptRequest, SealCondition } from '@iplik/api-client';
+import type { TicketOutcome } from '@/modules/evidence';
 import type { Kilogram } from '@iplik/units';
 import { calculateNetKg, parseKg } from '@iplik/units';
 
@@ -20,6 +21,7 @@ export type DeliveryDraft = {
   grossKg: string;
   tareKg: string;
   bagCount: string;
+  ticket: TicketOutcome | undefined;
   document: DocumentDraft;
 };
 
@@ -33,7 +35,8 @@ export type DraftError =
   | 'bagKeysRequired'
   | 'invalidKg'
   | 'tareExceedsGross'
-  | 'invalidBagCount';
+  | 'invalidBagCount'
+  | 'ticketRequired';
 
 export const EMPTY_DRAFT: DeliveryDraft = {
   sealCondition: undefined,
@@ -42,6 +45,7 @@ export const EMPTY_DRAFT: DeliveryDraft = {
   grossKg: '',
   tareKg: '',
   bagCount: '',
+  ticket: undefined,
   document: { shipmentNo: '', date: '', netKg: '', bagCount: '' },
 };
 
@@ -76,7 +80,8 @@ function validateSeal(draft: DeliveryDraft): DraftError | undefined {
 function validateWeighing(draft: DeliveryDraft): DraftError | undefined {
   const weighing = parseWeighing(draft);
   if (typeof weighing === 'string') return weighing;
-  return parseCount(draft.bagCount) === undefined ? 'invalidBagCount' : undefined;
+  if (parseCount(draft.bagCount) === undefined) return 'invalidBagCount';
+  return draft.ticket === undefined ? 'ticketRequired' : undefined;
 }
 
 function validateDocument({ netKg, bagCount }: DocumentDraft): DraftError | undefined {

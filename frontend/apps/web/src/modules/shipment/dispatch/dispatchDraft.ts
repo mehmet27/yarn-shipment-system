@@ -1,4 +1,5 @@
 import type { DispatchWeighingRequest } from '@iplik/api-client';
+import type { TicketOutcome } from '@/modules/evidence';
 import type { Kilogram } from '@iplik/units';
 import { calculateNetKg, parseKg } from '@iplik/units';
 
@@ -9,10 +10,12 @@ export type DispatchDraft = {
   bagCount: string;
   scaleTicketNo: string;
   sealNo: string;
+  ticket: TicketOutcome | undefined;
 };
 
 /** i18n anahtarı (`dispatch.errors.*`). */
-export type DispatchError = 'invalidKg' | 'tareExceedsGross' | 'invalidBagCount' | 'sealNoRequired';
+export type DispatchError =
+  'invalidKg' | 'tareExceedsGross' | 'invalidBagCount' | 'sealNoRequired' | 'ticketRequired';
 
 export const EMPTY_DISPATCH_DRAFT: DispatchDraft = {
   grossKg: '',
@@ -20,6 +23,7 @@ export const EMPTY_DISPATCH_DRAFT: DispatchDraft = {
   bagCount: '',
   scaleTicketNo: '',
   sealNo: '',
+  ticket: undefined,
 };
 
 export type DispatchWeighing = { grossKg: Kilogram; tareKg: Kilogram; netKg: Kilogram };
@@ -42,7 +46,8 @@ export function validateDispatch(draft: DispatchDraft): DispatchError | undefine
   const weighing = parseDispatchWeighing(draft);
   if (typeof weighing === 'string') return weighing;
   if (parseBagCount(draft.bagCount) === undefined) return 'invalidBagCount';
-  return draft.sealNo.trim() === '' ? 'sealNoRequired' : undefined;
+  if (draft.sealNo.trim() === '') return 'sealNoRequired';
+  return draft.ticket === undefined ? 'ticketRequired' : undefined;
 }
 
 /** Tüm alanlar geçerliyse sözleşmedeki isteği kurar; boş kantar fişi isteğe girmez. */
@@ -51,6 +56,7 @@ export function toDispatchRequest(draft: DispatchDraft): DispatchWeighingRequest
   const bagCount = parseBagCount(draft.bagCount);
   if (typeof weighing === 'string' || bagCount === undefined) return undefined;
   const sealNo = draft.sealNo.trim();
+  if (draft.ticket === undefined) return undefined;
   const scaleTicketNo = draft.scaleTicketNo.trim();
   if (sealNo === '') return undefined;
   return {

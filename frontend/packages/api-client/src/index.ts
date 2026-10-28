@@ -112,8 +112,16 @@ export {
   confirmEvidenceUpload,
   EvidenceSource,
   EvidenceType,
+  ReadingProblem,
+  readEvidenceTicket,
   requestEvidenceUpload,
   StorageUploadError,
+  TicketReadingStatus,
   uploadToStorage,
 } from './evidence';
-export type { EvidenceView, RequestUploadRequest, UploadTicketView } from './evidence';
+export type {
+  EvidenceView,
+  RequestUploadRequest,
+  TicketReadingView,
+  UploadTicketView,
+} from './evidence';

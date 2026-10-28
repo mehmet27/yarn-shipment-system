@@ -51,6 +51,11 @@ const browser = await chromium.launch({
     : { channel: 'chrome' }),
   args: ['--no-sandbox'],
 });
+// Düğme yazısı kapsayıcısından geniş olursa (kesilmiş) etiketin metnini döner.
+const findClippedLabels = () =>
+  [...document.querySelectorAll('.mantine-Button-label')]
+    .filter((el) => el.scrollWidth > el.clientWidth + 1)
+    .map((el) => (el.textContent ?? '').slice(0, 40));
 const problems = [];
 for (const width of WIDTHS) {
   for (const [role, path] of SCREENS) {
@@ -64,8 +69,10 @@ for (const width of WIDTHS) {
     // Dokunma hedefi kuralı dokunmatik genişliklerde (< 768 px) geçerlidir; fare için gevşektir.
     const small =
       width < TOUCH_MAX_WIDTH_PX ? await page.evaluate(findSmallTargets, MIN_TARGET_PX) : [];
+    const clipped = await page.evaluate(findClippedLabels);
     const label = `${width}px ${role} ${path}`;
     if (overflow > 0) problems.push(`${label}: yatay taşma ${overflow}px`);
+    for (const text of clipped) problems.push(`${label}: kesik düğme yazısı "${text}"`);
     for (const item of small) problems.push(`${label}: küçük hedef ${item}`);
     if (shotsDir) {
       const name = `${width}-${role}-${path.replaceAll('/', '_')}`;

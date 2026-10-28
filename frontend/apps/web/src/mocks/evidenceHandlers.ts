@@ -8,6 +8,8 @@ const STORAGE_URL = 'https://mock-storage.local/evidence';
 const MAX_BYTES = 20 * 1024 * 1024;
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/heic', 'application/pdf'];
 const TICKET_TTL_MS = 600_000;
+/** Bu boyutun altındaki yüklemeler "okunamayan fiş" sayılır; testler iki yolu da seçebilir. */
+export const UNREADABLE_BELOW_BYTES = 1000;
 
 type Pending = {
   shipmentId: string;
@@ -63,6 +65,28 @@ export function createEvidenceHandlers(permissions: readonly Permission[]) {
     http.put(`${STORAGE_URL}/:evidenceId`, ({ params }) => {
       uploaded.add(String(params.evidenceId));
       return new HttpResponse(null, { status: 200 });
+    }),
+    http.post('/api/v1/evidence/:evidenceId/ticket-reading', ({ params }) => {
+      const id = String(params.evidenceId);
+      const ticket = pending.get(id);
+      if (ticket === undefined) return problem(404, 'UPLOAD_NOT_FOUND');
+      const base = {
+        evidenceId: id,
+        shipmentId: ticket.shipmentId,
+        evidenceType: ticket.evidenceType,
+        readAt: new Date().toISOString(),
+      };
+      if (ticket.sizeBytes < UNREADABLE_BELOW_BYTES) {
+        return HttpResponse.json({ ...base, status: 'UNREADABLE', problems: ['WEIGHT_NOT_READ'] });
+      }
+      return HttpResponse.json({
+        ...base,
+        status: 'READ',
+        grossKg: 12500,
+        tareKg: 2500,
+        netKg: 10000,
+        problems: [],
+      });
     }),
     http.post(`${EVIDENCE_PATH}/:evidenceId/confirm`, ({ params }) => {
       const id = String(params.evidenceId);

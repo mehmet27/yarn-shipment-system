@@ -8,9 +8,14 @@ const VALID: DispatchDraft = {
   bagCount: '40',
   scaleTicketNo: ' KF-1 ',
   sealNo: ' M-77 ',
+  ticket: { kind: 'READ' },
 };
 
 describe('dispatchDraft', () => {
+  it('fiş sonucu yoksa devam ettirmez', () => {
+    expect(validateDispatch({ ...VALID, ticket: undefined })).toBe('ticketRequired');
+  });
+
   it('geçerli taslağı API biçiminde isteğe çevirir', () => {
     expect(toDispatchRequest(VALID)).toEqual({
       grossKg: '2000.000',

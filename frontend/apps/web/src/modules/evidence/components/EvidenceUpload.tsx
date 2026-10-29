@@ -5,7 +5,8 @@ import { Alert, Paper, Select, Stack, Title } from '@iplik/ui';
 import { useState } from 'react';
 import { useCurrentUser } from '@/modules/auth';
 import { useUploadEvidence } from '../hooks/useUploadEvidence';
-import { MAX_SIZE_BYTES, UPLOAD_PERMISSION_BY_TYPE } from '../uploadTypes';
+import { ACCEPTED_MIME_TYPES, fileProblem, UPLOAD_PERMISSION_BY_TYPE } from '../uploadTypes';
+import type { FileProblem } from '../uploadTypes';
 import { uploadErrorKey } from '../uploadErrors';
 import { UploadButtons } from './UploadButtons';
 
@@ -17,14 +18,15 @@ export function EvidenceUpload({ shipmentId }: { shipmentId: string }) {
     user.data?.permissions.includes(UPLOAD_PERMISSION_BY_TYPE[type]),
   );
   const [selected, setSelected] = useState<EvidenceType>();
-  const [isTooLarge, setTooLarge] = useState(false);
+  const [problem, setProblem] = useState<FileProblem>();
   const mutation = useUploadEvidence(shipmentId);
   const evidenceType = selected ?? allowed[0];
   if (evidenceType === undefined) return null;
   const upload = (file: File | null, source: EvidenceSource) => {
     if (file === null) return;
-    setTooLarge(file.size > MAX_SIZE_BYTES);
-    if (file.size <= MAX_SIZE_BYTES) mutation.mutate({ file, evidenceType, source });
+    const found = fileProblem(file, ACCEPTED_MIME_TYPES);
+    setProblem(found);
+    if (found === undefined) mutation.mutate({ file, evidenceType, source });
   };
   return (
     <Paper withBorder p="md">
@@ -40,7 +42,7 @@ export function EvidenceUpload({ shipmentId }: { shipmentId: string }) {
           allowDeselect={false}
         />
         <UploadButtons isLoading={mutation.isPending} onPick={upload} />
-        {isTooLarge && <Alert color="red">{t('evidence.errors.tooLarge')}</Alert>}
+        {problem !== undefined && <Alert color="red">{t(`evidence.errors.${problem}`)}</Alert>}
         {mutation.isError && <Alert color="red">{t(uploadErrorKey(mutation.error))}</Alert>}
         {mutation.isSuccess && <Alert color="green">{t('evidence.done')}</Alert>}
       </Stack>

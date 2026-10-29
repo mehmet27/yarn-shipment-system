@@ -19,3 +19,19 @@ export const ACCEPT = ACCEPTED_MIME_TYPES.join(',');
 const MAX_SIZE_MB = 20;
 const BYTES_PER_MB = 1_048_576;
 export const MAX_SIZE_BYTES = MAX_SIZE_MB * BYTES_PER_MB;
+
+/** Kantar fişi yalnızca fotoğraftır; PDF kabul edilmez. */
+export const PHOTO_MIME_TYPES = ACCEPTED_MIME_TYPES.filter((type) => type.startsWith('image/'));
+
+/** Bazı tarayıcılar HEIC dosyasının türünü boş bırakır; uzantıdan tanınır. */
+const HEIC_EXTENSION = /\.hei[cf]$/i;
+
+/** i18n anahtarı (`evidence.errors.*`). `accept` yalnızca ipucudur; dosya burada denetlenir (H-20). */
+export type FileProblem = 'tooLarge' | 'wrongType';
+
+export function fileProblem(file: File, types: readonly string[]): FileProblem | undefined {
+  const isHeic = file.type === '' && HEIC_EXTENSION.test(file.name);
+  const isAccepted = types.includes(file.type) || (isHeic && types.includes('image/heic'));
+  if (!isAccepted) return 'wrongType';
+  return file.size > MAX_SIZE_BYTES ? 'tooLarge' : undefined;
+}

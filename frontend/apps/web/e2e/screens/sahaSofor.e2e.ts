@@ -20,6 +20,7 @@ test.describe('Saha: şoför', { tag: '@saha' }, () => {
     async ({ page, openAs }) => {
       await openAs('DRIVER', '/saha/sevkiyat/shp-0010');
       await page.getByRole('button', { name: 'Yükü teslim aldım' }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Evet, teslim aldım' }).click();
       await expect(page.getByText('Yolda', { exact: true })).toBeVisible();
       await page.getByRole('button', { name: 'Vardım, mühür sağlam' }).click();
       await expect(page.getByText('Teslim bekliyor', { exact: true })).toBeVisible();
@@ -29,5 +30,16 @@ test.describe('Saha: şoför', { tag: '@saha' }, () => {
   test('başkasının sevkiyatında yetki uyarısı görür', async ({ page, openAs }) => {
     await openAs('DRIVER', '/saha/sevkiyat/shp-0002');
     await expect(page.getByRole('alert')).toContainText('Bu sayfayı görme yetkiniz yok.');
+  });
+
+  // H-18: geri alınamaz adım onaysız yapılmaz.
+  test('teslim almadan önce onay sorar; vazgeçince durum değişmez', async ({ page, openAs }) => {
+    await openAs('DRIVER', '/saha/sevkiyat/shp-0010');
+    await page.getByRole('button', { name: 'Yükü teslim aldım' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Yükü teslim aldınız mı?' });
+    await expect(dialog).toContainText('Bu adım geri alınamaz.');
+    await dialog.getByRole('button', { name: 'Vazgeç' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByText('Yüklendi', { exact: true })).toBeVisible();
   });
 });

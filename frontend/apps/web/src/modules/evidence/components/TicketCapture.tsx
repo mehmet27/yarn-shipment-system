@@ -49,7 +49,7 @@ export function TicketCapture({
             }}
           />
         )}
-        <TicketStatus last={flow.last} outcome={outcome} />
+        <TicketStatus problem={flow.problem} last={flow.last} outcome={outcome} />
         {mutation.isError && <Alert color="red">{t(uploadErrorKey(mutation.error))}</Alert>}
         {isFallback ? (
           <TicketFallback

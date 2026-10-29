@@ -50,9 +50,12 @@ export const EMPTY_DRAFT: DeliveryDraft = {
   document: { shipmentNo: '', date: '', netKg: '', bagCount: '', signedDocumentEvidenceId: '' },
 };
 
-/** Tekrar okutulan anahtar listeye ikinci kez eklenmez; backend de tekrarları bir kez sayar. */
+/**
+ * Tekrar okutulan anahtar listeye ikinci kez eklenmez; backend de tekrarları bir kez sayar. Anahtar
+ * büyük harfe çevrilir, böylece "bag-0002" ile "BAG-0002" aynı çuval sayılır (H-17).
+ */
 export function addBagKey(keys: readonly string[], input: string): readonly string[] {
-  const key = input.trim();
+  const key = input.trim().toUpperCase();
   if (key === '' || keys.includes(key) || keys.length >= MAX_BAG_KEYS) return keys;
   return [...keys, key];
 }

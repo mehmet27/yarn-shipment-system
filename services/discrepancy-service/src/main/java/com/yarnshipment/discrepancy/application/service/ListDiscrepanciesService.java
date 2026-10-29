@@ -9,7 +9,10 @@ import com.yarnshipment.discrepancy.application.port.out.DiscrepancyQueryPort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Kullanıcının lokasyon kapsamındaki uyuşmazlıkları listeler; dış roller hiçbir şey görmez. */
+/**
+ * Kullanıcının lokasyon kapsamındaki uyuşmazlıkları listeler. Fasoncu yalnızca kendi sevkiyatlarınınkini görür
+ * (sorgu {@code subcontractor_id} ile süzülür); şoför hiçbir şey görmez.
+ */
 @Service
 public class ListDiscrepanciesService implements ListDiscrepanciesUseCase {
 
@@ -25,9 +28,8 @@ public class ListDiscrepanciesService implements ListDiscrepanciesUseCase {
     @Transactional(readOnly = true)
     public DiscrepancyPage listDiscrepancies(ListDiscrepanciesQuery query) {
         AccessScope scope = scopeGuard.scopeOf(query.actor());
-        boolean external = scope.subcontractorId() != null || scope.driverId() != null;
         boolean noSites = !scope.allSites() && scope.siteIds().isEmpty();
-        if (external || noSites) {
+        if (scope.driverId() != null || noSites) {
             return DiscrepancyPage.empty(query.page(), query.size());
         }
         return queryPort.findDiscrepancies(query.filter(), scope, query.page(), query.size());

@@ -22,7 +22,7 @@ class DeliveryReceivedContractTest {
             .build();
 
     @Test
-    @DisplayName("Teslim olayı sözleşme kaydına okunur; bağlam, plaka, irsaliye ve mühür durumu taşınır")
+    @DisplayName("Teslim olayı sözleşme kaydına okunur; bağlam, plaka, fasoncu, irsaliye ve mühür durumu taşınır")
     void shouldMatchEventContract() {
         // given
         DeliveryReceipt receipt = TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY)
@@ -42,6 +42,7 @@ class DeliveryReceivedContractTest {
         assertThat(context.siteId()).isEqualTo(TestShipments.SITE_ID);
         assertThat(context.shipmentNo()).isEqualTo("SV-2026-000123");
         assertThat(context.plateNo()).isEqualTo("34ABC123");
+        assertThat(context.subcontractorId()).isEqualTo(TestShipments.SUBCONTRACTOR_ID);
         assertThat(context.document().signedDocumentEvidenceId()).isNull();
         assertThat(com.yarnshipment.events.shipment.DeliveryReceived.TYPE).isEqualTo(DeliveryReceived.TYPE);
     }

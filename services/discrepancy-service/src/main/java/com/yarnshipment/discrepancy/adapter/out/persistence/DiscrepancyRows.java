@@ -34,8 +34,10 @@ final class DiscrepancyRows {
         return new Discrepancy(
                 requiredUuid(rs, "id"),
                 rs.getString("discrepancy_no"),
-                requiredUuid(rs, "site_id"),
-                requiredUuid(rs, "shipment_id"),
+                new Discrepancy.Origin(
+                        requiredUuid(rs, "site_id"),
+                        requiredUuid(rs, "shipment_id"),
+                        optionalUuid(rs, "subcontractor_id")),
                 basis,
                 measure,
                 DiscrepancyStatus.valueOf(rs.getString("status")),

@@ -126,7 +126,7 @@ Unique Key'in tek kullanımı burada, tek veritabanı işlemiyle garanti edilir.
 | Tablo | Önemli kolonlar | Kısıt / not |
 | --- | --- | --- |
 | `tolerance_rule` (tolerans) | product\_id (boş = genel), green\_max\_pct, yellow\_max\_pct, valid\_from, valid\_to | geçerlilik aralıkları çakışamaz (exclusion constraint) |
-| `discrepancy` (uyuşmazlık) | discrepancy\_no, site\_id, shipment\_id, type (QUANTITY, BAG, SEAL, QUALITY, DOCUMENT, PHOTO, TIME), severity (YELLOW, RED), status (OPEN, IN\_REVIEW, RESOLVED, CLOSED), rule\_code, expected\_value, actual\_value, diff\_kg, diff\_pct, assignee\_id, due\_at, resolution (TOLERANCE, DATA\_ERROR, CLAIM\_JUSTIFIED, CLAIM\_UNJUSTIFIED, LIABILITY\_ASSIGNED), resolution\_note, liable\_party, resolved\_by, resolved\_at, closed\_at | discrepancy\_no unique; RESOLVED için resolution ve not zorunlu (CHECK) |
+| `discrepancy` (uyuşmazlık) | discrepancy\_no, site\_id, shipment\_id, subcontractor\_id (fasoncunun kendi kayıtlarını görmesi için; eski kayıtlarda boş), type (QUANTITY, BAG, SEAL, QUALITY, DOCUMENT, PHOTO, TIME), severity (YELLOW, RED), status (OPEN, IN\_REVIEW, RESOLVED, CLOSED), rule\_code, expected\_value, actual\_value, diff\_kg, diff\_pct, assignee\_id, due\_at, resolution (TOLERANCE, DATA\_ERROR, CLAIM\_JUSTIFIED, CLAIM\_UNJUSTIFIED, LIABILITY\_ASSIGNED), resolution\_note, liable\_party, resolved\_by, resolved\_at, closed\_at | discrepancy\_no unique; RESOLVED için resolution ve not zorunlu (CHECK) |
 | `discrepancy_activity` | discrepancy\_id, action\_type, note, evidence\_id, actor\_id, occurred\_at | yalnızca ekleme; yaşam döngüsü geçmişi |
 | `quality_claim` (kalite itirazı) | discrepancy\_id, shipment\_id, subcontractor\_id, opened\_by, opened\_at, deadline\_at, description | deadline = teslim + 3 iş günü (rapor karar #7) |
 | `quality_claim_bag` | claim\_id, bag\_id, unique\_key | PK (claim\_id, bag\_id) |
@@ -171,6 +171,7 @@ Veri hacmi küçük-orta ölçekte; büyüyen tek tablolar `audit_log` ve `evide
 | discrepancy\_db | `discrepancy (status, severity, due_at)` | Süresi geçen uyuşmazlıklar, dashboard |
 | discrepancy\_db | `discrepancy (shipment_id)` | Sevkiyat dosyası |
 | discrepancy\_db | `discrepancy (assignee_id, status)` | "Bana atananlar" listesi |
+| discrepancy\_db | `discrepancy (subcontractor_id, status)` | Fasoncunun kendi uyuşmazlıkları |
 | audit\_db | `audit_log (entity_type, entity_id, occurred_at)` | Bir kaydın geçmişi |
 | audit\_db | `audit_log (actor_user_id, occurred_at)` | Kullanıcı bazında düzeltme raporu |
 | reporting\_db | `shipment_view (status, completed_at)` | Dashboard |

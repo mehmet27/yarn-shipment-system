@@ -18,6 +18,7 @@ import org.jspecify.annotations.Nullable;
  * @param expectedKeys sevkiyattaki çuvalların anahtarları
  * @param scannedKeys teslimde okutulan anahtarlar
  * @param document irsaliye değerleri
+ * @param subcontractorId sevkiyatın fasoncusu; bağlamında fasoncu taşımayan eski olaylarda boş
  */
 public record ComparisonInput(
         UUID shipmentId,
@@ -28,7 +29,8 @@ public record ComparisonInput(
         DeliveryFigures delivery,
         List<String> expectedKeys,
         List<String> scannedKeys,
-        DocumentFigures document) {
+        DocumentFigures document,
+        @Nullable UUID subcontractorId) {
 
     public ComparisonInput {
         Objects.requireNonNull(shipmentId, "shipmentId");

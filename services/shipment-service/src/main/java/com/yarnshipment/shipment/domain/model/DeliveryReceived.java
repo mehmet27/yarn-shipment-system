@@ -54,7 +54,12 @@ public record DeliveryReceived(
                 measurement.scannedKeys().stream().sorted().toList(),
                 new SealState(receipt.dispatch().sealNo(), null),
                 new SealState(measurement.sealNo(), measurement.sealCondition()),
-                new Context(receipt.siteId(), receipt.shipmentNo(), receipt.plateNo(), measurement.document()));
+                new Context(
+                        receipt.siteId(),
+                        receipt.shipmentNo(),
+                        receipt.plateNo(),
+                        measurement.document(),
+                        receipt.subcontractorId()));
     }
 
     /**
@@ -88,7 +93,12 @@ public record DeliveryReceived(
      * @param shipmentNo sevkiyat numarası
      * @param plateNo araç plakası; araç girilmediyse boş
      * @param document irsaliye değerleri ve imzalı belge
+     * @param subcontractorId sevkiyatın fasoncusu; uyuşmazlıklar fasoncunun kapsamına bu kimlikle bağlanır
      */
     public record Context(
-            UUID siteId, String shipmentNo, @Nullable String plateNo, DeliveryDocument document) {}
+            UUID siteId,
+            String shipmentNo,
+            @Nullable String plateNo,
+            DeliveryDocument document,
+            UUID subcontractorId) {}
 }

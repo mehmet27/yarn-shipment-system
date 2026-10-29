@@ -98,6 +98,15 @@ public record Shipment(
         Weighing weighing =
                 new Weighing(measurement.grossKg(), measurement.tareKg(), measurement.bagCount(), receivedAt);
         return new DeliveryReceipt(
-                id, siteId, shipmentNo, parties.plateNo(), receivedBy, receivedAt, weighing, measurement, dispatch);
+                id,
+                siteId,
+                shipmentNo,
+                parties.plateNo(),
+                parties.subcontractorId(),
+                receivedBy,
+                receivedAt,
+                weighing,
+                measurement,
+                dispatch);
     }
 }

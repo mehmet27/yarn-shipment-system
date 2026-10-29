@@ -9,8 +9,9 @@ import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotFoundException;
 import java.util.UUID;
 
 /**
- * Uyuşmazlığı yükler ve kapsam kontrolünden geçirir. Uyuşmazlık fasoncu ya da şoföre bağlı olmadığı için dış roller
- * kapsam dışında kalır: iki tarafın değerlerini yan yana gören tek yer bu servistir (SEC-06).
+ * Uyuşmazlığı yükler ve kapsam kontrolünden geçirir. Fasoncu yalnızca kendi sevkiyatının uyuşmazlığını görür
+ * (yetki matrisi, {@code DISCREPANCY_VIEW} "kendi"); uyuşmazlık karşılaştırmadan sonra açıldığı için kör giriş
+ * bozulmaz. Şoföre bağlı uyuşmazlık yoktur, şoför kapsam dışında kalır.
  */
 final class DiscrepancyAccess {
 
@@ -29,7 +30,10 @@ final class DiscrepancyAccess {
                 .findDiscrepancy(discrepancyId)
                 .orElseThrow(() -> new DiscrepancyNotFoundException(discrepancyId));
         scopeGuard.validateInScope(
-                actor, new ScopedResource(RESOURCE_TYPE, discrepancy.id(), discrepancy.siteId(), null, null), action);
+                actor,
+                new ScopedResource(
+                        RESOURCE_TYPE, discrepancy.id(), discrepancy.siteId(), discrepancy.subcontractorId(), null),
+                action);
         return discrepancy;
     }
 }

@@ -27,7 +27,9 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
     >
       <Stack>
         <Group>
-          <Title order={2}>{shipment.shipmentNo}</Title>
+          <Title order={1} size="h2">
+            {shipment.shipmentNo}
+          </Title>
           <ShipmentStatusBadge status={shipment.status} />
         </Group>
         <SimpleGrid cols={{ base: 2, md: 4 }}>

@@ -20,7 +20,9 @@ export function DiscrepancyListPage() {
   });
   return (
     <Stack>
-      <Title order={2}>{t('discrepancy.list.title')}</Title>
+      <Title order={1} size="h2">
+        {t('discrepancy.list.title')}
+      </Title>
       <Group grow align="flex-end">
         <Select
           label={t('discrepancy.list.statusFilter')}

@@ -8,7 +8,9 @@ export function MasterDataPage() {
   const { t } = useTranslation();
   return (
     <Stack>
-      <Title order={2}>{t('masterData.title')}</Title>
+      <Title order={1} size="h2">
+        {t('masterData.title')}
+      </Title>
       <Tabs defaultValue={MANAGED_KINDS[0]} keepMounted={false}>
         <Tabs.List>
           {MANAGED_KINDS.map((kind) => (

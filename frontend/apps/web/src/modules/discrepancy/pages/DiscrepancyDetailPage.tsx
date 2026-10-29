@@ -22,7 +22,9 @@ export function DiscrepancyDetailPage() {
             {t('discrepancy.back')}
           </Anchor>
           <Group justify="space-between">
-            <Title order={2}>{discrepancy.discrepancyNo}</Title>
+            <Title order={1} size="h2">
+              {discrepancy.discrepancyNo}
+            </Title>
             <DiscrepancyBadges discrepancy={discrepancy} />
           </Group>
           <Anchor component={Link} to={`/panel/sevkiyat/${discrepancy.shipmentId}`}>

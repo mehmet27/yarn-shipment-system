@@ -21,7 +21,9 @@ export function DispatchWeighingPage() {
         {(shipment) => (
           <Stack>
             <Stack gap={2}>
-              <Title order={3}>{t('dispatch.title')}</Title>
+              <Title order={1} size="h3">
+                {t('dispatch.title')}
+              </Title>
               <Text c="dimmed">{shipment.shipmentNo}</Text>
             </Stack>
             {shipment.allowedActions.includes('RECORD_DISPATCH') ? (

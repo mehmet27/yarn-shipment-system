@@ -1,5 +1,11 @@
 import { SCREENS } from '../screens';
-import { clippedButtonLabels, horizontalOverflow, smallTouchTargets } from '../support/layout';
+import {
+  clippedButtonLabels,
+  horizontalOverflow,
+  offCenterButtonLabels,
+  pageHeadings,
+  smallTouchTargets,
+} from '../support/layout';
 import { expect, test } from '../support/test';
 
 const TOUCH_MAX_WIDTH_PX = 768;
@@ -15,6 +21,8 @@ for (const screen of SCREENS) {
 
       expect(await horizontalOverflow(page), 'yatay taşma (px)').toBe(0);
       expect(await clippedButtonLabels(page), 'kesik düğme yazısı').toEqual([]);
+      expect(await offCenterButtonLabels(page), 'dikeyde ortalanmamış düğme yazısı').toEqual([]);
+      expect(await pageHeadings(page), 'tek sayfa başlığı (h1)').toHaveLength(1);
       const width = page.viewportSize()?.width ?? TOUCH_MAX_WIDTH_PX;
       if (width < TOUCH_MAX_WIDTH_PX) {
         expect(await smallTouchTargets(page), 'küçük dokunma hedefi').toEqual([]);

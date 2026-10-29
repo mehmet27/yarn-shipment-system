@@ -6,12 +6,13 @@ import { createBrowserRouter } from 'react-router';
 import type { RouteObject } from 'react-router';
 import { FieldLayout } from './layouts/FieldLayout';
 import { PanelLayout } from './layouts/PanelLayout';
+import { RouteErrorPage } from './pages/RouteErrorPage';
 import { ErrorPage } from './pages/ErrorPage';
 import { HomeRedirectPage } from './pages/HomeRedirectPage';
 import { PanelHomePage } from './pages/PanelHomePage';
 
 /** Mimari doküman "Routing": /panel masaüstü, /saha mobil kabuk; her route bir izin taşır. */
-export const appRoutes: RouteObject[] = [
+const routes: RouteObject[] = [
   {
     path: '/',
     element: (
@@ -48,6 +49,12 @@ export const appRoutes: RouteObject[] = [
   { path: '/403', element: <ErrorPage reason="forbidden" /> },
   { path: '*', element: <ErrorPage reason="notFound" /> },
 ];
+
+/** Her kök route bir hata sayfası taşır; alt sayfadaki çökme beyaz ekran bırakmaz (H-25). */
+export const appRoutes: RouteObject[] = routes.map((route) => ({
+  ...route,
+  errorElement: <RouteErrorPage />,
+}));
 
 export function createAppRouter() {
   return createBrowserRouter(appRoutes);

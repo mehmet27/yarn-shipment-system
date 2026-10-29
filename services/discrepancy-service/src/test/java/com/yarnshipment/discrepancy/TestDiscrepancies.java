@@ -30,11 +30,36 @@ public final class TestDiscrepancies {
 
     /** Verilen fasoncunun sevkiyatında açılmış uyuşmazlık; fasoncusu boş eski kayıt için {@code null}. */
     public static Discrepancy of(UUID siteId, @Nullable UUID subcontractorId, DiscrepancyStatus status) {
+        return withBasis(
+                siteId,
+                subcontractorId,
+                status,
+                new Discrepancy.Basis(DiscrepancyType.QUANTITY, Severity.RED, "QUANTITY_RED"));
+    }
+
+    /** {@link TestTokens#SITE_ID} lokasyonunda, verilen kurala göre açılmış uyuşmazlık. */
+    public static Discrepancy withRule(UUID id, DiscrepancyType type, String ruleCode, DiscrepancyStatus status) {
+        Discrepancy discrepancy = withBasis(
+                TestTokens.SITE_ID, SUBCONTRACTOR, status, new Discrepancy.Basis(type, Severity.YELLOW, ruleCode));
+        return new Discrepancy(
+                id,
+                discrepancy.discrepancyNo(),
+                discrepancy.origin(),
+                discrepancy.basis(),
+                discrepancy.measure(),
+                status,
+                discrepancy.handling(),
+                null,
+                CREATED_AT);
+    }
+
+    private static Discrepancy withBasis(
+            UUID siteId, @Nullable UUID subcontractorId, DiscrepancyStatus status, Discrepancy.Basis basis) {
         return new Discrepancy(
                 ID,
                 "UY-SV-3-1",
                 new Discrepancy.Origin(siteId, SHIPMENT, subcontractorId),
-                new Discrepancy.Basis(DiscrepancyType.QUANTITY, Severity.RED, "QUANTITY_RED"),
+                basis,
                 new Discrepancy.Measure("2000.000", "1960.000", new BigDecimal("40.000"), new BigDecimal("2.00")),
                 status,
                 new Discrepancy.Handling(null, DUE_AT),

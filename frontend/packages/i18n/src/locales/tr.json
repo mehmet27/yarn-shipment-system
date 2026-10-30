@@ -8,7 +8,9 @@
     "forbidden": "Bu sayfayı görme yetkiniz yok.",
     "notFound": "Aradığınız sayfa bulunamadı.",
     "unexpected": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
-    "backHome": "Ana sayfaya dön"
+    "backHome": "Ana sayfaya dön",
+    "crashed": "Sayfa yüklenemedi. Bağlantınızı kontrol edip yeniden deneyin.",
+    "retry": "Yeniden dene"
   },
   "nav": {
     "panel": "Yönetim Paneli",
@@ -28,6 +30,13 @@
     "actor": {
       "system": "Sistem",
       "otherUser": "Başka bir kullanıcı"
+    },
+    "close": "Kapat",
+    "pagination": {
+      "first": "İlk sayfa",
+      "previous": "Önceki sayfa",
+      "next": "Sonraki sayfa",
+      "last": "Son sayfa"
     }
   },
   "shipment": {
@@ -110,8 +119,10 @@
           "BAG_ALREADY_RESERVED": "Bir çuval başka sevkiyata ayrılmış; hiçbiri atanmadı.",
           "INVALID_SHIPMENT_STATUS": "Çuval yalnızca taslak sevkiyata atanabilir.",
           "BAG_SERVICE_UNAVAILABLE": "Çuval servisi yanıt vermiyor. Lütfen biraz sonra tekrar deneyin.",
+          "BAG_OUT_OF_SCOPE": "Bir çuval bu sevkiyatın lokasyonuna ait değil; hiçbiri atanmadı.",
           "unknown": "Çuvallar atanamadı. Lütfen tekrar deneyin."
-        }
+        },
+        "nothingNew": "Bu çuvallar zaten bu sevkiyata atanmış; yeni çuval atanmadı."
       }
     }
   },
@@ -122,6 +133,11 @@
     "sealNo": "Mühür no",
     "confirmPickup": "Yükü teslim aldım",
     "confirmPickupHint": "Çuval sayısını ve mühür numarasını kontrol ettikten sonra onaylayın.",
+    "confirmPickupTitle": "Yükü teslim aldınız mı?",
+    "confirmPickupQuestion": "Onaylarsanız sevkiyat Yolda olur. Bu adım geri alınamaz.",
+    "confirmPickupAccept": "Evet, teslim aldım",
+    "confirmPickupDismiss": "Vazgeç",
+    "confirmPickupClose": "Kapat",
     "pickupConfirmed": "Teslim alma kaydedildi.",
     "declareArrivalHint": "Fasoncuya vardığınızda mührü kontrol edin ve durumuna göre seçin.",
     "arrivedSealIntact": "Vardım, mühür sağlam",
@@ -271,10 +287,10 @@
     "owner": "Fasoncu (isteğe bağlı)",
     "ownerHint": "Boş bırakırsanız kendi şoförümüzdür.",
     "saveFailed": "Kayıt kaydedilemedi. Lütfen tekrar deneyin.",
-    "duplicatePlate": "Bu plaka başka bir araçta kullanılıyor.",
     "errors": {
       "labelRequired": "Bu alan boş olamaz.",
-      "labelTooLong": "Metin çok uzun."
+      "labelTooLong": "Metin çok uzun.",
+      "invalidPlate": "Geçerli bir plaka girin (ör. 34 ABC 123)."
     },
     "kinds": {
       "subcontractor": {
@@ -293,6 +309,14 @@
         "tab": "Lokasyonlar",
         "field": "Lokasyon adı"
       }
+    },
+    "created": "Kayıt eklendi.",
+    "updated": "Değişiklikler kaydedildi.",
+    "plateHint": "Ör. 34 ABC 123: il kodu (01-81), 1-3 harf, 2-4 rakam",
+    "serverErrors": {
+      "DUPLICATE_PLATE": "Bu plaka başka bir araçta kullanılıyor.",
+      "DUPLICATE_SUBCONTRACTOR": "Bu ünvanla kayıtlı bir fasoncu zaten var.",
+      "INVALID_PLATE": "Geçerli bir plaka girin (ör. 34 ABC 123)."
     }
   },
   "discrepancy": {
@@ -403,6 +427,7 @@
     },
     "errors": {
       "tooLarge": "Dosya en fazla 20 MB olabilir.",
+      "wrongType": "Bu dosya türü yüklenemez. Fotoğraf (JPEG, PNG, HEIC) ya da PDF seçin.",
       "UPLOAD_NOT_ALLOWED": "Bu dosya türü, boyutu ya da yükleme izni geçerli değil.",
       "SHIPMENT_NOT_FOUND": "Sevkiyat bulunamadı.",
       "SHIPMENT_LOCKED": "Sevkiyat kilitli; artık dosya eklenemiyor.",
@@ -452,6 +477,10 @@
         "NO_TICKET": "Fiş çıkmadı",
         "OTHER": "Diğer"
       }
+    },
+    "fileErrors": {
+      "wrongType": "Kantar fişi için fotoğraf seçin (JPEG, PNG veya HEIC).",
+      "tooLarge": "Fotoğraf en fazla 20 MB olabilir."
     }
   }
 }

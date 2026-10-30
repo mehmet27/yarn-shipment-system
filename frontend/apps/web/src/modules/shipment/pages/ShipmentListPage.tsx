@@ -1,8 +1,9 @@
 import { SHIPMENT_STATUSES } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Button, Group, Pagination, Select, Stack, Text, Title } from '@iplik/ui';
+import { Button, Group, Select, Stack, Text, Title } from '@iplik/ui';
 import { Can } from '@/modules/auth';
 import { Link } from 'react-router';
+import { ListPagination } from '../components/ListPagination';
 import { QueryState } from '../components/QueryState';
 import { ShipmentTable } from '../components/ShipmentTable';
 import { useShipmentListFilter, PAGE_SIZE } from '../hooks/useShipmentListFilter';
@@ -24,7 +25,9 @@ export function ShipmentListPage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>{t('shipment.list.title')}</Title>
+        <Title order={1} size="h2">
+          {t('shipment.list.title')}
+        </Title>
         <Can permission="SHIPMENT_CREATE">
           <Button component={Link} to="/panel/sevkiyat/yeni">
             {t('create.open')}
@@ -48,7 +51,7 @@ export function ShipmentListPage() {
           ) : (
             <Stack>
               <ShipmentTable shipments={page.items} />
-              <Pagination
+              <ListPagination
                 total={page.page.totalPages}
                 value={filter.page}
                 onChange={filter.setPage}

@@ -62,7 +62,8 @@ KEYCLOAK_TEST_USER_PASSWORD=<deploy/.env değeri> node tools/keycloak/verify-rea
 ```
 
 Yerel Keycloak'ta ikinci faktör kurulu değildir; `admin` ve `kalite` rolleri MFA'sız oturumda düşürüldüğü için
-shipment-service'i `--spring.profiles.active=local` ile başlatın (yalnızca yerelde MFA şartını kapatır).
+shipment, bag, discrepancy ve evidence servislerini `--spring.profiles.active=local` ile başlatın (yalnızca yerelde
+MFA şartını kapatır; üretim ayarı değişmez). Profilsiz açılan serviste bu iki rol 403 `ACCESS_DENIED` alır.
 
 Compose, tek bir PostgreSQL 17 konteynerinde 8 servis veritabanını ve Keycloak veritabanını, her servis için
 `<servis>_migrator`, `<servis>_app` ve `<servis>_readonly` rolleriyle açar. Tabloları servisler açılışta Flyway
@@ -82,8 +83,12 @@ PostgreSQL'i ayrıca kurmanız gerekmez; yukarıdaki Compose yeterlidir. Servis 
 ```bash
 export SHIPMENT_DB_APP_PASSWORD=<LOCAL_DB_PASSWORD>
 export SHIPMENT_DB_MIGRATOR_PASSWORD=<LOCAL_DB_PASSWORD>
+export YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET=<deploy/.env içindeki KEYCLOAK_ADMIN_CLIENT_SECRET>
 ./mvnw -pl services/shipment-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
+
+`YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET` verilmezse servis yine açılır, ama Tanımlar ekranındaki "Giriş hesabı aç"
+502 `LOGIN_ACCOUNT_UNAVAILABLE` ("Giriş sistemine ulaşılamadı") döner.
 
 `local` profilinde ayrıca yerel örnek veri yüklenir (`db/seed-local/R__local_sample_shipments.sql`): iki lokasyonda, taslaktan kontrole kadar her durumda yedi sevkiyat; kimlikler yerel Keycloak kullanıcılarıyla eşleşir (fasoncu ve şoför kendi sevkiyatlarını görür). Dosya tekrarlanabilir migration'dır, kayıtlar iki kez eklenmez. Üretim profilinde bu konum yoktur.
 
@@ -95,7 +100,7 @@ Taslak sevkiyata yanlış okutulan çuval `DELETE /api/v1/shipments/{id}/bags/{u
 
 Ana veri listeleri (`GET /api/v1/master-data/{sites,subcontractors,drivers,vehicles}`, `q` ile arama, sayfalı) `md_*` tablolarından okunur; yerel örnek veri iki lokasyon, üç fasoncu, üç şoför ve üç araç içerir. Lokasyon listesi isteyenin kapsamıyla süzülür. 
 
-Fasoncu ve şoför yönetimi yalnızca yöneticidedir (`MASTER_DATA_MANAGE`): `POST /api/v1/master-data/{subcontractors,drivers}` (`Idempotency-Key` ister), `PUT .../{id}`, `POST .../{id}/deactivate` ve `.../activate`. Kayıt silinmez, pasife alınır; pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez. Pasife alınmış kayıtları yönetici `?status=ALL` ile listeler (diğer roller 403 alır); yanıttaki `active` alanı durumu gösterir. Her değişiklik `audit_local`'e değiştiren kullanıcıyla düşer. Şoförün fasoncusu verilirse etkin olmalıdır. Araç ve lokasyon için aynı uçlar vardır (`/api/v1/master-data/{vehicles,sites}`); plaka boşluksuz büyük harfe çevrilir, kullanılmış plaka 409 `DUPLICATE_PLATE` verir. Şoför ve fasoncunun giriş hesabı Keycloak'ta ayrıca açılır: [adımlar](docs/yonetim/giris-hesabi-acma.md). Otomatik hesap açma sonraki iştir.
+Fasoncu ve şoför yönetimi yalnızca yöneticidedir (`MASTER_DATA_MANAGE`): `POST /api/v1/master-data/{subcontractors,drivers}` (`Idempotency-Key` ister), `PUT .../{id}`, `POST .../{id}/deactivate` ve `.../activate`. Kayıt silinmez, pasife alınır; pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez. Pasife alınmış kayıtları yönetici `?status=ALL` ile listeler (diğer roller 403 alır); yanıttaki `active` alanı durumu gösterir. Her değişiklik `audit_local`'e değiştiren kullanıcıyla düşer. Şoförün fasoncusu verilirse etkin olmalıdır. Araç ve lokasyon için aynı uçlar vardır (`/api/v1/master-data/{vehicles,sites}`); plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`), kullanılmış plaka 409 `DUPLICATE_PLATE` verir. Fasoncu ünvanı tektir (büyük/küçük harf ve baş/son boşluk yok sayılır); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Şoför ve fasoncunun giriş hesabı Keycloak'ta ayrıca açılır: [adımlar](docs/yonetim/giris-hesabi-acma.md). Otomatik hesap açma sonraki iştir.
 
 | Değişken | Varsayılan |
 |---|---|
@@ -171,14 +176,15 @@ Servis `shipment.events.v1` konusundaki teslim girişi olayını (`delivery-rece
 | Mühür hasarlı/yok, mühür no farklı | sıfır | Kırmızı |
 | İmzalı irsaliye yok, irsaliye alanları teslimle tutmuyor | sıfır | Sarı |
 
-Her bulgu bir `discrepancy` satırı (`UY-<sevkiyat no>-<sıra>`, durum `OPEN`, son tarih 5 iş günü) ve `OPENED` geçmiş kaydı açar. Girdi, uyuşmazlıklar ve `comparison-completed.v1` olayı (`discrepancy.events.v1`) aynı transaction'da yazılır. Aynı olay ya da aynı sevkiyatın ikinci teslim olayı tekrar karşılaştırılmaz. Geçici hata üç kez yeniden denenir; bozuk ya da eksik olay doğrudan `shipment.events.v1.DLT` konusuna gider.
+Her bulgu bir `discrepancy` satırı (`UY-<sevkiyat no>-<sıra>`, durum `OPEN`, son tarih 5 iş günü) ve `OPENED` geçmiş kaydı açar. Satır, olay bağlamındaki fasoncu kimliğini (`subcontractor_id`) taşır; fasoncu listede ve detayda yalnızca kendi sevkiyatlarının uyuşmazlıklarını görür, şoför hiçbirini görmez. Girdi, uyuşmazlıklar ve `comparison-completed.v1` olayı (`discrepancy.events.v1`) aynı transaction'da yazılır. Aynı olay ya da aynı sevkiyatın ikinci teslim olayı tekrar karşılaştırılmaz. Geçici hata üç kez yeniden denenir; bozuk ya da eksik olay doğrudan `shipment.events.v1.DLT` konusuna gider.
 
-shipment-service `discrepancy.events.v1` konusunu dinler: temiz sonuç sevkiyatı `CHECKING` → `COMPLETED` yapar ve `shipment-completed.v1` yayınlar, uyuşmazlık `IN_REVIEW`'a alır. Geçiş geçmişte sistem hesabıyla (`00000000-0000-0000-0000-000000000000`) görünür. Kanıt (imzalı irsaliye fotoğrafı) yükleme henüz olmadığı için şimdilik her karşılaştırma `DOCUMENT_MISSING` (Sarı) açar ve sevkiyatlar incelemeye düşer.
+shipment-service `discrepancy.events.v1` konusunu dinler: temiz sonuç sevkiyatı `CHECKING` → `COMPLETED` yapar ve `shipment-completed.v1` yayınlar, uyuşmazlık `IN_REVIEW`'a alır. Geçiş geçmişte sistem hesabıyla (`00000000-0000-0000-0000-000000000000`) görünür. Tutanakta imzalı irsaliye yoksa karşılaştırma `DOCUMENT_MISSING` (Sarı) açar. Belge sonradan yüklenince (`evidence-uploaded.v1`, tür `SIGNED_DELIVERY_DOC`) bu uyuşmazlık sistem hesabıyla `DATA_ERROR` kararıyla kapanır; son açık uyuşmazlıksa sevkiyat tamamlanır. İrsaliye alanlarının tutmadığı belge uyuşmazlıkları insan kararı bekler.
 
 Servisin HTTP ucu yoktur. Çalıştırmak için `DISCREPANCY_DB_APP_PASSWORD`, `DISCREPANCY_DB_MIGRATOR_PASSWORD` ve gerekirse `KAFKA_BOOTSTRAP_SERVERS` verilir:
 
 ```bash
-DISCREPANCY_DB_APP_PASSWORD=... DISCREPANCY_DB_MIGRATOR_PASSWORD=... ./mvnw -pl services/discrepancy-service spring-boot:run
+DISCREPANCY_DB_APP_PASSWORD=... DISCREPANCY_DB_MIGRATOR_PASSWORD=... \
+./mvnw -pl services/discrepancy-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 ## evidence-service (fotoğraf ve belge yükleme)
@@ -206,10 +212,15 @@ Yerelde MinIO `docker compose` ile açılır (`deploy/.env` içinde `EVIDENCE_ST
 
 ```bash
 EVIDENCE_DB_APP_PASSWORD=... EVIDENCE_DB_MIGRATOR_PASSWORD=... \
-EVIDENCE_STORAGE_ACCESS_KEY=... EVIDENCE_STORAGE_SECRET_KEY=... ./mvnw -pl services/evidence-service spring-boot:run
+EVIDENCE_STORAGE_ACCESS_KEY=... EVIDENCE_STORAGE_SECRET_KEY=... \
+./mvnw -pl services/evidence-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-İmzalı adres, `EVIDENCE_STORAGE_ENDPOINT` adresiyle üretilir; telefon ya da tarayıcının eriştiği adres olmalıdır. Kanıt görüntüleme, geçersiz kılma ve imzalı irsaliyenin teslim girişine bağlanması sonraki adımlardır.
+İmzalı adres, `EVIDENCE_STORAGE_ENDPOINT` adresiyle üretilir; telefon ya da tarayıcının eriştiği adres olmalıdır.
+
+`GET /api/v1/evidence/{evidenceId}` kanıt üst verisini (dosyayı değil), `GET /api/v1/evidence?shipmentId=` sevkiyatın kanıtlarını, `GET /api/v1/evidence/{evidenceId}/download-url` dosya için yaklaşık 5 dakika geçerli imzalı indirme adresini verir. Üçü de kör girişe uyar: depo teslim fotoğraflarını, fasoncu çıkış fotoğraflarını karşılaştırma bitene kadar (sevkiyat `IN_REVIEW` ya da `COMPLETED` olana kadar) görmez, şoför yalnızca plaka fotoğrafını görür; görünmeyen kanıt listede yer almaz ve tek tek istenirse `404 EVIDENCE_NOT_FOUND` döner. Mühür fotoğrafı hangi aşamada çekildiği kayıtlı olmadığı için çıkış tarafı sayılır.
+
+shipment-service teslim girişinde `document.signedDocumentEvidenceId` verilirse kanıtı bu servisten doğrular: yoksa, başka sevkiyata aitse ya da türü `SIGNED_DELIVERY_DOC` değilse `422 DELIVERY_EVIDENCE_INVALID`, servise ulaşılamazsa `502 EVIDENCE_SERVICE_UNAVAILABLE` (adres: `yarnshipment.evidence-service.url`, varsayılan `http://localhost:8086`). Geçersiz kılma sonraki adımdır.
 
 ## common-web (ortak web altyapısı)
 

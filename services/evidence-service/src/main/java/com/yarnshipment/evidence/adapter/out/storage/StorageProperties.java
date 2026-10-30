@@ -13,6 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param secretKey gizli anahtar
  * @param pathStyle yol biçimli adresleme (MinIO için true)
  * @param uploadUrlTtl imzalı yükleme adresinin geçerlilik süresi
+ * @param downloadUrlTtl imzalı indirme adresinin geçerlilik süresi
  */
 @ConfigurationProperties("yarnshipment.evidence.storage")
 record StorageProperties(
@@ -22,4 +23,5 @@ record StorageProperties(
         String accessKey,
         String secretKey,
         boolean pathStyle,
-        Duration uploadUrlTtl) {}
+        Duration uploadUrlTtl,
+        Duration downloadUrlTtl) {}

@@ -32,3 +32,25 @@ export function clippedButtonLabels(page: Page) {
       .map((el) => el.textContent.slice(0, 40)),
   );
 }
+
+/** Yazısı düğmenin dikey ortasından kaymış düğmeler (H-26); 2 px'e kadar fark yuvarlamadır. */
+export function offCenterButtonLabels(page: Page) {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('.mantine-Button-root')]
+      .map((root) => ({ root, label: root.querySelector('.mantine-Button-label') }))
+      .filter(({ root, label }) => label !== null && root.getBoundingClientRect().height > 0)
+      .filter(({ root, label }) => {
+        const box = root.getBoundingClientRect();
+        const text = label?.getBoundingClientRect() ?? box;
+        return Math.abs(box.top + box.height / 2 - (text.top + text.height / 2)) > 2;
+      })
+      .map(({ root }) => root.textContent.trim().slice(0, 40)),
+  );
+}
+
+/** Sayfa başlığı (h1); ekran okuyucu ve testler sayfayı bununla tanır (H-28). */
+export function pageHeadings(page: Page) {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('h1')].map((el) => el.textContent.trim()),
+  );
+}

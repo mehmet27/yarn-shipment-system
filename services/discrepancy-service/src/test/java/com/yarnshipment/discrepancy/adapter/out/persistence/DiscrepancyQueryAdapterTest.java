@@ -3,6 +3,7 @@ package com.yarnshipment.discrepancy.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.common.security.scope.AccessScope;
+import com.yarnshipment.discrepancy.TestComparisons;
 import com.yarnshipment.discrepancy.application.port.in.DiscrepancyPage;
 import com.yarnshipment.discrepancy.application.port.in.ListDiscrepanciesQuery.Filter;
 import com.yarnshipment.discrepancy.domain.model.Severity;
@@ -69,5 +70,21 @@ class DiscrepancyQueryAdapterTest {
         assertThat(queries.findDiscrepancies(NO_FILTER, AccessScope.UNRESTRICTED, 0, PAGE_SIZE)
                         .totalElements())
                 .isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Fasoncu kapsamı uyuşmazlıkları fasoncu kimliğiyle süzer; kayıt fasoncuyu taşır")
+    void shouldFilterBySubcontractor() {
+        AccessScope own =
+                AccessScope.restrictedTo(Set.of(SeededDiscrepancies.SITE), TestComparisons.SUBCONTRACTOR, null);
+        AccessScope other = AccessScope.restrictedTo(Set.of(SeededDiscrepancies.SITE), UUID.randomUUID(), null);
+
+        DiscrepancyPage mine = queries.findDiscrepancies(NO_FILTER, own, 0, PAGE_SIZE);
+
+        assertThat(mine.totalElements()).isEqualTo(2);
+        assertThat(mine.items())
+                .allSatisfy(item -> assertThat(item.subcontractorId()).isEqualTo(TestComparisons.SUBCONTRACTOR));
+        assertThat(queries.findDiscrepancies(NO_FILTER, other, 0, PAGE_SIZE).items())
+                .isEmpty();
     }
 }

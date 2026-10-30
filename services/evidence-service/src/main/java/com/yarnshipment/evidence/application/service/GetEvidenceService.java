@@ -1,7 +1,6 @@
 package com.yarnshipment.evidence.application.service;
 
 import com.yarnshipment.common.security.Actor;
-import com.yarnshipment.common.security.Permission;
 import com.yarnshipment.common.security.scope.ScopeGuard;
 import com.yarnshipment.evidence.application.port.in.GetEvidenceQuery;
 import com.yarnshipment.evidence.application.port.in.GetEvidenceUseCase;
@@ -15,8 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Kanıt üst verisini okur. Kapsam sevkiyat üzerinden belirlenir: sevkiyat isteyene görünmüyorsa kanıtın varlığı da
- * açığa çıkmaz (404). Dosyanın kendisi bu uçtan verilmez.
+ * Kanıt üst verisini okur. Kapsam sevkiyat üzerinden belirlenir; sevkiyat ya da kanıt türü (kör giriş) isteyene
+ * görünmüyorsa kanıtın varlığı da açığa çıkmaz (404). Dosyanın kendisi bu uçtan verilmez.
  */
 @Service
 public class GetEvidenceService implements GetEvidenceUseCase {
@@ -37,9 +36,6 @@ public class GetEvidenceService implements GetEvidenceUseCase {
     @Transactional(readOnly = true)
     public EvidenceFile getEvidence(GetEvidenceQuery query) {
         Actor actor = query.actor();
-        if (!actor.hasPermission(Permission.EVIDENCE_VIEW)) {
-            throw new EvidenceNotFoundException(query.evidenceId());
-        }
         EvidenceFile file = evidence.findEvidence(query.evidenceId())
                 .orElseThrow(() -> new EvidenceNotFoundException(query.evidenceId()));
         ShipmentSnapshot shipment;
@@ -49,6 +45,9 @@ public class GetEvidenceService implements GetEvidenceUseCase {
             throw new EvidenceNotFoundException(query.evidenceId());
         }
         scopeGuard.validateInScope(actor, ShipmentScopes.of(actor, shipment.shipmentId(), shipment.siteId()), ACTION);
+        if (!EvidenceVisibility.mayView(actor, file.declared().type(), shipment.comparisonDone())) {
+            throw new EvidenceNotFoundException(query.evidenceId());
+        }
         return file;
     }
 }

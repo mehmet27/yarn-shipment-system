@@ -39,7 +39,8 @@ final class DeliveryReceivedMapper {
                         sealCondition(event.deliverySeal().condition())),
                 event.expectedUniqueKeys(),
                 event.scannedUniqueKeys(),
-                document(context.document()));
+                document(context.document()),
+                context.subcontractorId());
     }
 
     /** Kantar fişleriyle karşılaştırılacak elle girişler; plakayı taşımayan eski olayda plaka kontrolü atlanır. */

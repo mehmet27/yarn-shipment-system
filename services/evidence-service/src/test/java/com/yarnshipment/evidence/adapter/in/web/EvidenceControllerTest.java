@@ -6,9 +6,13 @@ import static org.mockito.Mockito.when;
 
 import com.yarnshipment.evidence.TestTokens;
 import com.yarnshipment.evidence.TestUploads;
+import com.yarnshipment.evidence.application.port.in.DownloadLink;
+import com.yarnshipment.evidence.application.port.in.GetEvidenceDownloadUseCase;
 import com.yarnshipment.evidence.application.port.in.GetEvidenceUseCase;
+import com.yarnshipment.evidence.application.port.in.ListEvidenceUseCase;
 import com.yarnshipment.evidence.domain.model.EvidenceFile;
 import com.yarnshipment.evidence.domain.model.EvidenceNotFoundException;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,6 +35,12 @@ class EvidenceControllerTest {
 
     @MockitoBean
     private GetEvidenceUseCase getEvidence;
+
+    @MockitoBean
+    private GetEvidenceDownloadUseCase getDownload;
+
+    @MockitoBean
+    private ListEvidenceUseCase listEvidence;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -57,6 +67,23 @@ class EvidenceControllerTest {
     }
 
     @Test
+    @DisplayName("İndirme adresi ve sevkiyat listesi döner")
+    void shouldReturnDownloadLinkAndList() {
+        when(getDownload.getDownloadLink(any())).thenReturn(new DownloadLink("https://s3/get", TestUploads.expiry()));
+        MvcTestResult link = get("warehouse", URI + "/download-url");
+        assertThat(link).hasStatusOk();
+        assertThat(link).bodyJson().extractingPath("$.url").isEqualTo("https://s3/get");
+
+        when(listEvidence.listEvidence(any()))
+                .thenReturn(List.of(EvidenceFile.confirm(
+                        TestUploads.intent(UUID.randomUUID()), TestUploads.stored(), TestUploads.NOW)));
+        MvcTestResult list = get("warehouse", "/api/v1/evidence?shipmentId=" + TestUploads.SHIPMENT_ID);
+        assertThat(list).hasStatusOk();
+        assertThat(list).bodyJson().extractingPath("$.items[0].sha256").isEqualTo(TestUploads.SHA);
+        assertThat(get("warehouse", "/api/v1/evidence")).hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     @DisplayName("Görüntüleme izni olmayan 403, token'sız istek 401 alır")
     void shouldCheckPermission() {
         assertThat(get("nobody")).hasStatus(HttpStatus.FORBIDDEN);
@@ -64,8 +91,12 @@ class EvidenceControllerTest {
     }
 
     private MvcTestResult get(String role) {
+        return get(role, URI);
+    }
+
+    private MvcTestResult get(String role, String uri) {
         return mvc.get()
-                .uri(URI)
+                .uri(uri)
                 .with(SecurityMockMvcRequestPostProcessors.authentication(
                         TestTokens.CONVERTER.convert(TestTokens.token(role).build())))
                 .exchange();

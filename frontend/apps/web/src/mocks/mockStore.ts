@@ -65,7 +65,20 @@ export function addMockShipment(request: CreateShipmentRequest): InternalShipmen
   return created;
 }
 
+/** Sevkiyata atanmış çuval anahtarları; aynı anahtar ikinci kez atanınca sayılmaz (backend gibi). */
+let assignedBagKeys = new Map<string, Set<string>>();
+
+/** Yeni atanan anahtar sayısını döner. */
+export function assignMockBagKeys(shipmentId: string, keys: readonly string[]): number {
+  const assigned = assignedBagKeys.get(shipmentId) ?? new Set<string>();
+  const fresh = keys.filter((key) => !assigned.has(key));
+  for (const key of fresh) assigned.add(key);
+  assignedBagKeys.set(shipmentId, assigned);
+  return fresh.length;
+}
+
 export function resetMockStore(): void {
   resetMasterData();
   shipments = [...MOCK_SHIPMENTS];
+  assignedBagKeys = new Map();
 }

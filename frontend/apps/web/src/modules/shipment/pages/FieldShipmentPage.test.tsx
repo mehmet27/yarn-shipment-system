@@ -27,6 +27,7 @@ describe('FieldShipmentPage', () => {
     server.use(...createHandlers('DRIVER'));
     renderApp('/saha/sevkiyat/shp-0010');
     await userEvent.click(await screen.findByRole('button', { name: 'Yükü teslim aldım' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Evet, teslim aldım' }));
     expect(await screen.findByText('Yolda')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Yükü teslim aldım' })).not.toBeInTheDocument();
   });
@@ -35,6 +36,7 @@ describe('FieldShipmentPage', () => {
     server.use(...createHandlers('DRIVER'));
     renderApp('/saha/sevkiyat/shp-0010');
     await userEvent.click(await screen.findByRole('button', { name: 'Yükü teslim aldım' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Evet, teslim aldım' }));
     await userEvent.click(
       await screen.findByRole('button', { name: 'Vardım, mühür hasarlı veya yok' }),
     );
@@ -46,5 +48,15 @@ describe('FieldShipmentPage', () => {
     server.use(...createHandlers('DRIVER'));
     renderApp('/saha/sevkiyat/shp-0002');
     expect(await screen.findByRole('alert')).toHaveTextContent('Bu sayfayı görme yetkiniz yok.');
+  });
+
+  it('teslim almadan önce onay sorar; vazgeçince durum değişmez', async () => {
+    server.use(...createHandlers('DRIVER'));
+    renderApp('/saha/sevkiyat/shp-0010');
+    await userEvent.click(await screen.findByRole('button', { name: 'Yükü teslim aldım' }));
+    expect(await screen.findByText(/Bu adım geri alınamaz/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Vazgeç' }));
+    expect(screen.getByText('Yüklendi')).toBeInTheDocument();
+    expect(screen.queryByText('Yolda')).not.toBeInTheDocument();
   });
 });

@@ -12,6 +12,7 @@ import com.yarnshipment.shipment.masterdata.application.port.in.ChangeSubcontrac
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.UpdateSubcontractorUseCase;
+import com.yarnshipment.shipment.masterdata.domain.model.DuplicateSubcontractorException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
 import com.yarnshipment.shipment.masterdata.domain.model.Subcontractor;
@@ -80,6 +81,22 @@ class SubcontractorManagementControllerTest {
     void shouldRejectMissingTitle() throws Exception {
         assertThat(post(admin(), SUBCONTRACTORS, "{\"title\": \"\"}")).hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(createSubcontractor);
+    }
+
+    @Test
+    @DisplayName("Kullanılmış ünvan DUPLICATE_SUBCONTRACTOR ile 409 döner")
+    void shouldMapDuplicateTitle() throws Exception {
+        // given
+        when(createSubcontractor.createSubcontractor(any(), any()))
+                .thenThrow(new DuplicateSubcontractorException("Yeni Tekstil"));
+
+        // when
+        MvcTestResult result = post(admin(), SUBCONTRACTORS, "{\"title\": \"yeni tekstil\"}");
+
+        // then
+        assertThat(result).hasStatus(HttpStatus.CONFLICT);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("DUPLICATE_SUBCONTRACTOR");
+        assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Fasoncu zaten kayıtlı");
     }
 
     @Test

@@ -35,6 +35,7 @@ class DeliveryCommandAdapterTest {
     private static final UUID SHIPMENT = UUID.fromString("0192f0a0-0000-7000-8000-000000000201");
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-00000000a001");
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-00000000d001");
+    private static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000003");
     private static final Instant NOW = Instant.parse("2026-10-22T09:00:00Z");
     private static final int BAGS = 40;
     private static final String INSERT_SHIPMENT = """
@@ -116,6 +117,7 @@ class DeliveryCommandAdapterTest {
     private static DeliveryReceipt receipt() {
         var measurement = TestDeliveries.measurement();
         Weighing weighing = new Weighing(measurement.grossKg(), measurement.tareKg(), BAGS, NOW);
-        return new DeliveryReceipt(SHIPMENT, SITE, "SV-2", null, USER, NOW, weighing, measurement, ShipmentSide.EMPTY);
+        return new DeliveryReceipt(
+                SHIPMENT, SITE, "SV-2", null, SUBCONTRACTOR, USER, NOW, weighing, measurement, ShipmentSide.EMPTY);
     }
 }

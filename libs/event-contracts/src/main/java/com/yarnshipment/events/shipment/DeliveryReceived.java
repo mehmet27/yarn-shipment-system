@@ -66,9 +66,15 @@ public record DeliveryReceived(
      * @param shipmentNo sevkiyat numarası
      * @param plateNo araç plakası; araç girilmediyse ya da olay eskiyse boş
      * @param document irsaliye değerleri
+     * @param subcontractorId sevkiyatın fasoncusu; uyuşmazlığı fasoncunun kapsamına bağlar (sonradan eklendi; eski
+     *     olaylarda boş)
      */
     public record Context(
-            UUID siteId, String shipmentNo, @Nullable String plateNo, Document document) {}
+            UUID siteId,
+            String shipmentNo,
+            @Nullable String plateNo,
+            Document document,
+            @Nullable UUID subcontractorId) {}
 
     /**
      * İrsaliye üzerindeki değerler, fasoncunun okuduğu haliyle.

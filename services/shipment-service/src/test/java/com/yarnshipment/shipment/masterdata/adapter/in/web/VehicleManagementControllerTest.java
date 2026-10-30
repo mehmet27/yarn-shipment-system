@@ -103,6 +103,23 @@ class VehicleManagementControllerTest {
     }
 
     @Test
+    @DisplayName("Biçimsiz plaka INVALID_PLATE ile 400 döner ve alanı gösterir")
+    void shouldMapInvalidPlate() throws Exception {
+        // given
+        when(create.createVehicle(any(), any()))
+                .thenThrow(new com.yarnshipment.shipment.masterdata.domain.model.InvalidPlateException("ABC"));
+
+        // when
+        MvcTestResult result = post(admin(), "{\"plateNo\": \"abc\"}");
+
+        // then
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("INVALID_PLATE");
+        assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo("plateNo");
+        assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Plaka geçersiz");
+    }
+
+    @Test
     @DisplayName("Güncelleme 200, olmayan kayıt MASTER_DATA_NOT_FOUND ile 404 döner")
     void shouldUpdateAndMapNotFound() throws Exception {
         // given

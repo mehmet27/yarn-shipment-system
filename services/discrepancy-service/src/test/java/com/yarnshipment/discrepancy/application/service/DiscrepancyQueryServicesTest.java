@@ -21,11 +21,13 @@ import com.yarnshipment.discrepancy.application.port.in.GetDiscrepancyQuery;
 import com.yarnshipment.discrepancy.application.port.in.ListDiscrepanciesQuery;
 import com.yarnshipment.discrepancy.application.port.out.DiscrepancyQueryPort;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotFoundException;
+import com.yarnshipment.discrepancy.domain.model.DiscrepancyStatus;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -52,15 +54,48 @@ class DiscrepancyQueryServicesTest {
     }
 
     @Test
-    @DisplayName("Fasoncu uyuşmazlığa erişemez; iki tarafın değerleri yalnızca iç kullanıcıya açıktır")
-    void shouldHideFromExternalRoles() {
+    @DisplayName("Fasoncu kendi sevkiyatının uyuşmazlığını görür; başka fasoncunun ya da fasoncusu boş kaydı görmez")
+    void shouldScopeSubcontractorToOwnDiscrepancies() {
+        Actor subcontractor = TestTokens.actor(TestTokens.subcontractorToken());
+        when(queries.findDiscrepancy(TestDiscrepancies.ID))
+                .thenReturn(Optional.of(TestDiscrepancies.open(TestTokens.SITE_ID)))
+                .thenReturn(Optional.of(
+                        TestDiscrepancies.of(TestTokens.SITE_ID, UUID.randomUUID(), DiscrepancyStatus.OPEN)))
+                .thenReturn(Optional.of(TestDiscrepancies.of(TestTokens.SITE_ID, null, DiscrepancyStatus.OPEN)));
+        GetDiscrepancyQuery query = new GetDiscrepancyQuery(subcontractor, TestDiscrepancies.ID);
+
+        assertThat(get.getDiscrepancy(query).subcontractorId()).isEqualTo(TestTokens.SUBCONTRACTOR_ID);
+        assertThatThrownBy(() -> get.getDiscrepancy(query)).isInstanceOf(OutOfScopeAccessException.class);
+        assertThatThrownBy(() -> get.getDiscrepancy(query)).isInstanceOf(OutOfScopeAccessException.class);
+    }
+
+    @Test
+    @DisplayName("Fasoncunun listesi kendi fasoncu kimliğiyle süzülür")
+    void shouldListSubcontractorDiscrepanciesByOwner() {
+        Actor subcontractor = TestTokens.actor(TestTokens.subcontractorToken());
+        when(queries.findDiscrepancies(any(), any(), eq(0), eq(PAGE_SIZE)))
+                .thenReturn(DiscrepancyPage.empty(0, PAGE_SIZE));
+
+        list.listDiscrepancies(new ListDiscrepanciesQuery(subcontractor, NO_FILTER, 0, PAGE_SIZE));
+
+        verify(queries)
+                .findDiscrepancies(
+                        any(),
+                        argThat(scope -> TestTokens.SUBCONTRACTOR_ID.equals(scope.subcontractorId())),
+                        eq(0),
+                        eq(PAGE_SIZE));
+    }
+
+    @Test
+    @DisplayName("Şoför uyuşmazlık göremez; liste sorgusu hiç çalışmaz")
+    void shouldHideFromDriver() {
         when(queries.findDiscrepancy(TestDiscrepancies.ID))
                 .thenReturn(Optional.of(TestDiscrepancies.open(TestTokens.SITE_ID)));
-        Actor subcontractor = TestTokens.actor(TestTokens.subcontractorToken());
+        Actor driver = TestTokens.actor(TestTokens.driverToken());
 
-        assertThatThrownBy(() -> get.getDiscrepancy(new GetDiscrepancyQuery(subcontractor, TestDiscrepancies.ID)))
+        assertThatThrownBy(() -> get.getDiscrepancy(new GetDiscrepancyQuery(driver, TestDiscrepancies.ID)))
                 .isInstanceOf(OutOfScopeAccessException.class);
-        assertThat(list.listDiscrepancies(new ListDiscrepanciesQuery(subcontractor, NO_FILTER, 0, PAGE_SIZE))
+        assertThat(list.listDiscrepancies(new ListDiscrepanciesQuery(driver, NO_FILTER, 0, PAGE_SIZE))
                         .items())
                 .isEmpty();
         verify(queries, never()).findDiscrepancies(any(), any(), anyInt(), anyInt());

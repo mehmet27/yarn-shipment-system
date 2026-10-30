@@ -316,7 +316,7 @@ paths:
       operationId: createSubcontractor
       summary: Fasoncu ekler
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Ünvan boş olamaz. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Ünvan boş olamaz ve tektir (büyük/küçük harf ve baş/son boşluk yok sayılır, pasif kayıtlar dahil); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -338,13 +338,15 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
   /api/v1/master-data/subcontractors/{subcontractorId}:
     put:
       tags: [SubcontractorManagement]
       operationId: updateSubcontractor
       summary: Fasoncu günceller
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Başka fasoncunun ünvanı 409 `DUPLICATE_SUBCONTRACTOR` verir.
       parameters:
         - name: subcontractorId
           in: path
@@ -373,6 +375,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
   /api/v1/master-data/subcontractors/{subcontractorId}/deactivate:
     post:
       tags: [SubcontractorManagement]
@@ -674,7 +678,7 @@ paths:
       operationId: createVehicle
       summary: Araç ekler
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir; başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`); başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -704,7 +708,7 @@ paths:
       operationId: updateVehicle
       summary: Araç günceller
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Plaka kuralı eklemedeki gibidir (`INVALID_PLATE`, `DUPLICATE_PLATE`).
       parameters:
         - name: vehicleId
           in: path
@@ -787,7 +791,7 @@ paths:
       operationId: listSites
       summary: Lokasyon listesi
       description: |
-        Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07). Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+        Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07); `MASTER_DATA_MANAGE` izni olan (admin) tüm lokasyonları görür, böylece yeni açtığı lokasyonu yönetebilir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
@@ -993,8 +997,9 @@ paths:
         Depo personeli çuvalları okutur ya da listeden seçer; her çuval bag-service'te bu sevkiyata ayrılır ve
         sevkiyatın çuval listesine yazılır. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Hepsi ya da hiçbiri:
         bir çuval bulunamazsa (`BAG_NOT_FOUND`), kullanılamaz durumdaysa (`BAG_NOT_AVAILABLE`) ya da başka
-        sevkiyattaysa (`BAG_ALREADY_RESERVED`) hiçbiri atanmaz. Aynı çuvalı tekrar göndermek hata vermez;
-        `assignedCount` yalnızca yeni atananları sayar. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
+        sevkiyattaysa (`BAG_ALREADY_RESERVED`) hiçbiri atanmaz. Çuval isteyenin lokasyon kapsamı dışındaysa 403
+        `BAG_OUT_OF_SCOPE` döner. Aynı çuvalı tekrar göndermek hata vermez; `assignedCount` yalnızca yeni atananları
+        sayar. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
       parameters:
         - name: shipmentId
           in: path
@@ -1145,13 +1150,14 @@ components:
     Conflict:
       description: >-
         Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor
-        (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE)
+        (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da
+        fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR)
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
     BadRequest:
-      description: İstek biçimi hatalı
+      description: İstek biçimi hatalı; plaka biçimi geçersizse `INVALID_PLATE`
       content:
         application/problem+json:
           schema:
@@ -1163,7 +1169,7 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
     Forbidden:
-      description: İzin yok (ACCESS_DENIED) veya kayıt kapsam dışı (OUT_OF_SCOPE)
+      description: İzin yok (ACCESS_DENIED), kayıt kapsam dışı (OUT_OF_SCOPE) ya da çuval başka lokasyonda (BAG_OUT_OF_SCOPE)
       content:
         application/problem+json:
           schema:

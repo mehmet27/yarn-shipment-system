@@ -36,6 +36,7 @@ export function DeliveryWizard({ shipmentId, onSubmitted }: DeliveryWizardProps)
         draft={draft}
         onChange={(patch) => {
           setDraft({ ...draft, ...patch });
+          setError(undefined);
         }}
       />
       {error !== undefined && <Alert color="red">{t(`delivery.errors.${error}`)}</Alert>}

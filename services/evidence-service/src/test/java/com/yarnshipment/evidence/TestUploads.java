@@ -1,5 +1,6 @@
 package com.yarnshipment.evidence;
 
+import com.yarnshipment.evidence.domain.model.EvidenceFile;
 import com.yarnshipment.evidence.domain.model.EvidenceSource;
 import com.yarnshipment.evidence.domain.model.EvidenceType;
 import com.yarnshipment.evidence.domain.model.StoredObject;
@@ -41,6 +42,21 @@ public final class TestUploads {
 
     public static Instant expiry() {
         return NOW.plusSeconds(TTL_SECONDS);
+    }
+
+    /** Verilen türde, onaylanmış bir kanıt. */
+    public static EvidenceFile file(EvidenceType type) {
+        UploadIntent base = intent(UUID.randomUUID());
+        UploadIntent intent = new UploadIntent(
+                UUID.randomUUID(),
+                base.shipmentId(),
+                base.siteId(),
+                new UploadIntent.DeclaredFile(type, JPEG, SIZE, EvidenceSource.CAMERA, null),
+                base.storageKey(),
+                base.requestedBy(),
+                base.requestedAt(),
+                base.expiresAt());
+        return EvidenceFile.confirm(intent, stored(), NOW);
     }
 
     public static StoredObject stored() {

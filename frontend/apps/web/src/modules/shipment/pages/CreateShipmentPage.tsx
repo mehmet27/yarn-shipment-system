@@ -13,7 +13,9 @@ export function CreateShipmentPage() {
         {t('create.back')}
       </Anchor>
       <Stack gap={2}>
-        <Title order={3}>{t('create.title')}</Title>
+        <Title order={1} size="h3">
+          {t('create.title')}
+        </Title>
         <Text c="dimmed">{t('create.hint')}</Text>
       </Stack>
       <CreateShipmentForm

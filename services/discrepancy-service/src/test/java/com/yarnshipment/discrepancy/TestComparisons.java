@@ -16,6 +16,7 @@ public final class TestComparisons {
     public static final UUID SHIPMENT = UUID.fromString("0192f0a0-0000-7000-8000-000000000301");
     public static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-00000000a001");
     public static final UUID EVIDENCE = UUID.fromString("0192f0a0-0000-7000-8000-00000000f001");
+    public static final UUID SUBCONTRACTOR = TestTokens.SUBCONTRACTOR_ID;
     public static final String SHIPMENT_NO = "SV-3";
     public static final String SEAL = "M-0001";
     public static final BigDecimal DISPATCH_KG = new BigDecimal("2000.000");
@@ -44,6 +45,15 @@ public final class TestComparisons {
     public static ComparisonInput input(
             DispatchFigures dispatch, DeliveryFigures delivery, List<String> scannedKeys, DocumentFigures document) {
         return new ComparisonInput(
-                SHIPMENT, SITE, SHIPMENT_NO, RECEIVED_AT, dispatch, delivery, KEYS, scannedKeys, document);
+                SHIPMENT,
+                SITE,
+                SHIPMENT_NO,
+                RECEIVED_AT,
+                dispatch,
+                delivery,
+                KEYS,
+                scannedKeys,
+                document,
+                SUBCONTRACTOR);
     }
 }

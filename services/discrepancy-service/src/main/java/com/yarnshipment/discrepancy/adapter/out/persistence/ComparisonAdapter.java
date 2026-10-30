@@ -34,11 +34,11 @@ final class ComparisonAdapter implements ComparisonPort {
             VALUES (:id, :shipmentId, :dispatchNetKg, :deliveryNetKg, :dispatchKeys::jsonb, :deliveryKeys::jsonb,
                     :sealNos::jsonb, :receivedAt, :at, :actor)""";
     private static final String INSERT_DISCREPANCY = """
-            INSERT INTO discrepancy (id, discrepancy_no, site_id, shipment_id, discrepancy_type, severity, status,
-                                     rule_code, expected_value, actual_value, diff_kg, diff_pct, due_at, created_at,
-                                     created_by)
-            VALUES (:id, :no, :siteId, :shipmentId, :type, :severity, 'OPEN', :ruleCode, :expected, :actual, :diffKg,
-                    :diffPct, :dueAt, :at, :actor)""";
+            INSERT INTO discrepancy (id, discrepancy_no, site_id, shipment_id, subcontractor_id, discrepancy_type,
+                                     severity, status, rule_code, expected_value, actual_value, diff_kg, diff_pct,
+                                     due_at, created_at, created_by)
+            VALUES (:id, :no, :siteId, :shipmentId, :subcontractorId, :type, :severity, 'OPEN', :ruleCode, :expected,
+                    :actual, :diffKg, :diffPct, :dueAt, :at, :actor)""";
     private static final String INSERT_ACTIVITY = """
             INSERT INTO discrepancy_activity (id, created_at, discrepancy_id, action_type, note, actor_id, occurred_at)
             VALUES (:id, :at, :discrepancyId, :action, :note, :actor, :at)""";
@@ -109,6 +109,7 @@ final class ComparisonAdapter implements ComparisonPort {
                 .param("no", no)
                 .param("siteId", input.siteId())
                 .param("shipmentId", input.shipmentId())
+                .param("subcontractorId", input.subcontractorId())
                 .param("type", finding.type().name())
                 .param("severity", finding.severity().name())
                 .param("ruleCode", finding.ruleCode())

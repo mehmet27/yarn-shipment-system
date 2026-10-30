@@ -590,12 +590,12 @@ export interface DriverShipmentView {
 export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView | DriverShipmentView;
 
 /**
- * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE)
+ * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR)
  */
 export type ConflictResponse = Problem;
 
 /**
- * İstek biçimi hatalı
+ * İstek biçimi hatalı; plaka biçimi geçersizse `INVALID_PLATE`
  */
 export type BadRequestResponse = Problem;
 
@@ -605,7 +605,7 @@ export type BadRequestResponse = Problem;
 export type UnauthorizedResponse = Problem;
 
 /**
- * İzin yok (ACCESS_DENIED) veya kayıt kapsam dışı (OUT_OF_SCOPE)
+ * İzin yok (ACCESS_DENIED), kayıt kapsam dışı (OUT_OF_SCOPE) ya da çuval başka lokasyonda (BAG_OUT_OF_SCOPE)
  */
 export type ForbiddenResponse = Problem;
 
@@ -885,7 +885,7 @@ export const listSubcontractors = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Ünvan boş olamaz. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Ünvan boş olamaz ve tektir (büyük/küçük harf ve baş/son boşluk yok sayılır, pasif kayıtlar dahil); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Fasoncu ekler
  */
 export const createSubcontractor = (
@@ -900,7 +900,7 @@ export const createSubcontractor = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Başka fasoncunun ünvanı 409 `DUPLICATE_SUBCONTRACTOR` verir.
  * @summary Fasoncu günceller
  */
 export const updateSubcontractor = (
@@ -1067,7 +1067,7 @@ export const listVehicles = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir; başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`); başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Araç ekler
  */
 export const createVehicle = (
@@ -1082,7 +1082,7 @@ export const createVehicle = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Plaka kuralı eklemedeki gibidir (`INVALID_PLATE`, `DUPLICATE_PLATE`).
  * @summary Araç günceller
  */
 export const updateVehicle = (
@@ -1124,7 +1124,7 @@ export const activateVehicle = (
     }
 
 /**
- * Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07). Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+ * Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07); `MASTER_DATA_MANAGE` izni olan (admin) tüm lokasyonları görür, böylece yeni açtığı lokasyonu yönetebilir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
  * @summary Lokasyon listesi
  */
 export const listSites = (
@@ -1231,8 +1231,9 @@ export const cancelShipment = (
  * Depo personeli çuvalları okutur ya da listeden seçer; her çuval bag-service'te bu sevkiyata ayrılır ve
  * sevkiyatın çuval listesine yazılır. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Hepsi ya da hiçbiri:
  * bir çuval bulunamazsa (`BAG_NOT_FOUND`), kullanılamaz durumdaysa (`BAG_NOT_AVAILABLE`) ya da başka
- * sevkiyattaysa (`BAG_ALREADY_RESERVED`) hiçbiri atanmaz. Aynı çuvalı tekrar göndermek hata vermez;
- * `assignedCount` yalnızca yeni atananları sayar. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
+ * sevkiyattaysa (`BAG_ALREADY_RESERVED`) hiçbiri atanmaz. Çuval isteyenin lokasyon kapsamı dışındaysa 403
+ * `BAG_OUT_OF_SCOPE` döner. Aynı çuvalı tekrar göndermek hata vermez; `assignedCount` yalnızca yeni atananları
+ * sayar. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
  * @summary Çuvalları taslak sevkiyata atar
  */
 export const assignShipmentBags = (

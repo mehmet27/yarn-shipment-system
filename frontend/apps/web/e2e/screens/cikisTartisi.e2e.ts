@@ -44,4 +44,19 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
     await openAs('MANAGER', '/panel/sevkiyat/shp-0001/cikis');
     await expect(page.getByText('Bu sayfayı görme yetkiniz yok.')).toBeVisible();
   });
+
+  // H-20: fotoğraf yerine metin dosyası seçilince gönderme düğmesi çıkmaz, sebep yazılır.
+  test('fiş yerine fotoğraf olmayan dosyayı kabul etmez', async ({ page, openAs }) => {
+    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis');
+    await fillFields(page, WEIGHING);
+    await page.getByTestId('ticket-input').setInputFiles({
+      name: 'notlar.txt',
+      mimeType: 'text/plain',
+      buffer: Buffer.from('fiş değil'),
+    });
+    await expect(
+      page.getByText('Kantar fişi için fotoğraf seçin (JPEG, PNG veya HEIC).'),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Fotoğrafı gönder' })).toHaveCount(0);
+  });
 });

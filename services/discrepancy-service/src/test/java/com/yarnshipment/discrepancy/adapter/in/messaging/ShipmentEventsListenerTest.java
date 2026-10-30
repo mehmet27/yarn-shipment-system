@@ -32,6 +32,8 @@ class ShipmentEventsListenerTest {
     private static final UUID EVENT = UUID.fromString("0192f0a0-0000-7000-8000-0000000000e1");
     private static final String ACTOR = "0192f0a0-0000-7000-8000-00000000d001";
     private static final Instant AT = Instant.parse("2026-10-23T09:00:00Z");
+    private static final UUID SUBCONTRACTOR = TestComparisons.SUBCONTRACTOR;
+
     /** Sözleşmede olmayan {@code futureField} yok sayılır (EVT-06). */
     private static final String DELIVERY = """
             {"shipmentId":"%s","deliveryReceiptId":"0192f0a0-0000-7000-8000-0000000000f1",
@@ -41,10 +43,10 @@ class ShipmentEventsListenerTest {
              "expectedUniqueKeys":["UK-0001","UK-0002"],"scannedUniqueKeys":["UK-0002","UK-0001"],
              "dispatchSeal":{"sealNo":"M-0001","condition":null},
              "deliverySeal":{"sealNo":"M-0001","condition":"intact"},
-             "context":{"siteId":"%s","shipmentNo":"SV-3","plateNo":"34ABC123",
+             "context":{"siteId":"%s","shipmentNo":"SV-3","plateNo":"34ABC123","subcontractorId":"%s",
                         "document":{"shipmentNo":"SV-3","date":"2026-10-23","netKg":2000.000,"bagCount":2,
                                     "signedDocumentEvidenceId":null}},
-             "futureField":true}""".formatted(TestComparisons.SHIPMENT, TestComparisons.SITE);
+             "futureField":true}""".formatted(TestComparisons.SHIPMENT, TestComparisons.SITE, SUBCONTRACTOR);
 
     private final CompareDeliveryUseCase useCase = mock(CompareDeliveryUseCase.class);
     private final ShipmentEventsListener listener = new ShipmentEventsListener(useCase);
@@ -60,6 +62,7 @@ class ShipmentEventsListenerTest {
         assertThat(command.getValue().eventId()).isEqualTo(EVENT);
         assertThat(command.getValue().actorId()).isEqualTo(UUID.fromString(ACTOR));
         assertThat(input.siteId()).isEqualTo(TestComparisons.SITE);
+        assertThat(input.subcontractorId()).isEqualTo(SUBCONTRACTOR);
         assertThat(input.dispatch().netKg()).isEqualByComparingTo("2000");
         assertThat(input.delivery().sealCondition()).isEqualTo(SealCondition.INTACT);
         assertThat(input.document().signedDocumentEvidenceId()).isNull();

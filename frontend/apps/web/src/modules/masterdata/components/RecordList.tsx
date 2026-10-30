@@ -1,12 +1,13 @@
 import { useTranslation } from '@iplik/i18n';
-import { Group, Pagination, Stack, Text, useDebouncedValue } from '@iplik/ui';
+import { Group, Stack, Text, useDebouncedValue } from '@iplik/ui';
 import { useState } from 'react';
-import { QueryState } from '@/modules/shipment';
+import { ListPagination, QueryState } from '@/modules/shipment';
 import { useRecords } from '../hooks/useRecords';
 import type { ManagedKind, RecordRow } from '../kinds';
 import { RecordCard } from './RecordCard';
 import { RecordForm } from './RecordForm';
 import { RecordToolbar } from './RecordToolbar';
+import { SavedNotice, useSavedNotice } from './SavedNotice';
 
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -21,6 +22,7 @@ export function RecordList({ kind }: { kind: ManagedKind }) {
   const [page, setPage] = useState(1);
   const [isShowingInactive, setShowingInactive] = useState(false);
   const [editing, setEditing] = useState<Editing>();
+  const notice = useSavedNotice();
   const query = useRecords(kind, { q, page: page - 1, size: PAGE_SIZE, isShowingInactive });
   return (
     <Stack>
@@ -39,6 +41,7 @@ export function RecordList({ kind }: { kind: ManagedKind }) {
           setPage(1);
         }}
       />
+      <SavedNotice saved={notice.saved} onDismiss={notice.onDismiss} />
       <QueryState query={query}>
         {({ rows, totalPages }) =>
           rows.length === 0 ? (
@@ -49,7 +52,7 @@ export function RecordList({ kind }: { kind: ManagedKind }) {
                 <RecordCard key={record.id} kind={kind} record={record} onEdit={setEditing} />
               ))}
               <Group justify="center">
-                <Pagination total={totalPages} value={page} onChange={setPage} />
+                <ListPagination total={totalPages} value={page} onChange={setPage} />
               </Group>
             </Stack>
           )
@@ -61,6 +64,10 @@ export function RecordList({ kind }: { kind: ManagedKind }) {
           record={editing === 'new' ? undefined : editing}
           onClose={() => {
             setEditing(undefined);
+          }}
+          onSaved={(isNew) => {
+            setEditing(undefined);
+            notice.show(isNew);
           }}
         />
       )}

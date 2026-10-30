@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { AppShell, Group, Title } from '@iplik/ui';
+import { AppShell, Group, Text } from '@iplik/ui';
 import { Outlet } from 'react-router';
 import { LogoutButton } from './LogoutButton';
 
@@ -12,7 +12,7 @@ export function FieldLayout() {
     <AppShell header={{ height: HEADER_HEIGHT_PX }} padding="sm">
       <AppShell.Header bg="brand.7" c="white">
         <Group h="100%" px="sm" justify="space-between">
-          <Title order={5}>{t('nav.field')}</Title>
+          <Text fw={700}>{t('nav.field')}</Text>
           <LogoutButton />
         </Group>
       </AppShell.Header>

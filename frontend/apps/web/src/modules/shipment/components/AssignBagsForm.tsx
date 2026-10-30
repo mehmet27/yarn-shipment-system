@@ -54,11 +54,14 @@ export function AssignBagsForm({ shipmentId }: { shipmentId: string }) {
       {mutation.isError && (
         <Alert color="red">{t(assignErrorKey(toProblem(mutation.error).code))}</Alert>
       )}
-      {mutation.isSuccess && (
-        <Alert color="green">
-          {t('shipment.bags.assign.done', { count: mutation.data.assignedCount })}
-        </Alert>
-      )}
+      {mutation.isSuccess &&
+        (mutation.data.assignedCount === 0 ? (
+          <Alert color="yellow">{t('shipment.bags.assign.nothingNew')}</Alert>
+        ) : (
+          <Alert color="green">
+            {t('shipment.bags.assign.done', { count: mutation.data.assignedCount })}
+          </Alert>
+        ))}
       <Button disabled={keys.length === 0} loading={mutation.isPending} onClick={assign}>
         {t('shipment.bags.assign.submit', { count: keys.length })}
       </Button>

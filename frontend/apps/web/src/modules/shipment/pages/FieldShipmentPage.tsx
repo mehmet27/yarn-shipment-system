@@ -25,7 +25,9 @@ export function FieldShipmentPage() {
         {(shipment) => (
           <Stack>
             <Group justify="space-between">
-              <Title order={3}>{shipment.shipmentNo}</Title>
+              <Title order={1} size="h3">
+                {shipment.shipmentNo}
+              </Title>
               <ShipmentStatusBadge status={shipment.status} />
             </Group>
             <Text>{shipment.subcontractorTitle}</Text>

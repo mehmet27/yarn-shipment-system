@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
+import com.yarnshipment.evidence.application.port.out.ObjectStoragePort;
 import com.yarnshipment.evidence.application.port.out.ObjectStoragePort.PresignedUpload;
 import com.yarnshipment.evidence.application.port.out.ObjectStoragePort.UploadTarget;
 import com.yarnshipment.evidence.domain.model.StoredObject;
@@ -39,7 +40,7 @@ class S3ObjectStorageAdapterTest {
     private static final long SIZE = 2_048L;
 
     private final StorageProperties properties = new StorageProperties(
-            "http://localhost:9000", "us-east-1", "evidence", "access", "secret-secret", true, TTL);
+            "http://localhost:9000", "us-east-1", "evidence", "access", "secret-secret", true, TTL, TTL);
     private final S3Configuration configuration = new S3Configuration();
     private final S3Client client = mock(S3Client.class);
     private final S3Presigner presigner = configuration.s3Presigner(properties);
@@ -57,6 +58,17 @@ class S3ObjectStorageAdapterTest {
                 .contains("X-Amz-Signature=");
         assertThat(upload.headers()).containsEntry("content-type", "image/jpeg").doesNotContainKey("host");
         assertThat(upload.expiresAt()).isEqualTo(NOW.plus(TTL));
+    }
+
+    @Test
+    @DisplayName("İmzalı indirme adresi nesneyi gösterir ve ayar süresi kadar geçerlidir")
+    void shouldPresignDownload() {
+        ObjectStoragePort.PresignedDownload download = adapter.presignDownload(KEY);
+
+        assertThat(download.url())
+                .startsWith("http://localhost:9000/evidence/" + KEY)
+                .contains("X-Amz-Signature=");
+        assertThat(download.expiresAt()).isEqualTo(NOW.plus(TTL));
     }
 
     @Test

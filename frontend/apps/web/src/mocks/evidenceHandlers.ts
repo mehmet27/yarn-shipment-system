@@ -56,7 +56,8 @@ export function createEvidenceHandlers(permissions: readonly Permission[]) {
         {
           evidenceId,
           uploadUrl: `${STORAGE_URL}/${evidenceId}`,
-          headers: { 'Content-Type': body.mimeType },
+          // Backend imzaya boyutu da katar ve başlığı istemciye döner (S3ObjectStorageAdapter).
+          headers: { 'Content-Type': body.mimeType, 'Content-Length': String(body.sizeBytes) },
           expiresAt: new Date(Date.now() + TICKET_TTL_MS).toISOString(),
         },
         { status: 201 },

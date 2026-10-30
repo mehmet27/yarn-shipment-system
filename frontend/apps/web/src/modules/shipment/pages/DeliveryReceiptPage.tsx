@@ -23,7 +23,9 @@ export function DeliveryReceiptPage() {
         {(shipment) => (
           <Stack>
             <Stack gap={2}>
-              <Title order={3}>{t('delivery.title')}</Title>
+              <Title order={1} size="h3">
+                {t('delivery.title')}
+              </Title>
               <Text c="dimmed">{shipment.shipmentNo}</Text>
             </Stack>
             {canRecord && (

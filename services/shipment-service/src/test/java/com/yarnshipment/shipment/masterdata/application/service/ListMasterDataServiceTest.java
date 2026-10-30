@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.masterdata.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.yarnshipment.common.security.Actor;
@@ -42,6 +43,20 @@ class ListMasterDataServiceTest {
         // when / then
         assertThat(service.listSites(actor, query)).isSameAs(page);
         verify(port).findSites(scope, query);
+    }
+
+    @Test
+    @DisplayName("Ana veri yöneticisi kapsamından bağımsız olarak tüm lokasyonları görür")
+    void shouldListAllSitesForMasterDataManager() throws Exception {
+        // given
+        Actor admin = TestTokens.actor("admin");
+        MasterDataQuery query = new MasterDataQuery(null, 0, SIZE);
+        MasterDataPage<Site> page = new MasterDataPage<>(List.of(), 0, SIZE, 0);
+        when(port.findSites(AccessScope.UNRESTRICTED, query)).thenReturn(page);
+
+        // when / then
+        assertThat(service.listSites(admin, query)).isSameAs(page);
+        verifyNoInteractions(scopeGuard);
     }
 
     @Test

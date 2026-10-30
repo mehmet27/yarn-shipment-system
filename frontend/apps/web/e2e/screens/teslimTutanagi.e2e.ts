@@ -60,4 +60,19 @@ test.describe('Teslim tutanağı', { tag: '@saha' }, () => {
     ).toBeVisible();
     await expect(page.getByText('Bu sevkiyat artık teslim tutanağı beklemiyor.')).toHaveCount(0);
   });
+
+  // H-16: "En az bir çuval okutun." çuval okutulunca kaybolur.
+  test('çuval okutulunca boş liste uyarısı kalkar', async ({ page, openAs }) => {
+    await openAs('SUBCONTRACTOR', '/saha/sevkiyat/shp-0004/teslim');
+    await page.getByText('Sağlam', { exact: true }).click();
+    await page.getByLabel('Mühür numarası').fill('M-0004');
+    await page.getByRole('button', { name: 'İleri' }).click();
+    await page.getByRole('button', { name: 'İleri' }).click();
+    await expect(page.getByText('En az bir çuval okutun.')).toBeVisible();
+    const barcode = page.getByLabel('Çuval barkodu');
+    await barcode.fill('B-1');
+    await barcode.press('Enter');
+    await expect(page.getByText('Okutulan çuval: 1')).toBeVisible();
+    await expect(page.getByText('En az bir çuval okutun.')).toHaveCount(0);
+  });
 });

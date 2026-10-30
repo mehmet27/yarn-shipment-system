@@ -1,6 +1,6 @@
 import { Can } from '@/modules/auth';
 import { useTranslation } from '@iplik/i18n';
-import { AppShell, Burger, Group, NavLink, Title, useDisclosure } from '@iplik/ui';
+import { AppShell, Burger, Group, NavLink, Text, useDisclosure } from '@iplik/ui';
 import { NavLink as RouterNavLink, Outlet, useLocation } from 'react-router';
 import { LogoutButton } from './LogoutButton';
 
@@ -22,7 +22,9 @@ export function PanelLayout() {
         <Group h="100%" px="md" justify="space-between">
           <Group>
             <Burger opened={isNavOpen} onClick={toggle} hiddenFrom="sm" color="white" />
-            <Title order={4}>{t('app.name')}</Title>
+            <Text fw={700} size="lg">
+              {t('app.name')}
+            </Text>
           </Group>
           <LogoutButton />
         </Group>

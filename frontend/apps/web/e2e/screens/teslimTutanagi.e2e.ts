@@ -52,6 +52,15 @@ test.describe('Teslim tutanağı', { tag: '@saha' }, () => {
     await expect(page.getByText('Bu sevkiyat artık teslim tutanağı beklemiyor.')).toBeVisible();
   });
 
+  // H-19: yetkisi olmayan rol durum hatası değil, yetki mesajı görür.
+  test('fasoncu olmayan rol teslim beklerken yetki mesajı görür', async ({ page, openAs }) => {
+    await openAs('DRIVER', '/saha/sevkiyat/shp-0004/teslim');
+    await expect(
+      page.getByText('Teslim tutanağını yalnızca sevkiyatın fasoncusu doldurabilir.'),
+    ).toBeVisible();
+    await expect(page.getByText('Bu sevkiyat artık teslim tutanağı beklemiyor.')).toHaveCount(0);
+  });
+
   // H-16: "En az bir çuval okutun." çuval okutulunca kaybolur.
   test('çuval okutulunca boş liste uyarısı kalkar', async ({ page, openAs }) => {
     await openAs('SUBCONTRACTOR', '/saha/sevkiyat/shp-0004/teslim');

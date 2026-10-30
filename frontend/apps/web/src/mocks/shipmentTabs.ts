@@ -9,6 +9,8 @@ import type {
 import { SHIPMENT_STATUSES } from '@iplik/api-client';
 
 const HOUR_MS = 3_600_000;
+/** Backend sistem adımlarını sıfır UUID ile kaydeder (ör. karşılaştırma sonrası İncelemede). */
+const SYSTEM_ACTOR_ID = '00000000-0000-0000-0000-000000000000';
 
 /** Durum sırası boyunca (iptal hariç) taslaktan mevcut duruma saatlik geçişler üretir. */
 export function toHistory(shipment: InternalShipmentView): StatusChangeView[] {
@@ -18,7 +20,7 @@ export function toHistory(shipment: InternalShipmentView): StatusChangeView[] {
     ...(index === 0 ? {} : { fromStatus: SHIPMENT_STATUSES[index - 1] }),
     toStatus,
     changedAt: new Date(start + index * HOUR_MS).toISOString(),
-    changedBy: 'user-warehouse',
+    changedBy: toStatus === 'IN_REVIEW' ? SYSTEM_ACTOR_ID : 'user-warehouse',
   }));
 }
 

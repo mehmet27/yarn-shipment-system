@@ -25,6 +25,12 @@
   "common": {
     "notRecorded": "Kaydedilmedi",
     "hiddenUntilComparison": "Karşılaştırma bitince görünür",
+    "hiddenForRole": "Görme yetkiniz yok",
+    "blindCount": "Teslimde siz gireceksiniz",
+    "actor": {
+      "system": "Sistem",
+      "otherUser": "Başka bir kullanıcı"
+    },
     "close": "Kapat",
     "pagination": {
       "first": "İlk sayfa",
@@ -86,7 +92,9 @@
       "tare": "Dara",
       "net": "Net",
       "difference": "Fark",
-      "recordDispatch": "Çıkış tartısını gir"
+      "recordDispatch": "Çıkış tartısını gir",
+      "deliveryHidden": "Teslim tartısını görme yetkiniz yok.",
+      "dispatchHidden": "Çıkış tartısı kör kontrol gereği gizli."
     },
     "history": {
       "empty": "Henüz durum geçişi yok."
@@ -186,6 +194,7 @@
     "submitted": "Teslim tutanağı gönderildi.",
     "submitFailed": "Tutanak gönderilemedi. Lütfen tekrar deneyin.",
     "invalidStatus": "Bu sevkiyat artık teslim tutanağı beklemiyor.",
+    "noPermission": "Teslim tutanağını yalnızca sevkiyatın fasoncusu doldurabilir.",
     "errors": {
       "sealConditionRequired": "Mühür durumunu seçin.",
       "sealNoRequired": "Mühür numarasını girin.",
@@ -376,6 +385,26 @@
       "OPENED": "Açıldı",
       "ASSIGNED": "Atandı",
       "RESOLVED": "Çözüldü"
+    },
+    "rule": {
+      "QUANTITY_TOLERANCE": "Net kilo tolerans dışında",
+      "QUANTITY_DISPATCH_MISSING": "Çıkış tartısı yok",
+      "BAG_COUNT_MISMATCH": "Çuval sayısı tutmuyor",
+      "BAG_KEYS_MISMATCH": "Okutulan çuvallar tutmuyor",
+      "SEAL_NOT_INTACT": "Mühür sağlam değil",
+      "SEAL_NO_MISMATCH": "Mühür numarası tutmuyor",
+      "DOCUMENT_MISSING": "İmzalı irsaliye yok",
+      "DOCUMENT_SHIPMENT_NO_MISMATCH": "İrsaliyedeki sevkiyat no tutmuyor",
+      "DOCUMENT_NET_KG_MISMATCH": "İrsaliyedeki net kilo tutmuyor",
+      "DOCUMENT_BAG_COUNT_MISMATCH": "İrsaliyedeki çuval sayısı tutmuyor",
+      "TICKET_DISPATCH_PLATE_MISMATCH": "Çıkış fişindeki plaka tutmuyor",
+      "TICKET_DELIVERY_PLATE_MISMATCH": "Teslim fişindeki plaka tutmuyor",
+      "TICKET_DISPATCH_REUSED": "Çıkış fişi başka sevkiyatta kullanılmış",
+      "TICKET_DELIVERY_REUSED": "Teslim fişi başka sevkiyatta kullanılmış",
+      "TICKET_DISPATCH_WEIGHT_MISMATCH": "Çıkış fişindeki kilo girilenle tutmuyor",
+      "TICKET_DELIVERY_WEIGHT_MISMATCH": "Teslim fişindeki kilo girilenle tutmuyor",
+      "TICKET_QUANTITY_TOLERANCE": "Fişlere göre net kilo tolerans dışında",
+      "QUALITY_CLAIM": "Kalite talebi"
     }
   },
   "evidence": {

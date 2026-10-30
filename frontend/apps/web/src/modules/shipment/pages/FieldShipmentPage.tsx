@@ -1,4 +1,3 @@
-import type { ShipmentDetail } from '@iplik/api-client';
 import { EvidenceUpload } from '@/modules/evidence';
 import { useTranslation } from '@iplik/i18n';
 import { Anchor, Button, Group, Paper, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
@@ -6,22 +5,17 @@ import { Link, useParams } from 'react-router';
 import { ArrivalDeclaration } from '../components/ArrivalDeclaration';
 import { PickupConfirmation } from '../components/PickupConfirmation';
 import { QueryState } from '../components/QueryState';
+import { findBagCount, findSealNo } from '../components/shipmentViews';
 import { ShipmentStatusBadge } from '../components/ShipmentStatusBadge';
+import { useFieldText } from '../components/useFieldText';
 import { useShipment } from '../hooks/useShipment';
-
-function findBagCount(shipment: ShipmentDetail): number | undefined {
-  return 'dispatchBagCount' in shipment ? shipment.dispatchBagCount : undefined;
-}
-
-function findSealNo(shipment: ShipmentDetail): string | undefined {
-  return 'dispatchSealNo' in shipment ? shipment.dispatchSealNo : undefined;
-}
 
 /** Şoför ekranı: yalnızca çuval sayısı ve mühür no (yetkilendirme Y1); kilo hiç gelmez. */
 export function FieldShipmentPage() {
   const { t } = useTranslation();
   const { shipmentId = '' } = useParams();
   const query = useShipment(shipmentId);
+  const text = useFieldText();
   return (
     <Stack>
       <Anchor component={Link} to="/saha">
@@ -41,11 +35,11 @@ export function FieldShipmentPage() {
               <SimpleGrid cols={2}>
                 <Text c="dimmed">{t('field.bagCount')}</Text>
                 <Text fw={700} size="xl">
-                  {findBagCount(shipment) ?? t('common.notRecorded')}
+                  {text(findBagCount(shipment))}
                 </Text>
                 <Text c="dimmed">{t('field.sealNo')}</Text>
                 <Text fw={700} size="xl">
-                  {findSealNo(shipment) ?? t('common.notRecorded')}
+                  {text(findSealNo(shipment))}
                 </Text>
               </SimpleGrid>
             </Paper>

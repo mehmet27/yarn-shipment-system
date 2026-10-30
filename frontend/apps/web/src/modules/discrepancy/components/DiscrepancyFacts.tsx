@@ -1,6 +1,7 @@
 import type { DiscrepancyView } from '@iplik/api-client';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Paper, Stack } from '@iplik/ui';
+import { formatFactValue, ruleLabel } from './discrepancyText';
 import { Fact } from './Fact';
 import { formatDifference } from './formatDifference';
 
@@ -11,9 +12,15 @@ export function DiscrepancyFacts({ discrepancy: d }: { discrepancy: DiscrepancyV
     <Paper withBorder p="md">
       <Stack gap="sm">
         <Fact label={t('discrepancy.facts.type')} value={t(`discrepancy.type.${d.type}`)} />
-        <Fact label={t('discrepancy.facts.rule')} value={d.ruleCode} />
-        <Fact label={t('discrepancy.facts.expected')} value={d.expectedValue} />
-        <Fact label={t('discrepancy.facts.actual')} value={d.actualValue} />
+        <Fact label={t('discrepancy.facts.rule')} value={ruleLabel(t, d.ruleCode)} />
+        <Fact
+          label={t('discrepancy.facts.expected')}
+          value={formatFactValue(t, d.type, d.expectedValue)}
+        />
+        <Fact
+          label={t('discrepancy.facts.actual')}
+          value={formatFactValue(t, d.type, d.actualValue)}
+        />
         <Fact
           label={t('discrepancy.facts.difference')}
           value={formatDifference(d.diffKg, d.diffPct)}

@@ -27,6 +27,10 @@ tags:
   - name: DriverManagement
   - name: VehicleManagement
   - name: SiteManagement
+  - name: CatalogLists
+  - name: ProductManagement
+  - name: QualityGradeManagement
+  - name: LotManagement
   - name: CurrentUser
 security:
   - bearerAuth: []
@@ -922,6 +926,448 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/products:
+    get:
+      tags: [CatalogLists]
+      operationId: listProducts
+      summary: İplik listesi
+      description: |
+        İplik (ürün) seçimi için; koda göre sıralı. Arama `q` ile kod ve adda yapılır (büyük-küçük harf duyarsız).
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/SearchText'
+        - $ref: '#/components/parameters/StatusFilter'
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [ProductManagement]
+      operationId: createProduct
+      summary: İplik ekler
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Kod boşluklardan arındırılıp büyük harfe çevrilir; harf veya rakamla başlar, en çok 40 karakterdir ve yalnızca harf, rakam ve `+ . _ / -` içerir (değilse 400 `INVALID_MASTER_DATA`). Kullanılmış kod 409 `DUPLICATE_CODE` verir. Kod eklendikten sonra değişmez. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '201':
+          description: Eklendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/master-data/products/{productId}:
+    put:
+      tags: [ProductManagement]
+      operationId: updateProduct
+      summary: İplik günceller
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve iplik numarası güncellenir. Kayıt pasif olsa da güncellenebilir.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdateRequest'
+      responses:
+        '200':
+          description: Güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/master-data/products/{productId}/deactivate:
+    post:
+      tags: [ProductManagement]
+      operationId: deactivateProduct
+      summary: İplik pasife alır
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif iplik yeni partiye verilemez; mevcut partiler etkilenmez.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/products/{productId}/activate:
+    post:
+      tags: [ProductManagement]
+      operationId: activateProduct
+      summary: İplik yeniden etkinleştirir
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/quality-grades:
+    get:
+      tags: [CatalogLists]
+      operationId: listQualityGrades
+      summary: Kalite sınıfı listesi
+      description: |
+        Kalite sınıfı (A, B ...) seçimi için; koda göre sıralı. Arama `q` ile kod ve adda yapılır.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/SearchText'
+        - $ref: '#/components/parameters/StatusFilter'
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualityGradePageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [QualityGradeManagement]
+      operationId: createQualityGrade
+      summary: Kalite sınıfı ekler
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Kod kuralı iplikteki gibidir (`INVALID_MASTER_DATA`, `DUPLICATE_CODE`); kod partinin kilidiyle çuvala kopyalandığı için eklendikten sonra değişmez. Etiket rengi `#RRGGBB` biçimindedir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QualityGradeCreateRequest'
+      responses:
+        '201':
+          description: Eklendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualityGradeView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/master-data/quality-grades/{qualityGradeId}:
+    put:
+      tags: [QualityGradeManagement]
+      operationId: updateQualityGrade
+      summary: Kalite sınıfı günceller
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve etiket rengi güncellenir.
+      parameters:
+        - name: qualityGradeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QualityGradeUpdateRequest'
+      responses:
+        '200':
+          description: Güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualityGradeView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/master-data/quality-grades/{qualityGradeId}/deactivate:
+    post:
+      tags: [QualityGradeManagement]
+      operationId: deactivateQualityGrade
+      summary: Kalite sınıfı pasife alır
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif sınıf yeni partiye verilemez ve kilitlenecek partide kullanılamaz.
+      parameters:
+        - name: qualityGradeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/quality-grades/{qualityGradeId}/activate:
+    post:
+      tags: [QualityGradeManagement]
+      operationId: activateQualityGrade
+      summary: Kalite sınıfı yeniden etkinleştirir
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+      parameters:
+        - name: qualityGradeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/lots:
+    get:
+      tags: [CatalogLists]
+      operationId: listLots
+      summary: Parti listesi
+      description: |
+        Partiler, üretim tarihine göre yeniden eskiye. Yalnızca kullanıcının yetkili olduğu lokasyonların partileri gelir; `MASTER_DATA_MANAGE` izni olan hepsini görür. Arama `q` ile parti numarası, iplik kodu ve adında yapılır. `status=ALL` için `LOT_QUALITY_LOCK` gerekir.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/SearchText'
+        - $ref: '#/components/parameters/StatusFilter'
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LotPageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [LotManagement]
+      operationId: createLot
+      summary: Parti ekler
+      description: |
+        Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Parti numarası kod kuralına uyar ve lokasyonda tektir (`DUPLICATE_CODE`). Lokasyon, iplik ve kalite sınıfı etkin olmalı, üretim tarihi ileride olamaz (değilse 400 `INVALID_MASTER_DATA`). Parti kilitsiz açılır; çuval bağlanabilmesi için kalitesi kilitlenmelidir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LotCreateRequest'
+      responses:
+        '201':
+          description: Eklendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LotView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/master-data/lots/{lotId}:
+    put:
+      tags: [LotManagement]
+      operationId: updateLot
+      summary: Parti günceller
+      description: |
+        Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Yalnızca kalitesi kilitlenmemiş parti düzenlenir; kilitli parti 409 `LOT_QUALITY_LOCKED` verir. Lokasyon değişmez.
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LotUpdateRequest'
+      responses:
+        '200':
+          description: Güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LotView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/master-data/lots/{lotId}/deactivate:
+    post:
+      tags: [LotManagement]
+      operationId: deactivateLot
+      summary: Parti pasife alır
+      description: |
+        Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Kilitli parti de pasife alınabilir; kilit ve kalite değişmez.
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/lots/{lotId}/activate:
+    post:
+      tags: [LotManagement]
+      operationId: activateLot
+      summary: Parti yeniden etkinleştirir
+      description: |
+        Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/lots/{lotId}/quality-lock:
+    post:
+      tags: [LotManagement]
+      operationId: lockLotQuality
+      summary: Partinin kalitesini kilitler
+      description: |
+        Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında (rapor Bölüm 10). Kilitten sonra partinin numarası, ipliği, kalitesi ve üretim tarihi değişmez ve kilit geri alınamaz; çuvallar yalnızca kilitli partiye bağlanır ve kaliteyi partiden alır. Kilit `LotQualityLocked` olayıyla çuval servisine gider. Kilitli parti 409 `LOT_QUALITY_LOCKED`; pasif parti ya da pasif kalite sınıfı 400 `INVALID_MASTER_DATA` verir.
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Kilitlendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LotView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
   /api/v1/shipments/{shipmentId}/history:
     get:
       tags: [ShipmentFile]
@@ -1151,7 +1597,8 @@ components:
       description: >-
         Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor
         (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da
-        fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR)
+        fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE)
+        ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED)
       content:
         application/problem+json:
           schema:
@@ -1653,6 +2100,202 @@ components:
           format: uuid
         name:
           type: string
+    ProductCreateRequest:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 40
+          description: Harf veya rakamla başlar; harf, rakam ve + . _ / - içerir. Büyük harfe çevrilir, sonra değişmez
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        yarnCount:
+          type: string
+          maxLength: 50
+          description: İplik numarası, ör. Ne 30/1
+    ProductUpdateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        yarnCount:
+          type: string
+          maxLength: 50
+    ProductView:
+      type: object
+      required: [id, code, name]
+      properties:
+        active:
+          type: boolean
+          description: Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        yarnCount:
+          type: string
+    ProductPageResponse:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductView'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+    QualityGradeCreateRequest:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 40
+          description: Harf veya rakamla başlar; harf, rakam ve + . _ / - içerir. Büyük harfe çevrilir, sonra değişmez
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        labelColor:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          description: Etiket rengi; A/B etiketlerini ayırmak için
+    QualityGradeUpdateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        labelColor:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+    QualityGradeView:
+      type: object
+      required: [id, code, name]
+      properties:
+        active:
+          type: boolean
+          description: Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        labelColor:
+          type: string
+          description: '#RRGGBB'
+    QualityGradePageResponse:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/QualityGradeView'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+    LotCreateRequest:
+      type: object
+      required: [siteId, lotNo, productId, qualityGradeId, productionDate]
+      properties:
+        siteId:
+          type: string
+          format: uuid
+        lotNo:
+          type: string
+          minLength: 1
+          maxLength: 40
+          description: Parti numarası; lokasyonda tektir, büyük harfe çevrilir
+        productId:
+          type: string
+          format: uuid
+        qualityGradeId:
+          type: string
+          format: uuid
+        productionDate:
+          type: string
+          format: date
+    LotUpdateRequest:
+      type: object
+      required: [lotNo, productId, qualityGradeId, productionDate]
+      properties:
+        lotNo:
+          type: string
+          minLength: 1
+          maxLength: 40
+          description: Parti numarası; lokasyonda tektir, büyük harfe çevrilir
+        productId:
+          type: string
+          format: uuid
+        qualityGradeId:
+          type: string
+          format: uuid
+        productionDate:
+          type: string
+          format: date
+    LotView:
+      type: object
+      required: [id, siteId, siteName, lotNo, productId, productCode, productName, qualityGradeId, qualityGradeCode,
+        qualityGradeName, productionDate, active]
+      properties:
+        id:
+          type: string
+          format: uuid
+        siteId:
+          type: string
+          format: uuid
+        siteName:
+          type: string
+        lotNo:
+          type: string
+        productId:
+          type: string
+          format: uuid
+        productCode:
+          type: string
+        productName:
+          type: string
+        qualityGradeId:
+          type: string
+          format: uuid
+        qualityGradeCode:
+          type: string
+        qualityGradeName:
+          type: string
+        productionDate:
+          type: string
+          format: date
+        qualityLockedAt:
+          type: string
+          format: date-time
+          description: Kalitenin kilitlendiği an; boşsa parti kilitsizdir ve düzenlenebilir
+        active:
+          type: boolean
+    LotPageResponse:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LotView'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
     ShipmentHistoryResponse:
       type: object
       required: [items]

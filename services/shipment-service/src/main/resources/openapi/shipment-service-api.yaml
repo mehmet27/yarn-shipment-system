@@ -1227,6 +1227,7 @@ components:
         - USER_MANAGE
         - SETTINGS_MANAGE
         - LOT_QUALITY_LOCK
+        - BAG_CREATE
         - SHIPMENT_VIEW
         - SHIPMENT_CREATE
         - SHIPMENT_CANCEL

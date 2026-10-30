@@ -1,4 +1,5 @@
 import { RequireAuth, RequirePermission } from '@/modules/auth';
+import { bagPanelRoutes } from '@/modules/bag';
 import { discrepancyPanelRoutes } from '@/modules/discrepancy';
 import { masterDataPanelRoutes } from '@/modules/masterdata';
 import { shipmentFieldRoutes, shipmentPanelRoutes } from '@/modules/shipment';
@@ -35,6 +36,7 @@ const routes: RouteObject[] = [
       ...shipmentPanelRoutes,
       ...discrepancyPanelRoutes,
       ...masterDataPanelRoutes,
+      ...bagPanelRoutes,
     ],
   },
   {

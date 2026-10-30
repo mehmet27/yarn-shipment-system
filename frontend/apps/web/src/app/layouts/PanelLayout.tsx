@@ -36,6 +36,14 @@ export function PanelLayout() {
           label={t('nav.shipments')}
           active={pathname.startsWith('/panel/sevkiyat')}
         />
+        <Can permission="BAG_CREATE">
+          <NavLink
+            component={RouterNavLink}
+            to="/panel/cuvallar"
+            label={t('nav.bags')}
+            active={pathname.startsWith('/panel/cuvallar')}
+          />
+        </Can>
         <Can permission="DISCREPANCY_VIEW">
           <NavLink
             component={RouterNavLink}

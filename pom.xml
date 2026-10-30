@@ -59,6 +59,9 @@
         <aws-sdk.version>2.31.50</aws-sdk.version>
         <openapi-generator.version>7.26.0</openapi-generator.version>
         <anthropic-java.version>3.3.0</anthropic-java.version>
+        <!-- Etiket: QR kod ve PDF (mimari doküman, "Etiket ve belge"). -->
+        <zxing.version>3.5.3</zxing.version>
+        <openpdf.version>2.0.3</openpdf.version>
 
         <!-- TEST-08: satır kapsamı eşikleri -->
         <coverage.line.minimum>0.80</coverage.line.minimum>
@@ -125,6 +128,16 @@
                 <groupId>com.anthropic</groupId>
                 <artifactId>anthropic-java</artifactId>
                 <version>${anthropic-java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.zxing</groupId>
+                <artifactId>core</artifactId>
+                <version>${zxing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.librepdf</groupId>
+                <artifactId>openpdf</artifactId>
+                <version>${openpdf.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -33,7 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Fiş okuması; migration'larla kurulan gerçek şemada ve uygulama rolüyle. */
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({EvidenceStoreAdapter.class, TicketReadingAdapter.class, UuidV7Generator.class})
+@Import({EvidenceStoreAdapter.class, EvidenceOutbox.class, TicketReadingAdapter.class, UuidV7Generator.class})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class TicketReadingAdapterTest {
 

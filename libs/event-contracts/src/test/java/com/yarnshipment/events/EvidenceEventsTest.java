@@ -2,6 +2,7 @@ package com.yarnshipment.events;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.yarnshipment.events.evidence.EvidenceInvalidated;
 import com.yarnshipment.events.evidence.EvidenceReuseDetected;
 import com.yarnshipment.events.evidence.EvidenceUploaded;
 import com.yarnshipment.events.evidence.TicketRead;
@@ -31,6 +32,9 @@ class EvidenceEventsTest {
                 .isEqualTo(uploaded);
         assertThat(JSON.readValue(JSON.writeValueAsString(reuse), EvidenceReuseDetected.class))
                 .isEqualTo(reuse);
+        EvidenceInvalidated invalidated = new EvidenceInvalidated(evidence, SHIPMENT, "SEAL", "yanlış yükleme", AT);
+        assertThat(JSON.readValue(JSON.writeValueAsString(invalidated), EvidenceInvalidated.class))
+                .isEqualTo(invalidated);
     }
 
     @Test

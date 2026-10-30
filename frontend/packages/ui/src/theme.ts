@@ -45,8 +45,18 @@ export const theme = createTheme({
     // Dar ekranda uzun etiketler kesilmesin: etiket satır atlar, düğme yüksekliği uzar.
     Button: {
       defaultProps: { size: 'lg' },
+      // Yükseklik auto olunca iç kutu kendi boyunda kalır ve yazı üste yapışır; kök flex olup
+      // içeriği dikeyde ortalar (H-26).
       styles: {
-        root: { height: 'auto', minHeight: 'var(--button-height)', paddingBlock: 8 },
+        root: {
+          height: 'auto',
+          minHeight: 'var(--button-height)',
+          paddingBlock: 8,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        inner: { flex: 1 },
         label: { whiteSpace: 'normal', textAlign: 'center' },
       },
     },

@@ -24,7 +24,9 @@ export function ShipmentListPage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>{t('shipment.list.title')}</Title>
+        <Title order={1} size="h2">
+          {t('shipment.list.title')}
+        </Title>
         <Can permission="SHIPMENT_CREATE">
           <Button component={Link} to="/panel/sevkiyat/yeni">
             {t('create.open')}

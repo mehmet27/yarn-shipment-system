@@ -12,7 +12,9 @@ export function FieldShipmentListPage() {
   const query = useShipments({ page: 0, size: FIELD_PAGE_SIZE });
   return (
     <Stack>
-      <Title order={3}>{t('field.myShipments')}</Title>
+      <Title order={1} size="h3">
+        {t('field.myShipments')}
+      </Title>
       <QueryState query={query}>
         {(page) =>
           page.items.length === 0 ? (

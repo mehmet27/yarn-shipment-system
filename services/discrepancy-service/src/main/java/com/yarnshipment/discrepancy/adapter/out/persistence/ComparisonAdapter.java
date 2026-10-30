@@ -30,9 +30,10 @@ final class ComparisonAdapter implements ComparisonPort {
     private static final String COUNT_INPUTS = "SELECT count(*) FROM comparison_input WHERE shipment_id = :shipmentId";
     private static final String INSERT_INPUT = """
             INSERT INTO comparison_input (id, shipment_id, dispatch_net_kg, delivery_net_kg, dispatch_bag_keys,
-                                          delivery_bag_keys, seal_nos, received_at, created_at, created_by)
+                                          delivery_bag_keys, seal_nos, received_at, site_id, subcontractor_id,
+                                          shipment_no, created_at, created_by)
             VALUES (:id, :shipmentId, :dispatchNetKg, :deliveryNetKg, :dispatchKeys::jsonb, :deliveryKeys::jsonb,
-                    :sealNos::jsonb, :receivedAt, :at, :actor)""";
+                    :sealNos::jsonb, :receivedAt, :siteId, :subcontractorId, :shipmentNo, :at, :actor)""";
     private static final String INSERT_DISCREPANCY = """
             INSERT INTO discrepancy (id, discrepancy_no, site_id, shipment_id, subcontractor_id, discrepancy_type,
                                      severity, status, rule_code, expected_value, actual_value, diff_kg, diff_pct,
@@ -96,6 +97,9 @@ final class ComparisonAdapter implements ComparisonPort {
                 .param("deliveryKeys", jsonMapper.writeValueAsString(input.scannedKeys()))
                 .param("sealNos", jsonMapper.writeValueAsString(seals))
                 .param("receivedAt", Timestamp.from(input.receivedAt()))
+                .param("siteId", input.siteId())
+                .param("subcontractorId", input.subcontractorId())
+                .param("shipmentNo", input.shipmentNo())
                 .param("at", at)
                 .param("actor", comparison.actorId())
                 .update();

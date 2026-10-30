@@ -1,6 +1,10 @@
 package com.yarnshipment.discrepancy.adapter.in.web;
 
 import com.yarnshipment.common.web.problem.ProblemFactory;
+import com.yarnshipment.discrepancy.domain.claim.ClaimRejectedException;
+import com.yarnshipment.discrepancy.domain.claim.EvidenceServiceUnavailableException;
+import com.yarnshipment.discrepancy.domain.claim.InspectionNotFoundException;
+import com.yarnshipment.discrepancy.domain.claim.QualityClaimNotFoundException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotFoundException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
 import com.yarnshipment.discrepancy.domain.model.LiablePartyRequiredException;
@@ -37,5 +41,31 @@ public final class DiscrepancyExceptionHandler {
     @ExceptionHandler(LiablePartyRequiredException.class)
     public ProblemDetail handleLiablePartyRequired(HttpServletRequest request) {
         return problems.create(request, HttpStatus.BAD_REQUEST, "LIABLE_PARTY_REQUIRED");
+    }
+
+    @ExceptionHandler(QualityClaimNotFoundException.class)
+    public ProblemDetail handleClaimNotFound(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.NOT_FOUND, "QUALITY_CLAIM_NOT_FOUND");
+    }
+
+    @ExceptionHandler(InspectionNotFoundException.class)
+    public ProblemDetail handleInspectionNotFound(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.NOT_FOUND, "INSPECTION_NOT_FOUND");
+    }
+
+    @ExceptionHandler(ClaimRejectedException.class)
+    public ProblemDetail handleClaimRejected(ClaimRejectedException exception, HttpServletRequest request) {
+        HttpStatus status = switch (exception.rejection()) {
+            case BAG_NOT_DELIVERED, EVIDENCE_REQUIRED, EVIDENCE_INVALID, RESULT_EVIDENCE_REQUIRED ->
+                HttpStatus.BAD_REQUEST;
+            case NOT_AVAILABLE, WINDOW_CLOSED, BAG_ALREADY_CLAIMED, INSPECTION_RECORDED -> HttpStatus.CONFLICT;
+        };
+        return problems.create(
+                request, status, "QUALITY_CLAIM_" + exception.rejection().name());
+    }
+
+    @ExceptionHandler(EvidenceServiceUnavailableException.class)
+    public ProblemDetail handleEvidenceUnavailable(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.SERVICE_UNAVAILABLE, "EVIDENCE_SERVICE_UNAVAILABLE");
     }
 }

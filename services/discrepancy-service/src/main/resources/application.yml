@@ -45,3 +45,6 @@ yarnshipment:
   outbox:
     topic: discrepancy.events.v1
     source: /yarn-shipment/discrepancy-service
+  evidence-service:
+    # İtiraza bağlanan fotoğraf ve lab belgesi isteyenin token'ıyla doğrulanır.
+    url: ${EVIDENCE_SERVICE_URL:http://localhost:8086}

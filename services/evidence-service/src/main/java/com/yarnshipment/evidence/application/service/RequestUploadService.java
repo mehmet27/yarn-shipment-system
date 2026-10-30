@@ -11,8 +11,10 @@ import com.yarnshipment.evidence.application.port.out.ObjectStoragePort.UploadTa
 import com.yarnshipment.evidence.application.port.out.ShipmentAccessPort;
 import com.yarnshipment.evidence.application.port.out.ShipmentAccessPort.ShipmentSnapshot;
 import com.yarnshipment.evidence.application.port.out.UploadIntentPort;
+import com.yarnshipment.evidence.domain.model.EvidenceType;
 import com.yarnshipment.evidence.domain.model.ShipmentLockedException;
 import com.yarnshipment.evidence.domain.model.UploadIntent;
+import com.yarnshipment.evidence.domain.model.UploadStage;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
@@ -55,7 +57,7 @@ public class RequestUploadService implements RequestUploadUseCase {
         UploadPermissions.requireAllowed(actor, file);
         ShipmentSnapshot shipment = shipments.findAccessible(command.shipmentId());
         scopeGuard.validateInScope(actor, ShipmentScopes.of(actor, shipment.shipmentId(), shipment.siteId()), ACTION);
-        if (shipment.locked()) {
+        if (isClosedFor(file.type(), shipment)) {
             throw new ShipmentLockedException(shipment.shipmentId());
         }
         Instant now = clock.instant();
@@ -72,5 +74,17 @@ public class RequestUploadService implements RequestUploadUseCase {
                 now,
                 upload.expiresAt()));
         return new UploadTicket(evidenceId, upload.url(), upload.headers(), upload.expiresAt());
+    }
+
+    /**
+     * Kalite itirazı teslim karşılaştırmasından sonra, sevkiyat tamamlanmış olsa bile 3 iş günü açılabilir; itiraz
+     * fotoğrafı ve lab belgesi bu yüzden kilide değil karşılaştırmaya bağlıdır. Diğer kanıtlar kilitli sevkiyata
+     * eklenemez.
+     */
+    private static boolean isClosedFor(EvidenceType type, ShipmentSnapshot shipment) {
+        if (type.stages().contains(UploadStage.CLAIM)) {
+            return !shipment.comparisonDone();
+        }
+        return shipment.locked();
     }
 }

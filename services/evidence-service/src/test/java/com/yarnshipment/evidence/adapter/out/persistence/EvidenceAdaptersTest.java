@@ -1,9 +1,11 @@
 package com.yarnshipment.evidence.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.evidence.TestTokens;
 import com.yarnshipment.evidence.TestUploads;
+import com.yarnshipment.evidence.domain.model.EvidenceAlreadyInvalidatedException;
 import com.yarnshipment.evidence.domain.model.EvidenceFile;
 import com.yarnshipment.evidence.domain.model.StoredObject;
 import com.yarnshipment.evidence.domain.model.UploadIntent;
@@ -25,7 +27,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Yükleme isteği ve kanıt kaydı; migration'larla kurulan gerçek şemada ve uygulama rolüyle. */
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({EvidenceStoreAdapter.class, UploadIntentAdapter.class, UuidV7Generator.class})
+@Import({
+    EvidenceStoreAdapter.class,
+    EvidenceInvalidationAdapter.class,
+    EvidenceOutbox.class,
+    UploadIntentAdapter.class,
+    UuidV7Generator.class
+})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class EvidenceAdaptersTest {
 
@@ -36,6 +44,9 @@ class EvidenceAdaptersTest {
 
     @Autowired
     private EvidenceStoreAdapter evidence;
+
+    @Autowired
+    private EvidenceInvalidationAdapter invalidations;
 
     @Autowired
     private UploadIntentAdapter intents;
@@ -103,6 +114,22 @@ class EvidenceAdaptersTest {
         evidence.saveEvidence(other);
 
         assertThat(evidence.findByShipment(shipment)).containsExactlyInAnyOrder(first, second);
+    }
+
+    @Test
+    @DisplayName("Geçersiz kılma durumu ve gerekçeyi yazar, olay üretir; ikinci kez yapılamaz")
+    void shouldPersistInvalidation() {
+        EvidenceFile file = newEvidence(UUID.randomUUID(), TestUploads.SHA);
+        evidence.saveEvidence(file);
+        EvidenceFile invalidated = file.invalidate("yanlış sevkiyat");
+
+        invalidations.saveInvalidation(invalidated, USER, TestUploads.NOW);
+
+        assertThat(evidence.findEvidence(file.id())).contains(invalidated);
+        assertThat(outboxCount(file.shipmentId(), "com.yarnshipment.evidence.evidence-invalidated.v1"))
+                .isEqualTo(1);
+        assertThatThrownBy(() -> invalidations.saveInvalidation(invalidated, USER, TestUploads.NOW))
+                .isInstanceOf(EvidenceAlreadyInvalidatedException.class);
     }
 
     private int outboxCount(UUID shipmentId, String type) {

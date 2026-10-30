@@ -27,6 +27,7 @@ servers:
 tags:
   - name: EvidenceUploads
   - name: Evidence
+  - name: EvidenceCorrections
   - name: TicketReadings
 security:
   - bearerAuth: []
@@ -193,6 +194,47 @@ paths:
           $ref: '#/components/responses/NotFound'
         '503':
           $ref: '#/components/responses/Unavailable'
+  /api/v1/evidence/{evidenceId}/invalidate:
+    post:
+      tags: [EvidenceCorrections]
+      operationId: invalidateEvidence
+      summary: Kanıtı geçersiz kıl
+      description: |
+        Yanlış ya da uygunsuz yüklenen kanıtı gerekçeyle geçersiz sayar (yalnızca admin). Kayıt ve dosya silinmez;
+        durum `INVALIDATED` olur. Geçersiz kanıt teslim girişinde imzalı irsaliye olarak kabul edilmez. Bir kanıt
+        yalnızca bir kez geçersiz kılınabilir.
+      parameters:
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvalidateEvidenceRequest'
+      responses:
+        '200':
+          description: Geçersiz kılınan kanıt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/Unavailable'
   /api/v1/evidence/{evidenceId}:
     get:
       tags: [Evidence]
@@ -264,7 +306,9 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
     Conflict:
-      description: Sevkiyat kilitli (SHIPMENT_LOCKED) ya da dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED)
+      description: >-
+        Sevkiyat kilitli (SHIPMENT_LOCKED), dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED) ya da kanıt zaten geçersiz
+        kılınmış (EVIDENCE_ALREADY_INVALIDATED)
       content:
         application/problem+json:
           schema:
@@ -357,10 +401,25 @@ components:
         expiresAt:
           type: string
           format: date-time
+    EvidenceStatus:
+      type: string
+      enum: [VALID, INVALIDATED]
+    InvalidateEvidenceRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
     EvidenceView:
       type: object
-      required: [id, shipmentId, evidenceType, mimeType, sizeBytes, sha256, source, uploadedAt]
+      required: [id, shipmentId, evidenceType, mimeType, sizeBytes, sha256, source, uploadedAt, status]
       properties:
+        status:
+          $ref: '#/components/schemas/EvidenceStatus'
+        invalidatedReason:
+          type: string
         id:
           type: string
           format: uuid

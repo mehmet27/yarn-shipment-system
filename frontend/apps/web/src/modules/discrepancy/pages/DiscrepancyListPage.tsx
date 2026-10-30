@@ -1,7 +1,7 @@
 import { DiscrepancyStatus, Severity } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Group, Pagination, Select, Stack, Text, Title } from '@iplik/ui';
-import { QueryState } from '@/modules/shipment';
+import { Group, Select, Stack, Text, Title } from '@iplik/ui';
+import { ListPagination, QueryState } from '@/modules/shipment';
 import { DiscrepancyCard } from '../components/DiscrepancyCard';
 import { useDiscrepancies } from '../hooks/useDiscrepancies';
 import { PAGE_SIZE, useDiscrepancyFilter } from '../hooks/useDiscrepancyFilter';
@@ -54,7 +54,7 @@ export function DiscrepancyListPage() {
               {page.items.map((item) => (
                 <DiscrepancyCard key={item.id} discrepancy={item} />
               ))}
-              <Pagination
+              <ListPagination
                 total={page.page.totalPages}
                 value={filter.page}
                 onChange={filter.setPage}

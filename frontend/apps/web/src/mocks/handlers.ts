@@ -4,6 +4,7 @@ import type { Kilogram } from '@iplik/units';
 import { calculateNetKg, isKilogram } from '@iplik/units';
 import { http, HttpResponse } from 'msw';
 import {
+  assignMockBagKeys,
   addMockShipment,
   findMockShipment,
   isMockSealUsed,
@@ -106,8 +107,9 @@ function createGetShipmentHandler(role: Role) {
   });
 }
 
-/** Yerel örnek çuvallar: BAG-0001..BAG-0005. */
+/** Yerel örnek çuvallar: BAG-0001..BAG-0005; BAG-0005 başka lokasyondadır (QA H-03). */
 const KNOWN_BAG_KEY = /^BAG-000[1-5]$/;
+const OTHER_SITE_BAG_KEY = 'BAG-0005';
 
 function createTabHandlers(role: Role) {
   const user = createMockUser(role);
@@ -128,10 +130,19 @@ function createTabHandlers(role: Role) {
       const keys = body.uniqueKeys ?? [];
       const unknown = keys.find((key) => !KNOWN_BAG_KEY.test(key));
       if (unknown !== undefined) {
-        return HttpResponse.json({ code: 'BAG_NOT_FOUND', title: unknown }, { status: 404 });
+        return HttpResponse.json(
+          { status: 404, code: 'BAG_NOT_FOUND', title: unknown },
+          { status: 404 },
+        );
       }
-      return withShipment(params.shipmentId, () =>
-        HttpResponse.json({ assignedCount: keys.length }),
+      if (keys.includes(OTHER_SITE_BAG_KEY)) {
+        return HttpResponse.json(
+          { status: 403, code: 'BAG_OUT_OF_SCOPE', title: 'Kapsam dışı' },
+          { status: 403 },
+        );
+      }
+      return withShipment(params.shipmentId, (s) =>
+        HttpResponse.json({ assignedCount: assignMockBagKeys(s.shipmentId, keys) }),
       );
     }),
     http.delete(`${SHIPMENTS_PATH}/:shipmentId/bags/:uniqueKey`, ({ params }) =>

@@ -26,6 +26,7 @@ class BagServiceClientTest {
     private static final UUID BAG_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000301");
     private static final int OK = 200;
     private static final int NOT_FOUND = 404;
+    private static final int FORBIDDEN = 403;
     private static final int CONFLICT = 409;
     private static final int SERVER_ERROR = 500;
 
@@ -56,11 +57,12 @@ class BagServiceClientTest {
     }
 
     @Test
-    @DisplayName("BAG_ALREADY_RESERVED, BAG_NOT_AVAILABLE ve BAG_NOT_FOUND alan hatasına çevrilir")
+    @DisplayName("BAG_ALREADY_RESERVED, BAG_NOT_AVAILABLE, BAG_NOT_FOUND ve OUT_OF_SCOPE alan hatasına çevrilir")
     void shouldTranslateProblemCodes() throws Exception {
         assertReason(CONFLICT, "BAG_ALREADY_RESERVED", Reason.ALREADY_RESERVED);
         assertReason(CONFLICT, "BAG_NOT_AVAILABLE", Reason.NOT_AVAILABLE);
         assertReason(NOT_FOUND, "BAG_NOT_FOUND", Reason.NOT_FOUND);
+        assertReason(FORBIDDEN, "OUT_OF_SCOPE", Reason.OUT_OF_SCOPE);
     }
 
     @Test

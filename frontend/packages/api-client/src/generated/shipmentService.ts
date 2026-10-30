@@ -605,7 +605,7 @@ export type BadRequestResponse = Problem;
 export type UnauthorizedResponse = Problem;
 
 /**
- * İzin yok (ACCESS_DENIED) veya kayıt kapsam dışı (OUT_OF_SCOPE)
+ * İzin yok (ACCESS_DENIED), kayıt kapsam dışı (OUT_OF_SCOPE) ya da çuval başka lokasyonda (BAG_OUT_OF_SCOPE)
  */
 export type ForbiddenResponse = Problem;
 
@@ -1231,8 +1231,9 @@ export const cancelShipment = (
  * Depo personeli çuvalları okutur ya da listeden seçer; her çuval bag-service'te bu sevkiyata ayrılır ve
  * sevkiyatın çuval listesine yazılır. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Hepsi ya da hiçbiri:
  * bir çuval bulunamazsa (`BAG_NOT_FOUND`), kullanılamaz durumdaysa (`BAG_NOT_AVAILABLE`) ya da başka
- * sevkiyattaysa (`BAG_ALREADY_RESERVED`) hiçbiri atanmaz. Aynı çuvalı tekrar göndermek hata vermez;
- * `assignedCount` yalnızca yeni atananları sayar. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
+ * sevkiyattaysa (`BAG_ALREADY_RESERVED`) hiçbiri atanmaz. Çuval isteyenin lokasyon kapsamı dışındaysa 403
+ * `BAG_OUT_OF_SCOPE` döner. Aynı çuvalı tekrar göndermek hata vermez; `assignedCount` yalnızca yeni atananları
+ * sayar. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
  * @summary Çuvalları taslak sevkiyata atar
  */
 export const assignShipmentBags = (

@@ -91,6 +91,20 @@ class EvidenceAdaptersTest {
                 .isEqualTo(1);
     }
 
+    @Test
+    @DisplayName("Sevkiyatın kanıtları listelenir; başka sevkiyatın kanıtı karışmaz")
+    void shouldListEvidenceByShipment() {
+        UUID shipment = UUID.randomUUID();
+        EvidenceFile first = newEvidence(shipment, TestUploads.SHA);
+        EvidenceFile second = newEvidence(shipment, TestUploads.SHA.replace('a', 'c'));
+        EvidenceFile other = newEvidence(UUID.randomUUID(), TestUploads.SHA.replace('a', 'd'));
+        evidence.saveEvidence(first);
+        evidence.saveEvidence(second);
+        evidence.saveEvidence(other);
+
+        assertThat(evidence.findByShipment(shipment)).containsExactlyInAnyOrder(first, second);
+    }
+
     private int outboxCount(UUID shipmentId, String type) {
         Integer count = jdbc.queryForObject(
                 "SELECT count(*) FROM outbox_event WHERE aggregate_id = ? AND event_type = ?",

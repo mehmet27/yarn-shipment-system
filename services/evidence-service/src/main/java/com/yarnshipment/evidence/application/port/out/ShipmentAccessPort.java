@@ -11,8 +11,9 @@ public interface ShipmentAccessPort {
      * @param shipmentId sevkiyat
      * @param siteId çıkış lokasyonu
      * @param locked sevkiyat kilitli mi (tamamlanmış ya da iptal edilmiş)
+     * @param comparisonDone karşılaştırma bitti mi; kör giriş bundan sonra kalkar
      */
-    record ShipmentSnapshot(UUID shipmentId, UUID siteId, boolean locked) {}
+    record ShipmentSnapshot(UUID shipmentId, UUID siteId, boolean locked, boolean comparisonDone) {}
 
     /** Sevkiyat isteyene görünmüyorsa {@code ShipmentNotAccessibleException} fırlatır. */
     ShipmentSnapshot findAccessible(UUID shipmentId);

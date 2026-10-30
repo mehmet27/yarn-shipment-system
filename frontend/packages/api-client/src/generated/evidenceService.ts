@@ -143,6 +143,15 @@ export interface TicketReadingView {
   readAt: string;
 }
 
+export interface EvidenceListView {
+  items: EvidenceView[];
+}
+
+export interface EvidenceDownloadView {
+  url: string;
+  expiresAt: string;
+}
+
 /**
  * İstek hatalı (UPLOAD_NOT_ALLOWED, VALIDATION_FAILED, TICKET_READING_NOT_SUPPORTED)
  */
@@ -182,6 +191,10 @@ export type UnavailableResponse = Problem;
  * İşlem kaydedildiği anda istemcide üretilir, yeniden denemede aynı kalır (API-04)
  */
 export type IdempotencyKeyParameter = string;
+
+export type ListEvidenceParams = {
+shipmentId: string;
+};
 
 /**
  * Aynı `Idempotency-Key` ile tekrar gönderilen istek aynı cevabı alır (API-04).
@@ -226,6 +239,36 @@ export const readEvidenceTicket = (
     }
 
 /**
+ * Yükleme sırasıyla, isteyenin görmesine izin verilen kanıtların üst verisi. Kör giriş gereği çıkış kantar
+ * fotoğrafı karşılaştırma bitene kadar fasoncuya, teslim fotoğrafları depoya listede de gösterilmez (alan yok,
+ * boş değil). Şoför yalnızca plaka fotoğrafını görür.
+ * @summary Sevkiyatın kanıtları
+ */
+export const listEvidence = (
+    params: ListEvidenceParams,
+ ) => {
+      return customInstance<EvidenceListView>(
+      {url: `/api/v1/evidence`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * Dosyayı doğrudan nesne deposundan okumak için kısa ömürlü (yaklaşık 5 dk) adres. Görme kuralları üst veri
+ * ucuyla aynıdır; görünmeyen kanıt EVIDENCE_NOT_FOUND döner. Adres her çağrıda yenilenir, saklanmamalıdır.
+ * @summary Kanıt dosyası için imzalı indirme adresi
+ */
+export const getEvidenceDownloadUrl = (
+    evidenceId: string,
+ ) => {
+      return customInstance<EvidenceDownloadView>(
+      {url: `/api/v1/evidence/${evidenceId}/download-url`, method: 'GET'
+    },
+      );
+    }
+
+/**
  * Dosyanın kendisini değil üst verisini döner (tür, sevkiyat, boyut, hash). Sevkiyat isteyene görünmüyorsa
  * kanıt da yoktur (EVIDENCE_NOT_FOUND).
  * @summary Kanıt üst verisi
@@ -247,4 +290,6 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 export type RequestEvidenceUploadResult = NonNullable<Awaited<ReturnType<typeof requestEvidenceUpload>>>
 export type ConfirmEvidenceUploadResult = NonNullable<Awaited<ReturnType<typeof confirmEvidenceUpload>>>
 export type ReadEvidenceTicketResult = NonNullable<Awaited<ReturnType<typeof readEvidenceTicket>>>
+export type ListEvidenceResult = NonNullable<Awaited<ReturnType<typeof listEvidence>>>
+export type GetEvidenceDownloadUrlResult = NonNullable<Awaited<ReturnType<typeof getEvidenceDownloadUrl>>>
 export type GetEvidenceResult = NonNullable<Awaited<ReturnType<typeof getEvidence>>>

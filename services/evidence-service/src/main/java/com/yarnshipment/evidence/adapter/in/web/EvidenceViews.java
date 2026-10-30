@@ -1,15 +1,19 @@
 package com.yarnshipment.evidence.adapter.in.web;
 
+import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceDownloadView;
+import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceListView;
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceSource;
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceType;
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceView;
 import com.yarnshipment.evidence.adapter.in.web.api.model.RequestUploadRequest;
 import com.yarnshipment.evidence.adapter.in.web.api.model.UploadTicketView;
+import com.yarnshipment.evidence.application.port.in.DownloadLink;
 import com.yarnshipment.evidence.application.port.in.UploadTicket;
 import com.yarnshipment.evidence.domain.model.EvidenceFile;
 import com.yarnshipment.evidence.domain.model.UploadIntent.DeclaredFile;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 
 /** Alan modeli ile üretilen API modelleri arasındaki dönüşümler. */
 final class EvidenceViews {
@@ -26,6 +30,14 @@ final class EvidenceViews {
                 com.yarnshipment.evidence.domain.model.EvidenceSource.valueOf(
                         request.getSource().getValue()),
                 capturedAt == null ? null : capturedAt.toInstant());
+    }
+
+    static EvidenceDownloadView toView(DownloadLink link) {
+        return new EvidenceDownloadView(link.url(), link.expiresAt().atOffset(ZoneOffset.UTC));
+    }
+
+    static EvidenceListView toView(List<EvidenceFile> files) {
+        return new EvidenceListView(files.stream().map(EvidenceViews::toView).toList());
     }
 
     static UploadTicketView toView(UploadTicket ticket) {

@@ -3,12 +3,8 @@ package com.yarnshipment.evidence.adapter.out.storage;
 import com.yarnshipment.evidence.application.port.out.ObjectStoragePort;
 import com.yarnshipment.evidence.domain.model.StoredObject;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
-import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +17,8 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
@@ -32,7 +30,6 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 final class S3ObjectStorageAdapter implements ObjectStoragePort {
 
     private static final String HOST_HEADER = "host";
-    private static final int BUFFER_SIZE = 8192;
 
     private final StorageProperties properties;
     private final Clock clock;
@@ -69,6 +66,19 @@ final class S3ObjectStorageAdapter implements ObjectStoragePort {
     }
 
     @Override
+    public PresignedDownload presignDownload(String storageKey) {
+        GetObjectRequest get = GetObjectRequest.builder()
+                .bucket(properties.bucket())
+                .key(storageKey)
+                .build();
+        PresignedGetObjectRequest presigned = presigner.presignGetObject(GetObjectPresignRequest.builder()
+                .signatureDuration(properties.downloadUrlTtl())
+                .getObjectRequest(get)
+                .build());
+        return new PresignedDownload(presigned.url().toString(), clock.instant().plus(properties.downloadUrlTtl()));
+    }
+
+    @Override
     public Optional<StoredObject> inspect(String storageKey) {
         GetObjectRequest request = GetObjectRequest.builder()
                 .bucket(properties.bucket())
@@ -76,10 +86,7 @@ final class S3ObjectStorageAdapter implements ObjectStoragePort {
                 .build();
         try (var stream = client.getObject(request, ResponseTransformer.toInputStream())) {
             GetObjectResponse response = stream.response();
-            MessageDigest digest = sha256();
-            long size = drain(stream, digest);
-            return Optional.of(
-                    new StoredObject(size, HexFormat.of().formatHex(digest.digest()), response.contentType()));
+            return Optional.of(ObjectDigest.measure(stream, response.contentType()));
         } catch (NoSuchKeyException exception) {
             return Optional.empty();
         } catch (IOException exception) {
@@ -103,25 +110,6 @@ final class S3ObjectStorageAdapter implements ObjectStoragePort {
             throw new UncheckedIOException(exception);
         } catch (SdkException exception) {
             throw new IllegalStateException("Object storage read failed", exception);
-        }
-    }
-
-    private static long drain(InputStream stream, MessageDigest digest) throws IOException {
-        byte[] buffer = new byte[BUFFER_SIZE];
-        long total = 0;
-        int read;
-        while ((read = stream.read(buffer)) != -1) {
-            digest.update(buffer, 0, read);
-            total += read;
-        }
-        return total;
-    }
-
-    private static MessageDigest sha256() {
-        try {
-            return MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException(exception);
         }
     }
 }

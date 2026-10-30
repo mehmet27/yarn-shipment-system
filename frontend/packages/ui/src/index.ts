@@ -8,6 +8,7 @@ export {
   CloseButton,
   Button,
   Center,
+  Checkbox,
   Container,
   FileButton,
   Group,
@@ -26,6 +27,7 @@ export {
   Table,
   Tabs,
   Text,
+  Textarea,
   TextInput,
   Title,
 } from '@mantine/core';

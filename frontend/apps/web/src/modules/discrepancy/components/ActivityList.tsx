@@ -4,7 +4,14 @@ import { QueryState, useActorLabel } from '@/modules/shipment';
 import { useDiscrepancyActivity } from '../hooks/useDiscrepancy';
 import { ruleLabel } from './discrepancyText';
 
-const KNOWN_ACTIONS = ['OPENED', 'ASSIGNED', 'RESOLVED'];
+const KNOWN_ACTIONS = [
+  'OPENED',
+  'ASSIGNED',
+  'RESOLVED',
+  'CLAIM_EVIDENCE',
+  'INSPECTION_REQUESTED',
+  'INSPECTION_RESULT',
+];
 
 /** Etkinlik geçmişi en eskiden yeniye; bilinmeyen eylem türü ham değerle gösterilir. */
 export function ActivityList({ discrepancyId }: { discrepancyId: string }) {

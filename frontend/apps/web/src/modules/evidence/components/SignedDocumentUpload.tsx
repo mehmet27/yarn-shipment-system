@@ -1,11 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Stack, Text } from '@iplik/ui';
-import { useState } from 'react';
-import { useUploadEvidence } from '../hooks/useUploadEvidence';
-import { ACCEPTED_MIME_TYPES, fileProblem } from '../uploadTypes';
-import type { FileProblem } from '../uploadTypes';
-import { uploadErrorKey } from '../uploadErrors';
-import { UploadButtons } from './UploadButtons';
+import { TypedEvidenceUpload } from './TypedEvidenceUpload';
 
 export type SignedDocumentUploadProps = {
   shipmentId: string;
@@ -16,29 +10,13 @@ export type SignedDocumentUploadProps = {
 /** İmzalı irsaliye fotoğrafı/PDF'i: yükleyip onaylar, dönen kanıt kimliğini üst bileşene verir. */
 export function SignedDocumentUpload({ shipmentId, onUploaded }: SignedDocumentUploadProps) {
   const { t } = useTranslation();
-  const mutation = useUploadEvidence(shipmentId);
-  const [problem, setProblem] = useState<FileProblem>();
-  const pick = (file: File | null, source: 'CAMERA' | 'GALLERY') => {
-    if (file === null) return;
-    const found = fileProblem(file, ACCEPTED_MIME_TYPES);
-    setProblem(found);
-    if (found !== undefined) return;
-    mutation.mutate(
-      { file, evidenceType: 'SIGNED_DELIVERY_DOC', source },
-      {
-        onSuccess: (evidence) => {
-          onUploaded(evidence.id);
-        },
-      },
-    );
-  };
   return (
-    <Stack>
-      <Text fw={600}>{t('delivery.document.signed')}</Text>
-      <UploadButtons isLoading={mutation.isPending} onPick={pick} />
-      {problem !== undefined && <Alert color="red">{t(`evidence.errors.${problem}`)}</Alert>}
-      {mutation.isError && <Alert color="red">{t(uploadErrorKey(mutation.error))}</Alert>}
-      {mutation.isSuccess && <Alert color="green">{t('delivery.document.signedDone')}</Alert>}
-    </Stack>
+    <TypedEvidenceUpload
+      shipmentId={shipmentId}
+      evidenceType="SIGNED_DELIVERY_DOC"
+      label={t('delivery.document.signed')}
+      doneLabel={t('delivery.document.signedDone')}
+      onUploaded={onUploaded}
+    />
   );
 }

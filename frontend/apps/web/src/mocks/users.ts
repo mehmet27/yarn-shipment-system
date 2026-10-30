@@ -48,6 +48,7 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'DELIVERY_RECORD',
     'DELIVERY_VIEW',
     'EVIDENCE_UPLOAD_DELIVERY',
+    'EVIDENCE_UPLOAD_CLAIM',
     'EVIDENCE_VIEW',
     'QUALITY_CLAIM_OPEN',
     'DISCREPANCY_VIEW',

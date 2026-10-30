@@ -83,7 +83,8 @@
         "weights": "Kilolar",
         "bags": "Çuvallar",
         "evidence": "Kanıtlar",
-        "history": "Geçmiş"
+        "history": "Geçmiş",
+        "claims": "Kalite itirazı"
       },
       "comingSoon": "Bu sekme sonraki adımda eklenecek.",
       "dispatch": "Çıkış",
@@ -384,7 +385,10 @@
       "title": "Geçmiş",
       "OPENED": "Açıldı",
       "ASSIGNED": "Atandı",
-      "RESOLVED": "Çözüldü"
+      "RESOLVED": "Çözüldü",
+      "CLAIM_EVIDENCE": "İtiraz fotoğrafı eklendi",
+      "INSPECTION_REQUESTED": "Numune / lab kontrolü istendi",
+      "INSPECTION_RESULT": "Kontrol sonucu girildi"
     },
     "rule": {
       "QUANTITY_TOLERANCE": "Net kilo tolerans dışında",
@@ -481,6 +485,61 @@
     "fileErrors": {
       "wrongType": "Kantar fişi için fotoğraf seçin (JPEG, PNG veya HEIC).",
       "tooLarge": "Fotoğraf en fazla 20 MB olabilir."
+    }
+  },
+  "claim": {
+    "title": "Kalite itirazı",
+    "empty": "Bu sevkiyatta kalite itirazı yok.",
+    "notAvailable": "Teslim karşılaştırması bitmeden kalite itirazı açılamaz.",
+    "ofDiscrepancy": "İtiraz dosyası",
+    "window": {
+      "open": "İtiraz süresi {{deadline}} tarihinde biter.",
+      "closed": "İtiraz süresi {{deadline}} tarihinde doldu."
+    },
+    "open": {
+      "start": "Kalite itirazı aç",
+      "title": "Yeni kalite itirazı",
+      "bags": "İtiraz edilen çuvallar",
+      "description": "Sorunu anlatın",
+      "photos": "Fotoğraflar",
+      "photosDone": "{{count}} fotoğraf eklendi.",
+      "photoRequired": "En az bir fotoğraf ekleyin.",
+      "submit": "İtirazı gönder"
+    },
+    "card": {
+      "bags": "Çuvallar",
+      "photos": "{{count}} fotoğraf",
+      "openedAt": "Açıldı"
+    },
+    "inspection": {
+      "kindLabel": "Kontrol türü",
+      "kind": {
+        "SAMPLE": "Numune kontrolü",
+        "LAB": "Laboratuvar analizi"
+      },
+      "note": "Talep notu",
+      "request": "Kontrol iste",
+      "pending": "Sonuç bekleniyor",
+      "done": "Sonuçlandı",
+      "requestedAt": "İstendi",
+      "result": "Sonuç",
+      "labDocument": "Laboratuvar raporu (zorunlu)",
+      "optionalDocument": "Belge (isteğe bağlı)",
+      "documentAttached": "Rapor belgesi eklendi.",
+      "saveResult": "Sonucu kaydet"
+    },
+    "errors": {
+      "QUALITY_CLAIM_NOT_AVAILABLE": "Bu sevkiyata henüz itiraz açılamaz.",
+      "QUALITY_CLAIM_WINDOW_CLOSED": "İtiraz süresi doldu; teslimden sonra 3 iş günü içinde açılabilir.",
+      "QUALITY_CLAIM_BAG_NOT_DELIVERED": "Seçilen çuval bu sevkiyatta teslim edilmemiş.",
+      "QUALITY_CLAIM_BAG_ALREADY_CLAIMED": "Seçilen çuvallardan birine zaten itiraz açılmış.",
+      "QUALITY_CLAIM_EVIDENCE_REQUIRED": "En az bir fotoğraf ekleyin.",
+      "QUALITY_CLAIM_EVIDENCE_INVALID": "Eklenen dosya bu sevkiyata ait değil ya da türü uygun değil.",
+      "QUALITY_CLAIM_INSPECTION_RECORDED": "Bu kontrolün sonucu zaten girilmiş.",
+      "QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED": "Laboratuvar analizinde rapor belgesi zorunludur.",
+      "DISCREPANCY_NOT_OPEN": "Uyuşmazlık kapandı; yeni kontrol istenemez.",
+      "EVIDENCE_SERVICE_UNAVAILABLE": "Dosyalar doğrulanamadı. Lütfen biraz sonra tekrar deneyin.",
+      "unknown": "İşlem yapılamadı. Lütfen tekrar deneyin."
     }
   }
 }

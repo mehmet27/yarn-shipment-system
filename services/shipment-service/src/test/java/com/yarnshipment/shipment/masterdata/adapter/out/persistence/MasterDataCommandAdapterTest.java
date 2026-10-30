@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.shipment.adapter.out.persistence.PostgresTestDatabase;
 import com.yarnshipment.shipment.masterdata.domain.model.DriverDetails;
+import com.yarnshipment.shipment.masterdata.domain.model.DuplicateSubcontractorException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -102,6 +103,21 @@ class MasterDataCommandAdapterTest {
                 .isFalse();
         assertThat(inTx(() -> adapter.updateSubcontractor(actor, UUID.randomUUID(), "X")))
                 .isFalse();
+    }
+
+    @Test
+    @DisplayName("Ünvan büyük/küçük harf ve boşluk farkı yok sayılarak tektir; ekleme ve güncellemede reddedilir")
+    void shouldRejectDuplicateTitle() throws Exception {
+        // given
+        UUID actor = UUID.randomUUID();
+        inTx(() -> adapter.insertSubcontractor(actor, "Tekil Dokuma"));
+        var other = inTx(() -> adapter.insertSubcontractor(actor, "Diğer Dokuma"));
+
+        // when / then
+        assertThatThrownBy(() -> inTx(() -> adapter.insertSubcontractor(actor, " tekil dokuma ")))
+                .isInstanceOf(DuplicateSubcontractorException.class);
+        assertThatThrownBy(() -> inTx(() -> adapter.updateSubcontractor(actor, other.id(), "TEKIL DOKUMA")))
+                .isInstanceOf(DuplicateSubcontractorException.class);
     }
 
     @Test

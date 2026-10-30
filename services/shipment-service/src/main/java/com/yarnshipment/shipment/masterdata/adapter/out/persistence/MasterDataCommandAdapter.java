@@ -3,11 +3,13 @@ package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 import com.yarnshipment.shipment.masterdata.application.port.out.MasterDataCommandPort;
 import com.yarnshipment.shipment.masterdata.domain.model.Driver;
 import com.yarnshipment.shipment.masterdata.domain.model.DriverDetails;
+import com.yarnshipment.shipment.masterdata.domain.model.DuplicateSubcontractorException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
 import com.yarnshipment.shipment.masterdata.domain.model.Subcontractor;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.util.UUID;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
@@ -44,23 +46,31 @@ final class MasterDataCommandAdapter implements MasterDataCommandPort {
     public Subcontractor insertSubcontractor(UUID actorId, String title) {
         actAs(actorId);
         UUID id = UUID.randomUUID();
-        jdbc.sql(INSERT_SUBCONTRACTOR)
-                .param("id", id)
-                .param("title", title)
-                .param("at", Timestamp.from(clock.instant()))
-                .param("actor", actorId)
-                .update();
+        try {
+            jdbc.sql(INSERT_SUBCONTRACTOR)
+                    .param("id", id)
+                    .param("title", title)
+                    .param("at", Timestamp.from(clock.instant()))
+                    .param("actor", actorId)
+                    .update();
+        } catch (DuplicateKeyException e) {
+            throw new DuplicateSubcontractorException(title);
+        }
         return new Subcontractor(id, title);
     }
 
     @Override
     public boolean updateSubcontractor(UUID actorId, UUID id, String title) {
         actAs(actorId);
-        return jdbc.sql(UPDATE_SUBCONTRACTOR)
-                        .param("title", title)
-                        .param("id", id)
-                        .update()
-                > 0;
+        try {
+            return jdbc.sql(UPDATE_SUBCONTRACTOR)
+                            .param("title", title)
+                            .param("id", id)
+                            .update()
+                    > 0;
+        } catch (DuplicateKeyException e) {
+            throw new DuplicateSubcontractorException(title);
+        }
     }
 
     @Override

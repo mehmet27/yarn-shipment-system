@@ -11,7 +11,9 @@ import com.yarnshipment.shipment.domain.model.InvalidNewShipmentException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.SealAlreadyUsedException;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicatePlateException;
+import com.yarnshipment.shipment.masterdata.domain.model.DuplicateSubcontractorException;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
+import com.yarnshipment.shipment.masterdata.domain.model.InvalidPlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
@@ -109,9 +111,17 @@ public final class ShipmentExceptionHandler {
         return problem(request, HttpStatus.NOT_FOUND, "MASTER_DATA_NOT_FOUND");
     }
 
-    @ExceptionHandler(DuplicatePlateException.class)
-    public ProblemDetail handleDuplicatePlate(HttpServletRequest request) {
-        return problem(request, HttpStatus.CONFLICT, "DUPLICATE_PLATE");
+    @ExceptionHandler({DuplicatePlateException.class, DuplicateSubcontractorException.class})
+    public ProblemDetail handleDuplicateMasterData(RuntimeException exception, HttpServletRequest request) {
+        String code = exception instanceof DuplicatePlateException ? "DUPLICATE_PLATE" : "DUPLICATE_SUBCONTRACTOR";
+        return problem(request, HttpStatus.CONFLICT, code);
+    }
+
+    @ExceptionHandler(InvalidPlateException.class)
+    public ProblemDetail handleInvalidPlate(HttpServletRequest request) {
+        ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_PLATE");
+        problem.setProperty("errors", List.of(Map.of("field", "plateNo", "message", "invalid")));
+        return problem;
     }
 
     @ExceptionHandler(LoginAccountExistsException.class)

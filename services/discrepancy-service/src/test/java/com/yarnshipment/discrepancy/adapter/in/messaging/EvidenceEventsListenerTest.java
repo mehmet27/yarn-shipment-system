@@ -9,6 +9,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import com.yarnshipment.common.outbox.CloudEventHeaders;
 import com.yarnshipment.common.outbox.OutboxEvent;
 import com.yarnshipment.discrepancy.TestComparisons;
+import com.yarnshipment.discrepancy.application.port.in.CloseMissingDocumentCommand;
+import com.yarnshipment.discrepancy.application.port.in.CloseMissingDocumentUseCase;
 import com.yarnshipment.discrepancy.application.port.in.RecordTicketReadingCommand;
 import com.yarnshipment.discrepancy.application.port.in.RecordTicketReadingUseCase;
 import com.yarnshipment.discrepancy.domain.ticket.ScaleWeights;
@@ -48,8 +50,14 @@ class EvidenceEventsListenerTest {
              "fields":{},"problems":["WEIGHT_NOT_READ","BLURRY"],"readAt":"2026-10-23T08:00:00Z"}
             """.formatted(EVIDENCE, TestComparisons.SHIPMENT);
 
+    private static final String UPLOADED = """
+            {"evidenceId":"%s","shipmentId":"%s","evidenceType":"%s","sha256":"abc",
+             "uploadedAt":"2026-10-23T08:00:00Z"}
+            """;
+
     private final RecordTicketReadingUseCase useCase = mock(RecordTicketReadingUseCase.class);
-    private final EvidenceEventsListener listener = new EvidenceEventsListener(useCase);
+    private final CloseMissingDocumentUseCase closeMissingDocument = mock(CloseMissingDocumentUseCase.class);
+    private final EvidenceEventsListener listener = new EvidenceEventsListener(useCase, closeMissingDocument);
 
     @Test
     @DisplayName("Fiş okundu olayı kilolar, alanlar ve yükleyen kişiyle okuma kaydına çevrilir")
@@ -81,11 +89,27 @@ class EvidenceEventsListenerTest {
     }
 
     @Test
-    @DisplayName("Diğer kanıt olayları saklanmaz")
-    void shouldIgnoreOtherEvents() {
-        listener.onEvidenceEvent(record(EvidenceUploaded.TYPE, "{}", Map.of()));
+    @DisplayName("İmzalı teslim belgesi yüklenince sevkiyatın belge yok uyuşmazlığı kapatılır")
+    void shouldCloseMissingDocumentOnSignedDocumentUpload() {
+        String uploaded = UPLOADED.formatted(EVIDENCE, TestComparisons.SHIPMENT, "SIGNED_DELIVERY_DOC");
 
+        listener.onEvidenceEvent(record(EvidenceUploaded.TYPE, uploaded, Map.of("actorId", ACTOR)));
+
+        verify(closeMissingDocument)
+                .closeMissingDocument(
+                        new CloseMissingDocumentCommand(TestComparisons.SHIPMENT, UUID.fromString(EVIDENCE)));
         verifyNoInteractions(useCase);
+    }
+
+    @Test
+    @DisplayName("Diğer kanıt yüklemeleri ve olaylar saklanmaz, uyuşmazlık kapatmaz")
+    void shouldIgnoreOtherEvents() {
+        String scale = UPLOADED.formatted(EVIDENCE, TestComparisons.SHIPMENT, "DELIVERY_SCALE");
+
+        listener.onEvidenceEvent(record(EvidenceUploaded.TYPE, scale, Map.of()));
+        listener.onEvidenceEvent(record("com.yarnshipment.evidence.evidence-reuse-detected.v1", "{}", Map.of()));
+
+        verifyNoInteractions(useCase, closeMissingDocument);
     }
 
     @Test
@@ -98,7 +122,7 @@ class EvidenceEventsListenerTest {
         assertThatThrownBy(() ->
                         listener.onEvidenceEvent(record(TicketRead.TYPE, readWithoutWeights, Map.of("actorId", ACTOR))))
                 .isInstanceOf(IllegalArgumentException.class);
-        verifyNoInteractions(useCase);
+        verifyNoInteractions(useCase, closeMissingDocument);
     }
 
     private RecordTicketReadingCommand captured() {

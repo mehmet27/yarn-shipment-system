@@ -125,3 +125,21 @@ export type {
   TicketReadingView,
   UploadTicketView,
 } from './evidence';
+export {
+  BAGS_PATH,
+  BagStatus,
+  createBags,
+  listLockedLots,
+  listLotBags,
+  PackageType,
+  printBagLabels,
+} from './bags';
+export type {
+  BagView,
+  CreateBagsRequest,
+  CreateBagsResponse,
+  LabeledBagView,
+  LockedLotView,
+  LotBagsResponse,
+  PrintLabelsRequest,
+} from './bags';

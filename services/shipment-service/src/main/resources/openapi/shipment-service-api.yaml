@@ -791,7 +791,7 @@ paths:
       operationId: listSites
       summary: Lokasyon listesi
       description: |
-        Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07). Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+        Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07); `MASTER_DATA_MANAGE` izni olan (admin) tüm lokasyonları görür, böylece yeni açtığı lokasyonu yönetebilir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'

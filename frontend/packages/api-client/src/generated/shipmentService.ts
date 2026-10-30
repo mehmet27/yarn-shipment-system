@@ -1124,7 +1124,7 @@ export const activateVehicle = (
     }
 
 /**
- * Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07). Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+ * Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07); `MASTER_DATA_MANAGE` izni olan (admin) tüm lokasyonları görür, böylece yeni açtığı lokasyonu yönetebilir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
  * @summary Lokasyon listesi
  */
 export const listSites = (

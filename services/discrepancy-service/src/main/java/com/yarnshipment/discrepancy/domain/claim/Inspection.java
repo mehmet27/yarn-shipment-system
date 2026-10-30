@@ -66,15 +66,15 @@ public record Inspection(
      *
      * @param summary sonucun özeti
      * @param evidenceId sonuç belgesi ({@code LAB_RESULT} kanıtı)
-     * @param performedBy sonucu giren
-     * @param performedAt sonucun girildiği zaman
+     * @param recordedBy sonucu giren
+     * @param recordedAt sonucun girildiği zaman
      */
-    public record Result(String summary, @Nullable UUID evidenceId, UUID performedBy, Instant performedAt) {
+    public record Result(String summary, @Nullable UUID evidenceId, UUID recordedBy, Instant recordedAt) {
 
         public Result {
             Objects.requireNonNull(summary, "summary");
-            Objects.requireNonNull(performedBy, "performedBy");
-            Objects.requireNonNull(performedAt, "performedAt");
+            Objects.requireNonNull(recordedBy, "recordedBy");
+            Objects.requireNonNull(recordedAt, "recordedAt");
         }
     }
 }

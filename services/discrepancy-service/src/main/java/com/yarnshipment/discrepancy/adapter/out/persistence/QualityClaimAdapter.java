@@ -114,7 +114,7 @@ final class QualityClaimAdapter implements QualityClaimPort {
                         .list()));
     }
 
-    private static QualityClaim mapHeader(ResultSet rs, int rowNumber) throws SQLException {
+    static QualityClaim mapHeader(ResultSet rs, int rowNumber) throws SQLException {
         return new QualityClaim(
                 ClaimRows.requiredUuid(rs, "id"),
                 ClaimRows.requiredUuid(rs, "discrepancy_id"),

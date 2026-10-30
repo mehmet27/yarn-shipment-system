@@ -91,11 +91,11 @@ final class InspectionAdapter implements InspectionPort {
     @Override
     public void saveResult(Inspection recorded) {
         Inspection.Result result = Objects.requireNonNull(recorded.result(), "result");
-        setActor(result.performedBy());
+        setActor(result.recordedBy());
         int updated = jdbc.sql(UPDATE_RESULT)
                 .param("id", recorded.id())
-                .param("at", Timestamp.from(result.performedAt()))
-                .param("actor", result.performedBy())
+                .param("at", Timestamp.from(result.recordedAt()))
+                .param("actor", result.recordedBy())
                 .param("result", result.summary())
                 .param("evidenceId", result.evidenceId())
                 .update();
@@ -105,7 +105,7 @@ final class InspectionAdapter implements InspectionPort {
         insertActivity(
                 recorded,
                 new ActivityEntry("INSPECTION_RESULT", result.summary(), result.evidenceId()),
-                result.performedAt());
+                result.recordedAt());
     }
 
     private void setActor(UUID actorId) {
@@ -115,7 +115,7 @@ final class InspectionAdapter implements InspectionPort {
     private void insertActivity(Inspection inspection, ActivityEntry entry, Instant at) {
         UUID actor = inspection.result() == null
                 ? inspection.request().requestedBy()
-                : Objects.requireNonNull(inspection.result()).performedBy();
+                : Objects.requireNonNull(inspection.result()).recordedBy();
         jdbc.sql(INSERT_ACTIVITY)
                 .param("id", ids.next())
                 .param("at", Timestamp.from(at))

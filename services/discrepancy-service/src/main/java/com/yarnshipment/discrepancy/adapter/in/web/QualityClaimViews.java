@@ -85,8 +85,8 @@ final class QualityClaimViews {
         if (result != null) {
             view.result(result.summary())
                     .resultEvidenceId(result.evidenceId())
-                    .performedBy(result.performedBy())
-                    .performedAt(utc(result.performedAt()));
+                    .performedBy(result.recordedBy())
+                    .performedAt(utc(result.recordedAt()));
         }
         return view;
     }

@@ -21,9 +21,9 @@ import org.springframework.stereotype.Component;
 final class DiscrepancyQueryAdapter implements DiscrepancyQueryPort {
 
     private static final String SELECT = """
-            SELECT id, discrepancy_no, site_id, shipment_id, discrepancy_type, severity, status, rule_code,
-                   expected_value, actual_value, diff_kg, diff_pct, assignee_id, due_at, resolution, resolution_note,
-                   liable_party, resolved_by, resolved_at, created_at
+            SELECT id, discrepancy_no, site_id, shipment_id, subcontractor_id, discrepancy_type, severity, status,
+                   rule_code, expected_value, actual_value, diff_kg, diff_pct, assignee_id, due_at, resolution,
+                   resolution_note, liable_party, resolved_by, resolved_at, created_at
               FROM discrepancy""";
     private static final String ORDER = " ORDER BY due_at NULLS LAST, (severity = 'RED') DESC, discrepancy_no";
     private static final String ACTIVITY = """
@@ -52,6 +52,7 @@ final class DiscrepancyQueryAdapter implements DiscrepancyQueryPort {
         if (!scope.allSites()) {
             where.add("site_id IN (:siteIds)", "siteIds", scope.siteIds());
         }
+        where.add("subcontractor_id = :subcontractorId", "subcontractorId", scope.subcontractorId());
         where.add("status = :status", "status", name(filter.status()));
         where.add("severity = :severity", "severity", name(filter.severity()));
         where.add("assignee_id = :assigneeId", "assigneeId", filter.assigneeId());

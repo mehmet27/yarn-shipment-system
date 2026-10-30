@@ -11,8 +11,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @param id kimlik
  * @param discrepancyNo okunabilir numara
- * @param siteId çıkış lokasyonu
- * @param shipmentId sevkiyat
+ * @param origin lokasyon, sevkiyat ve fasoncu
  * @param basis neden açıldı
  * @param measure beklenen ve gerçek değer
  * @param status durum
@@ -23,8 +22,7 @@ import org.jspecify.annotations.Nullable;
 public record Discrepancy(
         UUID id,
         String discrepancyNo,
-        UUID siteId,
-        UUID shipmentId,
+        Origin origin,
         Basis basis,
         Measure measure,
         DiscrepancyStatus status,
@@ -35,8 +33,7 @@ public record Discrepancy(
     public Discrepancy {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(discrepancyNo, "discrepancyNo");
-        Objects.requireNonNull(siteId, "siteId");
-        Objects.requireNonNull(shipmentId, "shipmentId");
+        Objects.requireNonNull(origin, "origin");
         Objects.requireNonNull(basis, "basis");
         Objects.requireNonNull(measure, "measure");
         Objects.requireNonNull(status, "status");
@@ -50,8 +47,7 @@ public record Discrepancy(
         return new Discrepancy(
                 id,
                 discrepancyNo,
-                siteId,
-                shipmentId,
+                origin,
                 basis,
                 measure,
                 DiscrepancyStatus.IN_REVIEW,
@@ -69,8 +65,7 @@ public record Discrepancy(
         return new Discrepancy(
                 id,
                 discrepancyNo,
-                siteId,
-                shipmentId,
+                origin,
                 basis,
                 measure,
                 DiscrepancyStatus.RESOLVED,
@@ -79,9 +74,38 @@ public record Discrepancy(
                 createdAt);
     }
 
+    public UUID siteId() {
+        return origin.siteId();
+    }
+
+    public UUID shipmentId() {
+        return origin.shipmentId();
+    }
+
+    public @Nullable UUID subcontractorId() {
+        return origin.subcontractorId();
+    }
+
     private void requireUnresolved() {
         if (!status.isUnresolved()) {
             throw new DiscrepancyNotOpenException(id, status);
+        }
+    }
+
+    /**
+     * Uyuşmazlığın ait olduğu yer.
+     *
+     * @param siteId çıkış lokasyonu
+     * @param shipmentId sevkiyat
+     * @param subcontractorId sevkiyatın fasoncusu; fasoncu yalnızca kendi uyuşmazlıklarını görür. Fasoncu bilgisi
+     *     olaydan gelmeye başlamadan önce açılmış kayıtlarda boştur ve bunlar fasoncuya görünmez
+     */
+    public record Origin(
+            UUID siteId, UUID shipmentId, @Nullable UUID subcontractorId) {
+
+        public Origin {
+            Objects.requireNonNull(siteId, "siteId");
+            Objects.requireNonNull(shipmentId, "shipmentId");
         }
     }
 

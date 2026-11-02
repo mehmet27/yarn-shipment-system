@@ -53,6 +53,21 @@ public final class TestDiscrepancies {
                 CREATED_AT);
     }
 
+    /** Açık uyuşmazlık; beklenen değeri verilen (ör. eksik fotoğrafın türü). */
+    public static Discrepancy withMeasure(UUID id, DiscrepancyType type, String ruleCode, String expected) {
+        Discrepancy discrepancy = withRule(id, type, ruleCode, DiscrepancyStatus.OPEN);
+        return new Discrepancy(
+                id,
+                discrepancy.discrepancyNo(),
+                discrepancy.origin(),
+                discrepancy.basis(),
+                new Discrepancy.Measure(expected, null, null, null),
+                DiscrepancyStatus.OPEN,
+                discrepancy.handling(),
+                null,
+                CREATED_AT);
+    }
+
     private static Discrepancy withBasis(
             UUID siteId, @Nullable UUID subcontractorId, DiscrepancyStatus status, Discrepancy.Basis basis) {
         return new Discrepancy(

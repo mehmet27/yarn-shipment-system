@@ -3,9 +3,10 @@ info:
   title: discrepancy-service API
   version: 1.0.0
   description: |
-    Uyuşmazlık okuma, atama ve karara bağlama uçları (API-01). Uyuşmazlıklar teslim girişi karşılaştırmasından
-    otomatik açılır; bu API onları incelemeye alır ve çözer. Bir sevkiyatın tüm uyuşmazlıkları çözülünce sevkiyat
-    tamamlanır (olayla, shipment-service tarafında).
+    Uyuşmazlık okuma, atama ve karara bağlama uçları (API-01). Uyuşmazlıklar teslim girişi karşılaştırmasından,
+    kanıt olaylarından (tekrar kullanılan fotoğraf) ve zamanlanmış kontrolden (yolda süre aşımı) otomatik açılır;
+    bu API onları incelemeye alır ve çözer. Bir sevkiyatın tüm uyuşmazlıkları çözülünce sevkiyat tamamlanır (olayla,
+    shipment-service tarafında). Admin tolerans bantlarını ve süre sınırını ayar uçlarından değiştirir.
 
     Kurallar:
     - Kilo ve yüzde değerleri ondalık dize olarak taşınır, ör. `"40.000"` (API-03).
@@ -17,6 +18,7 @@ servers:
 tags:
   - name: Discrepancies
   - name: DiscrepancyDecisions
+  - name: DiscrepancySettings
 security:
   - bearerAuth: []
 paths:
@@ -185,6 +187,50 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+  /api/v1/discrepancy-settings:
+    get:
+      tags: [DiscrepancySettings]
+      operationId: getDiscrepancySettings
+      summary: Uyuşmazlık kurallarının ayarları (yalnızca Admin)
+      description: Güncel tolerans bantları, yolda kalma süresi sınırı ve son değişiklikler (en yenisi önce).
+      responses:
+        '200':
+          description: Ayarlar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscrepancySettingsView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      tags: [DiscrepancySettings]
+      operationId: updateDiscrepancySettings
+      summary: Tolerans bantlarını ve yolda kalma sınırını değiştirir (yalnızca Admin)
+      description: |
+        Yeni değer kaydedildiği andan sonraki karşılaştırmalara ve kontrollere uygulanır; açılmış uyuşmazlıklar
+        değişmez. Eski değer silinmez, geçerliliği kapatılır ve geçmişte görünür. Değişmeyen kural yeniden yazılmaz.
+        Bantlar `0 ≤ greenMaxPct < yellowMaxPct ≤ 100` olmalıdır (aksi halde TOLERANCE_BANDS_INVALID).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDiscrepancySettingsRequest'
+      responses:
+        '200':
+          description: Güncel ayarlar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscrepancySettingsView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 components:
   securitySchemes:
     bearerAuth:
@@ -201,7 +247,7 @@ components:
         format: uuid
   responses:
     BadRequest:
-      description: İstek biçimi hatalı
+      description: İstek biçimi hatalı ya da ayar kural sınırları dışında (TOLERANCE_BANDS_INVALID, TIME_LIMIT_INVALID)
       content:
         application/problem+json:
           schema:
@@ -390,3 +436,84 @@ components:
         liableParty:
           type: string
           maxLength: 200
+    Pct:
+      description: En çok iki ondalıklı yüzde, dize olarak (API-03)
+      type: string
+      pattern: '^\d{1,3}(\.\d{1,2})?$'
+      example: '0.50'
+    ToleranceView:
+      type: object
+      required: [greenMaxPct, yellowMaxPct]
+      properties:
+        greenMaxPct:
+          $ref: '#/components/schemas/Pct'
+        yellowMaxPct:
+          $ref: '#/components/schemas/Pct'
+    ToleranceVersionView:
+      type: object
+      required: [greenMaxPct, yellowMaxPct, validFrom, setBy]
+      properties:
+        greenMaxPct:
+          $ref: '#/components/schemas/Pct'
+        yellowMaxPct:
+          $ref: '#/components/schemas/Pct'
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
+          description: Güncel sürümde yok
+        setBy:
+          type: string
+          format: uuid
+          description: Değeri giren kullanıcı; ilk kuralda sistem hesabı (sıfır UUID)
+    TimeLimitVersionView:
+      type: object
+      required: [inTransitMaxHours, validFrom, setBy]
+      properties:
+        inTransitMaxHours:
+          type: integer
+          format: int32
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
+          description: Güncel sürümde yok
+        setBy:
+          type: string
+          format: uuid
+          description: Değeri giren kullanıcı; ilk kuralda sistem hesabı (sıfır UUID)
+    DiscrepancySettingsView:
+      type: object
+      required: [tolerance, inTransitMaxHours, toleranceHistory, timeLimitHistory]
+      properties:
+        tolerance:
+          $ref: '#/components/schemas/ToleranceView'
+        inTransitMaxHours:
+          type: integer
+          format: int32
+          description: Sevkiyat bundan uzun süre yolda kalırsa zaman uyuşmazlığı açılır
+        toleranceHistory:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToleranceVersionView'
+        timeLimitHistory:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeLimitVersionView'
+    UpdateDiscrepancySettingsRequest:
+      type: object
+      required: [greenMaxPct, yellowMaxPct, inTransitMaxHours]
+      properties:
+        greenMaxPct:
+          $ref: '#/components/schemas/Pct'
+        yellowMaxPct:
+          $ref: '#/components/schemas/Pct'
+        inTransitMaxHours:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 720

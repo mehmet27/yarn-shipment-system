@@ -3,6 +3,7 @@ package com.yarnshipment.discrepancy.adapter.in.web;
 import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotFoundException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
+import com.yarnshipment.discrepancy.domain.model.InvalidSettingException;
 import com.yarnshipment.discrepancy.domain.model.LiablePartyRequiredException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.Ordered;
@@ -37,5 +38,12 @@ public final class DiscrepancyExceptionHandler {
     @ExceptionHandler(LiablePartyRequiredException.class)
     public ProblemDetail handleLiablePartyRequired(HttpServletRequest request) {
         return problems.create(request, HttpStatus.BAD_REQUEST, "LIABLE_PARTY_REQUIRED");
+    }
+
+    /** Süre sınırı alanı ayrı kod alır; diğer alanlar tolerans bantlarıdır. */
+    @ExceptionHandler(InvalidSettingException.class)
+    public ProblemDetail handleInvalidSetting(InvalidSettingException exception, HttpServletRequest request) {
+        String code = "inTransitMaxHours".equals(exception.field()) ? "TIME_LIMIT_INVALID" : "TOLERANCE_BANDS_INVALID";
+        return problems.create(request, HttpStatus.BAD_REQUEST, code);
     }
 }

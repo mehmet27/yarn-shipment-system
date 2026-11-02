@@ -9,14 +9,17 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import com.yarnshipment.common.outbox.CloudEventHeaders;
 import com.yarnshipment.common.outbox.OutboxEvent;
 import com.yarnshipment.discrepancy.TestComparisons;
-import com.yarnshipment.discrepancy.application.port.in.CloseMissingDocumentCommand;
-import com.yarnshipment.discrepancy.application.port.in.CloseMissingDocumentUseCase;
+import com.yarnshipment.discrepancy.application.port.in.OpenReusedEvidenceCommand;
+import com.yarnshipment.discrepancy.application.port.in.OpenReusedEvidenceUseCase;
+import com.yarnshipment.discrepancy.application.port.in.RecordEvidenceUploadCommand;
+import com.yarnshipment.discrepancy.application.port.in.RecordEvidenceUploadUseCase;
 import com.yarnshipment.discrepancy.application.port.in.RecordTicketReadingCommand;
 import com.yarnshipment.discrepancy.application.port.in.RecordTicketReadingUseCase;
 import com.yarnshipment.discrepancy.domain.ticket.ScaleWeights;
 import com.yarnshipment.discrepancy.domain.ticket.TicketReading;
 import com.yarnshipment.discrepancy.domain.ticket.TicketSide;
 import com.yarnshipment.events.evidence.EvidenceEvents;
+import com.yarnshipment.events.evidence.EvidenceReuseDetected;
 import com.yarnshipment.events.evidence.EvidenceUploaded;
 import com.yarnshipment.events.evidence.TicketRead;
 import java.time.Instant;
@@ -50,14 +53,10 @@ class EvidenceEventsListenerTest {
              "fields":{},"problems":["WEIGHT_NOT_READ","BLURRY"],"readAt":"2026-10-23T08:00:00Z"}
             """.formatted(EVIDENCE, TestComparisons.SHIPMENT);
 
-    private static final String UPLOADED = """
-            {"evidenceId":"%s","shipmentId":"%s","evidenceType":"%s","sha256":"abc",
-             "uploadedAt":"2026-10-23T08:00:00Z"}
-            """;
-
     private final RecordTicketReadingUseCase useCase = mock(RecordTicketReadingUseCase.class);
-    private final CloseMissingDocumentUseCase closeMissingDocument = mock(CloseMissingDocumentUseCase.class);
-    private final EvidenceEventsListener listener = new EvidenceEventsListener(useCase, closeMissingDocument);
+    private final RecordEvidenceUploadUseCase recordUpload = mock(RecordEvidenceUploadUseCase.class);
+    private final OpenReusedEvidenceUseCase openReused = mock(OpenReusedEvidenceUseCase.class);
+    private final EvidenceEventsListener listener = new EvidenceEventsListener(useCase, recordUpload, openReused);
 
     @Test
     @DisplayName("Fiş okundu olayı kilolar, alanlar ve yükleyen kişiyle okuma kaydına çevrilir")
@@ -89,27 +88,48 @@ class EvidenceEventsListenerTest {
     }
 
     @Test
-    @DisplayName("İmzalı teslim belgesi yüklenince sevkiyatın belge yok uyuşmazlığı kapatılır")
-    void shouldCloseMissingDocumentOnSignedDocumentUpload() {
-        String uploaded = UPLOADED.formatted(EVIDENCE, TestComparisons.SHIPMENT, "SIGNED_DELIVERY_DOC");
+    @DisplayName("Her kanıt yüklemesi türüyle sevkiyata yazılır; eksik belge ya da fotoğraf uyuşmazlığı kapanabilir")
+    void shouldRecordEveryUpload() {
+        String uploaded = """
+                {"evidenceId":"%s","shipmentId":"%s","evidenceType":"%s","sha256":"abc",
+                 "uploadedAt":"2026-10-23T08:00:00Z"}
+                """.formatted(EVIDENCE, TestComparisons.SHIPMENT, "SIGNED_DELIVERY_DOC");
 
         listener.onEvidenceEvent(record(EvidenceUploaded.TYPE, uploaded, Map.of("actorId", ACTOR)));
 
-        verify(closeMissingDocument)
-                .closeMissingDocument(
-                        new CloseMissingDocumentCommand(TestComparisons.SHIPMENT, UUID.fromString(EVIDENCE)));
-        verifyNoInteractions(useCase);
+        verify(recordUpload)
+                .recordEvidenceUpload(new RecordEvidenceUploadCommand(
+                        TestComparisons.SHIPMENT, UUID.fromString(EVIDENCE), "SIGNED_DELIVERY_DOC", AT));
+        verifyNoInteractions(useCase, openReused);
     }
 
     @Test
-    @DisplayName("Diğer kanıt yüklemeleri ve olaylar saklanmaz, uyuşmazlık kapatmaz")
+    @DisplayName("Tekrar kullanılan kanıt olayı, olay kimliğiyle fotoğraf uyuşmazlığı komutuna çevrilir")
+    void shouldOpenReusedEvidence() {
+        String original = "0192f0a0-0000-7000-8000-00000000f001";
+        String reuse = """
+                {"evidenceId":"%s","shipmentId":"%s","duplicateOfId":"%s","originalShipmentId":"%s",
+                 "detectedAt":"2026-10-23T08:00:00Z"}
+                """.formatted(EVIDENCE, TestComparisons.SHIPMENT, original, UUID.randomUUID());
+
+        listener.onEvidenceEvent(record(EvidenceReuseDetected.TYPE, reuse, Map.of()));
+
+        verify(openReused)
+                .openReusedEvidence(new OpenReusedEvidenceCommand(
+                        EVENT,
+                        EvidenceReuseDetected.TYPE,
+                        UUID.fromString(EVIDENCE),
+                        TestComparisons.SHIPMENT,
+                        UUID.fromString(original)));
+        verifyNoInteractions(useCase, recordUpload);
+    }
+
+    @Test
+    @DisplayName("Bilinmeyen kanıt olayları kullanılmaz")
     void shouldIgnoreOtherEvents() {
-        String scale = UPLOADED.formatted(EVIDENCE, TestComparisons.SHIPMENT, "DELIVERY_SCALE");
+        listener.onEvidenceEvent(record("com.yarnshipment.evidence.evidence-invalidated.v1", "{}", Map.of()));
 
-        listener.onEvidenceEvent(record(EvidenceUploaded.TYPE, scale, Map.of()));
-        listener.onEvidenceEvent(record("com.yarnshipment.evidence.evidence-reuse-detected.v1", "{}", Map.of()));
-
-        verifyNoInteractions(useCase, closeMissingDocument);
+        verifyNoInteractions(useCase, recordUpload, openReused);
     }
 
     @Test
@@ -122,7 +142,7 @@ class EvidenceEventsListenerTest {
         assertThatThrownBy(() ->
                         listener.onEvidenceEvent(record(TicketRead.TYPE, readWithoutWeights, Map.of("actorId", ACTOR))))
                 .isInstanceOf(IllegalArgumentException.class);
-        verifyNoInteractions(useCase, closeMissingDocument);
+        verifyNoInteractions(useCase, recordUpload, openReused);
     }
 
     private RecordTicketReadingCommand captured() {

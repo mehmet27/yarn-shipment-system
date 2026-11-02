@@ -30,7 +30,7 @@ public record Finding(
         Objects.requireNonNull(ruleCode, "ruleCode");
     }
 
-    static Finding of(ComparisonRule rule, @Nullable Object expected, @Nullable Object actual) {
+    public static Finding of(ComparisonRule rule, @Nullable Object expected, @Nullable Object actual) {
         return new Finding(rule.type(), rule.severity(), rule.name(), text(expected), text(actual), null, null);
     }
 

@@ -6,11 +6,13 @@ import java.time.Clock;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /** discrepancy-service giriş noktası. */
 @SpringBootApplication(proxyBeanMethods = false)
 @EnableYarnShipmentSecurity
 @EnableYarnShipmentWeb
+@EnableScheduling
 public final class DiscrepancyServiceApplication {
 
     /** Zaman tek kaynaktan gelir; testler sabit saat verir (DOM-10). */

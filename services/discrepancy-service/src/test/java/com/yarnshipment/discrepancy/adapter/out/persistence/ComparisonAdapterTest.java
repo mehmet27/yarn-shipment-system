@@ -29,7 +29,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Karşılaştırma kaydı ve tolerans kuralı, migration'larla kurulan gerçek şemada ve uygulama rolüyle. */
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({ComparisonAdapter.class, ToleranceRuleAdapter.class, UuidV7Generator.class})
+@Import({ComparisonAdapter.class, DiscrepancyWriter.class, ToleranceRuleAdapter.class, UuidV7Generator.class})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class ComparisonAdapterTest {
 

@@ -1,6 +1,9 @@
 package com.yarnshipment.discrepancy.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.yarnshipment.discrepancy.TestComparisons;
 import com.yarnshipment.discrepancy.TestTickets;
@@ -8,7 +11,10 @@ import com.yarnshipment.discrepancy.application.port.in.CompareDeliveryCommand;
 import com.yarnshipment.discrepancy.application.port.out.ComparisonPort;
 import com.yarnshipment.discrepancy.application.port.out.CompletedComparison;
 import com.yarnshipment.discrepancy.application.port.out.ProcessedEventPort;
+import com.yarnshipment.discrepancy.application.port.out.ShipmentEvidencePort;
+import com.yarnshipment.discrepancy.application.port.out.ShipmentWatchPort;
 import com.yarnshipment.discrepancy.application.port.out.TicketReadingPort;
+import com.yarnshipment.discrepancy.application.port.out.ToleranceRulePort;
 import com.yarnshipment.discrepancy.domain.model.Band;
 import com.yarnshipment.discrepancy.domain.model.ComparisonInput;
 import com.yarnshipment.discrepancy.domain.model.DeliveryFigures;
@@ -67,12 +73,21 @@ class CompareDeliveryServiceTest {
             return tickets;
         }
     };
+    private final ToleranceRulePort toleranceRules = mock(ToleranceRulePort.class);
+    private final ShipmentWatchPort watch = mock(ShipmentWatchPort.class);
+    private final ShipmentEvidencePort evidence = mock(ShipmentEvidencePort.class);
     private final CompareDeliveryService service = new CompareDeliveryService(
             processedEvents,
-            at -> Optional.ofNullable(rule),
+            toleranceRules,
             comparisons,
             ticketReadings,
+            watch,
+            evidence,
             Clock.fixed(NOW, ZoneOffset.UTC));
+
+    CompareDeliveryServiceTest() {
+        when(toleranceRules.findGeneralRule(any())).thenAnswer(invocation -> Optional.ofNullable(rule));
+    }
 
     @Test
     @DisplayName("Teslim karşılaştırılır; son tarih beş iş günü sonrasıdır ve olayı yapan kişi kaydedilir")

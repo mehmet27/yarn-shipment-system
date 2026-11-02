@@ -5,6 +5,7 @@ import com.yarnshipment.discrepancy.domain.model.DeliveryFigures;
 import com.yarnshipment.discrepancy.domain.model.DispatchFigures;
 import com.yarnshipment.discrepancy.domain.model.DocumentFigures;
 import com.yarnshipment.discrepancy.domain.model.SealCondition;
+import com.yarnshipment.discrepancy.domain.rule.WatchedShipment;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -36,6 +37,11 @@ public final class TestComparisons {
 
     public static DocumentFigures document() {
         return new DocumentFigures(SHIPMENT_NO, DISPATCH_KG, BAGS, EVIDENCE);
+    }
+
+    /** Sevkiyat olaylarından izlenen bu sevkiyat; yola çıkışı bilinmiyor. */
+    public static WatchedShipment watched() {
+        return new WatchedShipment(SHIPMENT, SHIPMENT_NO, SITE, SUBCONTRACTOR, null);
     }
 
     public static ComparisonInput clean() {

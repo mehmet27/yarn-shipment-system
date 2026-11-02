@@ -11,10 +11,19 @@ import com.yarnshipment.common.outbox.OutboxEvent;
 import com.yarnshipment.discrepancy.TestComparisons;
 import com.yarnshipment.discrepancy.application.port.in.CompareDeliveryCommand;
 import com.yarnshipment.discrepancy.application.port.in.CompareDeliveryUseCase;
+import com.yarnshipment.discrepancy.application.port.in.RegisterShipmentCommand;
+import com.yarnshipment.discrepancy.application.port.in.RegisterShipmentUseCase;
+import com.yarnshipment.discrepancy.application.port.in.TrackShipmentCommand;
+import com.yarnshipment.discrepancy.application.port.in.TrackShipmentCommand.Milestone;
+import com.yarnshipment.discrepancy.application.port.in.TrackShipmentUseCase;
 import com.yarnshipment.discrepancy.domain.model.ComparisonInput;
 import com.yarnshipment.discrepancy.domain.model.SealCondition;
 import com.yarnshipment.discrepancy.domain.ticket.WeighingEntries;
 import com.yarnshipment.events.shipment.DeliveryReceived;
+import com.yarnshipment.events.shipment.ShipmentArrived;
+import com.yarnshipment.events.shipment.ShipmentCancelled;
+import com.yarnshipment.events.shipment.ShipmentCreated;
+import com.yarnshipment.events.shipment.ShipmentDispatched;
 import com.yarnshipment.events.shipment.ShipmentEvents;
 import java.time.Instant;
 import java.util.Map;
@@ -49,7 +58,9 @@ class ShipmentEventsListenerTest {
              "futureField":true}""".formatted(TestComparisons.SHIPMENT, TestComparisons.SITE, SUBCONTRACTOR);
 
     private final CompareDeliveryUseCase useCase = mock(CompareDeliveryUseCase.class);
-    private final ShipmentEventsListener listener = new ShipmentEventsListener(useCase);
+    private final RegisterShipmentUseCase register = mock(RegisterShipmentUseCase.class);
+    private final TrackShipmentUseCase track = mock(TrackShipmentUseCase.class);
+    private final ShipmentEventsListener listener = new ShipmentEventsListener(useCase, register, track);
 
     @Test
     @DisplayName("Teslim girişi olayı karşılaştırma komutuna çevrilir; olay kimliği ve yapan kişi taşınır")
@@ -89,11 +100,56 @@ class ShipmentEventsListenerTest {
     }
 
     @Test
-    @DisplayName("Diğer sevkiyat olayları karşılaştırmaya gitmez")
-    void shouldIgnoreOtherEvents() {
-        listener.onShipmentEvent(record("com.yarnshipment.shipment.shipment-dispatched.v1", "{}", Map.of()));
+    @DisplayName("Oluşturma olayı sevkiyatı numarası, lokasyonu ve fasoncusuyla izlemeye alır")
+    void shouldRegisterCreatedShipment() {
+        String created = """
+                {"shipmentId":"%s","shipmentNo":"SV-3","siteId":"%s","subcontractorId":"%s",
+                 "createdAt":"2026-10-23T09:00:00Z"}
+                """.formatted(TestComparisons.SHIPMENT, TestComparisons.SITE, SUBCONTRACTOR);
 
-        verifyNoInteractions(useCase);
+        listener.onShipmentEvent(record(ShipmentCreated.TYPE, created, Map.of()));
+
+        verify(register)
+                .registerShipment(new RegisterShipmentCommand(
+                        TestComparisons.SHIPMENT, "SV-3", TestComparisons.SITE, SUBCONTRACTOR, AT));
+        verifyNoInteractions(useCase, track);
+    }
+
+    @Test
+    @DisplayName("Yola çıkış, varış, tamamlanma ve iptal olayları izleme adımına çevrilir")
+    void shouldTrackMilestones() {
+        String driver = UUID.randomUUID().toString();
+        String shipment = TestComparisons.SHIPMENT.toString();
+        String site = TestComparisons.SITE.toString();
+        String time = "\"2026-10-23T09:00:00Z\"";
+
+        listener.onShipmentEvent(record(
+                ShipmentDispatched.TYPE,
+                "{\"shipmentId\":\"%s\",\"siteId\":\"%s\",\"driverId\":\"%s\",\"bagCount\":3,\"dispatchedAt\":%s}"
+                        .formatted(shipment, site, driver, time),
+                Map.of()));
+        listener.onShipmentEvent(record(
+                ShipmentArrived.TYPE,
+                "{\"shipmentId\":\"%s\",\"siteId\":\"%s\",\"driverId\":\"%s\",\"sealIntact\":true,\"arrivedAt\":%s}"
+                        .formatted(shipment, site, driver, time),
+                Map.of()));
+        listener.onShipmentEvent(record(
+                ShipmentCancelled.TYPE,
+                "{\"shipmentId\":\"%s\",\"siteId\":\"%s\",\"cancelledAt\":%s}".formatted(shipment, site, time),
+                Map.of()));
+
+        verify(track).trackShipment(new TrackShipmentCommand(TestComparisons.SHIPMENT, Milestone.DISPATCHED, AT));
+        verify(track).trackShipment(new TrackShipmentCommand(TestComparisons.SHIPMENT, Milestone.ARRIVED, AT));
+        verify(track).trackShipment(new TrackShipmentCommand(TestComparisons.SHIPMENT, Milestone.CLOSED, AT));
+        verifyNoInteractions(useCase, register);
+    }
+
+    @Test
+    @DisplayName("Kullanılmayan sevkiyat olayları hiçbir use case'e gitmez")
+    void shouldIgnoreOtherEvents() {
+        listener.onShipmentEvent(record("com.yarnshipment.shipment.shipment-loaded.v1", "{}", Map.of()));
+
+        verifyNoInteractions(useCase, register, track);
     }
 
     @Test

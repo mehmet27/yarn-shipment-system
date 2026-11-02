@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -47,5 +48,19 @@ class CatalogRulesTest {
         assertThat(new ProductDetails("Polyester", " Ne 30/1 ").yarnCount()).isEqualTo("Ne 30/1");
         assertThatThrownBy(() -> new ProductDetails("Polyester", "x".repeat(OptionalText.MAX_LENGTH + 1)))
                 .isInstanceOf(InvalidMasterDataException.class);
+    }
+
+    @Test
+    @DisplayName("İplik ve kalite sınıfı isteğe bağlı alan olmadan oluşur; tekrarlı kod alanını taşır")
+    void shouldBuildRecordsWithoutOptionalFields() {
+        UUID id = UUID.randomUUID();
+
+        Product product = new Product(id, "PES-30-1", new ProductDetails("Polyester", null), true);
+        QualityGrade grade = new QualityGrade(id, "A", new QualityGradeDetails("Birinci", null), false);
+
+        assertThat(product.details().yarnCount()).isNull();
+        assertThat(grade.details().labelColor()).isNull();
+        assertThat(grade.active()).isFalse();
+        assertThat(new DuplicateCodeException("lotNo", "P-1").field()).isEqualTo("lotNo");
     }
 }

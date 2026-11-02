@@ -71,3 +71,33 @@ export {
   createSubcontractorLoginAccount,
 } from './generated/shipmentService';
 export type { LoginAccountRequest, LoginAccountResponse } from './generated/shipmentService';
+
+export {
+  activateLot,
+  activateProduct,
+  activateQualityGrade,
+  createLot,
+  createProduct,
+  createQualityGrade,
+  deactivateLot,
+  deactivateProduct,
+  deactivateQualityGrade,
+  listLots,
+  listProducts,
+  listQualityGrades,
+  lockLotQuality,
+  updateLot,
+  updateProduct,
+  updateQualityGrade,
+} from './generated/shipmentService';
+export type {
+  LotCreateRequest,
+  LotUpdateRequest,
+  LotView,
+  ProductCreateRequest,
+  ProductUpdateRequest,
+  ProductView,
+  QualityGradeCreateRequest,
+  QualityGradeUpdateRequest,
+  QualityGradeView,
+} from './generated/shipmentService';

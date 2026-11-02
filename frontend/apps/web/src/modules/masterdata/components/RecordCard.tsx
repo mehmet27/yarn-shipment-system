@@ -3,6 +3,7 @@ import { Badge, Button, Group, Paper, Stack, Text } from '@iplik/ui';
 import { useSetActive } from '../hooks/useSetActive';
 import type { ManagedKind, RecordRow } from '../kinds';
 import { LoginAccountButton } from './LoginAccountButton';
+import { RecordCodeLine } from './RecordCodeLine';
 
 export type RecordCardProps = {
   kind: ManagedKind;
@@ -23,6 +24,7 @@ export function RecordCard({ kind, record, onEdit }: RecordCardProps) {
           </Text>
           {!record.isActive && <Badge color="gray">{t('masterData.inactive')}</Badge>}
         </Group>
+        {record.code !== undefined && <RecordCodeLine kind={kind} record={record} />}
         {kind === 'driver' && (
           <Text size="sm" c="dimmed">
             {record.ownerTitle === undefined

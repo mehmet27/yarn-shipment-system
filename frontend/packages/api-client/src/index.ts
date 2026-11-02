@@ -93,6 +93,35 @@ export { CorrectionTarget, listCorrections, recordCorrection } from './masterDat
 export type { CorrectionListResponse, CorrectionView, RecordCorrectionRequest } from './masterData';
 export type { AssignShipmentBagsRequest, AssignShipmentBagsResponse } from './masterData';
 export {
+  activateLot,
+  activateProduct,
+  activateQualityGrade,
+  createLot,
+  createProduct,
+  createQualityGrade,
+  deactivateLot,
+  deactivateProduct,
+  deactivateQualityGrade,
+  listLots,
+  listProducts,
+  listQualityGrades,
+  lockLotQuality,
+  updateLot,
+  updateProduct,
+  updateQualityGrade,
+} from './masterData';
+export type {
+  LotCreateRequest,
+  LotUpdateRequest,
+  LotView,
+  ProductCreateRequest,
+  ProductUpdateRequest,
+  ProductView,
+  QualityGradeCreateRequest,
+  QualityGradeUpdateRequest,
+  QualityGradeView,
+} from './masterData';
+export {
   assignDiscrepancy,
   DISCREPANCIES_PATH,
   DISCREPANCY_SETTINGS_PATH,

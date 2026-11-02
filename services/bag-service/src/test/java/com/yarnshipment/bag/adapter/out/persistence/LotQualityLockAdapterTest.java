@@ -62,15 +62,21 @@ class LotQualityLockAdapterTest {
     }
 
     @Test
-    @DisplayName("Çuval kilitli partiye kilitteki kaliteyle bağlanır; başka kalite veya kilitsiz parti reddedilir")
+    @DisplayName("Çuval kilitli partiye kilitteki kaliteyle bağlanır; başka kalite reddedilir")
     void shouldBindBagsOnlyToLockedQuality() {
         UUID lot = UUID.randomUUID();
         adapter.insertIfAbsent(new LotQualityLock(lot, SITE, "P-9", PRODUCT, "A", LOCKED_AT), LOCKED_AT);
 
         jdbc.update(INSERT_BAG, UUID.randomUUID(), SITE, "LQ-1", lot, PRODUCT, "A", SITE);
 
+        // Test işlemi ilk kısıt hatasında iptal olur; bu yüzden her test tek bir reddi dener.
         assertThatThrownBy(() -> jdbc.update(INSERT_BAG, UUID.randomUUID(), SITE, "LQ-2", lot, PRODUCT, "B", SITE))
                 .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    @DisplayName("Kalitesi kilitlenmemiş partiye çuval bağlanamaz")
+    void shouldRejectBagForUnlockedLot() {
         assertThatThrownBy(() ->
                         jdbc.update(INSERT_BAG, UUID.randomUUID(), SITE, "LQ-3", UUID.randomUUID(), PRODUCT, "A", SITE))
                 .isInstanceOf(DataIntegrityViolationException.class);

@@ -1,5 +1,9 @@
-import type { Permission, ResolveDiscrepancyRequest } from '@iplik/api-client';
-import { DISCREPANCIES_PATH, Resolution } from '@iplik/api-client';
+import type {
+  Permission,
+  ResolveDiscrepancyRequest,
+  UpdateDiscrepancySettingsRequest,
+} from '@iplik/api-client';
+import { DISCREPANCIES_PATH, DISCREPANCY_SETTINGS_PATH, Resolution } from '@iplik/api-client';
 import { http, HttpResponse } from 'msw';
 import {
   assignMock,
@@ -8,6 +12,7 @@ import {
   mockActivity,
   resolveMock,
 } from './discrepancies';
+import { mockDiscrepancySettings, updateMockDiscrepancySettings } from './discrepancySettings';
 
 const DEFAULT_PAGE_SIZE = 20;
 const problem = (status: number, code: string) =>
@@ -23,6 +28,40 @@ function readResolve(json: unknown): ResolveDiscrepancyRequest | undefined {
   return typeof liableParty === 'string'
     ? { resolution: known, note, liableParty }
     : { resolution: known, note };
+}
+
+const PCT_PATTERN = /^\d{1,3}(\.\d{1,2})?$/;
+const MAX_HOURS = 720;
+
+function readSettings(json: unknown): UpdateDiscrepancySettingsRequest | undefined {
+  if (!isRecord(json)) return undefined;
+  const { greenMaxPct, yellowMaxPct, inTransitMaxHours } = json;
+  if (typeof greenMaxPct !== 'string' || !PCT_PATTERN.test(greenMaxPct)) return undefined;
+  if (typeof yellowMaxPct !== 'string' || !PCT_PATTERN.test(yellowMaxPct)) return undefined;
+  if (typeof inTransitMaxHours !== 'number') return undefined;
+  return { greenMaxPct, yellowMaxPct, inTransitMaxHours };
+}
+
+/** Admin'in kural ayarları; backend'deki gibi yalnızca SETTINGS_MANAGE ile ve aynı hata kodlarıyla. */
+function createSettingsHandlers(permissions: readonly Permission[], userId: string) {
+  const canManage = permissions.includes('SETTINGS_MANAGE');
+  return [
+    http.get(DISCREPANCY_SETTINGS_PATH, () =>
+      canManage ? HttpResponse.json(mockDiscrepancySettings()) : problem(403, 'ACCESS_DENIED'),
+    ),
+    http.put(DISCREPANCY_SETTINGS_PATH, async ({ request }) => {
+      if (!canManage) return problem(403, 'ACCESS_DENIED');
+      const body = readSettings(await request.json());
+      if (body === undefined) return problem(400, 'INVALID_REQUEST');
+      const green = Number(body.greenMaxPct);
+      const yellow = Number(body.yellowMaxPct);
+      if (yellow <= green || yellow > 100) return problem(400, 'TOLERANCE_BANDS_INVALID');
+      if (body.inTransitMaxHours < 1 || body.inTransitMaxHours > MAX_HOURS) {
+        return problem(400, 'TIME_LIMIT_INVALID');
+      }
+      return HttpResponse.json(updateMockDiscrepancySettings(body, userId));
+    }),
+  ];
 }
 
 /** Uyuşmazlık uçları; karar eylemleri yalnızca DISCREPANCY_RESOLVE izniyle ve açık uyuşmazlıkta görünür. */
@@ -87,5 +126,6 @@ export function createDiscrepancyHandlers(permissions: readonly Permission[], us
       resolveMock(item, body, userId);
       return HttpResponse.json(view(item.id));
     }),
+    ...createSettingsHandlers(permissions, userId),
   ];
 }

@@ -52,6 +52,14 @@ export function PanelLayout() {
             active={pathname.startsWith('/panel/tanimlar')}
           />
         </Can>
+        <Can permission="SETTINGS_MANAGE">
+          <NavLink
+            component={RouterNavLink}
+            to="/panel/kural-ayarlari"
+            label={t('nav.discrepancySettings')}
+            active={pathname.startsWith('/panel/kural-ayarlari')}
+          />
+        </Can>
       </AppShell.Navbar>
       <AppShell.Main>
         <Outlet />

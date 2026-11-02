@@ -89,24 +89,33 @@ export {
   removeShipmentBag,
 } from './masterData';
 export type { LoginAccountRequest, LoginAccountResponse } from './masterData';
+export { CorrectionTarget, listCorrections, recordCorrection } from './masterData';
+export type { CorrectionListResponse, CorrectionView, RecordCorrectionRequest } from './masterData';
 export type { AssignShipmentBagsRequest, AssignShipmentBagsResponse } from './masterData';
 export {
   assignDiscrepancy,
   DISCREPANCIES_PATH,
+  DISCREPANCY_SETTINGS_PATH,
   DiscrepancyStatus,
   getDiscrepancy,
+  getDiscrepancySettings,
   listDiscrepancies,
   listDiscrepancyActivity,
   Resolution,
   resolveDiscrepancy,
   Severity,
+  updateDiscrepancySettings,
 } from './discrepancies';
 export type {
   DiscrepancyActivityView,
   DiscrepancyPage,
+  DiscrepancySettingsView,
   DiscrepancyView,
   ListDiscrepanciesParams,
   ResolveDiscrepancyRequest,
+  TimeLimitVersionView,
+  ToleranceVersionView,
+  UpdateDiscrepancySettingsRequest,
 } from './discrepancies';
 export {
   confirmEvidenceUpload,

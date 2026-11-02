@@ -17,7 +17,8 @@
     "field": "Saha",
     "shipments": "Sevkiyatlar",
     "masterData": "Tanımlar",
-    "discrepancies": "Uyuşmazlıklar"
+    "discrepancies": "Uyuşmazlıklar",
+    "discrepancySettings": "Kural ayarları"
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}"
@@ -83,7 +84,8 @@
         "weights": "Kilolar",
         "bags": "Çuvallar",
         "evidence": "Kanıtlar",
-        "history": "Geçmiş"
+        "history": "Geçmiş",
+        "corrections": "Düzeltmeler"
       },
       "comingSoon": "Bu sekme sonraki adımda eklenecek.",
       "dispatch": "Çıkış",
@@ -123,6 +125,31 @@
           "unknown": "Çuvallar atanamadı. Lütfen tekrar deneyin."
         },
         "nothingNew": "Bu çuvallar zaten bu sevkiyata atanmış; yeni çuval atanmadı."
+      }
+    },
+    "correction": {
+      "intro": "Tamamlanıp kilitlenen sevkiyatta kayıtlar değişmez; yanlış girilen tartım ya da mühür numarasını yalnızca Admin gerekçe yazarak düzeltir. Eski değer silinmez, burada kalır.",
+      "empty": "Bu sevkiyatta düzeltme yok.",
+      "target": "Ne düzeltilecek?",
+      "targets": {
+        "DISPATCH_WEIGHING": "Çıkış tartısı",
+        "DELIVERY_WEIGHING": "Teslim tartısı",
+        "DISPATCH_SEAL_NO": "Çıkış mühür numarası",
+        "DELIVERY_SEAL_NO": "Teslim mühür numarası"
+      },
+      "sealNo": "Doğru mühür numarası",
+      "reason": "Gerekçe",
+      "submit": "Düzeltmeyi kaydet",
+      "errors": {
+        "targetRequired": "Neyin düzeltileceğini seçin.",
+        "invalidKg": "Brüt ve darayı kilo olarak girin, ör. 1.982,5.",
+        "tareExceedsGross": "Dara brütten büyük olamaz.",
+        "sealNoRequired": "Mühür numarasını girin.",
+        "reasonRequired": "Gerekçe yazın.",
+        "INVALID_CORRECTION": "Düzeltme kaydedilemedi: yeni değer eskisiyle aynı olabilir ya da kayıt artık düzeltilemiyor.",
+        "SEAL_ALREADY_USED": "Bu mühür numarası başka bir sevkiyatın çıkışında kullanılmış.",
+        "CORRECTION_CONFLICT": "Kayıt bu arada değişti. Sayfayı yenileyip tekrar deneyin.",
+        "unknown": "Düzeltme kaydedilemedi. Lütfen tekrar deneyin."
       }
     }
   },
@@ -404,8 +431,37 @@
       "TICKET_DISPATCH_WEIGHT_MISMATCH": "Çıkış fişindeki kilo girilenle tutmuyor",
       "TICKET_DELIVERY_WEIGHT_MISMATCH": "Teslim fişindeki kilo girilenle tutmuyor",
       "TICKET_QUANTITY_TOLERANCE": "Fişlere göre net kilo tolerans dışında",
-      "QUALITY_CLAIM": "Kalite talebi"
-    }
+      "QUALITY_CLAIM": "Kalite talebi",
+      "PHOTO_MISSING": "Zorunlu fotoğraf yüklenmemiş",
+      "PHOTO_REUSED": "Fotoğraf başka sevkiyatta kullanılmış",
+      "TIME_IN_TRANSIT_EXCEEDED": "Sevkiyat yolda çok kaldı"
+    },
+    "settings": {
+      "title": "Kural ayarları",
+      "intro": "Net kilo farkının yüzdesi Yeşil üst sınırı aşarsa Sarı, Sarı üst sınırı aşarsa Kırmızı uyuşmazlık açılır. Yolda süre sınırı aşılan sevkiyat için Sarı uyuşmazlık açılır. Değişiklik yalnızca bundan sonraki karşılaştırmalara uygulanır.",
+      "greenMaxPct": "Yeşil üst sınır (%)",
+      "greenHint": "Bu farka kadar uyuşmazlık açılmaz",
+      "yellowMaxPct": "Sarı üst sınır (%)",
+      "yellowHint": "Bunun üstü Kırmızıdır",
+      "inTransitMaxHours": "Yolda en çok (saat)",
+      "hoursHint": "{{min}} ile {{max}} saat arası",
+      "submit": "Kaydet",
+      "saved": "Ayarlar kaydedildi.",
+      "failed": "Ayarlar kaydedilemedi. Lütfen tekrar deneyin.",
+      "toleranceHistory": "Tolerans geçmişi",
+      "timeLimitHistory": "Yolda süre sınırı geçmişi",
+      "bands": "Yeşil / Sarı üst sınır",
+      "period": "Geçerlilik",
+      "current": "halen",
+      "setBy": "Değiştiren",
+      "hours": "{{count}} saat",
+      "errors": {
+        "pct": "0 ile 100 arasında, en çok iki ondalıklı bir yüzde girin.",
+        "order": "Sarı üst sınır Yeşil üst sınırdan büyük olmalı.",
+        "hours": "1 ile 720 arasında tam saat girin."
+      }
+    },
+    "hoursUnit": "saat"
   },
   "evidence": {
     "title": "Fotoğraf ve belgeler",

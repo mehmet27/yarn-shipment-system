@@ -20,4 +20,5 @@ export default defineConfig({
   shipment: service('shipment-service', 'shipment-service-api.yaml', 'shipmentService'),
   discrepancy: service('discrepancy-service', 'discrepancy-service-api.yaml', 'discrepancyService'),
   evidence: service('evidence-service', 'evidence-service-api.yaml', 'evidenceService'),
+  bag: service('bag-service', 'bag-service-api.yaml', 'bagService'),
 });

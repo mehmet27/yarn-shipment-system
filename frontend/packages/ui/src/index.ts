@@ -16,6 +16,7 @@ export {
   Loader,
   Modal,
   NavLink,
+  NumberInput,
   Pagination,
   Paper,
   SegmentedControl,

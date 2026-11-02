@@ -48,7 +48,7 @@ final class EvidenceServiceClient implements EvidenceLookupPort {
             if (view == null) {
                 throw new EvidenceServiceUnavailableException("Empty evidence response");
             }
-            return Optional.of(new EvidenceReference(view.id(), view.shipmentId(), view.evidenceType()));
+            return Optional.of(new EvidenceReference(view.id(), view.shipmentId(), view.evidenceType(), view.status()));
         } catch (RestClientResponseException exception) {
             if (exception.getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)
                     || exception.getStatusCode().isSameCodeAs(HttpStatus.FORBIDDEN)) {
@@ -60,5 +60,5 @@ final class EvidenceServiceClient implements EvidenceLookupPort {
         }
     }
 
-    private record EvidenceView(UUID id, UUID shipmentId, String evidenceType) {}
+    private record EvidenceView(UUID id, UUID shipmentId, String evidenceType, String status) {}
 }

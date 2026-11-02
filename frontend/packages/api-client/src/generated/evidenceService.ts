@@ -86,7 +86,25 @@ export interface UploadTicketView {
   expiresAt: string;
 }
 
+export type EvidenceStatus = typeof EvidenceStatus[keyof typeof EvidenceStatus];
+
+
+export const EvidenceStatus = {
+  VALID: 'VALID',
+  INVALIDATED: 'INVALIDATED',
+} as const;
+
+export interface InvalidateEvidenceRequest {
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  reason: string;
+}
+
 export interface EvidenceView {
+  status: EvidenceStatus;
+  invalidatedReason?: string;
   id: string;
   shipmentId: string;
   evidenceType: EvidenceType;
@@ -173,7 +191,7 @@ export type ForbiddenResponse = Problem;
 export type NotFoundResponse = Problem;
 
 /**
- * Sevkiyat kilitli (SHIPMENT_LOCKED) ya da dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED)
+ * Sevkiyat kilitli (SHIPMENT_LOCKED), dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED) ya da kanıt zaten geçersiz kılınmış (EVIDENCE_ALREADY_INVALIDATED)
  */
 export type ConflictResponse = Problem;
 
@@ -269,6 +287,24 @@ export const getEvidenceDownloadUrl = (
     }
 
 /**
+ * Yanlış ya da uygunsuz yüklenen kanıtı gerekçeyle geçersiz sayar (yalnızca admin). Kayıt ve dosya silinmez;
+ * durum `INVALIDATED` olur. Geçersiz kanıt teslim girişinde imzalı irsaliye olarak kabul edilmez. Bir kanıt
+ * yalnızca bir kez geçersiz kılınabilir.
+ * @summary Kanıtı geçersiz kıl
+ */
+export const invalidateEvidence = (
+    evidenceId: string,
+    invalidateEvidenceRequest: InvalidateEvidenceRequest,
+ ) => {
+      return customInstance<EvidenceView>(
+      {url: `/api/v1/evidence/${evidenceId}/invalidate`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: invalidateEvidenceRequest
+    },
+      );
+    }
+
+/**
  * Dosyanın kendisini değil üst verisini döner (tür, sevkiyat, boyut, hash). Sevkiyat isteyene görünmüyorsa
  * kanıt da yoktur (EVIDENCE_NOT_FOUND).
  * @summary Kanıt üst verisi
@@ -292,4 +328,5 @@ export type ConfirmEvidenceUploadResult = NonNullable<Awaited<ReturnType<typeof 
 export type ReadEvidenceTicketResult = NonNullable<Awaited<ReturnType<typeof readEvidenceTicket>>>
 export type ListEvidenceResult = NonNullable<Awaited<ReturnType<typeof listEvidence>>>
 export type GetEvidenceDownloadUrlResult = NonNullable<Awaited<ReturnType<typeof getEvidenceDownloadUrl>>>
+export type InvalidateEvidenceResult = NonNullable<Awaited<ReturnType<typeof invalidateEvidence>>>
 export type GetEvidenceResult = NonNullable<Awaited<ReturnType<typeof getEvidence>>>

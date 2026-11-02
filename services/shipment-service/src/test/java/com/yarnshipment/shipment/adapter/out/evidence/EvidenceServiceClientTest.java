@@ -42,10 +42,11 @@ class EvidenceServiceClientTest {
         EvidenceServiceClient client = clientAnswering(
                 OK,
                 "{\"id\":\"" + EVIDENCE + "\",\"shipmentId\":\"" + SHIPMENT
-                        + "\",\"evidenceType\":\"SIGNED_DELIVERY_DOC\",\"sha256\":\"x\"}");
+                        + "\",\"evidenceType\":\"SIGNED_DELIVERY_DOC\",\"status\":\"VALID\",\"sha256\":\"x\"}");
 
         assertThat(client.findEvidence(EVIDENCE))
-                .contains(new EvidenceReference(EVIDENCE, SHIPMENT, EvidenceReference.SIGNED_DELIVERY_DOC));
+                .contains(new EvidenceReference(
+                        EVIDENCE, SHIPMENT, EvidenceReference.SIGNED_DELIVERY_DOC, EvidenceReference.VALID));
     }
 
     @Test

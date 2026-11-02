@@ -1,8 +1,8 @@
-import { Can } from '@/modules/auth';
 import { useTranslation } from '@iplik/i18n';
-import { AppShell, Burger, Group, NavLink, Text, useDisclosure } from '@iplik/ui';
-import { NavLink as RouterNavLink, Outlet, useLocation } from 'react-router';
+import { AppShell, Burger, Group, Text, useDisclosure } from '@iplik/ui';
+import { Outlet } from 'react-router';
 import { LogoutButton } from './LogoutButton';
+import { PanelNav } from './PanelNav';
 
 const HEADER_HEIGHT_PX = 56;
 const NAVBAR_WIDTH_PX = 240;
@@ -11,7 +11,6 @@ const NAVBAR_WIDTH_PX = 240;
 export function PanelLayout() {
   const { t } = useTranslation();
   const [isNavOpen, { toggle }] = useDisclosure();
-  const { pathname } = useLocation();
   return (
     <AppShell
       header={{ height: HEADER_HEIGHT_PX }}
@@ -30,36 +29,7 @@ export function PanelLayout() {
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="xs">
-        <NavLink
-          component={RouterNavLink}
-          to="/panel/sevkiyat"
-          label={t('nav.shipments')}
-          active={pathname.startsWith('/panel/sevkiyat')}
-        />
-        <Can permission="BAG_CREATE">
-          <NavLink
-            component={RouterNavLink}
-            to="/panel/cuvallar"
-            label={t('nav.bags')}
-            active={pathname.startsWith('/panel/cuvallar')}
-          />
-        </Can>
-        <Can permission="DISCREPANCY_VIEW">
-          <NavLink
-            component={RouterNavLink}
-            to="/panel/uyusmazliklar"
-            label={t('nav.discrepancies')}
-            active={pathname.startsWith('/panel/uyusmazliklar')}
-          />
-        </Can>
-        <Can permission="MASTER_DATA_MANAGE">
-          <NavLink
-            component={RouterNavLink}
-            to="/panel/tanimlar"
-            label={t('nav.masterData')}
-            active={pathname.startsWith('/panel/tanimlar')}
-          />
-        </Can>
+        <PanelNav />
       </AppShell.Navbar>
       <AppShell.Main>
         <Outlet />

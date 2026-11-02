@@ -1,7 +1,9 @@
 package com.yarnshipment.evidence.adapter.in.web;
 
 import com.yarnshipment.common.web.problem.ProblemFactory;
+import com.yarnshipment.evidence.domain.model.EvidenceAlreadyInvalidatedException;
 import com.yarnshipment.evidence.domain.model.EvidenceNotFoundException;
+import com.yarnshipment.evidence.domain.model.InvalidationReasonRequiredException;
 import com.yarnshipment.evidence.domain.model.ShipmentLockedException;
 import com.yarnshipment.evidence.domain.model.ShipmentNotAccessibleException;
 import com.yarnshipment.evidence.domain.model.ShipmentServiceUnavailableException;
@@ -34,6 +36,16 @@ public final class EvidenceExceptionHandler {
     @ExceptionHandler(EvidenceNotFoundException.class)
     public ProblemDetail handleEvidenceNotFound(HttpServletRequest request) {
         return problems.create(request, HttpStatus.NOT_FOUND, "EVIDENCE_NOT_FOUND");
+    }
+
+    @ExceptionHandler(EvidenceAlreadyInvalidatedException.class)
+    public ProblemDetail handleAlreadyInvalidated(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.CONFLICT, "EVIDENCE_ALREADY_INVALIDATED");
+    }
+
+    @ExceptionHandler(InvalidationReasonRequiredException.class)
+    public ProblemDetail handleReasonRequired(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.BAD_REQUEST, "INVALIDATION_REASON_REQUIRED");
     }
 
     @ExceptionHandler(UploadNotAllowedException.class)

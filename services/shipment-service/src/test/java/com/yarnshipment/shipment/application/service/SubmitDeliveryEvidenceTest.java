@@ -35,8 +35,7 @@ class SubmitDeliveryEvidenceTest {
     @DisplayName("Bu sevkiyatın imzalı irsaliyesi olan kanıt kabul edilir")
     void shouldAcceptSignedDocumentOfShipment() {
         queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
-        EvidenceReference found =
-                new EvidenceReference(EVIDENCE, TestShipments.SHIPMENT_ID, EvidenceReference.SIGNED_DELIVERY_DOC);
+        EvidenceReference found = reference(TestShipments.SHIPMENT_ID, EvidenceReference.SIGNED_DELIVERY_DOC, "VALID");
 
         service(Optional.of(found)).submitDeliveryReceipt(command());
 
@@ -44,19 +43,28 @@ class SubmitDeliveryEvidenceTest {
     }
 
     @Test
-    @DisplayName("Kanıt yoksa, başka sevkiyata aitse ya da imzalı irsaliye değilse teslim kaydedilmez")
+    @DisplayName(
+            "Kanıt yoksa, başka sevkiyata aitse, imzalı irsaliye değilse ya da geçersiz kılınmışsa teslim kaydedilmez")
     void shouldRejectInvalidEvidence() {
         queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
-        EvidenceReference otherShipment =
-                new EvidenceReference(EVIDENCE, UUID.randomUUID(), EvidenceReference.SIGNED_DELIVERY_DOC);
-        EvidenceReference otherType = new EvidenceReference(EVIDENCE, TestShipments.SHIPMENT_ID, "SEAL");
+        EvidenceReference otherShipment = reference(UUID.randomUUID(), EvidenceReference.SIGNED_DELIVERY_DOC, "VALID");
+        EvidenceReference otherType = reference(TestShipments.SHIPMENT_ID, "SEAL", "VALID");
+        EvidenceReference invalidated =
+                reference(TestShipments.SHIPMENT_ID, EvidenceReference.SIGNED_DELIVERY_DOC, "INVALIDATED");
 
         for (Optional<EvidenceReference> answer : java.util.List.of(
-                Optional.<EvidenceReference>empty(), Optional.of(otherShipment), Optional.of(otherType))) {
+                Optional.<EvidenceReference>empty(),
+                Optional.of(otherShipment),
+                Optional.of(otherType),
+                Optional.of(invalidated))) {
             assertThatThrownBy(() -> service(answer).submitDeliveryReceipt(command()))
                     .isInstanceOf(InvalidDeliveryEvidenceException.class);
         }
         assertThat(commandPort.receipts()).isEmpty();
+    }
+
+    private static EvidenceReference reference(UUID shipmentId, String type, String status) {
+        return new EvidenceReference(EVIDENCE, shipmentId, type, status);
     }
 
     private SubmitDeliveryReceiptService service(Optional<EvidenceReference> answer) {

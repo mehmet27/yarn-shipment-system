@@ -3,6 +3,7 @@ package com.yarnshipment.evidence.adapter.in.web;
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceDownloadView;
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceListView;
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceSource;
+import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceStatus;
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceType;
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceView;
 import com.yarnshipment.evidence.adapter.in.web.api.model.RequestUploadRequest;
@@ -50,6 +51,7 @@ final class EvidenceViews {
 
     static EvidenceView toView(EvidenceFile file) {
         EvidenceView view = new EvidenceView(
+                EvidenceStatus.fromValue(file.status().name()),
                 file.id(),
                 file.shipmentId(),
                 EvidenceType.fromValue(file.declared().type().name()),
@@ -58,6 +60,7 @@ final class EvidenceViews {
                 file.stored().sha256(),
                 EvidenceSource.fromValue(file.declared().source().name()),
                 file.uploadedAt().atOffset(ZoneOffset.UTC));
+        view.setInvalidatedReason(file.invalidatedReason());
         if (file.declared().capturedAt() != null) {
             view.setCapturedAt(file.declared().capturedAt().atOffset(ZoneOffset.UTC));
         }

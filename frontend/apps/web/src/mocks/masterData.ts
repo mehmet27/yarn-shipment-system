@@ -1,4 +1,5 @@
-export type MasterKind = 'subcontractor' | 'driver' | 'vehicle' | 'site';
+export type MasterKind =
+  'subcontractor' | 'driver' | 'vehicle' | 'site' | 'product' | 'qualityGrade';
 
 /** Dört ana veri türünün ortak sahte kaydı; `label` ünvan, ad-soyad, plaka veya lokasyon adıdır. */
 export type MockRecord = {
@@ -6,9 +7,12 @@ export type MockRecord = {
   label: string;
   isActive: boolean;
   subcontractorId?: string;
+  /** İplik ve kalite sınıfında: değişmez kod ve iplik numarası ya da etiket rengi. */
+  code?: string;
+  extra?: string;
 };
 
-export type MockValues = { label: string; subcontractorId?: string };
+export type MockValues = { label: string; subcontractorId?: string; code?: string; extra?: string };
 
 const SEED: Readonly<Record<MasterKind, readonly MockRecord[]>> = {
   subcontractor: [
@@ -27,6 +31,14 @@ const SEED: Readonly<Record<MasterKind, readonly MockRecord[]>> = {
     { id: 'veh-1', label: '16XYZ456', isActive: true },
   ],
   site: [{ id: 'site-merkez', label: 'Merkez Depo', isActive: true }],
+  product: [
+    { id: 'prd-0', label: 'Polyester 30/1', isActive: true, code: 'PES-30-1', extra: 'Ne 30/1' },
+    { id: 'prd-1', label: 'Pamuk 20/1', isActive: true, code: 'CO-20-1' },
+  ],
+  qualityGrade: [
+    { id: 'grd-a', label: 'Birinci kalite', isActive: true, code: 'A' },
+    { id: 'grd-b', label: 'İkinci kalite', isActive: true, code: 'B' },
+  ],
 };
 
 let records = structuredClone(SEED) as Record<MasterKind, MockRecord[]>;
@@ -62,12 +74,26 @@ export function isDuplicateTitle(label: string, exceptId?: string): boolean {
   );
 }
 
+/** İplik ve kalite kodu büyük/küçük harf gözetmeden tekildir. */
+export function isDuplicateCode(kind: MasterKind, code: string): boolean {
+  return records[kind].some((record) => record.code === code.trim().toUpperCase());
+}
+
+/** Sözleşmedeki isteğe bağlı alanlar; boşsa kayıtta hiç yoktur. */
+function optionalFields(values: MockValues): Partial<MockRecord> {
+  return {
+    ...(values.subcontractorId === undefined ? {} : { subcontractorId: values.subcontractorId }),
+    ...(values.extra === undefined ? {} : { extra: values.extra }),
+  };
+}
+
 export function createMasterRecord(kind: MasterKind, values: MockValues): MockRecord {
   const created: MockRecord = {
     id: `${kind}-new-${String(nextId++)}`,
     label: normalize(kind, values.label),
     isActive: true,
-    ...(values.subcontractorId === undefined ? {} : { subcontractorId: values.subcontractorId }),
+    ...(values.code === undefined ? {} : { code: values.code.trim().toUpperCase() }),
+    ...optionalFields(values),
   };
   records[kind] = [...records[kind], created];
   return created;
@@ -84,7 +110,8 @@ export function updateMasterRecord(
     id: found.id,
     isActive: found.isActive,
     label: normalize(kind, values.label),
-    ...(values.subcontractorId === undefined ? {} : { subcontractorId: values.subcontractorId }),
+    ...(found.code === undefined ? {} : { code: found.code }),
+    ...optionalFields(values),
   };
   records[kind] = records[kind].map((record) => (record.id === id ? updated : record));
   return updated;

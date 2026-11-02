@@ -410,6 +410,140 @@ export interface SitePageResponse {
   page: PageMetadata;
 }
 
+export interface ProductCreateRequest {
+  /**
+     * Harf veya rakamla başlar; harf, rakam ve + . _ / - içerir. Büyük harfe çevrilir, sonra değişmez
+     * @minLength 1
+     * @maxLength 40
+     */
+  code: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+  /**
+     * İplik numarası, ör. Ne 30/1
+     * @maxLength 50
+     */
+  yarnCount?: string;
+}
+
+export interface ProductUpdateRequest {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+  /** @maxLength 50 */
+  yarnCount?: string;
+}
+
+export interface ProductView {
+  /** Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir */
+  active?: boolean;
+  id: string;
+  code: string;
+  name: string;
+  yarnCount?: string;
+}
+
+export interface ProductPageResponse {
+  items: ProductView[];
+  page: PageMetadata;
+}
+
+export interface QualityGradeCreateRequest {
+  /**
+     * Harf veya rakamla başlar; harf, rakam ve + . _ / - içerir. Büyük harfe çevrilir, sonra değişmez
+     * @minLength 1
+     * @maxLength 40
+     */
+  code: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+  /**
+     * Etiket rengi; A/B etiketlerini ayırmak için
+     * @pattern ^#[0-9A-Fa-f]{6}$
+     */
+  labelColor?: string;
+}
+
+export interface QualityGradeUpdateRequest {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  labelColor?: string;
+}
+
+export interface QualityGradeView {
+  /** Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir */
+  active?: boolean;
+  id: string;
+  code: string;
+  name: string;
+  /** #RRGGBB */
+  labelColor?: string;
+}
+
+export interface QualityGradePageResponse {
+  items: QualityGradeView[];
+  page: PageMetadata;
+}
+
+export interface LotCreateRequest {
+  siteId: string;
+  /**
+     * Parti numarası; lokasyonda tektir, büyük harfe çevrilir
+     * @minLength 1
+     * @maxLength 40
+     */
+  lotNo: string;
+  productId: string;
+  qualityGradeId: string;
+  productionDate: string;
+}
+
+export interface LotUpdateRequest {
+  /**
+     * Parti numarası; lokasyonda tektir, büyük harfe çevrilir
+     * @minLength 1
+     * @maxLength 40
+     */
+  lotNo: string;
+  productId: string;
+  qualityGradeId: string;
+  productionDate: string;
+}
+
+export interface LotView {
+  id: string;
+  siteId: string;
+  siteName: string;
+  lotNo: string;
+  productId: string;
+  productCode: string;
+  productName: string;
+  qualityGradeId: string;
+  qualityGradeCode: string;
+  qualityGradeName: string;
+  productionDate: string;
+  /** Kalitenin kilitlendiği an; boşsa parti kilitsizdir ve düzenlenebilir */
+  qualityLockedAt?: string;
+  active: boolean;
+}
+
+export interface LotPageResponse {
+  items: LotView[];
+  page: PageMetadata;
+}
+
 /**
  * Bir durum geçişi; ilk satırda `fromStatus` yoktur.
  */
@@ -590,7 +724,7 @@ export interface DriverShipmentView {
 export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView | DriverShipmentView;
 
 /**
- * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR)
+ * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE) ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED)
  */
 export type ConflictResponse = Problem;
 
@@ -719,6 +853,72 @@ status?: StatusFilterParameter;
 };
 
 export type ListSitesParams = {
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
+};
+
+export type ListProductsParams = {
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
+};
+
+export type ListQualityGradesParams = {
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
+};
+
+export type ListLotsParams = {
 /**
  * @minimum 0
  */
@@ -1195,6 +1395,232 @@ export const activateSite = (
     }
 
 /**
+ * İplik (ürün) seçimi için; koda göre sıralı. Arama `q` ile kod ve adda yapılır (büyük-küçük harf duyarsız).
+ * @summary İplik listesi
+ */
+export const listProducts = (
+    params?: ListProductsParams,
+ ) => {
+      return customInstance<ProductPageResponse>(
+      {url: `/api/v1/master-data/products`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Kod boşluklardan arındırılıp büyük harfe çevrilir; harf veya rakamla başlar, en çok 40 karakterdir ve yalnızca harf, rakam ve `+ . _ / -` içerir (değilse 400 `INVALID_MASTER_DATA`). Kullanılmış kod 409 `DUPLICATE_CODE` verir. Kod eklendikten sonra değişmez. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * @summary İplik ekler
+ */
+export const createProduct = (
+    productCreateRequest: ProductCreateRequest,
+ ) => {
+      return customInstance<ProductView>(
+      {url: `/api/v1/master-data/products`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: productCreateRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve iplik numarası güncellenir. Kayıt pasif olsa da güncellenebilir.
+ * @summary İplik günceller
+ */
+export const updateProduct = (
+    productId: string,
+    productUpdateRequest: ProductUpdateRequest,
+ ) => {
+      return customInstance<ProductView>(
+      {url: `/api/v1/master-data/products/${productId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: productUpdateRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif iplik yeni partiye verilemez; mevcut partiler etkilenmez.
+ * @summary İplik pasife alır
+ */
+export const deactivateProduct = (
+    productId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/products/${productId}/deactivate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * @summary İplik yeniden etkinleştirir
+ */
+export const activateProduct = (
+    productId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/products/${productId}/activate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Kalite sınıfı (A, B ...) seçimi için; koda göre sıralı. Arama `q` ile kod ve adda yapılır.
+ * @summary Kalite sınıfı listesi
+ */
+export const listQualityGrades = (
+    params?: ListQualityGradesParams,
+ ) => {
+      return customInstance<QualityGradePageResponse>(
+      {url: `/api/v1/master-data/quality-grades`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Kod kuralı iplikteki gibidir (`INVALID_MASTER_DATA`, `DUPLICATE_CODE`); kod partinin kilidiyle çuvala kopyalandığı için eklendikten sonra değişmez. Etiket rengi `#RRGGBB` biçimindedir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * @summary Kalite sınıfı ekler
+ */
+export const createQualityGrade = (
+    qualityGradeCreateRequest: QualityGradeCreateRequest,
+ ) => {
+      return customInstance<QualityGradeView>(
+      {url: `/api/v1/master-data/quality-grades`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: qualityGradeCreateRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve etiket rengi güncellenir.
+ * @summary Kalite sınıfı günceller
+ */
+export const updateQualityGrade = (
+    qualityGradeId: string,
+    qualityGradeUpdateRequest: QualityGradeUpdateRequest,
+ ) => {
+      return customInstance<QualityGradeView>(
+      {url: `/api/v1/master-data/quality-grades/${qualityGradeId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: qualityGradeUpdateRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif sınıf yeni partiye verilemez ve kilitlenecek partide kullanılamaz.
+ * @summary Kalite sınıfı pasife alır
+ */
+export const deactivateQualityGrade = (
+    qualityGradeId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/quality-grades/${qualityGradeId}/deactivate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * @summary Kalite sınıfı yeniden etkinleştirir
+ */
+export const activateQualityGrade = (
+    qualityGradeId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/quality-grades/${qualityGradeId}/activate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Partiler, üretim tarihine göre yeniden eskiye. Yalnızca kullanıcının yetkili olduğu lokasyonların partileri gelir; `MASTER_DATA_MANAGE` izni olan hepsini görür. Arama `q` ile parti numarası, iplik kodu ve adında yapılır. `status=ALL` için `LOT_QUALITY_LOCK` gerekir.
+ * @summary Parti listesi
+ */
+export const listLots = (
+    params?: ListLotsParams,
+ ) => {
+      return customInstance<LotPageResponse>(
+      {url: `/api/v1/master-data/lots`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Parti numarası kod kuralına uyar ve lokasyonda tektir (`DUPLICATE_CODE`). Lokasyon, iplik ve kalite sınıfı etkin olmalı, üretim tarihi ileride olamaz (değilse 400 `INVALID_MASTER_DATA`). Parti kilitsiz açılır; çuval bağlanabilmesi için kalitesi kilitlenmelidir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * @summary Parti ekler
+ */
+export const createLot = (
+    lotCreateRequest: LotCreateRequest,
+ ) => {
+      return customInstance<LotView>(
+      {url: `/api/v1/master-data/lots`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: lotCreateRequest
+    },
+      );
+    }
+
+/**
+ * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Yalnızca kalitesi kilitlenmemiş parti düzenlenir; kilitli parti 409 `LOT_QUALITY_LOCKED` verir. Lokasyon değişmez.
+ * @summary Parti günceller
+ */
+export const updateLot = (
+    lotId: string,
+    lotUpdateRequest: LotUpdateRequest,
+ ) => {
+      return customInstance<LotView>(
+      {url: `/api/v1/master-data/lots/${lotId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: lotUpdateRequest
+    },
+      );
+    }
+
+/**
+ * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Kilitli parti de pasife alınabilir; kilit ve kalite değişmez.
+ * @summary Parti pasife alır
+ */
+export const deactivateLot = (
+    lotId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/lots/${lotId}/deactivate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * @summary Parti yeniden etkinleştirir
+ */
+export const activateLot = (
+    lotId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/lots/${lotId}/activate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında (rapor Bölüm 10). Kilitten sonra partinin numarası, ipliği, kalitesi ve üretim tarihi değişmez ve kilit geri alınamaz; çuvallar yalnızca kilitli partiye bağlanır ve kaliteyi partiden alır. Kilit `LotQualityLocked` olayıyla çuval servisine gider. Kilitli parti 409 `LOT_QUALITY_LOCKED`; pasif parti ya da pasif kalite sınıfı 400 `INVALID_MASTER_DATA` verir.
+ * @summary Partinin kalitesini kilitler
+ */
+export const lockLotQuality = (
+    lotId: string,
+ ) => {
+      return customInstance<LotView>(
+      {url: `/api/v1/master-data/lots/${lotId}/quality-lock`, method: 'POST'
+    },
+      );
+    }
+
+/**
  * Kapsamdaki her kullanıcı için aynıdır; kişisel veri taşımaz, işlemi yapan yalnızca kimlikle gelir.
  * @summary Sevkiyatın durum geçmişi, eskiden yeniye
  */
@@ -1314,6 +1740,22 @@ export type CreateSiteResult = NonNullable<Awaited<ReturnType<typeof createSite>
 export type UpdateSiteResult = NonNullable<Awaited<ReturnType<typeof updateSite>>>
 export type DeactivateSiteResult = NonNullable<Awaited<ReturnType<typeof deactivateSite>>>
 export type ActivateSiteResult = NonNullable<Awaited<ReturnType<typeof activateSite>>>
+export type ListProductsResult = NonNullable<Awaited<ReturnType<typeof listProducts>>>
+export type CreateProductResult = NonNullable<Awaited<ReturnType<typeof createProduct>>>
+export type UpdateProductResult = NonNullable<Awaited<ReturnType<typeof updateProduct>>>
+export type DeactivateProductResult = NonNullable<Awaited<ReturnType<typeof deactivateProduct>>>
+export type ActivateProductResult = NonNullable<Awaited<ReturnType<typeof activateProduct>>>
+export type ListQualityGradesResult = NonNullable<Awaited<ReturnType<typeof listQualityGrades>>>
+export type CreateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof createQualityGrade>>>
+export type UpdateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof updateQualityGrade>>>
+export type DeactivateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof deactivateQualityGrade>>>
+export type ActivateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof activateQualityGrade>>>
+export type ListLotsResult = NonNullable<Awaited<ReturnType<typeof listLots>>>
+export type CreateLotResult = NonNullable<Awaited<ReturnType<typeof createLot>>>
+export type UpdateLotResult = NonNullable<Awaited<ReturnType<typeof updateLot>>>
+export type DeactivateLotResult = NonNullable<Awaited<ReturnType<typeof deactivateLot>>>
+export type ActivateLotResult = NonNullable<Awaited<ReturnType<typeof activateLot>>>
+export type LockLotQualityResult = NonNullable<Awaited<ReturnType<typeof lockLotQuality>>>
 export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof getShipmentHistory>>>
 export type CancelShipmentResult = NonNullable<Awaited<ReturnType<typeof cancelShipment>>>
 export type AssignShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof assignShipmentBags>>>

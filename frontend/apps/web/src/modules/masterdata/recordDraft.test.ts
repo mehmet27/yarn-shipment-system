@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeLabel, validateLabel } from './recordDraft';
+import {
+  normalizeCode,
+  normalizeLabel,
+  validateCode,
+  validateExtra,
+  validateLabel,
+} from './recordDraft';
 
 describe('validateLabel', () => {
   it('boş ve yalnızca boşluktan oluşan metni reddeder', () => {
@@ -36,5 +42,24 @@ describe('normalizeLabel', () => {
 
   it('diğer türlerde yalnızca kenar boşluklarını siler', () => {
     expect(normalizeLabel('subcontractor', '  Aydın  Örme ')).toBe('Aydın  Örme');
+  });
+});
+
+describe('validateCode / validateExtra', () => {
+  it('kodu büyük harfe çevirir ve desene uymayanı reddeder', () => {
+    expect(normalizeCode(' pes-30/1 ')).toBe('PES-30/1');
+    expect(validateCode('pes-30/1')).toBeUndefined();
+    expect(validateCode('  ')).toBe('codeRequired');
+    expect(validateCode('-A')).toBe('invalidCode');
+    expect(validateCode('A B')).toBe('invalidCode');
+    expect(validateCode('A'.repeat(41))).toBe('invalidCode');
+  });
+
+  it('etiket rengi #RRGGBB olmalı, boş bırakılabilir', () => {
+    expect(validateExtra('qualityGrade', ' #2e7d32 ')).toBeUndefined();
+    expect(validateExtra('qualityGrade', '')).toBeUndefined();
+    expect(validateExtra('qualityGrade', 'yeşil')).toBe('invalidColor');
+    expect(validateExtra('product', 'Ne 30/1')).toBeUndefined();
+    expect(validateExtra('product', 'x'.repeat(51))).toBe('extraTooLong');
   });
 });

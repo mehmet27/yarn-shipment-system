@@ -20,27 +20,9 @@ import {
   updateSubcontractor,
   updateVehicle,
 } from '@iplik/api-client';
-import type { ListParams, ManagedKind, RecordPage, RecordValues } from './kinds';
-
-type Adapter = {
-  list: (params: ListParams) => Promise<RecordPage>;
-  save: (id: string | undefined, values: RecordValues) => Promise<void>;
-  setActive: (id: string, isActive: boolean) => Promise<void>;
-};
-
-/** Sözleşmedeki ortak sorgu: pasifler yalnızca yönetici için `status=ALL` ile gelir. */
-function toQuery({ q, page, size, isShowingInactive }: ListParams) {
-  return {
-    page,
-    size,
-    status: isShowingInactive ? ('ALL' as const) : ('ACTIVE' as const),
-    ...(q === '' ? {} : { q }),
-  };
-}
-
-async function discard(request: Promise<unknown>): Promise<void> {
-  await request;
-}
+import type { ManagedKind } from './kinds';
+import { discard, product, qualityGrade, toQuery } from './catalogAdapters';
+import type { Adapter } from './catalogAdapters';
 
 const subcontractor: Adapter = {
   async list(params) {
@@ -126,4 +108,6 @@ export const ADAPTERS: Readonly<Record<ManagedKind, Adapter>> = {
   driver,
   vehicle,
   site,
+  product,
+  qualityGrade,
 };

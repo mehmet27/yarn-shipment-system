@@ -52,6 +52,14 @@ export function PanelLayout() {
             active={pathname.startsWith('/panel/tanimlar')}
           />
         </Can>
+        <Can permission="LOT_QUALITY_LOCK">
+          <NavLink
+            component={RouterNavLink}
+            to="/panel/partiler"
+            label={t('nav.lots')}
+            active={pathname.startsWith('/panel/partiler')}
+          />
+        </Can>
       </AppShell.Navbar>
       <AppShell.Main>
         <Outlet />

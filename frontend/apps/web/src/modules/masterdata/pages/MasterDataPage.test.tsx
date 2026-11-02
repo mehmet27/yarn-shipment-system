@@ -116,6 +116,39 @@ describe('MasterDataPage', () => {
     expect(await within(dialog).findByText('Giriş hesabı açıldı.')).toBeInTheDocument();
   });
 
+  it('iplik kodla eklenir; aynı kod sunucu hatasıyla kod alanında gösterilir', async () => {
+    server.use(...createHandlers('ADMIN'));
+    renderApp('/panel/tanimlar');
+    await userEvent.click(await screen.findByRole('tab', { name: 'İplikler' }));
+    expect(await screen.findByText('PES-30-1')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Ekle' }));
+    await userEvent.type(screen.getByLabelText(/^Kod/), 'pes-30-1');
+    await userEvent.type(screen.getByLabelText(/İplik adı/), 'Polyester');
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(await screen.findByText('Bu kod başka bir kayıtta kullanılıyor.')).toBeInTheDocument();
+
+    await userEvent.clear(screen.getByLabelText(/^Kod/));
+    await userEvent.type(screen.getByLabelText(/^Kod/), 'pes-40-1');
+    await userEvent.type(screen.getByLabelText(/İplik numarası/), 'Ne 40/1');
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(await screen.findByText('PES-40-1')).toBeInTheDocument();
+  });
+
+  it('kalite sınıfında geçersiz etiket rengini göndermeden reddeder; kod düzenlenemez', async () => {
+    server.use(...createHandlers('ADMIN'));
+    renderApp('/panel/tanimlar');
+    await userEvent.click(await screen.findByRole('tab', { name: 'Kalite sınıfları' }));
+    const card = await screen.findByRole('group', { name: 'İkinci kalite' });
+    await userEvent.click(within(card).getByRole('button', { name: 'Düzenle' }));
+    expect(screen.getByLabelText(/^Kod/)).toBeDisabled();
+    await userEvent.clear(screen.getByLabelText(/Etiket rengi/));
+    await userEvent.type(screen.getByLabelText(/Etiket rengi/), 'sarı');
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(
+      await screen.findByText('Rengi #RRGGBB biçiminde girin (ör. #2E7D32).'),
+    ).toBeInTheDocument();
+  });
+
   it('MASTER_DATA_MANAGE yetkisi olmayan rol bu sayfaya giremez', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/tanimlar');

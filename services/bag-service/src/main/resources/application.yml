@@ -36,5 +36,11 @@ spring:
         jwt:
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/yarnshipment}
           audiences: yarnshipment-api
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: bag-service
+      # Servis ilk açıldığında konudaki geçmiş parti kilitleri de işlenir; kilit olmadan partiye çuval bağlanamaz.
+      auto-offset-reset: earliest
 server:
   port: ${SERVER_PORT:8084}

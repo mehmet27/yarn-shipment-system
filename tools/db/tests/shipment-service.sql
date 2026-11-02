@@ -149,4 +149,45 @@ SET CONSTRAINTS ALL IMMEDIATE;
 SET CONSTRAINTS ALL DEFERRED;
 SELECT pg_temp.expect_error($$UPDATE weighing SET superseded_by = NULL
     WHERE id = '00000000-0000-7000-8000-000000000203'$$, 'YS002');
+
+-- Parti kalite kilidi (rapor Bölüm 10): kilitsiz parti düzenlenir; kilitli partinin kalitesi, ürünü, numarası ve
+-- kilidi değişmez, yalnızca pasife alınır. Kodlar eklendikten sonra değişmez.
+INSERT INTO md_site (id, name, created_at, created_by)
+VALUES ('00000000-0000-7000-8000-000000000601', 'Lokasyon', now(), gen_random_uuid()),
+       ('00000000-0000-7000-8000-000000000606', 'Diğer lokasyon', now(), gen_random_uuid());
+INSERT INTO md_product (id, code, name, created_at, created_by)
+VALUES ('00000000-0000-7000-8000-000000000602', 'PES-30', 'Polyester 30/1', now(), gen_random_uuid());
+INSERT INTO md_quality_grade (id, code, name, label_color, created_at, created_by)
+VALUES ('00000000-0000-7000-8000-000000000603', 'A', 'Birinci kalite', '#2E7D32', now(), gen_random_uuid()),
+       ('00000000-0000-7000-8000-000000000604', 'B', 'İkinci kalite', NULL, now(), gen_random_uuid());
+SELECT pg_temp.expect_error($$INSERT INTO md_product (id, code, name, created_at, created_by)
+    VALUES (gen_random_uuid(), 'pes-30', 'Tekrar', now(), gen_random_uuid())$$, '23505');
+SELECT pg_temp.expect_error($$UPDATE md_quality_grade SET code = 'C'
+    WHERE id = '00000000-0000-7000-8000-000000000603'$$, 'YS002');
+SELECT pg_temp.expect_error($$INSERT INTO md_quality_grade (id, code, name, label_color, created_at, created_by)
+    VALUES (gen_random_uuid(), 'X', 'Renk', 'red', now(), gen_random_uuid())$$, '23514');
+INSERT INTO md_production_lot (id, site_id, lot_no, product_id, quality_grade_id, production_date, created_at,
+                               created_by)
+VALUES ('00000000-0000-7000-8000-000000000605', '00000000-0000-7000-8000-000000000601', 'P-1',
+        '00000000-0000-7000-8000-000000000602', '00000000-0000-7000-8000-000000000603', current_date, now(),
+        gen_random_uuid());
+SELECT pg_temp.expect_error($$INSERT INTO md_production_lot (id, site_id, lot_no, product_id, quality_grade_id,
+    production_date, created_at, created_by) VALUES (gen_random_uuid(), '00000000-0000-7000-8000-000000000601',
+    'p-1', '00000000-0000-7000-8000-000000000602', '00000000-0000-7000-8000-000000000603', current_date, now(),
+    gen_random_uuid())$$, '23505');
+UPDATE md_production_lot SET quality_grade_id = '00000000-0000-7000-8000-000000000604'
+WHERE id = '00000000-0000-7000-8000-000000000605';
+SELECT pg_temp.expect_error($$UPDATE md_production_lot SET quality_locked_at = now()
+    WHERE id = '00000000-0000-7000-8000-000000000605'$$, '23514');
+UPDATE md_production_lot SET quality_locked_at = now(), quality_locked_by = gen_random_uuid()
+WHERE id = '00000000-0000-7000-8000-000000000605';
+SELECT pg_temp.expect_error($$UPDATE md_production_lot SET quality_grade_id = '00000000-0000-7000-8000-000000000603'
+    WHERE id = '00000000-0000-7000-8000-000000000605'$$, 'YS004');
+SELECT pg_temp.expect_error($$UPDATE md_production_lot SET quality_locked_at = NULL, quality_locked_by = NULL
+    WHERE id = '00000000-0000-7000-8000-000000000605'$$, 'YS004');
+SELECT pg_temp.expect_error($$UPDATE md_production_lot SET site_id = '00000000-0000-7000-8000-000000000606'
+    WHERE id = '00000000-0000-7000-8000-000000000605'$$, 'YS002');
+UPDATE md_production_lot SET active = false WHERE id = '00000000-0000-7000-8000-000000000605';
+SELECT pg_temp.expect_error($$DELETE FROM md_production_lot
+    WHERE id = '00000000-0000-7000-8000-000000000605'$$, '42501');
 ROLLBACK;

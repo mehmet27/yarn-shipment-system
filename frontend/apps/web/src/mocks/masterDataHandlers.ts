@@ -3,6 +3,7 @@ import { http, HttpResponse } from 'msw';
 import type { MasterKind, MockRecord, MockValues } from './masterData';
 import {
   createMasterRecord,
+  isDuplicateCode,
   isDuplicatePlate,
   isDuplicateTitle,
   isValidPlate,
@@ -20,6 +21,8 @@ const PATHS: Readonly<Record<MasterKind, string>> = {
   driver: 'drivers',
   vehicle: 'vehicles',
   site: 'sites',
+  product: 'products',
+  qualityGrade: 'quality-grades',
 };
 
 const problem = (status: number, code: string, title: string) =>
@@ -42,6 +45,10 @@ function toView(kind: MasterKind, record: MockRecord) {
       return { id, plateNo: label, active: isActive };
     case 'site':
       return { id, name: label, active: isActive };
+    case 'product':
+      return { id, code: record.code, name: label, active: isActive, yarnCount: record.extra };
+    case 'qualityGrade':
+      return { id, code: record.code, name: label, active: isActive, labelColor: record.extra };
   }
 }
 
@@ -50,7 +57,20 @@ const LABEL_FIELD: Readonly<Record<MasterKind, string>> = {
   driver: 'fullName',
   vehicle: 'plateNo',
   site: 'name',
+  product: 'name',
+  qualityGrade: 'name',
 };
+
+/** İplik numarası ya da etiket rengi alanının sözleşmedeki adı. */
+const EXTRA_FIELD: Partial<Record<MasterKind, string>> = {
+  product: 'yarnCount',
+  qualityGrade: 'labelColor',
+};
+
+function textField(body: Record<string, unknown>, field: string | undefined) {
+  const value = field === undefined ? undefined : body[field];
+  return typeof value === 'string' ? value : undefined;
+}
 
 function readValues(kind: MasterKind, json: unknown): MockValues | undefined {
   if (typeof json !== 'object' || json === null) return undefined;
@@ -58,9 +78,14 @@ function readValues(kind: MasterKind, json: unknown): MockValues | undefined {
   const label = body[LABEL_FIELD[kind]];
   if (typeof label !== 'string' || label.trim() === '') return undefined;
   const owner = body.subcontractorId;
-  return typeof owner === 'string' && kind === 'driver'
-    ? { label, subcontractorId: owner }
-    : { label };
+  const code = textField(body, 'code');
+  const extra = textField(body, EXTRA_FIELD[kind]);
+  return {
+    label,
+    ...(typeof owner === 'string' && kind === 'driver' ? { subcontractorId: owner } : {}),
+    ...(code === undefined ? {} : { code }),
+    ...(extra === undefined ? {} : { extra }),
+  };
 }
 
 function listHandler(kind: MasterKind, canManage: boolean) {
@@ -122,6 +147,9 @@ function writeHandlers(kind: MasterKind, canManage: boolean) {
       if (values === undefined) return problem(400, 'INVALID_MASTER_DATA', 'Geçersiz kayıt');
       const conflict = conflictOf(kind, values.label);
       if (conflict !== undefined) return conflict;
+      if (values.code !== undefined && isDuplicateCode(kind, values.code)) {
+        return problem(409, 'DUPLICATE_CODE', 'Kod zaten kayıtlı');
+      }
       return HttpResponse.json(toView(kind, createMasterRecord(kind, values)), { status: 201 });
     }),
     http.put(`${path}/:id`, async ({ params, request }) => {
@@ -158,7 +186,14 @@ function writeHandlers(kind: MasterKind, canManage: boolean) {
   ];
 }
 
-const KINDS: readonly MasterKind[] = ['subcontractor', 'driver', 'vehicle', 'site'];
+const KINDS: readonly MasterKind[] = [
+  'subcontractor',
+  'driver',
+  'vehicle',
+  'site',
+  'product',
+  'qualityGrade',
+];
 
 /** Ana veri liste ve yönetim uçları; yönetim yalnızca MASTER_DATA_MANAGE izniyle (403 aksi halde). */
 export function createMasterDataHandlers(permissions: readonly Permission[]) {

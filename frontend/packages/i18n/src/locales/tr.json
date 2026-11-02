@@ -17,7 +17,8 @@
     "field": "Saha",
     "shipments": "Sevkiyatlar",
     "masterData": "Tanımlar",
-    "discrepancies": "Uyuşmazlıklar"
+    "discrepancies": "Uyuşmazlıklar",
+    "lots": "Partiler"
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}"
@@ -290,7 +291,11 @@
     "errors": {
       "labelRequired": "Bu alan boş olamaz.",
       "labelTooLong": "Metin çok uzun.",
-      "invalidPlate": "Geçerli bir plaka girin (ör. 34 ABC 123)."
+      "invalidPlate": "Geçerli bir plaka girin (ör. 34 ABC 123).",
+      "codeRequired": "Kod boş olamaz.",
+      "invalidCode": "Kod harf veya rakamla başlamalı; yalnızca harf, rakam ve + . _ / - içerebilir (en çok 40 karakter).",
+      "extraTooLong": "En çok 50 karakter girin.",
+      "invalidColor": "Rengi #RRGGBB biçiminde girin (ör. #2E7D32)."
     },
     "kinds": {
       "subcontractor": {
@@ -308,6 +313,16 @@
       "site": {
         "tab": "Lokasyonlar",
         "field": "Lokasyon adı"
+      },
+      "product": {
+        "tab": "İplikler",
+        "field": "İplik adı",
+        "extra": "İplik numarası"
+      },
+      "qualityGrade": {
+        "tab": "Kalite sınıfları",
+        "field": "Kalite adı",
+        "extra": "Etiket rengi"
       }
     },
     "created": "Kayıt eklendi.",
@@ -316,8 +331,12 @@
     "serverErrors": {
       "DUPLICATE_PLATE": "Bu plaka başka bir araçta kullanılıyor.",
       "DUPLICATE_SUBCONTRACTOR": "Bu ünvanla kayıtlı bir fasoncu zaten var.",
-      "INVALID_PLATE": "Geçerli bir plaka girin (ör. 34 ABC 123)."
-    }
+      "INVALID_PLATE": "Geçerli bir plaka girin (ör. 34 ABC 123).",
+      "DUPLICATE_CODE": "Bu kod başka bir kayıtta kullanılıyor."
+    },
+    "code": "Kod",
+    "codeHint": "Ör. PES-30/1. Harf, rakam ve + . _ / - kullanılır; eklendikten sonra değişmez.",
+    "codeFixed": "Kod çuvala ve etikete yazıldığı için değiştirilemez."
   },
   "discrepancy": {
     "back": "Uyuşmazlık listesi",
@@ -481,6 +500,41 @@
     "fileErrors": {
       "wrongType": "Kantar fişi için fotoğraf seçin (JPEG, PNG veya HEIC).",
       "tooLarge": "Fotoğraf en fazla 20 MB olabilir."
+    }
+  },
+  "lots": {
+    "title": "Partiler",
+    "intro": "Parti açılır, kalitesi kilitlenir; kilitli partinin kalitesi değişmez ve yalnızca kilitli partiye çuval bağlanır.",
+    "add": "Parti ekle",
+    "edit": "Partiyi düzenle",
+    "unlocked": "Kalite kilitli değil",
+    "lockedAt": "Kalite kilitli · {{at}}",
+    "summary": "Kalite {{grade}} · {{site}} · {{date}}",
+    "fields": {
+      "siteId": "Lokasyon",
+      "lotNo": "Parti numarası",
+      "productId": "İplik",
+      "qualityGradeId": "Kalite sınıfı",
+      "productionDate": "Üretim tarihi"
+    },
+    "lock": {
+      "open": "Kaliteyi kilitle",
+      "question": "{{lotNo}} partisinin kalitesi {{grade}} olarak kilitlenecek. Bu işlem geri alınamaz; parti bundan sonra düzenlenemez.",
+      "confirm": "Kilitle",
+      "dismiss": "Vazgeç",
+      "failed": "Kalite kilitlenemedi. Lütfen tekrar deneyin."
+    },
+    "errors": {
+      "required": "Bu alan boş olamaz.",
+      "invalidLotNo": "Parti numarası harf veya rakamla başlamalı; yalnızca harf, rakam ve + . _ / - içerebilir.",
+      "futureDate": "Üretim tarihi bugünden sonra olamaz."
+    },
+    "serverErrors": {
+      "DUPLICATE_CODE": "Bu parti numarası bu lokasyonda zaten kayıtlı.",
+      "LOT_QUALITY_LOCKED": "Partinin kalitesi kilitlenmiş; parti artık değiştirilemez.",
+      "INVALID_MASTER_DATA": "Bilgiler geçersiz. Seçilen lokasyon, iplik ve kalitenin etkin olduğundan emin olun.",
+      "FORBIDDEN": "Bu lokasyonda parti açma yetkiniz yok.",
+      "unknown": "Parti kaydedilemedi. Lütfen tekrar deneyin."
     }
   }
 }

@@ -3,16 +3,141 @@ info:
   title: bag-service API
   version: 1.0.0
   description: |
-    Çuval sorgusu ve sevkiyat rezervasyonu (API-01). Bir çuval aynı anda yalnızca bir sevkiyatta olabilir; tek kullanım
+    Çuval oluşturma, etiket basımı, çuval sorgusu ve sevkiyat rezervasyonu (API-01). Bir çuval aynı anda yalnızca bir sevkiyatta olabilir; tek kullanım
     garantisi bu serviste, tek veritabanı işlemiyle verilir. Rezervasyon aynı sevkiyat için tekrarlanırsa değişiklik
     yapmaz (idempotent).
 servers:
   - url: /
 tags:
   - name: Bags
+  - name: BagCreation
+    description: Çuval (Unique Key) üretimi
+  - name: Labels
+    description: Çuval etiketi basımı
 security:
   - bearerAuth: []
 paths:
+  /api/v1/bags:
+    post:
+      tags: [BagCreation]
+      operationId: createBags
+      summary: Kalitesi kilitli partiye çuval (Unique Key) üretir
+      description: |
+        Parti, kalitesi kilitlenmiş olmalıdır; çuvalın partisi ve kalitesi partiden kopyalanır, elle girilmez
+        (rapor Bölüm 10). Anahtarlar sunucuda, tahmin edilemeyen biçimde üretilir. Hepsi ya da hiçbiri.
+        `Idempotency-Key` başlığıyla tekrar gönderim yeni çuval üretmez.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBagsRequest'
+      responses:
+        '201':
+          description: Çuvallar oluşturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateBagsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Parti yok ya da kalitesi kilitli değil (LOT_NOT_LOCKED)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/v1/bags/lots:
+    get:
+      tags: [BagCreation]
+      operationId: listLockedLots
+      summary: Çuval üretilebilecek (kalitesi kilitli) partiler
+      description: Yalnızca isteyenin lokasyonlarındaki partiler, en son kilitlenen önce.
+      responses:
+        '200':
+          description: Partiler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LockedLotsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/bags/lots/{lotId}/bags:
+    get:
+      tags: [BagCreation]
+      operationId: listLotBags
+      summary: Partinin çuvalları ve etiket baskı sayıları
+      description: En son oluşturulan önce, en fazla 500 çuval.
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Çuvallar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LotBagsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Parti yok ya da kalitesi kilitli değil (LOT_NOT_LOCKED)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/v1/bags/labels:
+    post:
+      tags: [Labels]
+      operationId: printLabels
+      summary: Çuval etiketlerini basar (PDF)
+      description: |
+        Her çuval için bir sayfa 100 × 70 mm etiket: QR kod, okunur Unique Key, parti ve kalite. Kalite renkli
+        bantla da ayrılır (A yeşil, B turuncu); tek renk yazıcıda A dolu, diğerleri çerçeveli basılır. Her baskı
+        kaydedilir. Daha önce basılmış bir çuval varsa `reprintReason` zorunludur ve etikete baskı numarası yazılır.
+        İptal edilmiş (VOID) çuvalın etiketi basılmaz.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrintLabelsRequest'
+      responses:
+        '200':
+          description: Etiketler
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          description: Yeniden baskıda gerekçe yok (LABEL_REPRINT_REASON_REQUIRED)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
   /api/v1/bags/{uniqueKey}:
     get:
       tags: [Bags]
@@ -187,6 +312,98 @@ components:
           type: string
           format: uuid
           description: Çuval bir sevkiyata ayrılmışsa o sevkiyat
+    CreateBagsRequest:
+      type: object
+      required: [lotId, packageType, count]
+      properties:
+        lotId:
+          type: string
+          format: uuid
+        packageType:
+          $ref: '#/components/schemas/PackageType'
+        count:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 200
+    CreateBagsResponse:
+      type: object
+      required: [bags]
+      properties:
+        bags:
+          type: array
+          items:
+            $ref: '#/components/schemas/BagView'
+    LockedLotView:
+      type: object
+      required: [lotId, siteId, lotNo, qualityGradeCode, lockedAt, bagCount]
+      properties:
+        lotId:
+          type: string
+          format: uuid
+        siteId:
+          type: string
+          format: uuid
+        lotNo:
+          type: string
+        qualityGradeCode:
+          type: string
+        lockedAt:
+          type: string
+          format: date-time
+        bagCount:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Partiye üretilmiş çuval sayısı (iptal edilenler dahil)
+    LockedLotsResponse:
+      type: object
+      required: [lots]
+      properties:
+        lots:
+          type: array
+          items:
+            $ref: '#/components/schemas/LockedLotView'
+    LabeledBagView:
+      type: object
+      required: [bag, printCount]
+      properties:
+        bag:
+          $ref: '#/components/schemas/BagView'
+        printCount:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Etiketin kaç kez basıldığı; 0 ise hiç basılmadı
+        lastPrintedAt:
+          type: string
+          format: date-time
+    LotBagsResponse:
+      type: object
+      required: [bags]
+      properties:
+        bags:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabeledBagView'
+    PrintLabelsRequest:
+      type: object
+      required: [uniqueKeys]
+      properties:
+        uniqueKeys:
+          type: array
+          minItems: 1
+          maxItems: 200
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+        reprintReason:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Daha önce basılmış çuval varsa zorunlu
     ReserveBagsRequest:
       type: object
       required: [shipmentId, uniqueKeys]

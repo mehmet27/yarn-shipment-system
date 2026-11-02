@@ -49,6 +49,13 @@ class RolePermissionMatrixTest {
     }
 
     @Test
+    @DisplayName("Çuvalı ve etiketini yalnızca depo ve admin oluşturur")
+    void shouldAllowOnlyWarehouseAndAdminToCreateBags() {
+        // when / then
+        assertThat(rolesHaving(Permission.BAG_CREATE)).containsExactlyInAnyOrder(Role.ADMIN, Role.WAREHOUSE);
+    }
+
+    @Test
     @DisplayName("Birden fazla rolün izinleri birleşir")
     void shouldUnionPermissionsOfRoles() {
         // when

@@ -59,6 +59,7 @@ Rol, izin ve claim adları koddaki adlarla aynıdır ve İngilizcedir (kod stand
 | `MASTER_DATA_MANAGE` (fasoncu, şoför, araç, ürün) | ✓ |  |  |  |  |  |
 | `USER_MANAGE`, `SETTINGS_MANAGE` (tolerans, zorunlu kanıt) | ✓ |  |  |  |  |  |
 | `LOT_QUALITY_LOCK` | ✓ |  |  |  | ✓ |  |
+| `BAG_CREATE` (çuval / Unique Key oluşturma, etiket basımı) | ✓ | ✓ |  |  |  |  |
 | `SHIPMENT_VIEW` | ✓ | ✓ | kendi | kendi | ✓ | ✓ |
 | `SHIPMENT_CREATE` (çuval atama, şoför/araç atama) | ✓ | ✓ |  |  |  |  |
 | `SHIPMENT_CANCEL` | ✓ |  |  |  |  |  |
@@ -80,6 +81,7 @@ Rol, izin ve claim adları koddaki adlarla aynıdır ve İngilizcedir (kod stand
 **Matristen farklılaşan veya eklenen noktalar** (son bölümde karara bağlandı):
 
 - `LOT_QUALITY_LOCK` matriste yoktu; ön analiz Bölüm 10'daki "kalite parti bazında belirlenir ve kilitlenir" kuralı için Kalite ve Admin'e eklendi.
+- `BAG_CREATE` matriste ayrı satır değildi; çuval oluşturma ve etiket basımı "Sevkiyat ve çuval ataması" satırı gibi Depo'ya, düzeltme yetkisi için Admin'e verildi. Yeniden baskıda gerekçe zorunludur ve etikete baskı numarası yazılır.
 - `SHIPMENT_CREATE` Admin'e de verildi, çünkü süreç tablosunda (7.1, adım 1) sorumlu "Depo / Admin".
 - Kanıt görüntüleme kör girişe bağlandı: çıkış kantar fotoğrafı kiloyu gösterdiği için fasoncu onu karşılaştırmadan önce göremez; depo da teslim kantar fotoğrafını göremez.
 - Yönetici hiçbir yazma izni almaz; kodda bunu doğrulayan bir test olacak. Şoför çıkış kilosunu görmez, yalnız çuval sayısı ve mühür numarasını görür (Y1).

@@ -62,6 +62,9 @@ export const theme = createTheme({
     },
     TextInput: { defaultProps: { size: 'lg' } },
     Select: { defaultProps: { size: 'lg' } },
+    // Artı/eksi okları 44 px'e sığmaz; telefonda sayı klavyesi açılır.
+    NumberInput: { defaultProps: { size: 'lg', hideControls: true } },
+    Checkbox: { vars: () => ({ root: { '--checkbox-size': TOUCH_TARGET } }) },
     Burger: {
       defaultProps: { size: 'md' },
       styles: { root: { minWidth: TOUCH_TARGET, minHeight: TOUCH_TARGET } },

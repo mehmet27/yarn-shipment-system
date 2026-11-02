@@ -60,13 +60,16 @@ class CheckConclusionAdapterTest {
     }
 
     @Test
-    @DisplayName("Temiz sonuç sevkiyatı tamamlar; geçmiş sistem hesabıyla, tamamlanma olayı outbox'a yazılır")
+    @DisplayName(
+            "Temiz sonuç sevkiyatı tamamlayıp kilitler; geçmiş sistem hesabıyla, tamamlanma olayı outbox'a yazılır")
     void shouldCompleteShipment() {
         adapter.recordConclusion(
                 new CheckConclusion(SHIPMENT, SITE, ShipmentStatus.CHECKING, ShipmentStatus.COMPLETED, NOW));
 
         assertThat(jdbc.queryForObject("SELECT status FROM shipment WHERE id = ?", String.class, SHIPMENT))
                 .isEqualTo("COMPLETED");
+        assertThat(jdbc.queryForObject("SELECT locked_at FROM shipment WHERE id = ?", Instant.class, SHIPMENT))
+                .isEqualTo(NOW);
         assertThat(jdbc.queryForObject(
                         "SELECT changed_by FROM shipment_status_history WHERE shipment_id = ?", UUID.class, SHIPMENT))
                 .isEqualTo(CheckConclusion.SYSTEM_ACTOR);
@@ -86,6 +89,8 @@ class CheckConclusionAdapterTest {
 
         assertThat(jdbc.queryForObject("SELECT status FROM shipment WHERE id = ?", String.class, SHIPMENT))
                 .isEqualTo("IN_REVIEW");
+        assertThat(jdbc.queryForObject("SELECT locked_at FROM shipment WHERE id = ?", Instant.class, SHIPMENT))
+                .isNull();
         assertThat(jdbc.queryForObject(
                         "SELECT count(*) FROM outbox_event WHERE aggregate_id = ?", Integer.class, SHIPMENT))
                 .isZero();

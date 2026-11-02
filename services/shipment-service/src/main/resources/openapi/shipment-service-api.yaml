@@ -21,6 +21,7 @@ tags:
   - name: ShipmentFile
   - name: ShipmentBags
   - name: ShipmentCancellation
+  - name: ShipmentCorrection
   - name: ShipmentArrival
   - name: MasterData
   - name: SubcontractorManagement
@@ -988,6 +989,74 @@ paths:
           $ref: '#/components/responses/Conflict'
         '502':
           $ref: '#/components/responses/BadGateway'
+  /api/v1/shipments/{shipmentId}/corrections:
+    post:
+      tags: [ShipmentCorrection]
+      operationId: recordCorrection
+      summary: Tartım ya da mühür numarasını gerekçeyle düzeltir
+      description: |
+        Yalnızca Admin (CORRECTION_CREATE). Tamamlanıp kilitlenmiş sevkiyatta da çalışır (rapor 7.8). Kayıt
+        güncellenmez: yeni satır eklenir, eski değer hem eski satırda hem düzeltme kaydında saklanır. Tartım
+        düzeltmesinde brüt ve dara birlikte gönderilir; çuval sayısı ve tartım zamanı aynen kalır. Düzeltilecek kayıt
+        yoksa, yeni değer eskisiyle aynıysa ya da gerekçe boşsa `INVALID_CORRECTION`; mühür numarası başka sevkiyatta
+        kullanılmışsa `SEAL_ALREADY_USED`; kayıt bu arada başka düzeltmeyle değiştiyse `CORRECTION_CONFLICT`. Aynı
+        `Idempotency-Key` ile tekrar gelen istek düzeltmeyi yeniden uygulamaz, ilk kaydı döner.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordCorrectionRequest'
+      responses:
+        '201':
+          description: Düzeltme kaydedildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CorrectionView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    get:
+      tags: [ShipmentCorrection]
+      operationId: listCorrections
+      summary: Sevkiyatın düzeltme kayıtları, eskiden yeniye
+      description: Admin ve yönetici (CORRECTION_CREATE ya da AUDIT_VIEW); eski ve yeni değer birlikte döner.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Düzeltmeler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CorrectionListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /api/v1/shipments/{shipmentId}/bags:
     post:
       tags: [ShipmentBags]
@@ -1151,7 +1220,8 @@ components:
       description: >-
         Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor
         (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da
-        fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR)
+        fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da düzeltilecek kayıt bu arada değişti
+        (CORRECTION_CONFLICT)
       content:
         application/problem+json:
           schema:
@@ -1419,6 +1489,67 @@ components:
           $ref: '#/components/schemas/ScanMethod'
         document:
           $ref: '#/components/schemas/DeliveryDocument'
+    CorrectionTarget:
+      description: |
+        Düzeltilen kayıt: çıkış ya da teslim tartımı (brüt ve dara), çıkış ya da teslim mühür numarası
+      type: string
+      enum: [DISPATCH_WEIGHING, DELIVERY_WEIGHING, DISPATCH_SEAL_NO, DELIVERY_SEAL_NO]
+    RecordCorrectionRequest:
+      description: Tartım düzeltmesinde grossKg ve tareKg, mühür düzeltmesinde sealNo zorunludur.
+      type: object
+      required: [target, reason]
+      properties:
+        target:
+          $ref: '#/components/schemas/CorrectionTarget'
+        grossKg:
+          $ref: '#/components/schemas/Kg'
+        tareKg:
+          $ref: '#/components/schemas/Kg'
+        sealNo:
+          type: string
+          minLength: 1
+          maxLength: 64
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    CorrectionView:
+      description: |
+        Bir düzeltme. Tartımda değerler `gross=… tare=… net=…` biçimindedir (kilo, üç ondalık), mühürde numaradır.
+      type: object
+      required: [id, target, reason, status, requestedBy, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        target:
+          $ref: '#/components/schemas/CorrectionTarget'
+        oldValue:
+          type: string
+        newValue:
+          type: string
+        reason:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED]
+        requestedBy:
+          type: string
+          format: uuid
+        approvedBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+    CorrectionListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CorrectionView'
     CancelShipmentRequest:
       type: object
       required: [reason]

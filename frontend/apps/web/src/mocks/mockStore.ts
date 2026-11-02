@@ -5,6 +5,7 @@ import type {
   Weighing,
 } from '@iplik/api-client';
 import { resetMockClaims } from './claims';
+import { resetMockLots } from './lots';
 import { resetMasterData } from './masterData';
 import { MOCK_SHIPMENTS } from './shipments';
 
@@ -81,6 +82,7 @@ export function assignMockBagKeys(shipmentId: string, keys: readonly string[]): 
 export function resetMockStore(): void {
   resetMasterData();
   resetMockClaims();
+  resetMockLots();
   shipments = [...MOCK_SHIPMENTS];
   assignedBagKeys = new Map();
 }

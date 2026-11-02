@@ -3,6 +3,7 @@ package com.yarnshipment.evidence.domain.model;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Onaylanmış kanıt dosyasının üst verisi. Dosyanın kendisi nesne deposundadır; kayıt silinmez (DOM-17).
@@ -14,6 +15,8 @@ import java.util.UUID;
  * @param declared bildirilen özellikler
  * @param uploadedAt sunucunun alış zamanı
  * @param uploadedBy yükleyen
+ * @param status kayıt durumu
+ * @param invalidatedReason geçersiz kılma gerekçesi; yalnızca geçersiz kılınmış kayıtta dolu
  */
 public record EvidenceFile(
         UUID id,
@@ -22,7 +25,9 @@ public record EvidenceFile(
         StoredObject stored,
         UploadIntent.DeclaredFile declared,
         Instant uploadedAt,
-        UUID uploadedBy) {
+        UUID uploadedBy,
+        EvidenceStatus status,
+        @Nullable String invalidatedReason) {
 
     public EvidenceFile {
         Objects.requireNonNull(id, "id");
@@ -32,6 +37,7 @@ public record EvidenceFile(
         Objects.requireNonNull(declared, "declared");
         Objects.requireNonNull(uploadedAt, "uploadedAt");
         Objects.requireNonNull(uploadedBy, "uploadedBy");
+        Objects.requireNonNull(status, "status");
     }
 
     /**
@@ -44,6 +50,34 @@ public record EvidenceFile(
             throw new UploadMismatchException(intent.id());
         }
         return new EvidenceFile(
-                intent.id(), intent.shipmentId(), intent.storageKey(), stored, intent.file(), at, intent.requestedBy());
+                intent.id(),
+                intent.shipmentId(),
+                intent.storageKey(),
+                stored,
+                intent.file(),
+                at,
+                intent.requestedBy(),
+                EvidenceStatus.VALID,
+                null);
+    }
+
+    /** Kaydı gerekçeyle geçersiz kılar; dosya ve hash'i yerinde kalır. Bir kez yapılabilir. */
+    public EvidenceFile invalidate(String reason) {
+        if (reason.isBlank()) {
+            throw new InvalidationReasonRequiredException();
+        }
+        if (status == EvidenceStatus.INVALIDATED) {
+            throw new EvidenceAlreadyInvalidatedException(id);
+        }
+        return new EvidenceFile(
+                id,
+                shipmentId,
+                storageKey,
+                stored,
+                declared,
+                uploadedAt,
+                uploadedBy,
+                EvidenceStatus.INVALIDATED,
+                reason.strip());
     }
 }

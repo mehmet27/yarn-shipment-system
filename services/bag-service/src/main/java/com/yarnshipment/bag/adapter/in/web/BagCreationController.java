@@ -62,8 +62,8 @@ public class BagCreationController implements BagCreationApi {
     @PreAuthorize("hasAuthority('BAG_CREATE')")
     public ResponseEntity<LockedLotsResponse> listLockedLots() {
         Actor actor = currentActorProvider.getCurrentActor();
-        return ResponseEntity.ok(new LockedLotsResponse(
-                listLockedLotsUseCase.listLockedLots(new ListLockedLotsQuery(actor)).stream()
+        return ResponseEntity.ok(
+                new LockedLotsResponse(listLockedLotsUseCase.listLockedLots(new ListLockedLotsQuery(actor)).stream()
                         .map(BagViews::toView)
                         .toList()));
     }
@@ -72,8 +72,8 @@ public class BagCreationController implements BagCreationApi {
     @PreAuthorize("hasAuthority('BAG_CREATE')")
     public ResponseEntity<LotBagsResponse> listLotBags(UUID lotId) {
         Actor actor = currentActorProvider.getCurrentActor();
-        return ResponseEntity.ok(new LotBagsResponse(
-                listLotBagsUseCase.listLotBags(new ListLotBagsQuery(actor, lotId)).stream()
+        return ResponseEntity.ok(
+                new LotBagsResponse(listLotBagsUseCase.listLotBags(new ListLotBagsQuery(actor, lotId)).stream()
                         .map(BagViews::toView)
                         .toList()));
     }

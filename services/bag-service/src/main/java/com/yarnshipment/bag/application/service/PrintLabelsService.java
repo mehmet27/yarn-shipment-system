@@ -60,7 +60,8 @@ public class PrintLabelsService implements PrintLabelsUseCase {
                 .ifPresent(bag -> {
                     throw new BagNotAvailableException(bag.uniqueKey(), bag.status());
                 });
-        Map<UUID, Integer> printed = prints.lockAndCountPrints(found.stream().map(Bag::id).toList());
+        Map<UUID, Integer> printed =
+                prints.lockAndCountPrints(found.stream().map(Bag::id).toList());
         List<BagLabel> labels = found.stream()
                 .map(bag -> new BagLabel(bag, printed.getOrDefault(bag.id(), 0) + 1))
                 .toList();

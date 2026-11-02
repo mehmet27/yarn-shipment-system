@@ -24,9 +24,12 @@ final class QrSymbol {
                             0,
                             0,
                             Map.of(
-                                    EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M,
-                                    EncodeHintType.MARGIN, 0,
-                                    EncodeHintType.CHARACTER_SET, "UTF-8"));
+                                    EncodeHintType.ERROR_CORRECTION,
+                                    ErrorCorrectionLevel.M,
+                                    EncodeHintType.MARGIN,
+                                    0,
+                                    EncodeHintType.CHARACTER_SET,
+                                    "UTF-8"));
         } catch (WriterException e) {
             throw new IllegalArgumentException("Content cannot be encoded as QR", e);
         }

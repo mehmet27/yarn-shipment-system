@@ -33,8 +33,7 @@ class ListLotsServicesTest {
     private final LotQueryPort lots = mock(LotQueryPort.class);
     private final BagQueryPort bags = mock(BagQueryPort.class);
     private final ListLockedLotsService listLots = new ListLockedLotsService(lots);
-    private final ListLotBagsService listBags =
-            new ListLotBagsService(lots, bags, new ScopeGuard(event -> {}, CLOCK));
+    private final ListLotBagsService listBags = new ListLotBagsService(lots, bags, new ScopeGuard(event -> {}, CLOCK));
 
     @Test
     @DisplayName("Parti listesi isteyenin lokasyonlarıyla sorgulanır")

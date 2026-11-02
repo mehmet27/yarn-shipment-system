@@ -24,11 +24,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Etiket baskı kayıtları, gerçek PostgreSQL'de ve yerel örnek veri üzerinde. */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({
-    BagQueryAdapter.class,
-    LabelPrintAdapter.class,
-    UuidV7Generator.class
-})
+@Import({BagQueryAdapter.class, LabelPrintAdapter.class, UuidV7Generator.class})
 class LabelPrintAdapterTest {
 
     private static final PostgresTestDatabase DATABASE = PostgresTestDatabase.startIsolated();

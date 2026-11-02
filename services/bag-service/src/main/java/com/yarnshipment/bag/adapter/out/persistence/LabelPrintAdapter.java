@@ -47,11 +47,9 @@ final class LabelPrintAdapter implements LabelPrintPort {
         List<UUID> idList = List.copyOf(bagIds);
         jdbc.sql(LOCK).param("ids", idList).query().listOfRows();
         Map<UUID, Integer> printed = new HashMap<>();
-        jdbc.sql(COUNT)
-                .param("ids", idList)
-                .query(rs -> {
-                    printed.put(rs.getObject("bag_id", UUID.class), rs.getInt("printed"));
-                });
+        jdbc.sql(COUNT).param("ids", idList).query(rs -> {
+            printed.put(rs.getObject("bag_id", UUID.class), rs.getInt("printed"));
+        });
         return Map.copyOf(printed);
     }
 

@@ -9,4 +9,5 @@ import org.jspecify.annotations.Nullable;
  *
  * @param reprintReason daha önce basılmış bir çuval varsa zorunlu
  */
-public record PrintLabelsCommand(Actor actor, List<String> uniqueKeys, @Nullable String reprintReason) {}
+public record PrintLabelsCommand(
+        Actor actor, List<String> uniqueKeys, @Nullable String reprintReason) {}

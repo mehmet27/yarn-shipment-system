@@ -72,11 +72,15 @@ class BagProductionControllerTest {
     void shouldCreateBags() {
         when(createBagsUseCase.createBags(any())).thenReturn(List.of(bag(), bag()));
 
-        MvcTestResult result = post("/api/v1/bags", CREATE_BODY, TestTokens.token("warehouse").build());
+        MvcTestResult result =
+                post("/api/v1/bags", CREATE_BODY, TestTokens.token("warehouse").build());
 
         assertThat(result).hasStatus(HttpStatus.CREATED);
         assertThat(result).bodyJson().extractingPath("$.bags.length()").isEqualTo(2);
-        assertThat(result).bodyJson().extractingPath("$.bags[0].qualityGradeCode").isEqualTo("A");
+        assertThat(result)
+                .bodyJson()
+                .extractingPath("$.bags[0].qualityGradeCode")
+                .isEqualTo("A");
     }
 
     @Test
@@ -93,7 +97,8 @@ class BagProductionControllerTest {
     void shouldReturnConflictForUnlockedLot() {
         when(createBagsUseCase.createBags(any())).thenThrow(new LotNotLockedException(LOT_ID));
 
-        MvcTestResult result = post("/api/v1/bags", CREATE_BODY, TestTokens.token("warehouse").build());
+        MvcTestResult result =
+                post("/api/v1/bags", CREATE_BODY, TestTokens.token("warehouse").build());
 
         assertThat(result).hasStatus(HttpStatus.CONFLICT);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("LOT_NOT_LOCKED");
@@ -109,8 +114,11 @@ class BagProductionControllerTest {
         when(listLotBagsUseCase.listLotBags(any()))
                 .thenReturn(List.of(new LabeledBag(bag(), PRINT_COUNT, LOCKED_AT), new LabeledBag(bag(), 0, null)));
 
-        MvcTestResult lots = get("/api/v1/bags/lots", TestTokens.token("warehouse").build());
-        MvcTestResult bags = get("/api/v1/bags/lots/" + LOT_ID + "/bags", TestTokens.token("warehouse").build());
+        MvcTestResult lots =
+                get("/api/v1/bags/lots", TestTokens.token("warehouse").build());
+        MvcTestResult bags = get(
+                "/api/v1/bags/lots/" + LOT_ID + "/bags",
+                TestTokens.token("warehouse").build());
 
         assertThat(lots).hasStatusOk();
         assertThat(lots).bodyJson().extractingPath("$.lots[0].lotNo").isEqualTo("P-2026-0001");
@@ -126,7 +134,8 @@ class BagProductionControllerTest {
     void shouldReturnLabelPdf() {
         when(printLabelsUseCase.printLabels(any())).thenReturn("%PDF-1.4".getBytes(StandardCharsets.US_ASCII));
 
-        MvcTestResult result = post("/api/v1/bags/labels", PRINT_BODY, TestTokens.token("warehouse").build());
+        MvcTestResult result = post(
+                "/api/v1/bags/labels", PRINT_BODY, TestTokens.token("warehouse").build());
 
         assertThat(result).hasStatusOk();
         assertThat(result).hasContentType(MediaType.APPLICATION_PDF);
@@ -139,10 +148,10 @@ class BagProductionControllerTest {
     @Test
     @DisplayName("Gerekçesiz yeniden baskı LABEL_REPRINT_REASON_REQUIRED koduyla 422 döner")
     void shouldRequireReprintReason() {
-        when(printLabelsUseCase.printLabels(any()))
-                .thenThrow(new LabelReprintReasonRequiredException("BAG-7K3M-Q9XD"));
+        when(printLabelsUseCase.printLabels(any())).thenThrow(new LabelReprintReasonRequiredException("BAG-7K3M-Q9XD"));
 
-        MvcTestResult result = post("/api/v1/bags/labels", PRINT_BODY, TestTokens.token("warehouse").build());
+        MvcTestResult result = post(
+                "/api/v1/bags/labels", PRINT_BODY, TestTokens.token("warehouse").build());
 
         assertThat(result).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("LABEL_REPRINT_REASON_REQUIRED");

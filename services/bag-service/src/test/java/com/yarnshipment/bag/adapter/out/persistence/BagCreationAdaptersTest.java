@@ -68,7 +68,9 @@ class BagCreationAdaptersTest {
         assertThat(lot.qualityGradeCode()).isEqualTo("A");
         assertThat(lot.bagCount()).isEqualTo(SEEDED_BAGS_OF_LOT);
         assertThat(lots.findLocked(UUID.randomUUID())).isEmpty();
-        assertThat(lots.findLockedInSites(List.of(SITE_A))).extracting(LockedLot::lotId).containsExactly(LOT_A);
+        assertThat(lots.findLockedInSites(List.of(SITE_A)))
+                .extracting(LockedLot::lotId)
+                .containsExactly(LOT_A);
         assertThat(lots.findLockedInSites(List.of())).isEmpty();
     }
 

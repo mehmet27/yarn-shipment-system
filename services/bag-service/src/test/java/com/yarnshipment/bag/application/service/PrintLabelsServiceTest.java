@@ -54,8 +54,8 @@ class PrintLabelsServiceTest {
         List<BagLabel> expected = List.of(new BagLabel(first, 1), new BagLabel(second, 1));
         when(renderer.render(expected)).thenReturn(PDF);
 
-        byte[] pdf = print.printLabels(
-                new PrintLabelsCommand(actor, List.of(first.uniqueKey(), second.uniqueKey()), "  "));
+        byte[] pdf =
+                print.printLabels(new PrintLabelsCommand(actor, List.of(first.uniqueKey(), second.uniqueKey()), "  "));
 
         assertThat(pdf).isEqualTo(PDF);
         verify(prints).record(expected, null, actor.userId(), CLOCK.instant());

@@ -61,7 +61,7 @@ final class TicketReviewAdapter implements TicketReviewPort {
         return jdbc.sql(ENTERED)
                 .param("shipmentId", shipmentId)
                 .query((rs, row) -> new EnteredNets(
-                        Objects.requireNonNull(rs.getBigDecimal("dispatch_net_kg")),
+                        rs.getBigDecimal("dispatch_net_kg"),
                         Objects.requireNonNull(rs.getBigDecimal("delivery_net_kg"))))
                 .optional();
     }

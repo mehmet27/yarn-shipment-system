@@ -77,10 +77,9 @@ class TicketReviewAdapterTest {
                 .extracting(TicketReading::evidenceId)
                 .containsExactly(unreadable.evidenceId(), dispatch.evidenceId());
         assertThat(listed.getFirst().read()).isFalse();
-        assertThat(reviews.findEnteredNets(TestComparisons.SHIPMENT)
-                        .orElseThrow()
-                        .deliveryNetKg())
-                .isEqualByComparingTo(TestComparisons.DISPATCH_KG);
+        var entered = reviews.findEnteredNets(TestComparisons.SHIPMENT).orElseThrow();
+        assertThat(entered.deliveryNetKg()).isEqualByComparingTo(TestComparisons.DISPATCH_KG);
+        assertThat(entered.dispatchNetKg()).as("çıkış tartısı girilmemiş").isNull();
         assertThat(reviews.findEnteredNets(UUID.randomUUID())).isEmpty();
     }
 

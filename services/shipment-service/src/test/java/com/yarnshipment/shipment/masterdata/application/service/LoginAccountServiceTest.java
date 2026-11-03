@@ -6,11 +6,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.LoginAccountRequest;
+import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
+import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccount;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSpec;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
 import java.util.ArrayList;
@@ -25,6 +28,8 @@ import org.junit.jupiter.api.Test;
 class LoginAccountServiceTest {
 
     private static final int PASSWORD_LENGTH = 16;
+    private static final int PAGE_SIZE = 20;
+    private static final int ACCOUNT_COUNT = 3;
     private static final UUID DRIVER = UUID.fromString("0192f0a0-0000-7000-8000-000000000004");
     private static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000003");
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
@@ -48,7 +53,18 @@ class LoginAccountServiceTest {
             return ids.contains(SITE) ? Set.of(SITE) : Set.of();
         }
     };
-    private final LoginAccountPort accounts = opened::add;
+    private final List<LoginAccountSummary> existing = new ArrayList<>();
+    private final LoginAccountPort accounts = new LoginAccountPort() {
+        @Override
+        public void create(LoginAccountSpec spec) {
+            opened.add(spec);
+        }
+
+        @Override
+        public List<LoginAccountSummary> findAll() {
+            return List.copyOf(existing);
+        }
+    };
     private final LoginAccountService service = new LoginAccountService(targets, accounts);
 
     @Test
@@ -104,5 +120,30 @@ class LoginAccountServiceTest {
         assertThatThrownBy(() -> service.createDriverLoginAccount(admin, DRIVER, inactive))
                 .isInstanceOf(InvalidMasterDataException.class);
         assertThat(opened).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Hesap listesi giriş adı, ad ve e-postada büyük-küçük harf duyarsız aranır ve sayfalanır")
+    void shouldSearchAndPageLoginAccounts() {
+        existing.add(summary("ali.yilmaz", "Ali Yılmaz", "ali@ornek.com"));
+        existing.add(summary("depo", "Depo Sorumlusu", "depo@fabrika.com"));
+        existing.add(summary("fasoncu", "Örnek Tekstil", "info@ornek.com"));
+
+        MasterDataPage<LoginAccountSummary> byEmail =
+                service.listLoginAccounts(new MasterDataQuery("ORNEK.COM", 0, PAGE_SIZE));
+        MasterDataPage<LoginAccountSummary> secondPage = service.listLoginAccounts(new MasterDataQuery(null, 1, 2));
+        MasterDataPage<LoginAccountSummary> byName =
+                service.listLoginAccounts(new MasterDataQuery("sorumlu", 0, PAGE_SIZE));
+
+        assertThat(byEmail.items()).extracting(LoginAccountSummary::username).containsExactly("ali.yilmaz", "fasoncu");
+        assertThat(byEmail.totalElements()).isEqualTo(2);
+        assertThat(secondPage.items()).extracting(LoginAccountSummary::username).containsExactly("fasoncu");
+        assertThat(secondPage.totalElements()).isEqualTo(ACCOUNT_COUNT);
+        assertThat(secondPage.totalPages()).isEqualTo(2);
+        assertThat(byName.items()).extracting(LoginAccountSummary::username).containsExactly("depo");
+    }
+
+    private static LoginAccountSummary summary(String username, String fullName, String email) {
+        return new LoginAccountSummary(username, username, fullName, email, List.of("DRIVER"), true, false, null);
     }
 }

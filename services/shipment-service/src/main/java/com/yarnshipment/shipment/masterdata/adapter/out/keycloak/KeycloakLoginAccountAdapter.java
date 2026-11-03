@@ -1,15 +1,20 @@
 package com.yarnshipment.shipment.masterdata.adapter.out.keycloak;
 
+import com.yarnshipment.common.security.Role;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSpec;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,12 +32,14 @@ import org.springframework.web.client.RestClientResponseException;
 /**
  * {@link LoginAccountPort}'un Keycloak Yönetim API'si uygulaması. Servis hesabıyla ({@code client_credentials})
  * çalışır; bu hesabın yalnızca kullanıcı yönetimi ve rol okuma yetkisi olmalıdır. Kullanıcı açıldıktan sonra rol
- * atanamazsa kullanıcı silinir, yarım hesap kalmaz. Şifre ve token loglanmaz.
+ * atanamazsa kullanıcı silinir, yarım hesap kalmaz. Şifre ve token loglanmaz. Liste, uygulama rollerinin üyeleri
+ * birleştirilerek çıkarılır; böylece rolsüz servis hesapları listeye girmez ve kullanıcı başına ek çağrı gerekmez.
  */
 @Component
 final class KeycloakLoginAccountAdapter implements LoginAccountPort {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
+    private static final int PAGE_SIZE = 100;
     private static final String SITE_IDS = "site_ids";
     private static final ParameterizedTypeReference<Map<String, Object>> OBJECT = new ParameterizedTypeReference<>() {};
     private static final ParameterizedTypeReference<List<Map<String, Object>>> OBJECTS =
@@ -74,6 +81,58 @@ final class KeycloakLoginAccountAdapter implements LoginAccountPort {
                     "Keycloak rejected the call status=" + exception.getStatusCode(), exception);
         } catch (RestClientException exception) {
             throw new LoginAccountUnavailableException("Keycloak call failed", exception);
+        }
+    }
+
+    @Override
+    public List<LoginAccountSummary> findAll() {
+        if (clientSecret.isBlank()) {
+            throw new LoginAccountUnavailableException("Keycloak admin client is not configured");
+        }
+        try {
+            String token = accessToken();
+            Map<Role, List<Map<String, Object>>> membersByRole = new EnumMap<>(Role.class);
+            for (Role role : KeycloakAccountSummaries.listedRoles()) {
+                membersByRole.put(role, membersOf(token, role));
+            }
+            return KeycloakAccountSummaries.merge(membersByRole);
+        } catch (RestClientResponseException exception) {
+            throw new LoginAccountUnavailableException(
+                    "Keycloak rejected the call status=" + exception.getStatusCode(), exception);
+        } catch (RestClientException exception) {
+            throw new LoginAccountUnavailableException("Keycloak call failed", exception);
+        }
+    }
+
+    /** Rolün doğrudan üyeleri, sayfa sayfa; realm'de tanımlı olmayan rol boş döner. */
+    private List<Map<String, Object>> membersOf(String token, Role role) {
+        String realmRole = role.name().toLowerCase(Locale.ROOT);
+        List<Map<String, Object>> members = new ArrayList<>();
+        List<Map<String, Object>> page;
+        do {
+            page = memberPage(token, realmRole, members.size());
+            members.addAll(page);
+        } while (page.size() == PAGE_SIZE);
+        return members;
+    }
+
+    private List<Map<String, Object>> memberPage(String token, String realmRole, int first) {
+        try {
+            List<Map<String, Object>> page = client.get()
+                    .uri(uri -> uri.path("/admin/realms/{realm}/roles/{role}/users")
+                            .queryParam("first", first)
+                            .queryParam("max", PAGE_SIZE)
+                            .queryParam("briefRepresentation", false)
+                            .build(realm, realmRole))
+                    .headers(headers -> headers.setBearerAuth(token))
+                    .retrieve()
+                    .body(OBJECTS);
+            return page == null ? List.of() : page;
+        } catch (RestClientResponseException exception) {
+            if (exception.getStatusCode().value() == HttpStatus.NOT_FOUND.value()) {
+                return List.of();
+            }
+            throw exception;
         }
     }
 

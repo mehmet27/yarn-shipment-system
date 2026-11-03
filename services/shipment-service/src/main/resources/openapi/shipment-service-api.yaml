@@ -32,6 +32,7 @@ tags:
   - name: ProductManagement
   - name: QualityGradeManagement
   - name: LotManagement
+  - name: LoginAccounts
   - name: CurrentUser
 security:
   - bearerAuth: []
@@ -628,6 +629,35 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+  /api/v1/master-data/login-accounts:
+    get:
+      tags: [LoginAccounts]
+      operationId: listLoginAccounts
+      summary: Giriş hesabı olan kullanıcıların listesi
+      description: |
+        Yalnızca yönetici (USER_MANAGE). Keycloak'ta uygulama rollerinden en az birine sahip kullanıcılar giriş adına
+        göre sıralı gelir; servis hesapları listede yoktur. Arama `q` ile giriş adı, ad ve e-postada yapılır
+        (büyük-küçük harf duyarsız). Şifre ya da başka kimlik bilgisi hiçbir zaman dönmez. Keycloak'a ulaşılamazsa ya
+        da yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE`.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/SearchText'
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginAccountPageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '502':
           $ref: '#/components/responses/BadGateway'
   /api/v1/master-data/drivers/{driverId}/activate:
@@ -1692,7 +1722,9 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
     BadGateway:
-      description: Çuval servisine (BAG_SERVICE_UNAVAILABLE) ya da kanıt servisine (EVIDENCE_SERVICE_UNAVAILABLE) ulaşılamadı
+      description: >-
+        Çuval servisine (BAG_SERVICE_UNAVAILABLE), kanıt servisine (EVIDENCE_SERVICE_UNAVAILABLE) ya da Keycloak'a
+        (LOGIN_ACCOUNT_UNAVAILABLE) ulaşılamadı
       content:
         application/problem+json:
           schema:
@@ -2172,6 +2204,45 @@ components:
         temporaryPassword:
           type: string
           description: Geçici şifre; yalnızca bu yanıtta görünür, ilk girişte değiştirilir
+    LoginAccountView:
+      type: object
+      description: Giriş hesabının özeti; şifre ya da kimlik bilgisi içermez.
+      required: [id, username, roles, enabled, passwordChangeRequired]
+      properties:
+        id:
+          type: string
+          description: Keycloak kullanıcı kimliği
+        username:
+          type: string
+          description: Giriş adı
+        fullName:
+          type: string
+          description: Ad soyad ya da unvan; profilde yoksa gelmez
+        email:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+        enabled:
+          type: boolean
+          description: Hesap girişe açık mı
+        passwordChangeRequired:
+          type: boolean
+          description: Kişi henüz ilk girişini yapıp geçici şifresini değiştirmedi
+        createdAt:
+          type: string
+          format: date-time
+    LoginAccountPageResponse:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoginAccountView'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
     VehiclePageResponse:
       type: object
       required: [items, page]

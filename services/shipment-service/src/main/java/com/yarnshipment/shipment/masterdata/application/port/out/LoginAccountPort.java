@@ -1,8 +1,10 @@
 package com.yarnshipment.shipment.masterdata.application.port.out;
 
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSpec;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
+import java.util.List;
 
-/** Kimlik sağlayıcıda (Keycloak) kullanıcı açar. */
+/** Kimlik sağlayıcıda (Keycloak) kullanıcı açar ve uygulama rolü olan kullanıcıları listeler. */
 public interface LoginAccountPort {
 
     /**
@@ -11,4 +13,10 @@ public interface LoginAccountPort {
      * {@code LoginAccountUnavailableException} fırlatır. Yarım kalan hesap bırakılmaz.
      */
     void create(LoginAccountSpec spec);
+
+    /**
+     * Uygulama rollerinden en az birine sahip kullanıcılar, giriş adına göre sıralı. Servis hesapları gelmez.
+     * Sağlayıcı yanıt vermezse ya da yapılandırılmamışsa {@code LoginAccountUnavailableException} fırlatır.
+     */
+    List<LoginAccountSummary> findAll();
 }

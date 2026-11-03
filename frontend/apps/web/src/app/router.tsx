@@ -3,6 +3,7 @@ import { bagPanelRoutes } from '@/modules/bag';
 import { discrepancyPanelRoutes } from '@/modules/discrepancy';
 import { masterDataPanelRoutes } from '@/modules/masterdata';
 import { shipmentFieldRoutes, shipmentPanelRoutes } from '@/modules/shipment';
+import { usersPanelRoutes } from '@/modules/users';
 import { createBrowserRouter } from 'react-router';
 import type { RouteObject } from 'react-router';
 import { FieldLayout } from './layouts/FieldLayout';
@@ -37,6 +38,7 @@ const routes: RouteObject[] = [
       ...discrepancyPanelRoutes,
       ...masterDataPanelRoutes,
       ...bagPanelRoutes,
+      ...usersPanelRoutes,
     ],
   },
   {

@@ -78,4 +78,10 @@ export const SCREENS: readonly Screen[] = [
     path: '/saha/sevkiyat/shp-0004/teslim',
     ready: /Teslim tutanağı/,
   },
+  {
+    name: 'Kullanıcılar',
+    role: 'ADMIN',
+    path: '/panel/kullanicilar',
+    ready: /Sisteme giriş hesabı olan kişiler/,
+  },
 ];

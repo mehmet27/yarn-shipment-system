@@ -71,6 +71,12 @@ export {
   createSubcontractorLoginAccount,
 } from './generated/shipmentService';
 export type { LoginAccountRequest, LoginAccountResponse } from './generated/shipmentService';
+export { listLoginAccounts } from './generated/shipmentService';
+export type {
+  ListLoginAccountsParams,
+  LoginAccountPageResponse,
+  LoginAccountView,
+} from './generated/shipmentService';
 
 export {
   activateLot,

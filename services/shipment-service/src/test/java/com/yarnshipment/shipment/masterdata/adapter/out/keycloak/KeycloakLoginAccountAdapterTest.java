@@ -146,7 +146,8 @@ class KeycloakLoginAccountAdapterTest {
     }
 
     @Test
-    @DisplayName("E-posta gönderilemezse (SMTP yok) açılan kullanıcı silinir ve LoginAccountUnavailableException fırlar")
+    @DisplayName(
+            "E-posta gönderilemezse (SMTP yok) açılan kullanıcı silinir ve LoginAccountUnavailableException fırlar")
     void shouldRemoveStaffWhenInviteFails() throws Exception {
         inviteStatus = SERVER_ERROR;
         KeycloakLoginAccountAdapter adapter = adapter("secret");

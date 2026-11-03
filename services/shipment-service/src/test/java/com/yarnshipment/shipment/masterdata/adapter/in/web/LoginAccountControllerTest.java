@@ -136,7 +136,8 @@ class LoginAccountControllerTest {
     @Test
     @DisplayName("Yönetici fabrika içi hesap açar: 201, gövdede şifre yok, istek use case'e rol ve lokasyonla gider")
     void shouldCreateStaffAccount() {
-        MvcTestResult result = send(mvc.post().uri(URI), STAFF_BODY, TestTokens.token("admin").build());
+        MvcTestResult result =
+                send(mvc.post().uri(URI), STAFF_BODY, TestTokens.token("admin").build());
 
         assertThat(result).hasStatus(HttpStatus.CREATED);
         assertThat(result).headers().hasValue("Cache-Control", "no-store");
@@ -149,10 +150,12 @@ class LoginAccountControllerTest {
     }
 
     @Test
-    @DisplayName("Fabrika içi hesap açma: admin dışı 403; şoför rolü, bozuk giriş adı ve boş lokasyon 400; var olan 409")
+    @DisplayName(
+            "Fabrika içi hesap açma: admin dışı 403; şoför rolü, bozuk giriş adı ve boş lokasyon 400; var olan 409")
     void shouldGuardStaffAccountCreation() {
         Jwt admin = TestTokens.token("admin").build();
-        MvcTestResult forbidden = send(mvc.post().uri(URI), STAFF_BODY, TestTokens.token("warehouse").build());
+        MvcTestResult forbidden = send(
+                mvc.post().uri(URI), STAFF_BODY, TestTokens.token("warehouse").build());
         MvcTestResult driverRole = send(mvc.post().uri(URI), STAFF_BODY.replace("WAREHOUSE", "DRIVER"), admin);
         MvcTestResult badName = send(mvc.post().uri(URI), STAFF_BODY.replace("depo2", "A B"), admin);
         MvcTestResult noSites = send(mvc.post().uri(URI), STAFF_BODY.replace(SITE.toString(), ""), admin);
@@ -174,7 +177,8 @@ class LoginAccountControllerTest {
         Jwt admin = TestTokens.token("admin").build();
         String uri = URI + "/" + USER + "/role";
         MvcTestResult changed = send(mvc.put().uri(uri), ROLE_BODY, admin);
-        MvcTestResult forbidden = send(mvc.put().uri(uri), ROLE_BODY, TestTokens.token("quality").build());
+        MvcTestResult forbidden =
+                send(mvc.put().uri(uri), ROLE_BODY, TestTokens.token("quality").build());
         MvcTestResult badRole = send(mvc.put().uri(uri), "{\"role\":\"DRIVER\"}", admin);
         verify(changeRole).changeLoginAccountRole(any(), eq(USER), eq(StaffRole.QUALITY));
         doThrow(new InvalidMasterDataException("userId", "own account"))

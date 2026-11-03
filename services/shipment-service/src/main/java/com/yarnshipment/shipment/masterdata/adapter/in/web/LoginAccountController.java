@@ -1,12 +1,12 @@
 package com.yarnshipment.shipment.masterdata.adapter.in.web;
 
+import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.shipment.adapter.in.web.api.LoginAccountsApi;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ChangeLoginAccountRoleRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountPageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.Role;
 import com.yarnshipment.shipment.adapter.in.web.api.model.StaffLoginAccountRequest;
-import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.shipment.masterdata.application.port.in.ChangeLoginAccountRoleUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateStaffLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.ListLoginAccountsUseCase;
@@ -60,7 +60,9 @@ public class LoginAccountController implements LoginAccountsApi {
                         request.getFullName(),
                         StaffRole.valueOf(request.getRole().name()),
                         request.getSiteIds().stream().toList()));
-        return ResponseEntity.status(HttpStatus.CREATED).cacheControl(CacheControl.noStore()).build();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .cacheControl(CacheControl.noStore())
+                .build();
     }
 
     @Override

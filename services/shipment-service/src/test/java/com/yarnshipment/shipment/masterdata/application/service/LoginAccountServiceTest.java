@@ -162,7 +162,8 @@ class LoginAccountServiceTest {
     @DisplayName("Fabrika içi hesap şifresiz, verilen rol ve lokasyonla açılır")
     void shouldOpenStaffAccountWithoutPassword() {
         service.createStaffLoginAccount(
-                admin, new StaffAccountRequest("depo2", "depo2@ornek.com", "Ayşe Depo", StaffRole.WAREHOUSE, List.of(SITE)));
+                admin,
+                new StaffAccountRequest("depo2", "depo2@ornek.com", "Ayşe Depo", StaffRole.WAREHOUSE, List.of(SITE)));
 
         assertThat(openedStaff).singleElement().satisfies(spec -> {
             assertThat(spec.username()).isEqualTo("depo2");
@@ -176,7 +177,8 @@ class LoginAccountServiceTest {
     @DisplayName("Fabrika içi hesapta lokasyon boşsa ya da etkin değilse hesap açılmaz")
     void shouldRejectStaffAccountWithBadSites() {
         assertThatThrownBy(() -> service.createStaffLoginAccount(
-                        admin, new StaffAccountRequest("depo2", "d@ornek.com", "Ayşe Depo", StaffRole.QUALITY, List.of())))
+                        admin,
+                        new StaffAccountRequest("depo2", "d@ornek.com", "Ayşe Depo", StaffRole.QUALITY, List.of())))
                 .isInstanceOf(InvalidMasterDataException.class);
         assertThatThrownBy(() -> service.createStaffLoginAccount(
                         admin,

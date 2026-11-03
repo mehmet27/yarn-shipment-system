@@ -208,7 +208,9 @@ final class KeycloakLoginAccountAdapter implements LoginAccountPort {
         user.put("firstName", names[0]);
         user.put("lastName", names[1]);
         user.put("email", spec.email());
-        user.put("attributes", Map.of(SITE_IDS, spec.siteIds().stream().map(Object::toString).toList()));
+        user.put(
+                "attributes",
+                Map.of(SITE_IDS, spec.siteIds().stream().map(Object::toString).toList()));
         user.put("requiredActions", List.of("UPDATE_PASSWORD"));
         return user;
     }

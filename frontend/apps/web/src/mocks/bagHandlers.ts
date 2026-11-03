@@ -78,7 +78,7 @@ export function createBagHandlers(permissions: readonly Permission[]) {
       const body = (await request.json()) as CreateBody;
       const lot = LOTS.find((candidate) => candidate.lotId === body.lotId);
       if (lot === undefined) {
-        return problem(409, 'LOT_NOT_LOCKED', 'Partinin kalitesi kilitli değil');
+        return problem(409, 'LOT_NOT_LOCKED', 'Kalite kilitlenmeden çuval üretilemez');
       }
       if (!Number.isInteger(body.count) || body.count < 1 || body.count > MAX_COUNT) {
         return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');

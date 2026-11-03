@@ -64,7 +64,11 @@ export function CreateBagsForm({ lotId, onCreated }: CreateBagsFormProps) {
           {t('bag.created', { count: mutation.data.length })}
         </Alert>
       )}
-      {mutation.isError && <Alert color="red">{t(bagErrorKey(mutation.error))}</Alert>}
+      {mutation.isError && (
+        <Alert color="red" role="alert">
+          {t(bagErrorKey(mutation.error))}
+        </Alert>
+      )}
     </Stack>
   );
 }

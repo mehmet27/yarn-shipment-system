@@ -1,5 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { BAGS_PATH } from '@iplik/api-client';
+import { http, HttpResponse } from 'msw';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
@@ -42,6 +44,26 @@ describe('Çuval ve etiket ekranı', () => {
     await waitFor(() => {
       expect(screen.getAllByText('1 kez')).toHaveLength(4);
     });
+  });
+
+  it('kalitesi kilitlenmemiş parti için anlaşılır uyarı gösterir, çuval eklemez', async () => {
+    server.use(
+      http.post(BAGS_PATH, () =>
+        HttpResponse.json(
+          { status: 409, code: 'LOT_NOT_LOCKED', title: 'Kalite kilitlenmeden çuval üretilemez' },
+          { status: 409 },
+        ),
+      ),
+      ...createHandlers('WAREHOUSE'),
+    );
+    renderApp('/panel/cuvallar');
+    await userEvent.click(await screen.findByRole('button', { name: 'Çuval oluştur' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Kalite kilitlenmeden çuval üretilemez. Önce Partiler ekranından partinin kalitesini kilitleyin.',
+    );
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getAllByText('1 kez')).toHaveLength(1);
   });
 
   it('daha önce basılmış etiketi yalnızca gerekçeyle yeniden basar', async () => {

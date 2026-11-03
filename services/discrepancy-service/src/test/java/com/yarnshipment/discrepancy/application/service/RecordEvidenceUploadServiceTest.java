@@ -10,10 +10,11 @@ import static org.mockito.Mockito.when;
 
 import com.yarnshipment.common.security.scope.AccessScope;
 import com.yarnshipment.discrepancy.TestDiscrepancies;
-import com.yarnshipment.discrepancy.application.port.in.CloseMissingDocumentCommand;
 import com.yarnshipment.discrepancy.application.port.in.DiscrepancyPage;
+import com.yarnshipment.discrepancy.application.port.in.RecordEvidenceUploadCommand;
 import com.yarnshipment.discrepancy.application.port.out.DiscrepancyDecisionPort;
 import com.yarnshipment.discrepancy.application.port.out.DiscrepancyQueryPort;
+import com.yarnshipment.discrepancy.application.port.out.ShipmentEvidencePort;
 import com.yarnshipment.discrepancy.domain.model.Discrepancy;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyStatus;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyType;
@@ -28,7 +29,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-class CloseMissingDocumentServiceTest {
+class RecordEvidenceUploadServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-10-24T10:00:00Z");
     private static final int PAGE_SIZE = 100;
@@ -39,10 +40,11 @@ class CloseMissingDocumentServiceTest {
 
     private final DiscrepancyQueryPort queries = mock(DiscrepancyQueryPort.class);
     private final DiscrepancyDecisionPort decisions = mock(DiscrepancyDecisionPort.class);
-    private final CloseMissingDocumentService service =
-            new CloseMissingDocumentService(queries, decisions, Clock.fixed(NOW, ZoneOffset.UTC));
-    private final CloseMissingDocumentCommand command =
-            new CloseMissingDocumentCommand(TestDiscrepancies.SHIPMENT, EVIDENCE);
+    private final ShipmentEvidencePort evidence = mock(ShipmentEvidencePort.class);
+    private final RecordEvidenceUploadService service =
+            new RecordEvidenceUploadService(queries, decisions, evidence, Clock.fixed(NOW, ZoneOffset.UTC));
+    private final RecordEvidenceUploadCommand command =
+            new RecordEvidenceUploadCommand(TestDiscrepancies.SHIPMENT, EVIDENCE, "SIGNED_DELIVERY_DOC", NOW);
 
     @Test
     @DisplayName(
@@ -54,10 +56,10 @@ class CloseMissingDocumentServiceTest {
                 TestDiscrepancies.withRule(
                         MISMATCH, DiscrepancyType.DOCUMENT, "DOCUMENT_NET_KG_MISMATCH", DiscrepancyStatus.OPEN));
 
-        int closed = service.closeMissingDocument(command);
+        int closed = service.recordEvidenceUpload(command);
 
         ArgumentCaptor<Discrepancy> saved = ArgumentCaptor.forClass(Discrepancy.class);
-        verify(decisions).saveResolution(saved.capture(), eq(CloseMissingDocumentService.SYSTEM_ACTOR), eq(NOW));
+        verify(decisions).saveResolution(saved.capture(), eq(SystemDefaults.SYSTEM_ACTOR), eq(NOW));
         Discrepancy.Decision decision = Objects.requireNonNull(saved.getValue().decision());
         assertThat(closed).isEqualTo(1);
         assertThat(saved.getValue().id()).isEqualTo(MISSING);
@@ -73,8 +75,30 @@ class CloseMissingDocumentServiceTest {
         givenShipmentDiscrepancies(TestDiscrepancies.withRule(
                 RESOLVED, DiscrepancyType.DOCUMENT, "DOCUMENT_MISSING", DiscrepancyStatus.RESOLVED));
 
-        assertThat(service.closeMissingDocument(command)).isZero();
+        assertThat(service.recordEvidenceUpload(command)).isZero();
         verify(decisions, never()).saveResolution(any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("Yüklenen tür sevkiyata yazılır; zorunlu fotoğraf yalnızca aynı türdeki PHOTO_MISSING'i kapatır")
+    void shouldClosePhotoMissingOfSameType() {
+        UUID otherType = UUID.fromString("0192f0a0-0000-7000-8000-0000000d0014");
+        givenShipmentDiscrepancies(
+                TestDiscrepancies.withMeasure(MISSING, DiscrepancyType.PHOTO, "PHOTO_MISSING", "BAG_OVERVIEW"),
+                TestDiscrepancies.withMeasure(otherType, DiscrepancyType.PHOTO, "PHOTO_MISSING", "SEAL"),
+                TestDiscrepancies.withRule(
+                        MISMATCH, DiscrepancyType.DOCUMENT, "DOCUMENT_MISSING", DiscrepancyStatus.OPEN));
+        RecordEvidenceUploadCommand photo =
+                new RecordEvidenceUploadCommand(TestDiscrepancies.SHIPMENT, EVIDENCE, "BAG_OVERVIEW", NOW);
+
+        int closed = service.recordEvidenceUpload(photo);
+
+        ArgumentCaptor<Discrepancy> saved = ArgumentCaptor.forClass(Discrepancy.class);
+        verify(evidence).recordUploaded(EVIDENCE, TestDiscrepancies.SHIPMENT, "BAG_OVERVIEW", NOW);
+        verify(decisions).saveResolution(saved.capture(), eq(SystemDefaults.SYSTEM_ACTOR), eq(NOW));
+        assertThat(closed).isEqualTo(1);
+        assertThat(saved.getValue().id()).isEqualTo(MISSING);
+        assertThat(Objects.requireNonNull(saved.getValue().decision()).note()).contains("fotoğraf");
     }
 
     private void givenShipmentDiscrepancies(Discrepancy... discrepancies) {

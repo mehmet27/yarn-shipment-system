@@ -26,7 +26,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Uyuşmazlık listesi, migration'larla kurulan gerçek şemada ve uygulama rolüyle. */
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({ComparisonAdapter.class, DiscrepancyQueryAdapter.class, UuidV7Generator.class})
+@Import({ComparisonAdapter.class, DiscrepancyWriter.class, DiscrepancyQueryAdapter.class, UuidV7Generator.class})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class DiscrepancyQueryAdapterTest {
 

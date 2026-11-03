@@ -2,11 +2,14 @@ package com.yarnshipment.discrepancy.adapter.in.messaging;
 
 import com.yarnshipment.common.outbox.CloudEventHeaders;
 import com.yarnshipment.common.outbox.IncomingEvent;
-import com.yarnshipment.discrepancy.application.port.in.CloseMissingDocumentCommand;
-import com.yarnshipment.discrepancy.application.port.in.CloseMissingDocumentUseCase;
+import com.yarnshipment.discrepancy.application.port.in.OpenReusedEvidenceCommand;
+import com.yarnshipment.discrepancy.application.port.in.OpenReusedEvidenceUseCase;
+import com.yarnshipment.discrepancy.application.port.in.RecordEvidenceUploadCommand;
+import com.yarnshipment.discrepancy.application.port.in.RecordEvidenceUploadUseCase;
 import com.yarnshipment.discrepancy.application.port.in.RecordTicketReadingCommand;
 import com.yarnshipment.discrepancy.application.port.in.RecordTicketReadingUseCase;
 import com.yarnshipment.events.evidence.EvidenceEvents;
+import com.yarnshipment.events.evidence.EvidenceReuseDetected;
 import com.yarnshipment.events.evidence.EvidenceUploaded;
 import com.yarnshipment.events.evidence.TicketRead;
 import java.util.UUID;
@@ -17,8 +20,9 @@ import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * {@code evidence.events.v1} dinleyicisi. Kantar fişi okumalarını saklar; imzalı teslim belgesi yüklenince sevkiyatın
- * açık "belge yok" uyuşmazlığını kapatır. Diğer kanıt olayları kullanılmaz ve onaylanır.
+ * {@code evidence.events.v1} dinleyicisi. Kantar fişi okumalarını saklar; yüklenen kanıtın türünü sevkiyata yazar ve
+ * sonradan gelen belge ya da fotoğrafın "eksik" uyuşmazlığını kapatır; tekrar kullanılan fotoğraf için uyuşmazlık
+ * açar. Diğer kanıt olayları kullanılmaz ve onaylanır.
  */
 @Component
 final class EvidenceEventsListener {
@@ -28,35 +32,34 @@ final class EvidenceEventsListener {
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build();
 
-    /** evidence-service'teki imzalı teslim belgesi (irsaliye) kanıt türü. */
-    private static final String SIGNED_DELIVERY_DOC = "SIGNED_DELIVERY_DOC";
-
     private final RecordTicketReadingUseCase recordTicketReadingUseCase;
-    private final CloseMissingDocumentUseCase closeMissingDocumentUseCase;
+    private final RecordEvidenceUploadUseCase recordEvidenceUploadUseCase;
+    private final OpenReusedEvidenceUseCase openReusedEvidenceUseCase;
 
     EvidenceEventsListener(
             RecordTicketReadingUseCase recordTicketReadingUseCase,
-            CloseMissingDocumentUseCase closeMissingDocumentUseCase) {
+            RecordEvidenceUploadUseCase recordEvidenceUploadUseCase,
+            OpenReusedEvidenceUseCase openReusedEvidenceUseCase) {
         this.recordTicketReadingUseCase = recordTicketReadingUseCase;
-        this.closeMissingDocumentUseCase = closeMissingDocumentUseCase;
+        this.recordEvidenceUploadUseCase = recordEvidenceUploadUseCase;
+        this.openReusedEvidenceUseCase = openReusedEvidenceUseCase;
     }
 
     @KafkaListener(topics = EvidenceEvents.TOPIC)
     void onEvidenceEvent(ConsumerRecord<String, String> record) {
         IncomingEvent event = CloudEventHeaders.read(record);
         if (EvidenceUploaded.TYPE.equals(event.type())) {
-            onEvidenceUploaded(EVENT_READER.readValue(event.data(), EvidenceUploaded.class));
+            EvidenceUploaded uploaded = EVENT_READER.readValue(event.data(), EvidenceUploaded.class);
+            recordEvidenceUploadUseCase.recordEvidenceUpload(new RecordEvidenceUploadCommand(
+                    uploaded.shipmentId(), uploaded.evidenceId(), uploaded.evidenceType(), uploaded.uploadedAt()));
+        } else if (EvidenceReuseDetected.TYPE.equals(event.type())) {
+            EvidenceReuseDetected reuse = EVENT_READER.readValue(event.data(), EvidenceReuseDetected.class);
+            openReusedEvidenceUseCase.openReusedEvidence(new OpenReusedEvidenceCommand(
+                    event.id(), event.type(), reuse.evidenceId(), reuse.shipmentId(), reuse.duplicateOfId()));
         } else if (TicketRead.TYPE.equals(event.type())) {
             TicketRead read = EVENT_READER.readValue(event.data(), TicketRead.class);
             recordTicketReadingUseCase.recordTicketReading(
                     new RecordTicketReadingCommand(actorOf(event), TicketReadMapper.toReading(read)));
-        }
-    }
-
-    private void onEvidenceUploaded(EvidenceUploaded uploaded) {
-        if (SIGNED_DELIVERY_DOC.equals(uploaded.evidenceType())) {
-            closeMissingDocumentUseCase.closeMissingDocument(
-                    new CloseMissingDocumentCommand(uploaded.shipmentId(), uploaded.evidenceId()));
         }
     }
 

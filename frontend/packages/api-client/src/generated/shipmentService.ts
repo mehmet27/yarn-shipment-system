@@ -239,6 +239,66 @@ export interface DeliveryReceiptRequest {
   document?: DeliveryDocument;
 }
 
+/**
+ * Düzeltilen kayıt: çıkış ya da teslim tartımı (brüt ve dara), çıkış ya da teslim mühür numarası
+ */
+export type CorrectionTarget = typeof CorrectionTarget[keyof typeof CorrectionTarget];
+
+
+export const CorrectionTarget = {
+  DISPATCH_WEIGHING: 'DISPATCH_WEIGHING',
+  DELIVERY_WEIGHING: 'DELIVERY_WEIGHING',
+  DISPATCH_SEAL_NO: 'DISPATCH_SEAL_NO',
+  DELIVERY_SEAL_NO: 'DELIVERY_SEAL_NO',
+} as const;
+
+/**
+ * Tartım düzeltmesinde grossKg ve tareKg, mühür düzeltmesinde sealNo zorunludur.
+ */
+export interface RecordCorrectionRequest {
+  target: CorrectionTarget;
+  grossKg?: Kg;
+  tareKg?: Kg;
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
+  sealNo?: string;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  reason: string;
+}
+
+export type CorrectionViewStatus = typeof CorrectionViewStatus[keyof typeof CorrectionViewStatus];
+
+
+export const CorrectionViewStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+} as const;
+
+/**
+ * Bir düzeltme. Tartımda değerler `gross=… tare=… net=…` biçimindedir (kilo, üç ondalık), mühürde numaradır.
+ */
+export interface CorrectionView {
+  id: string;
+  target: CorrectionTarget;
+  oldValue?: string;
+  newValue?: string;
+  reason: string;
+  status: CorrectionViewStatus;
+  requestedBy: string;
+  approvedBy?: string;
+  createdAt: string;
+}
+
+export interface CorrectionListResponse {
+  items: CorrectionView[];
+}
+
 export interface CancelShipmentRequest {
   /**
      * @minLength 1
@@ -725,7 +785,7 @@ export interface DriverShipmentView {
 export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView | DriverShipmentView;
 
 /**
- * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE) ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED)
+ * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE) ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da düzeltilecek kayıt bu arada değişti (CORRECTION_CONFLICT)
  */
 export type ConflictResponse = Problem;
 
@@ -1655,6 +1715,40 @@ export const cancelShipment = (
     }
 
 /**
+ * Yalnızca Admin (CORRECTION_CREATE). Tamamlanıp kilitlenmiş sevkiyatta da çalışır (rapor 7.8). Kayıt
+ * güncellenmez: yeni satır eklenir, eski değer hem eski satırda hem düzeltme kaydında saklanır. Tartım
+ * düzeltmesinde brüt ve dara birlikte gönderilir; çuval sayısı ve tartım zamanı aynen kalır. Düzeltilecek kayıt
+ * yoksa, yeni değer eskisiyle aynıysa ya da gerekçe boşsa `INVALID_CORRECTION`; mühür numarası başka sevkiyatta
+ * kullanılmışsa `SEAL_ALREADY_USED`; kayıt bu arada başka düzeltmeyle değiştiyse `CORRECTION_CONFLICT`. Aynı
+ * `Idempotency-Key` ile tekrar gelen istek düzeltmeyi yeniden uygulamaz, ilk kaydı döner.
+ * @summary Tartım ya da mühür numarasını gerekçeyle düzeltir
+ */
+export const recordCorrection = (
+    shipmentId: string,
+    recordCorrectionRequest: RecordCorrectionRequest,
+ ) => {
+      return customInstance<CorrectionView>(
+      {url: `/api/v1/shipments/${shipmentId}/corrections`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: recordCorrectionRequest
+    },
+      );
+    }
+
+/**
+ * Admin ve yönetici (CORRECTION_CREATE ya da AUDIT_VIEW); eski ve yeni değer birlikte döner.
+ * @summary Sevkiyatın düzeltme kayıtları, eskiden yeniye
+ */
+export const listCorrections = (
+    shipmentId: string,
+ ) => {
+      return customInstance<CorrectionListResponse>(
+      {url: `/api/v1/shipments/${shipmentId}/corrections`, method: 'GET'
+    },
+      );
+    }
+
+/**
  * Depo personeli çuvalları okutur ya da listeden seçer; her çuval bag-service'te bu sevkiyata ayrılır ve
  * sevkiyatın çuval listesine yazılır. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Hepsi ya da hiçbiri:
  * bir çuval bulunamazsa (`BAG_NOT_FOUND`), kullanılamaz durumdaysa (`BAG_NOT_AVAILABLE`) ya da başka
@@ -1759,6 +1853,8 @@ export type ActivateLotResult = NonNullable<Awaited<ReturnType<typeof activateLo
 export type LockLotQualityResult = NonNullable<Awaited<ReturnType<typeof lockLotQuality>>>
 export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof getShipmentHistory>>>
 export type CancelShipmentResult = NonNullable<Awaited<ReturnType<typeof cancelShipment>>>
+export type RecordCorrectionResult = NonNullable<Awaited<ReturnType<typeof recordCorrection>>>
+export type ListCorrectionsResult = NonNullable<Awaited<ReturnType<typeof listCorrections>>>
 export type AssignShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof assignShipmentBags>>>
 export type GetShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof getShipmentBags>>>
 export type RemoveShipmentBagResult = NonNullable<Awaited<ReturnType<typeof removeShipmentBag>>>

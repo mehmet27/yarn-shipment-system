@@ -18,6 +18,12 @@ describe('discrepancyText', () => {
     expect(formatFactValue(t, 'BAG', undefined)).toBeUndefined();
   });
 
+  it('yolda kalma süresini saatle, eksik fotoğrafı türüyle yazar', () => {
+    expect(formatFactValue(t, 'TIME', '26')).toBe('26 [discrepancy.hoursUnit]');
+    expect(formatFactValue(t, 'PHOTO', 'BAG_OVERVIEW')).toBe('[evidence.types.BAG_OVERVIEW]');
+    expect(ruleLabel(t, 'PHOTO_REUSED')).toBe('[discrepancy.rule.PHOTO_REUSED]');
+  });
+
   it('fiş tartısını brüt, dara ve net olarak yazar', () => {
     expect(formatFactValue(t, 'DOCUMENT', 'gross=1200.000 tare=250.000 net=950.000')).toBe(
       '[shipment.file.gross] 1.200 kg · [shipment.file.tare] 250 kg · [shipment.file.net] 950 kg',

@@ -22,7 +22,13 @@ export const KNOWN_RULES: readonly string[] = [
   'TICKET_DELIVERY_WEIGHT_MISMATCH',
   'TICKET_QUANTITY_TOLERANCE',
   'QUALITY_CLAIM',
+  'PHOTO_MISSING',
+  'PHOTO_REUSED',
+  'TIME_IN_TRANSIT_EXCEEDED',
 ];
+
+/** Zorunlu fotoğraf kuralında beklenen değer kanıt türüdür (`evidence.types.*`). */
+const EVIDENCE_TYPE_PATTERN = /^[A-Z][A-Z_]+$/;
 
 type Translate = (key: string) => string;
 
@@ -40,7 +46,7 @@ function kgText(value: string): string {
 
 /**
  * Kuralın ürettiği beklenen/gerçek değeri okunur yazar: kilo "1.000,5 kg", tartı "Brüt … · Dara …",
- * çuval sayısı ve plaka gibi diğer değerler olduğu gibi.
+ * yolda kalma süresi "26 saat", eksik fotoğraf türü adıyla; çuval sayısı ve plaka gibi diğerleri olduğu gibi.
  */
 export function formatFactValue(
   t: Translate,
@@ -54,6 +60,8 @@ export function formatFactValue(
       (key, index) => `${t(key)} ${kgText(weighing[index + 1] ?? '')}`,
     ).join(' · ');
   }
+  if (type === 'TIME') return `${value} ${t('discrepancy.hoursUnit')}`;
+  if (type === 'PHOTO' && EVIDENCE_TYPE_PATTERN.test(value)) return t(`evidence.types.${value}`);
   const isQuantity = type === 'QUANTITY' || value.includes('.');
   return isQuantity ? kgText(value) : value;
 }

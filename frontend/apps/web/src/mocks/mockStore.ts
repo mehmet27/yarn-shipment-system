@@ -4,6 +4,8 @@ import type {
   ShipmentStatus,
   Weighing,
 } from '@iplik/api-client';
+import { resetMockCorrections } from './corrections';
+import { resetDiscrepancySettings } from './discrepancySettings';
 import { resetMockClaims } from './claims';
 import { resetMockLots } from './lots';
 import { resetMasterData } from './masterData';
@@ -36,6 +38,19 @@ export function recordMockDispatch(
     shipment.shipmentId === shipmentId
       ? { ...shipment, status: 'LOADED', allowedActions: [], dispatchWeighing, dispatchSealNo }
       : shipment,
+  );
+}
+
+/** Admin düzeltmesi: tartım ya da mühür yeni değeriyle değişir (eskisi düzeltme kaydında kalır). */
+export function patchMockShipment(
+  shipmentId: string,
+  patch: Pick<
+    Partial<InternalShipmentView>,
+    'dispatchWeighing' | 'deliveryWeighing' | 'dispatchSealNo'
+  >,
+): void {
+  shipments = shipments.map((shipment) =>
+    shipment.shipmentId === shipmentId ? { ...shipment, ...patch } : shipment,
   );
 }
 
@@ -81,6 +96,8 @@ export function assignMockBagKeys(shipmentId: string, keys: readonly string[]): 
 
 export function resetMockStore(): void {
   resetMasterData();
+  resetDiscrepancySettings();
+  resetMockCorrections();
   resetMockClaims();
   resetMockLots();
   shipments = [...MOCK_SHIPMENTS];

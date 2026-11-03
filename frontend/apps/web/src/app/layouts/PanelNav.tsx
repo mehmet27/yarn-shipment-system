@@ -16,6 +16,11 @@ const ITEMS: readonly PanelNavItem[] = [
   { to: '/panel/uyusmazliklar', labelKey: 'nav.discrepancies', permission: 'DISCREPANCY_VIEW' },
   { to: '/panel/tanimlar', labelKey: 'nav.masterData', permission: 'MASTER_DATA_MANAGE' },
   { to: '/panel/partiler', labelKey: 'nav.lots', permission: 'LOT_QUALITY_LOCK' },
+  {
+    to: '/panel/kural-ayarlari',
+    labelKey: 'nav.discrepancySettings',
+    permission: 'SETTINGS_MANAGE',
+  },
 ];
 
 /** Panel yan menüsü: her bağlantı yalnızca yetkisi olan kullanıcıya görünür. */

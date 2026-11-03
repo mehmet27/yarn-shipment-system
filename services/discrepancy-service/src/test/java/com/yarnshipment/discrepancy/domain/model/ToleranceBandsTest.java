@@ -28,4 +28,27 @@ class ToleranceBandsTest {
         assertThatThrownBy(() -> new ToleranceBands(BigDecimal.ONE.negate(), BigDecimal.ONE))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    @DisplayName(
+            "Ayar ekranından gelen bant 0 ≤ Yeşil < Sarı ≤ %100 ve en çok iki ondalık olmalıdır; hatalı alan söylenir")
+    void shouldValidateSettingBands() {
+        assertThat(ToleranceBands.ofSetting(new BigDecimal("0.8"), new BigDecimal("100.00"))
+                        .yellowMaxPct())
+                .isEqualByComparingTo("100");
+        assertThatThrownBy(() -> ToleranceBands.ofSetting(new BigDecimal("-0.1"), BigDecimal.ONE))
+                .isInstanceOfSatisfying(
+                        InvalidSettingException.class,
+                        e -> assertThat(e.field()).isEqualTo("greenMaxPct"));
+        assertThatThrownBy(() -> ToleranceBands.ofSetting(new BigDecimal("0.125"), BigDecimal.ONE))
+                .isInstanceOfSatisfying(
+                        InvalidSettingException.class,
+                        e -> assertThat(e.field()).isEqualTo("greenMaxPct"));
+        assertThatThrownBy(() -> ToleranceBands.ofSetting(BigDecimal.ONE, BigDecimal.ONE))
+                .isInstanceOfSatisfying(
+                        InvalidSettingException.class,
+                        e -> assertThat(e.field()).isEqualTo("yellowMaxPct"));
+        assertThatThrownBy(() -> ToleranceBands.ofSetting(BigDecimal.ONE, new BigDecimal("100.01")))
+                .isInstanceOf(InvalidSettingException.class);
+    }
 }

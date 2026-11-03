@@ -89,6 +89,8 @@ export {
   removeShipmentBag,
 } from './masterData';
 export type { LoginAccountRequest, LoginAccountResponse } from './masterData';
+export { CorrectionTarget, listCorrections, recordCorrection } from './masterData';
+export type { CorrectionListResponse, CorrectionView, RecordCorrectionRequest } from './masterData';
 export type { AssignShipmentBagsRequest, AssignShipmentBagsResponse } from './masterData';
 export {
   activateLot,
@@ -122,8 +124,10 @@ export type {
 export {
   assignDiscrepancy,
   DISCREPANCIES_PATH,
+  DISCREPANCY_SETTINGS_PATH,
   DiscrepancyStatus,
   getDiscrepancy,
+  getDiscrepancySettings,
   getShipmentClaims,
   InspectionKind,
   listDiscrepancies,
@@ -135,10 +139,12 @@ export {
   Resolution,
   resolveDiscrepancy,
   Severity,
+  updateDiscrepancySettings,
 } from './discrepancies';
 export type {
   DiscrepancyActivityView,
   DiscrepancyPage,
+  DiscrepancySettingsView,
   DiscrepancyView,
   InspectionView,
   ListDiscrepanciesParams,
@@ -147,6 +153,9 @@ export type {
   RecordInspectionResultRequest,
   RequestInspectionRequest,
   ResolveDiscrepancyRequest,
+  TimeLimitVersionView,
+  ToleranceVersionView,
+  UpdateDiscrepancySettingsRequest,
   ShipmentClaimsView,
 } from './discrepancies';
 export {

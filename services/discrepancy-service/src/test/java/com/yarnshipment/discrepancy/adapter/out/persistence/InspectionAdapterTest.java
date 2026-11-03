@@ -27,6 +27,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
     ComparisonAdapter.class,
+    DiscrepancyWriter.class,
     QualityClaimAdapter.class,
     QualityClaimWriter.class,
     InspectionAdapter.class,

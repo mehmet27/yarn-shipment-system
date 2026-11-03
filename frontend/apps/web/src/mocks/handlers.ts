@@ -20,6 +20,7 @@ import { createEvidenceHandlers } from './evidenceHandlers';
 import { createLoginAccountHandlers } from './loginAccountHandlers';
 import { createLotHandlers } from './lotHandlers';
 import { createMasterDataHandlers } from './masterDataHandlers';
+import { createReportHandlers } from './reportHandlers';
 import { toBagsView, toHistory } from './shipmentTabs';
 import { isInScope, toDetailView, toPermittedView, toSummary } from './shipmentViews';
 import { createMockUser } from './users';
@@ -276,6 +277,7 @@ export function createHandlers(role: Role) {
     ...createDiscrepancyHandlers(createMockUser(role).permissions, createMockUser(role).userId),
     ...createCorrectionHandlers(createMockUser(role).permissions, createMockUser(role).userId),
     ...createClaimHandlers(role),
+    ...createReportHandlers(createMockUser(role).permissions),
     logoutHandler,
   ];
 }

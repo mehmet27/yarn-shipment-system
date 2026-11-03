@@ -21,7 +21,8 @@
     "discrepancySettings": "Kural ayarları",
     "bags": "Çuval ve etiket",
     "lots": "Partiler",
-    "users": "Kullanıcılar"
+    "users": "Kullanıcılar",
+    "reports": "Raporlar"
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}"
@@ -757,6 +758,59 @@
     "errors": {
       "LOGIN_ACCOUNT_UNAVAILABLE": "Giriş sistemine şu an ulaşılamıyor; kullanıcı listesi alınamadı.",
       "unknown": "Kullanıcı listesi yüklenemedi."
+    }
+  },
+  "report": {
+    "title": "Raporlar",
+    "intro": "Göstergeler olgusaldır; kişileri etiketlemez, kontrol sıklığını artıracak noktaları gösterir. Şoför ve fasoncular kimliklerinin ilk 8 karakteriyle listelenir.",
+    "period": {
+      "label": "Rapor dönemi",
+      "days7": "7 gün",
+      "days30": "30 gün",
+      "days90": "90 gün"
+    },
+    "tabs": {
+      "drivers": "Şoförler",
+      "subcontractors": "Fasoncular",
+      "pairs": "Eşleşmeler"
+    },
+    "parties": {
+      "driver": "Şoför",
+      "subcontractor": "Fasoncu",
+      "shipments": "Karşılaştırılan sevkiyat",
+      "discrepant": "Uyuşmazlıklı",
+      "rate": "Uyuşmazlık oranı",
+      "averageDiff": "Ortalama fark",
+      "empty": "Bu dönemde karşılaştırılmış sevkiyat yok."
+    },
+    "dashboard": {
+      "title": "Özet",
+      "shipments": "Sevkiyatlar",
+      "total": "Toplam",
+      "inProgress": "Süren",
+      "inReview": "İncelemede",
+      "completed": "Tamamlanan",
+      "comparison": "Karşılaştırma",
+      "compared": "Karşılaştırılan sevkiyat",
+      "comparedHint": "Teslim girişi yapılmış olanlar",
+      "band": {
+        "GREEN": "Yeşil",
+        "YELLOW": "Sarı",
+        "RED": "Kırmızı"
+      },
+      "dispatchNet": "Çıkış net",
+      "deliveryNet": "Teslim net",
+      "absoluteDiff": "Toplam mutlak fark",
+      "discrepancies": "Açık uyuşmazlıklar",
+      "open": "Açık",
+      "openRed": "Kırmızı",
+      "openYellow": "Sarı",
+      "overdue": "Süresi geçen",
+      "overdueList": "Süresi geçen uyuşmazlıklar",
+      "noOverdue": "Süresi geçen uyuşmazlık yok.",
+      "dueAt": "Vade: {{at}}",
+      "largestList": "Kilo farkı en büyük sevkiyatlar",
+      "noDifferences": "Bu dönemde fark kaydı yok."
     }
   }
 }

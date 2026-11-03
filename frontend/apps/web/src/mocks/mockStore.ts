@@ -10,6 +10,7 @@ import { resetMockClaims } from './claims';
 import { resetMockLoginAccounts } from './loginAccounts';
 import { resetMockLots } from './lots';
 import { resetMasterData } from './masterData';
+import { resetTareStandards } from './tareStandards';
 import { MOCK_SHIPMENTS } from './shipments';
 
 /** Sahte API'nin değişebilir durumu; testler arasında resetMockStore ile sıfırlanır. */
@@ -97,6 +98,7 @@ export function assignMockBagKeys(shipmentId: string, keys: readonly string[]): 
 
 export function resetMockStore(): void {
   resetMasterData();
+  resetTareStandards();
   resetDiscrepancySettings();
   resetMockCorrections();
   resetMockClaims();

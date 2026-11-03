@@ -5,11 +5,15 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.LotView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ProductPageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ProductView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.QualityGradePageResponse;
+import com.yarnshipment.shipment.adapter.in.web.api.model.PackagingType;
 import com.yarnshipment.shipment.adapter.in.web.api.model.QualityGradeView;
+import com.yarnshipment.shipment.adapter.in.web.api.model.TareStandardView;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.domain.catalog.Product;
 import com.yarnshipment.shipment.masterdata.domain.catalog.QualityGrade;
+import com.yarnshipment.shipment.masterdata.domain.catalog.TareStandard;
 import com.yarnshipment.shipment.masterdata.domain.lot.ProductionLot;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.ZoneOffset;
 
@@ -28,6 +32,16 @@ final class CatalogPages {
         return new QualityGradeView(item.id(), item.code(), item.details().name())
                 .labelColor(item.details().labelColor())
                 .active(item.active());
+    }
+
+    static TareStandardView view(TareStandard item) {
+        return new TareStandardView(
+                item.id(),
+                item.siteId(),
+                item.siteName(),
+                PackagingType.valueOf(item.packagingType().name()),
+                item.details().standardTareKg().setScale(3, RoundingMode.HALF_UP).toPlainString(),
+                item.details().maxDeviationPct().setScale(2, RoundingMode.HALF_UP).toPlainString());
     }
 
     static LotView view(ProductionLot item) {

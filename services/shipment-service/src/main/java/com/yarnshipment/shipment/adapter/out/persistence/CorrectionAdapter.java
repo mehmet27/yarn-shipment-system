@@ -44,9 +44,9 @@ final class CorrectionAdapter implements CorrectionPort {
             WHERE id = :oldId""";
     private static final String INSERT_WEIGHING = """
             INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, scale_ticket_no, weighed_at,
-                                  entered_by, created_at, created_by)
+                                  entered_by, created_at, created_by, expected_tare_kg, tare_tolerance_pct)
             SELECT :newId, shipment_id, side, :gross, :tare, bag_count, scale_ticket_no, weighed_at, entered_by, :at,
-                   :actor
+                   :actor, expected_tare_kg, tare_tolerance_pct
             FROM weighing WHERE id = :oldId""";
     private static final String INSERT_SEAL = """
             INSERT INTO seal (id, shipment_id, side, seal_no, seal_condition, recorded_by, recorded_at, created_at,

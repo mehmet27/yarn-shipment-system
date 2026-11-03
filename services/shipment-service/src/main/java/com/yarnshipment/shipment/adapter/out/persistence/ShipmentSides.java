@@ -2,7 +2,9 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 
 import com.yarnshipment.shipment.domain.model.SealCondition;
 import com.yarnshipment.shipment.domain.model.ShipmentSide;
+import com.yarnshipment.shipment.domain.model.TareBasis;
 import com.yarnshipment.shipment.domain.model.Weighing;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -39,7 +41,11 @@ final class ShipmentSides {
     }
 
     private static Weighing toWeighing(WeighingJpaEntity entity) {
-        return new Weighing(entity.getGrossKg(), entity.getTareKg(), entity.getBagCount(), entity.getWeighedAt());
+        BigDecimal expected = entity.getExpectedTareKg();
+        BigDecimal tolerance = entity.getTareTolerancePct();
+        TareBasis basis = expected == null || tolerance == null ? null : new TareBasis(expected, tolerance);
+        return new Weighing(
+                entity.getGrossKg(), entity.getTareKg(), entity.getBagCount(), entity.getWeighedAt(), basis);
     }
 
     private record SideKey(UUID shipmentId, String side) {}

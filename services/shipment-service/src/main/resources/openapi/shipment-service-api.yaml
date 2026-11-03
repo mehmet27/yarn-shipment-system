@@ -31,6 +31,7 @@ tags:
   - name: CatalogLists
   - name: ProductManagement
   - name: QualityGradeManagement
+  - name: TareStandardManagement
   - name: LotManagement
   - name: LoginAccounts
   - name: CurrentUser
@@ -1094,6 +1095,58 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/tare-standards:
+    get:
+      tags: [TareStandardManagement]
+      operationId: listTareStandards
+      summary: Standart dara listesi
+      description: |
+        Lokasyon ve ambalaj tipi başına standart dara ve izin verilen sapma. `siteId` verilirse yalnızca o lokasyonunkiler gelir. Lokasyon adına, sonra ambalaj tipine göre sıralıdır; sayfalanmaz.
+      parameters:
+        - name: siteId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Liste
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TareStandardListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      tags: [TareStandardManagement]
+      operationId: saveTareStandard
+      summary: Standart dara tanımlar
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Lokasyon ve ambalaj tipi için tek tanım vardır; varsa değerleri güncellenir (aynı istek tekrarlanırsa sonuç değişmez). Standart ambalaj başınadır; çıkış tartımında beklenen dara = standart × çuval sayısı. Şimdilik yalnızca `BAG` tartımda kullanılır. Standart sıfırsa karşılaştırma yapılmaz. Sonradan değişen standart, kaydedilmiş tartımların sapmasını etkilemez. Bilinmeyen lokasyon `INVALID_MASTER_DATA`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TareStandardSaveRequest'
+      responses:
+        '200':
+          description: Kaydedildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TareStandardView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /api/v1/master-data/quality-grades:
     get:
       tags: [CatalogLists]
@@ -1923,6 +1976,15 @@ components:
         weighedAt:
           type: string
           format: date-time
+        expectedTareKg:
+          $ref: '#/components/schemas/Kg'
+        tareTolerancePct:
+          $ref: '#/components/schemas/Pct'
+        tareDeviationPct:
+          $ref: '#/components/schemas/Pct'
+        tareAlert:
+          type: boolean
+          description: Dara, kayıt anındaki standarttan izin verilenden fazla saptı. Standart tanımsızsa false ve sapma alanları yok
     SealCondition:
       type: string
       enum: [INTACT, DAMAGED, MISSING]
@@ -2357,6 +2419,53 @@ components:
             $ref: '#/components/schemas/ProductView'
         page:
           $ref: '#/components/schemas/PageMetadata'
+    PackagingType:
+      type: string
+      enum: [BAG, BOX, PALLET, BOBBIN]
+    Pct:
+      description: İki ondalıklı yüzde, dize olarak (API-03); sapmada işaretli olabilir
+      type: string
+      pattern: '^-?\d{1,3}\.\d{2}$'
+      example: '2.50'
+    TareStandardSaveRequest:
+      type: object
+      required: [siteId, packagingType, standardTareKg, maxDeviationPct]
+      properties:
+        siteId:
+          type: string
+          format: uuid
+        packagingType:
+          $ref: '#/components/schemas/PackagingType'
+        standardTareKg:
+          $ref: '#/components/schemas/Kg'
+        maxDeviationPct:
+          $ref: '#/components/schemas/Pct'
+    TareStandardView:
+      type: object
+      required: [id, siteId, siteName, packagingType, standardTareKg, maxDeviationPct]
+      properties:
+        id:
+          type: string
+          format: uuid
+        siteId:
+          type: string
+          format: uuid
+        siteName:
+          type: string
+        packagingType:
+          $ref: '#/components/schemas/PackagingType'
+        standardTareKg:
+          $ref: '#/components/schemas/Kg'
+        maxDeviationPct:
+          $ref: '#/components/schemas/Pct'
+    TareStandardListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TareStandardView'
     QualityGradeCreateRequest:
       type: object
       required: [code, name]

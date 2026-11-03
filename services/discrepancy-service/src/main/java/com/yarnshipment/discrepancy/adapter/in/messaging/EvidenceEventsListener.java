@@ -8,10 +8,14 @@ import com.yarnshipment.discrepancy.application.port.in.RecordEvidenceUploadComm
 import com.yarnshipment.discrepancy.application.port.in.RecordEvidenceUploadUseCase;
 import com.yarnshipment.discrepancy.application.port.in.RecordTicketReadingCommand;
 import com.yarnshipment.discrepancy.application.port.in.RecordTicketReadingUseCase;
+import com.yarnshipment.discrepancy.application.port.in.ticket.OpenUnverifiedTicketCommand;
+import com.yarnshipment.discrepancy.application.port.in.ticket.OpenUnverifiedTicketUseCase;
+import com.yarnshipment.discrepancy.domain.ticket.TicketSide;
 import com.yarnshipment.events.evidence.EvidenceEvents;
 import com.yarnshipment.events.evidence.EvidenceReuseDetected;
 import com.yarnshipment.events.evidence.EvidenceUploaded;
 import com.yarnshipment.events.evidence.TicketRead;
+import com.yarnshipment.events.evidence.TicketUnverified;
 import java.util.UUID;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -22,7 +26,7 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * {@code evidence.events.v1} dinleyicisi. Kantar fişi okumalarını saklar; yüklenen kanıtın türünü sevkiyata yazar ve
  * sonradan gelen belge ya da fotoğrafın "eksik" uyuşmazlığını kapatır; tekrar kullanılan fotoğraf için uyuşmazlık
- * açar. Diğer kanıt olayları kullanılmaz ve onaylanır.
+ * açar; doğrulanamayan kantar fişi için de uyuşmazlık açar. Diğer kanıt olayları kullanılmaz ve onaylanır.
  */
 @Component
 final class EvidenceEventsListener {
@@ -35,14 +39,17 @@ final class EvidenceEventsListener {
     private final RecordTicketReadingUseCase recordTicketReadingUseCase;
     private final RecordEvidenceUploadUseCase recordEvidenceUploadUseCase;
     private final OpenReusedEvidenceUseCase openReusedEvidenceUseCase;
+    private final OpenUnverifiedTicketUseCase openUnverifiedTicketUseCase;
 
     EvidenceEventsListener(
             RecordTicketReadingUseCase recordTicketReadingUseCase,
             RecordEvidenceUploadUseCase recordEvidenceUploadUseCase,
-            OpenReusedEvidenceUseCase openReusedEvidenceUseCase) {
+            OpenReusedEvidenceUseCase openReusedEvidenceUseCase,
+            OpenUnverifiedTicketUseCase openUnverifiedTicketUseCase) {
         this.recordTicketReadingUseCase = recordTicketReadingUseCase;
         this.recordEvidenceUploadUseCase = recordEvidenceUploadUseCase;
         this.openReusedEvidenceUseCase = openReusedEvidenceUseCase;
+        this.openUnverifiedTicketUseCase = openUnverifiedTicketUseCase;
     }
 
     @KafkaListener(topics = EvidenceEvents.TOPIC)
@@ -60,6 +67,15 @@ final class EvidenceEventsListener {
             TicketRead read = EVENT_READER.readValue(event.data(), TicketRead.class);
             recordTicketReadingUseCase.recordTicketReading(
                     new RecordTicketReadingCommand(actorOf(event), TicketReadMapper.toReading(read)));
+        } else if (TicketUnverified.TYPE.equals(event.type())) {
+            TicketUnverified unverified = EVENT_READER.readValue(event.data(), TicketUnverified.class);
+            openUnverifiedTicketUseCase.openUnverifiedTicket(new OpenUnverifiedTicketCommand(
+                    event.id(),
+                    event.type(),
+                    unverified.evidenceId(),
+                    unverified.shipmentId(),
+                    TicketSide.valueOf(unverified.evidenceType()),
+                    unverified.reason()));
         }
     }
 

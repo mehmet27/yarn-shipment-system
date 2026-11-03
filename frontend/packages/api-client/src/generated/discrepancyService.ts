@@ -7,6 +7,11 @@
  * bu API onları incelemeye alır ve çözer. Bir sevkiyatın tüm uyuşmazlıkları çözülünce sevkiyat tamamlanır (olayla,
  * shipment-service tarafında). Admin tolerans bantlarını ve süre sınırını ayar uçlarından değiştirir.
  *
+ * Kantar fişi paneli (tasarım PR 4): uyuşmazlığın sevkiyatındaki fiş okumaları, aynı taraf için elle girilen netle
+ * yan yana döner. İnceleyen kişi okumanın yanlış olduğunu "AI yanıldı" olarak işaretleyebilir; işaret isabet
+ * ölçümüne girer ve uyuşmazlık geçmişine `TICKET_MISREAD` olarak yazılır. Kör giriş gereği karar yetkisi olmayan
+ * kullanıcı (fasoncu) fişleri teslim karşılaştırmasından önce göremez.
+ *
  * Kurallar:
  * - Kilo ve yüzde değerleri ondalık dize olarak taşınır, ör. `"40.000"` (API-03).
  * - Zamanlar ISO 8601 UTC (API-03).
@@ -132,6 +137,62 @@ export interface DiscrepancyActivityView {
   evidenceId?: string;
   actorId: string;
   occurredAt: string;
+}
+
+export interface TicketMisreadView {
+  markedBy: string;
+  markedAt: string;
+  note?: string;
+}
+
+export type DiscrepancyTicketViewSide = typeof DiscrepancyTicketViewSide[keyof typeof DiscrepancyTicketViewSide];
+
+
+export const DiscrepancyTicketViewSide = {
+  DISPATCH_SCALE: 'DISPATCH_SCALE',
+  DELIVERY_SCALE: 'DELIVERY_SCALE',
+} as const;
+
+export type DiscrepancyTicketViewStatus = typeof DiscrepancyTicketViewStatus[keyof typeof DiscrepancyTicketViewStatus];
+
+
+export const DiscrepancyTicketViewStatus = {
+  READ: 'READ',
+  UNREADABLE: 'UNREADABLE',
+} as const;
+
+export type DiscrepancyTicketViewAllowedActionsItem = typeof DiscrepancyTicketViewAllowedActionsItem[keyof typeof DiscrepancyTicketViewAllowedActionsItem];
+
+
+export const DiscrepancyTicketViewAllowedActionsItem = {
+  MARK_MISREAD: 'MARK_MISREAD',
+} as const;
+
+export interface DiscrepancyTicketView {
+  /** Fotoğraf; evidence-service indirme adresiyle gösterilir */
+  evidenceId: string;
+  side: DiscrepancyTicketViewSide;
+  status: DiscrepancyTicketViewStatus;
+  /** Okunan brüt; yalnızca READ iken dolu */
+  grossKg?: string;
+  tareKg?: string;
+  netKg?: string;
+  /** Aynı taraf için elle girilen net; teslim karşılaştırması yapılmadıysa boş */
+  enteredNetKg?: string;
+  plate?: string;
+  ticketNo?: string;
+  scaleName?: string;
+  weighedAt?: string;
+  problems: string[];
+  readAt: string;
+  misread?: TicketMisreadView;
+  /** Bu kullanıcının bu okumada yapabileceği eylemler (FE-SEC-03) */
+  allowedActions: DiscrepancyTicketViewAllowedActionsItem[];
+}
+
+export interface MarkTicketMisreadRequest {
+  /** @maxLength 500 */
+  note?: string;
 }
 
 export interface AssignDiscrepancyRequest {
@@ -327,7 +388,7 @@ export type UnauthorizedResponse = Problem;
 export type ForbiddenResponse = Problem;
 
 /**
- * Uyuşmazlık yok (DISCREPANCY_NOT_FOUND)
+ * Uyuşmazlık ya da sevkiyatında bu fiş okuması yok (DISCREPANCY_NOT_FOUND, TICKET_READING_NOT_FOUND)
  */
 export type NotFoundResponse = Problem;
 
@@ -406,6 +467,35 @@ export const listDiscrepancyActivity = (
  ) => {
       return customInstance<DiscrepancyActivityView[]>(
       {url: `/api/v1/discrepancies/${discrepancyId}/activity`, method: 'GET'
+    },
+      );
+    }
+
+/**
+ * @summary Uyuşmazlığın sevkiyatındaki kantar fişleri (en yeniden eskiye)
+ */
+export const listDiscrepancyTickets = (
+    discrepancyId: string,
+ ) => {
+      return customInstance<DiscrepancyTicketView[]>(
+      {url: `/api/v1/discrepancies/${discrepancyId}/tickets`, method: 'GET'
+    },
+      );
+    }
+
+/**
+ * Okuma bu uyuşmazlığın sevkiyatına ait olmalıdır; zaten işaretliyse değişmez.
+ * @summary Fiş okumasını "AI yanıldı" olarak işaretler
+ */
+export const markTicketMisread = (
+    discrepancyId: string,
+    evidenceId: string,
+    markTicketMisreadRequest?: MarkTicketMisreadRequest,
+ ) => {
+      return customInstance<DiscrepancyTicketView[]>(
+      {url: `/api/v1/discrepancies/${discrepancyId}/tickets/${evidenceId}/misread`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: markTicketMisreadRequest
     },
       );
     }
@@ -546,6 +636,8 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 export type ListDiscrepanciesResult = NonNullable<Awaited<ReturnType<typeof listDiscrepancies>>>
 export type GetDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof getDiscrepancy>>>
 export type ListDiscrepancyActivityResult = NonNullable<Awaited<ReturnType<typeof listDiscrepancyActivity>>>
+export type ListDiscrepancyTicketsResult = NonNullable<Awaited<ReturnType<typeof listDiscrepancyTickets>>>
+export type MarkTicketMisreadResult = NonNullable<Awaited<ReturnType<typeof markTicketMisread>>>
 export type AssignDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof assignDiscrepancy>>>
 export type ResolveDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof resolveDiscrepancy>>>
 export type OpenQualityClaimResult = NonNullable<Awaited<ReturnType<typeof openQualityClaim>>>

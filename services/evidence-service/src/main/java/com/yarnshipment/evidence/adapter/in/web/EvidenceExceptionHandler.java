@@ -11,6 +11,7 @@ import com.yarnshipment.evidence.domain.model.UploadIntentNotFoundException;
 import com.yarnshipment.evidence.domain.model.UploadMismatchException;
 import com.yarnshipment.evidence.domain.model.UploadNotAllowedException;
 import com.yarnshipment.evidence.domain.model.UploadNotCompletedException;
+import com.yarnshipment.evidence.domain.ticket.TicketNotUnreadableException;
 import com.yarnshipment.evidence.domain.ticket.TicketReaderUnavailableException;
 import com.yarnshipment.evidence.domain.ticket.TicketReadingNotSupportedException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -91,5 +92,10 @@ public final class EvidenceExceptionHandler {
     @ExceptionHandler(TicketReaderUnavailableException.class)
     public ProblemDetail handleReaderUnavailable(HttpServletRequest request) {
         return problems.create(request, HttpStatus.SERVICE_UNAVAILABLE, "TICKET_READING_UNAVAILABLE");
+    }
+
+    @ExceptionHandler(TicketNotUnreadableException.class)
+    public ProblemDetail handleTicketNotUnreadable(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.CONFLICT, "TICKET_NOT_UNREADABLE");
     }
 }

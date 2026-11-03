@@ -20,7 +20,9 @@
  * Kantar fişi okuma: `DISPATCH_SCALE` ve `DELIVERY_SCALE` kanıtları onaylandıktan sonra
  * `POST /api/v1/evidence/{evidenceId}/ticket-reading` ile okunur. Cevap `UNREADABLE` ise brüt veya dara güvenle
  * okunamamıştır ve istemci yeniden çekim ister. Okuma kapalıysa ya da modele ulaşılamazsa 503
- * `TICKET_READING_UNAVAILABLE` döner; istemci okumasız devam eder.
+ * `TICKET_READING_UNAVAILABLE` döner; istemci okumasız devam eder. Üç denemede kilo okunamazsa kullanıcı gerekçe
+ * seçip `POST /api/v1/evidence/{evidenceId}/ticket-reading/unverified` ile devam eder; kontrol "doğrulanamadı"
+ * uyuşmazlığına düşer.
  *
  * OpenAPI spec version: 1.0.0
  */
@@ -161,6 +163,28 @@ export interface TicketReadingView {
   readAt: string;
 }
 
+export type UnverifiedReason = typeof UnverifiedReason[keyof typeof UnverifiedReason];
+
+
+export const UnverifiedReason = {
+  PRINTER_BROKEN: 'PRINTER_BROKEN',
+  TICKET_DAMAGED: 'TICKET_DAMAGED',
+  NO_TICKET: 'NO_TICKET',
+  OTHER: 'OTHER',
+} as const;
+
+export interface DeclareTicketUnverifiedRequest {
+  reason: UnverifiedReason;
+}
+
+export interface TicketUnverifiedView {
+  evidenceId: string;
+  shipmentId: string;
+  evidenceType: EvidenceType;
+  reason: UnverifiedReason;
+  declaredAt: string;
+}
+
 export interface EvidenceListView {
   items: EvidenceView[];
 }
@@ -191,7 +215,7 @@ export type ForbiddenResponse = Problem;
 export type NotFoundResponse = Problem;
 
 /**
- * Sevkiyat kilitli (SHIPMENT_LOCKED), dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED) ya da kanıt zaten geçersiz kılınmış (EVIDENCE_ALREADY_INVALIDATED)
+ * Sevkiyat kilitli (SHIPMENT_LOCKED), dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED) ya da kanıt zaten geçersiz kılınmış (EVIDENCE_ALREADY_INVALIDATED); okunamamış fiş yokken "doğrulanamadı" seçilmiş (TICKET_NOT_UNREADABLE)
  */
 export type ConflictResponse = Problem;
 
@@ -252,6 +276,24 @@ export const readEvidenceTicket = (
  ) => {
       return customInstance<TicketReadingView>(
       {url: `/api/v1/evidence/${evidenceId}/ticket-reading`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Son denemenin okuması `UNREADABLE` olan fiş için gerekçe yazar ve fotoğraf uyuşmazlığı ("doğrulanamadı")
+ * açılmasını sağlar. Yalnızca kanıtı yükleyen ister; tekrar çağrılırsa ilk kayıt döner. Okunmamış ya da güvenle
+ * okunmuş fiş için 409 `TICKET_NOT_UNREADABLE` döner.
+ * @summary Okunamayan fişle gerekçe seçip devam et
+ */
+export const declareTicketUnverified = (
+    evidenceId: string,
+    declareTicketUnverifiedRequest: DeclareTicketUnverifiedRequest,
+ ) => {
+      return customInstance<TicketUnverifiedView>(
+      {url: `/api/v1/evidence/${evidenceId}/ticket-reading/unverified`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: declareTicketUnverifiedRequest
     },
       );
     }
@@ -326,6 +368,7 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 export type RequestEvidenceUploadResult = NonNullable<Awaited<ReturnType<typeof requestEvidenceUpload>>>
 export type ConfirmEvidenceUploadResult = NonNullable<Awaited<ReturnType<typeof confirmEvidenceUpload>>>
 export type ReadEvidenceTicketResult = NonNullable<Awaited<ReturnType<typeof readEvidenceTicket>>>
+export type DeclareTicketUnverifiedResult = NonNullable<Awaited<ReturnType<typeof declareTicketUnverified>>>
 export type ListEvidenceResult = NonNullable<Awaited<ReturnType<typeof listEvidence>>>
 export type GetEvidenceDownloadUrlResult = NonNullable<Awaited<ReturnType<typeof getEvidenceDownloadUrl>>>
 export type InvalidateEvidenceResult = NonNullable<Awaited<ReturnType<typeof invalidateEvidence>>>

@@ -8,6 +8,11 @@ info:
     bu API onları incelemeye alır ve çözer. Bir sevkiyatın tüm uyuşmazlıkları çözülünce sevkiyat tamamlanır (olayla,
     shipment-service tarafında). Admin tolerans bantlarını ve süre sınırını ayar uçlarından değiştirir.
 
+    Kantar fişi paneli (tasarım PR 4): uyuşmazlığın sevkiyatındaki fiş okumaları, aynı taraf için elle girilen netle
+    yan yana döner. İnceleyen kişi okumanın yanlış olduğunu "AI yanıldı" olarak işaretleyebilir; işaret isabet
+    ölçümüne girer ve uyuşmazlık geçmişine `TICKET_MISREAD` olarak yazılır. Kör giriş gereği karar yetkisi olmayan
+    kullanıcı (fasoncu) fişleri teslim karşılaştırmasından önce göremez.
+
     Kurallar:
     - Kilo ve yüzde değerleri ondalık dize olarak taşınır, ör. `"40.000"` (API-03).
     - Zamanlar ISO 8601 UTC (API-03).
@@ -26,6 +31,7 @@ tags:
   - name: DiscrepancyDecisions
   - name: QualityClaims
   - name: DiscrepancySettings
+  - name: DiscrepancyTickets
 security:
   - bearerAuth: []
 paths:
@@ -124,6 +130,65 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DiscrepancyActivityView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/discrepancies/{discrepancyId}/tickets:
+    get:
+      tags: [DiscrepancyTickets]
+      operationId: listDiscrepancyTickets
+      summary: Uyuşmazlığın sevkiyatındaki kantar fişleri (en yeniden eskiye)
+      parameters:
+        - $ref: '#/components/parameters/DiscrepancyId'
+      responses:
+        '200':
+          description: Fiş okumaları
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiscrepancyTicketView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/discrepancies/{discrepancyId}/tickets/{evidenceId}/misread:
+    post:
+      tags: [DiscrepancyTickets]
+      operationId: markTicketMisread
+      summary: Fiş okumasını "AI yanıldı" olarak işaretler
+      description: Okuma bu uyuşmazlığın sevkiyatına ait olmalıdır; zaten işaretliyse değişmez.
+      parameters:
+        - $ref: '#/components/parameters/DiscrepancyId'
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkTicketMisreadRequest'
+      responses:
+        '200':
+          description: Güncel fiş okumaları
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiscrepancyTicketView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -411,7 +476,7 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
     NotFound:
-      description: Uyuşmazlık yok (DISCREPANCY_NOT_FOUND)
+      description: Uyuşmazlık ya da sevkiyatında bu fiş okuması yok (DISCREPANCY_NOT_FOUND, TICKET_READING_NOT_FOUND)
       content:
         application/problem+json:
           schema:
@@ -590,6 +655,72 @@ components:
         occurredAt:
           type: string
           format: date-time
+    TicketMisreadView:
+      type: object
+      required: [markedBy, markedAt]
+      properties:
+        markedBy:
+          type: string
+          format: uuid
+        markedAt:
+          type: string
+          format: date-time
+        note:
+          type: string
+    DiscrepancyTicketView:
+      type: object
+      required: [evidenceId, side, status, problems, readAt, allowedActions]
+      properties:
+        evidenceId:
+          type: string
+          format: uuid
+          description: Fotoğraf; evidence-service indirme adresiyle gösterilir
+        side:
+          type: string
+          enum: [DISPATCH_SCALE, DELIVERY_SCALE]
+        status:
+          type: string
+          enum: [READ, UNREADABLE]
+        grossKg:
+          type: string
+          description: Okunan brüt; yalnızca READ iken dolu
+        tareKg:
+          type: string
+        netKg:
+          type: string
+        enteredNetKg:
+          type: string
+          description: Aynı taraf için elle girilen net; teslim karşılaştırması yapılmadıysa boş
+        plate:
+          type: string
+        ticketNo:
+          type: string
+        scaleName:
+          type: string
+        weighedAt:
+          type: string
+          format: date-time
+        problems:
+          type: array
+          items:
+            type: string
+        readAt:
+          type: string
+          format: date-time
+        misread:
+          $ref: '#/components/schemas/TicketMisreadView'
+        allowedActions:
+          type: array
+          description: Bu kullanıcının bu okumada yapabileceği eylemler (FE-SEC-03)
+          items:
+            type: string
+            enum: [MARK_MISREAD]
+    MarkTicketMisreadRequest:
+      type: object
+      properties:
+        note:
+          type: string
+          maxLength: 500
     AssignDiscrepancyRequest:
       type: object
       required: [assigneeId]

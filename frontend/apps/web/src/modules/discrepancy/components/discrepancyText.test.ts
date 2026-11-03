@@ -24,6 +24,15 @@ describe('discrepancyText', () => {
     expect(ruleLabel(t, 'PHOTO_REUSED')).toBe('[discrepancy.rule.PHOTO_REUSED]');
   });
 
+  it('"fiş doğrulanamadı" gerekçesini fotoğraf türüyle karıştırmadan yazar (K0)', () => {
+    expect(formatFactValue(t, 'PHOTO', 'PRINTER_BROKEN')).toBe(
+      '[ticket.fallback.reasons.PRINTER_BROKEN]',
+    );
+    expect(ruleLabel(t, 'TICKET_DELIVERY_UNVERIFIED')).toBe(
+      '[discrepancy.rule.TICKET_DELIVERY_UNVERIFIED]',
+    );
+  });
+
   it('fiş tartısını brüt, dara ve net olarak yazar', () => {
     expect(formatFactValue(t, 'DOCUMENT', 'gross=1200.000 tare=250.000 net=950.000')).toBe(
       '[shipment.file.gross] 1.200 kg · [shipment.file.tare] 250 kg · [shipment.file.net] 950 kg',

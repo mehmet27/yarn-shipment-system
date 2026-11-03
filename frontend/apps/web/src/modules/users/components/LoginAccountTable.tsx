@@ -1,9 +1,8 @@
 import type { LoginAccountView } from '@iplik/api-client';
-import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Stack, Table, Text, useMediaQuery } from '@iplik/ui';
-import { RoleBadges } from './RoleBadges';
-import { StatusBadges } from './StatusBadges';
+import { useTranslation } from '@iplik/i18n';
+import { Stack, Table, useMediaQuery } from '@iplik/ui';
 import { LoginAccountCard } from './LoginAccountCard';
+import { LoginAccountRow } from './LoginAccountRow';
 
 const DESKTOP_QUERY = '(min-width: 48em)';
 const TABLE_MIN_WIDTH = 720;
@@ -34,34 +33,12 @@ export function LoginAccountTable({ accounts }: LoginAccountTableProps) {
             <Table.Th>{t('users.field.roles')}</Table.Th>
             <Table.Th>{t('users.field.status')}</Table.Th>
             <Table.Th>{t('users.field.createdAt')}</Table.Th>
+            <Table.Th>{t('users.field.actions')}</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
           {accounts.map((account) => (
-            <Table.Tr key={account.id}>
-              <Table.Td>
-                <Text fw={600} size="sm">
-                  {account.username}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                {account.fullName ?? (
-                  <Text c="dimmed" size="sm">
-                    {t('users.noName')}
-                  </Text>
-                )}
-              </Table.Td>
-              <Table.Td>{account.email ?? '–'}</Table.Td>
-              <Table.Td>
-                <RoleBadges account={account} />
-              </Table.Td>
-              <Table.Td>
-                <StatusBadges account={account} />
-              </Table.Td>
-              <Table.Td>
-                {account.createdAt === undefined ? '–' : formatDateTime(account.createdAt)}
-              </Table.Td>
-            </Table.Tr>
+            <LoginAccountRow key={account.id} account={account} />
           ))}
         </Table.Tbody>
       </Table>

@@ -1,6 +1,7 @@
 import type { LoginAccountView } from '@iplik/api-client';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Group, Paper, Stack, Text } from '@iplik/ui';
+import { AccountActions } from './AccountActions';
 import { RoleBadges } from './RoleBadges';
 import { StatusBadges } from './StatusBadges';
 
@@ -32,6 +33,7 @@ export function LoginAccountCard({ account }: LoginAccountCardProps) {
             {t('users.field.createdAt')}: {formatDateTime(account.createdAt)}
           </Text>
         )}
+        <AccountActions account={account} />
       </Stack>
     </Paper>
   );

@@ -90,6 +90,12 @@ export {
 } from './masterData';
 export type { LoginAccountRequest, LoginAccountResponse } from './masterData';
 export { listLoginAccounts } from './masterData';
+export { changeLoginAccountRole, createStaffLoginAccount } from './masterData';
+export type {
+  ChangeLoginAccountRoleRequest,
+  StaffLoginAccountRequest,
+  StaffRole,
+} from './masterData';
 export type {
   ListLoginAccountsParams,
   LoginAccountPageResponse,

@@ -3,22 +3,31 @@ package com.yarnshipment.shipment.masterdata.adapter.out.keycloak;
 import com.yarnshipment.common.security.Role;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountRoleLockedException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
+import com.yarnshipment.shipment.masterdata.domain.model.StaffAccountSpec;
+import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
@@ -40,6 +49,7 @@ final class KeycloakLoginAccountAdapter implements LoginAccountPort {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
     private static final int PAGE_SIZE = 100;
+    private static final int INVITE_LIFESPAN_SECONDS = 3 * 24 * 60 * 60;
     private static final String SITE_IDS = "site_ids";
     private static final ParameterizedTypeReference<Map<String, Object>> OBJECT = new ParameterizedTypeReference<>() {};
     private static final ParameterizedTypeReference<List<Map<String, Object>>> OBJECTS =
@@ -74,14 +84,133 @@ final class KeycloakLoginAccountAdapter implements LoginAccountPort {
             String token = accessToken();
             requireNoAccountFor(token, spec);
             Map<String, Object> role = realmRole(token, spec.role());
-            String userId = createUser(token, spec);
-            assignRole(token, userId, role);
+            String userId = createUser(token, userRepresentation(spec));
+            rollbackOnFailure(token, userId, () -> assignRole(token, userId, role));
         } catch (RestClientResponseException exception) {
             throw new LoginAccountUnavailableException(
                     "Keycloak rejected the call status=" + exception.getStatusCode(), exception);
         } catch (RestClientException exception) {
             throw new LoginAccountUnavailableException("Keycloak call failed", exception);
         }
+    }
+
+    @Override
+    public void createStaff(StaffAccountSpec spec) {
+        requireConfigured();
+        try {
+            String token = accessToken();
+            Map<String, Object> role = realmRole(token, spec.role().realmRole());
+            String userId = createUser(token, staffRepresentation(spec));
+            rollbackOnFailure(token, userId, () -> {
+                assignRole(token, userId, role);
+                sendPasswordInvite(token, userId);
+            });
+        } catch (RestClientResponseException exception) {
+            throw new LoginAccountUnavailableException(
+                    "Keycloak rejected the call status=" + exception.getStatusCode(), exception);
+        } catch (RestClientException exception) {
+            throw new LoginAccountUnavailableException("Keycloak call failed", exception);
+        }
+    }
+
+    @Override
+    public void changeStaffRole(UUID userId, StaffRole role) {
+        requireConfigured();
+        try {
+            String token = accessToken();
+            String id = userId.toString();
+            List<Map<String, Object>> current = currentRealmRoles(token, id);
+            Set<String> names = new HashSet<>();
+            current.forEach(mapping -> names.add(String.valueOf(mapping.get("name"))));
+            if (names.contains(LoginRole.DRIVER.realmRole()) || names.contains(LoginRole.SUBCONTRACTOR.realmRole())) {
+                throw new LoginAccountRoleLockedException();
+            }
+            Map<String, Object> target = realmRole(token, role.realmRole());
+            if (!names.contains(role.realmRole())) {
+                assignRole(token, id, target);
+            }
+            List<Map<String, Object>> obsolete = current.stream()
+                    .filter(mapping -> isStaffRole(String.valueOf(mapping.get("name")))
+                            && !role.realmRole().equals(mapping.get("name")))
+                    .map(mapping -> Map.of("id", mapping.get("id"), "name", mapping.get("name")))
+                    .toList();
+            if (!obsolete.isEmpty()) {
+                client.method(HttpMethod.DELETE)
+                        .uri("/admin/realms/{realm}/users/{id}/role-mappings/realm", realm, id)
+                        .headers(headers -> headers.setBearerAuth(token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(obsolete)
+                        .retrieve()
+                        .toBodilessEntity();
+            }
+            endSessions(token, id);
+        } catch (RestClientResponseException exception) {
+            throw new LoginAccountUnavailableException(
+                    "Keycloak rejected the call status=" + exception.getStatusCode(), exception);
+        } catch (RestClientException exception) {
+            throw new LoginAccountUnavailableException("Keycloak call failed", exception);
+        }
+    }
+
+    private void requireConfigured() {
+        if (clientSecret.isBlank()) {
+            throw new LoginAccountUnavailableException("Keycloak admin client is not configured");
+        }
+    }
+
+    private static boolean isStaffRole(String name) {
+        return Stream.of(StaffRole.values()).anyMatch(role -> role.realmRole().equals(name));
+    }
+
+    private List<Map<String, Object>> currentRealmRoles(String token, String userId) {
+        try {
+            List<Map<String, Object>> roles = client.get()
+                    .uri("/admin/realms/{realm}/users/{id}/role-mappings/realm", realm, userId)
+                    .headers(headers -> headers.setBearerAuth(token))
+                    .retrieve()
+                    .body(OBJECTS);
+            return roles == null ? List.of() : roles;
+        } catch (RestClientResponseException exception) {
+            if (exception.getStatusCode().value() == HttpStatus.NOT_FOUND.value()) {
+                throw new LoginAccountNotFoundException();
+            }
+            throw exception;
+        }
+    }
+
+    /** Eski rolle alınmış token'lar kısa süre geçerli kalır; açık oturumlar kapatılarak yeni rolle giriş istenir. */
+    private void endSessions(String token, String userId) {
+        client.post()
+                .uri("/admin/realms/{realm}/users/{id}/logout", realm, userId)
+                .headers(headers -> headers.setBearerAuth(token))
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    /** Şifre hiçbir yerde üretilmez; kişi e-postadaki bağlantıdan kendi şifresini belirler. */
+    private void sendPasswordInvite(String token, String userId) {
+        client.put()
+                .uri(uri -> uri.path("/admin/realms/{realm}/users/{id}/execute-actions-email")
+                        .queryParam("lifespan", INVITE_LIFESPAN_SECONDS)
+                        .build(realm, userId))
+                .headers(headers -> headers.setBearerAuth(token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(List.of("UPDATE_PASSWORD"))
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    private static Map<String, Object> staffRepresentation(StaffAccountSpec spec) {
+        String[] names = splitName(spec.fullName());
+        Map<String, Object> user = new LinkedHashMap<>();
+        user.put("username", spec.username());
+        user.put("enabled", true);
+        user.put("firstName", names[0]);
+        user.put("lastName", names[1]);
+        user.put("email", spec.email());
+        user.put("attributes", Map.of(SITE_IDS, spec.siteIds().stream().map(Object::toString).toList()));
+        user.put("requiredActions", List.of("UPDATE_PASSWORD"));
+        return user;
     }
 
     @Override
@@ -168,13 +297,17 @@ final class KeycloakLoginAccountAdapter implements LoginAccountPort {
     }
 
     private Map<String, Object> realmRole(String token, LoginRole role) {
+        return realmRole(token, role.realmRole());
+    }
+
+    private Map<String, Object> realmRole(String token, String roleName) {
         Map<String, Object> found = client.get()
-                .uri("/admin/realms/{realm}/roles/{role}", realm, role.realmRole())
+                .uri("/admin/realms/{realm}/roles/{role}", realm, roleName)
                 .headers(headers -> headers.setBearerAuth(token))
                 .retrieve()
                 .body(OBJECT);
         if (found == null) {
-            throw new LoginAccountUnavailableException("Keycloak role not found role=" + role.realmRole());
+            throw new LoginAccountUnavailableException("Keycloak role not found role=" + roleName);
         }
         return Map.of("id", found.get("id"), "name", found.get("name"));
     }
@@ -201,8 +334,7 @@ final class KeycloakLoginAccountAdapter implements LoginAccountPort {
         return user;
     }
 
-    private String createUser(String token, LoginAccountSpec spec) {
-        Map<String, Object> user = userRepresentation(spec);
+    private String createUser(String token, Map<String, Object> user) {
         try {
             URI location = client.post()
                     .uri("/admin/realms/{realm}/users", realm)
@@ -223,14 +355,19 @@ final class KeycloakLoginAccountAdapter implements LoginAccountPort {
     }
 
     private void assignRole(String token, String userId, Map<String, Object> role) {
+        client.post()
+                .uri("/admin/realms/{realm}/users/{id}/role-mappings/realm", realm, userId)
+                .headers(headers -> headers.setBearerAuth(token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(List.of(role))
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    /** Adım başarısız olursa yeni açılan kullanıcı silinir; yarım hesap kalmaz. */
+    private void rollbackOnFailure(String token, String userId, Runnable step) {
         try {
-            client.post()
-                    .uri("/admin/realms/{realm}/users/{id}/role-mappings/realm", realm, userId)
-                    .headers(headers -> headers.setBearerAuth(token))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(List.of(role))
-                    .retrieve()
-                    .toBodilessEntity();
+            step.run();
         } catch (RestClientException exception) {
             deleteQuietly(token, userId, exception);
             throw exception;

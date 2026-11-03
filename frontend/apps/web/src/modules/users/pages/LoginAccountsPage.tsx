@@ -1,24 +1,40 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Text, TextInput, Title, useDebouncedValue } from '@iplik/ui';
+import {
+  Button,
+  Group,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+  useDebouncedValue,
+  useDisclosure,
+} from '@iplik/ui';
 import { useState } from 'react';
+import { CreateStaffAccountModal } from '../components/CreateStaffAccountModal';
 import { LoginAccountResults } from '../components/LoginAccountResults';
 import { useLoginAccounts } from '../hooks/useLoginAccounts';
 
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
-/** Yönetici: giriş hesabı olan kullanıcıları kullanıcı adı, rol ve durumla görür; şifre gösterilmez. */
+/** Yönetici: giriş hesabı olan kullanıcıları görür, depo/kalite/müdür/yönetici hesabı açar ve rolünü değiştirir; şifre
+ * hiçbir yerde gösterilmez. */
 export function LoginAccountsPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [q] = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   const [page, setPage] = useState(1);
+  const [isCreating, { open, close }] = useDisclosure(false);
   const query = useLoginAccounts({ q, page: page - 1, size: PAGE_SIZE });
   return (
     <Stack>
-      <Title order={1} size="h2">
-        {t('users.title')}
-      </Title>
+      <Group justify="space-between" align="flex-start">
+        <Title order={1} size="h2">
+          {t('users.title')}
+        </Title>
+        <Button onClick={open}>{t('users.create.open')}</Button>
+      </Group>
+      <CreateStaffAccountModal opened={isCreating} onClose={close} />
       <Text c="dimmed">{t('users.intro')}</Text>
       <TextInput
         type="search"

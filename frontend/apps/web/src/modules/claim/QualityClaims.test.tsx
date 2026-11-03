@@ -57,9 +57,9 @@ describe('Kalite itirazı', () => {
 
   it('kalite lab analizi ister, raporla sonucu kaydeder', async () => {
     server.use(...createHandlers('QUALITY'));
-    renderApp('/panel/sevkiyat/shp-0013');
+    renderApp('/panel/sevkiyat/shp-0022');
     await userEvent.click(await screen.findByRole('tab', { name: 'Kalite itirazı' }));
-    const card = await screen.findByRole('article', { name: 'UY-shp-0013-1' });
+    const card = await screen.findByRole('article', { name: 'UY-shp-0022-1' });
     await userEvent.click(within(card).getByText('Laboratuvar analizi'));
     await userEvent.type(within(card).getByLabelText('Talep notu'), 'Şahit numuneyle karşılaştır');
     await userEvent.click(within(card).getByRole('button', { name: 'Kontrol iste' }));
@@ -76,9 +76,9 @@ describe('Kalite itirazı', () => {
 
   it('yönetici itirazları görür ama kontrol isteyemez', async () => {
     server.use(...createHandlers('MANAGER'));
-    renderApp('/panel/sevkiyat/shp-0013');
+    renderApp('/panel/sevkiyat/shp-0022');
     await userEvent.click(await screen.findByRole('tab', { name: 'Kalite itirazı' }));
-    expect(await screen.findByRole('article', { name: 'UY-shp-0013-1' })).toBeInTheDocument();
+    expect(await screen.findByRole('article', { name: 'UY-shp-0022-1' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Kontrol iste' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Kalite itirazı aç' })).not.toBeInTheDocument();
   });

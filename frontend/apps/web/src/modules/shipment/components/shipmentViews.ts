@@ -102,13 +102,12 @@ function pickDefined({
   };
 }
 
-const DELIVERED: ReadonlySet<ShipmentDetail['status']> = new Set([
-  'CHECKING',
-  'IN_REVIEW',
-  'COMPLETED',
-]);
+const COMPARISON_DONE: ReadonlySet<ShipmentDetail['status']> = new Set(['IN_REVIEW', 'COMPLETED']);
 
-/** Kalite itirazı teslimden sonra konuşulur; asıl pencere ve kapsam kontrolü backend'dedir. */
+/**
+ * Kalite itirazı teslim karşılaştırması bittikten sonra konuşulur (CHECKING'de backend 409
+ * QUALITY_CLAIM_NOT_AVAILABLE döner); asıl pencere ve kapsam kontrolü backend'dedir.
+ */
 export function isDelivered(shipment: ShipmentDetail): boolean {
-  return DELIVERED.has(shipment.status);
+  return COMPARISON_DONE.has(shipment.status);
 }

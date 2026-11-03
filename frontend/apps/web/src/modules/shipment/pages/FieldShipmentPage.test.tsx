@@ -1,3 +1,4 @@
+import { http, HttpResponse } from 'msw';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
@@ -58,5 +59,37 @@ describe('FieldShipmentPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Vazgeç' }));
     expect(screen.getByText('Yüklendi')).toBeInTheDocument();
     expect(screen.queryByText('Yolda')).not.toBeInTheDocument();
+  });
+
+  it('geçersiz sevkiyat kimliği için "bulunamadı" gösterir', async () => {
+    server.use(
+      ...createHandlers('DRIVER'),
+      http.get('/api/v1/shipments/:id', () =>
+        HttpResponse.json(
+          { status: 400, code: 'VALIDATION_FAILED', title: 'Geçersiz kimlik' },
+          { status: 400 },
+        ),
+      ),
+    );
+    renderApp('/saha/sevkiyat/gecersiz');
+    expect(await screen.findByText(/bulunamadı/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Beklenmeyen bir hata/)).not.toBeInTheDocument();
+  });
+
+  it('teslim karşılaştırması bitmeden itiraz isteği atmaz', async () => {
+    let claimRequests = 0;
+    server.use(
+      ...createHandlers('SUBCONTRACTOR'),
+      http.get('/api/v1/quality-claims/shipments/:id', () => {
+        claimRequests += 1;
+        return HttpResponse.json(
+          { status: 409, code: 'QUALITY_CLAIM_NOT_AVAILABLE', title: 'x' },
+          { status: 409 },
+        );
+      }),
+    );
+    renderApp('/saha/sevkiyat/shp-0013');
+    expect(await screen.findByText('SVK-2026-0013')).toBeInTheDocument();
+    expect(claimRequests).toBe(0);
   });
 });

@@ -56,8 +56,8 @@ public class RecordDispatchService implements RecordDispatchUseCase {
                         != command.measurement().bagCount()) {
             throw new InvalidDispatchException("bagCount", "differs from assigned bags");
         }
-        TareBasis tareBasis =
-                tareBasisPort.findBagTareBasis(shipment.siteId(), command.measurement().bagCount());
+        TareBasis tareBasis = tareBasisPort.findBagTareBasis(
+                shipment.siteId(), command.measurement().bagCount());
         dispatchCommandPort.recordDispatch(
                 shipment.recordDispatch(command.measurement(), clock.instant(), tareBasis), actor.userId());
     }

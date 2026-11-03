@@ -14,18 +14,21 @@ class TareStandardDetailsTest {
     @DisplayName("Sıfır dara ve sıfır ya da yüzde yüz sapma geçerlidir")
     void shouldAcceptBounds() {
         assertThat(new TareStandardDetails(BigDecimal.ZERO, BigDecimal.ZERO)).isNotNull();
-        assertThat(new TareStandardDetails(new BigDecimal("0.450"), new BigDecimal("100"))).isNotNull();
+        assertThat(new TareStandardDetails(new BigDecimal("0.450"), new BigDecimal("100")))
+                .isNotNull();
     }
 
     @Test
     @DisplayName("Negatif dara ve aralık dışı sapma alan adıyla reddedilir")
     void shouldRejectOutOfRange() {
         assertThatThrownBy(() -> new TareStandardDetails(new BigDecimal("-0.1"), BigDecimal.ONE))
-                .isInstanceOfSatisfying(InvalidMasterDataException.class, e -> assertThat(e.field())
-                        .isEqualTo("standardTareKg"));
+                .isInstanceOfSatisfying(
+                        InvalidMasterDataException.class,
+                        e -> assertThat(e.field()).isEqualTo("standardTareKg"));
         assertThatThrownBy(() -> new TareStandardDetails(BigDecimal.ONE, new BigDecimal("100.01")))
-                .isInstanceOfSatisfying(InvalidMasterDataException.class, e -> assertThat(e.field())
-                        .isEqualTo("maxDeviationPct"));
+                .isInstanceOfSatisfying(
+                        InvalidMasterDataException.class,
+                        e -> assertThat(e.field()).isEqualTo("maxDeviationPct"));
         assertThatThrownBy(() -> new TareStandardDetails(BigDecimal.ONE, new BigDecimal("-1")))
                 .isInstanceOf(InvalidMasterDataException.class);
     }

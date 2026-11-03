@@ -75,11 +75,13 @@ class WeighingJpaEntity {
         return weighedAt;
     }
 
-    @Nullable BigDecimal getExpectedTareKg() {
+    @Nullable
+    BigDecimal getExpectedTareKg() {
         return expectedTareKg;
     }
 
-    @Nullable BigDecimal getTareTolerancePct() {
+    @Nullable
+    BigDecimal getTareTolerancePct() {
         return tareTolerancePct;
     }
 }

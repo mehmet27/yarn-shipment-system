@@ -58,10 +58,10 @@ class WeighingTest {
     void shouldCarryTareDeviation() {
         TareBasis basis = new TareBasis(new BigDecimal("20.000"), new BigDecimal("5.00"));
 
-        Weighing within = new Weighing(
-                new BigDecimal("2000.500"), new BigDecimal("20.500"), BAG_COUNT, WEIGHED_AT, basis);
-        Weighing beyond = new Weighing(
-                new BigDecimal("2000.500"), new BigDecimal("18.000"), BAG_COUNT, WEIGHED_AT, basis);
+        Weighing within =
+                new Weighing(new BigDecimal("2000.500"), new BigDecimal("20.500"), BAG_COUNT, WEIGHED_AT, basis);
+        Weighing beyond =
+                new Weighing(new BigDecimal("2000.500"), new BigDecimal("18.000"), BAG_COUNT, WEIGHED_AT, basis);
 
         assertThat(within.tareDeviationPct()).isEqualByComparingTo("2.50");
         assertThat(within.tareAlert()).isFalse();

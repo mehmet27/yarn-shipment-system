@@ -43,7 +43,11 @@ class RecordDispatchServiceTest {
             new FixedBagCountPort(TestDispatches.measurement().bagCount());
     private final FixedTareBasisPort tareBasisPort = new FixedTareBasisPort();
     private final RecordDispatchService service = new RecordDispatchService(
-            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), commandPort, bagsPort, tareBasisPort, clock);
+            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
+            commandPort,
+            bagsPort,
+            tareBasisPort,
+            clock);
     private final Actor warehouse = TestTokens.actor("warehouse");
 
     private RecordDispatchCommand command(Actor actor) {

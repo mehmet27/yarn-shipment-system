@@ -2,10 +2,10 @@ package com.yarnshipment.shipment.masterdata.adapter.in.web;
 
 import com.yarnshipment.shipment.adapter.in.web.api.model.LotPageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.LotView;
+import com.yarnshipment.shipment.adapter.in.web.api.model.PackagingType;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ProductPageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ProductView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.QualityGradePageResponse;
-import com.yarnshipment.shipment.adapter.in.web.api.model.PackagingType;
 import com.yarnshipment.shipment.adapter.in.web.api.model.QualityGradeView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.TareStandardView;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
@@ -40,8 +40,14 @@ final class CatalogPages {
                 item.siteId(),
                 item.siteName(),
                 PackagingType.valueOf(item.packagingType().name()),
-                item.details().standardTareKg().setScale(3, RoundingMode.HALF_UP).toPlainString(),
-                item.details().maxDeviationPct().setScale(2, RoundingMode.HALF_UP).toPlainString());
+                item.details()
+                        .standardTareKg()
+                        .setScale(3, RoundingMode.HALF_UP)
+                        .toPlainString(),
+                item.details()
+                        .maxDeviationPct()
+                        .setScale(2, RoundingMode.HALF_UP)
+                        .toPlainString());
     }
 
     static LotView view(ProductionLot item) {

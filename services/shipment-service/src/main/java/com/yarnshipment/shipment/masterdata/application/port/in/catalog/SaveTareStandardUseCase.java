@@ -9,6 +9,5 @@ import java.util.UUID;
 /** Lokasyon ve ambalaj tipi için standart daranın tanımlanması; varsa değerleri günceller. */
 public interface SaveTareStandardUseCase {
 
-    TareStandard saveTareStandard(
-            Actor actor, UUID siteId, PackagingType packagingType, TareStandardDetails details);
+    TareStandard saveTareStandard(Actor actor, UUID siteId, PackagingType packagingType, TareStandardDetails details);
 }

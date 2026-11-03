@@ -15,7 +15,11 @@ import org.jspecify.annotations.Nullable;
  * @param tareBasis kayıt anındaki standart dara; tanımsızsa boş
  */
 public record Weighing(
-        BigDecimal grossKg, BigDecimal tareKg, int bagCount, Instant weighedAt, @Nullable TareBasis tareBasis) {
+        BigDecimal grossKg,
+        BigDecimal tareKg,
+        int bagCount,
+        Instant weighedAt,
+        @Nullable TareBasis tareBasis) {
 
     public Weighing {
         Objects.requireNonNull(grossKg, "grossKg");

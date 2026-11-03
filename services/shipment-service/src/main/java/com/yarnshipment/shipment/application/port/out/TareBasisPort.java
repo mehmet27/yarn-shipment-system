@@ -8,5 +8,6 @@ import org.jspecify.annotations.Nullable;
 public interface TareBasisPort {
 
     /** Lokasyonun çuval standardından beklenen dara; tanım yoksa ya da standart sıfırsa boş. */
-    @Nullable TareBasis findBagTareBasis(UUID siteId, int bagCount);
+    @Nullable
+    TareBasis findBagTareBasis(UUID siteId, int bagCount);
 }

@@ -21,7 +21,9 @@ info:
     Kantar fişi okuma: `DISPATCH_SCALE` ve `DELIVERY_SCALE` kanıtları onaylandıktan sonra
     `POST /api/v1/evidence/{evidenceId}/ticket-reading` ile okunur. Cevap `UNREADABLE` ise brüt veya dara güvenle
     okunamamıştır ve istemci yeniden çekim ister. Okuma kapalıysa ya da modele ulaşılamazsa 503
-    `TICKET_READING_UNAVAILABLE` döner; istemci okumasız devam eder.
+    `TICKET_READING_UNAVAILABLE` döner; istemci okumasız devam eder. Üç denemede kilo okunamazsa kullanıcı gerekçe
+    seçip `POST /api/v1/evidence/{evidenceId}/ticket-reading/unverified` ile devam eder; kontrol "doğrulanamadı"
+    uyuşmazlığına düşer.
 servers:
   - url: /
 tags:
@@ -131,6 +133,45 @@ paths:
           $ref: '#/components/responses/Conflict'
         '503':
           $ref: '#/components/responses/Unavailable'
+  /api/v1/evidence/{evidenceId}/ticket-reading/unverified:
+    post:
+      tags: [TicketReadings]
+      operationId: declareTicketUnverified
+      summary: Okunamayan fişle gerekçe seçip devam et
+      description: |
+        Son denemenin okuması `UNREADABLE` olan fiş için gerekçe yazar ve fotoğraf uyuşmazlığı ("doğrulanamadı")
+        açılmasını sağlar. Yalnızca kanıtı yükleyen ister; tekrar çağrılırsa ilk kayıt döner. Okunmamış ya da güvenle
+        okunmuş fiş için 409 `TICKET_NOT_UNREADABLE` döner.
+      parameters:
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeclareTicketUnverifiedRequest'
+      responses:
+        '200':
+          description: Kayıtlı gerekçe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketUnverifiedView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
   /api/v1/evidence:
     get:
       tags: [Evidence]
@@ -308,7 +349,8 @@ components:
     Conflict:
       description: >-
         Sevkiyat kilitli (SHIPMENT_LOCKED), dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED) ya da kanıt zaten geçersiz
-        kılınmış (EVIDENCE_ALREADY_INVALIDATED)
+        kılınmış (EVIDENCE_ALREADY_INVALIDATED); okunamamış fiş yokken "doğrulanamadı" seçilmiş
+        (TICKET_NOT_UNREADABLE)
       content:
         application/problem+json:
           schema:
@@ -497,6 +539,32 @@ components:
           items:
             $ref: '#/components/schemas/ReadingProblem'
         readAt:
+          type: string
+          format: date-time
+    UnverifiedReason:
+      type: string
+      enum: [PRINTER_BROKEN, TICKET_DAMAGED, NO_TICKET, OTHER]
+    DeclareTicketUnverifiedRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          $ref: '#/components/schemas/UnverifiedReason'
+    TicketUnverifiedView:
+      type: object
+      required: [evidenceId, shipmentId, evidenceType, reason, declaredAt]
+      properties:
+        evidenceId:
+          type: string
+          format: uuid
+        shipmentId:
+          type: string
+          format: uuid
+        evidenceType:
+          $ref: '#/components/schemas/EvidenceType'
+        reason:
+          $ref: '#/components/schemas/UnverifiedReason'
+        declaredAt:
           type: string
           format: date-time
     EvidenceListView:

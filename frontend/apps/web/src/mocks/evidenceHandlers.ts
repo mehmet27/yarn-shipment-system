@@ -18,6 +18,14 @@ type Pending = {
   sizeBytes: number;
 };
 
+/** Fiş fotoğrafı yerine gösterilen küçük görsel; gerçek depo adresi geliştirmede açılamaz. */
+const PHOTO_DATA_URL =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120"><rect width="200" height="120" fill="#eee"/><text x="20" y="65">Kantar fişi</text></svg>',
+  );
+const UNVERIFIED_REASONS = ['PRINTER_BROKEN', 'TICKET_DAMAGED', 'NO_TICKET', 'OTHER'] as const;
+
 const pending = new Map<string, Pending>();
 const uploaded = new Set<string>();
 
@@ -89,6 +97,33 @@ export function createEvidenceHandlers(permissions: readonly Permission[]) {
         problems: [],
       });
     }),
+    http.post(
+      '/api/v1/evidence/:evidenceId/ticket-reading/unverified',
+      async ({ params, request }) => {
+        const id = String(params.evidenceId);
+        const ticket = pending.get(id);
+        if (ticket === undefined) return problem(404, 'UPLOAD_NOT_FOUND');
+        const json: unknown = await request.json();
+        const reason = UNVERIFIED_REASONS.find((value) => isRecord(json) && json.reason === value);
+        if (reason === undefined) return problem(400, 'VALIDATION_FAILED');
+        if (ticket.sizeBytes >= UNREADABLE_BELOW_BYTES) {
+          return problem(409, 'TICKET_NOT_UNREADABLE');
+        }
+        return HttpResponse.json({
+          evidenceId: id,
+          shipmentId: ticket.shipmentId,
+          evidenceType: ticket.evidenceType,
+          reason,
+          declaredAt: new Date().toISOString(),
+        });
+      },
+    ),
+    http.get('/api/v1/evidence/:evidenceId/download-url', () =>
+      HttpResponse.json({
+        url: PHOTO_DATA_URL,
+        expiresAt: new Date(Date.now() + TICKET_TTL_MS).toISOString(),
+      }),
+    ),
     http.post(`${EVIDENCE_PATH}/:evidenceId/confirm`, ({ params }) => {
       const id = String(params.evidenceId);
       const ticket = pending.get(id);

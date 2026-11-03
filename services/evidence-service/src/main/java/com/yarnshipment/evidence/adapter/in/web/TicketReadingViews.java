@@ -4,9 +4,12 @@ import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceType;
 import com.yarnshipment.evidence.adapter.in.web.api.model.ReadingProblem;
 import com.yarnshipment.evidence.adapter.in.web.api.model.TicketReadingStatus;
 import com.yarnshipment.evidence.adapter.in.web.api.model.TicketReadingView;
+import com.yarnshipment.evidence.adapter.in.web.api.model.TicketUnverifiedView;
+import com.yarnshipment.evidence.adapter.in.web.api.model.UnverifiedReason;
 import com.yarnshipment.evidence.domain.ticket.ReadWeights;
 import com.yarnshipment.evidence.domain.ticket.TicketFields;
 import com.yarnshipment.evidence.domain.ticket.TicketReading;
+import com.yarnshipment.evidence.domain.ticket.TicketUnverified;
 import java.time.ZoneOffset;
 
 /** Fiş okumasının API modeline dönüşümü. */
@@ -38,5 +41,14 @@ final class TicketReadingViews {
             view.setWeighedAt(fields.weighedAt().atOffset(ZoneOffset.UTC));
         }
         return view;
+    }
+
+    static TicketUnverifiedView toView(TicketUnverified unverified) {
+        return new TicketUnverifiedView(
+                unverified.evidenceId(),
+                unverified.shipmentId(),
+                EvidenceType.fromValue(unverified.evidenceType().name()),
+                UnverifiedReason.fromValue(unverified.reason().name()),
+                unverified.declaredAt().atOffset(ZoneOffset.UTC));
     }
 }

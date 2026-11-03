@@ -138,6 +138,8 @@ export {
   InspectionKind,
   listDiscrepancies,
   listDiscrepancyActivity,
+  listDiscrepancyTickets,
+  markTicketMisread,
   openQualityClaim,
   QUALITY_CLAIMS_PATH,
   recordInspectionResult,
@@ -151,9 +153,12 @@ export type {
   DiscrepancyActivityView,
   DiscrepancyPage,
   DiscrepancySettingsView,
+  DiscrepancyTicketView,
+  TicketMisreadView,
   DiscrepancyView,
   InspectionView,
   ListDiscrepanciesParams,
+  MarkTicketMisreadRequest,
   OpenQualityClaimRequest,
   QualityClaimView,
   RecordInspectionResultRequest,
@@ -166,19 +171,24 @@ export type {
 } from './discrepancies';
 export {
   confirmEvidenceUpload,
+  declareTicketUnverified,
   EvidenceSource,
   EvidenceType,
+  getEvidenceDownloadUrl,
   ReadingProblem,
   readEvidenceTicket,
   requestEvidenceUpload,
   StorageUploadError,
   TicketReadingStatus,
+  UnverifiedReason,
   uploadToStorage,
 } from './evidence';
 export type {
+  EvidenceDownloadView,
   EvidenceView,
   RequestUploadRequest,
   TicketReadingView,
+  TicketUnverifiedView,
   UploadTicketView,
 } from './evidence';
 export {

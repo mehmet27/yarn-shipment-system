@@ -76,8 +76,17 @@ describe('DispatchWeighingPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('okunamayan fişi üç kez dener, sonra gerekçeyle devam ettirir', async () => {
+  it('okunamayan fişi üç kez dener, sonra gerekçeyi son fişe yazıp devam ettirir', async () => {
     server.use(...createHandlers('WAREHOUSE'));
+    const declared: unknown[] = [];
+    server.events.on('request:start', ({ request }) => {
+      if (request.url.endsWith('/ticket-reading/unverified')) {
+        void request
+          .clone()
+          .json()
+          .then((body: unknown) => declared.push(body));
+      }
+    });
     renderApp('/panel/sevkiyat/shp-0001/cikis');
     await screen.findByRole('button', { name: 'Kaydet' });
     await fill({ 'Brüt (kg)': '2.000', 'Dara (kg)': '17', 'Çuval sayısı': '40' });
@@ -90,6 +99,29 @@ describe('DispatchWeighingPage', () => {
     await userEvent.click(await screen.findByRole('option', { name: 'Yazıcı çalışmıyor' }));
     await userEvent.click(screen.getByRole('button', { name: 'Gerekçeyle devam et' }));
     expect(await screen.findByText(/K0 doğrulanamadı/)).toBeInTheDocument();
+    expect(declared).toEqual([{ reason: 'PRINTER_BROKEN' }]);
+    server.events.removeAllListeners();
+  });
+
+  it('gerekçe kaydedilemezse adımı tamamlamaz ve uyarır', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    server.use(
+      http.post('/api/v1/evidence/:evidenceId/ticket-reading/unverified', () =>
+        HttpResponse.json({ status: 500, code: 'INTERNAL', title: 'x' }, { status: 500 }),
+      ),
+    );
+    renderApp('/panel/sevkiyat/shp-0001/cikis');
+    await screen.findByRole('button', { name: 'Kaydet' });
+    await fill({ 'Brüt (kg)': '2.000', 'Dara (kg)': '17', 'Çuval sayısı': '40' });
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await captureTicket(false);
+      await screen.findByText('Kilo bilgisi okunamadı, lütfen tekrar çekin');
+    }
+    await userEvent.click(await screen.findByRole('combobox', { name: 'Gerekçe' }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Fiş hasarlı' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Gerekçeyle devam et' }));
+    expect(await screen.findByText('Gerekçe kaydedilemedi, tekrar deneyin.')).toBeInTheDocument();
+    expect(screen.queryByText(/K0 doğrulanamadı/)).not.toBeInTheDocument();
   });
 
   it('okuma servisi kapalıysa (503) okumayı atlayıp devam ettirir', async () => {

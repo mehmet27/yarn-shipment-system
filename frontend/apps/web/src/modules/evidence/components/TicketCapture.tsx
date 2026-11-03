@@ -1,6 +1,7 @@
 import type { EvidenceType } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Paper, Stack, Text } from '@iplik/ui';
+import { useUnverifiedFallback } from '../hooks/useDeclareUnverified';
 import { useTicketFlow } from '../hooks/useTicketFlow';
 import type { TicketOutcome } from '../ticketTypes';
 import { MAX_ATTEMPTS } from '../ticketTypes';
@@ -17,7 +18,10 @@ export type TicketCaptureProps = {
   onOutcome: (outcome: TicketOutcome | undefined) => void;
 };
 
-/** Kantar fişi çekimi: kamera → önizleme → gönder → okuma; en fazla 3 denemeden sonra yedek yol. */
+/**
+ * Kantar fişi çekimi: kamera → önizleme → gönder → okuma; en fazla 3 denemeden sonra yedek yol. Gerekçeyle
+ * devam edilirse gerekçe son denemenin fişine yazılır ve sunucu "doğrulanamadı" uyuşmazlığı açar (K0).
+ */
 export function TicketCapture({
   shipmentId,
   evidenceType,
@@ -26,6 +30,7 @@ export function TicketCapture({
 }: TicketCaptureProps) {
   const { t } = useTranslation();
   const flow = useTicketFlow(shipmentId, evidenceType, onOutcome);
+  const { declare, onReason } = useUnverifiedFallback(flow.last, onOutcome);
   const { mutation, file } = flow;
   const isDone = outcome !== undefined;
   const isFallback = !isDone && flow.attempts >= MAX_ATTEMPTS;
@@ -54,12 +59,12 @@ export function TicketCapture({
         {isFallback ? (
           <TicketFallback
             isSending={mutation.isPending}
+            isDeclaring={declare.isPending}
+            isFailed={declare.isError}
             onDisplayPhoto={(photo) => {
               flow.send(photo, false);
             }}
-            onReason={(reason) => {
-              onOutcome({ kind: 'UNVERIFIED', reason });
-            }}
+            onReason={onReason}
           />
         ) : (
           <CameraButton

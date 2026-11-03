@@ -15,6 +15,8 @@ import com.yarnshipment.discrepancy.application.port.in.RecordEvidenceUploadComm
 import com.yarnshipment.discrepancy.application.port.in.RecordEvidenceUploadUseCase;
 import com.yarnshipment.discrepancy.application.port.in.RecordTicketReadingCommand;
 import com.yarnshipment.discrepancy.application.port.in.RecordTicketReadingUseCase;
+import com.yarnshipment.discrepancy.application.port.in.ticket.OpenUnverifiedTicketCommand;
+import com.yarnshipment.discrepancy.application.port.in.ticket.OpenUnverifiedTicketUseCase;
 import com.yarnshipment.discrepancy.domain.ticket.ScaleWeights;
 import com.yarnshipment.discrepancy.domain.ticket.TicketReading;
 import com.yarnshipment.discrepancy.domain.ticket.TicketSide;
@@ -22,6 +24,7 @@ import com.yarnshipment.events.evidence.EvidenceEvents;
 import com.yarnshipment.events.evidence.EvidenceReuseDetected;
 import com.yarnshipment.events.evidence.EvidenceUploaded;
 import com.yarnshipment.events.evidence.TicketRead;
+import com.yarnshipment.events.evidence.TicketUnverified;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
@@ -56,7 +59,9 @@ class EvidenceEventsListenerTest {
     private final RecordTicketReadingUseCase useCase = mock(RecordTicketReadingUseCase.class);
     private final RecordEvidenceUploadUseCase recordUpload = mock(RecordEvidenceUploadUseCase.class);
     private final OpenReusedEvidenceUseCase openReused = mock(OpenReusedEvidenceUseCase.class);
-    private final EvidenceEventsListener listener = new EvidenceEventsListener(useCase, recordUpload, openReused);
+    private final OpenUnverifiedTicketUseCase openUnverified = mock(OpenUnverifiedTicketUseCase.class);
+    private final EvidenceEventsListener listener =
+            new EvidenceEventsListener(useCase, recordUpload, openReused, openUnverified);
 
     @Test
     @DisplayName("Fiş okundu olayı kilolar, alanlar ve yükleyen kişiyle okuma kaydına çevrilir")
@@ -125,11 +130,32 @@ class EvidenceEventsListenerTest {
     }
 
     @Test
+    @DisplayName("Fiş doğrulanamadı olayı, olay kimliği, taraf ve gerekçeyle uyuşmazlık komutuna çevrilir")
+    void shouldOpenUnverifiedTicket() {
+        String unverified = """
+                {"evidenceId":"%s","shipmentId":"%s","evidenceType":"DELIVERY_SCALE","reason":"TICKET_DAMAGED",
+                 "declaredAt":"2026-10-23T08:00:00Z"}
+                """.formatted(EVIDENCE, TestComparisons.SHIPMENT);
+
+        listener.onEvidenceEvent(record(TicketUnverified.TYPE, unverified, Map.of("actorId", ACTOR)));
+
+        verify(openUnverified)
+                .openUnverifiedTicket(new OpenUnverifiedTicketCommand(
+                        EVENT,
+                        TicketUnverified.TYPE,
+                        UUID.fromString(EVIDENCE),
+                        TestComparisons.SHIPMENT,
+                        TicketSide.DELIVERY_SCALE,
+                        "TICKET_DAMAGED"));
+        verifyNoInteractions(useCase, recordUpload, openReused);
+    }
+
+    @Test
     @DisplayName("Bilinmeyen kanıt olayları kullanılmaz")
     void shouldIgnoreOtherEvents() {
         listener.onEvidenceEvent(record("com.yarnshipment.evidence.evidence-invalidated.v1", "{}", Map.of()));
 
-        verifyNoInteractions(useCase, recordUpload, openReused);
+        verifyNoInteractions(useCase, recordUpload, openReused, openUnverified);
     }
 
     @Test

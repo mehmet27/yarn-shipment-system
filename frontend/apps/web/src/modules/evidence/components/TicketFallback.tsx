@@ -1,19 +1,30 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Select, Stack } from '@iplik/ui';
 import { useState } from 'react';
-import { UNVERIFIED_REASONS } from '../ticketTypes';
+import type { UnverifiedReason } from '@iplik/api-client';
+import { toUnverifiedReason, UNVERIFIED_REASONS } from '../ticketTypes';
 import { CameraButton } from './CameraButton';
 
 export type TicketFallbackProps = {
+  /** Kantar ekranı fotoğrafı yükleniyor. */
   isSending: boolean;
+  /** Gerekçe kaydediliyor / kaydedilemedi. */
+  isDeclaring: boolean;
+  isFailed: boolean;
   onDisplayPhoto: (file: File) => void;
-  onReason: (reason: string) => void;
+  onReason: (reason: UnverifiedReason) => void;
 };
 
 /** Üç denemeden sonra: kantar ekranını çek ya da gerekçe seçip devam et ("K0 doğrulanamadı"). */
-export function TicketFallback({ isSending, onDisplayPhoto, onReason }: TicketFallbackProps) {
+export function TicketFallback({
+  isSending,
+  isDeclaring,
+  isFailed,
+  onDisplayPhoto,
+  onReason,
+}: TicketFallbackProps) {
   const { t } = useTranslation();
-  const [reason, setReason] = useState<string | null>(null);
+  const [reason, setReason] = useState<UnverifiedReason>();
   return (
     <Stack>
       <Alert color="orange">{t('ticket.fallback.intro')}</Alert>
@@ -29,18 +40,22 @@ export function TicketFallback({ isSending, onDisplayPhoto, onReason }: TicketFa
           value,
           label: t(`ticket.fallback.reasons.${value}`),
         }))}
-        value={reason}
-        onChange={setReason}
+        value={reason ?? null}
+        onChange={(value) => {
+          setReason(toUnverifiedReason(value));
+        }}
       />
       <Button
         variant="default"
-        disabled={reason === null}
+        disabled={reason === undefined || isSending}
+        loading={isDeclaring}
         onClick={() => {
-          if (reason !== null) onReason(reason);
+          if (reason !== undefined) onReason(reason);
         }}
       >
         {t('ticket.fallback.continue')}
       </Button>
+      {isFailed && <Alert color="red">{t('ticket.fallback.failed')}</Alert>}
     </Stack>
   );
 }

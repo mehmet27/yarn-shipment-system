@@ -11,6 +11,7 @@ const KNOWN_ACTIONS = [
   'CLAIM_EVIDENCE',
   'INSPECTION_REQUESTED',
   'INSPECTION_RESULT',
+  'TICKET_MISREAD',
 ];
 
 /** Etkinlik geçmişi en eskiden yeniye; bilinmeyen eylem türü ham değerle gösterilir. */

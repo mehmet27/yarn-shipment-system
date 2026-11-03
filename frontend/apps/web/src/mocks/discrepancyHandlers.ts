@@ -13,6 +13,7 @@ import {
   resolveMock,
 } from './discrepancies';
 import { mockDiscrepancySettings, updateMockDiscrepancySettings } from './discrepancySettings';
+import { markMockMisread, mockTickets } from './ticketReviews';
 
 const DEFAULT_PAGE_SIZE = 20;
 const problem = (status: number, code: string) =>
@@ -60,6 +61,31 @@ function createSettingsHandlers(permissions: readonly Permission[], userId: stri
         return problem(400, 'TIME_LIMIT_INVALID');
       }
       return HttpResponse.json(updateMockDiscrepancySettings(body, userId));
+    }),
+  ];
+}
+
+/** Fiş paneli: yalnızca miktar uyuşmazlıklarında fiş vardır; "AI yanıldı" DISCREPANCY_RESOLVE ister. */
+function createTicketHandlers(permissions: readonly Permission[], userId: string) {
+  const canView = permissions.includes('DISCREPANCY_VIEW');
+  const canResolve = permissions.includes('DISCREPANCY_RESOLVE');
+  const ticketsOf = (id: string) =>
+    findMockDiscrepancy(id)?.type === 'QUANTITY' ? mockTickets(id, canResolve) : [];
+  return [
+    http.get(`${DISCREPANCIES_PATH}/:id/tickets`, ({ params }) =>
+      !canView || findMockDiscrepancy(params.id) === undefined
+        ? problem(404, 'DISCREPANCY_NOT_FOUND')
+        : HttpResponse.json(ticketsOf(String(params.id))),
+    ),
+    http.post(`${DISCREPANCIES_PATH}/:id/tickets/:evidenceId/misread`, ({ params }) => {
+      if (!canResolve) return problem(403, 'ACCESS_DENIED');
+      const id = String(params.id);
+      if (findMockDiscrepancy(id) === undefined) return problem(404, 'DISCREPANCY_NOT_FOUND');
+      const evidenceId = String(params.evidenceId);
+      if (!evidenceId.startsWith(id) || !markMockMisread(evidenceId, userId)) {
+        return problem(404, 'TICKET_READING_NOT_FOUND');
+      }
+      return HttpResponse.json(ticketsOf(id));
     }),
   ];
 }
@@ -126,6 +152,7 @@ export function createDiscrepancyHandlers(permissions: readonly Permission[], us
       resolveMock(item, body, userId);
       return HttpResponse.json(view(item.id));
     }),
+    ...createTicketHandlers(permissions, userId),
     ...createSettingsHandlers(permissions, userId),
   ];
 }

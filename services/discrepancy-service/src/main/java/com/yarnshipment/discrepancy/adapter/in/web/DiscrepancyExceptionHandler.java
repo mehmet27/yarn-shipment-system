@@ -9,6 +9,7 @@ import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotFoundException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
 import com.yarnshipment.discrepancy.domain.model.InvalidSettingException;
 import com.yarnshipment.discrepancy.domain.model.LiablePartyRequiredException;
+import com.yarnshipment.discrepancy.domain.ticket.TicketReadingNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -75,5 +76,10 @@ public final class DiscrepancyExceptionHandler {
     @ExceptionHandler(EvidenceServiceUnavailableException.class)
     public ProblemDetail handleEvidenceUnavailable(HttpServletRequest request) {
         return problems.create(request, HttpStatus.SERVICE_UNAVAILABLE, "EVIDENCE_SERVICE_UNAVAILABLE");
+    }
+
+    @ExceptionHandler(TicketReadingNotFoundException.class)
+    public ProblemDetail handleTicketReadingNotFound(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.NOT_FOUND, "TICKET_READING_NOT_FOUND");
     }
 }

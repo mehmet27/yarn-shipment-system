@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Kantar fişi kontrolleri (tasarım K1–K5). Evet/hayır kararını fişi okuyan model değil, bu kurallar ve tolerans
+ * Kantar fişi kontrolleri (tasarım K0–K5). Evet/hayır kararını fişi okuyan model değil, bu kurallar ve tolerans
  * bantları verir; okunmamış fişin kontrolü atlanır, sevkiyatı durdurmaz.
  */
 public final class TicketChecks {
@@ -52,6 +52,20 @@ public final class TicketChecks {
             findings.add(Finding.of(rule, reuse.otherShipmentId(), reuse.ticketNo()));
         }
         return findings;
+    }
+
+    /**
+     * K0: fiş üç denemede okunamadı, kullanıcı gerekçe seçip devam etti. Beklenen değer yoktur; gerçek değer
+     * gerekçedir.
+     *
+     * @param side fişin tarafı
+     * @param reason seçilen gerekçe, ör. {@code TICKET_DAMAGED}
+     */
+    public static Finding unverified(TicketSide side, String reason) {
+        ComparisonRule rule = side == TicketSide.DISPATCH_SCALE
+                ? ComparisonRule.TICKET_DISPATCH_UNVERIFIED
+                : ComparisonRule.TICKET_DELIVERY_UNVERIFIED;
+        return Finding.of(rule, null, reason);
     }
 
     /** K1/K2: brüt ve dara fişle 1 kg içinde tutmalı; öncelik net farkın bandından, en az Sarı. */

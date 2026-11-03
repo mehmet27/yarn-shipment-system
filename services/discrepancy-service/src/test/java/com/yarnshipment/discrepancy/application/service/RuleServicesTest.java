@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.yarnshipment.discrepancy.application.port.in.OpenReusedEvidenceCommand;
+import com.yarnshipment.discrepancy.application.port.in.ticket.OpenUnverifiedTicketCommand;
 import com.yarnshipment.discrepancy.application.port.out.DiscrepancyOpeningPort;
 import com.yarnshipment.discrepancy.application.port.out.OpenedDiscrepancy;
 import com.yarnshipment.discrepancy.application.port.out.ProcessedEventPort;
@@ -16,6 +17,7 @@ import com.yarnshipment.discrepancy.application.port.out.ShipmentWatchPort;
 import com.yarnshipment.discrepancy.application.port.out.TimeLimitRulePort;
 import com.yarnshipment.discrepancy.domain.rule.TimeLimit;
 import com.yarnshipment.discrepancy.domain.rule.WatchedShipment;
+import com.yarnshipment.discrepancy.domain.ticket.TicketSide;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -45,6 +47,8 @@ class RuleServicesTest {
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final OpenReusedEvidenceService reused = new OpenReusedEvidenceService(processed, watch, opening, clock);
     private final CheckTransitTimesService transit = new CheckTransitTimesService(watch, timeLimits, opening, clock);
+    private final OpenUnverifiedTicketService unverified =
+            new OpenUnverifiedTicketService(processed, watch, opening, clock);
     private final OpenReusedEvidenceCommand reuse =
             new OpenReusedEvidenceCommand(EVENT, "reuse", UUID.randomUUID(), SHIPMENT, UUID.randomUUID());
 
@@ -61,6 +65,25 @@ class RuleServicesTest {
         assertThat(opened.finding().ruleCode()).isEqualTo("PHOTO_REUSED");
         assertThat(opened.actorId()).isEqualTo(SystemDefaults.SYSTEM_ACTOR);
         assertThat(opened.dueAt()).isEqualTo(Instant.parse("2026-10-30T09:00:00Z"));
+    }
+
+    @Test
+    @DisplayName("Doğrulanamayan fiş tarafına göre Sarı fotoğraf uyuşmazlığı açar; gerçek değer gerekçedir")
+    void shouldOpenUnverifiedTicket() {
+        when(processed.markProcessed(EVENT, "unverified")).thenReturn(true, false);
+        when(watch.findShipment(SHIPMENT)).thenReturn(Optional.of(WATCHED));
+        OpenUnverifiedTicketCommand command = new OpenUnverifiedTicketCommand(
+                EVENT, "unverified", UUID.randomUUID(), SHIPMENT, TicketSide.DISPATCH_SCALE, "NO_TICKET");
+
+        assertThat(unverified.openUnverifiedTicket(command)).isTrue();
+        assertThat(unverified.openUnverifiedTicket(command)).isFalse();
+
+        OpenedDiscrepancy opened = captured();
+        assertThat(opened.finding().ruleCode()).isEqualTo("TICKET_DISPATCH_UNVERIFIED");
+        assertThat(opened.finding().type().name()).isEqualTo("PHOTO");
+        assertThat(opened.finding().severity().name()).isEqualTo("YELLOW");
+        assertThat(opened.finding().expectedValue()).isNull();
+        assertThat(opened.finding().actualValue()).isEqualTo("NO_TICKET");
     }
 
     @Test

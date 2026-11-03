@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.yarnshipment.evidence.TestTickets;
 import com.yarnshipment.evidence.TestTokens;
 import com.yarnshipment.evidence.TestUploads;
+import com.yarnshipment.evidence.application.port.in.DeclareTicketUnverifiedUseCase;
 import com.yarnshipment.evidence.application.port.in.ReadTicketUseCase;
 import com.yarnshipment.evidence.domain.model.EvidenceType;
 import com.yarnshipment.evidence.domain.ticket.ReadingProblem;
@@ -38,6 +39,9 @@ class TicketReadingControllerTest {
 
     @MockitoBean
     private ReadTicketUseCase readTicket;
+
+    @MockitoBean
+    private DeclareTicketUnverifiedUseCase declareUnverified;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

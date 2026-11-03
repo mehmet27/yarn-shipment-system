@@ -2,17 +2,22 @@ import axios from 'axios';
 
 export {
   confirmEvidenceUpload,
+  declareTicketUnverified,
   EvidenceSource,
   EvidenceType,
+  getEvidenceDownloadUrl,
   ReadingProblem,
   readEvidenceTicket,
   requestEvidenceUpload,
   TicketReadingStatus,
+  UnverifiedReason,
 } from './generated/evidenceService';
 export type {
+  EvidenceDownloadView,
   EvidenceView,
   RequestUploadRequest,
   TicketReadingView,
+  TicketUnverifiedView,
   UploadTicketView,
 } from './generated/evidenceService';
 

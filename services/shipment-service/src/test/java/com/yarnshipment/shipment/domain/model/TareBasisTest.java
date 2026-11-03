@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,9 +16,8 @@ class TareBasisTest {
     @Test
     @DisplayName("Beklenen dara standart × çuval sayısıdır")
     void shouldMultiplyStandardByBagCount() {
-        TareBasis basis = TareBasis.of(new BigDecimal("0.450"), new BigDecimal("5"), BAG_COUNT);
+        TareBasis basis = Objects.requireNonNull(TareBasis.of(new BigDecimal("0.450"), new BigDecimal("5"), BAG_COUNT));
 
-        assertThat(basis).isNotNull();
         assertThat(basis.expectedKg()).isEqualByComparingTo("18.000");
         assertThat(basis.tolerancePct()).isEqualByComparingTo("5");
     }

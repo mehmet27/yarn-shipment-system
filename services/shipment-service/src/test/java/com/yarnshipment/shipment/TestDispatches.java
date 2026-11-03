@@ -19,6 +19,6 @@ public final class TestDispatches {
 
     /** Çuval başı 0,5 kg standart dara, %5 sınır: 40 çuval için 20 kg beklenir. */
     public static TareBasis tareBasis(int bagCount) {
-        return TareBasis.of(new BigDecimal("0.500"), new BigDecimal("5.00"), bagCount);
+        return new TareBasis(new BigDecimal("0.500").multiply(BigDecimal.valueOf(bagCount)), new BigDecimal("5.00"));
     }
 }

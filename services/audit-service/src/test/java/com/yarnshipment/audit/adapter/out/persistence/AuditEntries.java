@@ -36,7 +36,7 @@ final class AuditEntries {
         return new AppendAuditEntryCommand(
                 UUID.randomUUID(),
                 occurredAt,
-                "shipment-service",
+                SYSTEM_CLIENT,
                 new AppendAuditEntryCommand.Actor(null, null, SYSTEM_CLIENT),
                 action,
                 "Shipment",

@@ -63,7 +63,7 @@ class AuditQueryAdapterTest {
         assertThat(record.actor().clientId()).isEqualTo(AuditEntries.SYSTEM_CLIENT);
         assertThat(record.action()).isEqualTo(AuditEntries.DELIVERED);
         assertThat(record.entity()).isEqualTo(new AuditRecord.Entity("Shipment", AuditEntries.OTHER_SHIPMENT));
-        assertThat(record.after()).containsEntry("status", "AuditEntries.LOADED");
+        assertThat(record.after()).containsEntry("status", "LOADED");
         assertThat(record.origin().traceId()).isEqualTo("corr-1");
         assertThat(record.occurredAt()).isEqualTo(SECOND_AT);
         assertThat(record.recordedAt()).isAfterOrEqualTo(record.occurredAt().minusSeconds(1));

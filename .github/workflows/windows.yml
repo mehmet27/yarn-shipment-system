@@ -1,0 +1,49 @@
+name: windows
+
+# Geliştirme Windows'ta yapılıyor; Linux CI'da görünmeyen sorunları (yol ayırıcısı, satır sonu,
+# kabuk farkları) yakalamak için ön yüz Windows'ta da derlenir, birim testleri ve @smoke uçtan uca
+# turu koşar.
+on:
+  pull_request:
+    paths: ['frontend/**', '.gitattributes', '.github/workflows/windows.yml']
+  push:
+    branches: [main]
+    paths: ['frontend/**', '.gitattributes', '.github/workflows/windows.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  frontend:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      # .gitattributes LF'yi zorunlu kılar; Windows checkout'unda CRLF'e dönen dosya kalmamalı.
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm --filter @iplik/web exec playwright install chromium
+      - run: pnpm test:e2e:smoke
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: e2e-rapor-windows
+          path: frontend/apps/web/e2e/rapor
+          retention-days: 14

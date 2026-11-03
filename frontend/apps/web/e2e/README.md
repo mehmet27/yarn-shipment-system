@@ -76,8 +76,15 @@ doldurma (`form.ts`), kantar fişi yükleme (`ticket.ts`), düzen ölçümleri (
 
 ## CI
 
-`frontend-e2e` iş akışı `main`'e her birleşmede tüm testleri koşar (FE-TEST-08) ve raporu artifact
-olarak saklar. GitHub'da Actions sekmesinden elle de başlatılabilir.
+`frontend-e2e` iş akışı `frontend/` altına dokunan her PR'da ve `main`'e her birleşmede tüm testleri
+koşar (FE-TEST-08) ve raporu `e2e-rapor` artifact'i olarak saklar. GitHub'da Actions sekmesinden elle de
+başlatılabilir.
+
+`windows` iş akışı aynı PR'larda ön yüzü Windows'ta derler, birim testlerini ve `@smoke` turunu koşar
+(rapor: `e2e-rapor-windows`). `portable-paths` her PR'da dosya yollarını denetler: yalnızca
+büyük/küçük harfi farklı adlar (`Button.tsx` / `button.tsx`), Windows'ta geçersiz karakter ya da
+ayrılmış adlar (`a:b`, `nul.txt`), sembolik bağlantılar ve 200 karakteri aşan yollar PR'ı kırar.
+Yerelde: depo kökünde `node tools/ci/check-portable-paths.mjs`.
 
 ## Henüz kapsanmayanlar
 

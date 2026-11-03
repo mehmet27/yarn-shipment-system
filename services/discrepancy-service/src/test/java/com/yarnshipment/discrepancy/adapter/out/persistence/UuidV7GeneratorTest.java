@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 class UuidV7GeneratorTest {
 
     private static final int COUNT = 10_000;
+    private static final int UUID_VERSION = 7;
 
     @Test
     @DisplayName("aynı milisaniyede üretilen kimlikler üretim sırasıyla artar")
@@ -29,7 +30,7 @@ class UuidV7GeneratorTest {
 
         assertThat(generated).isSortedAccordingTo(Comparator.comparing(UuidV7GeneratorTest::unsigned));
         assertThat(generated).doesNotHaveDuplicates();
-        assertThat(generated).allSatisfy(id -> assertThat(id.version()).isEqualTo(7));
+        assertThat(generated).allSatisfy(id -> assertThat(id.version()).isEqualTo(UUID_VERSION));
     }
 
     /** PostgreSQL uuid'leri bayt bayt (işaretsiz) karşılaştırır; Java'nın UUID.compareTo'su işaretlidir. */

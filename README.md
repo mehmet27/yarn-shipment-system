@@ -180,7 +180,21 @@ Her bulgu bir `discrepancy` satırı (`UY-<sevkiyat no>-<sıra>`, durum `OPEN`, 
 
 shipment-service `discrepancy.events.v1` konusunu dinler: temiz sonuç sevkiyatı `CHECKING` → `COMPLETED` yapar ve `shipment-completed.v1` yayınlar, uyuşmazlık `IN_REVIEW`'a alır. Geçiş geçmişte sistem hesabıyla (`00000000-0000-0000-0000-000000000000`) görünür. Tutanakta imzalı irsaliye yoksa karşılaştırma `DOCUMENT_MISSING` (Sarı) açar. Belge sonradan yüklenince (`evidence-uploaded.v1`, tür `SIGNED_DELIVERY_DOC`) bu uyuşmazlık sistem hesabıyla `DATA_ERROR` kararıyla kapanır; son açık uyuşmazlıksa sevkiyat tamamlanır. İrsaliye alanlarının tutmadığı belge uyuşmazlıkları insan kararı bekler.
 
-Servisin HTTP ucu yoktur. Çalıştırmak için `DISCREPANCY_DB_APP_PASSWORD`, `DISCREPANCY_DB_MIGRATOR_PASSWORD` ve gerekirse `KAFKA_BOOTSTRAP_SERVERS` verilir:
+### Kalite itirazı ve numune/lab
+
+Fasoncu ya da Kalite, teslim karşılaştırması bittikten sonra teslimde okutulmuş çuvallar için kalite itirazı açar (`POST /api/v1/quality-claims`, `QUALITY_CLAIM_OPEN`). Pencere teslimden itibaren 3 iş günüdür (Europe/Istanbul); itirazda çuval anahtarları, açıklama ve en az bir `QUALITY_CLAIM` fotoğrafı zorunludur. Fotoğrafların bu sevkiyata ait olduğu evidence-service'e isteyenin token'ıyla sorulur. Her itiraz `QUALITY` türünde Kırmızı bir uyuşmazlık (`QUALITY_CLAIM` kuralı, son tarih 5 iş günü) açar; aynı çuvala ikinci itiraz açılamaz. Kalite (`DISCREPANCY_RESOLVE`) itiraz üzerinden numune (`SAMPLE`) ya da laboratuvar (`LAB`) kontrolü ister ve sonucu bir kez girer; lab sonucunda `LAB_RESULT` belgesi zorunludur. Karar mevcut uyuşmazlık akışıyla (`CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED`) verilir.
+
+| Kod | HTTP | Anlamı |
+|---|---|---|
+| `QUALITY_CLAIM_NOT_AVAILABLE` | 409 | Teslim karşılaştırması yok ya da eski kayıtta lokasyon/fasoncu bilgisi eksik |
+| `QUALITY_CLAIM_WINDOW_CLOSED` | 409 | 3 iş günlük süre doldu |
+| `QUALITY_CLAIM_BAG_NOT_DELIVERED` / `_BAG_ALREADY_CLAIMED` | 400 / 409 | Çuval teslimde okutulmamış / zaten itiraz edilmiş |
+| `QUALITY_CLAIM_EVIDENCE_REQUIRED` / `_EVIDENCE_INVALID` | 400 | Fotoğraf yok / başka sevkiyata ait ya da türü yanlış |
+| `QUALITY_CLAIM_INSPECTION_RECORDED` | 409 | Kontrol sonucu zaten girilmiş |
+| `QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED` | 400 | Lab sonucunda belge yok |
+| `EVIDENCE_SERVICE_UNAVAILABLE` | 503 | Kanıtlar doğrulanamadı |
+
+Gateway `/api/v1/discrepancies/**` ve `/api/v1/quality-claims/**` yollarını bu servise yönlendirir. Çalıştırmak için `DISCREPANCY_DB_APP_PASSWORD`, `DISCREPANCY_DB_MIGRATOR_PASSWORD`, gerekirse `KAFKA_BOOTSTRAP_SERVERS` ve `EVIDENCE_SERVICE_URL` verilir:
 
 ```bash
 DISCREPANCY_DB_APP_PASSWORD=... DISCREPANCY_DB_MIGRATOR_PASSWORD=... \
@@ -191,7 +205,7 @@ DISCREPANCY_DB_APP_PASSWORD=... DISCREPANCY_DB_MIGRATOR_PASSWORD=... \
 
 Dosya servisten geçmez; iki adımda doğrudan nesne deposuna (S3 uyumlu, yerelde MinIO) yüklenir. Uçlar `/api/v1/evidence/**` altındadır, sözleşme `services/evidence-service/src/main/resources/openapi/evidence-service-api.yaml`.
 
-1. `POST /api/v1/evidence/uploads` (`Idempotency-Key` zorunlu): sevkiyat, kanıt türü, dosya türü, boyut ve kaynak (kamera/galeri) bildirilir. Servis izni, 20 MB sınırını ve izinli türleri (`image/jpeg`, `image/png`, `image/heic`, `application/pdf`) denetler, sevkiyatı shipment-service'e isteyenin token'ıyla sorar (görünmeyen sevkiyat `404 SHIPMENT_NOT_FOUND`; tamamlanmış/iptal `409 SHIPMENT_LOCKED`) ve yaklaşık 10 dakika geçerli imzalı bir `PUT` adresi döner.
+1. `POST /api/v1/evidence/uploads` (`Idempotency-Key` zorunlu): sevkiyat, kanıt türü, dosya türü, boyut ve kaynak (kamera/galeri) bildirilir. Servis izni, 20 MB sınırını ve izinli türleri (`image/jpeg`, `image/png`, `image/heic`, `application/pdf`) denetler, sevkiyatı shipment-service'e isteyenin token'ıyla sorar (görünmeyen sevkiyat `404 SHIPMENT_NOT_FOUND`; tamamlanmış/iptal `409 SHIPMENT_LOCKED`; kalite itirazı fotoğrafı ve lab belgesi ise karşılaştırma bittikten sonra, sevkiyat tamamlanmış olsa da yüklenebilir) ve yaklaşık 10 dakika geçerli imzalı bir `PUT` adresi döner.
 2. İstemci dosyayı o adrese, cevaptaki başlıklarla aynen `PUT` eder.
 3. `POST /api/v1/evidence/uploads/{evidenceId}/confirm`: sunucu dosyayı depodan okuyup gerçek boyut, tür ve SHA-256'yı kendisi hesaplar (SEC-09); bildirilenle uyuşmazsa `422 UPLOAD_MISMATCH`, dosya henüz yoksa `409 UPLOAD_NOT_COMPLETED`. Onay tekrarlanabilir.
 

@@ -50,7 +50,7 @@ spring:
             - id: discrepancy-service
               uri: ${DISCREPANCY_SERVICE_URL:http://localhost:8085}
               predicates:
-                - Path=/api/v1/discrepancies/**
+                - Path=/api/v1/discrepancies/**,/api/v1/quality-claims/**
               filters:
                 - RemoveRequestHeader=Cookie
                 - TokenRelay=

@@ -12,11 +12,18 @@ info:
     - Zamanlar ISO 8601 UTC (API-03).
     - Liste ucu sayfalıdır, `page` 0'dan başlar (API-06).
     - Kullanıcı yalnızca yetkili olduğu lokasyonların uyuşmazlıklarını görür (SEC-03).
+    - Durum değiştiren uçlar `Idempotency-Key` başlığını kabul eder (API-04).
+
+    Kalite itirazı (ön analiz, Bölüm 10): fasoncu teslimden sonraki 3 iş günü içinde, teslimde okuttuğu çuvallar için
+    fotoğraflı itiraz açar. İtiraz Kırmızı bir `QUALITY` uyuşmazlığıdır ve diğer uyuşmazlıklar gibi atanır ve
+    `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır. Kalite, karardan önce numune ya da lab kontrolü
+    isteyebilir ve sonucu (lab için belgeyle) girer.
 servers:
   - url: /
 tags:
   - name: Discrepancies
   - name: DiscrepancyDecisions
+  - name: QualityClaims
 security:
   - bearerAuth: []
 paths:
@@ -185,6 +192,138 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+  /api/v1/quality-claims:
+    post:
+      tags: [QualityClaims]
+      operationId: openQualityClaim
+      summary: Kalite itirazı açar
+      description: |
+        Teslimden itibaren 3 iş günü içinde, teslimde okutulmuş çuvallar için açılır. En az bir `QUALITY_CLAIM`
+        fotoğrafı gerekir; fotoğraf aynı sevkiyata yüklenmiş olmalıdır. Bir çuval aynı sevkiyatta bir kez itiraz
+        edilir. Fasoncu yalnızca kendi sevkiyatına itiraz açar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenQualityClaimRequest'
+      responses:
+        '201':
+          description: Açılan itiraz
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualityClaimView'
+        '400':
+          $ref: '#/components/responses/ClaimBadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/ClaimConflict'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+  /api/v1/quality-claims/shipments/{shipmentId}:
+    get:
+      tags: [QualityClaims]
+      operationId: getShipmentClaims
+      summary: Sevkiyatın itiraz dosyası
+      description: |
+        İtiraz süresi, teslimde okutulan çuvallar ve açılmış itirazlar (kontrolleriyle). Sevkiyat henüz
+        karşılaştırılmadıysa `409 QUALITY_CLAIM_NOT_AVAILABLE`.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: İtiraz dosyası
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShipmentClaimsView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/ClaimConflict'
+  /api/v1/quality-claims/{claimId}/inspections:
+    post:
+      tags: [QualityClaims]
+      operationId: requestInspection
+      summary: İtiraz için numune ya da lab kontrolü ister
+      description: Yalnızca karara bağlanmamış itirazda; kalite ve admin.
+      parameters:
+        - $ref: '#/components/parameters/ClaimId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestInspectionRequest'
+      responses:
+        '201':
+          description: İstenen kontrol
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ClaimNotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/quality-claims/{claimId}/inspections/{inspectionId}/result:
+    post:
+      tags: [QualityClaims]
+      operationId: recordInspectionResult
+      summary: Kontrol sonucunu girer
+      description: |
+        Sonuç bir kez girilir. Lab sonucu `LAB_RESULT` belgesiyle gelir; numune karşılaştırmasında belge isteğe
+        bağlıdır. Belge aynı sevkiyata yüklenmiş olmalıdır.
+      parameters:
+        - $ref: '#/components/parameters/ClaimId'
+        - name: inspectionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordInspectionResultRequest'
+      responses:
+        '200':
+          description: Sonuçlanan kontrol
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionView'
+        '400':
+          $ref: '#/components/responses/ClaimBadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ClaimNotFound'
+        '409':
+          $ref: '#/components/responses/ClaimConflict'
+        '503':
+          $ref: '#/components/responses/Unavailable'
 components:
   securitySchemes:
     bearerAuth:
@@ -192,6 +331,13 @@ components:
       scheme: bearer
       bearerFormat: JWT
   parameters:
+    ClaimId:
+      name: claimId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     DiscrepancyId:
       name: discrepancyId
       in: path
@@ -226,6 +372,34 @@ components:
             $ref: '#/components/schemas/Problem'
     Conflict:
       description: Uyuşmazlık bu işleme uygun durumda değil (DISCREPANCY_NOT_OPEN)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    ClaimBadRequest:
+      description: >-
+        İstek biçimi hatalı ya da itiraz kuralı tutmadı (QUALITY_CLAIM_BAG_NOT_DELIVERED,
+        QUALITY_CLAIM_EVIDENCE_REQUIRED, QUALITY_CLAIM_EVIDENCE_INVALID, QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    ClaimConflict:
+      description: >-
+        İtiraz şu an yapılamıyor (QUALITY_CLAIM_NOT_AVAILABLE, QUALITY_CLAIM_WINDOW_CLOSED,
+        QUALITY_CLAIM_BAG_ALREADY_CLAIMED, QUALITY_CLAIM_INSPECTION_RECORDED, DISCREPANCY_NOT_OPEN)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    ClaimNotFound:
+      description: İtiraz ya da kontrol yok (QUALITY_CLAIM_NOT_FOUND, INSPECTION_NOT_FOUND)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unavailable:
+      description: Kanıt doğrulanamadı; evidence-service yanıt vermedi (EVIDENCE_SERVICE_UNAVAILABLE)
       content:
         application/problem+json:
           schema:
@@ -390,3 +564,179 @@ components:
         liableParty:
           type: string
           maxLength: 200
+    InspectionKind:
+      type: string
+      description: SAMPLE fasoncudaki numuneyi şahit numuneyle karşılaştırır; LAB laboratuvar testidir.
+      enum: [SAMPLE, LAB]
+    OpenQualityClaimRequest:
+      type: object
+      required: [shipmentId, description, bagKeys, evidenceIds]
+      properties:
+        shipmentId:
+          type: string
+          format: uuid
+        description:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        bagKeys:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items:
+            type: string
+            minLength: 1
+            maxLength: 64
+        evidenceIds:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            type: string
+            format: uuid
+    RequestInspectionRequest:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          $ref: '#/components/schemas/InspectionKind'
+        note:
+          type: string
+          maxLength: 2000
+    RecordInspectionResultRequest:
+      type: object
+      required: [result]
+      properties:
+        result:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        evidenceId:
+          type: string
+          format: uuid
+          description: LAB_RESULT kanıtı; lab kontrolünde zorunlu
+    InspectionView:
+      type: object
+      required: [id, kind, requestedBy, requestedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          $ref: '#/components/schemas/InspectionKind'
+        requestNote:
+          type: string
+        requestedBy:
+          type: string
+          format: uuid
+        requestedAt:
+          type: string
+          format: date-time
+        result:
+          type: string
+        resultEvidenceId:
+          type: string
+          format: uuid
+        performedBy:
+          type: string
+          format: uuid
+        performedAt:
+          type: string
+          format: date-time
+        allowedActions:
+          type: array
+          description: Bu kullanıcının bu kontrolde yapabileceği eylemler (FE-SEC-03)
+          items:
+            type: string
+            enum: [RECORD_RESULT]
+    QualityClaimView:
+      type: object
+      required:
+        - id
+        - discrepancyId
+        - discrepancyNo
+        - shipmentId
+        - status
+        - description
+        - bagKeys
+        - evidenceIds
+        - openedBy
+        - openedAt
+        - deadlineAt
+        - inspections
+      properties:
+        id:
+          type: string
+          format: uuid
+        discrepancyId:
+          type: string
+          format: uuid
+        discrepancyNo:
+          type: string
+        shipmentId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/DiscrepancyStatus'
+        resolution:
+          $ref: '#/components/schemas/Resolution'
+        resolutionNote:
+          type: string
+        description:
+          type: string
+        bagKeys:
+          type: array
+          items:
+            type: string
+        evidenceIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        openedBy:
+          type: string
+          format: uuid
+        openedAt:
+          type: string
+          format: date-time
+        deadlineAt:
+          type: string
+          format: date-time
+        inspections:
+          type: array
+          items:
+            $ref: '#/components/schemas/InspectionView'
+        allowedActions:
+          type: array
+          description: Bu kullanıcının bu itirazda yapabileceği eylemler (FE-SEC-03)
+          items:
+            type: string
+            enum: [REQUEST_INSPECTION]
+    ShipmentClaimsView:
+      type: object
+      required: [shipmentId, deadlineAt, windowOpen, deliveredKeys, claims]
+      properties:
+        shipmentId:
+          type: string
+          format: uuid
+        deadlineAt:
+          type: string
+          format: date-time
+          description: İtirazın açılabileceği son an (teslim + 3 iş günü)
+        windowOpen:
+          type: boolean
+        deliveredKeys:
+          type: array
+          description: Teslimde okutulan çuval anahtarları
+          items:
+            type: string
+        claims:
+          type: array
+          items:
+            $ref: '#/components/schemas/QualityClaimView'
+        allowedActions:
+          type: array
+          description: Bu kullanıcının bu sevkiyatta yapabileceği eylemler (FE-SEC-03)
+          items:
+            type: string
+            enum: [OPEN_CLAIM]

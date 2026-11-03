@@ -1,3 +1,5 @@
+import { usePermission } from '@/modules/auth';
+import { QualityClaimsSection } from '@/modules/claim';
 import { EvidenceUpload } from '@/modules/evidence';
 import { useTranslation } from '@iplik/i18n';
 import { Anchor, Button, Group, Paper, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
@@ -5,7 +7,7 @@ import { Link, useParams } from 'react-router';
 import { ArrivalDeclaration } from '../components/ArrivalDeclaration';
 import { PickupConfirmation } from '../components/PickupConfirmation';
 import { QueryState } from '../components/QueryState';
-import { findBagCount, findSealNo } from '../components/shipmentViews';
+import { findBagCount, findSealNo, isDelivered } from '../components/shipmentViews';
 import { ShipmentStatusBadge } from '../components/ShipmentStatusBadge';
 import { useFieldText } from '../components/useFieldText';
 import { useShipment } from '../hooks/useShipment';
@@ -16,6 +18,7 @@ export function FieldShipmentPage() {
   const { shipmentId = '' } = useParams();
   const query = useShipment(shipmentId);
   const text = useFieldText();
+  const canViewClaims = usePermission('DISCREPANCY_VIEW');
   return (
     <Stack>
       <Anchor component={Link} to="/saha">
@@ -54,6 +57,9 @@ export function FieldShipmentPage() {
               <Button size="xl" fullWidth component={Link} to="teslim" relative="path">
                 {t('field.recordDelivery')}
               </Button>
+            )}
+            {canViewClaims && isDelivered(shipment) && (
+              <QualityClaimsSection shipmentId={shipment.shipmentId} />
             )}
           </Stack>
         )}

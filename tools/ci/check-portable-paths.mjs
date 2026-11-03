@@ -42,6 +42,23 @@ for (const { path } of entries) {
   }
 }
 
+// Uzantısız içe aktarmada çakışan modüller: "SettingsForm.tsx" ile "settingsForm.ts" Linux'ta
+// ayrı dosyalardır, ama Windows'ta `import './SettingsForm'` önce .ts'i bulur ve yanlış dosyayı açar.
+const MODULE_EXTENSION = /\.(?:[cm]?[jt]sx?|d\.ts)$/iu;
+const modules = new Map();
+for (const { path } of entries) {
+  if (!MODULE_EXTENSION.test(path)) {
+    continue;
+  }
+  const key = path.replace(MODULE_EXTENSION, '').toLowerCase();
+  const previous = modules.get(key);
+  if (previous === undefined) {
+    modules.set(key, path);
+  } else if (previous.replace(MODULE_EXTENSION, '') !== path.replace(MODULE_EXTENSION, '')) {
+    errors.push(`Uzantısız içe aktarmada çakışan modüller (Windows yanlışını açar): "${previous}" ve "${path}"`);
+  }
+}
+
 for (const { mode, path } of entries) {
   if (mode === '120000') {
     errors.push(`Sembolik bağlantı (Windows'ta düz metin dosyası olarak iner): ${path}`);

@@ -4,8 +4,8 @@ import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Paper, SimpleGrid, Stack, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useUpdateDiscrepancySettings } from '../hooks/useDiscrepancySettings';
-import type { DraftErrors, SettingsDraft } from './settingsForm';
-import { draftOf, MAX_HOURS, MIN_HOURS, validateDraft } from './settingsForm';
+import type { DraftErrors, SettingsDraft } from './settingsDraft';
+import { draftOf, MAX_HOURS, MIN_HOURS, validateDraft } from './settingsDraft';
 
 const SERVER_ERRORS: Record<string, string> = {
   TOLERANCE_BANDS_INVALID: 'discrepancy.settings.errors.order',

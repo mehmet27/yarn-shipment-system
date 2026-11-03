@@ -82,7 +82,8 @@ başlatılabilir.
 
 `windows` iş akışı aynı PR'larda ön yüzü Windows'ta derler, birim testlerini ve `@smoke` turunu koşar
 (rapor: `e2e-rapor-windows`). `portable-paths` her PR'da dosya yollarını denetler: yalnızca
-büyük/küçük harfi farklı adlar (`Button.tsx` / `button.tsx`), Windows'ta geçersiz karakter ya da
+büyük/küçük harfi farklı adlar (`Button.tsx` / `button.tsx`, ya da uzantısız içe aktarmada çakışan
+`SettingsForm.tsx` / `settingsForm.ts`), Windows'ta geçersiz karakter ya da
 ayrılmış adlar (`a:b`, `nul.txt`), sembolik bağlantılar ve 200 karakteri aşan yollar PR'ı kırar.
 Yerelde: depo kökünde `node tools/ci/check-portable-paths.mjs`.
 

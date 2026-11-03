@@ -12,6 +12,7 @@ const SCREENS = [
   ['WAREHOUSE', '/panel/sevkiyat'],
   ['WAREHOUSE', '/panel/sevkiyat/yeni'],
   ['ADMIN', '/panel/tanimlar'],
+  ['ADMIN', '/panel/kullanicilar'],
   ['ADMIN', '/panel/uyusmazliklar'],
   ['ADMIN', '/panel/uyusmazliklar/disc-0'],
   ['WAREHOUSE', '/panel/sevkiyat/shp-0001'],

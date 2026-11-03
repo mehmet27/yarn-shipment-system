@@ -20,7 +20,8 @@
     "discrepancies": "Uyuşmazlıklar",
     "discrepancySettings": "Kural ayarları",
     "bags": "Çuval ve etiket",
-    "lots": "Partiler"
+    "lots": "Partiler",
+    "users": "Kullanıcılar"
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}"
@@ -698,6 +699,40 @@
       "INVALID_MASTER_DATA": "Bilgiler geçersiz. Seçilen lokasyon, iplik ve kalitenin etkin olduğundan emin olun.",
       "FORBIDDEN": "Bu lokasyonda parti açma yetkiniz yok.",
       "unknown": "Parti kaydedilemedi. Lütfen tekrar deneyin."
+    }
+  },
+  "users": {
+    "title": "Kullanıcılar",
+    "intro": "Sisteme giriş hesabı olan kişiler. Şifreler hiçbir zaman gösterilmez; yeni hesap Tanımlar ekranında şoför ya da fasoncu kaydından açılır.",
+    "search": "Giriş adı, ad ya da e-posta ara",
+    "empty": "Giriş hesabı olan kullanıcı yok.",
+    "noMatch": "Aramaya uyan kullanıcı bulunamadı.",
+    "count": "{{count}} kullanıcı",
+    "field": {
+      "username": "Kullanıcı adı",
+      "fullName": "Ad soyad",
+      "email": "E-posta",
+      "roles": "Rol",
+      "status": "Durum",
+      "createdAt": "Açılış"
+    },
+    "status": {
+      "enabled": "Etkin",
+      "disabled": "Devre dışı",
+      "passwordChangeRequired": "İlk giriş bekleniyor"
+    },
+    "role": {
+      "ADMIN": "Yönetici",
+      "WAREHOUSE": "Depo",
+      "DRIVER": "Şoför",
+      "SUBCONTRACTOR": "Fasoncu",
+      "QUALITY": "Kalite",
+      "MANAGER": "Müdür"
+    },
+    "noName": "Ad girilmemiş",
+    "errors": {
+      "LOGIN_ACCOUNT_UNAVAILABLE": "Giriş sistemine şu an ulaşılamıyor; kullanıcı listesi alınamadı.",
+      "unknown": "Kullanıcı listesi yüklenemedi."
     }
   }
 }

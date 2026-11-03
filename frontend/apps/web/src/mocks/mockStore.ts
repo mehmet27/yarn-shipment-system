@@ -7,6 +7,7 @@ import type {
 import { resetMockCorrections } from './corrections';
 import { resetDiscrepancySettings } from './discrepancySettings';
 import { resetMockClaims } from './claims';
+import { resetMockLoginAccounts } from './loginAccounts';
 import { resetMockLots } from './lots';
 import { resetMasterData } from './masterData';
 import { MOCK_SHIPMENTS } from './shipments';
@@ -100,6 +101,7 @@ export function resetMockStore(): void {
   resetMockCorrections();
   resetMockClaims();
   resetMockLots();
+  resetMockLoginAccounts();
   shipments = [...MOCK_SHIPMENTS];
   assignedBagKeys = new Map();
 }

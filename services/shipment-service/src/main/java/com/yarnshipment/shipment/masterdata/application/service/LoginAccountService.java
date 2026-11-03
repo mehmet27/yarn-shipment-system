@@ -3,26 +3,32 @@ package com.yarnshipment.shipment.masterdata.application.service;
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateDriverLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.ListLoginAccountsUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.LoginAccountRequest;
+import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
+import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccount;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSpec;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
- * Şoför ve fasoncu için giriş hesabı açar. Kayıt ve lokasyonlar etkin olmalıdır; hesap Keycloak'ta tek çağrı dizisiyle
- * açılır ve yarım kalırsa geri alınır. Yerel veritabanına yazılmadığı için transaction açılmaz.
+ * Şoför ve fasoncu için giriş hesabı açar ve giriş hesaplarını listeler. Kayıt ve lokasyonlar etkin olmalıdır; hesap
+ * Keycloak'ta tek çağrı dizisiyle açılır ve yarım kalırsa geri alınır. Yerel veritabanına yazılmadığı için transaction
+ * açılmaz. Kullanıcı sayısı küçük olduğundan liste Keycloak'tan bütün olarak alınır, arama ve sayfalama burada yapılır.
  */
 @Service
 public final class LoginAccountService
-        implements CreateDriverLoginAccountUseCase, CreateSubcontractorLoginAccountUseCase {
+        implements CreateDriverLoginAccountUseCase, CreateSubcontractorLoginAccountUseCase, ListLoginAccountsUseCase {
 
     private final LoginAccountTargetPort targets;
     private final LoginAccountPort accounts;
@@ -48,6 +54,18 @@ public final class LoginAccountService
                 subcontractorId,
                 title.orElseThrow(() -> new MasterDataNotFoundException("Subcontractor", subcontractorId)),
                 request);
+    }
+
+    @Override
+    public MasterDataPage<LoginAccountSummary> listLoginAccounts(MasterDataQuery query) {
+        String text = query.text();
+        List<LoginAccountSummary> matching = accounts.findAll().stream()
+                .filter(account -> text == null || text.isBlank() || account.matches(text))
+                .toList();
+        long offset = (long) query.page() * query.size();
+        List<LoginAccountSummary> items =
+                matching.stream().skip(offset).limit(query.size()).toList();
+        return new MasterDataPage<>(items, query.page(), query.size(), matching.size());
     }
 
     private LoginAccount open(LoginRole role, UUID ownerId, String displayName, LoginAccountRequest request) {

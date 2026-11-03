@@ -431,6 +431,30 @@ export interface LoginAccountResponse {
   temporaryPassword: string;
 }
 
+/**
+ * Giriş hesabının özeti; şifre ya da kimlik bilgisi içermez.
+ */
+export interface LoginAccountView {
+  /** Keycloak kullanıcı kimliği */
+  id: string;
+  /** Giriş adı */
+  username: string;
+  /** Ad soyad ya da unvan; profilde yoksa gelmez */
+  fullName?: string;
+  email?: string;
+  roles: Role[];
+  /** Hesap girişe açık mı */
+  enabled: boolean;
+  /** Kişi henüz ilk girişini yapıp geçici şifresini değiştirmedi */
+  passwordChangeRequired: boolean;
+  createdAt?: string;
+}
+
+export interface LoginAccountPageResponse {
+  items: LoginAccountView[];
+  page: PageMetadata;
+}
+
 export interface VehicleView {
   /** Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir */
   active?: boolean;
@@ -805,7 +829,7 @@ export type UnauthorizedResponse = Problem;
 export type ForbiddenResponse = Problem;
 
 /**
- * Çuval servisine (BAG_SERVICE_UNAVAILABLE) ya da kanıt servisine (EVIDENCE_SERVICE_UNAVAILABLE) ulaşılamadı
+ * Çuval servisine (BAG_SERVICE_UNAVAILABLE), kanıt servisine (EVIDENCE_SERVICE_UNAVAILABLE) ya da Keycloak'a (LOGIN_ACCOUNT_UNAVAILABLE) ulaşılamadı
  */
 export type BadGatewayResponse = Problem;
 
@@ -889,6 +913,24 @@ q?: SearchTextParameter;
  */
 status?: StatusFilterParameter;
 subcontractorId?: string;
+};
+
+export type ListLoginAccountsParams = {
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
 };
 
 export type ListVehiclesParams = {
@@ -1296,6 +1338,23 @@ export const createSubcontractorLoginAccount = (
       {url: `/api/v1/master-data/subcontractors/${subcontractorId}/login-account`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: loginAccountRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (USER_MANAGE). Keycloak'ta uygulama rollerinden en az birine sahip kullanıcılar giriş adına
+ * göre sıralı gelir; servis hesapları listede yoktur. Arama `q` ile giriş adı, ad ve e-postada yapılır
+ * (büyük-küçük harf duyarsız). Şifre ya da başka kimlik bilgisi hiçbir zaman dönmez. Keycloak'a ulaşılamazsa ya
+ * da yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE`.
+ * @summary Giriş hesabı olan kullanıcıların listesi
+ */
+export const listLoginAccounts = (
+    params?: ListLoginAccountsParams,
+ ) => {
+      return customInstance<LoginAccountPageResponse>(
+      {url: `/api/v1/master-data/login-accounts`, method: 'GET',
+        params
     },
       );
     }
@@ -1824,6 +1883,7 @@ export type UpdateDriverResult = NonNullable<Awaited<ReturnType<typeof updateDri
 export type DeactivateDriverResult = NonNullable<Awaited<ReturnType<typeof deactivateDriver>>>
 export type CreateDriverLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createDriverLoginAccount>>>
 export type CreateSubcontractorLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createSubcontractorLoginAccount>>>
+export type ListLoginAccountsResult = NonNullable<Awaited<ReturnType<typeof listLoginAccounts>>>
 export type ActivateDriverResult = NonNullable<Awaited<ReturnType<typeof activateDriver>>>
 export type ListVehiclesResult = NonNullable<Awaited<ReturnType<typeof listVehicles>>>
 export type CreateVehicleResult = NonNullable<Awaited<ReturnType<typeof createVehicle>>>

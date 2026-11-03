@@ -1,6 +1,7 @@
 import type { Permission } from '@iplik/api-client';
 import { http, HttpResponse } from 'msw';
 import type { MasterKind, MockRecord, MockValues } from './masterData';
+import { addMockLoginAccount, isMockUsernameTaken } from './loginAccounts';
 import {
   createMasterRecord,
   isDuplicateCode,
@@ -114,12 +115,31 @@ function listHandler(kind: MasterKind, canManage: boolean) {
   });
 }
 
-/** Mock'ta bu giriş adı alınmış sayılır (409 yolunu denemek için). */
-const TAKEN_USERNAME = 'admin';
 const MOCK_TEMPORARY_PASSWORD = 'Gecici-Sifre-1';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
+}
+
+/** Hesap açar; Kullanıcılar ekranındaki giriş adları (ör. `admin`) alınmış sayılır, 409 yolu böyle denenir. */
+function openLoginAccount(kind: MasterKind, ownerId: string, body: unknown) {
+  const fields = isRecord(body) ? body : {};
+  const username = textField(fields, 'username') ?? '';
+  if (username === '') return problem(400, 'INVALID_MASTER_DATA', 'Geçersiz kayıt');
+  if (isMockUsernameTaken(username)) {
+    return problem(409, 'LOGIN_ACCOUNT_EXISTS', 'Giriş adı alınmış');
+  }
+  const owner = listMasterRecords(kind).find((record) => record.id === ownerId);
+  addMockLoginAccount({
+    username,
+    email: textField(fields, 'email') ?? '',
+    fullName: owner?.label ?? username,
+    role: kind === 'driver' ? 'DRIVER' : 'SUBCONTRACTOR',
+  });
+  return HttpResponse.json(
+    { username, temporaryPassword: MOCK_TEMPORARY_PASSWORD },
+    { status: 201 },
+  );
 }
 
 /** Backend'deki doğrulamalar: TR plaka deseni, tekil plaka ve tekil fasoncu ünvanı. */
@@ -162,18 +182,9 @@ function writeHandlers(kind: MasterKind, canManage: boolean) {
       const updated = updateMasterRecord(kind, id, values);
       return updated === undefined ? notFound() : HttpResponse.json(toView(kind, updated));
     }),
-    http.post(`${path}/:id/login-account`, async ({ request }) => {
+    http.post(`${path}/:id/login-account`, async ({ params, request }) => {
       if (!canManage) return denied();
-      const body: unknown = await request.json();
-      const username = isRecord(body) && typeof body.username === 'string' ? body.username : '';
-      if (username === '') return problem(400, 'INVALID_MASTER_DATA', 'Geçersiz kayıt');
-      if (username === TAKEN_USERNAME) {
-        return problem(409, 'LOGIN_ACCOUNT_EXISTS', 'Giriş adı alınmış');
-      }
-      return HttpResponse.json(
-        { username, temporaryPassword: MOCK_TEMPORARY_PASSWORD },
-        { status: 201 },
-      );
+      return openLoginAccount(kind, String(params.id), await request.json());
     }),
     ...(['deactivate', 'activate'] as const).map((action) =>
       http.post(`${path}/:id/${action}`, ({ params }) => {

@@ -21,6 +21,7 @@ const ITEMS: readonly PanelNavItem[] = [
     labelKey: 'nav.discrepancySettings',
     permission: 'SETTINGS_MANAGE',
   },
+  { to: '/panel/kullanicilar', labelKey: 'nav.users', permission: 'USER_MANAGE' },
 ];
 
 /** Panel yan menüsü: her bağlantı yalnızca yetkisi olan kullanıcıya görünür. */

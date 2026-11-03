@@ -1,0 +1,1 @@
+export { usersPanelRoutes } from './routes';

@@ -1,0 +1,17 @@
+name: portable-paths
+
+# Yalnızca büyük/küçük harfi farklı dosya adları, Windows'ta geçersiz karakter ya da ayrılmış adlar,
+# sembolik bağlantılar ve çok uzun yollar Linux'ta sorun çıkarmaz ama Windows'ta checkout'u bozar.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dosya yolları Windows ve macOS için uygun mu
+        run: node tools/ci/check-portable-paths.mjs

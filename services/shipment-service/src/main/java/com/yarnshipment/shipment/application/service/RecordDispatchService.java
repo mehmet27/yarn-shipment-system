@@ -10,7 +10,7 @@ import com.yarnshipment.shipment.application.port.out.TareBasisPort;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
-import com.yarnshipment.shipment.domain.model.TareBasis;
+import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import java.time.Clock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

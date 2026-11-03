@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.domain.model;
 
+import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;

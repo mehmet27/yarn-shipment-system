@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.domain.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import java.math.BigDecimal;
 import java.util.Objects;
 import org.junit.jupiter.api.DisplayName;

@@ -1,6 +1,6 @@
 package com.yarnshipment.shipment.application.port.out;
 
-import com.yarnshipment.shipment.domain.model.TareBasis;
+import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 

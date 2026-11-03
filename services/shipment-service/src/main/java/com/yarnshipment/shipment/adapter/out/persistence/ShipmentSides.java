@@ -2,8 +2,8 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 
 import com.yarnshipment.shipment.domain.model.SealCondition;
 import com.yarnshipment.shipment.domain.model.ShipmentSide;
-import com.yarnshipment.shipment.domain.model.TareBasis;
 import com.yarnshipment.shipment.domain.model.Weighing;
+import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;

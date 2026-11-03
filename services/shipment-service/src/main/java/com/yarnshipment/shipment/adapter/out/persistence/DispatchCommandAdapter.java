@@ -5,7 +5,7 @@ import com.yarnshipment.shipment.application.port.out.DispatchCommandPort;
 import com.yarnshipment.shipment.domain.model.DispatchRecording;
 import com.yarnshipment.shipment.domain.model.SealAlreadyUsedException;
 import com.yarnshipment.shipment.domain.model.ShipmentLoaded;
-import com.yarnshipment.shipment.domain.model.TareBasis;
+import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.UUID;

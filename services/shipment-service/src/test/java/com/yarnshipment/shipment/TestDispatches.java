@@ -1,7 +1,7 @@
 package com.yarnshipment.shipment;
 
 import com.yarnshipment.shipment.domain.model.DispatchMeasurement;
-import com.yarnshipment.shipment.domain.model.TareBasis;
+import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import java.math.BigDecimal;
 
 /** Testlerde kullanılan çıkış tartımı girdileri. */

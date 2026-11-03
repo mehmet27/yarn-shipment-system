@@ -87,7 +87,7 @@ class StaffLoginAccountControllerTest {
                 mvc.post().uri(URI), STAFF_BODY, TestTokens.token("warehouse").build());
         MvcTestResult driverRole = send(mvc.post().uri(URI), STAFF_BODY.replace("WAREHOUSE", "DRIVER"), admin);
         MvcTestResult badName = send(mvc.post().uri(URI), STAFF_BODY.replace("depo2", "A B"), admin);
-        MvcTestResult noSites = send(mvc.post().uri(URI), STAFF_BODY.replace(SITE.toString(), ""), admin);
+        MvcTestResult noSites = send(mvc.post().uri(URI), STAFF_BODY.replace("\"" + SITE + "\"", ""), admin);
         verifyNoInteractions(createStaff);
         doThrow(new LoginAccountExistsException("username")).when(createStaff).createStaffLoginAccount(any(), any());
         MvcTestResult exists = send(mvc.post().uri(URI), STAFF_BODY, admin);

@@ -11,11 +11,17 @@ import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
+import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
+import com.yarnshipment.shipment.domain.model.DeliveryScan;
+import com.yarnshipment.shipment.domain.model.DispatchBag;
+import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
+import com.yarnshipment.shipment.domain.model.ScanMethod;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -29,8 +35,9 @@ class RecordDispatchServiceTest {
     private final InMemoryShipmentQueryPort queryPort = new InMemoryShipmentQueryPort();
     private final RecordingDispatchCommandPort commandPort = new RecordingDispatchCommandPort();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
+    private final FixedBagCountPort bagsPort = new FixedBagCountPort(TestDispatches.measurement().bagCount());
     private final RecordDispatchService service = new RecordDispatchService(
-            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), commandPort, clock);
+            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), commandPort, bagsPort, clock);
     private final Actor warehouse = TestTokens.actor("warehouse");
 
     private RecordDispatchCommand command(Actor actor) {
@@ -90,5 +97,37 @@ class RecordDispatchServiceTest {
     void shouldRejectUnknownShipment() {
         assertThatThrownBy(() -> service.recordDispatch(command(warehouse)))
                 .isInstanceOf(ShipmentNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("Tartıdaki çuval sayısı atanan çuval sayısından farklıysa kayıt reddedilir")
+    void shouldRejectBagCountMismatch() {
+        queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
+        bagsPort.assigned = TestDispatches.measurement().bagCount() - 1;
+
+        assertThatThrownBy(() -> service.recordDispatch(command(warehouse)))
+                .isInstanceOf(InvalidDispatchException.class)
+                .extracting(e -> ((InvalidDispatchException) e).field())
+                .isEqualTo("bagCount");
+        assertThat(commandPort.recordings()).isEmpty();
+    }
+
+    private static final class FixedBagCountPort implements ShipmentBagsPort {
+        private int assigned;
+
+        FixedBagCountPort(int assigned) {
+            this.assigned = assigned;
+        }
+
+        @Override
+        public List<DispatchBag> findDispatchBags(UUID shipmentId) {
+            return Collections.nCopies(
+                    assigned, new DispatchBag(UUID.randomUUID(), "K", "L", "A", ScanMethod.SCAN, NOW));
+        }
+
+        @Override
+        public List<DeliveryScan> findDeliveryScans(UUID shipmentId) {
+            return List.of();
+        }
     }
 }

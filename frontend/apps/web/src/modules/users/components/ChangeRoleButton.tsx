@@ -11,7 +11,6 @@ export function ChangeRoleButton({ account }: { account: LoginAccountView }) {
     <>
       <Button
         variant="default"
-        size="xs"
         onClick={open}
         aria-label={t('users.changeRole.open', { username: account.username })}
       >

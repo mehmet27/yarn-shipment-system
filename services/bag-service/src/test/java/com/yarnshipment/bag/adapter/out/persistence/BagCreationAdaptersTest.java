@@ -102,13 +102,7 @@ class BagCreationAdaptersTest {
         LockedLot locked = lots.findLocked(LOT_A).orElseThrow();
         UUID unlockedLotId = UUID.randomUUID();
         LockedLot unlocked = new LockedLot(
-                unlockedLotId,
-                locked.siteId(),
-                "P-2026-9999",
-                locked.productId(),
-                locked.qualityGradeCode(),
-                NOW,
-                0);
+                unlockedLotId, locked.siteId(), "P-2026-9999", locked.productId(), locked.qualityGradeCode(), NOW, 0);
 
         BagCreationPort.NewBags newBags = new BagCreationPort.NewBags(unlocked, PackageType.BAG, 1);
 

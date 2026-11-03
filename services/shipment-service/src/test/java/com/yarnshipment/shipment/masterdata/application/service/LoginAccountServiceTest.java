@@ -8,7 +8,6 @@ import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.LoginAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
-import com.yarnshipment.shipment.masterdata.application.port.in.StaffAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
@@ -17,8 +16,6 @@ import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
-import com.yarnshipment.shipment.masterdata.domain.model.StaffAccountSpec;
-import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -39,8 +36,6 @@ class LoginAccountServiceTest {
     private static final UUID OTHER_SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000002");
 
     private final List<LoginAccountSpec> opened = new ArrayList<>();
-    private final List<StaffAccountSpec> openedStaff = new ArrayList<>();
-    private final List<String> roleChanges = new ArrayList<>();
     private final Actor admin = TestTokens.actor("admin");
     private final LoginAccountTargetPort targets = new LoginAccountTargetPort() {
         @Override
@@ -68,16 +63,6 @@ class LoginAccountServiceTest {
         @Override
         public List<LoginAccountSummary> findAll() {
             return List.copyOf(existing);
-        }
-
-        @Override
-        public void createStaff(StaffAccountSpec spec) {
-            openedStaff.add(spec);
-        }
-
-        @Override
-        public void changeStaffRole(UUID userId, StaffRole role) {
-            roleChanges.add(userId + ":" + role);
         }
     };
     private final LoginAccountService service = new LoginAccountService(targets, accounts);
@@ -156,49 +141,6 @@ class LoginAccountServiceTest {
         assertThat(secondPage.totalElements()).isEqualTo(ACCOUNT_COUNT);
         assertThat(secondPage.totalPages()).isEqualTo(2);
         assertThat(byName.items()).extracting(LoginAccountSummary::username).containsExactly("depo");
-    }
-
-    @Test
-    @DisplayName("Fabrika içi hesap şifresiz, verilen rol ve lokasyonla açılır")
-    void shouldOpenStaffAccountWithoutPassword() {
-        service.createStaffLoginAccount(
-                admin,
-                new StaffAccountRequest("depo2", "depo2@ornek.com", "Ayşe Depo", StaffRole.WAREHOUSE, List.of(SITE)));
-
-        assertThat(openedStaff).singleElement().satisfies(spec -> {
-            assertThat(spec.username()).isEqualTo("depo2");
-            assertThat(spec.role()).isEqualTo(StaffRole.WAREHOUSE);
-            assertThat(spec.siteIds()).containsExactly(SITE);
-        });
-        assertThat(opened).isEmpty();
-    }
-
-    @Test
-    @DisplayName("Fabrika içi hesapta lokasyon boşsa ya da etkin değilse hesap açılmaz")
-    void shouldRejectStaffAccountWithBadSites() {
-        assertThatThrownBy(() -> service.createStaffLoginAccount(
-                        admin,
-                        new StaffAccountRequest("depo2", "d@ornek.com", "Ayşe Depo", StaffRole.QUALITY, List.of())))
-                .isInstanceOf(InvalidMasterDataException.class);
-        assertThatThrownBy(() -> service.createStaffLoginAccount(
-                        admin,
-                        new StaffAccountRequest(
-                                "depo2", "d@ornek.com", "Ayşe Depo", StaffRole.QUALITY, List.of(SITE, OTHER_SITE))))
-                .isInstanceOf(InvalidMasterDataException.class);
-        assertThat(openedStaff).isEmpty();
-    }
-
-    @Test
-    @DisplayName("Rol başkasının hesabında değişir; kişi kendi rolünü değiştiremez")
-    void shouldChangeRoleOfOthersOnly() {
-        UUID other = UUID.randomUUID();
-
-        service.changeLoginAccountRole(admin, other, StaffRole.QUALITY);
-
-        assertThat(roleChanges).containsExactly(other + ":QUALITY");
-        assertThatThrownBy(() -> service.changeLoginAccountRole(admin, admin.userId(), StaffRole.MANAGER))
-                .isInstanceOf(InvalidMasterDataException.class);
-        assertThat(roleChanges).hasSize(1);
     }
 
     private static LoginAccountSummary summary(String username, String fullName, String email) {

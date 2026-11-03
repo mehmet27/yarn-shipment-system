@@ -118,8 +118,8 @@ class KeycloakLoginAccountListTest {
             answer(exchange);
         });
         created.start();
-        return new KeycloakLoginAccountAdapter(
-                "http://localhost:" + created.getAddress().getPort(), "yarnshipment", "yarnshipment-admin", secret);
+        return new KeycloakLoginAccountAdapter(new KeycloakAdminClient(
+                "http://localhost:" + created.getAddress().getPort(), "yarnshipment", "yarnshipment-admin", secret));
     }
 
     private void answer(HttpExchange exchange) throws IOException {

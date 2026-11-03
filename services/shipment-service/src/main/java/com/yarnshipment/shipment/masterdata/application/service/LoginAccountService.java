@@ -1,15 +1,12 @@
 package com.yarnshipment.shipment.masterdata.application.service;
 
 import com.yarnshipment.common.security.Actor;
-import com.yarnshipment.shipment.masterdata.application.port.in.ChangeLoginAccountRoleUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateDriverLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.CreateStaffLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.ListLoginAccountsUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.LoginAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
-import com.yarnshipment.shipment.masterdata.application.port.in.StaffAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
@@ -18,8 +15,6 @@ import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
-import com.yarnshipment.shipment.masterdata.domain.model.StaffAccountSpec;
-import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -27,18 +22,13 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
- * Şoför ve fasoncu için giriş hesabı açar; fabrika içi hesap açar ve rolünü değiştirir; hesapları listeler. Fabrika içi
- * hesapta şifre üretilmez, kişiye şifre belirleme e-postası gider; kişi kendi rolünü değiştiremez (kilitlenmeyi önler). Kayıt ve lokasyonlar etkin olmalıdır; hesap
+ * Şoför ve fasoncu için giriş hesabı açar ve giriş hesaplarını listeler. Kayıt ve lokasyonlar etkin olmalıdır; hesap
  * Keycloak'ta tek çağrı dizisiyle açılır ve yarım kalırsa geri alınır. Yerel veritabanına yazılmadığı için transaction
  * açılmaz. Kullanıcı sayısı küçük olduğundan liste Keycloak'tan bütün olarak alınır, arama ve sayfalama burada yapılır.
  */
 @Service
 public final class LoginAccountService
-        implements CreateDriverLoginAccountUseCase,
-                CreateSubcontractorLoginAccountUseCase,
-                CreateStaffLoginAccountUseCase,
-                ChangeLoginAccountRoleUseCase,
-                ListLoginAccountsUseCase {
+        implements CreateDriverLoginAccountUseCase, CreateSubcontractorLoginAccountUseCase, ListLoginAccountsUseCase {
 
     private final LoginAccountTargetPort targets;
     private final LoginAccountPort accounts;
@@ -64,21 +54,6 @@ public final class LoginAccountService
                 subcontractorId,
                 title.orElseThrow(() -> new MasterDataNotFoundException("Subcontractor", subcontractorId)),
                 request);
-    }
-
-    @Override
-    public void createStaffLoginAccount(Actor actor, StaffAccountRequest request) {
-        requireActiveSites(request.siteIds());
-        accounts.createStaff(new StaffAccountSpec(
-                request.username(), request.email(), request.fullName(), request.role(), request.siteIds()));
-    }
-
-    @Override
-    public void changeLoginAccountRole(Actor actor, UUID userId, StaffRole role) {
-        if (actor.userId().equals(userId)) {
-            throw new InvalidMasterDataException("userId", "own account");
-        }
-        accounts.changeStaffRole(userId, role);
     }
 
     @Override

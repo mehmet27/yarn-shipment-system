@@ -127,19 +127,19 @@ public final class ShipmentExceptionHandler {
         return problem;
     }
 
-    @ExceptionHandler(LoginAccountExistsException.class)
-    public ProblemDetail handleLoginAccountExists(HttpServletRequest request) {
-        return problem(request, HttpStatus.CONFLICT, "LOGIN_ACCOUNT_EXISTS");
-    }
-
-    @ExceptionHandler(LoginAccountNotFoundException.class)
-    public ProblemDetail handleLoginAccountNotFound(HttpServletRequest request) {
-        return problem(request, HttpStatus.NOT_FOUND, "LOGIN_ACCOUNT_NOT_FOUND");
-    }
-
-    @ExceptionHandler(LoginAccountRoleLockedException.class)
-    public ProblemDetail handleLoginAccountRoleLocked(HttpServletRequest request) {
-        return problem(request, HttpStatus.CONFLICT, "LOGIN_ACCOUNT_ROLE_LOCKED");
+    @ExceptionHandler({
+        LoginAccountExistsException.class,
+        LoginAccountNotFoundException.class,
+        LoginAccountRoleLockedException.class
+    })
+    public ProblemDetail handleLoginAccountState(RuntimeException exception, HttpServletRequest request) {
+        if (exception instanceof LoginAccountNotFoundException) {
+            return problem(request, HttpStatus.NOT_FOUND, "LOGIN_ACCOUNT_NOT_FOUND");
+        }
+        String code = exception instanceof LoginAccountRoleLockedException
+                ? "LOGIN_ACCOUNT_ROLE_LOCKED"
+                : "LOGIN_ACCOUNT_EXISTS";
+        return problem(request, HttpStatus.CONFLICT, code);
     }
 
     @ExceptionHandler(LoginAccountUnavailableException.class)

@@ -46,7 +46,8 @@ public class RecordDispatchService implements RecordDispatchUseCase {
             return;
         }
         if (shipment.status() == ShipmentStatus.DRAFT
-                && bagsPort.findDispatchBags(shipment.id()).size() != command.measurement().bagCount()) {
+                && bagsPort.findDispatchBags(shipment.id()).size()
+                        != command.measurement().bagCount()) {
             throw new InvalidDispatchException("bagCount", "differs from assigned bags");
         }
         dispatchCommandPort.recordDispatch(

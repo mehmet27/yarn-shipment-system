@@ -35,7 +35,8 @@ class RecordDispatchServiceTest {
     private final InMemoryShipmentQueryPort queryPort = new InMemoryShipmentQueryPort();
     private final RecordingDispatchCommandPort commandPort = new RecordingDispatchCommandPort();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
-    private final FixedBagCountPort bagsPort = new FixedBagCountPort(TestDispatches.measurement().bagCount());
+    private final FixedBagCountPort bagsPort =
+            new FixedBagCountPort(TestDispatches.measurement().bagCount());
     private final RecordDispatchService service = new RecordDispatchService(
             new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), commandPort, bagsPort, clock);
     private final Actor warehouse = TestTokens.actor("warehouse");

@@ -4,23 +4,27 @@ import com.yarnshipment.bag.application.port.out.BagCreationPort;
 import com.yarnshipment.bag.domain.model.Bag;
 import com.yarnshipment.bag.domain.model.BagStatus;
 import com.yarnshipment.bag.domain.model.LockedLot;
+import com.yarnshipment.bag.domain.model.LotNotLockedException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /**
  * {@link BagCreationPort}'un JDBC uygulaması. Anahtar çakışırsa (40 bitte çok nadir) satır eklenmez ve yeni anahtarla
  * tekrar denenir; transaction bozulmaz. Parti ve kalite {@code lot_quality_lock}'tan kopyalanır, yabancı anahtar
- * ({@code bag_quality_from_locked_lot}) kilitsiz partiyi veritabanında da reddeder.
+ * ({@code bag_quality_from_locked_lot}) kilitsiz partiyi veritabanında da reddeder; bu ihlal 500 yerine
+ * {@link LotNotLockedException} (409, {@code LOT_NOT_LOCKED}) olarak yükselir.
  */
 @Component
 final class BagCreationAdapter implements BagCreationPort {
 
     private static final int MAX_ATTEMPTS = 5;
+    private static final String LOCKED_LOT_CONSTRAINT = "bag_quality_from_locked_lot";
     private static final String SET_ACTOR = "SELECT set_config('app.actor_id', ?, true)";
     private static final String INSERT = """
             INSERT INTO bag (id, site_id, unique_key, package_type, lot_id, lot_no, product_id, quality_grade_code,
@@ -54,24 +58,38 @@ final class BagCreationAdapter implements BagCreationPort {
         for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             UUID id = ids.next();
             String key = keys.next();
-            int inserted = jdbc.sql(INSERT)
-                    .param("id", id)
-                    .param("siteId", newBags.lot().siteId())
-                    .param("key", key)
-                    .param("packageType", newBags.packageType().name())
-                    .param("lotId", newBags.lot().lotId())
-                    .param("lotNo", newBags.lot().lotNo())
-                    .param("productId", newBags.lot().productId())
-                    .param("grade", newBags.lot().qualityGradeCode())
-                    .param("status", BagStatus.CREATED.name())
-                    .param("at", at)
-                    .param("actor", actorUserId)
-                    .update();
+            int inserted;
+            try {
+                inserted = jdbc.sql(INSERT)
+                        .param("id", id)
+                        .param("siteId", newBags.lot().siteId())
+                        .param("key", key)
+                        .param("packageType", newBags.packageType().name())
+                        .param("lotId", newBags.lot().lotId())
+                        .param("lotNo", newBags.lot().lotNo())
+                        .param("productId", newBags.lot().productId())
+                        .param("grade", newBags.lot().qualityGradeCode())
+                        .param("status", BagStatus.CREATED.name())
+                        .param("at", at)
+                        .param("actor", actorUserId)
+                        .update();
+            } catch (DataIntegrityViolationException violation) {
+                throw translated(violation, newBags.lot());
+            }
             if (inserted == 1) {
                 return created(id, key, newBags);
             }
         }
         throw new IllegalStateException("Could not generate a free unique key after " + MAX_ATTEMPTS + " attempts");
+    }
+
+    /** Kalite kilidi kısıtı ihlali iş hatasına çevrilir; diğer ihlaller olduğu gibi yükselir. */
+    private static RuntimeException translated(DataIntegrityViolationException violation, LockedLot lot) {
+        String message = violation.getMostSpecificCause().getMessage();
+        if (message != null && message.contains(LOCKED_LOT_CONSTRAINT)) {
+            return new LotNotLockedException(lot.lotId(), violation);
+        }
+        return violation;
     }
 
     private static Bag created(UUID id, String key, NewBags newBags) {

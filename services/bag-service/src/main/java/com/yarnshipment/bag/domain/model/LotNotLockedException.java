@@ -12,4 +12,9 @@ public final class LotNotLockedException extends RuntimeException {
     public LotNotLockedException(UUID lotId) {
         super("Lot quality not locked lotId=" + lotId);
     }
+
+    /** Veritabanı kısıtı ({@code bag_quality_from_locked_lot}) reddettiğinde asıl hata saklanır. */
+    public LotNotLockedException(UUID lotId, Throwable cause) {
+        super("Lot quality not locked lotId=" + lotId, cause);
+    }
 }

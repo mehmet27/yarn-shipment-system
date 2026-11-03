@@ -660,7 +660,7 @@
       "VOID": "İptal"
     },
     "errors": {
-      "LOT_NOT_LOCKED": "Partinin kalitesi kilitli değil; çuval oluşturulamaz.",
+      "LOT_NOT_LOCKED": "Kalite kilitlenmeden çuval üretilemez. Önce Partiler ekranından partinin kalitesini kilitleyin.",
       "LABEL_REPRINT_REASON_REQUIRED": "Yeniden baskı için gerekçe yazın.",
       "BAG_NOT_AVAILABLE": "Yola çıkmış ya da iptal edilmiş çuvalın etiketi basılamaz.",
       "unexpected": "İşlem tamamlanamadı. Lütfen tekrar deneyin."

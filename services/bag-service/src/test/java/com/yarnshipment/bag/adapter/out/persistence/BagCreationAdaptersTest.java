@@ -1,11 +1,13 @@
 package com.yarnshipment.bag.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.bag.application.port.out.BagCreationPort;
 import com.yarnshipment.bag.domain.model.Bag;
 import com.yarnshipment.bag.domain.model.BagStatus;
 import com.yarnshipment.bag.domain.model.LockedLot;
+import com.yarnshipment.bag.domain.model.LotNotLockedException;
 import com.yarnshipment.bag.domain.model.PackageType;
 import java.time.Instant;
 import java.util.List;
@@ -92,5 +94,20 @@ class BagCreationAdaptersTest {
                 .extracting(Bag::packageType)
                 .containsOnly(PackageType.BOX);
         assertThat(lots.findLocked(LOT_A).orElseThrow().bagCount()).isEqualTo(SEEDED_BAGS_OF_LOT + NEW_BAGS);
+    }
+
+    @Test
+    @DisplayName("Kalite kilidi olmayan partiye çuval yazımı yabancı anahtarda reddedilir ve LOT_NOT_LOCKED'a çevrilir")
+    void shouldRejectBagOfUnlockedLot() {
+        LockedLot locked = lots.findLocked(LOT_A).orElseThrow();
+        UUID unlockedLotId = UUID.randomUUID();
+        LockedLot unlocked = new LockedLot(
+                unlockedLotId, locked.siteId(), "P-2026-9999", locked.productId(), locked.qualityGradeCode(), NOW, 0);
+
+        BagCreationPort.NewBags newBags = new BagCreationPort.NewBags(unlocked, PackageType.BAG, 1);
+
+        assertThatThrownBy(() -> creations.create(newBags, ACTOR, NOW))
+                .isInstanceOf(LotNotLockedException.class)
+                .hasMessageContaining(unlockedLotId.toString());
     }
 }

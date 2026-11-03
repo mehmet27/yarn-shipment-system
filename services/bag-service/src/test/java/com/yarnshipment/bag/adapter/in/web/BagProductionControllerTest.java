@@ -102,7 +102,7 @@ class BagProductionControllerTest {
 
         assertThat(result).hasStatus(HttpStatus.CONFLICT);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("LOT_NOT_LOCKED");
-        assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Partinin kalitesi kilitli değil");
+        assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Kalite kilitlenmeden çuval üretilemez");
     }
 
     @Test

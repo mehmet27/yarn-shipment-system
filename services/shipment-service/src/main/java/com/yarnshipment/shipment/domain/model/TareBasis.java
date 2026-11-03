@@ -24,7 +24,7 @@ public record TareBasis(BigDecimal expectedKg, BigDecimal tolerancePct) {
         }
     }
 
-    /** Standart ambalaj başı dara ile çuval sayısından beklenen daranın kurulması; standart sıfırsa karşılaştırma yok. */
+    /** Ambalaj başı standart dara ve çuval sayısından beklenen dara; standart sıfırsa karşılaştırma yok. */
     public static @Nullable TareBasis of(BigDecimal standardTareKg, BigDecimal tolerancePct, int bagCount) {
         if (standardTareKg.signum() == 0) {
             return null;

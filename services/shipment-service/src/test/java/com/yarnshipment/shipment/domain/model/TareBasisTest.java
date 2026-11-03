@@ -9,12 +9,13 @@ import org.junit.jupiter.api.Test;
 
 class TareBasisTest {
 
+    private static final int BAG_COUNT = 40;
     private static final TareBasis BASIS = new TareBasis(new BigDecimal("20.000"), new BigDecimal("5.00"));
 
     @Test
     @DisplayName("Beklenen dara standart × çuval sayısıdır")
     void shouldMultiplyStandardByBagCount() {
-        TareBasis basis = TareBasis.of(new BigDecimal("0.450"), new BigDecimal("5"), 40);
+        TareBasis basis = TareBasis.of(new BigDecimal("0.450"), new BigDecimal("5"), BAG_COUNT);
 
         assertThat(basis).isNotNull();
         assertThat(basis.expectedKg()).isEqualByComparingTo("18.000");
@@ -24,7 +25,8 @@ class TareBasisTest {
     @Test
     @DisplayName("Standart sıfırsa karşılaştırma yapılmaz")
     void shouldSkipZeroStandard() {
-        assertThat(TareBasis.of(BigDecimal.ZERO, new BigDecimal("5"), 40)).isNull();
+        assertThat(TareBasis.of(BigDecimal.ZERO, new BigDecimal("5"), BAG_COUNT))
+                .isNull();
     }
 
     @Test

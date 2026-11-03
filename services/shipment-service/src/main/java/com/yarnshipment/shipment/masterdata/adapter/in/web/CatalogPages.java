@@ -20,6 +20,9 @@ import java.time.ZoneOffset;
 /** İplik, kalite sınıfı ve parti sayfalarının web modeli. */
 final class CatalogPages {
 
+    private static final int KG_SCALE = 3;
+    private static final int PCT_SCALE = 2;
+
     private CatalogPages() {}
 
     static ProductView view(Product item) {
@@ -42,11 +45,11 @@ final class CatalogPages {
                 PackagingType.valueOf(item.packagingType().name()),
                 item.details()
                         .standardTareKg()
-                        .setScale(3, RoundingMode.HALF_UP)
+                        .setScale(KG_SCALE, RoundingMode.HALF_UP)
                         .toPlainString(),
                 item.details()
                         .maxDeviationPct()
-                        .setScale(2, RoundingMode.HALF_UP)
+                        .setScale(PCT_SCALE, RoundingMode.HALF_UP)
                         .toPlainString());
     }
 

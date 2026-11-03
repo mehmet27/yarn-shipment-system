@@ -12,22 +12,18 @@ import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
-import com.yarnshipment.shipment.application.port.out.TareBasisPort;
 import com.yarnshipment.shipment.domain.model.DeliveryScan;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
-import com.yarnshipment.shipment.domain.model.TareBasis;
-import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -41,12 +37,12 @@ class RecordDispatchServiceTest {
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final FixedBagCountPort bagsPort =
             new FixedBagCountPort(TestDispatches.measurement().bagCount());
-    private final FixedTareBasisPort tareBasisPort = new FixedTareBasisPort();
+    private boolean hasTareStandard;
     private final RecordDispatchService service = new RecordDispatchService(
             new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
             commandPort,
             bagsPort,
-            tareBasisPort,
+            (siteId, bagCount) -> hasTareStandard ? TestDispatches.tareBasis(bagCount) : null,
             clock);
     private final Actor warehouse = TestTokens.actor("warehouse");
 
@@ -126,8 +122,8 @@ class RecordDispatchServiceTest {
     @DisplayName("Lokasyonun çuval standardı varsa çıkış tartımına beklenen dara ve sapma eklenir")
     void shouldAttachTareBasis() {
         queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
-        // 40 çuval × 0,5 kg = 20 kg beklenen; girilen 18 kg → %-10 sapma, %5 sınırın dışında
-        tareBasisPort.basis = new TareBasis(new BigDecimal("20.000"), new BigDecimal("5.00"));
+        // çuval başı 0,5 kg × 40 çuval = 20 kg beklenen; girilen 18 kg → %-10 sapma, %5 sınırın dışında
+        hasTareStandard = true;
 
         service.recordDispatch(command(warehouse));
 
@@ -135,7 +131,6 @@ class RecordDispatchServiceTest {
             assertThat(recording.weighing().tareDeviationPct()).isEqualByComparingTo("-10.00");
             assertThat(recording.weighing().tareAlert()).isTrue();
         });
-        assertThat(tareBasisPort.askedBagCount).isEqualTo(TestDispatches.BAG_COUNT);
     }
 
     @Test
@@ -149,17 +144,6 @@ class RecordDispatchServiceTest {
             assertThat(recording.weighing().tareDeviationPct()).isNull();
             assertThat(recording.weighing().tareAlert()).isFalse();
         });
-    }
-
-    private static final class FixedTareBasisPort implements TareBasisPort {
-        private @Nullable TareBasis basis;
-        private int askedBagCount;
-
-        @Override
-        public @Nullable TareBasis findBagTareBasis(UUID siteId, int bagCount) {
-            askedBagCount = bagCount;
-            return basis;
-        }
     }
 
     private static final class FixedBagCountPort implements ShipmentBagsPort {

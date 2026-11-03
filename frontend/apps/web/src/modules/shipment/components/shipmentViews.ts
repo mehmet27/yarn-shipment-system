@@ -101,3 +101,14 @@ function pickDefined({
     ...(deliveryWeighing === undefined ? {} : { deliveryWeighing }),
   };
 }
+
+const DELIVERED: ReadonlySet<ShipmentDetail['status']> = new Set([
+  'CHECKING',
+  'IN_REVIEW',
+  'COMPLETED',
+]);
+
+/** Kalite itirazı teslimden sonra konuşulur; asıl pencere ve kapsam kontrolü backend'dedir. */
+export function isDelivered(shipment: ShipmentDetail): boolean {
+  return DELIVERED.has(shipment.status);
+}

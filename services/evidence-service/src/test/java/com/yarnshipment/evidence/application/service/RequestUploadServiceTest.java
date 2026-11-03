@@ -114,6 +114,26 @@ class RequestUploadServiceTest {
         assertThat(ticket.evidenceId()).isNotNull();
     }
 
+    @Test
+    @DisplayName("İtiraz fotoğrafı tamamlanmış sevkiyata eklenir; karşılaştırılmamış ya da iptal sevkiyata eklenmez")
+    void shouldAllowClaimEvidenceAfterComparison() {
+        Actor subcontractor = TestTokens.actor(TestTokens.subcontractorToken());
+        when(storage.presignUpload(any())).thenReturn(new PresignedUpload("u", Map.of(), TestUploads.expiry()));
+        when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
+                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, true, true));
+
+        assertThat(request.requestUpload(command(subcontractor, EvidenceType.QUALITY_CLAIM))
+                        .evidenceId())
+                .isNotNull();
+        assertThatThrownBy(() -> request.requestUpload(command(subcontractor, EvidenceType.DELIVERY_BAGS)))
+                .isInstanceOf(ShipmentLockedException.class);
+
+        when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
+                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, true, false));
+        assertThatThrownBy(() -> request.requestUpload(command(subcontractor, EvidenceType.QUALITY_CLAIM)))
+                .isInstanceOf(ShipmentLockedException.class);
+    }
+
     private void openShipment(boolean locked) {
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
                 .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, locked, false));

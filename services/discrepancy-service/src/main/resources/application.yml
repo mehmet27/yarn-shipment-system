@@ -50,3 +50,6 @@ yarnshipment:
     transit-check:
       initial-delay: ${TRANSIT_CHECK_INITIAL_DELAY:PT1M}
       interval: ${TRANSIT_CHECK_INTERVAL:PT15M}
+  evidence-service:
+    # İtiraza bağlanan fotoğraf ve lab belgesi isteyenin token'ıyla doğrulanır.
+    url: ${EVIDENCE_SERVICE_URL:http://localhost:8086}

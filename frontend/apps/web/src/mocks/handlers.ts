@@ -14,6 +14,7 @@ import {
 } from './mockStore';
 import { createBagHandlers } from './bagHandlers';
 import { createCorrectionHandlers } from './correctionHandlers';
+import { createClaimHandlers } from './claimHandlers';
 import { createDiscrepancyHandlers } from './discrepancyHandlers';
 import { createEvidenceHandlers } from './evidenceHandlers';
 import { createLotHandlers } from './lotHandlers';
@@ -272,6 +273,7 @@ export function createHandlers(role: Role) {
     ...createEvidenceHandlers(createMockUser(role).permissions),
     ...createDiscrepancyHandlers(createMockUser(role).permissions, createMockUser(role).userId),
     ...createCorrectionHandlers(createMockUser(role).permissions, createMockUser(role).userId),
+    ...createClaimHandlers(role),
     logoutHandler,
   ];
 }

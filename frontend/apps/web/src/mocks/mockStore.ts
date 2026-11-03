@@ -6,6 +6,7 @@ import type {
 } from '@iplik/api-client';
 import { resetMockCorrections } from './corrections';
 import { resetDiscrepancySettings } from './discrepancySettings';
+import { resetMockClaims } from './claims';
 import { resetMockLots } from './lots';
 import { resetMasterData } from './masterData';
 import { MOCK_SHIPMENTS } from './shipments';
@@ -97,6 +98,7 @@ export function resetMockStore(): void {
   resetMasterData();
   resetDiscrepancySettings();
   resetMockCorrections();
+  resetMockClaims();
   resetMockLots();
   shipments = [...MOCK_SHIPMENTS];
   assignedBagKeys = new Map();

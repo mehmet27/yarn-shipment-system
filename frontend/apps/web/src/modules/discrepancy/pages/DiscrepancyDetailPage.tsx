@@ -1,6 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Anchor, Group, Stack, Title } from '@iplik/ui';
 import { Link, useParams } from 'react-router';
+import { ClaimOfDiscrepancy } from '@/modules/claim';
 import { QueryState } from '@/modules/shipment';
 import { ActivityList } from '../components/ActivityList';
 import { AssignToMeButton } from '../components/AssignToMeButton';
@@ -31,6 +32,12 @@ export function DiscrepancyDetailPage() {
             {t('discrepancy.openShipment')}
           </Anchor>
           <DiscrepancyFacts discrepancy={discrepancy} />
+          {discrepancy.ruleCode === 'QUALITY_CLAIM' && (
+            <ClaimOfDiscrepancy
+              shipmentId={discrepancy.shipmentId}
+              discrepancyId={discrepancy.id}
+            />
+          )}
           {discrepancy.allowedActions?.includes('ASSIGN') && (
             <AssignToMeButton discrepancyId={discrepancy.id} />
           )}

@@ -28,6 +28,7 @@ export {
   Table,
   Tabs,
   Text,
+  Textarea,
   TextInput,
   Title,
 } from '@mantine/core';

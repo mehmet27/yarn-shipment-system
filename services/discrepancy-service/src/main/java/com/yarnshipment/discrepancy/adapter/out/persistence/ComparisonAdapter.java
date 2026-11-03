@@ -31,9 +31,10 @@ final class ComparisonAdapter implements ComparisonPort {
             SELECT severity FROM discrepancy WHERE shipment_id = :shipmentId AND status IN ('OPEN', 'IN_REVIEW')""";
     private static final String INSERT_INPUT = """
             INSERT INTO comparison_input (id, shipment_id, dispatch_net_kg, delivery_net_kg, dispatch_bag_keys,
-                                          delivery_bag_keys, seal_nos, received_at, created_at, created_by)
+                                          delivery_bag_keys, seal_nos, received_at, site_id, subcontractor_id,
+                                          shipment_no, created_at, created_by)
             VALUES (:id, :shipmentId, :dispatchNetKg, :deliveryNetKg, :dispatchKeys::jsonb, :deliveryKeys::jsonb,
-                    :sealNos::jsonb, :receivedAt, :at, :actor)""";
+                    :sealNos::jsonb, :receivedAt, :siteId, :subcontractorId, :shipmentNo, :at, :actor)""";
 
     private final JdbcClient jdbc;
     private final JsonMapper jsonMapper;
@@ -93,6 +94,9 @@ final class ComparisonAdapter implements ComparisonPort {
                 .param("deliveryKeys", jsonMapper.writeValueAsString(input.scannedKeys()))
                 .param("sealNos", jsonMapper.writeValueAsString(seals))
                 .param("receivedAt", Timestamp.from(input.receivedAt()))
+                .param("siteId", input.siteId())
+                .param("subcontractorId", input.subcontractorId())
+                .param("shipmentNo", input.shipmentNo())
                 .param("at", at)
                 .param("actor", comparison.actorId())
                 .update();

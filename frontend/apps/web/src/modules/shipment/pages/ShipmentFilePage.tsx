@@ -1,5 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Stack, Tabs, Text } from '@iplik/ui';
+import { usePermission } from '@/modules/auth';
+import { QualityClaimsSection } from '@/modules/claim';
 import { EvidenceUpload } from '@/modules/evidence';
 import { useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
@@ -8,7 +10,7 @@ import { CorrectionsTab, useCanSeeCorrections } from '../corrections/Corrections
 import { HistoryTab } from '../components/HistoryTab';
 import { ShipmentFileActions } from '../components/ShipmentFileActions';
 import { ShipmentHeader } from '../components/ShipmentHeader';
-import { toWeighings } from '../components/shipmentViews';
+import { isDelivered, toWeighings } from '../components/shipmentViews';
 import { WeightComparison } from '../components/WeightComparison';
 import { useShipment } from '../hooks/useShipment';
 
@@ -20,6 +22,7 @@ export function ShipmentFilePage() {
   const { shipmentId = '' } = useParams();
   const query = useShipment(shipmentId);
   const canSeeCorrections = useCanSeeCorrections();
+  const canViewClaims = usePermission('DISCREPANCY_VIEW');
   return (
     <QueryState query={query}>
       {(shipment) => (
@@ -35,10 +38,11 @@ export function ShipmentFilePage() {
               {canSeeCorrections && shipment.audience === 'INTERNAL' && (
                 <Tabs.Tab value="corrections">{t('shipment.file.tabs.corrections')}</Tabs.Tab>
               )}
+              {canViewClaims && isDelivered(shipment) && (
+                <Tabs.Tab value="claims">{t('shipment.file.tabs.claims')}</Tabs.Tab>
+              )}
               {PENDING_TABS.map((tab) => (
-                <Tabs.Tab key={tab} value={tab}>
-                  {t(`shipment.file.tabs.${tab}`)}
-                </Tabs.Tab>
+                <Tabs.Tab key={tab} value={tab} children={t(`shipment.file.tabs.${tab}`)} />
               ))}
             </Tabs.List>
             <Tabs.Panel value="weights" pt="md">
@@ -58,6 +62,9 @@ export function ShipmentFilePage() {
                 <CorrectionsTab shipment={shipment} />
               </Tabs.Panel>
             )}
+            <Tabs.Panel value="claims" pt="md">
+              <QualityClaimsSection shipmentId={shipmentId} />
+            </Tabs.Panel>
             {PENDING_TABS.map((tab) => (
               <Tabs.Panel key={tab} value={tab} pt="md">
                 <Text c="dimmed">{t('shipment.file.comingSoon')}</Text>

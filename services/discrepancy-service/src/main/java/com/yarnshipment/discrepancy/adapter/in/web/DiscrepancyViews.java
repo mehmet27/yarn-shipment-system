@@ -44,7 +44,8 @@ final class DiscrepancyViews {
                         ? null
                         : com.yarnshipment.discrepancy.domain.model.Severity.valueOf(severity.getValue()),
                 assigneeId,
-                shipmentId);
+                shipmentId,
+                null);
     }
 
     static com.yarnshipment.discrepancy.domain.model.Resolution resolutionOf(Resolution resolution) {

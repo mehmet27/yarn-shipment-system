@@ -39,7 +39,8 @@ final class SeededDiscrepancies {
     }
 
     static Discrepancy find(DiscrepancyQueryAdapter queries, Severity severity) {
-        return queries.findDiscrepancies(new Filter(null, severity, null, null), AccessScope.UNRESTRICTED, 0, PAGE_SIZE)
+        return queries.findDiscrepancies(
+                        new Filter(null, severity, null, null, null), AccessScope.UNRESTRICTED, 0, PAGE_SIZE)
                 .items()
                 .getFirst();
     }

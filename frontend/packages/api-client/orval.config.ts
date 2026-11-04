@@ -21,5 +21,6 @@ export default defineConfig({
   discrepancy: service('discrepancy-service', 'discrepancy-service-api.yaml', 'discrepancyService'),
   evidence: service('evidence-service', 'evidence-service-api.yaml', 'evidenceService'),
   bag: service('bag-service', 'bag-service-api.yaml', 'bagService'),
+  audit: service('audit-service', 'audit-service-api.yaml', 'auditService'),
   reporting: service('reporting-service', 'reporting-service-api.yaml', 'reportingService'),
 });

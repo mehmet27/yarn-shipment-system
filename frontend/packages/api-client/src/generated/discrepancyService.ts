@@ -50,6 +50,13 @@ export const DiscrepancyStatus = {
   CLOSED: 'CLOSED',
 } as const;
 
+export type DueFilter = typeof DueFilter[keyof typeof DueFilter];
+
+
+export const DueFilter = {
+  OVERDUE: 'OVERDUE',
+} as const;
+
 export type DiscrepancyType = typeof DiscrepancyType[keyof typeof DiscrepancyType];
 
 
@@ -422,6 +429,10 @@ status?: DiscrepancyStatus;
 severity?: Severity;
 assigneeId?: string;
 shipmentId?: string;
+/**
+ * OVERDUE ise yalnızca vadesi geçmiş ve hâlâ açık (OPEN, IN_REVIEW) kayıtlar döner.
+ */
+due?: DueFilter;
 /**
  * @minimum 0
  */

@@ -55,7 +55,7 @@ public class RecordEvidenceUploadService implements RecordEvidenceUploadUseCase 
         evidencePort.recordUploaded(
                 command.evidenceId(), command.shipmentId(), command.evidenceType(), command.uploadedAt());
         ListDiscrepanciesQuery.Filter ofShipment =
-                new ListDiscrepanciesQuery.Filter(null, null, null, command.shipmentId());
+                new ListDiscrepanciesQuery.Filter(null, null, null, command.shipmentId(), null);
         List<Discrepancy> missing =
                 queryPort.findDiscrepancies(ofShipment, AccessScope.UNRESTRICTED, 0, MAX_PER_SHIPMENT).items().stream()
                         .filter(discrepancy -> discrepancy.status().isUnresolved())

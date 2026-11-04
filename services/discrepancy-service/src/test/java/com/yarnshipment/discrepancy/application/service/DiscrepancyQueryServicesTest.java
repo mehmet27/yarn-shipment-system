@@ -37,7 +37,7 @@ class DiscrepancyQueryServicesTest {
     private static final int PAGE_SIZE = 20;
     private static final Clock CLOCK = Clock.fixed(NOW, ZoneOffset.UTC);
     private static final ListDiscrepanciesQuery.Filter NO_FILTER =
-            new ListDiscrepanciesQuery.Filter(null, null, null, null);
+            new ListDiscrepanciesQuery.Filter(null, null, null, null, null);
 
     private final DiscrepancyQueryPort queries = mock(DiscrepancyQueryPort.class);
     private final ScopeGuard scopeGuard = new ScopeGuard(event -> {}, CLOCK);

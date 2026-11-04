@@ -23,7 +23,8 @@
     "bags": "Çuval ve etiket",
     "lots": "Partiler",
     "users": "Kullanıcılar",
-    "reports": "Raporlar"
+    "reports": "Raporlar",
+    "audit": "Denetim kaydı"
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}"
@@ -376,6 +377,26 @@
     "codeHint": "Ör. PES-30/1. Harf, rakam ve + . _ / - kullanılır; eklendikten sonra değişmez.",
     "codeFixed": "Kod çuvala ve etikete yazıldığı için değiştirilemez."
   },
+  "audit": {
+    "title": "Denetim kaydı",
+    "entityFilter": "Kayıt türü",
+    "actionFilter": "İşlem",
+    "all": "Hepsi",
+    "empty": "Denetim kaydı yok.",
+    "denied": "Reddedildi",
+    "entity": { "Shipment": "Sevkiyat", "Evidence": "Kanıt", "Discrepancy": "Uyuşmazlık" },
+    "col": {
+      "time": "Zaman",
+      "actor": "Yapan",
+      "action": "İşlem",
+      "entity": "Kayıt",
+      "source": "Servis"
+    },
+    "chain": {
+      "ok": "Zincir doğrulandı ({{at}}).",
+      "broken": "Zincir bozuk ({{at}}); ilk bozuk kayıt: {{id}}."
+    }
+  },
   "discrepancy": {
     "back": "Uyuşmazlık listesi",
     "openShipment": "Sevkiyat dosyasını aç",
@@ -411,6 +432,7 @@
       "statusFilter": "Durum",
       "severityFilter": "Önem",
       "all": "Hepsi",
+      "overdueFilter": "Yalnızca süresi geçenler",
       "empty": "Uyuşmazlık yok."
     },
     "facts": {

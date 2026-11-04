@@ -22,6 +22,7 @@ const ITEMS: readonly PanelNavItem[] = [
     labelKey: 'nav.discrepancySettings',
     permission: 'SETTINGS_MANAGE',
   },
+  { to: '/panel/denetim', labelKey: 'nav.audit', permission: 'AUDIT_VIEW' },
   { to: '/panel/kullanicilar', labelKey: 'nav.users', permission: 'USER_MANAGE' },
 ];
 

@@ -64,6 +64,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: due
+          in: query
+          required: false
+          description: OVERDUE ise yalnızca vadesi geçmiş ve hâlâ açık (OPEN, IN_REVIEW) kayıtlar döner.
+          schema:
+            $ref: '#/components/schemas/DueFilter'
         - name: page
           in: query
           required: false
@@ -539,6 +545,9 @@ components:
     DiscrepancyStatus:
       type: string
       enum: [OPEN, IN_REVIEW, RESOLVED, CLOSED]
+    DueFilter:
+      type: string
+      enum: [OVERDUE]
     DiscrepancyType:
       type: string
       enum: [QUANTITY, BAG, SEAL, QUALITY, DOCUMENT, PHOTO, TIME]

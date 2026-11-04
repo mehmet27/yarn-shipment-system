@@ -57,6 +57,9 @@ final class DiscrepancyQueryAdapter implements DiscrepancyQueryPort {
         where.add("severity = :severity", "severity", name(filter.severity()));
         where.add("assignee_id = :assigneeId", "assigneeId", filter.assigneeId());
         where.add("shipment_id = :shipmentId", "shipmentId", filter.shipmentId());
+        if (Boolean.TRUE.equals(filter.overdue())) {
+            where.addFixed("due_at < now() AND status IN ('OPEN', 'IN_REVIEW')");
+        }
 
         long total = where.bind(jdbc.sql("SELECT count(*) FROM discrepancy" + where.clause()))
                 .query(Long.class)
@@ -92,6 +95,10 @@ final class DiscrepancyQueryAdapter implements DiscrepancyQueryPort {
                 conditions.add(condition);
                 params.put(name, value);
             }
+        }
+
+        void addFixed(String condition) {
+            conditions.add(condition);
         }
 
         String clause() {

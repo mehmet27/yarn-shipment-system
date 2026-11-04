@@ -9,7 +9,8 @@ describe('Uyuşmazlık ekranları', () => {
   it('listeyi önem rozetiyle gösterir ve kartı detaya bağlar', async () => {
     server.use(...createHandlers('ADMIN'));
     renderApp('/panel/uyusmazliklar');
-    const card = await screen.findByRole('link', { name: 'UY-2026-0001' });
+    // İlk test sayfayı soğuk yükler; CI'da 1 sn'lik varsayılan bekleme yetmeyebilir.
+    const card = await screen.findByRole('link', { name: 'UY-2026-0001' }, { timeout: 5000 });
     expect(card).toHaveAttribute('href', '/panel/uyusmazliklar/disc-0');
     expect(within(card).getByText('Kırmızı')).toBeInTheDocument();
   });
@@ -20,6 +21,15 @@ describe('Uyuşmazlık ekranları', () => {
     await userEvent.click(await screen.findByRole('combobox', { name: 'Durum' }));
     await userEvent.click(await screen.findByRole('option', { name: 'Çözüldü' }));
     expect(router.state.location.search).toBe('?durum=RESOLVED');
+  });
+
+  it('süresi geçenler filtresini adrese yazar ve listeyi daraltır', async () => {
+    server.use(...createHandlers('ADMIN'));
+    const { router } = renderApp('/panel/uyusmazliklar');
+    await screen.findByRole('link', { name: 'UY-2026-0001' });
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Yalnızca süresi geçenler' }));
+    expect(router.state.location.search).toBe('?gecikmis=1');
+    await screen.findByRole('checkbox', { name: 'Yalnızca süresi geçenler', checked: true });
   });
 
   it('açık uyuşmazlığı bana atar, sonra notla karara bağlar', async () => {

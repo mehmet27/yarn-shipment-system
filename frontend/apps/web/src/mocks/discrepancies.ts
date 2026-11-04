@@ -79,11 +79,16 @@ function log(id: string, { actionType, actorId, note }: LogEntry) {
 export function listMockDiscrepancies(filter: {
   status?: string | null;
   severity?: string | null;
+  overdue?: boolean;
 }): DiscrepancyView[] {
   return items.filter(
     (item) =>
       (!filter.status || item.status === filter.status) &&
-      (!filter.severity || item.severity === filter.severity),
+      (!filter.severity || item.severity === filter.severity) &&
+      (!filter.overdue ||
+        ((item.status === 'OPEN' || item.status === 'IN_REVIEW') &&
+          item.dueAt !== undefined &&
+          new Date(item.dueAt).getTime() < Date.now())),
   );
 }
 

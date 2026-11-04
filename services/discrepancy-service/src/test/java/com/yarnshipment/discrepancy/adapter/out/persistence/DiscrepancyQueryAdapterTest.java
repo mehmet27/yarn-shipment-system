@@ -31,7 +31,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 class DiscrepancyQueryAdapterTest {
 
     private static final int PAGE_SIZE = 20;
-    private static final Filter NO_FILTER = new Filter(null, null, null, null);
+    private static final Filter NO_FILTER = new Filter(null, null, null, null, null);
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -60,7 +60,7 @@ class DiscrepancyQueryAdapterTest {
 
         DiscrepancyPage all = queries.findDiscrepancies(NO_FILTER, ownSite, 0, PAGE_SIZE);
         DiscrepancyPage red =
-                queries.findDiscrepancies(new Filter(null, Severity.RED, null, null), ownSite, 0, PAGE_SIZE);
+                queries.findDiscrepancies(new Filter(null, Severity.RED, null, null, null), ownSite, 0, PAGE_SIZE);
 
         assertThat(all.totalElements()).isEqualTo(2);
         assertThat(all.items().getFirst().basis().severity()).isEqualTo(Severity.RED);
@@ -70,6 +70,17 @@ class DiscrepancyQueryAdapterTest {
         assertThat(queries.findDiscrepancies(NO_FILTER, AccessScope.UNRESTRICTED, 0, PAGE_SIZE)
                         .totalElements())
                 .isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Vadesi geçmiş süzgeci yalnızca vadesi dolmuş açık kayıtları getirir")
+    void shouldFilterOverdue() {
+        Filter overdue = new Filter(null, null, null, null, true);
+
+        DiscrepancyPage result = queries.findDiscrepancies(overdue, AccessScope.UNRESTRICTED, 0, PAGE_SIZE);
+
+        // Tohum kayıtların vadesi 30.10.2026'dadır ve ikisi de hâlâ açıktır.
+        assertThat(result.items()).hasSize(2);
     }
 
     @Test

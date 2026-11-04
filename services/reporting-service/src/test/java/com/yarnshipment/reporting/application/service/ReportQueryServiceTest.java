@@ -83,7 +83,8 @@ class ReportQueryServiceTest {
     }
 
     @Test
-    @DisplayName("Sevkiyat dökümü ve fasoncu bakiyesi yönetici kapsamıyla, döküm limitiyle sorgulanır; dış roller boş alır")
+    @DisplayName(
+            "Sevkiyat dökümü ve fasoncu bakiyesi yönetici kapsamıyla, döküm limitiyle sorgulanır; dış roller boş alır")
     void shouldListShipmentAndBalanceReports() {
         service.listShipmentReport(query(TestTokens.actor("manager")));
         service.listSubcontractorBalance(query(TestTokens.actor("manager")));

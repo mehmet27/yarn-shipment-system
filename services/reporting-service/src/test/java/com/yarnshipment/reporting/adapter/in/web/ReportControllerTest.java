@@ -16,8 +16,8 @@ import com.yarnshipment.reporting.domain.model.ShipmentRow;
 import com.yarnshipment.reporting.domain.model.SubcontractorBalance;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,21 +144,20 @@ class ReportControllerTest {
     void shouldReturnShipmentReport() {
         UUID id = UUID.randomUUID();
         when(listShipments.listShipmentReport(any()))
-                .thenReturn(List.of(
-                        new ShipmentRow(
-                                id,
-                                "SHP-1",
-                                UUID.randomUUID(),
-                                null,
-                                "COMPLETED",
-                                new BigDecimal("1000.000"),
-                                new BigDecimal("990.000"),
-                                new BigDecimal("10.000"),
-                                new BigDecimal("1.00"),
-                                "GREEN",
-                                false,
-                                Instant.parse("2026-11-02T09:00:00Z"),
-                                null)));
+                .thenReturn(List.of(new ShipmentRow(
+                        id,
+                        "SHP-1",
+                        UUID.randomUUID(),
+                        null,
+                        "COMPLETED",
+                        new BigDecimal("1000.000"),
+                        new BigDecimal("990.000"),
+                        new BigDecimal("10.000"),
+                        new BigDecimal("1.00"),
+                        "GREEN",
+                        false,
+                        Instant.parse("2026-11-02T09:00:00Z"),
+                        null)));
 
         MvcTestResult result = get(BASE + "/shipments?from=2026-11-01&to=2026-11-03", manager());
 
@@ -186,7 +185,9 @@ class ReportControllerTest {
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$[0].inTransitKg").isEqualTo("500.000");
         assertThat(result).bodyJson().extractingPath("$[0].differenceKg").isEqualTo("10.000");
-        assertThat(get(BASE + "/subcontractor-balance", TestTokens.token("warehouse").build()))
+        assertThat(get(
+                        BASE + "/subcontractor-balance",
+                        TestTokens.token("warehouse").build()))
                 .hasStatus(HttpStatus.FORBIDDEN);
         assertThat(get(BASE + "/shipments", TestTokens.token("warehouse").build()))
                 .hasStatus(HttpStatus.FORBIDDEN);

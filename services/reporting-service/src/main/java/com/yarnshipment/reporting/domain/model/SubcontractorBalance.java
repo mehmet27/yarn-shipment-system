@@ -13,7 +13,11 @@ import java.util.UUID;
  * @param inTransitKg henüz teslim kaydı olmayan sevkiyatların çıkış net toplamı
  */
 public record SubcontractorBalance(
-        UUID subcontractorId, int shipmentCount, BigDecimal dispatchedKg, BigDecimal deliveredKg, BigDecimal inTransitKg) {
+        UUID subcontractorId,
+        int shipmentCount,
+        BigDecimal dispatchedKg,
+        BigDecimal deliveredKg,
+        BigDecimal inTransitKg) {
 
     /** Teslim edilmiş sevkiyatlarda çıkış − teslim: fasonda ya da yolda kaybolan miktar (fire). */
     public BigDecimal differenceKg() {

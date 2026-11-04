@@ -830,6 +830,7 @@
       "days90": "90 gün"
     },
     "tabs": {
+      "summary": "Özet",
       "drivers": "Şoförler",
       "subcontractors": "Fasoncular",
       "pairs": "Eşleşmeler"
@@ -871,6 +872,48 @@
       "dueAt": "Vade: {{at}}",
       "largestList": "Kilo farkı en büyük sevkiyatlar",
       "noDifferences": "Bu dönemde fark kaydı yok."
+    },
+    "range": {
+      "from": "Başlangıç tarihi",
+      "to": "Bitiş tarihi",
+      "invalid": "Başlangıç, bitişten sonra olamaz."
+    },
+    "export": {
+      "excel": "Excel indir (.xlsx)",
+      "pdf": "PDF / Yazdır",
+      "failed": "Rapor hazırlanamadı. Lütfen tekrar deneyin.",
+      "onlyDiscrepant": "Yalnızca uyuşmazlıklılar",
+      "allRows": "Tüm satırlar",
+      "total": "Toplam",
+      "period": "Dönem",
+      "generatedAt": "Oluşturulma zamanı",
+      "generatedBy": "Oluşturan",
+      "filter": "Süzgeç",
+      "cancelled": "İptal",
+      "differenceRate": "Mutlak fark oranı (çıkış net üzerinden)",
+      "indicator": "Gösterge",
+      "value": "Değer",
+      "discrepancyNo": "Uyuşmazlık no",
+      "severity": "Önem",
+      "dueAt": "Vade",
+      "shipmentNo": "Sevkiyat no",
+      "diffKg": "Fark (kg)",
+      "diffPct": "Fark oranı",
+      "band": "Bant",
+      "sheets": {
+        "summary": "Özet",
+        "overdue": "Süresi geçenler",
+        "largest": "En büyük farklar",
+        "drivers": "Şoförler",
+        "subcontractors": "Fasoncular",
+        "pairs": "Eşleşmeler"
+      },
+      "signature": {
+        "prepared": "Hazırlayan",
+        "checked": "Kontrol eden",
+        "approved": "Onaylayan",
+        "dateLine": "Tarih / İmza"
+      }
     }
   }
 }

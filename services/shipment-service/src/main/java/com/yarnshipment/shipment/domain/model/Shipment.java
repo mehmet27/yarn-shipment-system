@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.domain.model;
 
+import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -60,11 +61,17 @@ public record Shipment(
 
     /** Depo çıkış tartımını ve mührü kaydetti (DRAFT → LOADED). */
     public DispatchRecording recordDispatch(DispatchMeasurement measurement, Instant recordedAt) {
+        return recordDispatch(measurement, recordedAt, null);
+    }
+
+    /** Aynı kayıt; çıkış tartımına kayıt anındaki standart dara eklenir. */
+    public DispatchRecording recordDispatch(
+            DispatchMeasurement measurement, Instant recordedAt, @Nullable TareBasis tareBasis) {
         if (status != ShipmentStatus.DRAFT) {
             throw new InvalidShipmentStatusException(id, status, ShipmentStatus.LOADED);
         }
-        Weighing weighing =
-                new Weighing(measurement.grossKg(), measurement.tareKg(), measurement.bagCount(), recordedAt);
+        Weighing weighing = new Weighing(
+                measurement.grossKg(), measurement.tareKg(), measurement.bagCount(), recordedAt, tareBasis);
         return new DispatchRecording(
                 id, siteId, weighing, measurement.scaleTicketNo(), measurement.sealNo(), recordedAt);
     }

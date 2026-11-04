@@ -3,6 +3,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Stack, Table, Text } from '@iplik/ui';
 import type { Kilogram } from '@iplik/units';
 import { calculateDifferencePct, formatKg, formatPct } from '@iplik/units';
+import { TareDeviationRow } from './TareDeviationRow';
 import type { ShipmentWeighings } from './shipmentViews';
 
 export type WeightComparisonProps = {
@@ -55,6 +56,7 @@ export function WeightComparison({ weighings }: WeightComparisonProps) {
               <Table.Td ta="right">{cell(deliveryWeighing, hidden.delivery, field)}</Table.Td>
             </Table.Tr>
           ))}
+          {!hidden.dispatch && <TareDeviationRow weighing={dispatchWeighing} />}
           <Table.Tr>
             <Table.Th scope="row">{t('shipment.file.difference')}</Table.Th>
             <Table.Td colSpan={2} ta="right">

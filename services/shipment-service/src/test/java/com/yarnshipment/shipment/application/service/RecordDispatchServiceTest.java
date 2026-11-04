@@ -37,8 +37,13 @@ class RecordDispatchServiceTest {
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final FixedBagCountPort bagsPort =
             new FixedBagCountPort(TestDispatches.measurement().bagCount());
+    private boolean hasTareStandard;
     private final RecordDispatchService service = new RecordDispatchService(
-            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), commandPort, bagsPort, clock);
+            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
+            commandPort,
+            bagsPort,
+            (siteId, bagCount) -> hasTareStandard ? TestDispatches.tareBasis(bagCount) : null,
+            clock);
     private final Actor warehouse = TestTokens.actor("warehouse");
 
     private RecordDispatchCommand command(Actor actor) {
@@ -111,6 +116,34 @@ class RecordDispatchServiceTest {
                 .extracting(e -> ((InvalidDispatchException) e).field())
                 .isEqualTo("bagCount");
         assertThat(commandPort.recordings()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Lokasyonun çuval standardı varsa çıkış tartımına beklenen dara ve sapma eklenir")
+    void shouldAttachTareBasis() {
+        queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
+        // çuval başı 0,5 kg × 40 çuval = 20 kg beklenen; girilen 18 kg → %-10 sapma, %5 sınırın dışında
+        hasTareStandard = true;
+
+        service.recordDispatch(command(warehouse));
+
+        assertThat(commandPort.recordings()).singleElement().satisfies(recording -> {
+            assertThat(recording.weighing().tareDeviationPct()).isEqualByComparingTo("-10.00");
+            assertThat(recording.weighing().tareAlert()).isTrue();
+        });
+    }
+
+    @Test
+    @DisplayName("Standart tanımsızsa tartım sapma olmadan kaydedilir")
+    void shouldRecordWithoutTareBasis() {
+        queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
+
+        service.recordDispatch(command(warehouse));
+
+        assertThat(commandPort.recordings()).singleElement().satisfies(recording -> {
+            assertThat(recording.weighing().tareDeviationPct()).isNull();
+            assertThat(recording.weighing().tareAlert()).isFalse();
+        });
     }
 
     private static final class FixedBagCountPort implements ShipmentBagsPort {

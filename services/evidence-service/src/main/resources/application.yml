@@ -10,6 +10,8 @@ spring:
     hikari:
       schema: evidence
   flyway:
+    user: ${DB_USER:yarnshipment}
+    password: ${DB_PASSWORD}
     default-schema: evidence
     schemas: evidence
     create-schemas: true

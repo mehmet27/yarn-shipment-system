@@ -51,7 +51,12 @@ final class FakeCredentials implements AccountCredentialPort {
     }
 
     @Override
-    public void setEnabled(UUID userId, boolean enabled) {
-        enabledChanges.add(userId + ":" + enabled);
+    public void enable(UUID userId) {
+        enabledChanges.add(userId + ":true");
+    }
+
+    @Override
+    public void disable(UUID userId) {
+        enabledChanges.add(userId + ":false");
     }
 }

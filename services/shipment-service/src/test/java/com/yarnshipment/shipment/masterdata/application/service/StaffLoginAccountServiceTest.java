@@ -97,13 +97,13 @@ class StaffLoginAccountServiceTest {
     void shouldDisableOthersOnly() {
         UUID other = UUID.randomUUID();
 
-        service.changeLoginAccountEnabled(admin, other, false);
-        service.changeLoginAccountEnabled(admin, other, true);
-        service.changeLoginAccountEnabled(admin, admin.userId(), true);
+        service.disableLoginAccount(admin, other);
+        service.enableLoginAccount(admin, other);
+        service.enableLoginAccount(admin, admin.userId());
 
         assertThat(credentials.enabledChanges())
                 .containsExactly(other + ":false", other + ":true", admin.userId() + ":true");
-        assertThatThrownBy(() -> service.changeLoginAccountEnabled(admin, admin.userId(), false))
+        assertThatThrownBy(() -> service.disableLoginAccount(admin, admin.userId()))
                 .isInstanceOf(InvalidMasterDataException.class);
         assertThat(credentials.enabledChanges()).hasSize(EXPECTED_CHANGES);
     }

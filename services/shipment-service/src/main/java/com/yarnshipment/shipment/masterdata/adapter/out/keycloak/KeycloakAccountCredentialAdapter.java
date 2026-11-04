@@ -44,8 +44,13 @@ final class KeycloakAccountCredentialAdapter implements AccountCredentialPort {
     }
 
     @Override
-    public void setEnabled(UUID userId, boolean enabled) {
-        admin.guardedRun(() -> switchEnabled(admin.accessToken(), userId, enabled));
+    public void enable(UUID userId) {
+        admin.guardedRun(() -> switchEnabled(admin.accessToken(), userId, true));
+    }
+
+    @Override
+    public void disable(UUID userId) {
+        admin.guardedRun(() -> switchEnabled(admin.accessToken(), userId, false));
     }
 
     private Optional<ResetTarget> lookUp(String token, String username) {
@@ -85,7 +90,7 @@ final class KeycloakAccountCredentialAdapter implements AccountCredentialPort {
         if (user(token, userId).isEmpty()) {
             throw new LoginAccountNotFoundException();
         }
-        update(token, userId, Map.of("enabled", enabled));
+        putUser(token, userId, Map.of("enabled", enabled));
         if (!enabled) {
             endSessions(token, userId);
         }
@@ -114,11 +119,11 @@ final class KeycloakAccountCredentialAdapter implements AccountCredentialPort {
             List<?> remaining = actions.stream()
                     .filter(action -> !UPDATE_PASSWORD.equals(action))
                     .toList();
-            update(token, userId, Map.of("requiredActions", remaining));
+            putUser(token, userId, Map.of("requiredActions", remaining));
         }
     }
 
-    private void update(String token, UUID userId, Map<String, Object> changes) {
+    private void putUser(String token, UUID userId, Map<String, Object> changes) {
         admin.http()
                 .put()
                 .uri("/admin/realms/{realm}/users/{id}", admin.realm(), userId)

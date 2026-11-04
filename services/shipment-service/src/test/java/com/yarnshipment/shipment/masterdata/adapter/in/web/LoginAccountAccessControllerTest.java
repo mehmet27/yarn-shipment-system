@@ -58,7 +58,17 @@ class LoginAccountAccessControllerTest {
                 ENABLED_URI, "{\"enabled\":false}", TestTokens.token("admin").build());
 
         assertThat(result).hasStatus(HttpStatus.NO_CONTENT);
-        verify(changeEnabled).changeLoginAccountEnabled(any(), eq(USER), eq(false));
+        verify(changeEnabled).disableLoginAccount(any(), eq(USER));
+    }
+
+    @Test
+    @DisplayName("Yönetici hesabı yeniden açar: 204 ve use case enable ile çağrılır")
+    void shouldEnable() {
+        MvcTestResult result =
+                put(ENABLED_URI, "{\"enabled\":true}", TestTokens.token("admin").build());
+
+        assertThat(result).hasStatus(HttpStatus.NO_CONTENT);
+        verify(changeEnabled).enableLoginAccount(any(), eq(USER));
     }
 
     @Test
@@ -68,7 +78,7 @@ class LoginAccountAccessControllerTest {
         doThrow(new InvalidMasterDataException("userId", "own account"))
                 .doThrow(new LoginAccountNotFoundException())
                 .when(changeEnabled)
-                .changeLoginAccountEnabled(any(), any(), eq(false));
+                .disableLoginAccount(any(), any());
         doThrow(new SmsUnavailableException()).when(startReset).startPasswordReset(any(), any());
 
         MvcTestResult own = put(ENABLED_URI, "{\"enabled\":false}", admin);

@@ -35,7 +35,11 @@ public class LoginAccountAccessController implements LoginAccountAccessApi {
     @Override
     @PreAuthorize("hasAuthority('USER_MANAGE')")
     public ResponseEntity<Void> changeLoginAccountEnabled(UUID userId, ChangeLoginAccountEnabledRequest request) {
-        changeEnabled.changeLoginAccountEnabled(currentActorProvider.getCurrentActor(), userId, request.getEnabled());
+        if (request.getEnabled()) {
+            changeEnabled.enableLoginAccount(currentActorProvider.getCurrentActor(), userId);
+        } else {
+            changeEnabled.disableLoginAccount(currentActorProvider.getCurrentActor(), userId);
+        }
         return ResponseEntity.noContent().build();
     }
 

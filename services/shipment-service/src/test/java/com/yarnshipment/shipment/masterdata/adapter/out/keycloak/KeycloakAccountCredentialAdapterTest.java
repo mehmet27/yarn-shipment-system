@@ -119,8 +119,8 @@ class KeycloakAccountCredentialAdapterTest {
     void shouldSwitchEnabled() throws Exception {
         KeycloakAccountCredentialAdapter adapter = adapter();
 
-        adapter.setEnabled(USER, false);
-        adapter.setEnabled(USER, true);
+        adapter.disable(USER);
+        adapter.enable(USER);
 
         assertThat(calls).filteredOn(call -> call.endsWith("/logout")).hasSize(1);
         assertThat(bodies).anyMatch(body -> body.equals("{\"enabled\":false}"));
@@ -133,7 +133,7 @@ class KeycloakAccountCredentialAdapterTest {
         userStatus = NOT_FOUND;
         KeycloakAccountCredentialAdapter adapter = adapter();
 
-        assertThatThrownBy(() -> adapter.setEnabled(USER, false)).isInstanceOf(LoginAccountNotFoundException.class);
+        assertThatThrownBy(() -> adapter.disable(USER)).isInstanceOf(LoginAccountNotFoundException.class);
     }
 
     private KeycloakAccountCredentialAdapter adapter() throws IOException {

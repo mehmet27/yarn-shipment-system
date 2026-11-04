@@ -7,11 +7,13 @@ import com.yarnshipment.shipment.masterdata.application.port.in.ConfirmPasswordR
 import com.yarnshipment.shipment.masterdata.application.port.in.RequestPasswordResetUseCase;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * "Şifremi unuttum" uçları; girişsiz çağrılır (yollar {@code yarnshipment.security.public-paths} içindedir). Yanıt
  * giriş adının var olup olmadığını sızdırmaz. Yanıtlar önbelleğe alınmaz.
+ * {@code permitAll()} açıkça yazılır: uç herkese açıktır ve yöntem güvenliği bu niyeti belgeler.
  */
 @RestController
 public class PasswordResetController implements PasswordResetApi {
@@ -25,12 +27,14 @@ public class PasswordResetController implements PasswordResetApi {
     }
 
     @Override
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Void> requestPasswordReset(PasswordResetRequest request) {
         requestReset.requestPasswordReset(request.getUsername());
         return ResponseEntity.accepted().cacheControl(CacheControl.noStore()).build();
     }
 
     @Override
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Void> confirmPasswordReset(PasswordResetConfirmRequest request) {
         confirmReset.confirmPasswordReset(request.getUsername(), request.getCode(), request.getNewPassword());
         return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();

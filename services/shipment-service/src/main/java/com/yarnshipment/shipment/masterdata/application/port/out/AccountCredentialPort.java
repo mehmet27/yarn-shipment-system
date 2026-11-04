@@ -18,6 +18,9 @@ public interface AccountCredentialPort {
      */
     void setPassword(UUID userId, String password);
 
-    /** Hesabı girişe açar ya da kapatır; kapatılırsa açık oturumlar da kapanır. Kullanıcı yoksa not-found fırlatır. */
-    void setEnabled(UUID userId, boolean enabled);
+    /** Hesabı girişe açar. Kullanıcı yoksa not-found fırlatır. */
+    void enable(UUID userId);
+
+    /** Hesabı kapatır ve açık oturumlarını sonlandırır. Kullanıcı yoksa not-found fırlatır. */
+    void disable(UUID userId);
 }

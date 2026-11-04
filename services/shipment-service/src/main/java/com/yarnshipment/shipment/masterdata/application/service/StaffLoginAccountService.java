@@ -63,10 +63,15 @@ public final class StaffLoginAccountService
     }
 
     @Override
-    public void changeLoginAccountEnabled(Actor actor, UUID userId, boolean enabled) {
-        if (!enabled && actor.userId().equals(userId)) {
+    public void enableLoginAccount(Actor actor, UUID userId) {
+        credentials.enable(userId);
+    }
+
+    @Override
+    public void disableLoginAccount(Actor actor, UUID userId) {
+        if (actor.userId().equals(userId)) {
             throw new InvalidMasterDataException("userId", "own account");
         }
-        credentials.setEnabled(userId, enabled);
+        credentials.disable(userId);
     }
 }

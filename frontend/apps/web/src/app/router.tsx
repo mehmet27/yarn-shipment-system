@@ -2,6 +2,7 @@ import { RequireAuth, RequirePermission } from '@/modules/auth';
 import { bagPanelRoutes } from '@/modules/bag';
 import { discrepancyPanelRoutes } from '@/modules/discrepancy';
 import { masterDataPanelRoutes } from '@/modules/masterdata';
+import { reportPanelRoutes } from '@/modules/report';
 import { shipmentFieldRoutes, shipmentPanelRoutes } from '@/modules/shipment';
 import { usersPanelRoutes } from '@/modules/users';
 import { createBrowserRouter } from 'react-router';
@@ -39,6 +40,7 @@ const routes: RouteObject[] = [
       ...masterDataPanelRoutes,
       ...bagPanelRoutes,
       ...usersPanelRoutes,
+      ...reportPanelRoutes,
     ],
   },
   {

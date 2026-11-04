@@ -1,0 +1,279 @@
+openapi: 3.0.3
+info:
+  title: audit-service API
+  version: 1.0.0
+  description: |
+    Denetim izi okuma uçları (API-01). Kayıtlar tüm servislerin olaylarından (`shipment.events.v1`,
+    `evidence.events.v1`, `discrepancy.events.v1`) otomatik yazılır ve değiştirilemez; bu API yalnızca okur.
+    Her kayıt öncekinin hash'iyle zincirlenir, günlük iş zinciri doğrular ve sonucu `chain-checks` ucundan görünür.
+
+    Kurallar:
+    - Zamanlar ISO 8601 UTC (API-03).
+    - Liste ucu sayfalıdır, `page` 0'dan başlar; en yeni kayıt önce gelir (API-06).
+    - Uçlar `AUDIT_VIEW` izni ister (Admin, Kalite, Depo, Yönetici).
+    - Kayıtlar IP, cihaz ve user-agent bilgisini döndürmez (KVKK).
+servers:
+  - url: /
+tags:
+  - name: AuditLog
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/audit-log:
+    get:
+      tags: [AuditLog]
+      operationId: listAuditRecords
+      summary: Denetim kayıtları
+      description: Süzgeçler birlikte uygulanır. `from` dahil, `to` hariçtir.
+      parameters:
+        - name: entityType
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: entityId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: actorUserId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: action
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: sourceService
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditRecordPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/audit-log/chain-checks:
+    get:
+      tags: [AuditLog]
+      operationId: listChainChecks
+      summary: Zincir doğrulama sonuçları
+      description: En yeni sonuç önce gelir. `ok=false` zincirin bozulduğunu gösterir.
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Sonuçlar
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChainCheckView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    BadRequest:
+      description: İstek biçimi hatalı
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unauthorized:
+      description: Oturum yok veya token geçersiz (code AUTHENTICATION_REQUIRED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: İzin yok (ACCESS_DENIED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    Problem:
+      description: RFC 9457 hata gövdesi (ERR-07). İstemci kararını `code` alanına göre verir.
+      type: object
+      required: [type, title, status, code]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+        requestId:
+          type: string
+    PageMetadata:
+      type: object
+      required: [number, size, totalElements, totalPages]
+      properties:
+        number:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    AuditActor:
+      type: object
+      description: İşlemi yapan; kullanıcısız işlerde yalnızca `clientId` (servis hesabı) dolu olur.
+      properties:
+        userId:
+          type: string
+          format: uuid
+        role:
+          type: string
+        clientId:
+          type: string
+    AuditEntity:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          description: Shipment, Evidence, Discrepancy
+        id:
+          type: string
+          format: uuid
+    AuditRecordView:
+      type: object
+      required: [id, occurredAt, recordedAt, sourceService, eventId, actor, action]
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Zincirdeki sıra numarası
+        occurredAt:
+          type: string
+          format: date-time
+        recordedAt:
+          type: string
+          format: date-time
+        sourceService:
+          type: string
+        eventId:
+          type: string
+          format: uuid
+        actor:
+          $ref: '#/components/schemas/AuditActor'
+        action:
+          type: string
+          description: Olay türü (CloudEvents type) ya da yetki kararı için AUTHORIZATION
+        decision:
+          type: string
+          enum: [ALLOWED, DENIED]
+        entity:
+          $ref: '#/components/schemas/AuditEntity'
+        before:
+          type: object
+          additionalProperties: true
+        after:
+          type: object
+          additionalProperties: true
+          description: Olay kaydında olayın gövdesi
+        traceId:
+          type: string
+    AuditRecordPage:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditRecordView'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+    ChainCheckView:
+      type: object
+      required: [id, checkedAt, fromId, toId, ok]
+      properties:
+        id:
+          type: integer
+          format: int64
+        checkedAt:
+          type: string
+          format: date-time
+        fromId:
+          type: integer
+          format: int64
+        toId:
+          type: integer
+          format: int64
+        ok:
+          type: boolean
+        brokenAtId:
+          type: integer
+          format: int64
+          description: Zincir bozulmuşsa ilk bozuk kaydın sırası

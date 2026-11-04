@@ -13,6 +13,7 @@ type PanelNavItem = {
 const ITEMS: readonly PanelNavItem[] = [
   { to: '/panel/sevkiyat', labelKey: 'nav.shipments' },
   { to: '/panel/cuvallar', labelKey: 'nav.bags', permission: 'BAG_CREATE' },
+  { to: '/panel/raporlar', labelKey: 'nav.reports', permission: 'REPORT_VIEW' },
   { to: '/panel/uyusmazliklar', labelKey: 'nav.discrepancies', permission: 'DISCREPANCY_VIEW' },
   { to: '/panel/tanimlar', labelKey: 'nav.masterData', permission: 'MASTER_DATA_MANAGE' },
   { to: '/panel/partiler', labelKey: 'nav.lots', permission: 'LOT_QUALITY_LOCK' },

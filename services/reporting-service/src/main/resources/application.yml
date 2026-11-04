@@ -1,0 +1,39 @@
+# CONF-01: ortamdan gelen değerler ortam değişkeniyle verilir; gizli bilgi bu dosyaya yazılmaz (SEC-14).
+spring:
+  application:
+    name: reporting-service
+  datasource:
+    # Uygulama yalnızca DML yetkili rol ile bağlanır; DDL Flyway'in migrator rolüyle yapılır.
+    url: ${REPORTING_DB_URL:jdbc:postgresql://localhost:5432/reporting_db}
+    username: ${REPORTING_DB_APP_USER:reporting_app}
+    password: ${REPORTING_DB_APP_PASSWORD}
+  flyway:
+    user: ${REPORTING_DB_MIGRATOR_USER:reporting_migrator}
+    password: ${REPORTING_DB_MIGRATOR_PASSWORD}
+    placeholders:
+      app_role: ${REPORTING_DB_APP_USER:reporting_app}
+      readonly_role: ${REPORTING_DB_READONLY_USER:reporting_readonly}
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+  jackson:
+    default-property-inclusion: non_null
+  mvc:
+    problemdetails:
+      enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/yarnshipment}
+          audiences: yarnshipment-api
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: reporting-service
+      # Okuma modeli olaylardan yeniden kurulabilir; ilk açılışta konudaki tüm geçmiş işlenir.
+      auto-offset-reset: earliest
+server:
+  port: ${SERVER_PORT:8087}
+# Bu servis olay yayınlamaz; yalnızca tüketir (outbox yayıncısı topic verilmediği için kapalı kalır).

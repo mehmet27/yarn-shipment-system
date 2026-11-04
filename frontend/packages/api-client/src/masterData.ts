@@ -113,3 +113,11 @@ export type {
   QualityGradeUpdateRequest,
   QualityGradeView,
 } from './generated/shipmentService';
+
+export { listTareStandards, saveTareStandard } from './generated/shipmentService';
+export type {
+  PackagingType,
+  TareStandardListResponse,
+  TareStandardSaveRequest,
+  TareStandardView,
+} from './generated/shipmentService';

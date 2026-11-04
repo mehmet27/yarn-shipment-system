@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.mockito.Mockito;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /** Düz kodun yalnızca provider=log VE local profilinde yazılabildiğini garanti eder. */
 class SmsDevOutboxWiringTest {
@@ -24,7 +24,9 @@ class SmsDevOutboxWiringTest {
     }
 
     private ApplicationContextRunner runner(String... props) {
-        return new ApplicationContextRunner().withUserConfiguration(Config.class).withPropertyValues(props);
+        return new ApplicationContextRunner()
+                .withUserConfiguration(Config.class)
+                .withPropertyValues(props);
     }
 
     @Test

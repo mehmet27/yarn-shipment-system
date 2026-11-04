@@ -31,23 +31,28 @@ export function PrintableReport({ tables, title, logo = null }: PrintableReportP
             <Table withTableBorder withColumnBorders>
               <Table.Thead>
                 <Table.Tr>
-                  {table.headers.map((header) => (
-                    <Table.Th key={header}>{header}</Table.Th>
+                  {table.headers.map((header, index) => (
+                    <Table.Th key={`${String(index)}-${header}`}>{header}</Table.Th>
                   ))}
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {table.rows.map((row) => (
-                  <Table.Tr key={row.map(formatCell).join('|')}>
+                {table.rows.map((row, rowIndex) => (
+                  // Aynı değerlerde iki satır olabilir; anahtar çakışmasın diye sıra numarası da girer.
+                  <Table.Tr key={`${String(rowIndex)}|${row.map(formatCell).join('|')}`}>
                     {row.map((cell, index) => (
-                      <Table.Td key={table.headers[index]}>{formatCell(cell)}</Table.Td>
+                      <Table.Td key={`${String(index)}-${table.headers[index] ?? ''}`}>
+                        {formatCell(cell)}
+                      </Table.Td>
                     ))}
                   </Table.Tr>
                 ))}
                 {table.total !== undefined && (
                   <Table.Tr fw={700}>
                     {table.total.map((cell, index) => (
-                      <Table.Td key={table.headers[index]}>{formatCell(cell)}</Table.Td>
+                      <Table.Td key={`${String(index)}-${table.headers[index] ?? ''}`}>
+                        {formatCell(cell)}
+                      </Table.Td>
                     ))}
                   </Table.Tr>
                 )}

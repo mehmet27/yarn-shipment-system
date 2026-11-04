@@ -5,3 +5,18 @@
 body {
   background: var(--mantine-color-gray-0);
 }
+
+/* Rozet metni kesilmez: Mantine varsayılanı tek satır ve "…" ile kırpar; uzun metin alt satıra iner. */
+.mantine-Badge-root {
+  height: auto;
+  min-height: var(--badge-height);
+  max-width: 100%;
+  padding-block: 2px;
+}
+
+.mantine-Badge-label {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  text-align: center;
+}

@@ -64,3 +64,5 @@ export type { ProgressStepsProps } from './components/ProgressSteps';
 export { StatCard } from './components/StatCard';
 export type { StatCardProps, StatTone } from './components/StatCard';
 export { BRAND_GRADIENT, BRAND_SIDEBAR_GRADIENT } from './brandGradient';
+export { NavIcon } from './components/NavIcon';
+export type { NavIconName, NavIconProps } from './components/NavIcon';

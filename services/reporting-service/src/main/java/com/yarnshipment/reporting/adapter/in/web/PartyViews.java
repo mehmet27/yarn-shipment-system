@@ -55,13 +55,14 @@ final class PartyViews {
                 row.status(),
                 row.hadDiscrepancy(),
                 row.createdAt().atOffset(ZoneOffset.UTC));
+        var comparison = row.comparison();
         view.setDriverId(row.driverId());
-        view.setDispatchNetKg(plain(row.dispatchNetKg()));
-        view.setDeliveryNetKg(plain(row.deliveryNetKg()));
-        view.setDiffKg(plain(row.diffKg()));
-        view.setDiffPct(plain(row.diffPct()));
-        if (row.band() != null) {
-            view.setBand(ShipmentRowView.BandEnum.fromValue(row.band()));
+        view.setDispatchNetKg(plain(comparison.dispatchNetKg()));
+        view.setDeliveryNetKg(plain(comparison.deliveryNetKg()));
+        view.setDiffKg(plain(comparison.diffKg()));
+        view.setDiffPct(plain(comparison.diffPct()));
+        if (comparison.band() != null) {
+            view.setBand(ShipmentRowView.BandEnum.fromValue(comparison.band()));
         }
         if (row.completedAt() != null) {
             view.setCompletedAt(row.completedAt().atOffset(ZoneOffset.UTC));

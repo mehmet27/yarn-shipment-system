@@ -157,9 +157,9 @@ class ReportQueryAdapterTest {
         assertThat(rows).extracting("shipmentNo").containsExactly("SHP-1", "SHP-2", "SHP-3");
         var red = rows.get(1);
         assertThat(red.hadDiscrepancy()).isTrue();
-        assertThat(red.band()).isEqualTo("RED");
-        assertThat(red.diffKg()).isEqualByComparingTo("-40.000");
-        assertThat(rows.get(2).band()).isNull();
+        assertThat(red.comparison().band()).isEqualTo("RED");
+        assertThat(red.comparison().diffKg()).isEqualByComparingTo("-40.000");
+        assertThat(rows.get(2).comparison().band()).isNull();
         assertThat(rows.get(2).completedAt()).isNull();
         assertThat(reports.findShipments(PERIOD, scope(site), 2)).hasSize(2);
         assertThat(reports.findShipments(PERIOD, new ReportScope(Set.of(), false, null), 10))

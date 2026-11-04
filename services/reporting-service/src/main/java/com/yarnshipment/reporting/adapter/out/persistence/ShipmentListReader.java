@@ -2,8 +2,11 @@ package com.yarnshipment.reporting.adapter.out.persistence;
 
 import com.yarnshipment.reporting.application.port.out.ReportScope;
 import com.yarnshipment.reporting.domain.model.ReportPeriod;
+import com.yarnshipment.reporting.domain.model.ShipmentComparison;
 import com.yarnshipment.reporting.domain.model.ShipmentRow;
 import com.yarnshipment.reporting.domain.model.SubcontractorBalance;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -33,21 +36,27 @@ final class ShipmentListReader {
                  LIMIT :limit""";
         return ScopedSql.withPeriod(ScopedSql.bind(jdbc.sql(sql), scope), period)
                 .param("limit", limit)
-                .query((rs, row) -> new ShipmentRow(
-                        rs.getObject("shipment_id", UUID.class),
-                        rs.getString("shipment_no"),
-                        rs.getObject("subcontractor_id", UUID.class),
-                        rs.getObject("driver_id", UUID.class),
-                        rs.getString("status"),
-                        rs.getBigDecimal("dispatch_net_kg"),
-                        rs.getBigDecimal("delivery_net_kg"),
-                        rs.getBigDecimal("diff_kg"),
-                        rs.getBigDecimal("diff_pct"),
-                        rs.getString("band"),
-                        rs.getBoolean("had_discrepancy"),
-                        rs.getTimestamp("created_at").toInstant(),
-                        instantOrNull(rs.getTimestamp("completed_at"))))
+                .query((rs, row) -> mapShipment(rs))
                 .list();
+    }
+
+    private static ShipmentRow mapShipment(ResultSet rs) throws SQLException {
+        var comparison = new ShipmentComparison(
+                rs.getBigDecimal("dispatch_net_kg"),
+                rs.getBigDecimal("delivery_net_kg"),
+                rs.getBigDecimal("diff_kg"),
+                rs.getBigDecimal("diff_pct"),
+                rs.getString("band"));
+        return new ShipmentRow(
+                rs.getObject("shipment_id", UUID.class),
+                rs.getString("shipment_no"),
+                rs.getObject("subcontractor_id", UUID.class),
+                rs.getObject("driver_id", UUID.class),
+                rs.getString("status"),
+                comparison,
+                rs.getBoolean("had_discrepancy"),
+                rs.getTimestamp("created_at").toInstant(),
+                instantOrNull(rs.getTimestamp("completed_at")));
     }
 
     List<SubcontractorBalance> findSubcontractorBalances(ReportPeriod period, ReportScope scope) {

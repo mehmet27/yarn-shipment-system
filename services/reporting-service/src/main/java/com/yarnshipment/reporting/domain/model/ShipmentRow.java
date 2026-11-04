@@ -1,6 +1,5 @@
 package com.yarnshipment.reporting.domain.model;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -13,11 +12,7 @@ import org.jspecify.annotations.Nullable;
  * @param subcontractorId fasoncu
  * @param driverId şoför; henüz atanmadıysa boş
  * @param status durum
- * @param dispatchNetKg çıkış net kilo
- * @param deliveryNetKg teslim net kilo
- * @param diffKg çıkış net − teslim net; karşılaştırılmadıysa boş
- * @param diffPct fark yüzdesi
- * @param band {@code GREEN}, {@code YELLOW} ya da {@code RED}; karşılaştırılmadıysa boş
+ * @param comparison kilo ve karşılaştırma değerleri
  * @param hadDiscrepancy uyuşmazlık çıktı mı
  * @param createdAt oluşturulma
  * @param completedAt tamamlanma
@@ -28,11 +23,7 @@ public record ShipmentRow(
         UUID subcontractorId,
         @Nullable UUID driverId,
         String status,
-        @Nullable BigDecimal dispatchNetKg,
-        @Nullable BigDecimal deliveryNetKg,
-        @Nullable BigDecimal diffKg,
-        @Nullable BigDecimal diffPct,
-        @Nullable String band,
+        ShipmentComparison comparison,
         boolean hadDiscrepancy,
         Instant createdAt,
         @Nullable Instant completedAt) {}

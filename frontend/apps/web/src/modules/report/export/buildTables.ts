@@ -1,5 +1,6 @@
 import type { PairStatsView, PartyStatsView } from '@iplik/api-client';
 import { formatDateTime } from '@iplik/i18n';
+import { balanceTable, shipmentsTable } from './extraTables';
 import type { ReportBundle, ReportCell, ReportMeta, ReportTable } from './reportModel';
 import {
   count,
@@ -169,5 +170,7 @@ export function buildTables(
       },
       t,
     ),
+    shipmentsTable(bundle.shipments, meta, t),
+    balanceTable(bundle.balances, meta, t),
   ];
 }

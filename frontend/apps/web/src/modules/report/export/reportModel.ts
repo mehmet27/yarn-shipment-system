@@ -1,4 +1,10 @@
-import type { DashboardView, PairStatsView, PartyStatsView } from '@iplik/api-client';
+import type {
+  DashboardView,
+  PairStatsView,
+  PartyStatsView,
+  ShipmentRowView,
+  SubcontractorBalanceView,
+} from '@iplik/api-client';
 
 /** Dışa aktarma ve yazdırma için tek hücre; tür, Excel biçimini ve ekran biçimini belirler. */
 export type ReportCell =
@@ -23,6 +29,8 @@ export type ReportBundle = {
   drivers: PartyStatsView[];
   subcontractors: PartyStatsView[];
   pairs: PairStatsView[];
+  shipments: ShipmentRowView[];
+  balances: SubcontractorBalanceView[];
 };
 
 export type ReportMeta = {
@@ -85,6 +93,16 @@ export function partyTotals(rows: PartyLike[]): {
 }
 
 /** Karşılaştırılan toplam çıkış kilosuna göre mutlak fark yüzdesi; çıkış 0 ise 0. */
+/** Boş olabilen kilo/yüzde dizesi → hücre; yoksa boş metin. */
+export const optionalKg = (value: string | undefined): ReportCell =>
+  value === undefined ? text('') : kg(value);
+export const optionalPercent = (value: string | undefined): ReportCell =>
+  value === undefined ? text('') : percent(value);
+
+export function sumKg(values: (string | undefined)[]): number {
+  return round3(values.reduce((sum, value) => sum + (value === undefined ? 0 : Number(value)), 0));
+}
+
 export function differencePercent(dashboard: DashboardView): number {
   const dispatch = Number(dashboard.quantity.dispatchNetKg);
   return dispatch === 0

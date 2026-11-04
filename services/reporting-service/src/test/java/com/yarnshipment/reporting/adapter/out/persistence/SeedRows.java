@@ -77,6 +77,20 @@ final class SeedRows {
                 shipment.discrepant());
     }
 
+    /** Bakiye testi için fasoncu, durum ve çıkış/teslim kilosu belirlenebilen sevkiyat. */
+    void balanceShipment(UUID site, UUID subcontractor, String status, String dispatchKg, @Nullable String deliveryKg) {
+        jdbc.update(
+                """
+                INSERT INTO shipment_view (shipment_id, site_id, shipment_no, subcontractor_id, status,
+                                           dispatch_net_kg, delivery_net_kg, created_at)
+                VALUES (gen_random_uuid(), ?, 'BAL', ?, ?, ?::numeric, ?::numeric, '2026-11-02T09:00:00Z')""",
+                site,
+                subcontractor,
+                status,
+                dispatchKg,
+                deliveryKg);
+    }
+
     void oldShipment(UUID site) {
         jdbc.update("""
                 INSERT INTO shipment_view (shipment_id, site_id, shipment_no, subcontractor_id, status, created_at)

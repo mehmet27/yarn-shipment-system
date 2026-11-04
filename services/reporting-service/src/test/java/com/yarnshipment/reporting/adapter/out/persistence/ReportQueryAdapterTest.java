@@ -26,7 +26,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Dashboard ve rapor sorguları; gerçek şemada, uygulama rolüyle. Her test kendi lokasyonunu kullanır. */
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({ReportQueryAdapter.class, DashboardReader.class, DiscrepancyReader.class, PartyReader.class})
+@Import({
+    ReportQueryAdapter.class,
+    DashboardReader.class,
+    DiscrepancyReader.class,
+    PartyReader.class,
+    ShipmentListReader.class
+})
 class ReportQueryAdapterTest {
 
     private static final Instant NOW = Instant.parse("2026-11-03T12:00:00Z");
@@ -132,6 +138,54 @@ class ReportQueryAdapterTest {
         assertThat(pairs.get(0).shipmentCount()).isEqualTo(FOUR);
         assertThat(pairs.get(0).discrepancyRate()).isEqualByComparingTo("25.00");
         assertThat(pairs.get(0).averageAbsoluteDiffKg()).isEqualByComparingTo("10.000");
+    }
+
+    @Test
+    @DisplayName("Sevkiyat dökümü dönemdeki satırları en yeni önce, kapsamla sınırlı ve limitli döner")
+    void shouldListShipments() {
+        UUID site = UUID.randomUUID();
+        UUID other = UUID.randomUUID();
+        SeedRows seed = new SeedRows(jdbc);
+        seed.shipment(site, new Shipment("SHP-1", DRIVER_A, "COMPLETED", "GREEN", "0.000", false));
+        seed.shipment(site, new Shipment("SHP-2", DRIVER_B, "IN_REVIEW", "RED", "-40.000", true));
+        seed.shipment(site, new Shipment("SHP-3", DRIVER_B, "IN_TRANSIT", null, null, false));
+        seed.shipment(other, new Shipment("SHP-X", DRIVER_A, "COMPLETED", "GREEN", "0.000", false));
+        seed.oldShipment(site);
+
+        var rows = reports.findShipments(PERIOD, scope(site), 10);
+
+        assertThat(rows).extracting("shipmentNo").containsExactly("SHP-1", "SHP-2", "SHP-3");
+        var red = rows.get(1);
+        assertThat(red.hadDiscrepancy()).isTrue();
+        assertThat(red.band()).isEqualTo("RED");
+        assertThat(red.diffKg()).isEqualByComparingTo("-40.000");
+        assertThat(rows.get(2).band()).isNull();
+        assertThat(rows.get(2).completedAt()).isNull();
+        assertThat(reports.findShipments(PERIOD, scope(site), 2)).hasSize(2);
+        assertThat(reports.findShipments(PERIOD, new ReportScope(Set.of(), false, null), 10))
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Fasoncu bakiyesi iptalleri saymaz; teslimi olmayan çıkışı yolda kalan olarak ayırır")
+    void shouldSummarizeSubcontractorBalance() {
+        UUID site = UUID.randomUUID();
+        UUID subcontractor = UUID.randomUUID();
+        SeedRows seed = new SeedRows(jdbc);
+        seed.balanceShipment(site, subcontractor, "COMPLETED", "1000.000", "990.000");
+        seed.balanceShipment(site, subcontractor, "IN_TRANSIT", "500.000", null);
+        seed.balanceShipment(site, subcontractor, "CANCELLED", "300.000", null);
+
+        var balances = reports.findSubcontractorBalances(PERIOD, scope(site));
+
+        assertThat(balances).hasSize(1);
+        var balance = balances.get(0);
+        assertThat(balance.subcontractorId()).isEqualTo(subcontractor);
+        assertThat(balance.shipmentCount()).isEqualTo(2);
+        assertThat(balance.dispatchedKg()).isEqualByComparingTo("1500.000");
+        assertThat(balance.deliveredKg()).isEqualByComparingTo("990.000");
+        assertThat(balance.inTransitKg()).isEqualByComparingTo("500.000");
+        assertThat(balance.differenceKg()).isEqualByComparingTo("10.000");
     }
 
     private static ReportScope scope(UUID site) {

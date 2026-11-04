@@ -227,6 +227,8 @@ export {
   getDashboard,
   getDriverReport,
   getPairReport,
+  getShipmentReport,
+  getSubcontractorBalanceReport,
   getSubcontractorReport,
   REPORTS_PATH,
 } from './reports';
@@ -238,4 +240,6 @@ export type {
   OverdueDiscrepancyView,
   PairStatsView,
   PartyStatsView,
+  ShipmentRowView,
+  SubcontractorBalanceView,
 } from './reports';

@@ -833,7 +833,9 @@
       "summary": "Özet",
       "drivers": "Şoförler",
       "subcontractors": "Fasoncular",
-      "pairs": "Eşleşmeler"
+      "pairs": "Eşleşmeler",
+      "shipments": "Sevkiyat dökümü",
+      "balance": "Fasoncu bakiye"
     },
     "parties": {
       "driver": "Şoför",
@@ -906,14 +908,26 @@
         "largest": "En büyük farklar",
         "drivers": "Şoförler",
         "subcontractors": "Fasoncular",
-        "pairs": "Eşleşmeler"
+        "pairs": "Eşleşmeler",
+        "shipments": "Sevkiyat dökümü",
+        "balance": "Fasoncu bakiye"
       },
       "signature": {
         "prepared": "Hazırlayan",
         "checked": "Kontrol eden",
         "approved": "Onaylayan",
         "dateLine": "Tarih / İmza"
-      }
+      },
+      "status": "Durum",
+      "hadDiscrepancy": "Uyuşmazlık",
+      "yes": "Evet",
+      "no": "Hayır",
+      "createdAt": "Oluşturulma",
+      "completedAt": "Tamamlanma",
+      "dispatched": "Gönderilen (çıkış net)",
+      "delivered": "Teslim alınan (teslim net)",
+      "inTransit": "Yolda kalan",
+      "loss": "Fire (çıkış − yolda − teslim)"
     },
     "logo": {
       "add": "Rapor logosu ekle",
@@ -921,6 +935,13 @@
       "remove": "Logoyu kaldır",
       "invalid": "Logo PNG veya JPEG olmalı ve en çok 200 KB olabilir.",
       "file": "Logo dosyası"
+    },
+    "shipments": {
+      "limitNote": "En çok 5000 sevkiyat listelenir; fazlası için dönemi daraltın.",
+      "empty": "Bu dönemde sevkiyat yok."
+    },
+    "balance": {
+      "note": "İptal edilen sevkiyatlar sayılmaz. Yolda kalan: teslim kaydı henüz olmayan sevkiyatların çıkış net toplamı. Fire: teslim edilmiş sevkiyatlarda çıkış − teslim."
     }
   }
 }

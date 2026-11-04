@@ -149,4 +149,19 @@ describe('Panel ana sayfası ve raporlar', () => {
     expect(screen.getByRole('button', { name: 'Rapor logosu ekle' })).toBeInTheDocument();
     window.localStorage.clear();
   });
+
+  it('sevkiyat dökümü ve fasoncu bakiye sekmeleri satırları gösterir', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/raporlar');
+    await userEvent.click(await screen.findByRole('tab', { name: 'Sevkiyat dökümü' }));
+    expect(await screen.findByRole('link', { name: 'SV-2026-0007' })).toHaveAttribute(
+      'href',
+      '/panel/sevkiyat/shp-0007',
+    );
+    expect(screen.getByText('SV-2026-0008')).toBeInTheDocument();
+    await userEvent.click(screen.getByLabelText('Yalnızca uyuşmazlıklılar'));
+    expect(screen.queryByText('SV-2026-0008')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('tab', { name: 'Fasoncu bakiye' }));
+    expect(await screen.findByText('2.000 kg')).toBeInTheDocument();
+  });
 });

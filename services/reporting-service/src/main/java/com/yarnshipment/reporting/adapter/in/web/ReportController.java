@@ -5,9 +5,13 @@ import com.yarnshipment.reporting.adapter.in.web.api.ReportsApi;
 import com.yarnshipment.reporting.adapter.in.web.api.model.DashboardView;
 import com.yarnshipment.reporting.adapter.in.web.api.model.PairStatsView;
 import com.yarnshipment.reporting.adapter.in.web.api.model.PartyStatsView;
+import com.yarnshipment.reporting.adapter.in.web.api.model.ShipmentRowView;
+import com.yarnshipment.reporting.adapter.in.web.api.model.SubcontractorBalanceView;
 import com.yarnshipment.reporting.application.port.in.GetDashboardUseCase;
 import com.yarnshipment.reporting.application.port.in.ListDriverReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListPairReportUseCase;
+import com.yarnshipment.reporting.application.port.in.ListShipmentReportUseCase;
+import com.yarnshipment.reporting.application.port.in.ListSubcontractorBalanceUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ReportQuery;
 import java.time.LocalDate;
@@ -26,6 +30,8 @@ public class ReportController implements ReportsApi {
     private final ListDriverReportUseCase listDrivers;
     private final ListSubcontractorReportUseCase listSubcontractors;
     private final ListPairReportUseCase listPairs;
+    private final ListShipmentReportUseCase listShipments;
+    private final ListSubcontractorBalanceUseCase listBalances;
     private final CurrentActorProvider currentActorProvider;
 
     public ReportController(
@@ -33,11 +39,15 @@ public class ReportController implements ReportsApi {
             ListDriverReportUseCase listDrivers,
             ListSubcontractorReportUseCase listSubcontractors,
             ListPairReportUseCase listPairs,
+            ListShipmentReportUseCase listShipments,
+            ListSubcontractorBalanceUseCase listBalances,
             CurrentActorProvider currentActorProvider) {
         this.getDashboard = getDashboard;
         this.listDrivers = listDrivers;
         this.listSubcontractors = listSubcontractors;
         this.listPairs = listPairs;
+        this.listShipments = listShipments;
+        this.listBalances = listBalances;
         this.currentActorProvider = currentActorProvider;
     }
 
@@ -71,6 +81,24 @@ public class ReportController implements ReportsApi {
     public ResponseEntity<List<PairStatsView>> getPairReport(
             @Nullable LocalDate from, @Nullable LocalDate to, @Nullable UUID siteId) {
         return ResponseEntity.ok(listPairs.listPairReport(query(from, to, siteId)).stream()
+                .map(PartyViews::toView)
+                .toList());
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('REPORT_VIEW')")
+    public ResponseEntity<List<ShipmentRowView>> getShipmentReport(
+            @Nullable LocalDate from, @Nullable LocalDate to, @Nullable UUID siteId) {
+        return ResponseEntity.ok(listShipments.listShipmentReport(query(from, to, siteId)).stream()
+                .map(PartyViews::toView)
+                .toList());
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('REPORT_VIEW')")
+    public ResponseEntity<List<SubcontractorBalanceView>> getSubcontractorBalanceReport(
+            @Nullable LocalDate from, @Nullable LocalDate to, @Nullable UUID siteId) {
+        return ResponseEntity.ok(listBalances.listSubcontractorBalance(query(from, to, siteId)).stream()
                 .map(PartyViews::toView)
                 .toList());
     }

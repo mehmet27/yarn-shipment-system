@@ -8,7 +8,7 @@ Güncelleme: 04.11.2026. Sonraki geliştirmeler bu listeden sürer; biten madde 
 | 1 | Denetim kaydı okuma ekranı (8.1) | P1 | 3-4 | ✅ Yapıldı: `/panel/denetim`, menü, filtre, zincir doğrulama durumu |
 | 2 | Bildirimler: kırmızı uyuşmazlık, süresi geçen, eksik belge (9.4) | P2 | 8-10 | ⏳ Bekliyor (kanal kararı gerekir) |
 | 3 | QR/barkod kamerayla okutma (9.2) | P2 | 3-5 | ⏳ Bekliyor |
-| 4 | Süresi geçen uyuşmazlık filtresi (7.6) | P2 | 1-2 | ✅ Yapıldı: liste filtresi + `overdue` sorgu parametresi |
+| 4 | Süresi geçen uyuşmazlık filtresi (7.6) | P2 | 1-2 | ✅ Yapıldı: liste filtresi + `due=OVERDUE` sorgu parametresi |
 | 5 | Zayıf bağlantıda fotoğraf kuyruğu (9.3) | P2 | 4-5 | ⏳ Bekliyor (şoför kararına bağlı) |
 | 6 | Şahit numune kaydı (2.5) | P2 | 3-4 | ⏳ Bekliyor |
 | 7 | Kanıt ayrıntıları: galeri uyarısı, cihaz bilgisi, filigran, teslim çuval fotoğrafı | P2 | 4-5 | ⏳ Bekliyor |

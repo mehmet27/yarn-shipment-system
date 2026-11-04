@@ -1,0 +1,47 @@
+# CONF-01: ortamdan gelen değerler ortam değişkeniyle verilir; gizli bilgi bu dosyaya yazılmaz (SEC-14).
+spring:
+  application:
+    name: audit-service
+  datasource:
+    # Yazan rol tablolara erişemez; yalnızca audit_append() ve audit_verify_chain() çalıştırır.
+    url: ${AUDIT_DB_URL:jdbc:postgresql://localhost:5432/audit_db}
+    username: ${AUDIT_DB_WRITER_USER:audit_writer}
+    password: ${AUDIT_DB_WRITER_PASSWORD}
+  flyway:
+    user: ${AUDIT_DB_MIGRATOR_USER:audit_migrator}
+    password: ${AUDIT_DB_MIGRATOR_PASSWORD}
+    placeholders:
+      app_role: ${AUDIT_DB_WRITER_USER:audit_writer}
+      readonly_role: ${AUDIT_DB_READER_USER:audit_reader}
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+  jackson:
+    default-property-inclusion: non_null
+  mvc:
+    problemdetails:
+      enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/yarnshipment}
+          audiences: yarnshipment-api
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: audit-service
+      # Servis ilk açıldığında konulardaki geçmiş olaylar da zincire yazılır.
+      auto-offset-reset: earliest
+server:
+  port: ${SERVER_PORT:8088}
+yarnshipment:
+  audit:
+    # Audit ekranı okuma rolüyle ayrı bağlantı kullanır.
+    reader:
+      url: ${AUDIT_DB_URL:jdbc:postgresql://localhost:5432/audit_db}
+      username: ${AUDIT_DB_READER_USER:audit_reader}
+      password: ${AUDIT_DB_READER_PASSWORD}
+    chain-verification:
+      cron: ${AUDIT_CHAIN_VERIFICATION_CRON:0 0 3 * * *}

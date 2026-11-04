@@ -34,6 +34,7 @@
         <module>services/discrepancy-service</module>
         <module>services/evidence-service</module>
         <module>services/reporting-service</module>
+        <module>services/audit-service</module>
     </modules>
 
     <properties>

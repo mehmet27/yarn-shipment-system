@@ -262,3 +262,15 @@ Servis ana sınıfına `@EnableYarnShipmentWeb` eklenir; şunları verir:
 - **Hata yanıtı (ERR-06/07):** `ProblemFactory` ve ortak advice (`MISSING_HEADER`, `VALIDATION_FAILED`, `MALFORMED_REQUEST`). Servise özgü hatalar kendi advice'ında aynı fabrikayı kullanır.
 - **İstek kimliği:** her isteğe `X-Request-Id` (istemcinin güvenli değeri korunur, yoksa üretilir); log bağlamında `requestId`, hata gövdesinde `requestId` alanı.
 - **Idempotency-Key (API-04):** servis `JdbcClient` kullanıyorsa kendiliğinden devreye girer. `POST/PUT/PATCH` isteğinde `Idempotency-Key` varsa: aynı anahtar ve aynı gövde ilk başarılı (2xx) yanıtı tekrar döner (`Idempotency-Replayed: true`), aynı anahtar farklı gövde `422 IDEMPOTENCY_KEY_REUSED`, hâlâ işlenen istek `409 IDEMPOTENCY_IN_PROGRESS`. Başarısız istek anahtarı bırakır. Anahtar kullanıcıya özeldir; kayıtlar 24 saat tutulur (`yarnshipment.idempotency.*`). Servisin migration'ında `idempotency_record` tablosu gerekir (referans şema: `libs/common-web/src/main/resources/idempotency/idempotency_record.sql`).
+
+## audit-service (denetim izi)
+
+`shipment.events.v1`, `evidence.events.v1` ve `discrepancy.events.v1` konularındaki her olay, `audit_db` içindeki değiştirilemez hash zincirine `audit_append()` ile yazılır. Aktör (`actorId`, `actorRoles`) ve korelasyon (`correlationId`) CloudEvents başlıklarından gelir; aktörsüz sistem olayı, olayı üreten servisin adıyla `client_id` taşır. Aynı olayın tekrar teslimi ikinci satır üretmez (tekillik veritabanı fonksiyonundadır), bu yüzden işlenmiş olay tablosu yoktur. Zarfı bozuk olay kalıcı hatadır ve DLT'ye gider.
+
+Yazan rol (`audit_writer`) tablolara erişemez, yalnızca `audit_append()` ve `audit_verify_chain()` çalıştırır. Okuma ayrı bir bağlantıyla `audit_reader` rolüyle yapılır. Her gün 03:00 UTC'de (`AUDIT_CHAIN_VERIFICATION_CRON`) son doğrulamadan sonraki kayıtlar `audit_verify_chain()` ile doğrulanır; bozulma `ERROR` olarak loglanır.
+
+`AUDIT_VIEW` izni olanlar (Admin, Kalite, Depo, Yönetici) gateway üzerinden `GET /api/v1/audit-log` (süzgeçler: `entityType`, `entityId`, `actorUserId`, `action`, `sourceService`, `from`, `to`; sayfalı, en yeni önce) ve `GET /api/v1/audit-log/chain-checks` uçlarını okur. IP, cihaz ve user-agent yanıtta yer almaz. Çalıştırmak için `AUDIT_DB_WRITER_PASSWORD`, `AUDIT_DB_READER_PASSWORD`, `AUDIT_DB_MIGRATOR_PASSWORD` verilir; servis 8088 portunda çalışır:
+
+```bash
+./mvnw -pl services/audit-service spring-boot:run -Dspring-boot.run.profiles=local
+```

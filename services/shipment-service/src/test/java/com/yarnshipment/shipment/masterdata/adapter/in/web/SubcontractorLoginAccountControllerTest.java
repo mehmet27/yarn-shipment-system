@@ -8,9 +8,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.ChangeSubcontractorStatusUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.UpdateSubcontractorUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateSubcontractorLoginAccountUseCase;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

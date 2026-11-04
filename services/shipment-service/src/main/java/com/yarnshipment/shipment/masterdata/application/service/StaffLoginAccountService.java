@@ -1,12 +1,12 @@
 package com.yarnshipment.shipment.masterdata.application.service;
 
 import com.yarnshipment.common.security.Actor;
-import com.yarnshipment.shipment.masterdata.application.port.in.ChangeLoginAccountRoleUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.CreateStaffLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.DisableLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.EnableLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.IssueActivationCodeUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.StaffAccountRequest;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.DisableLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.EnableLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.IssueActivationCodeUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.StaffAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.out.AccountCredentialPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.StaffAccountPort;

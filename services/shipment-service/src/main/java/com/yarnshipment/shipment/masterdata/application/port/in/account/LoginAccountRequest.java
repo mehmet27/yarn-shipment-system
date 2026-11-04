@@ -1,4 +1,4 @@
-package com.yarnshipment.shipment.masterdata.application.port.in;
+package com.yarnshipment.shipment.masterdata.application.port.in.account;
 
 import java.util.List;
 import java.util.UUID;

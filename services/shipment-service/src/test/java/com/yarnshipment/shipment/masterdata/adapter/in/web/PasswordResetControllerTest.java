@@ -6,8 +6,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import com.yarnshipment.shipment.masterdata.application.port.in.ConfirmPasswordResetUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.RequestPasswordResetUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ConfirmPasswordResetUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.RequestPasswordResetUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidResetCodeException;
 import com.yarnshipment.shipment.masterdata.domain.model.SmsUnavailableException;
 import com.yarnshipment.shipment.masterdata.domain.model.WeakPasswordException;

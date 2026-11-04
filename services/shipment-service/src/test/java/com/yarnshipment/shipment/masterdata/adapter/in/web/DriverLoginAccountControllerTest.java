@@ -9,10 +9,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.ChangeDriverStatusUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.CreateDriverLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateDriverUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.LoginAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.in.UpdateDriverUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateDriverLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.LoginAccountRequest;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import com.yarnshipment.shipment.masterdata.domain.model.SmsUnavailableException;

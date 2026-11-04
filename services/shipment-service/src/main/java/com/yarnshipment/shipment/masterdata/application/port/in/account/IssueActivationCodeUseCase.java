@@ -1,4 +1,4 @@
-package com.yarnshipment.shipment.masterdata.application.port.in;
+package com.yarnshipment.shipment.masterdata.application.port.in.account;
 
 import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
 import java.util.UUID;

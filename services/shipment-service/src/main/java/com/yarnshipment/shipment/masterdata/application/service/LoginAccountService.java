@@ -1,13 +1,13 @@
 package com.yarnshipment.shipment.masterdata.application.service;
 
 import com.yarnshipment.common.security.Actor;
-import com.yarnshipment.shipment.masterdata.application.port.in.CreateDriverLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.IssueActivationCodeUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.ListLoginAccountsUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.LoginAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateDriverLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateSubcontractorLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.IssueActivationCodeUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.LoginAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;

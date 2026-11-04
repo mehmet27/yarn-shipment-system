@@ -8,10 +8,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.yarnshipment.shipment.TestTokens;
-import com.yarnshipment.shipment.masterdata.application.port.in.ChangeLoginAccountRoleUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.CreateStaffLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.ListLoginAccountsUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.StaffAccountRequest;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.StaffAccountRequest;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;

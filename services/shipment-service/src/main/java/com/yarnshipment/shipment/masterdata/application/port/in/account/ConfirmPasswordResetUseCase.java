@@ -1,4 +1,4 @@
-package com.yarnshipment.shipment.masterdata.application.port.in;
+package com.yarnshipment.shipment.masterdata.application.port.in.account;
 
 /** SMS kodunu doğrular ve kişinin seçtiği yeni şifreyi belirler. */
 public interface ConfirmPasswordResetUseCase {

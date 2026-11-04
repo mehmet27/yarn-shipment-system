@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.TestTokens;
-import com.yarnshipment.shipment.masterdata.application.port.in.StaffAccountRequest;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.StaffAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.StaffAccountPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;

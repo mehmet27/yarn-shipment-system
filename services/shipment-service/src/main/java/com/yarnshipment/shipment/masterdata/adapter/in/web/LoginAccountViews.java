@@ -11,9 +11,9 @@ final class LoginAccountViews {
 
     private LoginAccountViews() {}
 
-    static com.yarnshipment.shipment.masterdata.application.port.in.LoginAccountRequest command(
+    static com.yarnshipment.shipment.masterdata.application.port.in.account.LoginAccountRequest command(
             LoginAccountRequest request) {
-        return new com.yarnshipment.shipment.masterdata.application.port.in.LoginAccountRequest(
+        return new com.yarnshipment.shipment.masterdata.application.port.in.account.LoginAccountRequest(
                 request.getUsername(), request.getPhone(), request.getEmail(), List.copyOf(request.getSiteIds()));
     }
 

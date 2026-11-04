@@ -1,5 +1,7 @@
-package com.yarnshipment.shipment.masterdata.application.port.in;
+package com.yarnshipment.shipment.masterdata.application.port.in.account;
 
+import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
+import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 
 /**

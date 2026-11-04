@@ -8,9 +8,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.yarnshipment.shipment.TestTokens;
-import com.yarnshipment.shipment.masterdata.application.port.in.DisableLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.EnableLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.StartPasswordResetUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.DisableLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.EnableLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.StartPasswordResetUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
 import com.yarnshipment.shipment.masterdata.domain.model.SmsUnavailableException;

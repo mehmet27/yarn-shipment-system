@@ -1,10 +1,10 @@
 package com.yarnshipment.shipment.masterdata.application.service;
 
 import com.yarnshipment.common.security.Actor;
-import com.yarnshipment.shipment.masterdata.application.port.in.ConfirmPasswordResetUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.IssueActivationCodeUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.RequestPasswordResetUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.StartPasswordResetUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ConfirmPasswordResetUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.IssueActivationCodeUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.RequestPasswordResetUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.StartPasswordResetUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.out.AccountCredentialPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.ResetCode;
 import com.yarnshipment.shipment.masterdata.application.port.out.ResetCodePort;

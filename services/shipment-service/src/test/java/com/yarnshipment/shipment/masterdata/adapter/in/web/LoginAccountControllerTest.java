@@ -7,11 +7,11 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.yarnshipment.shipment.TestTokens;
-import com.yarnshipment.shipment.masterdata.application.port.in.ChangeLoginAccountRoleUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.CreateStaffLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.ListLoginAccountsUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import java.time.Instant;

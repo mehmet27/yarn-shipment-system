@@ -1,4 +1,4 @@
-package com.yarnshipment.shipment.masterdata.application.port.in;
+package com.yarnshipment.shipment.masterdata.application.port.in.account;
 
 /** "Şifremi unuttum": giriş adına kayıtlı telefona kod gönderir. */
 public interface RequestPasswordResetUseCase {

@@ -44,6 +44,7 @@ public class ShipmentFileController implements ShipmentFileApi {
                                 WebMappings.utc(change.changedAt()),
                                 change.changedBy())
                         .fromStatus(change.from() == null ? null : WebMappings.status(change.from()))
+                        .changedByName(change.changedByName())
                         .reason(change.reason()))
                 .toList()));
     }

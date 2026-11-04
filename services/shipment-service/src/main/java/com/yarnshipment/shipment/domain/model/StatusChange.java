@@ -13,17 +13,33 @@ import org.jspecify.annotations.Nullable;
  * @param changedAt geçiş zamanı
  * @param changedBy işlemi yapan kullanıcının kimliği
  * @param reason iptal ve düzeltme gerekçesi
+ * @param changedByName işlemi yapanın adı; çözülemediyse boş
  */
 public record StatusChange(
         @Nullable ShipmentStatus from,
         ShipmentStatus to,
         Instant changedAt,
         UUID changedBy,
-        @Nullable String reason) {
+        @Nullable String reason,
+        @Nullable String changedByName) {
 
     public StatusChange {
         Objects.requireNonNull(to, "to");
         Objects.requireNonNull(changedAt, "changedAt");
         Objects.requireNonNull(changedBy, "changedBy");
+    }
+
+    public StatusChange(
+            @Nullable ShipmentStatus from,
+            ShipmentStatus to,
+            Instant changedAt,
+            UUID changedBy,
+            @Nullable String reason) {
+        this(from, to, changedAt, changedBy, reason, null);
+    }
+
+    /** Aynı geçiş, işlemi yapanın adıyla. */
+    public StatusChange withChangedByName(@Nullable String name) {
+        return new StatusChange(from, to, changedAt, changedBy, reason, name);
     }
 }

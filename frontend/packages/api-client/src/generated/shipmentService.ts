@@ -753,6 +753,8 @@ export interface StatusChangeView {
   changedAt: string;
   /** İşlemi yapan kullanıcının kimliği */
   changedBy: string;
+  /** İşlemi yapanın adı; kimlik sağlayıcıdan çözülemezse yoktur */
+  changedByName?: string;
   /** İptal ve düzeltme gerekçesi */
   reason?: string;
 }

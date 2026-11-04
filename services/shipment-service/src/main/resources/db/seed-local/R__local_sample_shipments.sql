@@ -147,6 +147,32 @@ JOIN (VALUES (0, NULL, 'DRAFT'), (1, 'DRAFT', 'LOADED'), (2, 'LOADED', 'IN_TRANS
                              WHEN 'AWAITING_DELIVERY' THEN 3 ELSE 4 END
 ON CONFLICT (id, created_at) DO NOTHING;
 
+-- Outbox: geçmişteki her adım için gerçek akıştaki olay (EVT-03). Örnekler yerel veridir; tüketicilere tekrar
+-- gönderilmesin diye yayımlanmış sayılır (published_at dolu). Teslim alındı olayı alıcı kaydı gerektirdiğinden yoktur.
+INSERT INTO outbox_event (id, created_at, aggregate_type, aggregate_id, event_type, payload, headers, occurred_at,
+                          published_at)
+SELECT ('0192f0a0-0000-7000-8000-00000020' || lpad(s.n::text, 2, '0') || lpad(h.step::text, 2, '0'))::uuid,
+       s.created_at + (h.step * interval '1 hour'), 'Shipment', s.id, h.event_type,
+       CASE h.step
+           WHEN 0 THEN jsonb_build_object('shipmentId', s.id, 'shipmentNo', s.shipment_no, 'siteId', s.site_id,
+                                          'subcontractorId', s.subcontractor_id, 'createdAt', s.created_at)
+           WHEN 1 THEN jsonb_build_object('shipmentId', s.id, 'siteId', s.site_id, 'bagCount', s.planned_bags,
+                                          'loadedAt', s.created_at + interval '1 hour')
+           WHEN 2 THEN jsonb_build_object('shipmentId', s.id, 'siteId', s.site_id, 'driverId', s.driver_id,
+                                          'bagCount', s.planned_bags, 'dispatchedAt', s.created_at + interval '2 hours')
+           ELSE jsonb_build_object('shipmentId', s.id, 'siteId', s.site_id, 'driverId', s.driver_id,
+                                   'sealIntact', true, 'arrivedAt', s.created_at + interval '3 hours')
+       END,
+       jsonb_build_object('actorId', '0192f0a0-0000-7000-8000-00000000d001'),
+       s.created_at + (h.step * interval '1 hour'), s.created_at + (h.step * interval '1 hour')
+FROM seed_shipment s
+JOIN (VALUES (0, 'com.yarnshipment.shipment.shipment-created.v1'),
+             (1, 'com.yarnshipment.shipment.shipment-loaded.v1'),
+             (2, 'com.yarnshipment.shipment.shipment-dispatched.v1'),
+             (3, 'com.yarnshipment.shipment.shipment-arrived.v1')) AS h(step, event_type)
+  ON h.step <= CASE s.status WHEN 'DRAFT' THEN 0 WHEN 'LOADED' THEN 1 WHEN 'IN_TRANSIT' THEN 2 ELSE 3 END
+ON CONFLICT (id, created_at) DO NOTHING;
+
 -- Ana veri: sevkiyat örneklerinin başvurduğu kayıtlar ve seçim kutularında liste dolsun diye birkaç ek kayıt.
 INSERT INTO md_site (id, name, created_at, created_by)
 VALUES ('0192f0a0-0000-7000-8000-000000000001', 'Merkez Fabrika', '2026-10-01T08:00:00Z', '0192f0a0-0000-7000-8000-00000000d001'),

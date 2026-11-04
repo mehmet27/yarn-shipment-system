@@ -1,7 +1,7 @@
 package com.yarnshipment.shipment.masterdata.application.service;
 
 import com.yarnshipment.shipment.masterdata.application.port.out.AccountCredentialPort;
-import com.yarnshipment.shipment.masterdata.domain.model.ResetTarget;
+import com.yarnshipment.shipment.masterdata.application.port.out.ResetTarget;
 import com.yarnshipment.shipment.masterdata.domain.model.WeakPasswordException;
 import java.util.ArrayList;
 import java.util.List;

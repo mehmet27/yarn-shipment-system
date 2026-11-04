@@ -1,5 +1,6 @@
-package com.yarnshipment.shipment.masterdata.domain.model;
+package com.yarnshipment.shipment.masterdata.application.port.out;
 
+import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
 import java.util.Objects;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;

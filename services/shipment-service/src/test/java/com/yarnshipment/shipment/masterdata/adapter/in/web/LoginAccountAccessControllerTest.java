@@ -8,7 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.yarnshipment.shipment.TestTokens;
-import com.yarnshipment.shipment.masterdata.application.port.in.ChangeLoginAccountEnabledUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.DisableLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.EnableLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.StartPasswordResetUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
@@ -38,7 +39,10 @@ class LoginAccountAccessControllerTest {
     private final MockMvcTester mvc;
 
     @MockitoBean
-    private ChangeLoginAccountEnabledUseCase changeEnabled;
+    private DisableLoginAccountUseCase disableAccount;
+
+    @MockitoBean
+    private EnableLoginAccountUseCase enableAccount;
 
     @MockitoBean
     private StartPasswordResetUseCase startReset;
@@ -58,7 +62,7 @@ class LoginAccountAccessControllerTest {
                 ENABLED_URI, "{\"enabled\":false}", TestTokens.token("admin").build());
 
         assertThat(result).hasStatus(HttpStatus.NO_CONTENT);
-        verify(changeEnabled).disableLoginAccount(any(), eq(USER));
+        verify(disableAccount).disableLoginAccount(any(), eq(USER));
     }
 
     @Test
@@ -68,7 +72,7 @@ class LoginAccountAccessControllerTest {
                 put(ENABLED_URI, "{\"enabled\":true}", TestTokens.token("admin").build());
 
         assertThat(result).hasStatus(HttpStatus.NO_CONTENT);
-        verify(changeEnabled).enableLoginAccount(any(), eq(USER));
+        verify(enableAccount).enableLoginAccount(any(), eq(USER));
     }
 
     @Test
@@ -77,7 +81,7 @@ class LoginAccountAccessControllerTest {
         Jwt admin = TestTokens.token("admin").build();
         doThrow(new InvalidMasterDataException("userId", "own account"))
                 .doThrow(new LoginAccountNotFoundException())
-                .when(changeEnabled)
+                .when(disableAccount)
                 .disableLoginAccount(any(), any());
         doThrow(new SmsUnavailableException()).when(startReset).startPasswordReset(any(), any());
 
@@ -112,7 +116,7 @@ class LoginAccountAccessControllerTest {
 
         assertThat(disable).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(reset).hasStatus(HttpStatus.FORBIDDEN);
-        verifyNoInteractions(changeEnabled, startReset);
+        verifyNoInteractions(disableAccount, enableAccount, startReset);
     }
 
     private MvcTestResult put(String uri, String body, Jwt jwt) {

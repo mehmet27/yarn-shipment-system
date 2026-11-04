@@ -1,7 +1,7 @@
 package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 
+import com.yarnshipment.shipment.masterdata.application.port.out.ResetCode;
 import com.yarnshipment.shipment.masterdata.application.port.out.ResetCodePort;
-import com.yarnshipment.shipment.masterdata.domain.model.ResetCode;
 import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.UUID;

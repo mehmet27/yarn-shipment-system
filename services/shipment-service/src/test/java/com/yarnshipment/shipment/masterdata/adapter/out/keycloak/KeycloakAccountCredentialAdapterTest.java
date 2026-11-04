@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import com.yarnshipment.shipment.masterdata.application.port.out.ResetTarget;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
 import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
-import com.yarnshipment.shipment.masterdata.domain.model.ResetTarget;
 import com.yarnshipment.shipment.masterdata.domain.model.WeakPasswordException;
 import java.io.IOException;
 import java.net.InetSocketAddress;

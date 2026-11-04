@@ -1,4 +1,4 @@
-package com.yarnshipment.shipment.masterdata.domain.model;
+package com.yarnshipment.shipment.masterdata.application.port.out;
 
 import java.time.Instant;
 import java.util.Objects;

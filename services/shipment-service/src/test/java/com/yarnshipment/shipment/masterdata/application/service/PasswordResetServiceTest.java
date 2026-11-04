@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.TestTokens;
+import com.yarnshipment.shipment.masterdata.application.port.out.ResetTarget;
 import com.yarnshipment.shipment.masterdata.application.port.out.SmsPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidResetCodeException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
 import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
-import com.yarnshipment.shipment.masterdata.domain.model.ResetTarget;
 import com.yarnshipment.shipment.masterdata.domain.model.SmsUnavailableException;
 import com.yarnshipment.shipment.masterdata.domain.model.WeakPasswordException;
 import java.time.Instant;

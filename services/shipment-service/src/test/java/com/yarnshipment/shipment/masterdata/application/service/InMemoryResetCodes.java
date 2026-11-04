@@ -1,7 +1,7 @@
 package com.yarnshipment.shipment.masterdata.application.service;
 
+import com.yarnshipment.shipment.masterdata.application.port.out.ResetCode;
 import com.yarnshipment.shipment.masterdata.application.port.out.ResetCodePort;
-import com.yarnshipment.shipment.masterdata.domain.model.ResetCode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

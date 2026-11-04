@@ -1,6 +1,5 @@
 package com.yarnshipment.shipment.masterdata.application.port.out;
 
-import com.yarnshipment.shipment.masterdata.domain.model.ResetTarget;
 import java.util.Optional;
 import java.util.UUID;
 

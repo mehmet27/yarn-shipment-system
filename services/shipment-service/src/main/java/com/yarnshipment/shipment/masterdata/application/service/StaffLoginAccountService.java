@@ -1,9 +1,10 @@
 package com.yarnshipment.shipment.masterdata.application.service;
 
 import com.yarnshipment.common.security.Actor;
-import com.yarnshipment.shipment.masterdata.application.port.in.ChangeLoginAccountEnabledUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.ChangeLoginAccountRoleUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateStaffLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.DisableLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.EnableLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.IssueActivationCodeUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.StaffAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.out.AccountCredentialPort;
@@ -24,7 +25,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public final class StaffLoginAccountService
-        implements CreateStaffLoginAccountUseCase, ChangeLoginAccountRoleUseCase, ChangeLoginAccountEnabledUseCase {
+        implements CreateStaffLoginAccountUseCase,
+                ChangeLoginAccountRoleUseCase,
+                EnableLoginAccountUseCase,
+                DisableLoginAccountUseCase {
 
     private final LoginAccountTargetPort targets;
     private final StaffAccountPort accounts;

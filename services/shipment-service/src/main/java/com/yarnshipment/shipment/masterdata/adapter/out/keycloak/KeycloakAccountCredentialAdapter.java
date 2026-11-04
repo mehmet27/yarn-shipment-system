@@ -1,8 +1,8 @@
 package com.yarnshipment.shipment.masterdata.adapter.out.keycloak;
 
 import com.yarnshipment.shipment.masterdata.application.port.out.AccountCredentialPort;
+import com.yarnshipment.shipment.masterdata.application.port.out.ResetTarget;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
-import com.yarnshipment.shipment.masterdata.domain.model.ResetTarget;
 import com.yarnshipment.shipment.masterdata.domain.model.WeakPasswordException;
 import java.util.List;
 import java.util.Map;

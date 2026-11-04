@@ -22,6 +22,6 @@ class SmsAdaptersTest {
     @Test
     @DisplayName("Sahte gönderici hata vermeden loga yazar")
     void shouldLogOnly() {
-        assertThatCode(() -> new LogSmsAdapter().send(PHONE, "kod 123456")).doesNotThrowAnyException();
+        assertThatCode(() -> new LogSmsAdapter(new org.springframework.beans.factory.support.StaticListableBeanFactory().getBeanProvider(SmsDevOutbox.class)).send(PHONE, "kod 123456")).doesNotThrowAnyException();
     }
 }

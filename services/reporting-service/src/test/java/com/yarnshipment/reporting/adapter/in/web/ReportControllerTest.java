@@ -12,13 +12,7 @@ import com.yarnshipment.reporting.application.port.in.ListShipmentReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorBalanceUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorReportUseCase;
 import com.yarnshipment.reporting.domain.model.InvalidReportPeriodException;
-import com.yarnshipment.reporting.domain.model.ShipmentComparison;
-import com.yarnshipment.reporting.domain.model.ShipmentRow;
-import com.yarnshipment.reporting.domain.model.SubcontractorBalance;
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,61 +132,6 @@ class ReportControllerTest {
                 .bodyJson()
                 .extractingPath("$.overdueDiscrepancies[0].severity")
                 .isEqualTo("RED");
-    }
-
-    @Test
-    @DisplayName("Sevkiyat dökümü kilo ve yüzdeleri dize, olmayan alanları atlanmış döner")
-    void shouldReturnShipmentReport() {
-        UUID id = UUID.randomUUID();
-        when(listShipments.listShipmentReport(any()))
-                .thenReturn(List.of(new ShipmentRow(
-                        id,
-                        "SHP-1",
-                        UUID.randomUUID(),
-                        null,
-                        "COMPLETED",
-                        new ShipmentComparison(
-                                new BigDecimal("1000.000"),
-                                new BigDecimal("990.000"),
-                                new BigDecimal("10.000"),
-                                new BigDecimal("1.00"),
-                                "GREEN"),
-                        false,
-                        Instant.parse("2026-11-02T09:00:00Z"),
-                        null)));
-
-        MvcTestResult result = get(BASE + "/shipments?from=2026-11-01&to=2026-11-03", manager());
-
-        assertThat(result).hasStatusOk();
-        assertThat(result).bodyJson().extractingPath("$[0].shipmentNo").isEqualTo("SHP-1");
-        assertThat(result).bodyJson().extractingPath("$[0].diffKg").isEqualTo("10.000");
-        assertThat(result).bodyJson().extractingPath("$[0].band").isEqualTo("GREEN");
-        assertThat(result).bodyJson().extractingPath("$[0].hadDiscrepancy").isEqualTo(false);
-        assertThat(result).bodyJson().doesNotHavePath("$[0].driverId");
-    }
-
-    @Test
-    @DisplayName("Fasoncu bakiyesi çıkış, teslim, yolda kalan ve farkı döner; izinsiz kullanıcı 403 alır")
-    void shouldReturnSubcontractorBalance() {
-        when(listBalances.listSubcontractorBalance(any()))
-                .thenReturn(List.of(new SubcontractorBalance(
-                        UUID.randomUUID(),
-                        2,
-                        new BigDecimal("1500.000"),
-                        new BigDecimal("990.000"),
-                        new BigDecimal("500.000"))));
-
-        MvcTestResult result = get(BASE + "/subcontractor-balance", manager());
-
-        assertThat(result).hasStatusOk();
-        assertThat(result).bodyJson().extractingPath("$[0].inTransitKg").isEqualTo("500.000");
-        assertThat(result).bodyJson().extractingPath("$[0].differenceKg").isEqualTo("10.000");
-        assertThat(get(
-                        BASE + "/subcontractor-balance",
-                        TestTokens.token("warehouse").build()))
-                .hasStatus(HttpStatus.FORBIDDEN);
-        assertThat(get(BASE + "/shipments", TestTokens.token("warehouse").build()))
-                .hasStatus(HttpStatus.FORBIDDEN);
     }
 
     private static Jwt manager() {

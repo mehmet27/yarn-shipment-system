@@ -33,7 +33,7 @@ test.describe('Uyuşmazlıklar', { tag: '@panel' }, () => {
     await openAs('ADMIN', '/panel/uyusmazliklar/disc-0');
     await expect(page.getByText('Net kilo tolerans dışında').first()).toBeVisible();
     await expect(page.getByText('2.000 kg', { exact: true })).toBeVisible();
-    await expect(page.getByText('1.960 kg', { exact: true })).toBeVisible();
+    await expect(page.getByText('1.960 kg', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('QUANTITY_TOLERANCE')).toHaveCount(0);
     await expect(page.getByText(/2000\.000|1960\.000/)).toHaveCount(0);
     // Geçmişteki açılış kaydı da kuralı okunur yazar ve sistemi adıyla gösterir.

@@ -1,0 +1,45 @@
+import type { GetDashboardParams } from '@iplik/api-client';
+import {
+  getDriverReport,
+  getPairReport,
+  getSubcontractorReport,
+  REPORTS_PATH,
+} from '@iplik/api-client';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+
+export const REPORT_KINDS = ['drivers', 'subcontractors', 'pairs'] as const;
+export type ReportKind = (typeof REPORT_KINDS)[number];
+
+const FETCHERS = {
+  drivers: getDriverReport,
+  subcontractors: getSubcontractorReport,
+  pairs: getPairReport,
+} as const;
+
+/** Tür başına tek sorgu; yalnızca açık sekmenin raporu çekilir. */
+export function useDriverReport(params: GetDashboardParams, isEnabled: boolean) {
+  return useQuery({
+    queryKey: [REPORTS_PATH, 'drivers', params],
+    queryFn: () => FETCHERS.drivers(params),
+    enabled: isEnabled,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useSubcontractorReport(params: GetDashboardParams, isEnabled: boolean) {
+  return useQuery({
+    queryKey: [REPORTS_PATH, 'subcontractors', params],
+    queryFn: () => FETCHERS.subcontractors(params),
+    enabled: isEnabled,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function usePairReport(params: GetDashboardParams, isEnabled: boolean) {
+  return useQuery({
+    queryKey: [REPORTS_PATH, 'pairs', params],
+    queryFn: () => FETCHERS.pairs(params),
+    enabled: isEnabled,
+    placeholderData: keepPreviousData,
+  });
+}

@@ -1,7 +1,8 @@
 import type { ShipmentSummary } from '@iplik/api-client';
-import { formatDateTime } from '@iplik/i18n';
+import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Group, Paper, Stack, Text } from '@iplik/ui';
 import { Link } from 'react-router';
+import { ShipmentProgress } from './ShipmentProgress';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
 import { toStatusColor } from './statusColor';
 
@@ -12,6 +13,7 @@ export type ShipmentCardProps = {
 
 /** Dar ekranda liste satırı: tek dokunuşla açılan büyük kart (FE-UI-07, en az 44 px hedef). */
 export function ShipmentCard({ shipment, to }: ShipmentCardProps) {
+  const { t } = useTranslation();
   return (
     <Paper
       component={Link}
@@ -36,6 +38,10 @@ export function ShipmentCard({ shipment, to }: ShipmentCardProps) {
         <Text fw={500}>{shipment.subcontractorTitle}</Text>
         <Text size="sm" c="dimmed">
           {shipment.plateNo} · {formatDateTime(shipment.createdAt)}
+        </Text>
+        <ShipmentProgress status={shipment.status} />
+        <Text size="sm" c="brand.8" fw={500}>
+          {t(`shipment.nextStep.${shipment.status}`)}
         </Text>
       </Stack>
     </Paper>

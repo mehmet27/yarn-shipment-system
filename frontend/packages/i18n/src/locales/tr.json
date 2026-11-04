@@ -63,6 +63,21 @@
       "statusFilter": "Durum",
       "allStatuses": "Tüm durumlar"
     },
+    "nextStep": {
+      "label": "Sıradaki adım",
+      "DRAFT": "Çıkış tartısı bekleniyor",
+      "LOADED": "Şoförün yük teslim alması bekleniyor",
+      "IN_TRANSIT": "Yolda, varış bekleniyor",
+      "AWAITING_DELIVERY": "Fasoncunun teslim tutanağı bekleniyor",
+      "CHECKING": "Depo kontrolü bekleniyor",
+      "IN_REVIEW": "Uyuşmazlık incelemesi sürüyor",
+      "COMPLETED": "Süreç tamamlandı",
+      "CANCELLED": "İptal edildi"
+    },
+    "progress": {
+      "label": "{{done}} / {{total}} adım",
+      "cancelled": "İptal edildi"
+    },
     "field": {
       "shipmentNo": "Sevkiyat no",
       "subcontractor": "Fasoncu",

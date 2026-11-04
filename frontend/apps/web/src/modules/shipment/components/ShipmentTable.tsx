@@ -3,6 +3,7 @@ import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Anchor, Stack, Table, useMediaQuery } from '@iplik/ui';
 import { Link } from 'react-router';
 import { ShipmentCard } from './ShipmentCard';
+import { ShipmentProgress } from './ShipmentProgress';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
 
 const DESKTOP_QUERY = '(min-width: 48em)';
@@ -29,12 +30,13 @@ export function ShipmentTable({ shipments }: ShipmentTableProps) {
     );
   }
   return (
-    <Table.ScrollContainer minWidth={720}>
+    <Table.ScrollContainer minWidth={1000}>
       <Table striped highlightOnHover>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>{t('shipment.field.shipmentNo')}</Table.Th>
             <Table.Th>{t('shipment.field.status')}</Table.Th>
+            <Table.Th>{t('shipment.nextStep.label')}</Table.Th>
             <Table.Th>{t('shipment.field.subcontractor')}</Table.Th>
             <Table.Th>{t('shipment.field.driver')}</Table.Th>
             <Table.Th>{t('shipment.field.plate')}</Table.Th>
@@ -44,18 +46,26 @@ export function ShipmentTable({ shipments }: ShipmentTableProps) {
         <Table.Tbody>
           {shipments.map((shipment) => (
             <Table.Tr key={shipment.shipmentId}>
-              <Table.Td>
+              <Table.Td style={{ whiteSpace: 'nowrap' }}>
                 <Anchor component={Link} to={`/panel/sevkiyat/${shipment.shipmentId}`}>
                   {shipment.shipmentNo}
                 </Anchor>
               </Table.Td>
               <Table.Td>
-                <ShipmentStatusBadge status={shipment.status} />
+                <Stack gap={6} align="flex-start">
+                  <ShipmentStatusBadge status={shipment.status} />
+                  <ShipmentProgress status={shipment.status} />
+                </Stack>
+              </Table.Td>
+              <Table.Td c="brand.8" fw={500}>
+                {t(`shipment.nextStep.${shipment.status}`)}
               </Table.Td>
               <Table.Td>{shipment.subcontractorTitle}</Table.Td>
               <Table.Td>{shipment.driverName}</Table.Td>
-              <Table.Td>{shipment.plateNo}</Table.Td>
-              <Table.Td>{formatDateTime(shipment.createdAt)}</Table.Td>
+              <Table.Td style={{ whiteSpace: 'nowrap' }}>{shipment.plateNo}</Table.Td>
+              <Table.Td style={{ whiteSpace: 'nowrap' }}>
+                {formatDateTime(shipment.createdAt)}
+              </Table.Td>
             </Table.Tr>
           ))}
         </Table.Tbody>

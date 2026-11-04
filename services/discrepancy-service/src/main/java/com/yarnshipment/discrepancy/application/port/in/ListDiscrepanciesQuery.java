@@ -30,5 +30,16 @@ public record ListDiscrepanciesQuery(Actor actor, Filter filter, int page, int s
             @Nullable Severity severity,
             @Nullable UUID assigneeId,
             @Nullable UUID shipmentId,
-            @Nullable Boolean overdue) {}
+            @Nullable Boolean overdue) {
+
+        /**
+         * Aynı süzgeç, vadesi geçmiş kayıt koşuluyla.
+         *
+         * @param overdueOnly true ise yalnızca vadesi geçmiş açık kayıtlar
+         * @return yeni süzgeç
+         */
+        public Filter withOverdue(@Nullable Boolean overdueOnly) {
+            return new Filter(status, severity, assigneeId, shipmentId, overdueOnly);
+        }
+    }
 }

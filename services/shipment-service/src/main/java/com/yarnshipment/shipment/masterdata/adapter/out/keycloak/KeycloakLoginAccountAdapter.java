@@ -12,14 +12,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
 
 /**
  * {@link LoginAccountPort}'un Keycloak Yönetim API'si uygulaması (şoför/fasoncu hesabı açma ve liste). Kullanıcı
- * açıldıktan sonra rol atanamazsa kullanıcı silinir, yarım hesap kalmaz. Liste, uygulama rollerinin üyeleri
- * birleştirilerek çıkarılır; böylece rolsüz servis hesapları listeye girmez ve kullanıcı başına ek çağrı gerekmez.
+ * şifresiz açılır; şifreyi kişi SMS koduyla kendisi belirler. Kullanıcı açıldıktan sonra rol atanamazsa kullanıcı
+ * silinir, yarım hesap kalmaz. Liste, uygulama rollerinin üyeleri birleştirilerek çıkarılır; böylece rolsüz servis
+ * hesapları listeye girmez ve kullanıcı başına ek çağrı gerekmez.
  */
 @Component
 final class KeycloakLoginAccountAdapter implements LoginAccountPort {
@@ -34,14 +36,14 @@ final class KeycloakLoginAccountAdapter implements LoginAccountPort {
     }
 
     @Override
-    public void create(LoginAccountSpec spec) {
-        admin.guarded(() -> {
+    public UUID create(LoginAccountSpec spec) {
+        return admin.guarded(() -> {
             String token = admin.accessToken();
             requireNoAccountFor(token, spec);
             Map<String, Object> role = admin.realmRole(token, spec.role().realmRole());
             String userId = admin.createUser(token, userRepresentation(spec));
             admin.rollbackOnFailure(token, userId, () -> admin.assignRole(token, userId, role));
-            return null;
+            return UUID.fromString(userId);
         });
     }
 
@@ -112,18 +114,19 @@ final class KeycloakLoginAccountAdapter implements LoginAccountPort {
         user.put("enabled", true);
         user.put("firstName", names[0]);
         user.put("lastName", names[1]);
-        user.put("email", spec.email());
+        if (spec.email() != null) {
+            user.put("email", spec.email());
+        }
         user.put(
                 "attributes",
                 Map.of(
                         role.ownerAttribute(),
                         List.of(spec.ownerId().toString()),
+                        KeycloakAdminClient.PHONE_ATTRIBUTE,
+                        List.of(spec.phone().e164()),
                         SITE_IDS,
                         spec.siteIds().stream().map(Object::toString).toList()));
         user.put("requiredActions", List.of("UPDATE_PASSWORD"));
-        user.put(
-                "credentials",
-                List.of(Map.of("type", "password", "value", spec.temporaryPassword(), "temporary", true)));
         return user;
     }
 }

@@ -11,7 +11,6 @@ import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
-import com.yarnshipment.shipment.masterdata.domain.model.LoginAccount;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
@@ -27,7 +26,6 @@ import org.junit.jupiter.api.Test;
 
 class LoginAccountServiceTest {
 
-    private static final int PASSWORD_LENGTH = 16;
     private static final int PAGE_SIZE = 20;
     private static final int ACCOUNT_COUNT = 3;
     private static final UUID DRIVER = UUID.fromString("0192f0a0-0000-7000-8000-000000000004");
@@ -35,7 +33,10 @@ class LoginAccountServiceTest {
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     private static final UUID OTHER_SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000002");
 
+    private static final UUID NEW_USER = UUID.fromString("0192f0a0-0000-7000-8000-000000000201");
+
     private final List<LoginAccountSpec> opened = new ArrayList<>();
+    private final List<String> codesSent = new ArrayList<>();
     private final Actor admin = TestTokens.actor("admin");
     private final LoginAccountTargetPort targets = new LoginAccountTargetPort() {
         @Override
@@ -56,8 +57,9 @@ class LoginAccountServiceTest {
     private final List<LoginAccountSummary> existing = new ArrayList<>();
     private final LoginAccountPort accounts = new LoginAccountPort() {
         @Override
-        public void create(LoginAccountSpec spec) {
+        public UUID create(LoginAccountSpec spec) {
             opened.add(spec);
+            return NEW_USER;
         }
 
         @Override
@@ -65,30 +67,32 @@ class LoginAccountServiceTest {
             return List.copyOf(existing);
         }
     };
-    private final LoginAccountService service = new LoginAccountService(targets, accounts);
+    private final LoginAccountService service = new LoginAccountService(
+            targets,
+            accounts,
+            (userId, username, phone) -> codesSent.add(userId + ":" + username + ":" + phone.e164()));
 
     @Test
-    @DisplayName("Şoför için açılan hesap şoför rolü, kayıt kimliği ve üretilen geçici şifreyle istenir")
+    @DisplayName("Şoför hesabı şoför rolü ve kayıt kimliğiyle, şifresiz açılır; kod SMS'le gider")
     void shouldOpenDriverAccount() {
-        LoginAccount account = service.createDriverLoginAccount(
-                admin, DRIVER, new LoginAccountRequest("ali.yilmaz", "ali@ornek.com", List.of(SITE)));
+        service.createDriverLoginAccount(
+                admin, DRIVER, new LoginAccountRequest("ali.yilmaz", "0532 123 45 67", null, List.of(SITE)));
 
-        assertThat(account.username()).isEqualTo("ali.yilmaz");
-        assertThat(account.temporaryPassword()).hasSize(PASSWORD_LENGTH);
         assertThat(opened).singleElement().satisfies(spec -> {
             assertThat(spec.role()).isEqualTo(LoginRole.DRIVER);
             assertThat(spec.ownerId()).isEqualTo(DRIVER);
             assertThat(spec.displayName()).isEqualTo("Ali Yılmaz");
-            assertThat(spec.temporaryPassword()).isEqualTo(account.temporaryPassword());
+            assertThat(spec.email()).isNull();
+            assertThat(spec.phone().e164()).isEqualTo("+905321234567");
         });
-        assertThat(account.toString()).doesNotContain(account.temporaryPassword());
+        assertThat(codesSent).containsExactly(NEW_USER + ":ali.yilmaz:+905321234567");
     }
 
     @Test
     @DisplayName("Fasoncu hesabı fasoncu rolüyle istenir")
     void shouldOpenSubcontractorAccount() {
         service.createSubcontractorLoginAccount(
-                admin, SUBCONTRACTOR, new LoginAccountRequest("ornek", "a@b.com", List.of(SITE)));
+                admin, SUBCONTRACTOR, new LoginAccountRequest("ornek", "05321234567", "a@b.com", List.of(SITE)));
 
         assertThat(opened).singleElement().satisfies(spec -> {
             assertThat(spec.role()).isEqualTo(LoginRole.SUBCONTRACTOR);
@@ -99,7 +103,7 @@ class LoginAccountServiceTest {
     @Test
     @DisplayName("Kayıt yoksa ya da pasifse 404; Keycloak'a gidilmez")
     void shouldRejectUnknownOwner() {
-        LoginAccountRequest request = new LoginAccountRequest("x.y.z", "x@ornek.com", List.of(SITE));
+        LoginAccountRequest request = new LoginAccountRequest("x.y.z", "05321234567", null, List.of(SITE));
         UUID unknown = UUID.randomUUID();
 
         assertThatThrownBy(() -> service.createDriverLoginAccount(admin, unknown, request))
@@ -107,13 +111,14 @@ class LoginAccountServiceTest {
         assertThatThrownBy(() -> service.createSubcontractorLoginAccount(admin, unknown, request))
                 .isInstanceOf(MasterDataNotFoundException.class);
         assertThat(opened).isEmpty();
+        assertThat(codesSent).isEmpty();
     }
 
     @Test
     @DisplayName("Lokasyon boşsa ya da etkin değilse hesap açılmaz")
     void shouldRejectBadSites() {
-        LoginAccountRequest none = new LoginAccountRequest("x.y.z", "x@ornek.com", List.of());
-        LoginAccountRequest inactive = new LoginAccountRequest("x.y.z", "x@ornek.com", List.of(SITE, OTHER_SITE));
+        LoginAccountRequest none = new LoginAccountRequest("x.y.z", "05321234567", null, List.of());
+        LoginAccountRequest inactive = new LoginAccountRequest("x.y.z", "05321234567", null, List.of(SITE, OTHER_SITE));
 
         assertThatThrownBy(() -> service.createDriverLoginAccount(admin, DRIVER, none))
                 .isInstanceOf(InvalidMasterDataException.class);
@@ -144,6 +149,6 @@ class LoginAccountServiceTest {
     }
 
     private static LoginAccountSummary summary(String username, String fullName, String email) {
-        return new LoginAccountSummary(username, username, fullName, email, List.of("DRIVER"), true, false, null);
+        return new LoginAccountSummary(username, username, fullName, email, null, List.of("DRIVER"), true, false, null);
     }
 }

@@ -56,6 +56,7 @@ public class LoginAccountController implements LoginAccountsApi {
                 currentActorProvider.getCurrentActor(),
                 new StaffAccountRequest(
                         request.getUsername(),
+                        request.getPhone(),
                         request.getEmail(),
                         request.getFullName(),
                         StaffRole.valueOf(request.getRole().name()),
@@ -92,6 +93,7 @@ public class LoginAccountController implements LoginAccountsApi {
                 .username(account.username())
                 .fullName(account.fullName())
                 .email(account.email())
+                .phone(account.phone())
                 .roles(account.roles().stream().map(Role::valueOf).toList())
                 .enabled(account.enabled())
                 .passwordChangeRequired(account.passwordChangeRequired())

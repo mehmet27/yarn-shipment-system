@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.masterdata.application.service;
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateDriverLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.IssueActivationCodeUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.ListLoginAccountsUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.LoginAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
@@ -10,11 +11,11 @@ import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
-import com.yarnshipment.shipment.masterdata.domain.model.LoginAccount;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
+import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +24,8 @@ import org.springframework.stereotype.Service;
 
 /**
  * Şoför ve fasoncu için giriş hesabı açar ve giriş hesaplarını listeler. Kayıt ve lokasyonlar etkin olmalıdır; hesap
- * Keycloak'ta tek çağrı dizisiyle açılır ve yarım kalırsa geri alınır. Yerel veritabanına yazılmadığı için transaction
+ * Keycloak'ta şifresiz tek çağrı dizisiyle açılır ve yarım kalırsa geri alınır, ardından şifre belirleme kodu SMS'le
+ * gider. Yerel veritabanına yazılmadığı için transaction
  * açılmaz. Kullanıcı sayısı küçük olduğundan liste Keycloak'tan bütün olarak alınır, arama ve sayfalama burada yapılır.
  */
 @Service
@@ -32,24 +34,26 @@ public final class LoginAccountService
 
     private final LoginAccountTargetPort targets;
     private final LoginAccountPort accounts;
+    private final IssueActivationCodeUseCase activation;
 
-    public LoginAccountService(LoginAccountTargetPort targets, LoginAccountPort accounts) {
+    public LoginAccountService(
+            LoginAccountTargetPort targets, LoginAccountPort accounts, IssueActivationCodeUseCase activation) {
         this.targets = targets;
         this.accounts = accounts;
+        this.activation = activation;
     }
 
     @Override
-    public LoginAccount createDriverLoginAccount(Actor actor, UUID driverId, LoginAccountRequest request) {
+    public void createDriverLoginAccount(Actor actor, UUID driverId, LoginAccountRequest request) {
         String name = targets.findActiveDriverName(driverId)
                 .orElseThrow(() -> new MasterDataNotFoundException("Driver", driverId));
-        return open(LoginRole.DRIVER, driverId, name, request);
+        open(LoginRole.DRIVER, driverId, name, request);
     }
 
     @Override
-    public LoginAccount createSubcontractorLoginAccount(
-            Actor actor, UUID subcontractorId, LoginAccountRequest request) {
+    public void createSubcontractorLoginAccount(Actor actor, UUID subcontractorId, LoginAccountRequest request) {
         Optional<String> title = targets.findActiveSubcontractorTitle(subcontractorId);
-        return open(
+        open(
                 LoginRole.SUBCONTRACTOR,
                 subcontractorId,
                 title.orElseThrow(() -> new MasterDataNotFoundException("Subcontractor", subcontractorId)),
@@ -74,11 +78,11 @@ public final class LoginAccountService
         }
     }
 
-    private LoginAccount open(LoginRole role, UUID ownerId, String displayName, LoginAccountRequest request) {
+    private void open(LoginRole role, UUID ownerId, String displayName, LoginAccountRequest request) {
+        PhoneNumber phone = PhoneNumber.parse(request.phone());
         requireActiveSites(request.siteIds());
-        String password = TemporaryPasswords.generate();
-        accounts.create(new LoginAccountSpec(
-                request.username(), request.email(), displayName, role, ownerId, request.siteIds(), password));
-        return new LoginAccount(request.username(), password);
+        UUID userId = accounts.create(new LoginAccountSpec(
+                request.username(), request.email(), phone, displayName, role, ownerId, request.siteIds()));
+        activation.issueActivationCode(userId, request.username(), phone);
     }
 }

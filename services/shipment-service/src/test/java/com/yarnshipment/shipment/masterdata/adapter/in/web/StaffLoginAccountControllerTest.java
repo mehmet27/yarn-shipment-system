@@ -39,8 +39,9 @@ class StaffLoginAccountControllerTest {
     private static final String URI = "/api/v1/master-data/login-accounts";
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-000000000101");
-    private static final String STAFF_BODY = "{\"username\":\"depo2\",\"email\":\"depo2@ornek.com\","
-            + "\"fullName\":\"Ayşe Depo\",\"role\":\"WAREHOUSE\",\"siteIds\":[\"" + SITE + "\"]}";
+    private static final String STAFF_BODY = "{\"username\":\"depo2\",\"phone\":\"05321234567\","
+            + "\"email\":\"depo2@ornek.com\",\"fullName\":\"Ayşe Depo\",\"role\":\"WAREHOUSE\",\"siteIds\":[\"" + SITE
+            + "\"]}";
     private static final String ROLE_BODY = "{\"role\":\"QUALITY\"}";
 
     private final MockMvcTester mvc;
@@ -74,6 +75,7 @@ class StaffLoginAccountControllerTest {
         ArgumentCaptor<StaffAccountRequest> request = ArgumentCaptor.forClass(StaffAccountRequest.class);
         verify(createStaff).createStaffLoginAccount(any(), request.capture());
         assertThat(request.getValue().username()).isEqualTo("depo2");
+        assertThat(request.getValue().phone()).isEqualTo("05321234567");
         assertThat(request.getValue().role()).isEqualTo(StaffRole.WAREHOUSE);
         assertThat(request.getValue().siteIds()).containsExactly(SITE);
     }

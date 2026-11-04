@@ -3,7 +3,6 @@ package com.yarnshipment.shipment.masterdata.adapter.in.web;
 import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.shipment.adapter.in.web.api.SubcontractorManagementApi;
 import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountRequest;
-import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.SubcontractorRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.SubcontractorView;
 import com.yarnshipment.shipment.masterdata.application.port.in.ChangeSubcontractorStatusUseCase;
@@ -73,10 +72,9 @@ public class SubcontractorManagementController implements SubcontractorManagemen
 
     @Override
     @PreAuthorize("hasAuthority('MASTER_DATA_MANAGE')")
-    public ResponseEntity<LoginAccountResponse> createSubcontractorLoginAccount(
-            UUID subcontractorId, LoginAccountRequest request) {
-        var account = loginAccount.createSubcontractorLoginAccount(
+    public ResponseEntity<Void> createSubcontractorLoginAccount(UUID subcontractorId, LoginAccountRequest request) {
+        loginAccount.createSubcontractorLoginAccount(
                 currentActorProvider.getCurrentActor(), subcontractorId, LoginAccountViews.command(request));
-        return LoginAccountViews.created(account);
+        return LoginAccountViews.created();
     }
 }

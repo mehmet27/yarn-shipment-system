@@ -40,6 +40,7 @@ class LoginAccountControllerTest {
             "ali.yilmaz",
             "Ali Yılmaz",
             "ali@ornek.com",
+            "***4567",
             List.of("DRIVER"),
             true,
             true,

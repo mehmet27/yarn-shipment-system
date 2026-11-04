@@ -190,4 +190,16 @@ SELECT pg_temp.expect_error($$UPDATE md_production_lot SET site_id = '00000000-0
 UPDATE md_production_lot SET active = false WHERE id = '00000000-0000-7000-8000-000000000605';
 SELECT pg_temp.expect_error($$DELETE FROM md_production_lot
     WHERE id = '00000000-0000-7000-8000-000000000605'$$, '42501');
+
+-- Şifre sıfırlama kodu: kullanıcı başına tek satır, süre sonradan başlamalı, deneme sayacı eksiye düşmez.
+INSERT INTO md_password_reset_code (user_id, code_hash, salt, issued_at, expires_at)
+VALUES ('00000000-0000-7000-8000-000000000701', 'h', 's', now(), now() + interval '10 minutes');
+SELECT pg_temp.expect_error($$INSERT INTO md_password_reset_code (user_id, code_hash, salt, issued_at, expires_at)
+    VALUES ('00000000-0000-7000-8000-000000000701', 'h', 's', now(), now() + interval '10 minutes')$$, '23505');
+SELECT pg_temp.expect_error($$INSERT INTO md_password_reset_code (user_id, code_hash, salt, issued_at, expires_at)
+    VALUES ('00000000-0000-7000-8000-000000000702', 'h', 's', now(), now() - interval '1 minute')$$, '23514');
+SELECT pg_temp.expect_error($$UPDATE md_password_reset_code SET attempts = -1
+    WHERE user_id = '00000000-0000-7000-8000-000000000701'$$, '23514');
+UPDATE md_password_reset_code SET attempts = attempts + 1 WHERE user_id = '00000000-0000-7000-8000-000000000701';
+DELETE FROM md_password_reset_code WHERE user_id = '00000000-0000-7000-8000-000000000701';
 ROLLBACK;

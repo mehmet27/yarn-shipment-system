@@ -20,13 +20,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
 
 /**
- * {@link StaffAccountPort}'un Keycloak uygulaması. Fabrika içi kullanıcı şifresiz açılır; şifreyi kişi e-postadaki
- * bağlantıdan belirler. E-posta gidemezse (ör. SMTP yok) açılan kullanıcı silinir. Şifre hiçbir yerde üretilmez.
+ * {@link StaffAccountPort}'un Keycloak uygulaması. Fabrika içi kullanıcı şifresiz açılır; şifreyi kişi SMS koduyla
+ * kendisi belirler. Rol verilemezse açılan kullanıcı silinir. Şifre hiçbir yerde üretilmez.
  */
 @Component
 final class KeycloakStaffAccountAdapter implements StaffAccountPort {
 
-    private static final int INVITE_LIFESPAN_SECONDS = 3 * 24 * 60 * 60;
     private static final String SITE_IDS = "site_ids";
     private static final String UPDATE_PASSWORD = "UPDATE_PASSWORD";
 
@@ -37,8 +36,8 @@ final class KeycloakStaffAccountAdapter implements StaffAccountPort {
     }
 
     @Override
-    public void createStaff(StaffAccountSpec spec) {
-        admin.guardedRun(() -> open(spec));
+    public UUID createStaff(StaffAccountSpec spec) {
+        return admin.guarded(() -> open(spec));
     }
 
     @Override
@@ -46,14 +45,12 @@ final class KeycloakStaffAccountAdapter implements StaffAccountPort {
         admin.guardedRun(() -> replaceRole(userId.toString(), role));
     }
 
-    private void open(StaffAccountSpec spec) {
+    private UUID open(StaffAccountSpec spec) {
         String token = admin.accessToken();
         Map<String, Object> role = admin.realmRole(token, spec.role().realmRole());
         String userId = admin.createUser(token, representation(spec));
-        admin.rollbackOnFailure(token, userId, () -> {
-            admin.assignRole(token, userId, role);
-            sendPasswordInvite(token, userId);
-        });
+        admin.rollbackOnFailure(token, userId, () -> admin.assignRole(token, userId, role));
+        return UUID.fromString(userId);
     }
 
     private void replaceRole(String userId, StaffRole role) {
@@ -121,19 +118,6 @@ final class KeycloakStaffAccountAdapter implements StaffAccountPort {
                 .toBodilessEntity();
     }
 
-    private void sendPasswordInvite(String token, String userId) {
-        admin.http()
-                .put()
-                .uri(uri -> uri.path("/admin/realms/{realm}/users/{id}/execute-actions-email")
-                        .queryParam("lifespan", INVITE_LIFESPAN_SECONDS)
-                        .build(admin.realm(), userId))
-                .headers(headers -> headers.setBearerAuth(token))
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(List.of(UPDATE_PASSWORD))
-                .retrieve()
-                .toBodilessEntity();
-    }
-
     private static Map<String, Object> representation(StaffAccountSpec spec) {
         String[] names = KeycloakAdminClient.splitName(spec.fullName());
         Map<String, Object> user = new LinkedHashMap<>();
@@ -141,10 +125,16 @@ final class KeycloakStaffAccountAdapter implements StaffAccountPort {
         user.put("enabled", true);
         user.put("firstName", names[0]);
         user.put("lastName", names[1]);
-        user.put("email", spec.email());
+        if (spec.email() != null) {
+            user.put("email", spec.email());
+        }
         user.put(
                 "attributes",
-                Map.of(SITE_IDS, spec.siteIds().stream().map(Object::toString).toList()));
+                Map.of(
+                        SITE_IDS,
+                        spec.siteIds().stream().map(Object::toString).toList(),
+                        KeycloakAdminClient.PHONE_ATTRIBUTE,
+                        List.of(spec.phone().e164())));
         user.put("requiredActions", List.of(UPDATE_PASSWORD));
         return user;
     }

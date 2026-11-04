@@ -3,15 +3,14 @@ package com.yarnshipment.shipment.masterdata.adapter.in.web;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.ChangeSubcontractorStatusUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.UpdateSubcontractorUseCase;
-import com.yarnshipment.shipment.masterdata.domain.model.LoginAccount;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,7 +32,7 @@ class SubcontractorLoginAccountControllerTest {
     private static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000003");
     private static final String SUBCONTRACTOR_URI =
             "/api/v1/master-data/subcontractors/" + SUBCONTRACTOR + "/login-account";
-    private static final String BODY = "{\"username\":\"ali.yilmaz\",\"email\":\"ali@ornek.com\","
+    private static final String BODY = "{\"username\":\"ali.yilmaz\",\"phone\":\"05321234567\","
             + "\"siteIds\":[\"0192f0a0-0000-7000-8000-000000000001\"]}";
 
     private final MockMvcTester mvc;
@@ -59,16 +58,14 @@ class SubcontractorLoginAccountControllerTest {
     }
 
     @Test
-    @DisplayName("Fasoncu hesabı da 201 döner")
+    @DisplayName("Fasoncu hesabı da 201 döner, yanıtta şifre yoktur")
     void shouldCreateSubcontractorAccount() {
-        when(subcontractorAccount.createSubcontractorLoginAccount(any(), eq(SUBCONTRACTOR), any()))
-                .thenReturn(new LoginAccount("ornek", "Gecici-Sifre-456"));
-
         MvcTestResult result =
                 post(SUBCONTRACTOR_URI, BODY, TestTokens.token("admin").build());
 
         assertThat(result).hasStatus(HttpStatus.CREATED);
-        assertThat(result).bodyJson().extractingPath("$.username").isEqualTo("ornek");
+        assertThat(result).bodyText().isEmpty();
+        verify(subcontractorAccount).createSubcontractorLoginAccount(any(), eq(SUBCONTRACTOR), any());
     }
 
     @Test

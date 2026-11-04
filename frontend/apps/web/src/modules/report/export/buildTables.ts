@@ -1,6 +1,5 @@
 import type { PairStatsView, PartyStatsView } from '@iplik/api-client';
 import { formatDateTime } from '@iplik/i18n';
-import { shortId } from '../format';
 import type { ReportBundle, ReportCell, ReportMeta, ReportTable } from './reportModel';
 import {
   count,
@@ -131,15 +130,15 @@ export function buildTables(
 ): ReportTable[] {
   const t = translate;
   const driverRows = filterRows(bundle.drivers, meta.onlyDiscrepant).map((stats) => ({
-    parties: [shortId(stats.id)],
+    parties: [meta.nameOf(stats.id)],
     stats,
   }));
   const subcontractorRows = filterRows(bundle.subcontractors, meta.onlyDiscrepant).map((stats) => ({
-    parties: [shortId(stats.id)],
+    parties: [meta.nameOf(stats.id)],
     stats,
   }));
   const pairRows = filterRows(bundle.pairs, meta.onlyDiscrepant).map((stats) => ({
-    parties: [shortId(stats.driverId), shortId(stats.subcontractorId)],
+    parties: [meta.nameOf(stats.driverId), meta.nameOf(stats.subcontractorId)],
     stats,
   }));
   return [

@@ -78,6 +78,7 @@ const meta: ReportMeta = {
   generatedAt: new Date('2026-11-04T08:00:00Z'),
   generatedBy: 'Ayşe Yılmaz',
   onlyDiscrepant: false,
+  nameOf: (id) => (id.startsWith('aaaaaaaa') ? 'Ali Veli' : id.slice(0, 8)),
 };
 const t = (key: string) => key;
 
@@ -139,6 +140,18 @@ describe('tablolar ve biçim', () => {
     expect(formatCell({ kind: 'kg', value: 1234.5 })).toBe('1.234,500 kg');
     expect(formatCell({ kind: 'percent', value: 0.5 })).toBe('%50,00');
     expect(formatCell({ kind: 'count', value: 3 })).toBe('3');
+  });
+});
+
+describe('adlar', () => {
+  it('çözülen kimlik ad olarak, çözülemeyen kısaltma olarak yazılır', () => {
+    const [, , , driverTable, , pairTable] = buildTables(bundle, meta, t);
+    expect(driverTable?.rows[0]?.[0]).toEqual({ kind: 'text', value: 'Ali Veli' });
+    expect(driverTable?.rows[1]?.[0]).toEqual({ kind: 'text', value: 'bbbbbbbb' });
+    expect(pairTable?.rows[0]?.slice(0, 2)).toEqual([
+      { kind: 'text', value: 'Ali Veli' },
+      { kind: 'text', value: 'cccccccc' },
+    ]);
   });
 });
 

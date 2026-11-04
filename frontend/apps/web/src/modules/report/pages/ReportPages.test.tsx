@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
@@ -110,5 +111,42 @@ describe('Panel ana sayfası ve raporlar', () => {
     expect(create).toHaveBeenCalledTimes(1);
     click.mockRestore();
     vi.unstubAllGlobals();
+  });
+
+  it('şoför ve fasoncu adlarını tanım listesinden çözer', async () => {
+    server.use(
+      http.get('/api/v1/master-data/drivers', () =>
+        HttpResponse.json({
+          items: [{ id: 'a1b2c3d4-0000-7000-8000-000000000001', fullName: 'Ali Veli' }],
+          page: { number: 0, size: 100, totalElements: 1, totalPages: 1 },
+        }),
+      ),
+      ...createHandlers('MANAGER'),
+    );
+    renderApp('/panel/raporlar');
+    await userEvent.click(await screen.findByRole('tab', { name: 'Şoförler' }));
+    expect(await screen.findByText('Ali Veli')).toBeInTheDocument();
+    expect(screen.getByText('b2c3d4e5')).toBeInTheDocument();
+  });
+
+  it('logo eklenir, geçersiz dosya reddedilir ve yazdırma görünümüne girer', async () => {
+    server.use(...createHandlers('MANAGER'));
+    const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
+    renderApp('/panel/raporlar');
+    await screen.findByRole('button', { name: 'Rapor logosu ekle' });
+    const input = screen.getByLabelText('Logo dosyası');
+    await userEvent.upload(input, new File(['x'], 'a.gif', { type: 'image/gif' }), {
+      applyAccept: false,
+    });
+    expect(await screen.findByRole('alert')).toHaveTextContent('PNG veya JPEG');
+    await userEvent.upload(input, new File(['x'], 'logo.png', { type: 'image/png' }));
+    expect(await screen.findByRole('button', { name: 'Logoyu kaldır' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'PDF / Yazdır' }));
+    await waitFor(() => {
+      expect(print).toHaveBeenCalled();
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Logoyu kaldır' }));
+    expect(screen.getByRole('button', { name: 'Rapor logosu ekle' })).toBeInTheDocument();
+    window.localStorage.clear();
   });
 });

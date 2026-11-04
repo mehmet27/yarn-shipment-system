@@ -31,6 +31,8 @@ export type ReportMeta = {
   generatedAt: Date;
   generatedBy: string;
   onlyDiscrepant: boolean;
+  /** Şoför/fasoncu kimliğini ada çevirir; bilinmiyorsa kısaltma döner */
+  nameOf: (id: string) => string;
 };
 
 export const text = (value: string): ReportCell => ({ kind: 'text', value });

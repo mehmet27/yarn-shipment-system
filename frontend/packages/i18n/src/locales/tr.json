@@ -822,7 +822,7 @@
   },
   "report": {
     "title": "Raporlar",
-    "intro": "Göstergeler olgusaldır; kişileri etiketlemez, kontrol sıklığını artıracak noktaları gösterir. Şoför ve fasoncular kimliklerinin ilk 8 karakteriyle listelenir.",
+    "intro": "Göstergeler olgusaldır; kişileri etiketlemez, kontrol sıklığını artıracak noktaları gösterir. Adı çözülemeyen şoför ve fasoncular kimliklerinin ilk 8 karakteriyle listelenir.",
     "period": {
       "label": "Rapor dönemi",
       "days7": "7 gün",
@@ -914,6 +914,13 @@
         "approved": "Onaylayan",
         "dateLine": "Tarih / İmza"
       }
+    },
+    "logo": {
+      "add": "Rapor logosu ekle",
+      "change": "Logoyu değiştir",
+      "remove": "Logoyu kaldır",
+      "invalid": "Logo PNG veya JPEG olmalı ve en çok 200 KB olabilir.",
+      "file": "Logo dosyası"
     }
   }
 }

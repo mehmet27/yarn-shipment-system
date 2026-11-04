@@ -51,8 +51,8 @@ public class DiscrepancyController implements DiscrepanciesApi {
             Integer page,
             Integer size) {
         Actor actor = currentActorProvider.getCurrentActor();
-        ListDiscrepanciesQuery.Filter filter =
-                DiscrepancyViews.filterOf(status, severity, assigneeId, shipmentId).withOverdue(overdue);
+        ListDiscrepanciesQuery.Filter filter = DiscrepancyViews.filterOf(status, severity, assigneeId, shipmentId)
+                .withOverdue(overdue);
         var result = listDiscrepancies.listDiscrepancies(new ListDiscrepanciesQuery(actor, filter, page, size));
         return ResponseEntity.ok(DiscrepancyViews.toPage(result, actor));
     }

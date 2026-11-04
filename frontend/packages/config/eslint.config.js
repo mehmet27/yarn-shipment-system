@@ -285,7 +285,7 @@ export function createConfig({ tsconfigRootDir }) {
     },
     {
       // Tema dosyası renk token'larının tanımlandığı tek yerdir (FE-UI-02'nin kaynağı).
-      files: ['packages/ui/src/theme.ts'],
+      files: ['packages/ui/src/theme.ts', 'packages/ui/src/brandPalette*.ts'],
       rules: {
         'no-restricted-syntax': [
           'error',
@@ -294,6 +294,11 @@ export function createConfig({ tsconfigRootDir }) {
             .filter((rule) => rule.selector !== COLOR_LITERAL_SELECTOR),
         ],
       },
+    },
+    {
+      // Renk matematiği (palet üretimi, kontrast hesabı) sabit katsayılarla yazılır.
+      files: ['packages/ui/src/brandPalette*.ts'],
+      rules: { '@typescript-eslint/no-magic-numbers': 'off' },
     },
     {
       files: ['packages/api-client/src/**'],

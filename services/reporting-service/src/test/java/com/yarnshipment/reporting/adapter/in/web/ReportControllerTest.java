@@ -12,6 +12,7 @@ import com.yarnshipment.reporting.application.port.in.ListShipmentReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorBalanceUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorReportUseCase;
 import com.yarnshipment.reporting.domain.model.InvalidReportPeriodException;
+import com.yarnshipment.reporting.domain.model.ShipmentComparison;
 import com.yarnshipment.reporting.domain.model.ShipmentRow;
 import com.yarnshipment.reporting.domain.model.SubcontractorBalance;
 import java.math.BigDecimal;
@@ -150,11 +151,12 @@ class ReportControllerTest {
                         UUID.randomUUID(),
                         null,
                         "COMPLETED",
-                        new BigDecimal("1000.000"),
-                        new BigDecimal("990.000"),
-                        new BigDecimal("10.000"),
-                        new BigDecimal("1.00"),
-                        "GREEN",
+                        new ShipmentComparison(
+                                new BigDecimal("1000.000"),
+                                new BigDecimal("990.000"),
+                                new BigDecimal("10.000"),
+                                new BigDecimal("1.00"),
+                                "GREEN"),
                         false,
                         Instant.parse("2026-11-02T09:00:00Z"),
                         null)));

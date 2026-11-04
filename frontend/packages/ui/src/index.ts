@@ -33,6 +33,7 @@ export {
   TextInput,
   Title,
 } from '@mantine/core';
+export { Box } from '@mantine/core';
 export { useDebouncedValue, useDisclosure, useMediaQuery } from '@mantine/hooks';
 export { ErrorBoundary } from './ErrorBoundary';
 export type { ErrorBoundaryProps } from './ErrorBoundary';
@@ -46,3 +47,19 @@ export {
   isValidHexColor,
 } from './brandPalette';
 export { createAppTheme } from './theme';
+export { ActionBar } from './components/ActionBar';
+export type { ActionBarProps } from './components/ActionBar';
+export { ActivityFeed } from './components/ActivityFeed';
+export type { ActivityFeedProps, ActivityItem } from './components/ActivityFeed';
+export { EmptyState } from './components/EmptyState';
+export type { EmptyStateProps } from './components/EmptyState';
+export { ListGroupHeader } from './components/ListGroupHeader';
+export type { ListGroupHeaderProps } from './components/ListGroupHeader';
+export { MiniProgress } from './components/MiniProgress';
+export type { MiniProgressProps } from './components/MiniProgress';
+export { PageHero } from './components/PageHero';
+export type { PageHeroProps } from './components/PageHero';
+export { ProgressSteps } from './components/ProgressSteps';
+export type { ProgressStepsProps } from './components/ProgressSteps';
+export { StatCard } from './components/StatCard';
+export type { StatCardProps, StatTone } from './components/StatCard';

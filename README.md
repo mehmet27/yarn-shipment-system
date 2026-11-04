@@ -201,6 +201,25 @@ DISCREPANCY_DB_APP_PASSWORD=... DISCREPANCY_DB_MIGRATOR_PASSWORD=... \
 ./mvnw -pl services/discrepancy-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
+## reporting-service (dashboard ve raporlar)
+
+Okuma modeli servisidir: `shipment.events.v1` ve `discrepancy.events.v1` olaylarından `shipment_view`, `discrepancy_view` ve `pair_daily_stats` tablolarını besler; kayıt kaynağı değildir, silinip konuyu baştan okuyarak yeniden kurulabilir. Olay kimliği `processed_event`'e aynı transaction'da yazıldığı için tekrar gelen olay iki kez sayılmaz; sevkiyatı okuma modelinde olmayan olay hata verir ve ortak hata politikasıyla yeniden denenir. Sözleşme `services/reporting-service/src/main/resources/openapi/reporting-service-api.yaml`, gateway `/api/v1/reports/**` yolunu bu servise (`8087`) yönlendirir. Uçlar `REPORT_VIEW` izni ister (Admin, Kalite, Yönetici); şoför ve fasoncu rapor görmez, diğerleri yalnızca `site_ids` lokasyonlarını görür.
+
+| Uç | İçerik |
+|---|---|
+| `GET /api/v1/reports/dashboard` | Sevkiyat durum dağılımı, karşılaştırılan kilo toplamları, Yeşil/Sarı/Kırmızı sayıları, açık ve süresi geçen uyuşmazlıklar, kilo farkı en büyük 5 sevkiyat |
+| `GET /api/v1/reports/drivers`, `/subcontractors` | Karşılaştırılan sevkiyat sayısı, uyuşmazlıklı sevkiyat oranı, ortalama mutlak kilo farkı (oran yüksek olan önce) |
+| `GET /api/v1/reports/pairs` | Şoför–fasoncu eşleşmesi bazında aynı göstergeler (`pair_daily_stats`, Europe/Istanbul günü) |
+
+`from`/`to` (tarih, iki uç dahil) verilmezse son 30 gün alınır; en çok 366 gün (`REPORT_PERIOD_INVALID`). `siteId` kapsamı daraltır, yetkisiz lokasyon 403 döner. Henüz kapsam dışı: parti bazlı kalite itirazı raporu (olaylarda parti bilgisi yok), eksik belge/galeri oranı (8.5), şoför/fasoncu adlarının tanım servislerinden çözülmesi (ekran şimdilik kimliğin ilk 8 karakterini gösterir). Çalıştırmak için `REPORTING_DB_APP_PASSWORD`, `REPORTING_DB_MIGRATOR_PASSWORD` ve gerekirse `KAFKA_BOOTSTRAP_SERVERS` verilir:
+
+```bash
+REPORTING_DB_APP_PASSWORD=... REPORTING_DB_MIGRATOR_PASSWORD=... \
+./mvnw -pl services/reporting-service spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+Panelde ana sayfa (`/panel`) dönem seçimli dashboard'u, `/panel/raporlar` şoför/fasoncu/eşleşme sekmelerini gösterir.
+
 ## evidence-service (fotoğraf ve belge yükleme)
 
 Dosya servisten geçmez; iki adımda doğrudan nesne deposuna (S3 uyumlu, yerelde MinIO) yüklenir. Uçlar `/api/v1/evidence/**` altındadır, sözleşme `services/evidence-service/src/main/resources/openapi/evidence-service-api.yaml`.

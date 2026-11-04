@@ -54,6 +54,13 @@ spring:
               filters:
                 - RemoveRequestHeader=Cookie
                 - TokenRelay=
+            - id: reporting-service
+              uri: ${REPORTING_SERVICE_URL:http://localhost:8087}
+              predicates:
+                - Path=/api/v1/reports/**
+              filters:
+                - RemoveRequestHeader=Cookie
+                - TokenRelay=
             - id: evidence-service
               uri: ${EVIDENCE_SERVICE_URL:http://localhost:8086}
               predicates:

@@ -1,0 +1,362 @@
+openapi: 3.0.3
+info:
+  title: reporting-service API
+  version: 1.0.0
+  description: |
+    Panel ana sayfası ve temel raporlar (ön analiz, Bölüm 13). Veriler `shipment.events.v1` ve
+    `discrepancy.events.v1` olaylarından üretilen okuma modelinden gelir; kayıt kaynağı değildir ve bu API salt
+    okunurdur (Yönetici rolü de kullanır).
+
+    Kurallar:
+    - Kilo değerleri ondalık dize olarak taşınır, ör. `"40.000"`; yüzdeler iki ondalıklı dizedir (API-03).
+    - Zamanlar ISO 8601 UTC, dönem tarihleri Europe/Istanbul takvim günüdür (API-03).
+    - Dönem verilmezse son 30 gün alınır. Sevkiyat ölçütleri sevkiyatın oluşturulma gününe, eşleşme raporu
+      karşılaştırma gününe göre sayılır.
+    - Kullanıcı yalnızca yetkili olduğu lokasyonların verisini görür (SEC-03). Şoför ve fasoncu rapor görmez.
+    - Raporlar kişileri etiketlemez; olgusal göstergelerdir. Şoför, fasoncu ve parti kimlikleri döner, adlar tanım
+      servislerinden çözülür.
+servers:
+  - url: /
+tags:
+  - name: Reports
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/reports/dashboard:
+    get:
+      tags: [Reports]
+      operationId: getDashboard
+      summary: Panel ana sayfa özeti
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Dönem özeti
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/reports/drivers:
+    get:
+      tags: [Reports]
+      operationId: getDriverReport
+      summary: Şoför bazında sevkiyat sayısı, uyuşmazlık oranı ve ortalama kilo farkı
+      description: En yüksek uyuşmazlık oranı önce gelir.
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Şoför satırları
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartyStatsView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/reports/subcontractors:
+    get:
+      tags: [Reports]
+      operationId: getSubcontractorReport
+      summary: Fasoncu bazında sevkiyat sayısı, uyuşmazlık oranı ve ortalama kilo farkı
+      description: En yüksek uyuşmazlık oranı önce gelir.
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Fasoncu satırları
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartyStatsView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/reports/pairs:
+    get:
+      tags: [Reports]
+      operationId: getPairReport
+      summary: Şoför–fasoncu eşleşmesi bazında uyuşmazlık oranı
+      description: Anlaşma riskini görmek içindir; en yüksek oran önce gelir.
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Eşleşme satırları
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PairStatsView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    From:
+      name: from
+      in: query
+      required: false
+      description: Dönem başı (dahil), Europe/Istanbul günü
+      schema:
+        type: string
+        format: date
+    To:
+      name: to
+      in: query
+      required: false
+      description: Dönem sonu (dahil), Europe/Istanbul günü
+      schema:
+        type: string
+        format: date
+    SiteId:
+      name: siteId
+      in: query
+      required: false
+      description: Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+      schema:
+        type: string
+        format: uuid
+  responses:
+    BadRequest:
+      description: Dönem geçersiz (REPORT_PERIOD_INVALID)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unauthorized:
+      description: Oturum yok veya token geçersiz (code AUTHENTICATION_REQUIRED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: İzin yok (ACCESS_DENIED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    Problem:
+      description: RFC 9457 hata gövdesi (ERR-07). İstemci kararını `code` alanına göre verir.
+      type: object
+      required: [type, title, status, code]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+        requestId:
+          type: string
+    DashboardView:
+      type: object
+      required: [from, to, shipments, quantity, bands, discrepancies, overdueDiscrepancies, largestDifferences]
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        shipments:
+          $ref: '#/components/schemas/ShipmentTotalsView'
+        quantity:
+          $ref: '#/components/schemas/QuantityView'
+        bands:
+          $ref: '#/components/schemas/BandCountsView'
+        discrepancies:
+          $ref: '#/components/schemas/OpenDiscrepanciesView'
+        overdueDiscrepancies:
+          type: array
+          description: Süresi en çok geçen önce gelir; en çok 10 kayıt
+          items:
+            $ref: '#/components/schemas/OverdueDiscrepancyView'
+        largestDifferences:
+          type: array
+          description: Mutlak kilo farkı en büyük 5 sevkiyat
+          items:
+            $ref: '#/components/schemas/LargestDifferenceView'
+    ShipmentTotalsView:
+      type: object
+      required: [total, inProgress, inReview, completed, cancelled]
+      properties:
+        total:
+          type: integer
+          format: int32
+        inProgress:
+          type: integer
+          format: int32
+          description: Taslak, yüklendi, yolda, teslim bekliyor ve kontrol edilen sevkiyatlar
+        inReview:
+          type: integer
+          format: int32
+        completed:
+          type: integer
+          format: int32
+        cancelled:
+          type: integer
+          format: int32
+    QuantityView:
+      type: object
+      required: [dispatchNetKg, deliveryNetKg, absoluteDiffKg, comparedShipments]
+      description: Yalnızca karşılaştırması tamamlanan sevkiyatlar
+      properties:
+        dispatchNetKg:
+          type: string
+        deliveryNetKg:
+          type: string
+        absoluteDiffKg:
+          type: string
+        comparedShipments:
+          type: integer
+          format: int32
+    BandCountsView:
+      type: object
+      required: [green, yellow, red]
+      properties:
+        green:
+          type: integer
+          format: int32
+        yellow:
+          type: integer
+          format: int32
+        red:
+          type: integer
+          format: int32
+    OpenDiscrepanciesView:
+      type: object
+      description: Dönemden bağımsız, şu an açık olan uyuşmazlıklar
+      required: [open, red, yellow, overdue]
+      properties:
+        open:
+          type: integer
+          format: int32
+        red:
+          type: integer
+          format: int32
+        yellow:
+          type: integer
+          format: int32
+        overdue:
+          type: integer
+          format: int32
+    OverdueDiscrepancyView:
+      type: object
+      required: [discrepancyId, discrepancyNo, shipmentId, severity, dueAt]
+      properties:
+        discrepancyId:
+          type: string
+          format: uuid
+        discrepancyNo:
+          type: string
+        shipmentId:
+          type: string
+          format: uuid
+        severity:
+          type: string
+          enum: [YELLOW, RED]
+        dueAt:
+          type: string
+          format: date-time
+    LargestDifferenceView:
+      type: object
+      required: [shipmentId, shipmentNo, diffKg, band]
+      properties:
+        shipmentId:
+          type: string
+          format: uuid
+        shipmentNo:
+          type: string
+        diffKg:
+          type: string
+          description: Çıkış net − teslim net
+        diffPct:
+          type: string
+        band:
+          type: string
+          enum: [GREEN, YELLOW, RED]
+    PartyStatsView:
+      type: object
+      required: [id, shipmentCount, discrepantShipmentCount, discrepancyRate, averageAbsoluteDiffKg]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Şoför ya da fasoncu kimliği
+        shipmentCount:
+          type: integer
+          format: int32
+          description: Karşılaştırması tamamlanan sevkiyat sayısı
+        discrepantShipmentCount:
+          type: integer
+          format: int32
+        discrepancyRate:
+          type: string
+          description: Uyuşmazlıklı sevkiyat yüzdesi
+        averageAbsoluteDiffKg:
+          type: string
+    PairStatsView:
+      type: object
+      required: [driverId, subcontractorId, shipmentCount, discrepantShipmentCount, discrepancyCount, discrepancyRate, averageAbsoluteDiffKg]
+      properties:
+        driverId:
+          type: string
+          format: uuid
+        subcontractorId:
+          type: string
+          format: uuid
+        shipmentCount:
+          type: integer
+          format: int32
+        discrepantShipmentCount:
+          type: integer
+          format: int32
+        discrepancyCount:
+          type: integer
+          format: int32
+        discrepancyRate:
+          type: string
+        averageAbsoluteDiffKg:
+          type: string

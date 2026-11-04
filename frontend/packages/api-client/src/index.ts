@@ -216,3 +216,20 @@ export type {
   TareStandardSaveRequest,
   TareStandardView,
 } from './masterData';
+
+export {
+  getDashboard,
+  getDriverReport,
+  getPairReport,
+  getSubcontractorReport,
+  REPORTS_PATH,
+} from './reports';
+export type {
+  DashboardView,
+  GetDashboardParams,
+  LargestDifferenceView,
+  OpenDiscrepanciesView,
+  OverdueDiscrepancyView,
+  PairStatsView,
+  PartyStatsView,
+} from './reports';

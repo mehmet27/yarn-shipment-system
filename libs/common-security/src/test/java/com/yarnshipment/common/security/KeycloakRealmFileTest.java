@@ -50,8 +50,7 @@ class KeycloakRealmFileTest {
     }
 
     @Test
-    @DisplayName(
-            "E-posta zorunlu değildir: SMS ile giriş yapan hesap e-postasız açılabilir ve hesap güncelleme sayfasına düşmez")
+    @DisplayName("E-posta zorunlu değildir: e-postasız (SMS ile giriş yapan) hesap açılabilir")
     void shouldKeepEmailOptionalInUserProfile() {
         JsonNode raw = JsonMapper.shared().readTree(REALM_FILE.toFile());
         String config = raw.path("components")

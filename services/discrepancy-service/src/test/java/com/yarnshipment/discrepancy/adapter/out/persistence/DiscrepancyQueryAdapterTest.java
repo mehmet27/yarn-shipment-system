@@ -79,8 +79,8 @@ class DiscrepancyQueryAdapterTest {
 
         DiscrepancyPage result = queries.findDiscrepancies(overdue, AccessScope.UNRESTRICTED, 0, PAGE_SIZE);
 
-        // Tohum kayıtların vadesi gelecekte olduğundan hiçbiri vadesi geçmiş sayılmaz.
-        assertThat(result.items()).isEmpty();
+        // Tohum kayıtların vadesi 30.10.2026'dadır ve ikisi de hâlâ açıktır.
+        assertThat(result.items()).hasSize(2);
     }
 
     @Test

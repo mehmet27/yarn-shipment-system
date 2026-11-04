@@ -14,7 +14,7 @@ export function DiscrepancyListPage() {
     size: PAGE_SIZE,
     ...(filter.status === undefined ? {} : { status: filter.status }),
     ...(filter.severity === undefined ? {} : { severity: filter.severity }),
-    ...(filter.isOverdue ? { overdue: true } : {}),
+    ...(filter.isOverdue ? { due: 'OVERDUE' as const } : {}),
   });
   return (
     <Stack>

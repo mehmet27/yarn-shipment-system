@@ -7,6 +7,7 @@ import com.yarnshipment.discrepancy.adapter.in.web.api.model.DiscrepancyActivity
 import com.yarnshipment.discrepancy.adapter.in.web.api.model.DiscrepancyPage;
 import com.yarnshipment.discrepancy.adapter.in.web.api.model.DiscrepancyStatus;
 import com.yarnshipment.discrepancy.adapter.in.web.api.model.DiscrepancyView;
+import com.yarnshipment.discrepancy.adapter.in.web.api.model.DueFilter;
 import com.yarnshipment.discrepancy.adapter.in.web.api.model.Severity;
 import com.yarnshipment.discrepancy.application.port.in.GetDiscrepancyQuery;
 import com.yarnshipment.discrepancy.application.port.in.GetDiscrepancyUseCase;
@@ -47,12 +48,12 @@ public class DiscrepancyController implements DiscrepanciesApi {
             @Nullable Severity severity,
             @Nullable UUID assigneeId,
             @Nullable UUID shipmentId,
-            @Nullable Boolean overdue,
+            @Nullable DueFilter due,
             Integer page,
             Integer size) {
         Actor actor = currentActorProvider.getCurrentActor();
         ListDiscrepanciesQuery.Filter filter = DiscrepancyViews.filterOf(status, severity, assigneeId, shipmentId)
-                .withOverdue(overdue);
+                .withOverdue(due == null ? null : Boolean.TRUE);
         var result = listDiscrepancies.listDiscrepancies(new ListDiscrepanciesQuery(actor, filter, page, size));
         return ResponseEntity.ok(DiscrepancyViews.toPage(result, actor));
     }

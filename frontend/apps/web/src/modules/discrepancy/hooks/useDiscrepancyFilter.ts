@@ -8,9 +8,11 @@ export type DiscrepancyFilter = {
   page: number;
   status: Status | undefined;
   severity: Level | undefined;
+  isOverdue: boolean;
   setPage: (page: number) => void;
   setStatus: (status: Status | undefined) => void;
   setSeverity: (severity: Level | undefined) => void;
+  setOverdue: (isOverdue: boolean) => void;
 };
 
 /** FE-API-08: filtre ve sayfa URL'de tutulur; sayfa URL'de 1'den başlar. */
@@ -19,6 +21,7 @@ export function useDiscrepancyFilter(): DiscrepancyFilter {
   const page = Math.max(Number(searchParams.get('sayfa') ?? '1'), 1);
   const status = Object.values(DiscrepancyStatus).find((s) => s === searchParams.get('durum'));
   const severity = Object.values(Severity).find((s) => s === searchParams.get('onem'));
+  const isOverdue = searchParams.get('gecikmis') === '1';
   const update = (changes: Record<string, string | undefined>) => {
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
@@ -33,6 +36,7 @@ export function useDiscrepancyFilter(): DiscrepancyFilter {
     page,
     status,
     severity,
+    isOverdue,
     setPage: (value) => {
       update({ sayfa: String(value) });
     },
@@ -41,6 +45,9 @@ export function useDiscrepancyFilter(): DiscrepancyFilter {
     },
     setSeverity: (value) => {
       update({ onem: value, sayfa: undefined });
+    },
+    setOverdue: (value) => {
+      update({ gecikmis: value ? '1' : undefined, sayfa: undefined });
     },
   };
 }

@@ -22,6 +22,15 @@ describe('Uyuşmazlık ekranları', () => {
     expect(router.state.location.search).toBe('?durum=RESOLVED');
   });
 
+  it('süresi geçenler filtresini adrese yazar ve listeyi daraltır', async () => {
+    server.use(...createHandlers('ADMIN'));
+    const { router } = renderApp('/panel/uyusmazliklar');
+    await screen.findByRole('link', { name: 'UY-2026-0001' });
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Yalnızca süresi geçenler' }));
+    expect(router.state.location.search).toBe('?gecikmis=1');
+    await screen.findByRole('checkbox', { name: 'Yalnızca süresi geçenler', checked: true });
+  });
+
   it('açık uyuşmazlığı bana atar, sonra notla karara bağlar', async () => {
     server.use(...createHandlers('ADMIN'));
     renderApp('/panel/uyusmazliklar/disc-0');

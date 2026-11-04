@@ -1,4 +1,5 @@
 import { RequireAuth, RequirePermission } from '@/modules/auth';
+import { auditPanelRoutes } from '@/modules/audit';
 import { bagPanelRoutes } from '@/modules/bag';
 import { discrepancyPanelRoutes } from '@/modules/discrepancy';
 import { ForgotPasswordPage } from '@/modules/passwordreset';
@@ -42,6 +43,7 @@ const routes: RouteObject[] = [
       ...bagPanelRoutes,
       ...usersPanelRoutes,
       ...reportPanelRoutes,
+      ...auditPanelRoutes,
     ],
   },
   {

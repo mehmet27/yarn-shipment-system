@@ -64,6 +64,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: overdue
+          in: query
+          required: false
+          description: true ise yalnızca vadesi geçmiş ve hâlâ açık (OPEN, IN_REVIEW) kayıtlar döner.
+          schema:
+            type: boolean
         - name: page
           in: query
           required: false

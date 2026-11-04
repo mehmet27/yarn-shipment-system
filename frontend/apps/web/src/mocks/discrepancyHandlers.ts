@@ -109,6 +109,7 @@ export function createDiscrepancyHandlers(permissions: readonly Permission[], us
       const matching = listMockDiscrepancies({
         status: url.searchParams.get('status'),
         severity: url.searchParams.get('severity'),
+        overdue: url.searchParams.get('overdue') === 'true',
       });
       return HttpResponse.json({
         items: matching.slice(page * size, (page + 1) * size).map((item) => view(item.id)),

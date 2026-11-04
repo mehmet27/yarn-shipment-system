@@ -37,14 +37,16 @@ final class DiscrepancyViews {
             com.yarnshipment.discrepancy.adapter.in.web.api.model.@Nullable DiscrepancyStatus status,
             @Nullable Severity severity,
             @Nullable UUID assigneeId,
-            @Nullable UUID shipmentId) {
+            @Nullable UUID shipmentId,
+            @Nullable Boolean overdue) {
         return new ListDiscrepanciesQuery.Filter(
                 status == null ? null : DiscrepancyStatus.valueOf(status.getValue()),
                 severity == null
                         ? null
                         : com.yarnshipment.discrepancy.domain.model.Severity.valueOf(severity.getValue()),
                 assigneeId,
-                shipmentId);
+                shipmentId,
+                overdue);
     }
 
     static com.yarnshipment.discrepancy.domain.model.Resolution resolutionOf(Resolution resolution) {

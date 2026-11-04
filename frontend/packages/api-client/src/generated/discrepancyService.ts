@@ -423,6 +423,10 @@ severity?: Severity;
 assigneeId?: string;
 shipmentId?: string;
 /**
+ * true ise yalnızca vadesi geçmiş ve hâlâ açık (OPEN, IN_REVIEW) kayıtlar döner.
+ */
+overdue?: boolean;
+/**
  * @minimum 0
  */
 page?: number;

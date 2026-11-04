@@ -6,8 +6,8 @@ import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -29,13 +29,15 @@ final class KeycloakActorNameAdapter implements ActorNamePort {
         if (userIds.isEmpty()) {
             return Map.of();
         }
-        Set<UUID> wanted = Set.copyOf(userIds);
+        Map<String, UUID> wanted = new HashMap<>();
+        userIds.forEach(id -> wanted.put(id.toString(), id));
         try {
             Map<UUID, String> names = new HashMap<>();
             for (LoginAccountSummary account : accounts.findAll()) {
-                if (wanted.contains(account.id())) {
+                UUID userId = wanted.get(account.id().toLowerCase(Locale.ROOT));
+                if (userId != null) {
                     String fullName = account.fullName();
-                    names.put(account.id(), fullName == null || fullName.isBlank() ? account.username() : fullName);
+                    names.put(userId, fullName == null || fullName.isBlank() ? account.username() : fullName);
                 }
             }
             return names;

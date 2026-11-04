@@ -9,7 +9,8 @@ describe('Uyuşmazlık ekranları', () => {
   it('listeyi önem rozetiyle gösterir ve kartı detaya bağlar', async () => {
     server.use(...createHandlers('ADMIN'));
     renderApp('/panel/uyusmazliklar');
-    const card = await screen.findByRole('link', { name: 'UY-2026-0001' });
+    // İlk test sayfayı soğuk yükler; CI'da 1 sn'lik varsayılan bekleme yetmeyebilir.
+    const card = await screen.findByRole('link', { name: 'UY-2026-0001' }, { timeout: 5000 });
     expect(card).toHaveAttribute('href', '/panel/uyusmazliklar/disc-0');
     expect(within(card).getByText('Kırmızı')).toBeInTheDocument();
   });

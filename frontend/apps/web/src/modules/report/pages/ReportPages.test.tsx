@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
 import { renderApp } from '@/test/renderApp';
@@ -38,6 +38,7 @@ describe('Panel ana sayfası ve raporlar', () => {
   it('şoför raporu oranı yüzde olarak gösterir; sekmeler fasoncu ve eşleşmeyi açar', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/raporlar');
+    await userEvent.click(await screen.findByRole('tab', { name: 'Şoförler' }));
     const row = await screen.findByRole('row', { name: /a1b2c3d4/ });
     expect(within(row).getByText('%50,00')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Eşleşmeler' }));
@@ -52,5 +53,62 @@ describe('Panel ana sayfası ve raporlar', () => {
     await waitFor(() => {
       expect(router.state.location.pathname).not.toBe('/panel/raporlar');
     });
+  });
+
+  it('raporlar ekranı Özet sekmesiyle açılır ve toplam satırı ağırlıklı oranı gösterir', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/raporlar');
+    expect(await screen.findByTestId('stat-total')).toHaveTextContent('12');
+    await userEvent.click(screen.getByRole('tab', { name: 'Şoförler' }));
+    const total = await screen.findByTestId('party-total');
+    expect(total).toHaveTextContent('7');
+    expect(total).toHaveTextContent('%28,57');
+  });
+
+  it('"yalnızca uyuşmazlıklılar" anahtarı uyuşmazlığı olmayan satırı gizler', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/raporlar');
+    await userEvent.click(await screen.findByRole('tab', { name: 'Şoförler' }));
+    await screen.findByText('b2c3d4e5');
+    await userEvent.click(screen.getByLabelText('Yalnızca uyuşmazlıklılar'));
+    expect(screen.queryByText('b2c3d4e5')).not.toBeInTheDocument();
+    expect(screen.getByText('a1b2c3d4')).toBeInTheDocument();
+  });
+
+  it('başlangıç bitişten sonraysa uyarır ve dışa aktarma düğmelerini kapatır', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/raporlar');
+    await userEvent.type(await screen.findByLabelText('Başlangıç tarihi'), '2026-11-10');
+    await userEvent.type(screen.getByLabelText('Bitiş tarihi'), '2026-11-01');
+    expect(await screen.findByText('Başlangıç, bitişten sonra olamaz.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Excel indir (.xlsx)' })).toBeDisabled();
+  });
+
+  it('PDF düğmesi yazdırılabilir raporu imza alanlarıyla hazırlar ve yazdırmayı açar', async () => {
+    server.use(...createHandlers('MANAGER'));
+    const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
+    renderApp('/panel/raporlar');
+    await userEvent.click(await screen.findByRole('button', { name: 'PDF / Yazdır' }));
+    await waitFor(() => {
+      expect(print).toHaveBeenCalledTimes(1);
+    });
+    print.mockRestore();
+  });
+
+  it('Excel düğmesi dosyayı indirir', async () => {
+    server.use(...createHandlers('MANAGER'));
+    const create = vi.fn(() => 'blob:rapor');
+    vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: create, revokeObjectURL: vi.fn() }));
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
+    renderApp('/panel/raporlar');
+    await userEvent.click(await screen.findByRole('button', { name: 'Excel indir (.xlsx)' }));
+    await waitFor(() => {
+      expect(click).toHaveBeenCalledTimes(1);
+    });
+    expect(create).toHaveBeenCalledTimes(1);
+    click.mockRestore();
+    vi.unstubAllGlobals();
   });
 });

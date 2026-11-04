@@ -7,7 +7,7 @@ import {
 } from '@iplik/api-client';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-export const REPORT_KINDS = ['drivers', 'subcontractors', 'pairs'] as const;
+export const REPORT_KINDS = ['summary', 'drivers', 'subcontractors', 'pairs'] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 
 const FETCHERS = {

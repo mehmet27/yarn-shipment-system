@@ -1,0 +1,59 @@
+/* Rapor yazdırma görünümü: ekranda gizli, yazdırırken yalnızca bu bölüm basılır. */
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .print-only,
+  .print-only * {
+    visibility: visible;
+  }
+
+  .print-only {
+    display: block;
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+  }
+
+  .print-section {
+    margin-top: 12px;
+  }
+
+  .print-section table {
+    font-size: 11px;
+  }
+
+  .print-section thead {
+    display: table-header-group;
+  }
+
+  .print-section tr {
+    break-inside: avoid;
+  }
+
+  .print-signatures {
+    display: flex;
+    gap: 32px;
+    margin-top: 40px;
+    break-inside: avoid;
+  }
+
+  .print-signature {
+    flex: 1;
+  }
+
+  .print-signature-line {
+    border-bottom: 1px solid #000;
+    height: 40px;
+  }
+}

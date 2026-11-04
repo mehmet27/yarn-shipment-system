@@ -1,7 +1,10 @@
 import { useTranslation } from '@iplik/i18n';
 import { Table, Text } from '@iplik/ui';
 import type { ReactNode } from 'react';
+import { partyTotals } from '../export/reportModel';
 import { formatKilograms, formatPercent } from '../format';
+
+const KG_DECIMALS = 3;
 
 export type PartyRow = {
   key: string;
@@ -20,6 +23,7 @@ export type PartyTableProps = {
 /** Şoför, fasoncu ve eşleşme raporlarının ortak tablosu; en yüksek oran üstte gelir. */
 export function PartyTable({ partyHeaders, rows }: PartyTableProps) {
   const { t } = useTranslation();
+  const totals = partyTotals(rows);
   if (rows.length === 0) {
     return <Text c="dimmed">{t('report.parties.empty')}</Text>;
   }
@@ -50,6 +54,15 @@ export function PartyTable({ partyHeaders, rows }: PartyTableProps) {
             </Table.Tr>
           ))}
         </Table.Tbody>
+        <Table.Tfoot>
+          <Table.Tr fw={700} data-testid="party-total">
+            <Table.Td colSpan={partyHeaders.length}>{t('report.export.total')}</Table.Td>
+            <Table.Td>{totals.shipments}</Table.Td>
+            <Table.Td>{totals.discrepant}</Table.Td>
+            <Table.Td>{formatPercent(totals.rate.toFixed(2))}</Table.Td>
+            <Table.Td>{formatKilograms(totals.averageDiffKg.toFixed(KG_DECIMALS))}</Table.Td>
+          </Table.Tr>
+        </Table.Tfoot>
       </Table>
     </Table.ScrollContainer>
   );

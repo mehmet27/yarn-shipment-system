@@ -1,7 +1,7 @@
 import type { ShipmentStatus } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { MiniProgress } from '@iplik/ui';
-import { PROGRESS_TOTAL_STEPS, toProgressDone } from './shipmentProgress';
+import { PROGRESS_TOTAL_STEPS, toProgressDone } from './progressSteps';
 import { toStatusColor } from './statusColor';
 
 export type ShipmentProgressProps = {

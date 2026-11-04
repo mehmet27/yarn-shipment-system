@@ -2,7 +2,7 @@ import type { LoginAccountView, Role } from '@iplik/api-client';
 
 /**
  * Keycloak'taki giriş hesaplarının sahte karşılığı; yerel realm'deki test kullanıcılarıyla aynı giriş adlarını taşır.
- * Şifre tutulmaz, gerçek uç da şifre döndürmez.
+ * Şifre tutulmaz, gerçek uç da şifre döndürmez; telefon yalnızca maskeli gelir.
  */
 const SEED: readonly LoginAccountView[] = [
   {
@@ -12,6 +12,7 @@ const SEED: readonly LoginAccountView[] = [
     email: 'admin@iplik.local',
     roles: ['ADMIN'],
     enabled: true,
+    phone: '***0001',
     passwordChangeRequired: false,
     createdAt: '2026-01-05T08:00:00Z',
   },
@@ -52,6 +53,7 @@ const SEED: readonly LoginAccountView[] = [
     email: 'sofor@iplik.local',
     roles: ['DRIVER'],
     enabled: true,
+    phone: '***0005',
     passwordChangeRequired: true,
     createdAt: '2026-02-10T09:30:00Z',
   },
@@ -88,10 +90,11 @@ export function isMockUsernameTaken(username: string): boolean {
   return accounts.some((account) => account.username === username);
 }
 
-/** Tanımlar ekranından açılan hesap listeye ilk girişini bekleyen hesap olarak düşer. */
+/** Açılan hesap, kişi SMS'le şifresini belirleyene kadar ilk girişini bekleyen hesap olarak listeye düşer. */
 export function addMockLoginAccount(input: {
   username: string;
-  email: string;
+  email?: string;
+  phone: string;
   fullName: string;
   role: Role;
 }): void {
@@ -101,13 +104,30 @@ export function addMockLoginAccount(input: {
       id: `kc-new-${String(nextId++)}`,
       username: input.username,
       fullName: input.fullName,
-      email: input.email,
+      ...(input.email === undefined || input.email === '' ? {} : { email: input.email }),
+      phone: `***${input.phone.replace(/\D/g, '').slice(-4)}`,
       roles: [input.role],
       enabled: true,
       passwordChangeRequired: true,
       createdAt: new Date().toISOString(),
     },
   ];
+}
+
+/** Hesabı açar ya da kapatır; bulunamazsa `false` döner. */
+export function setMockLoginAccountEnabled(id: string, enabled: boolean): boolean {
+  if (!accounts.some((candidate) => candidate.id === id)) return false;
+  accounts = accounts.map((candidate) =>
+    candidate.id === id ? { ...candidate, enabled } : candidate,
+  );
+  return true;
+}
+
+/** Yönetici sıfırlaması için hesabın telefonu var mı; yoksa `no-phone`, hesap yoksa `not-found`. */
+export function mockPasswordResetState(id: string): 'ok' | 'not-found' | 'no-phone' {
+  const account = accounts.find((candidate) => candidate.id === id);
+  if (account === undefined) return 'not-found';
+  return account.phone === undefined ? 'no-phone' : 'ok';
 }
 
 /** Rolü değiştirir; bulunamazsa `not-found`, şoför/fasoncu hesabıysa `locked` döner. */

@@ -70,7 +70,18 @@ export {
   createDriverLoginAccount,
   createSubcontractorLoginAccount,
 } from './generated/shipmentService';
-export type { LoginAccountRequest, LoginAccountResponse } from './generated/shipmentService';
+export type { LoginAccountRequest } from './generated/shipmentService';
+export {
+  changeLoginAccountEnabled,
+  confirmPasswordReset,
+  requestPasswordReset,
+  startLoginAccountPasswordReset,
+} from './generated/shipmentService';
+export type {
+  ChangeLoginAccountEnabledRequest,
+  PasswordResetConfirmRequest,
+  PasswordResetRequest,
+} from './generated/shipmentService';
 export { listLoginAccounts } from './generated/shipmentService';
 export { changeLoginAccountRole, createStaffLoginAccount } from './generated/shipmentService';
 export type {

@@ -1,6 +1,7 @@
 import { RequireAuth, RequirePermission } from '@/modules/auth';
 import { bagPanelRoutes } from '@/modules/bag';
 import { discrepancyPanelRoutes } from '@/modules/discrepancy';
+import { ForgotPasswordPage } from '@/modules/passwordreset';
 import { masterDataPanelRoutes } from '@/modules/masterdata';
 import { reportPanelRoutes } from '@/modules/report';
 import { shipmentFieldRoutes, shipmentPanelRoutes } from '@/modules/shipment';
@@ -52,6 +53,7 @@ const routes: RouteObject[] = [
     ),
     children: shipmentFieldRoutes,
   },
+  { path: '/sifremi-unuttum', element: <ForgotPasswordPage /> },
   { path: '/403', element: <ErrorPage reason="forbidden" /> },
   { path: '*', element: <ErrorPage reason="notFound" /> },
 ];

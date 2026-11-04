@@ -1,6 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { AppShell, Burger, Group, Text, useDisclosure } from '@iplik/ui';
 import { Outlet } from 'react-router';
+import { ChangePasswordButton } from './ChangePasswordButton';
 import { LogoutButton } from './LogoutButton';
 import { PanelNav } from './PanelNav';
 
@@ -25,7 +26,10 @@ export function PanelLayout() {
               {t('app.name')}
             </Text>
           </Group>
-          <LogoutButton />
+          <Group gap={0}>
+            <ChangePasswordButton />
+            <LogoutButton />
+          </Group>
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="xs">

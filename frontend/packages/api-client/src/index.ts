@@ -1,5 +1,5 @@
 export { httpClient } from './httpClient';
-export { getCurrentUser, LOGIN_PATH, loginUrl, logout, ME_PATH } from './me';
+export { changePasswordUrl, getCurrentUser, LOGIN_PATH, loginUrl, logout, ME_PATH } from './me';
 export type { CurrentUser, Permission, Role } from './me';
 export { classifyProblem, toProblem } from './problem';
 export type { FieldError, Problem, ProblemKind } from './problem';
@@ -84,22 +84,28 @@ export type {
 export {
   assignShipmentBags,
   cancelShipment,
+  changeLoginAccountEnabled,
+  changeLoginAccountRole,
+  confirmPasswordReset,
   createDriverLoginAccount,
+  createStaffLoginAccount,
   createSubcontractorLoginAccount,
+  listLoginAccounts,
   removeShipmentBag,
+  requestPasswordReset,
+  startLoginAccountPasswordReset,
 } from './masterData';
-export type { LoginAccountRequest, LoginAccountResponse } from './masterData';
-export { listLoginAccounts } from './masterData';
-export { changeLoginAccountRole, createStaffLoginAccount } from './masterData';
 export type {
+  ChangeLoginAccountEnabledRequest,
   ChangeLoginAccountRoleRequest,
-  StaffLoginAccountRequest,
-  StaffRole,
-} from './masterData';
-export type {
   ListLoginAccountsParams,
   LoginAccountPageResponse,
+  LoginAccountRequest,
   LoginAccountView,
+  PasswordResetConfirmRequest,
+  PasswordResetRequest,
+  StaffLoginAccountRequest,
+  StaffRole,
 } from './masterData';
 export { CorrectionTarget, listCorrections, recordCorrection } from './masterData';
 export type { CorrectionListResponse, CorrectionView, RecordCorrectionRequest } from './masterData';

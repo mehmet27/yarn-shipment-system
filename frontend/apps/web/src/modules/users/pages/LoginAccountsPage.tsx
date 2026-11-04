@@ -10,15 +10,15 @@ import {
   useDisclosure,
 } from '@iplik/ui';
 import { useState } from 'react';
-import { CreateStaffAccountModal } from '../components/CreateStaffAccountModal';
+import { CreateAccountModal } from '../components/CreateAccountModal';
 import { LoginAccountResults } from '../components/LoginAccountResults';
 import { useLoginAccounts } from '../hooks/useLoginAccounts';
 
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
-/** Yönetici: giriş hesabı olan kullanıcıları görür, depo/kalite/müdür/yönetici hesabı açar ve rolünü değiştirir; şifre
- * hiçbir yerde gösterilmez. */
+/** Yönetici: giriş hesabı olan tüm kullanıcıları görür, her rolden hesap açar, pasife alır, rolünü değiştirir ve şifre
+ * sıfırlamayı başlatır; şifre hiçbir yerde gösterilmez. */
 export function LoginAccountsPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
@@ -34,7 +34,7 @@ export function LoginAccountsPage() {
         </Title>
         <Button onClick={open}>{t('users.create.open')}</Button>
       </Group>
-      <CreateStaffAccountModal opened={isCreating} onClose={close} />
+      <CreateAccountModal opened={isCreating} onClose={close} />
       <Text c="dimmed">{t('users.intro')}</Text>
       <TextInput
         type="search"

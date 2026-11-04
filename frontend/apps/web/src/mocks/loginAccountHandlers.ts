@@ -1,4 +1,5 @@
 import type {
+  ChangeLoginAccountEnabledRequest,
   ChangeLoginAccountRoleRequest,
   Permission,
   StaffLoginAccountRequest,
@@ -9,6 +10,8 @@ import {
   changeMockLoginAccountRole,
   isMockUsernameTaken,
   listMockLoginAccounts,
+  mockPasswordResetState,
+  setMockLoginAccountEnabled,
 } from './loginAccounts';
 
 const PATH = '/api/v1/master-data/login-accounts';
@@ -23,7 +26,7 @@ function problem(status: number, code: string, title: string) {
   return HttpResponse.json({ status, code, title }, { status });
 }
 
-/** Giriş hesabı listesi, fabrika içi hesap açma ve rol değiştirme; yalnızca USER_MANAGE (yönetici), aksi halde 403. */
+/** Giriş hesabı listesi, fabrika içi hesap açma, rol değiştirme, pasife alma ve şifre sıfırlamayı başlatma; yalnızca USER_MANAGE (yönetici), aksi halde 403. */
 export function createLoginAccountHandlers(permissions: readonly Permission[]) {
   const canList = permissions.includes('USER_MANAGE');
   return [
@@ -35,7 +38,8 @@ export function createLoginAccountHandlers(permissions: readonly Permission[]) {
       }
       addMockLoginAccount({
         username: body.username,
-        email: body.email,
+        ...(body.email === undefined ? {} : { email: body.email }),
+        phone: body.phone,
         fullName: body.fullName,
         role: body.role,
       });
@@ -51,6 +55,21 @@ export function createLoginAccountHandlers(permissions: readonly Permission[]) {
       if (result === 'locked') {
         return problem(409, 'LOGIN_ACCOUNT_ROLE_LOCKED', 'Rol değiştirilemez');
       }
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.put(`${PATH}/:id/enabled`, async ({ params, request }) => {
+      if (!canList) return problem(403, 'FORBIDDEN', 'Yetkiniz yok');
+      const body = (await request.json()) as ChangeLoginAccountEnabledRequest;
+      if (!setMockLoginAccountEnabled(String(params.id), body.enabled)) {
+        return problem(404, 'LOGIN_ACCOUNT_NOT_FOUND', 'Kullanıcı yok');
+      }
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.post(`${PATH}/:id/password-reset`, ({ params }) => {
+      if (!canList) return problem(403, 'FORBIDDEN', 'Yetkiniz yok');
+      const state = mockPasswordResetState(String(params.id));
+      if (state === 'not-found') return problem(404, 'LOGIN_ACCOUNT_NOT_FOUND', 'Kullanıcı yok');
+      if (state === 'no-phone') return problem(400, 'INVALID_MASTER_DATA', 'Telefon kayıtlı değil');
       return new HttpResponse(null, { status: 204 });
     }),
     http.get(PATH, ({ request }) => {

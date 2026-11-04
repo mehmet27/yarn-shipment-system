@@ -1,14 +1,23 @@
 import type { LoginAccountView } from '@iplik/api-client';
+import { Group } from '@iplik/ui';
 import { useCurrentUser } from '@/modules/auth';
 import { hasChangeableRole } from '../staffRoles';
 import { ChangeRoleButton } from './ChangeRoleButton';
+import { ResetPasswordButton } from './ResetPasswordButton';
+import { ToggleEnabledButton } from './ToggleEnabledButton';
 
 /**
- * Hesap satırının işlemleri. Şoför/fasoncu hesabında ve kişinin kendi hesabında rol değiştirme sunulmaz;
- * sunucu da aynı kuralı uygular (kendi yetkisini düşürüp kilitlenmeyi önler).
+ * Hesap satırının işlemleri: şifre sıfırlama (SMS), pasife alma/açma ve fabrika içi hesapta rol değiştirme. Kişinin
+ * kendi hesabında pasife alma ve rol değiştirme sunulmaz; sunucu da aynı kuralı uygular (kilitlenmeyi önler).
  */
 export function AccountActions({ account }: { account: LoginAccountView }) {
   const { data: me } = useCurrentUser();
-  if (!hasChangeableRole(account) || me?.userId === account.id) return null;
-  return <ChangeRoleButton account={account} />;
+  const isOwn = me?.userId === account.id;
+  return (
+    <Group gap="xs" align="flex-start">
+      <ResetPasswordButton account={account} />
+      {!isOwn && <ToggleEnabledButton account={account} />}
+      {!isOwn && hasChangeableRole(account) && <ChangeRoleButton account={account} />}
+    </Group>
+  );
 }

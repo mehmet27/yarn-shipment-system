@@ -3,7 +3,7 @@ import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Stack, Text } from '@iplik/ui';
 import { useState } from 'react';
-import { useChangeAccountRole } from '../hooks/useStaffAccountMutations';
+import { useChangeAccountRole } from '../hooks/useAccountMutations';
 import { asStaffRole } from '../staffRoles';
 import { StaffRoleSelect } from './StaffRoleSelect';
 

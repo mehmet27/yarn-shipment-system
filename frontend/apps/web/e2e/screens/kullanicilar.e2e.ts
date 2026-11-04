@@ -17,19 +17,24 @@ test.describe('Kullanıcılar', { tag: '@panel' }, () => {
     },
   );
 
-  test('Tanımlar ekranında açılan hesap listede görünür', async ({ page, openAs }) => {
-    await openAs('ADMIN', '/panel/tanimlar');
-    const card = page.getByRole('group', { name: 'Bursa Tekstil' });
-    await card.getByRole('button', { name: 'Giriş hesabı aç' }).click();
+  test('yönetici fasoncu hesabını Kullanıcılar ekranından açar; SMS gider, hesap listede görünür', async ({
+    page,
+    openAs,
+  }) => {
+    await openAs('ADMIN', '/panel/kullanicilar');
+    await page.getByRole('button', { name: 'Yeni kullanıcı' }).click();
     const dialog = page.getByRole('dialog');
+    await dialog.getByRole('combobox', { name: /Rol/ }).click();
+    await page.getByRole('option', { name: 'Fasoncu' }).click();
+    await dialog.getByRole('combobox', { name: /Fasoncu kaydı/ }).click();
+    await page.getByRole('option', { name: 'Bursa Tekstil' }).click();
     await dialog.getByLabel(/Giriş adı/).fill('bursa.tekstil');
-    await dialog.getByLabel(/E-posta/).fill('bilgi@bursa.com');
+    await dialog.getByLabel(/Telefon/).fill('0532 123 45 67');
     await dialog.getByRole('switch', { name: 'Merkez Depo' }).click();
-    await dialog.getByRole('button', { name: 'Hesabı aç' }).click();
-    await expect(dialog.getByText('Giriş hesabı açıldı.')).toBeVisible();
+    await dialog.getByRole('button', { name: /Hesabı aç/ }).click();
+    await expect(dialog.getByText(/numarasına gönderildi/)).toBeVisible();
     await dialog.getByRole('button', { name: 'Tamam' }).click();
 
-    await page.getByRole('link', { name: 'Kullanıcılar' }).click();
     await expect(page.getByRole('row', { name: /bursa\.tekstil/ })).toContainText('Fasoncu');
   });
 

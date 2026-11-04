@@ -99,24 +99,6 @@ describe('Kullanıcılar ekranı', () => {
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 
-  it('Tanımlar ekranında açılan hesap listeye ilk girişini bekleyen hesap olarak düşer', async () => {
-    const { router } = renderApp('/panel/tanimlar');
-    const card = await screen.findByRole('group', { name: 'Bursa Tekstil' });
-    await userEvent.click(within(card).getByRole('button', { name: 'Giriş hesabı aç' }));
-    const dialog = await screen.findByRole('dialog');
-    await userEvent.type(within(dialog).getByLabelText(/Giriş adı/), 'bursa.tekstil');
-    await userEvent.type(within(dialog).getByLabelText(/E-posta/), 'bilgi@bursa.com');
-    await userEvent.click(await within(dialog).findByRole('switch', { name: 'Merkez Depo' }));
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Hesabı aç' }));
-    expect(await within(dialog).findByText('Giriş hesabı açıldı.')).toBeInTheDocument();
-
-    await router.navigate('/panel/kullanicilar');
-    const table = await screen.findByRole('table');
-    const row = await within(table).findByRole('row', { name: /bursa\.tekstil/ });
-    expect(within(row).getByText('Fasoncu')).toBeInTheDocument();
-    expect(within(row).getByText('İlk giriş bekleniyor')).toBeInTheDocument();
-  });
-
   it('yönetici olmayan rol menüde ekranı görmez ve adrese gidince engellenir', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     const { router } = renderApp('/panel/kullanicilar');

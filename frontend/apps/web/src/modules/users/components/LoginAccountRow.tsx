@@ -5,7 +5,7 @@ import { AccountActions } from './AccountActions';
 import { RoleBadges } from './RoleBadges';
 import { StatusBadges } from './StatusBadges';
 
-/** Tablo satırı: kullanıcı adı, ad, e-posta, rol, durum, açılış ve işlemler. Şifre sütunu yoktur. */
+/** Tablo satırı: kullanıcı adı, ad, e-posta, telefon (maskeli), rol, durum, açılış ve işlemler. Şifre sütunu yoktur. */
 export function LoginAccountRow({ account }: { account: LoginAccountView }) {
   const { t } = useTranslation();
   return (
@@ -23,6 +23,7 @@ export function LoginAccountRow({ account }: { account: LoginAccountView }) {
         )}
       </Table.Td>
       <Table.Td>{account.email ?? '–'}</Table.Td>
+      <Table.Td>{account.phone ?? '–'}</Table.Td>
       <Table.Td>
         <RoleBadges account={account} />
       </Table.Td>

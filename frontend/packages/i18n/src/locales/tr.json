@@ -816,6 +816,10 @@
     "disable": {
       "action": "Pasife al",
       "open": "{{username}} hesabını pasife al",
+      "confirmTitle": "Hesabı pasife al",
+      "confirmIntro": "{{username}} hesabı pasife alınırsa kişi giriş yapamaz ve açık oturumları kapanır. Veri silinmez; hesabı sonra yeniden açabilirsiniz.",
+      "confirm": "Pasife al",
+      "cancel": "Vazgeç",
       "error": "Hesap pasife alınamadı. Lütfen tekrar deneyin."
     },
     "enable": {

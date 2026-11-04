@@ -42,6 +42,38 @@ class KeycloakRealmFileTest {
     }
 
     @Test
+    @DisplayName("Parola politikası en az 8 karakterdir; servisin kuralıyla aynıdır")
+    void shouldRequireEightCharacterPasswords() {
+        JsonNode raw = JsonMapper.shared().readTree(REALM_FILE.toFile());
+
+        assertThat(raw.path("passwordPolicy").asString("")).isEqualTo("length(8)");
+    }
+
+    @Test
+    @DisplayName("E-posta zorunlu değildir: e-postasız (SMS ile giriş yapan) hesap açılabilir")
+    void shouldKeepEmailOptionalInUserProfile() {
+        JsonNode raw = JsonMapper.shared().readTree(REALM_FILE.toFile());
+        String config = raw.path("components")
+                .path("org.keycloak.userprofile.UserProfileProvider")
+                .get(0)
+                .path("config")
+                .path("kc.user.profile.config")
+                .get(0)
+                .asString();
+        JsonNode attributes = JsonMapper.shared().readTree(config).path("attributes");
+
+        List<JsonNode> emailAttributes = new java.util.ArrayList<>();
+        for (JsonNode attribute : attributes) {
+            if ("email".equals(attribute.path("name").asString())) {
+                emailAttributes.add(attribute);
+            }
+        }
+
+        assertThat(emailAttributes).hasSize(1);
+        assertThat(emailAttributes.getFirst().has("required")).isFalse();
+    }
+
+    @Test
     @DisplayName("Realm rolleri Role enum'uyla birebir aynıdır")
     void shouldDefineExactlyTheServiceRoles() {
         // given

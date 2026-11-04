@@ -32,8 +32,8 @@ export function PartyTable({ partyHeaders, rows }: PartyTableProps) {
       <Table striped>
         <Table.Thead>
           <Table.Tr>
-            {partyHeaders.map((header) => (
-              <Table.Th key={header}>{header}</Table.Th>
+            {partyHeaders.map((header, index) => (
+              <Table.Th key={`${String(index)}-${header}`}>{header}</Table.Th>
             ))}
             <Table.Th>{t('report.parties.shipments')}</Table.Th>
             <Table.Th>{t('report.parties.discrepant')}</Table.Th>
@@ -45,7 +45,7 @@ export function PartyTable({ partyHeaders, rows }: PartyTableProps) {
           {rows.map((row) => (
             <Table.Tr key={row.key}>
               {row.parties.map((party, index) => (
-                <Table.Td key={partyHeaders[index]}>{party}</Table.Td>
+                <Table.Td key={`${String(index)}-${partyHeaders[index] ?? ''}`}>{party}</Table.Td>
               ))}
               <Table.Td>{row.shipmentCount}</Table.Td>
               <Table.Td>{row.discrepantShipmentCount}</Table.Td>

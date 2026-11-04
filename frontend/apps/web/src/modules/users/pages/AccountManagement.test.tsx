@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -107,6 +109,8 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     const table = await screen.findByRole('table');
     const depo = within(table).getByRole('row', { name: /Depo Sorumlusu/ });
     await userEvent.click(within(depo).getByRole('button', { name: 'depo hesabını pasife al' }));
+    const confirm = await screen.findByRole('dialog', { name: 'Hesabı pasife al' });
+    await userEvent.click(within(confirm).getByRole('button', { name: 'Pasife al' }));
     const disabled = await within(await screen.findByRole('table')).findByRole('row', {
       name: /Depo Sorumlusu.*Devre dışı/,
     });
@@ -118,6 +122,27 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
         name: /Depo Sorumlusu.*Etkin/,
       }),
     ).toBeInTheDocument();
+  });
+
+  it('pasife alma onay ister; vazgeçilirse hesap etkin kalır', async () => {
+    renderApp('/panel/kullanicilar');
+    const table = await screen.findByRole('table');
+    const depo = within(table).getByRole('row', { name: /Depo Sorumlusu/ });
+    await userEvent.click(within(depo).getByRole('button', { name: 'depo hesabını pasife al' }));
+    const confirm = await screen.findByRole('dialog', { name: 'Hesabı pasife al' });
+    await userEvent.click(within(confirm).getByRole('button', { name: 'Vazgeç' }));
+    expect(
+      within(await screen.findByRole('table')).getByRole('row', { name: /Depo Sorumlusu.*Etkin/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('rozet metinleri kesilmez: kırpma yerine alt satıra iner', () => {
+    const css = readFileSync(
+      resolve(__dirname, '../../../../../../packages/ui/src/styles.css'),
+      'utf8',
+    );
+    expect(css).toMatch(/\.mantine-Badge-label\s*{[^}]*text-overflow:\s*clip/);
+    expect(css).toMatch(/\.mantine-Badge-label\s*{[^}]*white-space:\s*normal/);
   });
 
   it('yönetici şifre sıfırlamayı başlatır; telefon maskeli görünür ve şifre gösterilmez', async () => {

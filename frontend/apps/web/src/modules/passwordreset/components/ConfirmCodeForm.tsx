@@ -16,16 +16,13 @@ function validate(code: string, password: string) {
   };
 }
 
-/** SMS kodunu ve yeni şifreyi alır; şifre yalnızca bu istekte gider, hiçbir yerde saklanmaz ya da gösterilmez. */
-export function ConfirmCodeForm({
-  username,
-  onDone,
-  onResend,
-}: {
-  username: string;
-  onDone: () => void;
-  onResend: () => void;
-}) {
+type ConfirmCodeFormProps = { username: string; onDone: () => void; onResend: () => void };
+
+/**
+ * SMS kodunu ve yeni şifreyi alır; şifre yalnızca bu istekte gider, hiçbir yerde saklanmaz ya da gösterilmez.
+ * Alan değişince önceki denemenin "Kod hatalı" iletisi silinir.
+ */
+export function ConfirmCodeForm({ username, onDone, onResend }: ConfirmCodeFormProps) {
   const { t } = useTranslation();
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
@@ -54,6 +51,7 @@ export function ConfirmCodeForm({
           value={code}
           onChange={(event) => {
             setCode(event.currentTarget.value);
+            mutation.reset();
           }}
           error={isSubmitted && isCodeInvalid ? t('forgotPassword.invalid.code') : undefined}
           withAsterisk
@@ -65,6 +63,7 @@ export function ConfirmCodeForm({
           value={password}
           onChange={(event) => {
             setPassword(event.currentTarget.value);
+            mutation.reset();
           }}
           error={
             isSubmitted && isPasswordInvalid ? t('forgotPassword.invalid.password') : undefined
@@ -72,7 +71,7 @@ export function ConfirmCodeForm({
           withAsterisk
         />
         {mutation.isError && <ResetError error={mutation.error} />}
-        <ConfirmActions isPending={mutation.isPending} onResend={onResend} />{' '}
+        <ConfirmActions isPending={mutation.isPending} onResend={onResend} />
       </Stack>
     </form>
   );

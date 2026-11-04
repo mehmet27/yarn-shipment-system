@@ -38,6 +38,20 @@ describe('Şifremi unuttum', () => {
     expect(await screen.findByText(/Kod hatalı, süresi dolmuş/)).toBeInTheDocument();
   });
 
+  it('kod hatalıysa gelen ileti, kod ya da şifre düzeltilince kaybolur', async () => {
+    renderApp('/sifremi-unuttum');
+    await requestCode('ali.yilmaz');
+
+    await userEvent.type(await screen.findByLabelText(/SMS kodu/), '000000');
+    await userEvent.type(screen.getByLabelText(/Yeni şifre/), 'uzunSifre1');
+    await userEvent.click(screen.getByRole('button', { name: 'Şifreyi belirle' }));
+    expect(await screen.findByText(/Kod hatalı, süresi dolmuş/)).toBeInTheDocument();
+
+    await userEvent.clear(screen.getByLabelText(/SMS kodu/));
+    await userEvent.type(screen.getByLabelText(/SMS kodu/), '1');
+    expect(screen.queryByText(/Kod hatalı, süresi dolmuş/)).not.toBeInTheDocument();
+  });
+
   it('giriş adı boşsa istek gitmez', async () => {
     renderApp('/sifremi-unuttum');
     await userEvent.click(await screen.findByRole('button', { name: 'Kod gönder' }));

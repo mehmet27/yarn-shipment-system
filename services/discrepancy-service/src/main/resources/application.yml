@@ -3,16 +3,21 @@ spring:
   application:
     name: discrepancy-service
   datasource:
-    # Uygulama yalnızca DML yetkili rol ile bağlanır; DDL Flyway'in migrator rolüyle yapılır.
-    url: ${DISCREPANCY_DB_URL:jdbc:postgresql://localhost:5432/discrepancy_db}
-    username: ${DISCREPANCY_DB_APP_USER:discrepancy_app}
-    password: ${DISCREPANCY_DB_APP_PASSWORD}
+    # Tek veritabanı, tek kullanıcı; servis tabloları kendi şemasında (discrepancy) durur (docs/veritabani-tasarimi.md).
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/yarnshipment}
+    username: ${DB_USER:yarnshipment}
+    password: ${DB_PASSWORD}
+    hikari:
+      schema: discrepancy
   flyway:
-    user: ${DISCREPANCY_DB_MIGRATOR_USER:discrepancy_migrator}
-    password: ${DISCREPANCY_DB_MIGRATOR_PASSWORD}
+    user: ${DB_USER:yarnshipment}
+    password: ${DB_PASSWORD}
+    default-schema: discrepancy
+    schemas: discrepancy
+    create-schemas: true
     placeholders:
-      app_role: ${DISCREPANCY_DB_APP_USER:discrepancy_app}
-      readonly_role: ${DISCREPANCY_DB_READONLY_USER:discrepancy_readonly}
+      app_role: ${DB_USER:yarnshipment}
+      readonly_role: ${DB_USER:yarnshipment}
   messages:
     basename: messages
     encoding: UTF-8

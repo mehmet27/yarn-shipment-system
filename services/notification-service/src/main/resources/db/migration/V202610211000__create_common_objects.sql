@@ -13,8 +13,8 @@
 --   YS004  kilitli parti kalitesi değiştirildi
 
 ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO ${readonly_role};
-GRANT USAGE ON SCHEMA public TO ${app_role}, ${readonly_role};
+ALTER DEFAULT PRIVILEGES IN SCHEMA ${flyway:defaultSchema} GRANT SELECT ON TABLES TO ${readonly_role};
+GRANT USAGE ON SCHEMA ${flyway:defaultSchema} TO ${app_role}, ${readonly_role};
 
 -- Aylık range partition'ları oluşturur. pg_partman olmayan ortamlarda (yerel Compose) servis
 -- bu fonksiyonu zamanlanmış görevle her gün çağırarak gelecek ayları hazır tutar.
@@ -22,7 +22,7 @@ CREATE FUNCTION create_monthly_partitions(parent regclass, from_month date, mont
     RETURNS void
     LANGUAGE plpgsql
     SECURITY DEFINER
-    SET search_path = public, pg_temp
+    SET search_path = ${flyway:defaultSchema}, pg_temp
 AS $$
 DECLARE
     parent_name text;
@@ -106,7 +106,7 @@ CREATE FUNCTION audit_local_capture()
     RETURNS trigger
     LANGUAGE plpgsql
     SECURITY DEFINER
-    SET search_path = public, pg_temp
+    SET search_path = ${flyway:defaultSchema}, pg_temp
 AS $$
 DECLARE
     old_row jsonb := CASE WHEN TG_OP IN ('UPDATE', 'DELETE') THEN to_jsonb(OLD) END;

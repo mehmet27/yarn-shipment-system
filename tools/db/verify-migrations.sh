@@ -21,9 +21,9 @@ docker run -d --name "$CONTAINER" \
   -v "$ROOT/deploy/postgres/initdb:/docker-entrypoint-initdb.d:ro" \
   "$POSTGRES_IMAGE" >/dev/null
 
-# İlk açılışta init script'leri biter, sunucu yeniden başlar; hazır olduğunda keycloak_db de vardır.
+# İlk açılışta init script'leri biter, sunucu yeniden başlar; hazır olduğunda yarnshipment de vardır.
 for _ in $(seq 1 60); do
-  if docker exec "$CONTAINER" psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname = 'keycloak_db'" \
+  if docker exec "$CONTAINER" psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname = 'yarnshipment'" \
       2>/dev/null | grep -q 1 && docker exec "$CONTAINER" pg_isready -U postgres -h 127.0.0.1 >/dev/null 2>&1; then
     break
   fi
@@ -31,29 +31,31 @@ for _ in $(seq 1 60); do
 done
 
 migrate() {
-  local service="$1" database="$2" prefix="$3" app_role="$4" readonly_role="$5"
-  echo "==> $service ($database)"
+  local service="$1" schema="$2"
+  echo "==> $service (şema $schema)"
   docker run --rm --network "container:$CONTAINER" \
     -v "$ROOT/services/$service/src/main/resources/db/migration:/flyway/sql:ro" \
     "$FLYWAY_IMAGE" -q \
-    -url="jdbc:postgresql://127.0.0.1:5432/$database" -user="${prefix}_migrator" -password="$PASSWORD" \
+    -url="jdbc:postgresql://127.0.0.1:5432/yarnshipment" -user=yarnshipment -password="$PASSWORD" \
+    -defaultSchema="$schema" -schemas="$schema" -createSchemas=true \
     -locations=filesystem:/flyway/sql -validateMigrationNaming=true \
-    -placeholders.app_role="$app_role" -placeholders.readonly_role="$readonly_role" \
+    -placeholders.app_role=yarnshipment -placeholders.readonly_role=yarnshipment \
     migrate
   local tests="$ROOT/tools/db/tests/$service.sql"
   if [[ -f "$tests" ]]; then
-    docker exec -i "$CONTAINER" psql -q -o /dev/null -v ON_ERROR_STOP=1 -U postgres -d "$database" < "$tests"
+    docker exec -i -e PGOPTIONS="-c search_path=$schema" "$CONTAINER" \
+      psql -q -o /dev/null -v ON_ERROR_STOP=1 -U postgres -d yarnshipment < "$tests"
     echo "    kısıt testleri geçti"
   fi
 }
 
-migrate master-data-service masterdata_db masterdata masterdata_app masterdata_readonly
-migrate bag-service bag_db bag bag_app bag_readonly
-migrate shipment-service shipment_db shipment shipment_app shipment_readonly
-migrate evidence-service evidence_db evidence evidence_app evidence_readonly
-migrate discrepancy-service discrepancy_db discrepancy discrepancy_app discrepancy_readonly
-migrate notification-service notification_db notification notification_app notification_readonly
-migrate reporting-service reporting_db reporting reporting_app reporting_readonly
-migrate audit-service audit_db audit audit_writer audit_reader
+migrate master-data-service masterdata
+migrate bag-service bag
+migrate shipment-service shipment
+migrate evidence-service evidence
+migrate discrepancy-service discrepancy
+migrate notification-service notification
+migrate reporting-service reporting
+migrate audit-service audit
 
 echo "Tüm migration'lar ve kısıt testleri başarılı."

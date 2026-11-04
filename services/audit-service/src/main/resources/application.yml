@@ -3,16 +3,21 @@ spring:
   application:
     name: audit-service
   datasource:
-    # Yazan rol tablolara erişemez; yalnızca audit_append() ve audit_verify_chain() çalıştırır.
-    url: ${AUDIT_DB_URL:jdbc:postgresql://localhost:5432/audit_db}
-    username: ${AUDIT_DB_WRITER_USER:audit_writer}
-    password: ${AUDIT_DB_WRITER_PASSWORD}
+    # Tek veritabanı, tek kullanıcı; servis tabloları kendi şemasında (audit) durur (docs/veritabani-tasarimi.md).
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/yarnshipment}
+    username: ${DB_USER:yarnshipment}
+    password: ${DB_PASSWORD}
+    hikari:
+      schema: audit
   flyway:
-    user: ${AUDIT_DB_MIGRATOR_USER:audit_migrator}
-    password: ${AUDIT_DB_MIGRATOR_PASSWORD}
+    user: ${DB_USER:yarnshipment}
+    password: ${DB_PASSWORD}
+    default-schema: audit
+    schemas: audit
+    create-schemas: true
     placeholders:
-      app_role: ${AUDIT_DB_WRITER_USER:audit_writer}
-      readonly_role: ${AUDIT_DB_READER_USER:audit_reader}
+      app_role: ${DB_USER:yarnshipment}
+      readonly_role: ${DB_USER:yarnshipment}
   messages:
     basename: messages
     encoding: UTF-8
@@ -38,10 +43,11 @@ server:
   port: ${SERVER_PORT:8088}
 yarnshipment:
   audit:
-    # Audit ekranı okuma rolüyle ayrı bağlantı kullanır.
+    # Audit ekranı ayrı bağlantı kullanır ama artık aynı kullanıcıyla (okuma/yazma ayrımı yok, bkz. docs).
     reader:
-      url: ${AUDIT_DB_URL:jdbc:postgresql://localhost:5432/audit_db}
-      username: ${AUDIT_DB_READER_USER:audit_reader}
-      password: ${AUDIT_DB_READER_PASSWORD}
+      url: ${DB_URL:jdbc:postgresql://localhost:5432/yarnshipment}
+      schema: audit
+      username: ${DB_USER:yarnshipment}
+      password: ${DB_PASSWORD}
     chain-verification:
       cron: ${AUDIT_CHAIN_VERIFICATION_CRON:0 0 3 * * *}

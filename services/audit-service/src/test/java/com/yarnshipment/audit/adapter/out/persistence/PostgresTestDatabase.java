@@ -10,8 +10,8 @@ import org.testcontainers.utility.DockerImageName;
  */
 final class PostgresTestDatabase {
 
-    private static final String WRITER_ROLE = "audit_writer";
-    private static final String READER_ROLE = "audit_reader";
+    private static final String WRITER_ROLE = "yarnshipment";
+    private static final String READER_ROLE = "yarnshipment";
     private static final String PASSWORD = "test";
 
     private final PostgreSQLContainer postgres;
@@ -24,10 +24,9 @@ final class PostgresTestDatabase {
         PostgreSQLContainer container = new PostgreSQLContainer(
                         DockerImageName.parse("mirror.gcr.io/library/postgres:17")
                                 .asCompatibleSubstituteFor("postgres"))
-                .withDatabaseName("audit_db")
-                .withUsername("audit_migrator")
-                .withPassword(PASSWORD)
-                .withInitScript("db/test-roles.sql");
+                .withDatabaseName("yarnshipment")
+                .withUsername("yarnshipment")
+                .withPassword(PASSWORD);
         container.start();
         return new PostgresTestDatabase(container);
     }
@@ -41,5 +40,6 @@ final class PostgresTestDatabase {
         registry.add("yarnshipment.audit.reader.url", postgres::getJdbcUrl);
         registry.add("yarnshipment.audit.reader.username", () -> READER_ROLE);
         registry.add("yarnshipment.audit.reader.password", () -> PASSWORD);
+        registry.add("yarnshipment.audit.reader.schema", () -> "audit");
     }
 }

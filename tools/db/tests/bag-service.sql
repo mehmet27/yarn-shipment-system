@@ -17,7 +17,6 @@ END;
 $$;
 GRANT EXECUTE ON FUNCTION pg_temp.expect_error(text, text) TO PUBLIC;
 
-SET ROLE bag_app;
 
 -- Kalitesi kilitlenmemiş partiye çuval açılamaz.
 SELECT pg_temp.expect_error($$INSERT INTO bag (id, site_id, unique_key, package_type, lot_id, lot_no, product_id,

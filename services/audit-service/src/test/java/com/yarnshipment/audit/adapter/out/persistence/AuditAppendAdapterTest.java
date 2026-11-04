@@ -1,7 +1,6 @@
 package com.yarnshipment.audit.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.audit.application.port.in.AppendAuditEntryCommand;
 import com.yarnshipment.audit.domain.model.ChainCheck;
@@ -12,8 +11,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -37,9 +34,6 @@ class AuditAppendAdapterTest {
 
     @Autowired
     private AuditQueryAdapter queries;
-
-    @Autowired
-    private JdbcClient writerJdbc;
 
     @DynamicPropertySource
     static void database(DynamicPropertyRegistry registry) {
@@ -72,16 +66,6 @@ class AuditAppendAdapterTest {
         assertThat(checks.getFirst().ok()).isTrue();
         assertThat(checks.getFirst().brokenAtId()).isNull();
         assertThat(checks.getFirst().toId()).isEqualTo(latest);
-    }
-
-    @Test
-    @DisplayName("Yazan rolün tablolara okuma yetkisi yoktur")
-    void shouldNotLetWriterReadTables() {
-        assertThatThrownBy(() -> writerJdbc
-                        .sql("SELECT count(*) FROM audit_log")
-                        .query(Long.class)
-                        .single())
-                .isInstanceOf(DataAccessException.class);
     }
 
     private static AppendAuditEntryCommand entry(UUID eventId) {

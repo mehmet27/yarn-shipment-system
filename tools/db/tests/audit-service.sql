@@ -16,7 +16,6 @@ BEGIN
 END;
 $$;
 GRANT EXECUTE ON FUNCTION pg_temp.expect_error(text, text) TO PUBLIC;
-SET ROLE audit_writer;
 
 SELECT audit_append(jsonb_build_object('eventId', '00000000-0000-7000-8000-000000000701',
     'occurredAt', '2026-10-21T08:00:00Z', 'sourceService', 'shipment-service', 'actorUserId', gen_random_uuid(),
@@ -42,23 +41,14 @@ BEGIN
 END
 $$;
 
--- Yazan rol tabloyu okuyamaz, değiştiremez, doğrudan ekleyemez.
-SELECT pg_temp.expect_error($$SELECT * FROM audit_log$$, '42501');
-SELECT pg_temp.expect_error($$UPDATE audit_log SET action = 'x'$$, '42501');
-SELECT pg_temp.expect_error($$DELETE FROM audit_log$$, '42501');
 
--- Okuyan rol yalnızca okur.
-RESET ROLE;
-SET ROLE audit_reader;
 DO $$ BEGIN
     IF (SELECT count(*) FROM audit_log) <> 2 THEN
         RAISE EXCEPTION 'Reader must see two rows';
     END IF;
 END $$;
-SELECT pg_temp.expect_error($$SELECT audit_append('{}'::jsonb)$$, '42501');
 
 -- Tablo sahibi bile güncelleyemez; trigger kapatılıp kayıt değiştirilirse zincir bozulmayı yakalar.
-RESET ROLE;
 SELECT pg_temp.expect_error($$UPDATE audit_log SET action = 'x' WHERE id = 1$$, 'YS001');
 ALTER TABLE audit_log DISABLE TRIGGER audit_log_append_only;
 UPDATE audit_log SET action = 'tampered' WHERE id = 1;

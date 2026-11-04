@@ -1,69 +1,32 @@
 #!/usr/bin/env bash
-# Servis başına veritabanı ve roller (veritabanı tasarımı, "Servis başına veritabanı" ve
-# "Kullanıcılar ve yetkiler"). Tabloları bu script kurmaz; her servis açılışta Flyway ile kurar.
-#
-# Her servis için:
-#   <servis>_migrator  veritabanının sahibi, yalnızca Flyway kullanır (DDL)
-#   <servis>_app       uygulamanın bağlandığı rol (DML; DELETE yetkisi migration'larda hiç verilmez)
-#   <servis>_readonly  raporlama ve inceleme için salt okuma
-# audit_db istisnadır: audit_writer yalnızca audit_append() çalıştırır, audit_reader yalnızca okur.
+# Tek veritabanı (yarnshipment) ve tek kullanıcı (yarnshipment). Servis tabloları servis başına şemada durur
+# (şemaları Flyway açar: masterdata, shipment, bag, evidence, discrepancy, notification, reporting, audit); Keycloak da aynı veritabanında "keycloak" şemasını kullanır.
+# Tabloları bu script kurmaz; her servis açılışta Flyway ile kurar. Bkz. docs/veritabani-tasarimi.md.
 set -euo pipefail
 
 : "${LOCAL_DB_PASSWORD:?LOCAL_DB_PASSWORD tanımlı değil}"
-
-SERVICES=(masterdata bag shipment evidence discrepancy notification reporting)
 
 run_sql() {
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname postgres \
     -v password="$LOCAL_DB_PASSWORD" "$@"
 }
 
-create_role() {
-  local role="$1"
-  run_sql -v role="$role" <<'SQL'
-SELECT format('CREATE ROLE %I LOGIN PASSWORD %L', :'role', :'password')
-WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'role')
+run_sql <<'SQL'
+SELECT format('CREATE ROLE yarnshipment LOGIN PASSWORD %L', :'password')
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'yarnshipment')
 \gexec
+SELECT 'CREATE DATABASE yarnshipment OWNER yarnshipment ENCODING ''UTF8'' TEMPLATE template0'
+WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'yarnshipment')
+\gexec
+REVOKE ALL ON DATABASE yarnshipment FROM PUBLIC;
+ALTER DATABASE yarnshipment SET timezone TO 'UTC';
+-- Veritabanına bağlanan herkes tüm servis şemalarını şema adı yazmadan görebilsin (psql, DBeaver vb.).
+-- Aynı ada sahip tablolar (outbox_event vb.) için ilk şema kazanır; kesin erişim için bag.bag gibi yazın.
+ALTER ROLE yarnshipment IN DATABASE yarnshipment
+  SET search_path TO masterdata, shipment, bag, evidence, discrepancy, notification, reporting, audit, public;
 SQL
-}
 
-create_database() {
-  local database="$1" owner="$2"
-  run_sql -v database="$database" -v owner="$owner" <<'SQL'
-SELECT format('CREATE DATABASE %I OWNER %I ENCODING ''UTF8'' TEMPLATE template0', :'database', :'owner')
-WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = :'database')
-\gexec
-SELECT format('REVOKE ALL ON DATABASE %I FROM PUBLIC', :'database')
-\gexec
-SELECT format('ALTER DATABASE %I SET timezone TO ''UTC''', :'database')
-\gexec
+# Keycloak şemasını Keycloak kendi tablolarıyla doldurur (KC_DB_SCHEMA=keycloak).
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname yarnshipment <<'SQL'
+CREATE SCHEMA IF NOT EXISTS keycloak AUTHORIZATION yarnshipment;
 SQL
-}
-
-grant_connect() {
-  local database="$1"
-  shift
-  for role in "$@"; do
-    run_sql -v database="$database" -v role="$role" <<'SQL'
-SELECT format('GRANT CONNECT ON DATABASE %I TO %I', :'database', :'role')
-\gexec
-SQL
-  done
-}
-
-for service in "${SERVICES[@]}"; do
-  create_role "${service}_migrator"
-  create_role "${service}_app"
-  create_role "${service}_readonly"
-  create_database "${service}_db" "${service}_migrator"
-  grant_connect "${service}_db" "${service}_app" "${service}_readonly"
-done
-
-create_role audit_migrator
-create_role audit_writer
-create_role audit_reader
-create_database audit_db audit_migrator
-grant_connect audit_db audit_writer audit_reader
-
-create_role keycloak
-create_database keycloak_db keycloak

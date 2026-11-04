@@ -3,16 +3,21 @@ spring:
   application:
     name: evidence-service
   datasource:
-    # Uygulama yalnızca DML yetkili rol ile bağlanır; DDL Flyway'in migrator rolüyle yapılır.
-    url: ${EVIDENCE_DB_URL:jdbc:postgresql://localhost:5432/evidence_db}
-    username: ${EVIDENCE_DB_APP_USER:evidence_app}
-    password: ${EVIDENCE_DB_APP_PASSWORD}
+    # Tek veritabanı, tek kullanıcı; servis tabloları kendi şemasında (evidence) durur (docs/veritabani-tasarimi.md).
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/yarnshipment}
+    username: ${DB_USER:yarnshipment}
+    password: ${DB_PASSWORD}
+    hikari:
+      schema: evidence
   flyway:
-    user: ${EVIDENCE_DB_MIGRATOR_USER:evidence_migrator}
-    password: ${EVIDENCE_DB_MIGRATOR_PASSWORD}
+    user: ${DB_USER:yarnshipment}
+    password: ${DB_PASSWORD}
+    default-schema: evidence
+    schemas: evidence
+    create-schemas: true
     placeholders:
-      app_role: ${EVIDENCE_DB_APP_USER:evidence_app}
-      readonly_role: ${EVIDENCE_DB_READONLY_USER:evidence_readonly}
+      app_role: ${DB_USER:yarnshipment}
+      readonly_role: ${DB_USER:yarnshipment}
   messages:
     basename: messages
     encoding: UTF-8

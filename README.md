@@ -65,9 +65,11 @@ Yerel Keycloak'ta ikinci faktör kurulu değildir; `admin` ve `kalite` rolleri M
 shipment, bag, discrepancy ve evidence servislerini `--spring.profiles.active=local` ile başlatın (yalnızca yerelde
 MFA şartını kapatır; üretim ayarı değişmez). Profilsiz açılan serviste bu iki rol 403 `ACCESS_DENIED` alır.
 
-Compose, tek bir PostgreSQL 17 konteynerinde 8 servis veritabanını ve Keycloak veritabanını, her servis için
-`<servis>_migrator`, `<servis>_app` ve `<servis>_readonly` rolleriyle açar. Tabloları servisler açılışta Flyway
-ile kurar; migration'lar `services/<servis>/src/main/resources/db/migration` altındadır.
+Compose, tek bir PostgreSQL 17 konteynerinde tek veritabanı (`yarnshipment`) ve tek kullanıcı (`yarnshipment`, şifre
+`LOCAL_DB_PASSWORD`) açar. Her servis tablolarını kendi şemasında tutar (`masterdata`, `shipment`, `bag`, `evidence`,
+`discrepancy`, `notification`, `reporting`, `audit`; Keycloak için `keycloak`). Kullanıcının `search_path`'i hepsini
+kapsar: `psql -h localhost -U yarnshipment yarnshipment` ile tek bağlantıdan her tabloya erişilir (`SELECT * FROM bag.bag`).
+Tabloları servisler açılışta Flyway ile kurar; migration'lar `services/<servis>/src/main/resources/db/migration` altındadır.
 
 Migration'ları ve veritabanı kısıt testlerini servisler olmadan doğrulamak için:
 
@@ -78,11 +80,10 @@ tools/db/verify-migrations.sh
 ## shipment-service'i çalıştırma
 
 PostgreSQL'i ayrıca kurmanız gerekmez; yukarıdaki Compose yeterlidir. Servis açılışta Flyway ile tabloları
-`shipment_migrator` rolüyle kurar, sonra yalnızca DML yetkili `shipment_app` rolüyle çalışır.
+`yarnshipment` kullanıcısıyla `shipment` şemasına kurar.
 
 ```bash
-export SHIPMENT_DB_APP_PASSWORD=<LOCAL_DB_PASSWORD>
-export SHIPMENT_DB_MIGRATOR_PASSWORD=<LOCAL_DB_PASSWORD>
+export DB_PASSWORD=<LOCAL_DB_PASSWORD>
 export YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET=<deploy/.env içindeki KEYCLOAK_ADMIN_CLIENT_SECRET>
 ./mvnw -pl services/shipment-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
@@ -104,8 +105,8 @@ Fasoncu ve şoför yönetimi yalnızca yöneticidedir (`MASTER_DATA_MANAGE`): `P
 
 | Değişken | Varsayılan |
 |---|---|
-| `SHIPMENT_DB_URL` | `jdbc:postgresql://localhost:5432/shipment_db` |
-| `SHIPMENT_DB_APP_USER` / `SHIPMENT_DB_MIGRATOR_USER` | `shipment_app` / `shipment_migrator` |
+| `DB_URL` (tüm servisler) | `jdbc:postgresql://localhost:5432/yarnshipment` |
+| `DB_USER` / `DB_PASSWORD` (tüm servisler) | `yarnshipment` / (zorunlu) |
 | `KEYCLOAK_ISSUER_URI` | `http://localhost:8180/realms/yarnshipment` |
 | `SERVER_PORT` | `8083` |
 | `YARNSHIPMENT_BAG_SERVICE_URL` | `http://localhost:8084` (çuval atama için bag-service; istek sahibinin token'ı iletilir, bu yüzden bag-service de çalışıyor olmalı) |
@@ -116,12 +117,10 @@ Persistence testleri Testcontainers ile gerçek PostgreSQL'e karşı çalışır
 
 ## bag-service'i çalıştırma
 
-Çuval kaydı, tek kullanım garantisi ve sevkiyat rezervasyonu `bag_db` veritabanındadır. Compose'un `bag_app` ve
-`bag_migrator` rolleriyle çalışır; `local` profilinde yerel örnek çuvallar (`BAG-0001`…`BAG-0005`) yüklenir.
+Çuval kaydı, tek kullanım garantisi ve sevkiyat rezervasyonu `bag` şemasındadır (`yarnshipment` veritabanı); `local` profilinde yerel örnek çuvallar (`BAG-0001`…`BAG-0005`) yüklenir.
 
 ```bash
-export BAG_DB_APP_PASSWORD=<LOCAL_DB_PASSWORD>
-export BAG_DB_MIGRATOR_PASSWORD=<LOCAL_DB_PASSWORD>
+export DB_PASSWORD=<LOCAL_DB_PASSWORD>
 ./mvnw -pl services/bag-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
@@ -194,10 +193,10 @@ Fasoncu ya da Kalite, teslim karşılaştırması bittikten sonra teslimde okutu
 | `QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED` | 400 | Lab sonucunda belge yok |
 | `EVIDENCE_SERVICE_UNAVAILABLE` | 503 | Kanıtlar doğrulanamadı |
 
-Gateway `/api/v1/discrepancies/**` ve `/api/v1/quality-claims/**` yollarını bu servise yönlendirir. Çalıştırmak için `DISCREPANCY_DB_APP_PASSWORD`, `DISCREPANCY_DB_MIGRATOR_PASSWORD`, gerekirse `KAFKA_BOOTSTRAP_SERVERS` ve `EVIDENCE_SERVICE_URL` verilir:
+Gateway `/api/v1/discrepancies/**` ve `/api/v1/quality-claims/**` yollarını bu servise yönlendirir. Çalıştırmak için `DB_PASSWORD`, gerekirse `KAFKA_BOOTSTRAP_SERVERS` ve `EVIDENCE_SERVICE_URL` verilir:
 
 ```bash
-DISCREPANCY_DB_APP_PASSWORD=... DISCREPANCY_DB_MIGRATOR_PASSWORD=... \
+DB_PASSWORD=... \
 ./mvnw -pl services/discrepancy-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
@@ -214,7 +213,7 @@ Okuma modeli servisidir: `shipment.events.v1` ve `discrepancy.events.v1` olaylar
 `from`/`to` (tarih, iki uç dahil) verilmezse son 30 gün alınır; en çok 366 gün (`REPORT_PERIOD_INVALID`). `siteId` kapsamı daraltır, yetkisiz lokasyon 403 döner. Henüz kapsam dışı: parti bazlı kalite itirazı raporu (olaylarda parti bilgisi yok), eksik belge/galeri oranı (8.5), şoför/fasoncu adlarının tanım servislerinden çözülmesi (ekran şimdilik kimliğin ilk 8 karakterini gösterir). Çalıştırmak için `REPORTING_DB_APP_PASSWORD`, `REPORTING_DB_MIGRATOR_PASSWORD` ve gerekirse `KAFKA_BOOTSTRAP_SERVERS` verilir:
 
 ```bash
-REPORTING_DB_APP_PASSWORD=... REPORTING_DB_MIGRATOR_PASSWORD=... \
+DB_PASSWORD=... \
 ./mvnw -pl services/reporting-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
@@ -244,7 +243,7 @@ discrepancy-service okumayı saklar ve teslim karşılaştırmasında o ana kada
 Yerelde MinIO `docker compose` ile açılır (`deploy/.env` içinde `EVIDENCE_STORAGE_ACCESS_KEY` ve `EVIDENCE_STORAGE_SECRET_KEY`; `evidence` kovası kendiliğinden oluşur). Servis aynı anahtarlarla, `EVIDENCE_DB_APP_PASSWORD` ve `EVIDENCE_DB_MIGRATOR_PASSWORD` ile çalıştırılır:
 
 ```bash
-EVIDENCE_DB_APP_PASSWORD=... EVIDENCE_DB_MIGRATOR_PASSWORD=... \
+DB_PASSWORD=... \
 EVIDENCE_STORAGE_ACCESS_KEY=... EVIDENCE_STORAGE_SECRET_KEY=... \
 ./mvnw -pl services/evidence-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
@@ -265,9 +264,9 @@ Servis ana sınıfına `@EnableYarnShipmentWeb` eklenir; şunları verir:
 
 ## audit-service (denetim izi)
 
-`shipment.events.v1`, `evidence.events.v1` ve `discrepancy.events.v1` konularındaki her olay, `audit_db` içindeki değiştirilemez hash zincirine `audit_append()` ile yazılır. Aktör (`actorId`, `actorRoles`) ve korelasyon (`correlationId`) CloudEvents başlıklarından gelir; aktörsüz sistem olayı, olayı üreten servisin adıyla `client_id` taşır. Aynı olayın tekrar teslimi ikinci satır üretmez (tekillik veritabanı fonksiyonundadır), bu yüzden işlenmiş olay tablosu yoktur. Zarfı bozuk olay kalıcı hatadır ve DLT'ye gider.
+`shipment.events.v1`, `evidence.events.v1` ve `discrepancy.events.v1` konularındaki her olay, `audit` şemasındaki değiştirilemez hash zincirine `audit_append()` ile yazılır. Aktör (`actorId`, `actorRoles`) ve korelasyon (`correlationId`) CloudEvents başlıklarından gelir; aktörsüz sistem olayı, olayı üreten servisin adıyla `client_id` taşır. Aynı olayın tekrar teslimi ikinci satır üretmez (tekillik veritabanı fonksiyonundadır), bu yüzden işlenmiş olay tablosu yoktur. Zarfı bozuk olay kalıcı hatadır ve DLT'ye gider.
 
-Yazan rol (`audit_writer`) tablolara erişemez, yalnızca `audit_append()` ve `audit_verify_chain()` çalıştırır. Okuma ayrı bir bağlantıyla `audit_reader` rolüyle yapılır. Her gün 03:00 UTC'de (`AUDIT_CHAIN_VERIFICATION_CRON`) son doğrulamadan sonraki kayıtlar `audit_verify_chain()` ile doğrulanır; bozulma `ERROR` olarak loglanır.
+Tek veritabanı kullanıcısına geçildiği için okuma/yazma rol ayrımı kalktı: audit tablolarını sahibi olan kullanıcı doğrudan değiştirebilir. Değişmezlik artık yalnızca `reject_modification` tetikleyicisi ve hash zinciriyle (bozulmayı günlük doğrulama yakalar) sağlanır; ayrıntı için `docs/veritabani-tasarimi.md`. Her gün 03:00 UTC'de (`AUDIT_CHAIN_VERIFICATION_CRON`) son doğrulamadan sonraki kayıtlar `audit_verify_chain()` ile doğrulanır; bozulma `ERROR` olarak loglanır.
 
 `AUDIT_VIEW` izni olanlar (Admin, Kalite, Depo, Yönetici) gateway üzerinden `GET /api/v1/audit-log` (süzgeçler: `entityType`, `entityId`, `actorUserId`, `action`, `sourceService`, `from`, `to`; sayfalı, en yeni önce) ve `GET /api/v1/audit-log/chain-checks` uçlarını okur. IP, cihaz ve user-agent yanıtta yer almaz. Çalıştırmak için `AUDIT_DB_WRITER_PASSWORD`, `AUDIT_DB_READER_PASSWORD`, `AUDIT_DB_MIGRATOR_PASSWORD` verilir; servis 8088 portunda çalışır:
 

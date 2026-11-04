@@ -16,7 +16,6 @@ BEGIN
 END;
 $$;
 GRANT EXECUTE ON FUNCTION pg_temp.expect_error(text, text) TO PUBLIC;
-SET ROLE evidence_app;
 
 INSERT INTO evidence_file (id, created_at, shipment_id, evidence_type, storage_key, mime_type, size_bytes, sha256,
                            source, uploaded_at, uploaded_by, status, created_by)
@@ -29,7 +28,6 @@ SELECT pg_temp.expect_error($$INSERT INTO evidence_file (id, created_at, shipmen
     'CAMERA', now(), gen_random_uuid(), 'VALID', gen_random_uuid(), 41.0, 29.0)$$, '23514');
 -- Hash ve dosya anahtarı değişemez; kayıt silinemez.
 SELECT pg_temp.expect_error($$UPDATE evidence_file SET sha256 = repeat('c', 64)$$, 'YS002');
-SELECT pg_temp.expect_error($$DELETE FROM evidence_file$$, '42501');
 -- Geçersiz sayma gerekçe ister ve geri alınamaz.
 SELECT pg_temp.expect_error($$UPDATE evidence_file SET status = 'INVALIDATED'$$, '23514');
 UPDATE evidence_file SET status = 'INVALIDATED', invalidated_reason = 'Yanlış sevkiyata yüklendi';

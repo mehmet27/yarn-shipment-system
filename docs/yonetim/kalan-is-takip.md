@@ -15,8 +15,8 @@ Güncelleme: 04.11.2026. Sonraki geliştirmeler bu listeden sürer; biten madde 
 | 8 | Eksik belge/foto, galeri oranı, düzeltilen kayıt raporu (8.5) | P2 | 3-4 | ⏳ Bekliyor |
 | 9 | KVKK aydınlatma/onay + e-İrsaliye no alanı (9.5, 9.6) | P2 | 2-3 | ⏳ Bekliyor |
 | 10 | Üretim Keycloak'ında OTP akışı (1.7) | P2 | 1-2 | 🟡 Kısmen: rehber `docs/yonetim/uretim-keycloak-otp.md`; konsolda uygulanıp doğrulanması kalıyor (kod değişikliği yok) |
-| 11 | Sevkiyat geçmişinde şoför/taşeron isimleri çözülmüyor (H-24) | — | 1-2 | ⏳ Bekliyor (önerilen sıra: ilk bu) |
-| 12 | Seed sevkiyatlar olay (outbox/geçmiş) üretmiyor | — | 1-2 | ⏳ Bekliyor (önerilen sıra: ilk bu) |
+| 11 | Sevkiyat geçmişinde şoför/taşeron isimleri çözülmüyor (H-24) | — | 1-2 | ✅ Yapıldı: geçmiş yanıtına `changedByName` (Keycloak hesaplarından çözülür), ekran adı gösterir; çözülemezse "Başka bir kullanıcı" |
+| 12 | Seed sevkiyatlar olay (outbox/geçmiş) üretmiyor | — | 1-2 | ✅ Yapıldı: yerel seed her geçmiş adım için outbox olayı yazar (yayımlanmış sayılır; teslim alındı olayı hariç) |
 | 13 | Faz 2/3: nem toleransı, konum, risk skoru, entegrasyonlar | P3 | 15+ | ⏳ Kapsam dışı |
 
-Önerilen sonraki sıra: 11, 12, sonra 2 ve 3. Şoför rolü kararı (PDF Bölüm 9) netleşmeden 5 bekletilir.
+Önerilen sonraki sıra: 2 ve 3. Şoför rolü kararı (PDF Bölüm 9) netleşmeden 5 bekletilir.

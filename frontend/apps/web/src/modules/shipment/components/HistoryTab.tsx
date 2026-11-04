@@ -25,7 +25,8 @@ export function HistoryTab({ shipmentId }: { shipmentId: string }) {
                     : `${t(`shipment.status.${change.fromStatus}`)} → ${t(`shipment.status.${change.toStatus}`)}`}
                 </Text>
                 <Text size="sm" c="dimmed">
-                  {formatDateTime(change.changedAt)} · {actorLabel(change.changedBy)}
+                  {formatDateTime(change.changedAt)} ·{' '}
+                  {actorLabel(change.changedBy, change.changedByName)}
                 </Text>
                 {change.reason !== undefined && <Text size="sm">{change.reason}</Text>}
               </Paper>

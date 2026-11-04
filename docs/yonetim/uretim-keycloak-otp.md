@@ -1,6 +1,6 @@
 # Üretim Keycloak'ında OTP (TOTP) kurulumu
 
-Kalan iş listesi madde 10 (bkz. `raporlar/kalan-is-takip.md`). Servis tarafı hazırdır: `SecurityProperties`
+Kalan iş listesi madde 10 (bkz. `docs/yonetim/kalan-is-takip.md`). Servis tarafı hazırdır: `SecurityProperties`
 varsayılanı ADMIN ve QUALITY rollerinin izinlerini yalnızca token'da `amr` içinde `otp`/`mfa` ya da `acr` = `2`
 varsa verir (karar Y5). Yerel realm (`deploy/keycloak/yarnshipment-realm-local.json`) bilerek OTP'siz tutulur;
 bu belge **üretim** realm'i içindir. Aşağıdaki adımlar Keycloak yönetim konsolunda uygulanır; bu depodan

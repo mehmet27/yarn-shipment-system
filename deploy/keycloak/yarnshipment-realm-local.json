@@ -7,6 +7,7 @@
   "defaultLocale": "tr",
   "registrationAllowed": false,
   "resetPasswordAllowed": false,
+  "loginTheme": "yarnshipment",
   "loginWithEmailAllowed": false,
   "duplicateEmailsAllowed": false,
   "bruteForceProtected": true,
@@ -257,6 +258,7 @@
       "lastName": "Yönetici",
       "email": "admin@yarnshipment.local",
       "attributes": {
+        "phone_number": ["+905550000001"],
         "site_ids": [
           "0192f0a0-0000-7000-8000-000000000001",
           "0192f0a0-0000-7000-8000-000000000002"
@@ -282,6 +284,7 @@
       "lastName": "Depocu",
       "email": "depo@yarnshipment.local",
       "attributes": {
+        "phone_number": ["+905550000002"],
         "site_ids": [
           "0192f0a0-0000-7000-8000-000000000001"
         ]
@@ -306,6 +309,7 @@
       "lastName": "Kalite",
       "email": "kalite@yarnshipment.local",
       "attributes": {
+        "phone_number": ["+905550000003"],
         "site_ids": [
           "0192f0a0-0000-7000-8000-000000000001",
           "0192f0a0-0000-7000-8000-000000000002"
@@ -331,6 +335,7 @@
       "lastName": "Müdür",
       "email": "mudur@yarnshipment.local",
       "attributes": {
+        "phone_number": ["+905550000004"],
         "site_ids": [
           "0192f0a0-0000-7000-8000-000000000001",
           "0192f0a0-0000-7000-8000-000000000002"
@@ -359,6 +364,7 @@
         "driver_id": [
           "0192f0a0-0000-7000-8000-000000000004"
         ],
+        "phone_number": ["+905550000005"],
         "site_ids": [
           "0192f0a0-0000-7000-8000-000000000001"
         ]
@@ -386,6 +392,7 @@
         "subcontractor_id": [
           "0192f0a0-0000-7000-8000-000000000003"
         ],
+        "phone_number": ["+905550000006"],
         "site_ids": [
           "0192f0a0-0000-7000-8000-000000000001"
         ]

@@ -1,6 +1,15 @@
-import type { Permission } from '@iplik/api-client';
+import type {
+  ChangeLoginAccountRoleRequest,
+  Permission,
+  StaffLoginAccountRequest,
+} from '@iplik/api-client';
 import { http, HttpResponse } from 'msw';
-import { listMockLoginAccounts } from './loginAccounts';
+import {
+  addMockLoginAccount,
+  changeMockLoginAccountRole,
+  isMockUsernameTaken,
+  listMockLoginAccounts,
+} from './loginAccounts';
 
 const PATH = '/api/v1/master-data/login-accounts';
 const DEFAULT_PAGE_SIZE = 20;
@@ -10,17 +19,42 @@ function matches(text: string | undefined, q: string): boolean {
   return text?.toLocaleLowerCase('tr').includes(q) ?? false;
 }
 
-/** Giriş hesabı listesi; yalnızca USER_MANAGE (yönetici), aksi halde 403. */
+function problem(status: number, code: string, title: string) {
+  return HttpResponse.json({ status, code, title }, { status });
+}
+
+/** Giriş hesabı listesi, fabrika içi hesap açma ve rol değiştirme; yalnızca USER_MANAGE (yönetici), aksi halde 403. */
 export function createLoginAccountHandlers(permissions: readonly Permission[]) {
   const canList = permissions.includes('USER_MANAGE');
   return [
-    http.get(PATH, ({ request }) => {
-      if (!canList) {
-        return HttpResponse.json(
-          { status: 403, code: 'FORBIDDEN', title: 'Yetkiniz yok' },
-          { status: 403 },
-        );
+    http.post(PATH, async ({ request }) => {
+      if (!canList) return problem(403, 'FORBIDDEN', 'Yetkiniz yok');
+      const body = (await request.json()) as StaffLoginAccountRequest;
+      if (isMockUsernameTaken(body.username)) {
+        return problem(409, 'LOGIN_ACCOUNT_EXISTS', 'Giriş adı alınmış');
       }
+      addMockLoginAccount({
+        username: body.username,
+        email: body.email,
+        fullName: body.fullName,
+        role: body.role,
+      });
+      return new HttpResponse(null, { status: 201 });
+    }),
+    http.put(`${PATH}/:id/role`, async ({ params, request }) => {
+      if (!canList) return problem(403, 'FORBIDDEN', 'Yetkiniz yok');
+      const body = (await request.json()) as ChangeLoginAccountRoleRequest;
+      const result = changeMockLoginAccountRole(String(params.id), body.role);
+      if (result === 'not-found') {
+        return problem(404, 'LOGIN_ACCOUNT_NOT_FOUND', 'Kullanıcı yok');
+      }
+      if (result === 'locked') {
+        return problem(409, 'LOGIN_ACCOUNT_ROLE_LOCKED', 'Rol değiştirilemez');
+      }
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.get(PATH, ({ request }) => {
+      if (!canList) return problem(403, 'FORBIDDEN', 'Yetkiniz yok');
       const params = new URL(request.url).searchParams;
       const page = Number(params.get('page') ?? '0');
       const size = Number(params.get('size') ?? String(DEFAULT_PAGE_SIZE));

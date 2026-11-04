@@ -461,6 +461,48 @@ export interface LoginAccountView {
   createdAt?: string;
 }
 
+/**
+ * Şifre davetiyle açılabilen fabrika içi roller; şoför ve fasoncu kayıtlarından açılır
+ */
+export type StaffRole = typeof StaffRole[keyof typeof StaffRole];
+
+
+export const StaffRole = {
+  ADMIN: 'ADMIN',
+  WAREHOUSE: 'WAREHOUSE',
+  QUALITY: 'QUALITY',
+  MANAGER: 'MANAGER',
+} as const;
+
+export interface StaffLoginAccountRequest {
+  /**
+     * Giriş adı; küçük harf, rakam, nokta, alt çizgi ve tire
+     * @pattern ^[a-z0-9][a-z0-9._-]{2,63}$
+     */
+  username: string;
+  /**
+     * Şifre belirleme bağlantısının gideceği adres
+     * @maxLength 255
+     */
+  email: string;
+  /**
+     * @minLength 2
+     * @maxLength 200
+     */
+  fullName: string;
+  role: StaffRole;
+  /**
+     * Kişinin göreceği etkin lokasyonlar
+     * @minItems 1
+     * @maxItems 100
+     */
+  siteIds: string[];
+}
+
+export interface ChangeLoginAccountRoleRequest {
+  role: StaffRole;
+}
+
 export interface LoginAccountPageResponse {
   items: LoginAccountView[];
   page: PageMetadata;
@@ -1405,6 +1447,43 @@ export const listLoginAccounts = (
     }
 
 /**
+ * Yalnızca yönetici (USER_MANAGE). Depo, kalite, müdür ya da yönetici hesabını Keycloak'ta şifresiz açar ve rolü
+ * verir; kişiye şifresini belirleyeceği bir e-posta bağlantısı gider. Şifre üretilmez, hiçbir yanıtta ya da
+ * logda yer almaz. Giriş adı ya da e-posta alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak ya da e-posta
+ * gönderimi çalışmazsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
+ * @summary Fabrika içi giriş hesabı açar
+ */
+export const createStaffLoginAccount = (
+    staffLoginAccountRequest: StaffLoginAccountRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/login-accounts`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: staffLoginAccountRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (USER_MANAGE). Kullanıcının fabrika içi rolünü (depo, kalite, müdür, yönetici) yenisiyle
+ * değiştirir ve açık oturumlarını kapatır; kişi yeni rolle yeniden giriş yapar. Kişi kendi rolünü değiştiremez
+ * (400 `INVALID_MASTER_DATA`, `userId`). Şoför ve fasoncu hesapları kayda bağlı olduğundan değiştirilemez
+ * (409 `LOGIN_ACCOUNT_ROLE_LOCKED`). Kullanıcı yoksa 404 `LOGIN_ACCOUNT_NOT_FOUND`.
+ * @summary Fabrika içi hesabın rolünü değiştirir
+ */
+export const changeLoginAccountRole = (
+    userId: string,
+    changeLoginAccountRoleRequest: ChangeLoginAccountRoleRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/login-accounts/${userId}/role`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: changeLoginAccountRoleRequest
+    },
+      );
+    }
+
+/**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Şoför yeniden etkinleştirir
  */
@@ -1958,6 +2037,8 @@ export type DeactivateDriverResult = NonNullable<Awaited<ReturnType<typeof deact
 export type CreateDriverLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createDriverLoginAccount>>>
 export type CreateSubcontractorLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createSubcontractorLoginAccount>>>
 export type ListLoginAccountsResult = NonNullable<Awaited<ReturnType<typeof listLoginAccounts>>>
+export type CreateStaffLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createStaffLoginAccount>>>
+export type ChangeLoginAccountRoleResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountRole>>>
 export type ActivateDriverResult = NonNullable<Awaited<ReturnType<typeof activateDriver>>>
 export type ListVehiclesResult = NonNullable<Awaited<ReturnType<typeof listVehicles>>>
 export type CreateVehicleResult = NonNullable<Awaited<ReturnType<typeof createVehicle>>>

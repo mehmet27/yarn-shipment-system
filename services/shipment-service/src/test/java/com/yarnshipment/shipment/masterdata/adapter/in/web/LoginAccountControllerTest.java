@@ -7,6 +7,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.yarnshipment.shipment.TestTokens;
+import com.yarnshipment.shipment.masterdata.application.port.in.ChangeLoginAccountRoleUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.CreateStaffLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.ListLoginAccountsUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
@@ -47,6 +49,12 @@ class LoginAccountControllerTest {
 
     @MockitoBean
     private ListLoginAccountsUseCase listLoginAccounts;
+
+    @MockitoBean
+    private CreateStaffLoginAccountUseCase createStaff;
+
+    @MockitoBean
+    private ChangeLoginAccountRoleUseCase changeRole;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

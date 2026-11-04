@@ -68,11 +68,14 @@ public final class LoginAccountService
         return new MasterDataPage<>(items, query.page(), query.size(), matching.size());
     }
 
-    private LoginAccount open(LoginRole role, UUID ownerId, String displayName, LoginAccountRequest request) {
-        if (request.siteIds().isEmpty()
-                || !targets.findActiveSiteIds(request.siteIds()).containsAll(new HashSet<>(request.siteIds()))) {
+    private void requireActiveSites(List<UUID> siteIds) {
+        if (siteIds.isEmpty() || !targets.findActiveSiteIds(siteIds).containsAll(new HashSet<>(siteIds))) {
             throw new InvalidMasterDataException("siteIds", "empty or unknown or inactive");
         }
+    }
+
+    private LoginAccount open(LoginRole role, UUID ownerId, String displayName, LoginAccountRequest request) {
+        requireActiveSites(request.siteIds());
         String password = TemporaryPasswords.generate();
         accounts.create(new LoginAccountSpec(
                 request.username(), request.email(), displayName, role, ownerId, request.siteIds(), password));

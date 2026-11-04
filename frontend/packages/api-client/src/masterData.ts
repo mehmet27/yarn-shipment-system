@@ -72,6 +72,12 @@ export {
 } from './generated/shipmentService';
 export type { LoginAccountRequest, LoginAccountResponse } from './generated/shipmentService';
 export { listLoginAccounts } from './generated/shipmentService';
+export { changeLoginAccountRole, createStaffLoginAccount } from './generated/shipmentService';
+export type {
+  ChangeLoginAccountRoleRequest,
+  StaffLoginAccountRequest,
+  StaffRole,
+} from './generated/shipmentService';
 export type {
   ListLoginAccountsParams,
   LoginAccountPageResponse,

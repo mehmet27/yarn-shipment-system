@@ -15,6 +15,8 @@ import com.yarnshipment.shipment.masterdata.domain.model.DuplicateSubcontractorE
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidPlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountRoleLockedException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -125,9 +127,19 @@ public final class ShipmentExceptionHandler {
         return problem;
     }
 
-    @ExceptionHandler(LoginAccountExistsException.class)
-    public ProblemDetail handleLoginAccountExists(HttpServletRequest request) {
-        return problem(request, HttpStatus.CONFLICT, "LOGIN_ACCOUNT_EXISTS");
+    @ExceptionHandler({
+        LoginAccountExistsException.class,
+        LoginAccountNotFoundException.class,
+        LoginAccountRoleLockedException.class
+    })
+    public ProblemDetail handleLoginAccountState(RuntimeException exception, HttpServletRequest request) {
+        if (exception instanceof LoginAccountNotFoundException) {
+            return problem(request, HttpStatus.NOT_FOUND, "LOGIN_ACCOUNT_NOT_FOUND");
+        }
+        String code = exception instanceof LoginAccountRoleLockedException
+                ? "LOGIN_ACCOUNT_ROLE_LOCKED"
+                : "LOGIN_ACCOUNT_EXISTS";
+        return problem(request, HttpStatus.CONFLICT, code);
     }
 
     @ExceptionHandler(LoginAccountUnavailableException.class)

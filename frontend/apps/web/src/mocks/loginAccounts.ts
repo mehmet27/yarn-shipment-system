@@ -110,6 +110,17 @@ export function addMockLoginAccount(input: {
   ];
 }
 
+/** Rolü değiştirir; bulunamazsa `not-found`, şoför/fasoncu hesabıysa `locked` döner. */
+export function changeMockLoginAccountRole(id: string, role: Role): 'ok' | 'not-found' | 'locked' {
+  const account = accounts.find((candidate) => candidate.id === id);
+  if (account === undefined) return 'not-found';
+  if (account.roles.includes('DRIVER') || account.roles.includes('SUBCONTRACTOR')) return 'locked';
+  accounts = accounts.map((candidate) =>
+    candidate.id === id ? { ...candidate, roles: [role] } : candidate,
+  );
+  return 'ok';
+}
+
 export function resetMockLoginAccounts(): void {
   accounts = structuredClone([...SEED]);
   nextId = 1;

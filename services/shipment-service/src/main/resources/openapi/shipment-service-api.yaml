@@ -2875,6 +2875,9 @@ components:
           description: İşlemi yapan kullanıcının kimliği
           type: string
           format: uuid
+        changedByName:
+          description: İşlemi yapanın adı; kimlik sağlayıcıdan çözülemezse yoktur
+          type: string
         reason:
           description: İptal ve düzeltme gerekçesi
           type: string

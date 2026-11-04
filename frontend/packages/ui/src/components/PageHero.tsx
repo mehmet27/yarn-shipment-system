@@ -1,5 +1,6 @@
 import { Box, Group, Stack, Text, Title } from '@mantine/core';
 import type { ReactNode } from 'react';
+import { BRAND_GRADIENT } from '../brandGradient';
 
 const OVERLAP_PADDING_PX = 64;
 const OVERLAP_OFFSET_PX = 40;
@@ -23,8 +24,7 @@ export function PageHero({ title, subtitle, actions, children }: PageHeroProps) 
         pt="lg"
         pb={children === undefined ? 'lg' : OVERLAP_PADDING_PX}
         style={{
-          background:
-            'linear-gradient(120deg, var(--mantine-color-brand-9), var(--mantine-color-brand-7))',
+          background: BRAND_GRADIENT,
           borderRadius: 'var(--mantine-radius-lg)',
         }}
       >

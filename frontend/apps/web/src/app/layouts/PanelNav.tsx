@@ -26,6 +26,11 @@ const ITEMS: readonly PanelNavItem[] = [
   { to: '/panel/kullanicilar', labelKey: 'nav.users', permission: 'USER_MANAGE' },
 ];
 
+const NAV_LINK_STYLES = {
+  root: { '--nl-hover': 'color-mix(in srgb, white 12%, transparent)' },
+  label: { fontWeight: 500 },
+} as const;
+
 /** Panel yan menüsü: her bağlantı yalnızca yetkisi olan kullanıcıya görünür. */
 export function PanelNav() {
   const { t } = useTranslation();
@@ -38,6 +43,10 @@ export function PanelNav() {
         to={item.to}
         label={t(item.labelKey)}
         active={pathname.startsWith(item.to)}
+        c="white"
+        variant="filled"
+        color="brand.6"
+        styles={NAV_LINK_STYLES}
       />
     );
     return item.permission === undefined ? (

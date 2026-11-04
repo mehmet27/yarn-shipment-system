@@ -30,7 +30,9 @@ class GetShipmentHistoryServiceTest {
             id -> List.of(new StatusChange(null, ShipmentStatus.DRAFT, NOW, UUID.randomUUID(), null));
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final GetShipmentHistoryService service = new GetShipmentHistoryService(
-            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), historyPort, ids -> java.util.Map.of());
+            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
+            historyPort,
+            ids -> java.util.Map.of());
 
     @Test
     @DisplayName("Kapsamdaki kullanıcı sevkiyatın geçmişini alır")

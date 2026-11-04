@@ -30,7 +30,11 @@ public record StatusChange(
     }
 
     public StatusChange(
-            @Nullable ShipmentStatus from, ShipmentStatus to, Instant changedAt, UUID changedBy, @Nullable String reason) {
+            @Nullable ShipmentStatus from,
+            ShipmentStatus to,
+            Instant changedAt,
+            UUID changedBy,
+            @Nullable String reason) {
         this(from, to, changedAt, changedBy, reason, null);
     }
 

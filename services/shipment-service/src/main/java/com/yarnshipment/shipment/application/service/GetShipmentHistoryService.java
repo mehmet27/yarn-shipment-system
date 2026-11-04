@@ -20,7 +20,8 @@ public class GetShipmentHistoryService implements GetShipmentHistoryUseCase {
     private final ShipmentHistoryPort historyPort;
     private final ActorNamePort actorNames;
 
-    public GetShipmentHistoryService(ScopedShipmentLoader shipments, ShipmentHistoryPort historyPort, ActorNamePort actorNames) {
+    public GetShipmentHistoryService(
+            ScopedShipmentLoader shipments, ShipmentHistoryPort historyPort, ActorNamePort actorNames) {
         this.shipments = shipments;
         this.historyPort = historyPort;
         this.actorNames = actorNames;

@@ -39,3 +39,10 @@ export type { ErrorBoundaryProps } from './ErrorBoundary';
 export { reportError } from './reportError';
 export { UiProvider } from './UiProvider';
 export type { UiProviderProps } from './UiProvider';
+export {
+  BRAND_SHADE_INDEX,
+  DEFAULT_BRAND_COLOR,
+  createBrandPalette,
+  isValidHexColor,
+} from './brandPalette';
+export { createAppTheme } from './theme';

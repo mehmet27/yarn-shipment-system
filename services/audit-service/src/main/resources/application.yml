@@ -35,7 +35,7 @@ spring:
       # Servis ilk açıldığında konulardaki geçmiş olaylar da zincire yazılır.
       auto-offset-reset: earliest
 server:
-  port: ${SERVER_PORT:8087}
+  port: ${SERVER_PORT:8088}
 yarnshipment:
   audit:
     # Audit ekranı okuma rolüyle ayrı bağlantı kullanır.

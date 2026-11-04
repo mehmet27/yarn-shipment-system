@@ -10,7 +10,7 @@ import org.testcontainers.utility.DockerImageName;
  */
 public final class PostgresTestDatabase {
 
-    private static final String APP_ROLE = "bag_app";
+    private static final String APP_ROLE = "yarnshipment";
     private static final String APP_PASSWORD = "test";
     /** Testler boyunca bir kez başlatılır; bu veritabanına yazan testler kendi kaydını geri alır. */
     private static final PostgresTestDatabase SHARED = startIsolated();
@@ -26,10 +26,9 @@ public final class PostgresTestDatabase {
         PostgreSQLContainer container = new PostgreSQLContainer(
                         DockerImageName.parse("mirror.gcr.io/library/postgres:17")
                                 .asCompatibleSubstituteFor("postgres"))
-                .withDatabaseName("bag_db")
-                .withUsername("bag_migrator")
-                .withPassword(APP_PASSWORD)
-                .withInitScript("db/test-roles.sql");
+                .withDatabaseName("yarnshipment")
+                .withUsername("yarnshipment")
+                .withPassword(APP_PASSWORD);
         container.start();
         return new PostgresTestDatabase(container);
     }

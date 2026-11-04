@@ -144,7 +144,7 @@ Unique Key'in tek kullanımı burada, tek veritabanı işlemiyle garanti edilir.
 | `shipment_view` | shipment\_id, site\_id, shipment\_no, subcontractor\_id, driver\_id, status, dispatch\_net\_kg, delivery\_net\_kg, diff\_pct, band, open\_discrepancy\_count, completed\_at | Dashboard; olaylardan güncellenir |
 | `pair_daily_stats` | day, driver\_id, subcontractor\_id, shipment\_count, discrepancy\_count, total\_diff\_kg | PK (day, driver\_id, subcontractor\_id); şoför–fasoncu eşleşme raporu |
 
-**Audit yetkileri (yetkilendirme analiziyle uyumlu):** audit-service'in yazan kullanıcısı `audit_writer` tabloya yalnız INSERT yapabilir; UPDATE, DELETE ve TRUNCATE hiçbir uygulama kullanıcısında yoktur. Kayıt, `SECURITY DEFINER` bir `audit_append()` fonksiyonuyla eklenir: fonksiyon advisory lock alır, son satırın hash'ini okur ve yeni satırı zincire bağlar. Böylece yazan kullanıcının SELECT yetkisi bile gerekmez. Audit ekranı için ayrı `audit_reader` kullanıcısı yalnız SELECT yapar.
+**Audit yetkileri (tek kullanıcıya geçişten önceki tasarım; bugünkü durum için "Tek veritabanı" bölümüne bakın):** audit-service'in yazan kullanıcısı `audit_writer` tabloya yalnız INSERT yapabilir; UPDATE, DELETE ve TRUNCATE hiçbir uygulama kullanıcısında yoktur. Kayıt, `SECURITY DEFINER` bir `audit_append()` fonksiyonuyla eklenir: fonksiyon advisory lock alır, son satırın hash'ini okur ve yeni satırı zincire bağlar. Böylece yazan kullanıcının SELECT yetkisi bile gerekmez. Audit ekranı için ayrı `audit_reader` kullanıcısı yalnız SELECT yapar.
 
 ## İlişkiler ve ER diyagramı
 
@@ -196,11 +196,11 @@ Performans notları:
 
 **Migration.** Her servis kendi Flyway script'lerini `src/main/resources/db/migration` altında tutar (`V1__init.sql` …). Başka servisin şemasına migration yazılmaz. Geliştirme ve testte Testcontainers ile gerçek PostgreSQL kullanılır.
 
-**Kullanıcılar ve yetkiler (veritabanı seviyesi).** Her servisin iki rolü olur: `<servis>_migrator` (DDL, yalnızca Flyway) ve `<servis>_app` (DML). Raporlama için ayrıca salt okuma `<servis>_readonly` rolü açılır.
+**Kullanıcılar ve yetkiler (veritabanı seviyesi).** Bugün tek veritabanı kullanıcısı (`yarnshipment`) vardır; Flyway ve uygulama aynı kullanıcıyla bağlanır. Ayrıntı ve sonuçları aşağıdaki "Tek veritabanı" bölümündedir.
 
 **Dosya saklama.** Fotoğraf ve belgeler MinIO'da `evidence/{yıl}/{ay}/{shipment_id}/{evidence_id}` anahtarıyla saklanır. Bucket'ta versiyonlama ve Object Lock (compliance modu) açıktır; saklama süresi dolmadan dosya silinemez. Varsayılan saklama süresi 10 yıldır ve \`system\_setting\` üzerinden değiştirilebilir; yeni değer yalnız bundan sonra yüklenen dosyalara uygulanır. Orijinal ve filigranlı kopya ayrı nesnelerdir, hash orijinalden alınır. Kapasite için kaba hesap: sevkiyat başına 15 fotoğraf × yaklaşık 1,5 MB (sıkıştırılmış) ≈ 23 MB.
 
-**Yerel geliştirme (şimdi).** `docker-compose.yml` içinde tek bir `postgres:17` konteyneri çalışır. `docker-entrypoint-initdb.d/01-databases.sql` script'i 9 veritabanını ve her servisin `_migrator` / `_app` kullanıcılarını oluşturur; tabloları servisler açılışta Flyway ile kurar. MinIO, Kafka ve Keycloak aynı Compose dosyasındadır. Her geliştirici aynı kurulumu `docker compose up` ile alır.
+**Yerel geliştirme (şimdi).** `docker-compose.yml` içinde tek bir `postgres:17` konteyneri çalışır. `docker-entrypoint-initdb.d/01-databases.sh` script'i `yarnshipment` veritabanını ve kullanıcısını oluşturur; tabloları servisler açılışta Flyway ile kurar. MinIO, Kafka ve Keycloak aynı Compose dosyasındadır. Her geliştirici aynı kurulumu `docker compose up` ile alır.
 
 **Kendi sunucularınız (sonra).** k3s üzerinde PostgreSQL için CloudNativePG operatörü öneriyorum: bir birincil ve bir yedek kopya, otomatik yük devri. Veritabanı adları ve kullanıcılar yerel kurulumla aynı kalır, servisler yalnızca bağlantı adresini değiştirir.
 
@@ -246,3 +246,48 @@ Migration'lar yazılırken tasarımın PostgreSQL'de birebir uygulanamayan veya 
 Uygulamanın eşlediği SQLSTATE kodları: `YS001` yalnızca ekleme yapılan tabloda değişiklik, `YS002` değiştirilemez kolon, `YS003` kilitli kayıt (REST 409), `YS004` kilitli parti kalitesi.
 
 Bekleyen: fasoncu kör girişi için Row Level Security (isteğe bağlı ek güvence) shipment-service iskeletiyle birlikte eklenecek.
+
+
+## Tek veritabanı, tek kullanıcı (güncel durum)
+
+Önceki tasarımdaki servis başına veritabanı (`masterdata_db`, `bag_db`, … `audit_db`, `keycloak_db`) ve rol seti
+(`_migrator`, `_app`, `_readonly`, `audit_writer`, `audit_reader`) kaldırıldı. Yerine:
+
+- **Tek veritabanı `yarnshipment`, tek kullanıcı `yarnshipment`.** Flyway ve uygulama aynı kullanıcıyla bağlanır
+  (`DB_URL`, `DB_USER`, `DB_PASSWORD`). Migration'lardaki `${app_role}` / `${readonly_role}` yer tutucuları bu kullanıcıya bağlanır.
+- **Servis başına şema, ortak `public` değil.** Servislerin ortak adlı nesneleri vardır (`outbox_event`, `audit_local`, `processed_event`,
+  `idempotency_record`, `ticket_reading`, `reject_modification()`, `audit_local_capture()` …). Hepsini tek şemaya koymak çakışır ve her
+  servisin kendi `flyway_schema_history` tablosunu da ayırmak gerekir. Servis başına şema (`masterdata`, `shipment`, `bag`, `evidence`,
+  `discrepancy`, `notification`, `reporting`, `audit`, ayrıca `keycloak`) hem bu çakışmayı çözer hem servis sınırını korur.
+- **Tek bağlantıdan erişim.** Kullanıcının `search_path`'i tüm servis şemalarını kapsar; DBeaver/psql ile tek bağlantıyla her tabloya bakılır.
+  Aynı adlı tabloda (örn. `outbox_event`) ilk şema kazanır, kesin erişim için `bag.outbox_event` yazın.
+- **Keycloak** aynı veritabanında `keycloak` şemasındadır (`KC_DB_SCHEMA`). Eski `keycloak_db` taşınmaz; yerel ortamda realm
+  açılışta içe aktarıldığı için `docker compose down -v` ile sıfırlamak yeterlidir.
+- **Migration'lar.** Eski scriptlerdeki sabit `public` (`SET search_path`, `GRANT USAGE ON SCHEMA`) `${flyway:defaultSchema}` oldu; bu,
+  mevcut migration dosyalarının sağlama toplamını değiştirir, bu yüzden eski kurulumlar yerinde değil aşağıdaki gibi taşınır.
+  Her servis `spring.flyway.default-schema` ile kendi şemasında ve kendi `flyway_schema_history` tablosuyla çalışır.
+
+**Güvenlik sonucu (bilinçli ödün).** Rol ayrımı kalktığı için şu korumalar zayıfladı:
+- *Audit:* `audit_writer`'ın tabloya erişememesi ve ayrı salt okuma rolü yok; tablo sahibi `audit_log`'u UPDATE/DELETE edebilir veya
+  tetikleyiciyi kapatabilir. Kalan korumalar: `reject_modification` tetikleyicisi (kazara değişikliği reddeder) ve hash zinciri
+  (`audit_verify_chain`, günlük doğrulama; tetikleyici kapatılıp satır değiştirilirse bozulma yakalanır, ama zincir baştan yeniden
+  hesaplanırsa yakalanmaz). Üretimde bu güvence gerekiyorsa audit için ayrı rol/veritabanı geri getirilmelidir.
+- *Diğer servisler:* uygulama kullanıcısı artık DELETE/DDL yetkisine sahiptir; "silinmez" kuralları yalnızca kodda ve tetikleyicilerdedir.
+- *Servisler arası izolasyon:* herhangi bir servisin kimlik bilgisi tüm şemalara erişir.
+
+**Mevcut yerel veriyi taşıma (pg_dump).** Eski kurulumdaki verileri yeni veritabanına şema bazında alın. Önce yeni yığını açıp servisleri
+bir kez başlatın (tablolar Flyway ile kurulsun), sonra her eski veritabanı için (`<db>`: `bag_db` …, `<şema>`: `bag` …):
+
+```bash
+# 1) Eski konteynerden yalnızca veriyi al (Flyway geçmişi hariç, tetikleyiciler çalışmasın diye superuser ile geri yüklenir)
+docker exec old-postgres pg_dump -U postgres -d <db> --data-only --exclude-table=flyway_schema_history \
+  --disable-triggers -f /tmp/<şema>.sql
+# 2) Yeni veritabanına, ilgili şemanın içine yükle
+docker cp old-postgres:/tmp/<şema>.sql .
+docker exec -i yarn-shipment-postgres-1 psql -U postgres -d yarnshipment -v ON_ERROR_STOP=1 \
+  -c "SET search_path = <şema>" -f - < <şema>.sql
+```
+Servis eşleşmesi: `masterdata_db→masterdata`, `shipment_db→shipment`, `bag_db→bag`, `evidence_db→evidence`, `discrepancy_db→discrepancy`,
+`notification_db→notification`, `reporting_db→reporting`, `audit_db→audit`. `--disable-triggers` `audit_local` ve `outbox_event` çiftlenmesini
+önler; audit zincirinin sıra numaraları dump içindeki `setval` ile korunur. Yükledikten sonra `SELECT audit.audit_verify_chain(1, (SELECT max(id) FROM audit.audit_log))` boş (NULL) dönmelidir.
+Servisleri yeniden başlatın. (`reporting_db` Kafka olaylarından yeniden üretilebildiği için taşımak şart değildir.)

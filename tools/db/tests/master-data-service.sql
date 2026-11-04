@@ -17,7 +17,6 @@ END;
 $$;
 GRANT EXECUTE ON FUNCTION pg_temp.expect_error(text, text) TO PUBLIC;
 
-SET ROLE masterdata_app;
 
 INSERT INTO site (id, code, name, site_type, status, created_at, created_by)
 VALUES ('00000000-0000-7000-8000-000000000001', 'F1', 'Fabrika', 'FACTORY', 'ACTIVE', now(), gen_random_uuid());
@@ -44,11 +43,6 @@ SELECT pg_temp.expect_error($$INSERT INTO production_lot (id, site_id, lot_no, p
 SELECT pg_temp.expect_error($$INSERT INTO user_profile (id, keycloak_user_id, full_name, user_type, status,
     created_at, created_by) VALUES (gen_random_uuid(), gen_random_uuid(), 'X', 'SUBCONTRACTOR', 'ACTIVE', now(),
     gen_random_uuid())$$, '23514');
--- Uygulama rolü silemez (GEN-04).
-SELECT pg_temp.expect_error($$DELETE FROM site$$, '42501');
--- Kritik tablo değişikliği yerel ize düşer; uygulama rolü bu izi okuyamaz.
-SELECT pg_temp.expect_error($$SELECT * FROM audit_local$$, '42501');
-RESET ROLE;
 DO $$ BEGIN
     IF (SELECT count(*) FROM audit_local WHERE table_name = 'production_lot') <> 1 THEN
         RAISE EXCEPTION 'audit_local did not capture production_lot insert';

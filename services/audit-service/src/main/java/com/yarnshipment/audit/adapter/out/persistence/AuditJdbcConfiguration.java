@@ -1,5 +1,6 @@
 package com.yarnshipment.audit.adapter.out.persistence;
 
+import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -9,9 +10,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 /**
- * İki ayrı veritabanı bağlantısı: yazan rol ({@code audit_writer}) yalnızca {@code audit_append()} çalıştırır, okuma
- * rolü ({@code audit_reader}) yalnızca SELECT yapar. Okuma bağlantısı {@link DataSource} bean'i olmaz; böylece
- * Spring Boot'un birincil bağlantısı yazan roldür.
+ * İki ayrı bağlantı havuzu (yazma/audit zinciri ve audit ekranı okuması). Tek veritabanı kullanıcısına geçildiği için
+ * ikisi de aynı kullanıcıyla bağlanır; "yazan rol tabloyu okuyamaz" koruması artık yoktur. Okuma bağlantısı
+ * {@link DataSource} bean'i olmaz; Spring Boot'un birincil bağlantısı yazma tarafıdır.
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(AuditReaderProperties.class)
@@ -27,11 +28,13 @@ class AuditJdbcConfiguration {
 
     @Bean(READER)
     JdbcClient auditReaderJdbc(AuditReaderProperties properties) {
-        DataSource readerDataSource = DataSourceBuilder.create()
+        HikariDataSource readerDataSource = DataSourceBuilder.create()
+                .type(HikariDataSource.class)
                 .url(properties.url())
                 .username(properties.username())
                 .password(properties.password())
                 .build();
+        readerDataSource.setSchema(properties.schema());
         return JdbcClient.create(readerDataSource);
     }
 }

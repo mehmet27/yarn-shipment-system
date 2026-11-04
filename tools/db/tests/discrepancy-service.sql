@@ -16,7 +16,6 @@ BEGIN
 END;
 $$;
 GRANT EXECUTE ON FUNCTION pg_temp.expect_error(text, text) TO PUBLIC;
-SET ROLE discrepancy_app;
 
 -- Genel kural (0,50 / 1,50, 2026-01-01'den açık uçlu) migration ile gelir.
 DO $$
@@ -46,8 +45,6 @@ SELECT pg_temp.expect_error($$UPDATE discrepancy SET status = 'RESOLVED'
 UPDATE discrepancy SET status = 'RESOLVED', resolution = 'TOLERANCE', resolution_note = 'Kantar farkı',
                        resolved_by = gen_random_uuid(), resolved_at = now()
 WHERE id = '00000000-0000-7000-8000-000000000601';
-SELECT pg_temp.expect_error($$DELETE FROM discrepancy$$, '42501');
 INSERT INTO discrepancy_activity (id, created_at, discrepancy_id, action_type, actor_id, occurred_at)
 VALUES (gen_random_uuid(), now(), '00000000-0000-7000-8000-000000000601', 'RESOLVED', gen_random_uuid(), now());
-SELECT pg_temp.expect_error($$UPDATE discrepancy_activity SET note = 'x'$$, '42501');
 ROLLBACK;

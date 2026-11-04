@@ -42,8 +42,9 @@ services:
     command: ["start-dev", "--http-port=8180", "--import-realm"]
     environment:
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
-      KC_DB_USERNAME: keycloak
+      KC_DB_URL: jdbc:postgresql://postgres:5432/yarnshipment
+      KC_DB_SCHEMA: keycloak
+      KC_DB_USERNAME: yarnshipment
       KC_DB_PASSWORD: ${LOCAL_DB_PASSWORD}
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?deploy/.env içinde KEYCLOAK_ADMIN_PASSWORD tanımlayın}

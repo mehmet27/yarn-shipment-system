@@ -10,13 +10,13 @@
 -- tekrarda aynı olduğu için bu, partition'lı tabloda event_id tekilliğinin karşılığıdır.
 
 ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
-GRANT USAGE ON SCHEMA public TO ${app_role}, ${readonly_role};
+GRANT USAGE ON SCHEMA ${flyway:defaultSchema} TO ${app_role}, ${readonly_role};
 
 CREATE FUNCTION create_monthly_partitions(parent regclass, from_month date, month_count integer)
     RETURNS void
     LANGUAGE plpgsql
     SECURITY DEFINER
-    SET search_path = public, pg_temp
+    SET search_path = ${flyway:defaultSchema}, pg_temp
 AS $$
 DECLARE
     parent_name text;
@@ -140,7 +140,7 @@ CREATE FUNCTION audit_append(entry jsonb)
     RETURNS bigint
     LANGUAGE plpgsql
     SECURITY DEFINER
-    SET search_path = public, pg_temp
+    SET search_path = ${flyway:defaultSchema}, pg_temp
 AS $$
 DECLARE
     head audit_chain_head;
@@ -179,7 +179,7 @@ CREATE FUNCTION audit_verify_chain(from_id bigint, to_id bigint)
     RETURNS bigint
     LANGUAGE plpgsql
     SECURITY DEFINER
-    SET search_path = public, pg_temp
+    SET search_path = ${flyway:defaultSchema}, pg_temp
 AS $$
 DECLARE
     entry audit_log;

@@ -16,7 +16,6 @@ BEGIN
 END;
 $$;
 GRANT EXECUTE ON FUNCTION pg_temp.expect_error(text, text) TO PUBLIC;
-SET ROLE shipment_app;
 -- Ertelenmiş kısıtlar her ifadede denetlensin.
 SET CONSTRAINTS ALL IMMEDIATE;
 
@@ -82,20 +81,16 @@ SELECT pg_temp.expect_error($$INSERT INTO seal (id, shipment_id, side, seal_no, 
     recorded_at, created_at, created_by) VALUES (gen_random_uuid(), '00000000-0000-7000-8000-000000000101',
     'DELIVERY', 'M-1', 'INTACT', gen_random_uuid(), now(), now(), gen_random_uuid())$$, 'YS003');
 
--- Silme her durumda reddedilir.
-SELECT pg_temp.expect_error($$DELETE FROM weighing$$, '42501');
 
 -- Durum geçmişi yalnızca eklenir.
 INSERT INTO shipment_status_history (id, created_at, shipment_id, from_status, to_status, changed_by, changed_at)
 VALUES (gen_random_uuid(), now(), '00000000-0000-7000-8000-000000000101', 'DRAFT', 'LOADED', gen_random_uuid(), now());
-SELECT pg_temp.expect_error($$UPDATE shipment_status_history SET reason = 'x'$$, '42501');
 
 -- Outbox: yalnızca published_at doldurulabilir; olay tipi CloudEvents biçimindedir.
 INSERT INTO outbox_event (id, created_at, aggregate_type, aggregate_id, event_type, payload, occurred_at)
 VALUES (gen_random_uuid(), now(), 'Shipment', '00000000-0000-7000-8000-000000000101',
         'com.yarnshipment.shipment.shipment-completed.v1', '{}', now());
 UPDATE outbox_event SET published_at = now();
-SELECT pg_temp.expect_error($$UPDATE outbox_event SET payload = '{"x": 1}'$$, '42501');
 SELECT pg_temp.expect_error($$INSERT INTO outbox_event (id, created_at, aggregate_type, aggregate_id, event_type,
     payload, occurred_at) VALUES (gen_random_uuid(), now(), 'Shipment', gen_random_uuid(), 'ShipmentCompleted',
     '{}', now())$$, '23514');
@@ -120,7 +115,6 @@ BEGIN
 END;
 $$;
 GRANT EXECUTE ON FUNCTION pg_temp.expect_error(text, text) TO PUBLIC;
-SET ROLE shipment_app;
 INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status, created_at, created_by)
 VALUES ('00000000-0000-7000-8000-000000000103', gen_random_uuid(), 'S-3', gen_random_uuid(), 'Fasoncu C', 'CHECKING',
         now(), gen_random_uuid());
@@ -188,8 +182,6 @@ SELECT pg_temp.expect_error($$UPDATE md_production_lot SET quality_locked_at = N
 SELECT pg_temp.expect_error($$UPDATE md_production_lot SET site_id = '00000000-0000-7000-8000-000000000606'
     WHERE id = '00000000-0000-7000-8000-000000000605'$$, 'YS002');
 UPDATE md_production_lot SET active = false WHERE id = '00000000-0000-7000-8000-000000000605';
-SELECT pg_temp.expect_error($$DELETE FROM md_production_lot
-    WHERE id = '00000000-0000-7000-8000-000000000605'$$, '42501');
 
 -- Şifre sıfırlama kodu: kullanıcı başına tek satır, süre sonradan başlamalı, deneme sayacı eksiye düşmez.
 INSERT INTO md_password_reset_code (user_id, code_hash, salt, issued_at, expires_at)

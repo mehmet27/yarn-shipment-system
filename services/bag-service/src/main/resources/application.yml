@@ -3,16 +3,19 @@ spring:
   application:
     name: bag-service
   datasource:
-    # Uygulama yalnızca DML yetkili rol ile bağlanır; DDL Flyway'in migrator rolüyle yapılır.
-    url: ${BAG_DB_URL:jdbc:postgresql://localhost:5432/bag_db}
-    username: ${BAG_DB_APP_USER:bag_app}
-    password: ${BAG_DB_APP_PASSWORD}
+    # Tek veritabanı, tek kullanıcı; servis tabloları kendi şemasında (bag) durur (docs/veritabani-tasarimi.md).
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/yarnshipment}
+    username: ${DB_USER:yarnshipment}
+    password: ${DB_PASSWORD}
+    hikari:
+      schema: bag
   flyway:
-    user: ${BAG_DB_MIGRATOR_USER:bag_migrator}
-    password: ${BAG_DB_MIGRATOR_PASSWORD}
+    default-schema: bag
+    schemas: bag
+    create-schemas: true
     placeholders:
-      app_role: ${BAG_DB_APP_USER:bag_app}
-      readonly_role: ${BAG_DB_READONLY_USER:bag_readonly}
+      app_role: ${DB_USER:yarnshipment}
+      readonly_role: ${DB_USER:yarnshipment}
   jpa:
     open-in-view: false
     hibernate:

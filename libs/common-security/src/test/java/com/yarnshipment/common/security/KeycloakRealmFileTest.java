@@ -62,15 +62,15 @@ class KeycloakRealmFileTest {
                 .asString();
         JsonNode attributes = JsonMapper.shared().readTree(config).path("attributes");
 
-        JsonNode email = null;
+        List<JsonNode> emailAttributes = new java.util.ArrayList<>();
         for (JsonNode attribute : attributes) {
             if ("email".equals(attribute.path("name").asString())) {
-                email = attribute;
+                emailAttributes.add(attribute);
             }
         }
 
-        assertThat(email).isNotNull();
-        assertThat(email.has("required")).isFalse();
+        assertThat(emailAttributes).hasSize(1);
+        assertThat(emailAttributes.getFirst().has("required")).isFalse();
     }
 
     @Test

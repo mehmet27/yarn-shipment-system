@@ -9,6 +9,7 @@ import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsExcep
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountRoleLockedException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
+import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import java.io.IOException;
@@ -27,14 +28,20 @@ class KeycloakStaffAccountAdapterTest {
 
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     private static final int OK = 200;
-    private static final int INVITE_CALL = 4;
+    private static final int DELETE_BODY_CALL = 4;
     private static final int CREATED = 201;
     private static final int NO_CONTENT = 204;
     private static final int NOT_FOUND = 404;
     private static final int CONFLICT = 409;
     private static final int SERVER_ERROR = 500;
-    private static final StaffAccountSpec STAFF =
-            new StaffAccountSpec("depo2", "depo2@ornek.com", "Ayşe Depo", StaffRole.WAREHOUSE, List.of(SITE));
+    private static final StaffAccountSpec STAFF = new StaffAccountSpec(
+            "depo2",
+            "depo2@ornek.com",
+            new PhoneNumber("+905321234567"),
+            "Ayşe Depo",
+            StaffRole.WAREHOUSE,
+            List.of(SITE));
+    private static final String NEW_ID = "0192f0a0-0000-7000-8000-000000000201";
     private static final String USER_ID = "0192f0a0-0000-7000-8000-000000000101";
     private static final String USERS = "/admin/realms/yarnshipment/users";
 
@@ -42,7 +49,7 @@ class KeycloakStaffAccountAdapterTest {
     private final List<String> bodies = new ArrayList<>();
     private @Nullable HttpServer server;
     private int createStatus = CREATED;
-    private int inviteStatus = NO_CONTENT;
+    private int roleStatus = NO_CONTENT;
     private int userRolesStatus = OK;
     private String userRoles = "[]";
 
@@ -55,38 +62,37 @@ class KeycloakStaffAccountAdapterTest {
     }
 
     @Test
-    @DisplayName("Fabrika içi kullanıcı şifresiz açılır, rol verilir, şifre belirleme e-postası istenir")
-    void shouldCreateStaffWithoutPasswordAndSendInvite() throws Exception {
+    @DisplayName("Fabrika içi kullanıcı şifresiz ve telefonuyla açılır, rol verilir; e-posta davetiyesi istenmez")
+    void shouldCreateStaffWithoutPassword() throws Exception {
         KeycloakStaffAccountAdapter adapter = adapter("secret");
 
-        adapter.createStaff(STAFF);
+        UUID created = adapter.createStaff(STAFF);
 
+        assertThat(created).isEqualTo(UUID.fromString(NEW_ID));
         assertThat(calls)
                 .containsExactly(
                         "POST /realms/yarnshipment/protocol/openid-connect/token",
                         "GET /admin/realms/yarnshipment/roles/warehouse",
                         "POST " + USERS,
-                        "POST " + USERS + "/u-1/role-mappings/realm",
-                        "PUT " + USERS + "/u-1/execute-actions-email");
+                        "POST " + USERS + "/" + NEW_ID + "/role-mappings/realm");
         assertThat(bodies.get(2))
                 .contains("\"username\":\"depo2\"")
                 .contains("\"site_ids\":[\"" + SITE + "\"]")
+                .contains("\"phone_number\":[\"+905321234567\"]")
                 .contains("UPDATE_PASSWORD")
                 .doesNotContain("credentials")
                 .doesNotContain("password\"");
-        assertThat(bodies.get(INVITE_CALL)).isEqualTo("[\"UPDATE_PASSWORD\"]");
     }
 
     @Test
-    @DisplayName(
-            "E-posta gönderilemezse (SMTP yok) açılan kullanıcı silinir ve LoginAccountUnavailableException fırlar")
-    void shouldRemoveStaffWhenInviteFails() throws Exception {
-        inviteStatus = SERVER_ERROR;
+    @DisplayName("Rol verilemezse açılan kullanıcı silinir ve LoginAccountUnavailableException fırlar")
+    void shouldRemoveStaffWhenRoleAssignmentFails() throws Exception {
+        roleStatus = SERVER_ERROR;
         KeycloakStaffAccountAdapter adapter = adapter("secret");
 
         assertThatThrownBy(() -> adapter.createStaff(STAFF)).isInstanceOf(LoginAccountUnavailableException.class);
 
-        assertThat(calls).contains("DELETE " + USERS + "/u-1");
+        assertThat(calls).contains("DELETE " + USERS + "/" + NEW_ID);
     }
 
     @Test
@@ -115,7 +121,7 @@ class KeycloakStaffAccountAdapterTest {
                         "POST " + roles,
                         "DELETE " + roles,
                         "POST " + USERS + "/" + USER_ID + "/logout");
-        assertThat(bodies.get(INVITE_CALL)).contains("warehouse").doesNotContain("offline_access");
+        assertThat(bodies.get(DELETE_BODY_CALL)).contains("warehouse").doesNotContain("offline_access");
     }
 
     @Test
@@ -165,12 +171,12 @@ class KeycloakStaffAccountAdapterTest {
             reply(exchange, OK, "{\"access_token\":\"t\"}");
         } else if (method.equals("GET") && path.endsWith("/role-mappings/realm")) {
             reply(exchange, userRolesStatus, userRoles);
-        } else if (method.equals("PUT") && path.endsWith("/execute-actions-email")) {
-            reply(exchange, inviteStatus, "");
+        } else if (method.equals("POST") && path.endsWith("/role-mappings/realm")) {
+            reply(exchange, roleStatus, "");
         } else if (method.equals("GET")) {
             reply(exchange, OK, "{\"id\":\"r-1\",\"name\":\"" + path.substring(path.lastIndexOf('/') + 1) + "\"}");
         } else if (method.equals("POST") && path.endsWith("/users")) {
-            exchange.getResponseHeaders().add("Location", "http://kc" + USERS + "/u-1");
+            exchange.getResponseHeaders().add("Location", "http://kc" + USERS + "/" + NEW_ID);
             reply(exchange, createStatus, "");
         } else {
             reply(exchange, NO_CONTENT, "");

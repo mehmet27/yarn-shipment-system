@@ -9,6 +9,7 @@ import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsExcep
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
+import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -31,9 +32,16 @@ class KeycloakLoginAccountAdapterTest {
     private static final int CONFLICT = 409;
     private static final int SERVER_ERROR = 500;
     private static final int USER_CALL = 3;
+    private static final String NEW_ID = "0192f0a0-0000-7000-8000-000000000201";
     private static final String USERS = "/admin/realms/yarnshipment/users";
     private static final LoginAccountSpec SPEC = new LoginAccountSpec(
-            "ali.yilmaz", "ali@ornek.com", "Ali Yılmaz", LoginRole.DRIVER, OWNER, List.of(SITE), "Gecici-Sifre-123");
+            "ali.yilmaz",
+            "ali@ornek.com",
+            new PhoneNumber("+905321234567"),
+            "Ali Yılmaz",
+            LoginRole.DRIVER,
+            OWNER,
+            List.of(SITE));
 
     private final List<String> calls = new ArrayList<>();
     private final List<String> bodies = new ArrayList<>();
@@ -51,27 +59,31 @@ class KeycloakLoginAccountAdapterTest {
     }
 
     @Test
-    @DisplayName("Kullanıcı geçici şifre, öznitelikler ve rolle açılır; sıra: token, arama, rol, kullanıcı, rol atama")
+    @DisplayName(
+            "Kullanıcı şifresiz; telefon, öznitelik ve rolle açılır; sıra: token, arama, rol, kullanıcı, rol atama")
     void shouldCreateUserWithRoleAndAttributes() throws Exception {
         KeycloakLoginAccountAdapter adapter = adapter("secret");
 
-        adapter.create(SPEC);
+        UUID created = adapter.create(SPEC);
 
+        assertThat(created).isEqualTo(UUID.fromString(NEW_ID));
         assertThat(calls)
                 .containsExactly(
                         "POST /realms/yarnshipment/protocol/openid-connect/token",
                         "GET " + USERS,
                         "GET /admin/realms/yarnshipment/roles/driver",
                         "POST " + USERS,
-                        "POST " + USERS + "/u-1/role-mappings/realm");
+                        "POST " + USERS + "/" + NEW_ID + "/role-mappings/realm");
         String user = bodies.get(USER_CALL);
         assertThat(user)
                 .contains("\"username\":\"ali.yilmaz\"")
                 .contains("\"email\":\"ali@ornek.com\"")
                 .contains("\"driver_id\":[\"" + OWNER + "\"]")
                 .contains("\"site_ids\":[\"" + SITE + "\"]")
-                .contains("\"temporary\":true")
-                .contains("UPDATE_PASSWORD");
+                .contains("\"phone_number\":[\"+905321234567\"]")
+                .contains("UPDATE_PASSWORD")
+                .doesNotContain("credentials")
+                .doesNotContain("password\"");
         assertThat(bodies.get(0)).contains("client_secret=secret");
     }
 
@@ -98,7 +110,7 @@ class KeycloakLoginAccountAdapterTest {
 
         assertThatThrownBy(() -> adapter.create(SPEC)).isInstanceOf(LoginAccountUnavailableException.class);
 
-        assertThat(calls).contains("DELETE " + USERS + "/u-1");
+        assertThat(calls).contains("DELETE " + USERS + "/" + NEW_ID);
     }
 
     @Test
@@ -135,7 +147,7 @@ class KeycloakLoginAccountAdapterTest {
         } else if (method.equals("GET")) {
             reply(exchange, OK, "{\"id\":\"r-1\",\"name\":\"driver\"}");
         } else if (method.equals("POST") && path.endsWith("/users")) {
-            exchange.getResponseHeaders().add("Location", "http://kc" + USERS + "/u-1");
+            exchange.getResponseHeaders().add("Location", "http://kc" + USERS + "/" + NEW_ID);
             reply(exchange, createStatus, "");
         } else if (method.equals("POST")) {
             reply(exchange, roleStatus, "");

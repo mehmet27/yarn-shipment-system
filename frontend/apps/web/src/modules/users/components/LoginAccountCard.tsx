@@ -27,6 +27,11 @@ export function LoginAccountCard({ account }: LoginAccountCardProps) {
             {account.email}
           </Text>
         )}
+        {account.phone !== undefined && (
+          <Text size="sm" c="dimmed">
+            {account.phone}
+          </Text>
+        )}
         <RoleBadges account={account} />
         {account.createdAt !== undefined && (
           <Text size="xs" c="dimmed">

@@ -30,6 +30,9 @@ final class KeycloakAdminClient {
 
     static final ParameterizedTypeReference<Map<String, Object>> OBJECT = new ParameterizedTypeReference<>() {};
     static final ParameterizedTypeReference<List<Map<String, Object>>> OBJECTS = new ParameterizedTypeReference<>() {};
+    /** Kullanıcıya yazılan telefon özniteliği (E.164). */
+    static final String PHONE_ATTRIBUTE = "phone_number";
+
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
 
     private final RestClient client;

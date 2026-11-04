@@ -19,6 +19,7 @@ export {
   NumberInput,
   Pagination,
   Paper,
+  PasswordInput,
   SegmentedControl,
   Select,
   SimpleGrid,

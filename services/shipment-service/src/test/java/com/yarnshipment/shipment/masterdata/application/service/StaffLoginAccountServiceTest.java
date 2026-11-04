@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.TestTokens;
-import com.yarnshipment.shipment.masterdata.application.port.in.StaffAccountRequest;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.StaffAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.StaffAccountPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Test;
 class StaffLoginAccountServiceTest {
 
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
+    private static final int EXPECTED_CHANGES = 3;
+    private static final UUID NEW_USER = UUID.fromString("0192f0a0-0000-7000-8000-000000000201");
     private static final UUID OTHER_SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000002");
 
     private final List<StaffAccountSpec> openedStaff = new ArrayList<>();
@@ -46,8 +48,9 @@ class StaffLoginAccountServiceTest {
     };
     private final StaffAccountPort accounts = new StaffAccountPort() {
         @Override
-        public void createStaff(StaffAccountSpec spec) {
+        public UUID createStaff(StaffAccountSpec spec) {
             openedStaff.add(spec);
+            return NEW_USER;
         }
 
         @Override
@@ -55,29 +58,63 @@ class StaffLoginAccountServiceTest {
             roleChanges.add(userId + ":" + role);
         }
     };
-    private final StaffLoginAccountService service = new StaffLoginAccountService(targets, accounts);
+    private final List<String> codesSent = new ArrayList<>();
+    private final FakeCredentials credentials = new FakeCredentials();
+    private final StaffLoginAccountService service = new StaffLoginAccountService(
+            targets, accounts, credentials, (userId, username, phone) -> codesSent.add(userId + ":" + phone.e164()));
 
     @Test
     @DisplayName("Fabrika içi hesap şifresiz, verilen rol ve lokasyonla açılır")
     void shouldOpenStaffAccountWithoutPassword() {
         service.createStaffLoginAccount(
                 admin,
-                new StaffAccountRequest("depo2", "depo2@ornek.com", "Ayşe Depo", StaffRole.WAREHOUSE, List.of(SITE)));
+                new StaffAccountRequest(
+                        "depo2", "05321234567", "depo2@ornek.com", "Ayşe Depo", StaffRole.WAREHOUSE, List.of(SITE)));
 
         assertThat(openedStaff).singleElement().satisfies(spec -> {
             assertThat(spec.username()).isEqualTo("depo2");
             assertThat(spec.role()).isEqualTo(StaffRole.WAREHOUSE);
             assertThat(spec.siteIds()).containsExactly(SITE);
+            assertThat(spec.phone().e164()).isEqualTo("+905321234567");
         });
+        assertThat(codesSent).containsExactly(NEW_USER + ":+905321234567");
+    }
+
+    @Test
+    @DisplayName("Telefon geçersizse hesap açılmaz ve SMS gitmez")
+    void shouldRejectBadPhone() {
+        StaffAccountRequest request =
+                new StaffAccountRequest("d", "123", null, "Ayşe Depo", StaffRole.QUALITY, List.of(SITE));
+
+        assertThatThrownBy(() -> service.createStaffLoginAccount(admin, request))
+                .isInstanceOf(InvalidMasterDataException.class);
+        assertThat(openedStaff).isEmpty();
+        assertThat(codesSent).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Hesap başkası için kapatılıp açılabilir; kişi kendi hesabını kapatamaz")
+    void shouldDisableOthersOnly() {
+        UUID other = UUID.randomUUID();
+
+        service.disableLoginAccount(admin, other);
+        service.enableLoginAccount(admin, other);
+        service.enableLoginAccount(admin, admin.userId());
+
+        assertThat(credentials.enabledChanges())
+                .containsExactly(other + ":false", other + ":true", admin.userId() + ":true");
+        assertThatThrownBy(() -> service.disableLoginAccount(admin, admin.userId()))
+                .isInstanceOf(InvalidMasterDataException.class);
+        assertThat(credentials.enabledChanges()).hasSize(EXPECTED_CHANGES);
     }
 
     @Test
     @DisplayName("Lokasyon boşsa ya da etkin değilse hesap açılmaz")
     void shouldRejectBadSites() {
         StaffAccountRequest none =
-                new StaffAccountRequest("d", "d@ornek.com", "Ayşe Depo", StaffRole.QUALITY, List.of());
-        StaffAccountRequest inactive =
-                new StaffAccountRequest("d", "d@ornek.com", "Ayşe Depo", StaffRole.QUALITY, List.of(SITE, OTHER_SITE));
+                new StaffAccountRequest("d", "05321234567", null, "Ayşe Depo", StaffRole.QUALITY, List.of());
+        StaffAccountRequest inactive = new StaffAccountRequest(
+                "d", "05321234567", null, "Ayşe Depo", StaffRole.QUALITY, List.of(SITE, OTHER_SITE));
 
         assertThatThrownBy(() -> service.createStaffLoginAccount(admin, none))
                 .isInstanceOf(InvalidMasterDataException.class);

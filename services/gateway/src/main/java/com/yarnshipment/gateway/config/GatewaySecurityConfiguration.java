@@ -3,6 +3,7 @@ package com.yarnshipment.gateway.config;
 import com.yarnshipment.gateway.web.BrowserEntryPoint;
 import com.yarnshipment.gateway.web.CsrfCookieFilter;
 import com.yarnshipment.gateway.web.JsonLogoutSuccessHandler;
+import com.yarnshipment.gateway.web.KeycloakActionRequestResolver;
 import com.yarnshipment.gateway.web.ReturnToFilter;
 import com.yarnshipment.gateway.web.ReturnToSuccessHandler;
 import jakarta.servlet.DispatcherType;
@@ -27,6 +28,8 @@ import tools.jackson.databind.json.JsonMapper;
 public class GatewaySecurityConfiguration {
 
     private static final String LOGIN_PATH = "/oauth2/authorization/keycloak";
+    /** Girişsiz çağrılan "şifremi unuttum" uçları; oturum ya da çerez taşımaz, bu yüzden CSRF dışıdır. */
+    private static final String PASSWORD_RESET_PATHS = "/api/v1/password-reset/**";
 
     @Bean
     SecurityFilterChain gatewaySecurityFilterChain(
@@ -40,13 +43,16 @@ public class GatewaySecurityConfiguration {
                 new JsonLogoutSuccessHandler(registrations, properties.postLogoutUrl(), jsonMapper);
         http.authorizeHttpRequests(requests -> requests.dispatcherTypeMatchers(DispatcherType.ERROR)
                         .permitAll()
-                        .requestMatchers("/actuator/health/**")
+                        .requestMatchers("/actuator/health/**", PASSWORD_RESET_PATHS)
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-                .oauth2Login(login -> login.successHandler(new ReturnToSuccessHandler(properties.postLoginUrl())))
+                .oauth2Login(login -> login.authorizationEndpoint(endpoint -> endpoint.authorizationRequestResolver(
+                                KeycloakActionRequestResolver.forRegistrations(registrations)))
+                        .successHandler(new ReturnToSuccessHandler(properties.postLoginUrl())))
                 .logout(configurer -> configurer.logoutSuccessHandler(logout))
                 .csrf(csrf -> csrf.csrfTokenRepository(csrfTokens)
+                        .ignoringRequestMatchers(PASSWORD_RESET_PATHS)
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 .addFilterAfter(new CsrfCookieFilter(csrfTokens), CsrfFilter.class)
                 .addFilterBefore(

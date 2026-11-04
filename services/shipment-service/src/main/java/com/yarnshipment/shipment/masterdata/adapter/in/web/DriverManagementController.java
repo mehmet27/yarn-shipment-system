@@ -5,11 +5,10 @@ import com.yarnshipment.shipment.adapter.in.web.api.DriverManagementApi;
 import com.yarnshipment.shipment.adapter.in.web.api.model.DriverRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.DriverView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountRequest;
-import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountResponse;
 import com.yarnshipment.shipment.masterdata.application.port.in.ChangeDriverStatusUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.CreateDriverLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateDriverUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.UpdateDriverUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateDriverLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.DriverDetails;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
 import java.util.UUID;
@@ -71,10 +70,10 @@ public class DriverManagementController implements DriverManagementApi {
 
     @Override
     @PreAuthorize("hasAuthority('MASTER_DATA_MANAGE')")
-    public ResponseEntity<LoginAccountResponse> createDriverLoginAccount(UUID driverId, LoginAccountRequest request) {
-        var account = loginAccount.createDriverLoginAccount(
+    public ResponseEntity<Void> createDriverLoginAccount(UUID driverId, LoginAccountRequest request) {
+        loginAccount.createDriverLoginAccount(
                 currentActorProvider.getCurrentActor(), driverId, LoginAccountViews.command(request));
-        return LoginAccountViews.created(account);
+        return LoginAccountViews.created();
     }
 
     private static DriverDetails details(DriverRequest request) {

@@ -8,11 +8,11 @@ import java.util.UUID;
 public interface StaffAccountPort {
 
     /**
-     * Kullanıcıyı şifresiz açar, rolünü verir ve şifre belirleme e-postasını gönderir. Herhangi bir adım başarısız
-     * olursa kullanıcı silinir. Giriş adı ya da e-posta alınmışsa {@code LoginAccountExistsException}; sağlayıcı (ya da
-     * e-posta) yanıt vermezse {@code LoginAccountUnavailableException} fırlatır.
+     * Kullanıcıyı şifresiz açar, rolünü ve telefonunu yazar, kimliğini döner. Rol verilemezse kullanıcı silinir.
+     * Giriş adı ya da e-posta alınmışsa {@code LoginAccountExistsException}; sağlayıcı yanıt vermezse
+     * {@code LoginAccountUnavailableException} fırlatır.
      */
-    void createStaff(StaffAccountSpec spec);
+    UUID createStaff(StaffAccountSpec spec);
 
     /**
      * Kullanıcının fabrika içi rolünü değiştirir ve açık oturumlarını kapatır. Kullanıcı yoksa

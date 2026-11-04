@@ -7,12 +7,12 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountPageRespon
 import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.Role;
 import com.yarnshipment.shipment.adapter.in.web.api.model.StaffLoginAccountRequest;
-import com.yarnshipment.shipment.masterdata.application.port.in.ChangeLoginAccountRoleUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.CreateStaffLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.ListLoginAccountsUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
-import com.yarnshipment.shipment.masterdata.application.port.in.StaffAccountRequest;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.StaffAccountRequest;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import java.time.Instant;
@@ -56,6 +56,7 @@ public class LoginAccountController implements LoginAccountsApi {
                 currentActorProvider.getCurrentActor(),
                 new StaffAccountRequest(
                         request.getUsername(),
+                        request.getPhone(),
                         request.getEmail(),
                         request.getFullName(),
                         StaffRole.valueOf(request.getRole().name()),
@@ -92,6 +93,7 @@ public class LoginAccountController implements LoginAccountsApi {
                 .username(account.username())
                 .fullName(account.fullName())
                 .email(account.email())
+                .phone(account.phone())
                 .roles(account.roles().stream().map(Role::valueOf).toList())
                 .enabled(account.enabled())
                 .passwordChangeRequired(account.passwordChangeRequired())

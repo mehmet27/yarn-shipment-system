@@ -116,8 +116,6 @@ function listHandler(kind: MasterKind, canManage: boolean) {
   });
 }
 
-const MOCK_TEMPORARY_PASSWORD = 'Gecici-Sifre-1';
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
@@ -134,13 +132,11 @@ function openLoginAccount(kind: MasterKind, ownerId: string, body: unknown) {
   addMockLoginAccount({
     username,
     email: textField(fields, 'email') ?? '',
+    phone: textField(fields, 'phone') ?? '',
     fullName: owner?.label ?? username,
     role: kind === 'driver' ? 'DRIVER' : 'SUBCONTRACTOR',
   });
-  return HttpResponse.json(
-    { username, temporaryPassword: MOCK_TEMPORARY_PASSWORD },
-    { status: 201 },
-  );
+  return new HttpResponse(null, { status: 201 });
 }
 
 /** Backend'deki doğrulamalar: TR plaka deseni, tekil plaka ve tekil fasoncu ünvanı. */

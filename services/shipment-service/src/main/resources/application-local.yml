@@ -7,3 +7,6 @@ yarnshipment:
   security:
     # Yerel Keycloak'ta ikinci faktör kurulumu yok; bu yüzden ADMIN ve QUALITY rolleri MFA'sız da geçerli sayılır.
     mfa-required-roles: []
+  sms:
+    # Yerelde SMS gerçekten gitmez; kod ve mesaj shipment-service loguna yazılır.
+    provider: log

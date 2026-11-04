@@ -52,6 +52,12 @@ spring:
 server:
   port: ${SERVER_PORT:8083}
 yarnshipment:
+  security:
+    # Şifre sıfırlama uçları girişsiz çağrılır (kullanıcı şifresini unutmuştur).
+    public-paths:
+      - /actuator/health/**
+      - /actuator/info
+      - /api/v1/password-reset/**
   outbox:
     # EVT-03/04: outbox_event satırları bu konuya CloudEvents olarak yayınlanır.
     topic: shipment.events.v1

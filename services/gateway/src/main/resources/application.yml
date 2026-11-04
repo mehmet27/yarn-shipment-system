@@ -40,6 +40,13 @@ spring:
                 # Oturum çerezi servise gitmez; servis yalnızca Bearer token görür.
                 - RemoveRequestHeader=Cookie
                 - TokenRelay=
+            - id: password-reset
+              uri: ${SHIPMENT_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/v1/password-reset/**
+              filters:
+                # Girişsiz uç: oturum çerezi servise gitmez, token da eklenmez.
+                - RemoveRequestHeader=Cookie
             - id: bag-service
               uri: ${BAG_SERVICE_URL:http://localhost:8084}
               predicates:

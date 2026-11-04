@@ -19,6 +19,14 @@ export function loginUrl(returnTo: string): string {
     : LOGIN_PATH;
 }
 
+/**
+ * Şifre değiştirme adresi: gateway girişi Keycloak'ın kendi "şifre değiştir" eylemiyle başlatır (`kc_action`). Şifre
+ * bu uygulamadan hiç geçmez; işlem bitince kişi uygulamaya döner.
+ */
+export function changePasswordUrl(): string {
+  return `${LOGIN_PATH}?kc_action=UPDATE_PASSWORD`;
+}
+
 export { getCurrentUser };
 
 /**

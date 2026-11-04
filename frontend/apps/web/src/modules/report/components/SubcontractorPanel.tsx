@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { QueryState } from '@/modules/shipment';
 import { filterRows } from '../export/reportModel';
-import { shortId } from '../format';
+import { usePartyNames } from '../hooks/usePartyNames';
 import { useSubcontractorReport } from '../hooks/usePartyReport';
 import type { ReportPanelProps } from './reportPanelProps';
 import { PartyTable } from './PartyTable';
@@ -13,6 +13,7 @@ export function SubcontractorPanel({
   isOnlyDiscrepant = false,
 }: ReportPanelProps) {
   const { t } = useTranslation();
+  const { nameOf } = usePartyNames();
   const query = useSubcontractorReport(params, isEnabled);
   return (
     <QueryState query={query}>
@@ -22,7 +23,7 @@ export function SubcontractorPanel({
           rows={filterRows(rows, isOnlyDiscrepant).map((row) => ({
             ...row,
             key: row.id,
-            parties: [shortId(row.id)],
+            parties: [nameOf(row.id)],
           }))}
         />
       )}

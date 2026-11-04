@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Table, Text, Title } from '@iplik/ui';
+import { PrintSignatures } from './PrintSignatures';
 import { formatCell } from '../export/formatCell';
 import type { ReportTable } from '../export/reportModel';
 import '../print.css';
@@ -7,15 +8,15 @@ import '../print.css';
 export type PrintableReportProps = {
   tables: ReportTable[];
   title: string;
+  logo?: string | null;
 };
 
-const SIGNATURES = ['prepared', 'checked', 'approved'] as const;
-
 /** Yalnızca yazdırırken görünür; tarayıcıda "PDF olarak kaydet" ile PDF çıktısı bu bölümden alınır. */
-export function PrintableReport({ tables, title }: PrintableReportProps) {
+export function PrintableReport({ tables, title, logo = null }: PrintableReportProps) {
   const { t } = useTranslation();
   return (
     <div className="print-only" data-testid="printable-report">
+      {logo !== null && <img src={logo} alt="" className="print-logo" />}
       <Title order={1} size="h2">
         {title}
       </Title>
@@ -58,17 +59,7 @@ export function PrintableReport({ tables, title }: PrintableReportProps) {
       <Text size="xs" mt="md">
         {t('report.intro')}
       </Text>
-      <div className="print-signatures">
-        {SIGNATURES.map((key) => (
-          <div key={key} className="print-signature">
-            <Text size="sm" fw={600}>
-              {t(`report.export.signature.${key}`)}
-            </Text>
-            <div className="print-signature-line" />
-            <Text size="xs">{t('report.export.signature.dateLine')}</Text>
-          </div>
-        ))}
-      </div>
+      <PrintSignatures />
     </div>
   );
 }

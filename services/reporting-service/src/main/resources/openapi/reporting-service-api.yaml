@@ -119,6 +119,57 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+  /api/v1/reports/shipments:
+    get:
+      tags: [Reports]
+      operationId: getShipmentReport
+      summary: Sevkiyat dökümü
+      description: |
+        Dönemde oluşturulan sevkiyatlar, en yeni önce. En çok 5000 satır döner; dönem daraltılarak fazlasına ulaşılır.
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Sevkiyat satırları
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShipmentRowView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/reports/subcontractor-balance:
+    get:
+      tags: [Reports]
+      operationId: getSubcontractorBalanceReport
+      summary: Fasoncu bazında gönderilen, teslim alınan ve yolda kalan kilo
+      description: İptal edilen sevkiyatlar sayılmaz; yolda kalan miktarı en yüksek olan önce gelir.
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Fasoncu bakiye satırları
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubcontractorBalanceView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 components:
   securitySchemes:
     bearerAuth:
@@ -360,3 +411,63 @@ components:
           type: string
         averageAbsoluteDiffKg:
           type: string
+    ShipmentRowView:
+      type: object
+      required: [shipmentId, shipmentNo, subcontractorId, status, hadDiscrepancy, createdAt]
+      properties:
+        shipmentId:
+          type: string
+          format: uuid
+        shipmentNo:
+          type: string
+        subcontractorId:
+          type: string
+          format: uuid
+        driverId:
+          type: string
+          format: uuid
+          description: Henüz atanmadıysa yoktur
+        status:
+          type: string
+        dispatchNetKg:
+          type: string
+        deliveryNetKg:
+          type: string
+        diffKg:
+          type: string
+          description: Çıkış net − teslim net; karşılaştırılmadıysa yoktur
+        diffPct:
+          type: string
+        band:
+          type: string
+          enum: [GREEN, YELLOW, RED]
+        hadDiscrepancy:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+    SubcontractorBalanceView:
+      type: object
+      required: [subcontractorId, shipmentCount, dispatchedKg, deliveredKg, inTransitKg, differenceKg]
+      properties:
+        subcontractorId:
+          type: string
+          format: uuid
+        shipmentCount:
+          type: integer
+          format: int32
+        dispatchedKg:
+          type: string
+          description: Çıkış net toplamı
+        deliveredKg:
+          type: string
+          description: Teslim net toplamı
+        inTransitKg:
+          type: string
+          description: Henüz teslim kaydı olmayan sevkiyatların çıkış net toplamı
+        differenceKg:
+          type: string
+          description: Teslim edilmiş sevkiyatlarda çıkış − teslim (fire)

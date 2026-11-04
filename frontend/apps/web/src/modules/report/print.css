@@ -25,6 +25,12 @@
     width: 100%;
   }
 
+  .print-logo {
+    max-height: 60px;
+    max-width: 220px;
+    margin-bottom: 8px;
+  }
+
   .print-section {
     margin-top: 12px;
   }

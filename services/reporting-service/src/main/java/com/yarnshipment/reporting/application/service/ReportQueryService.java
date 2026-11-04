@@ -3,6 +3,8 @@ package com.yarnshipment.reporting.application.service;
 import com.yarnshipment.reporting.application.port.in.GetDashboardUseCase;
 import com.yarnshipment.reporting.application.port.in.ListDriverReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListPairReportUseCase;
+import com.yarnshipment.reporting.application.port.in.ListShipmentReportUseCase;
+import com.yarnshipment.reporting.application.port.in.ListSubcontractorBalanceUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ReportQuery;
 import com.yarnshipment.reporting.application.port.out.ReportQueryPort;
@@ -13,7 +15,9 @@ import com.yarnshipment.reporting.domain.model.PairStats;
 import com.yarnshipment.reporting.domain.model.PartyStats;
 import com.yarnshipment.reporting.domain.model.QuantitySummary;
 import com.yarnshipment.reporting.domain.model.ReportPeriod;
+import com.yarnshipment.reporting.domain.model.ShipmentRow;
 import com.yarnshipment.reporting.domain.model.ShipmentTotals;
+import com.yarnshipment.reporting.domain.model.SubcontractorBalance;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -24,7 +28,15 @@ import org.springframework.transaction.annotation.Transactional;
 /** Dashboard ve rapor okumaları. Kapsam dışı kullanıcı boş rapor alır; dönem hatası fırlatılır. */
 @Service
 public class ReportQueryService
-        implements GetDashboardUseCase, ListDriverReportUseCase, ListSubcontractorReportUseCase, ListPairReportUseCase {
+        implements GetDashboardUseCase,
+                ListDriverReportUseCase,
+                ListSubcontractorReportUseCase,
+                ListPairReportUseCase,
+                ListShipmentReportUseCase,
+                ListSubcontractorBalanceUseCase {
+
+    /** Döküm bir seferde bu kadar satırla sınırlıdır; dönem daraltılarak daha fazlasına ulaşılır. */
+    public static final int SHIPMENT_REPORT_LIMIT = 5000;
 
     private final ReportQueryPort queryPort;
     private final ReportAccess access;
@@ -69,6 +81,24 @@ public class ReportQueryService
         ReportPeriod period = periodOf(query);
         return access.scopeOf(query)
                 .map(scope -> queryPort.findPairStats(period, scope))
+                .orElseGet(List::of);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ShipmentRow> listShipmentReport(ReportQuery query) {
+        ReportPeriod period = periodOf(query);
+        return access.scopeOf(query)
+                .map(scope -> queryPort.findShipments(period, scope, SHIPMENT_REPORT_LIMIT))
+                .orElseGet(List::of);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SubcontractorBalance> listSubcontractorBalance(ReportQuery query) {
+        ReportPeriod period = periodOf(query);
+        return access.scopeOf(query)
+                .map(scope -> queryPort.findSubcontractorBalances(period, scope))
                 .orElseGet(List::of);
     }
 

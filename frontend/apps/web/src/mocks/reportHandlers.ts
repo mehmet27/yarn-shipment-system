@@ -1,4 +1,11 @@
-import type { DashboardView, PairStatsView, PartyStatsView, Permission } from '@iplik/api-client';
+import type {
+  DashboardView,
+  PairStatsView,
+  PartyStatsView,
+  Permission,
+  ShipmentRowView,
+  SubcontractorBalanceView,
+} from '@iplik/api-client';
 import { REPORTS_PATH } from '@iplik/api-client';
 import { http, HttpResponse } from 'msw';
 
@@ -63,6 +70,43 @@ const MOCK_PAIRS: PairStatsView[] = [
   },
 ];
 
+const MOCK_SHIPMENTS: ShipmentRowView[] = [
+  {
+    shipmentId: 'shp-0007',
+    shipmentNo: 'SV-2026-0007',
+    subcontractorId: 'f9e8d7c6-0000-7000-8000-000000000009',
+    driverId: 'a1b2c3d4-0000-7000-8000-000000000001',
+    status: 'IN_REVIEW',
+    dispatchNetKg: '5000.000',
+    deliveryNetKg: '4820.000',
+    diffKg: '180.000',
+    diffPct: '3.60',
+    band: 'RED',
+    hadDiscrepancy: true,
+    createdAt: '2026-11-02T09:00:00Z',
+  },
+  {
+    shipmentId: 'shp-0008',
+    shipmentNo: 'SV-2026-0008',
+    subcontractorId: 'f9e8d7c6-0000-7000-8000-000000000009',
+    status: 'IN_TRANSIT',
+    dispatchNetKg: '2000.000',
+    hadDiscrepancy: false,
+    createdAt: '2026-11-03T09:00:00Z',
+  },
+];
+
+const MOCK_BALANCES: SubcontractorBalanceView[] = [
+  {
+    subcontractorId: 'f9e8d7c6-0000-7000-8000-000000000009',
+    shipmentCount: 2,
+    dispatchedKg: '7000.000',
+    deliveredKg: '4820.000',
+    inTransitKg: '2000.000',
+    differenceKg: '180.000',
+  },
+];
+
 /** Raporlar yalnızca REPORT_VIEW izniyle; backend gibi izinsizse 403 döner. */
 export function createReportHandlers(permissions: readonly Permission[]) {
   const canView = permissions.includes('REPORT_VIEW');
@@ -82,5 +126,11 @@ export function createReportHandlers(permissions: readonly Permission[]) {
       canView ? HttpResponse.json(MOCK_DRIVERS) : denied(),
     ),
     http.get(`${REPORTS_PATH}/pairs`, () => (canView ? HttpResponse.json(MOCK_PAIRS) : denied())),
+    http.get(`${REPORTS_PATH}/shipments`, () =>
+      canView ? HttpResponse.json(MOCK_SHIPMENTS) : denied(),
+    ),
+    http.get(`${REPORTS_PATH}/subcontractor-balance`, () =>
+      canView ? HttpResponse.json(MOCK_BALANCES) : denied(),
+    ),
   ];
 }

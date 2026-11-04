@@ -134,6 +134,46 @@ export interface PairStatsView {
   averageAbsoluteDiffKg: string;
 }
 
+export type ShipmentRowViewBand = typeof ShipmentRowViewBand[keyof typeof ShipmentRowViewBand];
+
+
+export const ShipmentRowViewBand = {
+  GREEN: 'GREEN',
+  YELLOW: 'YELLOW',
+  RED: 'RED',
+} as const;
+
+export interface ShipmentRowView {
+  shipmentId: string;
+  shipmentNo: string;
+  subcontractorId: string;
+  /** Henüz atanmadıysa yoktur */
+  driverId?: string;
+  status: string;
+  dispatchNetKg?: string;
+  deliveryNetKg?: string;
+  /** Çıkış net − teslim net; karşılaştırılmadıysa yoktur */
+  diffKg?: string;
+  diffPct?: string;
+  band?: ShipmentRowViewBand;
+  hadDiscrepancy: boolean;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface SubcontractorBalanceView {
+  subcontractorId: string;
+  shipmentCount: number;
+  /** Çıkış net toplamı */
+  dispatchedKg: string;
+  /** Teslim net toplamı */
+  deliveredKg: string;
+  /** Henüz teslim kaydı olmayan sevkiyatların çıkış net toplamı */
+  inTransitKg: string;
+  /** Teslim edilmiş sevkiyatlarda çıkış − teslim (fire) */
+  differenceKg: string;
+}
+
 /**
  * Dönem geçersiz (REPORT_PERIOD_INVALID)
  */
@@ -224,6 +264,36 @@ to?: ToParameter;
 siteId?: SiteIdParameter;
 };
 
+export type GetShipmentReportParams = {
+/**
+ * Dönem başı (dahil), Europe/Istanbul günü
+ */
+from?: FromParameter;
+/**
+ * Dönem sonu (dahil), Europe/Istanbul günü
+ */
+to?: ToParameter;
+/**
+ * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+ */
+siteId?: SiteIdParameter;
+};
+
+export type GetSubcontractorBalanceReportParams = {
+/**
+ * Dönem başı (dahil), Europe/Istanbul günü
+ */
+from?: FromParameter;
+/**
+ * Dönem sonu (dahil), Europe/Istanbul günü
+ */
+to?: ToParameter;
+/**
+ * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+ */
+siteId?: SiteIdParameter;
+};
+
 /**
  * @summary Panel ana sayfa özeti
  */
@@ -279,6 +349,34 @@ export const getPairReport = (
       );
     }
 
+/**
+ * Dönemde oluşturulan sevkiyatlar, en yeni önce. En çok 5000 satır döner; dönem daraltılarak fazlasına ulaşılır.
+ * @summary Sevkiyat dökümü
+ */
+export const getShipmentReport = (
+    params?: GetShipmentReportParams,
+ ) => {
+      return customInstance<ShipmentRowView[]>(
+      {url: `/api/v1/reports/shipments`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * İptal edilen sevkiyatlar sayılmaz; yolda kalan miktarı en yüksek olan önce gelir.
+ * @summary Fasoncu bazında gönderilen, teslim alınan ve yolda kalan kilo
+ */
+export const getSubcontractorBalanceReport = (
+    params?: GetSubcontractorBalanceReportParams,
+ ) => {
+      return customInstance<SubcontractorBalanceView[]>(
+      {url: `/api/v1/reports/subcontractor-balance`, method: 'GET',
+        params
+    },
+      );
+    }
+
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -288,3 +386,5 @@ export type GetDashboardResult = NonNullable<Awaited<ReturnType<typeof getDashbo
 export type GetDriverReportResult = NonNullable<Awaited<ReturnType<typeof getDriverReport>>>
 export type GetSubcontractorReportResult = NonNullable<Awaited<ReturnType<typeof getSubcontractorReport>>>
 export type GetPairReportResult = NonNullable<Awaited<ReturnType<typeof getPairReport>>>
+export type GetShipmentReportResult = NonNullable<Awaited<ReturnType<typeof getShipmentReport>>>
+export type GetSubcontractorBalanceReportResult = NonNullable<Awaited<ReturnType<typeof getSubcontractorBalanceReport>>>

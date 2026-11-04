@@ -9,6 +9,7 @@ export type ExportToolbarProps = {
   isOnlyDiscrepant: boolean;
   onIsOnlyDiscrepantChange: (value: boolean) => void;
   isDisabled: boolean;
+  logo: string | null;
 };
 
 /** Excel indirme ve PDF (yazdır) düğmeleri; ekrandaki dönem ve süzgeç tüm sayfalara uygulanır. */
@@ -17,6 +18,7 @@ export function ExportToolbar({
   isOnlyDiscrepant,
   onIsOnlyDiscrepantChange,
   isDisabled,
+  logo,
 }: ExportToolbarProps) {
   const { t } = useTranslation();
   const { busy, hasFailed, printTables, run } = useReportExport(params, isOnlyDiscrepant);
@@ -52,7 +54,9 @@ export function ExportToolbar({
           {t('report.export.failed')}
         </Alert>
       )}
-      {printTables !== null && <PrintableReport tables={printTables} title={t('report.title')} />}
+      {printTables !== null && (
+        <PrintableReport tables={printTables} title={t('report.title')} logo={logo} />
+      )}
     </>
   );
 }

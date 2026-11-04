@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { QueryState } from '@/modules/shipment';
 import { filterRows } from '../export/reportModel';
-import { shortId } from '../format';
+import { usePartyNames } from '../hooks/usePartyNames';
 import { usePairReport } from '../hooks/usePartyReport';
 import type { ReportPanelProps } from './reportPanelProps';
 import { PartyTable } from './PartyTable';
@@ -9,6 +9,7 @@ import { PartyTable } from './PartyTable';
 /** Şoför–fasoncu eşleşmesi rapor sekmesi. */
 export function PairPanel({ params, isEnabled, isOnlyDiscrepant = false }: ReportPanelProps) {
   const { t } = useTranslation();
+  const { nameOf } = usePartyNames();
   const query = usePairReport(params, isEnabled);
   return (
     <QueryState query={query}>
@@ -18,7 +19,7 @@ export function PairPanel({ params, isEnabled, isOnlyDiscrepant = false }: Repor
           rows={filterRows(rows, isOnlyDiscrepant).map((row) => ({
             ...row,
             key: `${row.driverId}:${row.subcontractorId}`,
-            parties: [shortId(row.driverId), shortId(row.subcontractorId)],
+            parties: [nameOf(row.driverId), nameOf(row.subcontractorId)],
           }))}
         />
       )}

@@ -1,8 +1,14 @@
-import type { DashboardView, PairStatsView, PartyStatsView } from '@iplik/api-client';
+import type {
+  DashboardView,
+  PairStatsView,
+  PartyStatsView,
+  ShipmentRowView,
+  SubcontractorBalanceView,
+} from '@iplik/api-client';
 import { describe, expect, it } from 'vitest';
 import { buildTables } from './buildTables';
 import { formatCell } from './formatCell';
-import type { ReportBundle, ReportMeta } from './reportModel';
+import type { ReportBundle, ReportCell, ReportMeta, ReportTable } from './reportModel';
 import { differencePercent, filterRows, partyTotals } from './reportModel';
 import {
   buildWorkbookBlob,
@@ -64,6 +70,41 @@ const pairs: PairStatsView[] = [
     averageAbsoluteDiffKg: '60.000',
   },
 ];
+const shipments: ShipmentRowView[] = [
+  {
+    shipmentId: 's1',
+    shipmentNo: 'SV-1',
+    subcontractorId: 'cccccccc-3',
+    driverId: 'aaaaaaaa-1',
+    status: 'IN_REVIEW',
+    dispatchNetKg: '1000.000',
+    deliveryNetKg: '900.000',
+    diffKg: '100.000',
+    diffPct: '10.00',
+    band: 'RED',
+    hadDiscrepancy: true,
+    createdAt: '2026-11-02T09:00:00Z',
+  },
+  {
+    shipmentId: 's2',
+    shipmentNo: 'SV-2',
+    subcontractorId: 'cccccccc-3',
+    status: 'IN_TRANSIT',
+    dispatchNetKg: '500.000',
+    hadDiscrepancy: false,
+    createdAt: '2026-11-03T09:00:00Z',
+  },
+];
+const balances: SubcontractorBalanceView[] = [
+  {
+    subcontractorId: 'cccccccc-3',
+    shipmentCount: 2,
+    dispatchedKg: '1500.000',
+    deliveredKg: '900.000',
+    inTransitKg: '500.000',
+    differenceKg: '100.000',
+  },
+];
 const bundle: ReportBundle = {
   from: dashboard.from,
   to: dashboard.to,
@@ -71,6 +112,8 @@ const bundle: ReportBundle = {
   drivers,
   subcontractors: drivers,
   pairs,
+  shipments,
+  balances,
 };
 const meta: ReportMeta = {
   from: dashboard.from,
@@ -78,6 +121,7 @@ const meta: ReportMeta = {
   generatedAt: new Date('2026-11-04T08:00:00Z'),
   generatedBy: 'Ayşe Yılmaz',
   onlyDiscrepant: false,
+  nameOf: (id) => (id.startsWith('aaaaaaaa') ? 'Ali Veli' : id.slice(0, 8)),
 };
 const t = (key: string) => key;
 
@@ -111,7 +155,7 @@ describe('rapor modeli', () => {
 });
 
 describe('tablolar ve biçim', () => {
-  it('altı tablo üretir: özet, süresi geçenler, en büyük farklar, şoför, fasoncu, eşleşme', () => {
+  it('sekiz tablo üretir: özet, süresi geçenler, en büyük farklar, şoför, fasoncu, eşleşme, döküm, bakiye', () => {
     const tables = buildTables(bundle, meta, t);
     expect(tables.map((table) => table.title)).toEqual([
       'report.export.sheets.summary',
@@ -120,6 +164,8 @@ describe('tablolar ve biçim', () => {
       'report.export.sheets.drivers',
       'report.export.sheets.subcontractors',
       'report.export.sheets.pairs',
+      'report.export.sheets.shipments',
+      'report.export.sheets.balance',
     ]);
   });
 
@@ -139,6 +185,64 @@ describe('tablolar ve biçim', () => {
     expect(formatCell({ kind: 'kg', value: 1234.5 })).toBe('1.234,500 kg');
     expect(formatCell({ kind: 'percent', value: 0.5 })).toBe('%50,00');
     expect(formatCell({ kind: 'count', value: 3 })).toBe('3');
+  });
+});
+
+describe('adlar', () => {
+  it('çözülen kimlik ad olarak, çözülemeyen kısaltma olarak yazılır', () => {
+    const [, , , driverTable, , pairTable] = buildTables(bundle, meta, t);
+    expect(driverTable?.rows[0]?.[0]).toEqual({ kind: 'text', value: 'Ali Veli' });
+    expect(driverTable?.rows[1]?.[0]).toEqual({ kind: 'text', value: 'bbbbbbbb' });
+    expect(pairTable?.rows[0]?.slice(0, 2)).toEqual([
+      { kind: 'text', value: 'Ali Veli' },
+      { kind: 'text', value: 'cccccccc' },
+    ]);
+  });
+});
+
+function cellAt(
+  table: ReportTable | undefined,
+  row: number,
+  column: number,
+): ReportCell | undefined {
+  return table?.rows[row]?.[column];
+}
+
+function totalAt(table: ReportTable | undefined, column: number): ReportCell | undefined {
+  return table?.total?.[column];
+}
+
+describe('sevkiyat dökümü ve bakiye', () => {
+  const emptyText = { kind: 'text', value: '' };
+
+  it('dökümde eksik alanlar boş kalır', () => {
+    const table = buildTables(bundle, meta, t)[6];
+    expect(table?.rows).toHaveLength(2);
+    expect(cellAt(table, 0, 2)).toEqual({ kind: 'text', value: 'Ali Veli' });
+    expect(cellAt(table, 1, 2)).toEqual(emptyText);
+    expect(cellAt(table, 1, 5)).toEqual(emptyText);
+  });
+
+  it('dökümün toplam satırı kiloları ve uyuşmazlık sayısını verir', () => {
+    const table = buildTables(bundle, meta, t)[6];
+    expect(totalAt(table, 4)).toEqual({ kind: 'kg', value: 1500 });
+    expect(totalAt(table, 5)).toEqual({ kind: 'kg', value: 900 });
+    expect(totalAt(table, 9)).toEqual({ kind: 'count', value: 1 });
+  });
+
+  it('uyuşmazlık süzgeci dökümü de daraltır; boş dökümde toplam satırı yoktur', () => {
+    const filtered = buildTables(bundle, { ...meta, onlyDiscrepant: true }, t)[6];
+    expect(filtered?.rows).toHaveLength(1);
+    const none = buildTables({ ...bundle, shipments: [] }, meta, t)[6];
+    expect(none?.total).toBeUndefined();
+  });
+
+  it('bakiye tablosu fasoncu adını ve fireyi verir, toplam satırı toplar', () => {
+    const table = buildTables(bundle, meta, t)[7];
+    expect(cellAt(table, 0, 0)).toEqual({ kind: 'text', value: 'cccccccc' });
+    expect(cellAt(table, 0, 5)).toEqual({ kind: 'kg', value: 100 });
+    expect(totalAt(table, 4)).toEqual({ kind: 'kg', value: 500 });
+    expect(buildTables({ ...bundle, balances: [] }, meta, t)[7]?.total).toBeUndefined();
   });
 });
 

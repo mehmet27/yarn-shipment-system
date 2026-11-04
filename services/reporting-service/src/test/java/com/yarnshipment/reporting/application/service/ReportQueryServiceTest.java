@@ -3,6 +3,7 @@ package com.yarnshipment.reporting.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -79,6 +80,21 @@ class ReportQueryServiceTest {
         verify(queryPort).findDriverStats(any(), any());
         verify(queryPort).findSubcontractorStats(any(), any());
         verify(queryPort).findPairStats(any(), any());
+    }
+
+    @Test
+    @DisplayName(
+            "Sevkiyat dökümü ve fasoncu bakiyesi yönetici kapsamıyla, döküm limitiyle sorgulanır; dış roller boş alır")
+    void shouldListShipmentAndBalanceReports() {
+        service.listShipmentReport(query(TestTokens.actor("manager")));
+        service.listSubcontractorBalance(query(TestTokens.actor("manager")));
+
+        verify(queryPort).findShipments(any(), any(), eq(ReportQueryService.SHIPMENT_REPORT_LIMIT));
+        verify(queryPort).findSubcontractorBalances(any(), any());
+        assertThat(service.listShipmentReport(query(TestTokens.actor(TestTokens.driverToken()))))
+                .isEmpty();
+        assertThat(service.listSubcontractorBalance(query(TestTokens.actor(TestTokens.subcontractorToken()))))
+                .isEmpty();
     }
 
     private static ReportQuery query(Actor actor) {

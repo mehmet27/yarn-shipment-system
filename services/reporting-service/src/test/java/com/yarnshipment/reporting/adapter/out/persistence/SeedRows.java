@@ -77,6 +77,28 @@ final class SeedRows {
                 shipment.discrepant());
     }
 
+    /**
+     * Bakiye testi sevkiyatı.
+     *
+     * @param subcontractor fasoncu
+     * @param status durum
+     * @param dispatchKg çıkış net kilo
+     * @param deliveryKg teslim net kilo; teslim edilmediyse boş
+     */
+    record Balance(
+            UUID subcontractor,
+            String status,
+            String dispatchKg,
+            @Nullable String deliveryKg) {}
+
+    void balanceShipment(UUID site, Balance balance) {
+        String sql = """
+                INSERT INTO shipment_view (shipment_id, site_id, shipment_no, subcontractor_id, status,
+                                           dispatch_net_kg, delivery_net_kg, created_at)
+                VALUES (gen_random_uuid(), ?, 'BAL', ?, ?, ?::numeric, ?::numeric, '2026-11-02T09:00:00Z')""";
+        jdbc.update(sql, site, balance.subcontractor(), balance.status(), balance.dispatchKg(), balance.deliveryKg());
+    }
+
     void oldShipment(UUID site) {
         jdbc.update("""
                 INSERT INTO shipment_view (shipment_id, site_id, shipment_no, subcontractor_id, status, created_at)

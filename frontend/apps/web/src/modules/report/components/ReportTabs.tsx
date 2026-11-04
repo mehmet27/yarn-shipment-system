@@ -3,9 +3,11 @@ import { Tabs } from '@iplik/ui';
 import { useState } from 'react';
 import type { ReportKind } from '../hooks/usePartyReport';
 import { REPORT_KINDS } from '../hooks/usePartyReport';
+import { BalancePanel } from './BalancePanel';
 import { DriverPanel } from './DriverPanel';
 import { PairPanel } from './PairPanel';
 import type { ReportPanelProps } from './reportPanelProps';
+import { ShipmentsPanel } from './ShipmentsPanel';
 import { SubcontractorPanel } from './SubcontractorPanel';
 import { SummaryPanel } from './SummaryPanel';
 
@@ -53,6 +55,16 @@ export function ReportTabs({ params, isOnlyDiscrepant }: ReportTabsProps) {
           isEnabled={kind === 'pairs'}
           isOnlyDiscrepant={isOnlyDiscrepant}
         />
+      </Tabs.Panel>
+      <Tabs.Panel value="shipments" pt="md">
+        <ShipmentsPanel
+          params={params}
+          isEnabled={kind === 'shipments'}
+          isOnlyDiscrepant={isOnlyDiscrepant}
+        />
+      </Tabs.Panel>
+      <Tabs.Panel value="balance" pt="md">
+        <BalancePanel params={params} isEnabled={kind === 'balance'} />
       </Tabs.Panel>
     </Tabs>
   );

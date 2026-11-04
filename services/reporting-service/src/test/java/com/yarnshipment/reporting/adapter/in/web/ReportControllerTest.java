@@ -8,6 +8,8 @@ import com.yarnshipment.reporting.TestTokens;
 import com.yarnshipment.reporting.application.port.in.GetDashboardUseCase;
 import com.yarnshipment.reporting.application.port.in.ListDriverReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListPairReportUseCase;
+import com.yarnshipment.reporting.application.port.in.ListShipmentReportUseCase;
+import com.yarnshipment.reporting.application.port.in.ListSubcontractorBalanceUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorReportUseCase;
 import com.yarnshipment.reporting.domain.model.InvalidReportPeriodException;
 import java.util.List;
@@ -42,6 +44,12 @@ class ReportControllerTest {
 
     @MockitoBean
     private ListPairReportUseCase listPairs;
+
+    @MockitoBean
+    private ListShipmentReportUseCase listShipments;
+
+    @MockitoBean
+    private ListSubcontractorBalanceUseCase listBalances;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

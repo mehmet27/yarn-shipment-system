@@ -26,7 +26,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Dashboard ve rapor sorguları; gerçek şemada, uygulama rolüyle. Her test kendi lokasyonunu kullanır. */
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({ReportQueryAdapter.class, DashboardReader.class, DiscrepancyReader.class, PartyReader.class})
+@Import({
+    ReportQueryAdapter.class,
+    DashboardReader.class,
+    DiscrepancyReader.class,
+    PartyReader.class,
+    ShipmentListReader.class
+})
 class ReportQueryAdapterTest {
 
     private static final Instant NOW = Instant.parse("2026-11-03T12:00:00Z");

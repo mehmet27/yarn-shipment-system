@@ -6,12 +6,14 @@ import { useCurrentUser } from '@/modules/auth';
 import { buildTables } from '../export/buildTables';
 import type { ReportTable } from '../export/reportModel';
 import { downloadWorkbook, reportFileName } from '../export/writeWorkbook';
+import { usePartyNames } from './usePartyNames';
 import { reportBundleQuery } from './reportBundleQuery';
 
 export type ExportFormat = 'xlsx' | 'pdf';
 
 /** Dışa aktarma akışı: tüm raporları çeker, Excel'i indirir ya da yazdırma bölümünü hazırlayıp yazdırmayı açar. */
 export function useReportExport(params: GetDashboardParams, isOnlyDiscrepant: boolean) {
+  const { nameOf } = usePartyNames();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: me } = useCurrentUser();
@@ -38,6 +40,7 @@ export function useReportExport(params: GetDashboardParams, isOnlyDiscrepant: bo
           generatedAt: new Date(),
           generatedBy: me?.fullName ?? '',
           onlyDiscrepant: isOnlyDiscrepant,
+          nameOf,
         },
         (key) => t(key),
       );

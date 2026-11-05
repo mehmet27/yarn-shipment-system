@@ -1,7 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import {
   AppShell,
-  Box,
   BRAND_GRADIENT,
   BRAND_SIDEBAR_GRADIENT,
   Burger,
@@ -12,9 +11,8 @@ import {
 } from '@iplik/ui';
 import { BrandMark } from '@/modules/branding';
 import { Outlet } from 'react-router';
-import { ChangePasswordButton } from './ChangePasswordButton';
-import { LogoutButton } from './LogoutButton';
 import { PanelNav } from './PanelNav';
+import { UserMenu } from './UserMenu';
 
 const HEADER_HEIGHT_PX = 56;
 const NAVBAR_WIDTH_PX = 248;
@@ -35,12 +33,7 @@ export function PanelLayout() {
             <Burger opened={isNavOpen} onClick={toggle} hiddenFrom="sm" color="white" />
             <BrandMark />
           </Group>
-          <Group gap={0} wrap="nowrap">
-            <Box visibleFrom="sm">
-              <ChangePasswordButton />
-            </Box>
-            <LogoutButton />
-          </Group>
+          <UserMenu />
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="sm" c="white" style={{ background: BRAND_SIDEBAR_GRADIENT, border: 0 }}>
@@ -49,9 +42,6 @@ export function PanelLayout() {
             {t('nav.panel')}
           </Text>
           <PanelNav />
-          <Box hiddenFrom="sm" mt="md">
-            <ChangePasswordButton />
-          </Box>
         </Stack>
       </AppShell.Navbar>
       <AppShell.Main>

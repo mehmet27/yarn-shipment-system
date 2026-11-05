@@ -3,7 +3,8 @@
     "name": "İplik Sevkiyat",
     "loading": "Yükleniyor…",
     "logout": "Çıkış yap",
-    "changePassword": "Şifremi değiştir"
+    "changePassword": "Şifremi değiştir",
+    "mfaOn": "✓ İki adımlı doğrulama açık"
   },
   "error": {
     "forbidden": "Bu sayfayı görme yetkiniz yok.",

@@ -3,6 +3,7 @@ export {
   Alert,
   Anchor,
   AppShell,
+  Avatar,
   Badge,
   Burger,
   CloseButton,
@@ -15,6 +16,7 @@ export {
   Group,
   List,
   Loader,
+  Menu,
   Modal,
   NavLink,
   NumberInput,
@@ -33,6 +35,7 @@ export {
   Textarea,
   TextInput,
   Title,
+  UnstyledButton,
 } from '@mantine/core';
 export { Box } from '@mantine/core';
 export { useDebouncedValue, useDisclosure, useMediaQuery } from '@mantine/hooks';

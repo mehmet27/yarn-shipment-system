@@ -45,10 +45,7 @@ const ITEMS: readonly PanelNavItem[] = [
   { to: '/panel/kullanicilar', labelKey: 'nav.users', icon: 'users', permission: 'USER_MANAGE' },
 ];
 
-const NAV_LINK_STYLES = {
-  root: { '--nl-hover': 'color-mix(in srgb, white 12%, transparent)' },
-  label: { fontWeight: 500 },
-} as const;
+const NAV_LINK_STYLES = { label: { fontWeight: 500 } } as const;
 
 /** Panel yan menüsü: her bağlantı yalnızca yetkisi olan kullanıcıya görünür. */
 export function PanelNav() {
@@ -63,6 +60,7 @@ export function PanelNav() {
         label={t(item.labelKey)}
         leftSection={<NavIcon name={item.icon} />}
         active={pathname.startsWith(item.to)}
+        className="panel-nav-link"
         c="white"
         variant="filled"
         color="brand.6"

@@ -7,7 +7,9 @@ export type NavIconName =
   | 'lots'
   | 'settings'
   | 'audit'
-  | 'users';
+  | 'users'
+  | 'password'
+  | 'logout';
 
 /** Her ikon 24x24 çizgi (stroke) yolu; renk metinden (currentColor) gelir. */
 const PATHS: Record<NavIconName, string> = {
@@ -22,6 +24,8 @@ const PATHS: Record<NavIconName, string> = {
   audit: 'M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6',
   users:
     'M9 11a4 4 0 100-8 4 4 0 000 8zM2 21c0-4 3-6 7-6s7 2 7 6M17 3.5a4 4 0 010 7M22 21c0-3-1.5-5-4-5.7',
+  password: 'M3 11h18v10H3zM7 11V7a5 5 0 0110 0v4M12 15v2',
+  logout: 'M9 21H4V3h5M16 17l5-5-5-5M21 12H9',
 };
 
 const ICON_SIZE_PX = 20;

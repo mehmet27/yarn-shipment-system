@@ -1,11 +1,10 @@
 import { useTranslation } from '@iplik/i18n';
 import {
   Button,
-  Group,
+  PageHero,
   Stack,
   Text,
   TextInput,
-  Title,
   useDebouncedValue,
   useDisclosure,
 } from '@iplik/ui';
@@ -28,12 +27,14 @@ export function LoginAccountsPage() {
   const query = useLoginAccounts({ q, page: page - 1, size: PAGE_SIZE });
   return (
     <Stack>
-      <Group justify="space-between" align="flex-start">
-        <Title order={1} size="h2">
-          {t('users.title')}
-        </Title>
-        <Button onClick={open}>{t('users.create.open')}</Button>
-      </Group>
+      <PageHero
+        title={t('users.title')}
+        actions={
+          <Button variant="white" color="brand" onClick={open}>
+            {t('users.create.open')}
+          </Button>
+        }
+      />
       <CreateAccountModal opened={isCreating} onClose={close} />
       <Text c="dimmed">{t('users.intro')}</Text>
       <TextInput

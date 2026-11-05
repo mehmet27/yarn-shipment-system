@@ -1,6 +1,6 @@
 import type { LotView } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Text, Title, useDebouncedValue } from '@iplik/ui';
+import { PageHero, Stack, useDebouncedValue } from '@iplik/ui';
 import { useState } from 'react';
 import { LotForm } from '../components/LotForm';
 import { LotResults } from '../components/LotResults';
@@ -26,10 +26,7 @@ export function LotsPage() {
   const query = useLots({ q, page: page - 1, size: PAGE_SIZE, isShowingInactive });
   return (
     <Stack>
-      <Title order={1} size="h2">
-        {t('lots.title')}
-      </Title>
-      <Text c="dimmed">{t('lots.intro')}</Text>
+      <PageHero title={t('lots.title')} subtitle={t('lots.intro')} />
       <RecordToolbar
         search={search}
         isShowingInactive={isShowingInactive}

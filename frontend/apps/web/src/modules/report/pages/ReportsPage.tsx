@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Group, Stack, Text, Title } from '@iplik/ui';
+import { Group, PageHero, Stack } from '@iplik/ui';
 import { useState } from 'react';
 import { LogoControl } from '../components/LogoControl';
 import { loadLogo, saveLogo } from '../logo';
@@ -17,18 +17,11 @@ export function ReportsPage() {
   const [logo, setLogo] = useState<string | null>(loadLogo);
   return (
     <Stack>
-      <Group justify="space-between" align="flex-start">
-        <Title order={1} size="h2">
-          {t('report.title')}
-        </Title>
-        <Group align="flex-start">
-          <PeriodSelect value={days} onChange={setDays} />
-          <DateRangeInputs value={range} onChange={setRange} hasError={hasRangeError} />
-        </Group>
+      <PageHero title={t('report.title')} subtitle={t('report.intro')} />
+      <Group align="flex-start">
+        <PeriodSelect value={days} onChange={setDays} />
+        <DateRangeInputs value={range} onChange={setRange} hasError={hasRangeError} />
       </Group>
-      <Text size="sm" c="dimmed">
-        {t('report.intro')}
-      </Text>
       <LogoControl
         logo={logo}
         onChange={(next) => {

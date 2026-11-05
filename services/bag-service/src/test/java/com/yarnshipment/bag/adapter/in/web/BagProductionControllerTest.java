@@ -169,7 +169,8 @@ class BagProductionControllerTest {
     void shouldVoidBags() {
         when(voidBagsUseCase.voidBags(any())).thenReturn(1);
 
-        MvcTestResult result = post("/api/v1/bags/void", VOID_BODY, TestTokens.token("warehouse").build());
+        MvcTestResult result = post(
+                "/api/v1/bags/void", VOID_BODY, TestTokens.token("warehouse").build());
 
         assertThat(result).hasStatus(HttpStatus.OK);
         assertThat(result).bodyJson().extractingPath("$.voidedCount").isEqualTo(1);
@@ -190,7 +191,8 @@ class BagProductionControllerTest {
         when(voidBagsUseCase.voidBags(any()))
                 .thenThrow(new BagNotVoidableException("BAG-7K3M-Q9XD", BagStatus.SHIPPED));
 
-        MvcTestResult result = post("/api/v1/bags/void", VOID_BODY, TestTokens.token("warehouse").build());
+        MvcTestResult result = post(
+                "/api/v1/bags/void", VOID_BODY, TestTokens.token("warehouse").build());
 
         assertThat(result).hasStatus(HttpStatus.CONFLICT);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("BAG_NOT_VOIDABLE");

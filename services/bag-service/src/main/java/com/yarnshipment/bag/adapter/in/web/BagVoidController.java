@@ -28,8 +28,7 @@ public class BagVoidController implements BagVoidApi {
     @PreAuthorize("hasAuthority('BAG_CREATE')")
     public ResponseEntity<VoidBagsResponse> voidBags(VoidBagsRequest request) {
         Actor actor = currentActorProvider.getCurrentActor();
-        VoidBagsCommand command =
-                new VoidBagsCommand(actor, List.copyOf(request.getUniqueKeys()), request.getReason());
+        VoidBagsCommand command = new VoidBagsCommand(actor, List.copyOf(request.getUniqueKeys()), request.getReason());
         return ResponseEntity.ok(new VoidBagsResponse(voidBagsUseCase.voidBags(command)));
     }
 }

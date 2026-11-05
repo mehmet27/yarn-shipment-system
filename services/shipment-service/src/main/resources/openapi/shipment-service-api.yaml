@@ -688,7 +688,7 @@ paths:
           $ref: '#/components/responses/BadGateway'
   /api/v1/master-data/user-names:
     get:
-      tags: [LoginAccounts]
+      tags: [UserNames]
       operationId: listUserNames
       summary: Kullanıcı kimliklerinin okunur adları
       description: |

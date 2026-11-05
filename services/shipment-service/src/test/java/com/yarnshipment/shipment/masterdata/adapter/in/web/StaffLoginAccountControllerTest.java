@@ -11,7 +11,6 @@ import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.account.ListUserNamesUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.StaffAccountRequest;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
@@ -55,9 +54,6 @@ class StaffLoginAccountControllerTest {
 
     @MockitoBean
     private ChangeLoginAccountRoleUseCase changeRole;
-
-    @MockitoBean
-    private ListUserNamesUseCase listUserNames;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

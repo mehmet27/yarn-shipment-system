@@ -12,13 +12,10 @@ import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.account.ListUserNamesUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -61,9 +58,6 @@ class LoginAccountControllerTest {
     private ChangeLoginAccountRoleUseCase changeRole;
 
     @MockitoBean
-    private ListUserNamesUseCase listUserNames;
-
-    @MockitoBean
     private JwtDecoder jwtDecoder;
 
     @Autowired
@@ -95,23 +89,6 @@ class LoginAccountControllerTest {
         verify(listLoginAccounts).listLoginAccounts(query.capture());
         assertThat(query.getValue().text()).isEqualTo("ali");
         assertThat(query.getValue().page()).isZero();
-    }
-
-    @Test
-    @DisplayName("Denetim görüntüleyen rol kimlikleri okunur adlara çevirir; telefon ve e-posta dönmez")
-    void shouldResolveUserNamesForAuditViewers() {
-        UUID id = UUID.fromString("0192f0a0-0000-7000-8000-0000000000aa");
-        when(listUserNames.listUserNames(any())).thenReturn(Map.of(id, "Ayşe Demir"));
-
-        MvcTestResult result = get(
-                "/api/v1/master-data/user-names?ids=" + id,
-                TestTokens.token("quality").build());
-
-        assertThat(result).hasStatus(HttpStatus.OK);
-        assertThat(result).bodyJson().extractingPath("$.items[0].name").isEqualTo("Ayşe Demir");
-        assertThat(result).bodyText().doesNotContain("phone").doesNotContain("email");
-        assertThat(get("/api/v1/master-data/user-names?ids=" + id, TestTokens.driverToken()))
-                .hasStatus(HttpStatus.FORBIDDEN);
     }
 
     @Test

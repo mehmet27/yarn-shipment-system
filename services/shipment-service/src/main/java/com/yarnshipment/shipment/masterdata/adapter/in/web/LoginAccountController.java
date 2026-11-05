@@ -7,22 +7,17 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountPageRespon
 import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.Role;
 import com.yarnshipment.shipment.adapter.in.web.api.model.StaffLoginAccountRequest;
-import com.yarnshipment.shipment.adapter.in.web.api.model.UserNameListResponse;
-import com.yarnshipment.shipment.adapter.in.web.api.model.UserNameView;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.account.ListUserNamesUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.StaffAccountRequest;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.Comparator;
-import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.CacheControl;
@@ -41,19 +36,16 @@ public class LoginAccountController implements LoginAccountsApi {
     private final ListLoginAccountsUseCase listLoginAccounts;
     private final CreateStaffLoginAccountUseCase createStaff;
     private final ChangeLoginAccountRoleUseCase changeRole;
-    private final ListUserNamesUseCase listUserNames;
     private final CurrentActorProvider currentActorProvider;
 
     public LoginAccountController(
             ListLoginAccountsUseCase listLoginAccounts,
             CreateStaffLoginAccountUseCase createStaff,
             ChangeLoginAccountRoleUseCase changeRole,
-            ListUserNamesUseCase listUserNames,
             CurrentActorProvider currentActorProvider) {
         this.listLoginAccounts = listLoginAccounts;
         this.createStaff = createStaff;
         this.changeRole = changeRole;
-        this.listUserNames = listUserNames;
         this.currentActorProvider = currentActorProvider;
     }
 
@@ -93,16 +85,6 @@ public class LoginAccountController implements LoginAccountsApi {
         LoginAccountPageResponse response = new LoginAccountPageResponse(
                 found.items().stream().map(LoginAccountController::view).toList(), MasterDataPages.metadata(found));
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(response);
-    }
-
-    @Override
-    @PreAuthorize("hasAnyAuthority('USER_MANAGE', 'AUDIT_VIEW')")
-    public ResponseEntity<UserNameListResponse> listUserNames(List<UUID> ids) {
-        List<UserNameView> items = listUserNames.listUserNames(ids).entrySet().stream()
-                .sorted(Comparator.comparing(entry -> entry.getKey().toString()))
-                .map(entry -> new UserNameView(entry.getKey(), entry.getValue()))
-                .toList();
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(new UserNameListResponse(items));
     }
 
     private static LoginAccountView view(LoginAccountSummary account) {

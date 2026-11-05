@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Anchor, Group, Stack, Title } from '@iplik/ui';
+import { Anchor, PageHero, Stack } from '@iplik/ui';
 import { Link, useParams } from 'react-router';
 import { ClaimOfDiscrepancy } from '@/modules/claim';
 import { QueryState } from '@/modules/shipment';
@@ -23,12 +23,10 @@ export function DiscrepancyDetailPage() {
           <Anchor component={Link} to="/panel/uyusmazliklar">
             {t('discrepancy.back')}
           </Anchor>
-          <Group justify="space-between">
-            <Title order={1} size="h2">
-              {discrepancy.discrepancyNo}
-            </Title>
-            <DiscrepancyBadges discrepancy={discrepancy} />
-          </Group>
+          <PageHero
+            title={discrepancy.discrepancyNo}
+            actions={<DiscrepancyBadges discrepancy={discrepancy} />}
+          />
           <Anchor component={Link} to={`/panel/sevkiyat/${discrepancy.shipmentId}`}>
             {t('discrepancy.openShipment')}
           </Anchor>

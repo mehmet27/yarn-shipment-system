@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Tabs, Title } from '@iplik/ui';
+import { PageHero, Stack, Tabs } from '@iplik/ui';
 import { RecordList } from '../components/RecordList';
 import { TareStandardsPanel } from '../components/TareStandardsPanel';
 import { MANAGED_KINDS } from '../kinds';
@@ -11,9 +11,7 @@ export function MasterDataPage() {
   const { t } = useTranslation();
   return (
     <Stack>
-      <Title order={1} size="h2">
-        {t('masterData.title')}
-      </Title>
+      <PageHero title={t('masterData.title')} />
       <Tabs defaultValue={MANAGED_KINDS[0]} keepMounted={false}>
         <Tabs.List>
           {MANAGED_KINDS.map((kind) => (

@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Text, Title } from '@iplik/ui';
+import { PageHero, Stack, Text } from '@iplik/ui';
 import { ListPagination, QueryState } from '@/modules/shipment';
 import { DiscrepancyCard } from '../components/DiscrepancyCard';
 import { useDiscrepancies } from '../hooks/useDiscrepancies';
@@ -18,9 +18,7 @@ export function DiscrepancyListPage() {
   });
   return (
     <Stack>
-      <Title order={1} size="h2">
-        {t('discrepancy.list.title')}
-      </Title>
+      <PageHero title={t('discrepancy.list.title')} />
       <DiscrepancyFilters filter={filter} />
       <QueryState query={query}>
         {(page) =>

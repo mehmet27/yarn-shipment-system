@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Select, Stack, Text, TextInput, Title } from '@iplik/ui';
+import { PageHero, Select, Stack, Text, TextInput } from '@iplik/ui';
 import { ListPagination, QueryState } from '@/modules/shipment';
 import { AUDIT_PAGE_SIZE, ENTITY_TYPES, useAuditFilter } from '../hooks/useAuditFilter';
 import { useAuditRecords } from '../hooks/useAuditLog';
@@ -18,9 +18,7 @@ export function AuditLogPage() {
   });
   return (
     <Stack>
-      <Title order={1} size="h2">
-        {t('audit.title')}
-      </Title>
+      <PageHero title={t('audit.title')} />
       <ChainCheckStatus />
       <Select
         label={t('audit.entityFilter')}

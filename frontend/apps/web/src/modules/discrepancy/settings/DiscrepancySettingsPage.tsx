@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Text, Title } from '@iplik/ui';
+import { PageHero, Stack } from '@iplik/ui';
 import { QueryState } from '@/modules/shipment';
 import { useDiscrepancySettings } from '../hooks/useDiscrepancySettings';
 import { SettingsForm } from './SettingsForm';
@@ -11,10 +11,10 @@ export function DiscrepancySettingsPage() {
   const query = useDiscrepancySettings();
   return (
     <Stack>
-      <Title order={1} size="h2">
-        {t('discrepancy.settings.title')}
-      </Title>
-      <Text c="dimmed">{t('discrepancy.settings.intro')}</Text>
+      <PageHero
+        title={t('discrepancy.settings.title')}
+        subtitle={t('discrepancy.settings.intro')}
+      />
       <QueryState query={query}>
         {(settings) => (
           <Stack>

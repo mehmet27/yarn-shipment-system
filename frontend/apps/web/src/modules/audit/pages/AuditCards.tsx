@@ -5,7 +5,13 @@ import { AuditActor } from './AuditActor';
 import { useActionLabel, useEntityLabel, useServiceLabel } from './auditText';
 
 /** Dar ekranda denetim kayıtları: tablo yerine her kayıt bir kart. */
-export function AuditCards({ records }: { records: AuditRecordView[] }) {
+export function AuditCards({
+  records,
+  names,
+}: {
+  records: AuditRecordView[];
+  names?: ReadonlyMap<string, string> | undefined;
+}) {
   const { t } = useTranslation();
   const actionLabel = useActionLabel();
   const entityLabel = useEntityLabel();
@@ -25,7 +31,7 @@ export function AuditCards({ records }: { records: AuditRecordView[] }) {
               {formatDateTime(record.occurredAt)}
             </Text>
             <Text size="sm">
-              <AuditActor actor={record.actor} /> ·{' '}
+              <AuditActor actor={record.actor} names={names} /> ·{' '}
               <span title={record.entity?.id}>{entityLabel(record.entity)}</span>
             </Text>
             <Text size="xs" c="dimmed" title={record.sourceService}>

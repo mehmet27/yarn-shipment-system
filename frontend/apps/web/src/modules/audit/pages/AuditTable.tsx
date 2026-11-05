@@ -1,6 +1,7 @@
 import type { AuditRecordView } from '@iplik/api-client/audit';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Badge, Table, useMediaQuery } from '@iplik/ui';
+import { useUserNames } from '../hooks/useUserNames';
 import { AuditActor } from './AuditActor';
 import { AuditCards } from './AuditCards';
 import { useActionLabel, useEntityLabel, useServiceLabel } from './auditText';
@@ -11,8 +12,11 @@ export function AuditTable({ records }: { records: AuditRecordView[] }) {
   const actionLabel = useActionLabel();
   const entityLabel = useEntityLabel();
   const serviceLabel = useServiceLabel();
+  const names = useUserNames(
+    records.flatMap((record) => (record.actor.userId === undefined ? [] : [record.actor.userId])),
+  ).data;
   const isDesktop = useMediaQuery('(min-width: 48em)', true, { getInitialValueInEffect: false });
-  if (!isDesktop) return <AuditCards records={records} />;
+  if (!isDesktop) return <AuditCards records={records} names={names} />;
   return (
     <Table.ScrollContainer minWidth={640}>
       <Table>
@@ -30,7 +34,7 @@ export function AuditTable({ records }: { records: AuditRecordView[] }) {
             <Table.Tr key={record.id}>
               <Table.Td>{formatDateTime(record.occurredAt)}</Table.Td>
               <Table.Td>
-                <AuditActor actor={record.actor} />
+                <AuditActor actor={record.actor} names={names} />
               </Table.Td>
               <Table.Td>
                 <span title={record.action}>{actionLabel(record.action)}</span>{' '}

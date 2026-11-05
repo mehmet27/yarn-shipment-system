@@ -686,6 +686,44 @@ paths:
           $ref: '#/components/responses/Conflict'
         '502':
           $ref: '#/components/responses/BadGateway'
+  /api/v1/master-data/user-names:
+    get:
+      tags: [UserNames]
+      operationId: listUserNames
+      summary: Kullanıcı kimliklerinin okunur adları
+      description: |
+        Denetim kaydı gibi ekranlarda kimliği ada çevirir. Yönetici (USER_MANAGE) ve denetim görüntüleyen roller
+        (AUDIT_VIEW) okur; yalnızca ad soyad (yoksa giriş adı) döner, telefon ve e-posta dönmez. Keycloak'ta
+        bulunmayan kimlik yanıtta olmaz. Keycloak'a ulaşılamazsa 502 `LOGIN_ACCOUNT_UNAVAILABLE`.
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          description: Kullanıcı kimlikleri (en çok 100)
+          schema:
+            type: array
+            minItems: 1
+            maxItems: 100
+            items:
+              type: string
+              format: uuid
+          style: form
+          explode: true
+      responses:
+        '200':
+          description: Adı bulunan kullanıcılar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserNameListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   /api/v1/master-data/login-accounts/{userId}/role:
     put:
       tags: [LoginAccounts]
@@ -2579,6 +2617,24 @@ components:
       properties:
         role:
           $ref: '#/components/schemas/StaffRole'
+    UserNameListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserNameView'
+    UserNameView:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Ad soyad; profilde yoksa giriş adı
     LoginAccountPageResponse:
       type: object
       required: [items, page]

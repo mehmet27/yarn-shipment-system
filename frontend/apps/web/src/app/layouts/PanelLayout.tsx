@@ -10,6 +10,7 @@ import {
   Text,
   useDisclosure,
 } from '@iplik/ui';
+import { BrandMark } from '@/modules/branding';
 import { Outlet } from 'react-router';
 import { ChangePasswordButton } from './ChangePasswordButton';
 import { LogoutButton } from './LogoutButton';
@@ -32,9 +33,7 @@ export function PanelLayout() {
         <Group h="100%" px="md" justify="space-between">
           <Group>
             <Burger opened={isNavOpen} onClick={toggle} hiddenFrom="sm" color="white" />
-            <Text fw={700} size="lg">
-              {t('app.name')}
-            </Text>
+            <BrandMark />
           </Group>
           <Group gap={0} wrap="nowrap">
             <Box visibleFrom="sm">

@@ -10,7 +10,7 @@ export type ShipmentStatusBadgeProps = {
 export function ShipmentStatusBadge({ status }: ShipmentStatusBadgeProps) {
   const { t } = useTranslation();
   return (
-    <Badge color={toStatusColor(status)} variant="light">
+    <Badge color={toStatusColor(status)} variant="light" data-testid="shipment-status">
       {t(`shipment.status.${status}`)}
     </Badge>
   );

@@ -76,6 +76,16 @@
     },
     "progress": {
       "label": "{{done}} / {{total}} adım",
+      "steps": "Sevkiyat süreci",
+      "step": {
+        "DRAFT": "Taslak",
+        "LOADED": "Yüklendi",
+        "IN_TRANSIT": "Yolda",
+        "AWAITING_DELIVERY": "Teslim",
+        "CHECKING": "Kontrol",
+        "COMPLETED": "Tamam"
+      },
+      "current": "Sıradaki adım: {{step}}",
       "cancelled": "İptal edildi"
     },
     "field": {
@@ -124,6 +134,7 @@
       "dispatchHidden": "Çıkış tartısı kör kontrol gereği gizli."
     },
     "history": {
+      "label": "Durum geçmişi",
       "empty": "Henüz durum geçişi yok."
     },
     "bags": {

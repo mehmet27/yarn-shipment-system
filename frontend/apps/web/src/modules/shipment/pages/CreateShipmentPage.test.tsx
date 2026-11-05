@@ -20,7 +20,7 @@ describe('CreateShipmentPage', () => {
     await pick('Şoför', 'Mert Kaya');
     await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
     expect(await screen.findByText('SVK-2026-0046')).toBeInTheDocument();
-    expect(screen.getByText('Taslak')).toBeInTheDocument();
+    expect(screen.getByText('Taslak', { selector: '.mantine-Badge-label' })).toBeInTheDocument();
   });
 
   it('fasoncu seçilmeden göndermeyi engeller', async () => {

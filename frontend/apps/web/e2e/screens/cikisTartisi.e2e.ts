@@ -16,7 +16,7 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
       await captureTicket(page);
       await expect(page.getByText('Fiş okundu')).toBeVisible();
       await page.getByRole('button', { name: 'Kaydet' }).click();
-      await expect(page.getByText('Yüklendi', { exact: true })).toBeVisible();
+      await expect(page.getByTestId('shipment-status')).toHaveText('Yüklendi');
     },
   );
 

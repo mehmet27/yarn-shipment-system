@@ -4,6 +4,7 @@ import { Stack, Table, Text } from '@iplik/ui';
 import type { Kilogram } from '@iplik/units';
 import { calculateDifferencePct, formatKg, formatPct } from '@iplik/units';
 import { TareDeviationRow } from './TareDeviationRow';
+import { WeightSummary } from './WeightSummary';
 import type { ShipmentWeighings } from './shipmentViews';
 
 export type WeightComparisonProps = {
@@ -30,6 +31,19 @@ function differencePct(dispatchNetKg?: Kilogram, deliveryNetKg?: Kilogram): stri
   return formatPct(calculateDifferencePct(dispatchNetKg, deliveryNetKg));
 }
 
+/** Özet kartlarında "Kaydedilmedi" yerine tire: üç kart yan yana dar ekrana sığar. */
+function summaryCell(value: string, notRecorded: string): string {
+  return value === notRecorded ? HIDDEN_CELL : value;
+}
+
+function differenceCell(
+  isHidden: boolean,
+  difference: string | undefined,
+  fallback: string,
+): string {
+  return isHidden ? HIDDEN_CELL : (difference ?? fallback);
+}
+
 export function WeightComparison({ weighings }: WeightComparisonProps) {
   const { t } = useTranslation();
   const { dispatchWeighing, deliveryWeighing, hidden } = weighings;
@@ -39,7 +53,12 @@ export function WeightComparison({ weighings }: WeightComparisonProps) {
   const difference = differencePct(dispatchWeighing?.netKg, deliveryWeighing?.netKg);
   const isAnyHidden = hidden.dispatch || hidden.delivery;
   return (
-    <Stack gap="xs" maw={640}>
+    <Stack gap="md" maw={760}>
+      <WeightSummary
+        dispatchNet={summaryCell(cell(dispatchWeighing, hidden.dispatch, 'netKg'), notRecorded)}
+        deliveryNet={summaryCell(cell(deliveryWeighing, hidden.delivery, 'netKg'), notRecorded)}
+        difference={summaryCell(differenceCell(isAnyHidden, difference, notRecorded), notRecorded)}
+      />
       <Table>
         <Table.Thead>
           <Table.Tr>
@@ -60,7 +79,7 @@ export function WeightComparison({ weighings }: WeightComparisonProps) {
           <Table.Tr>
             <Table.Th scope="row">{t('shipment.file.difference')}</Table.Th>
             <Table.Td colSpan={2} ta="right">
-              <Text fw={600}>{isAnyHidden ? HIDDEN_CELL : (difference ?? notRecorded)}</Text>
+              <Text fw={600}>{differenceCell(isAnyHidden, difference, notRecorded)}</Text>
             </Table.Td>
           </Table.Tr>
         </Table.Tbody>

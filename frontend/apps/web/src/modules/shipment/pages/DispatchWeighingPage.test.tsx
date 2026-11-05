@@ -32,7 +32,9 @@ describe('DispatchWeighingPage', () => {
     await captureTicket();
     expect(await screen.findByText('Fiş okundu')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
-    expect(await screen.findByText('Yüklendi')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Yüklendi', { selector: '.mantine-Badge-label' }),
+    ).toBeInTheDocument();
   });
 
   it('hatalı girişte kaydetmeden uyarır', async () => {

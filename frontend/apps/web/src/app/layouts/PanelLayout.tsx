@@ -1,6 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import {
   AppShell,
+  Box,
   BRAND_GRADIENT,
   BRAND_SIDEBAR_GRADIENT,
   Burger,
@@ -35,8 +36,10 @@ export function PanelLayout() {
               {t('app.name')}
             </Text>
           </Group>
-          <Group gap={0}>
-            <ChangePasswordButton />
+          <Group gap={0} wrap="nowrap">
+            <Box visibleFrom="sm">
+              <ChangePasswordButton />
+            </Box>
             <LogoutButton />
           </Group>
         </Group>
@@ -47,6 +50,9 @@ export function PanelLayout() {
             {t('nav.panel')}
           </Text>
           <PanelNav />
+          <Box hiddenFrom="sm" mt="md">
+            <ChangePasswordButton />
+          </Box>
         </Stack>
       </AppShell.Navbar>
       <AppShell.Main>

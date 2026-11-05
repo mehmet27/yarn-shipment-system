@@ -1,6 +1,6 @@
 import { SHIPMENT_STATUSES } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Button, Group, Select, Stack, Text, Title } from '@iplik/ui';
+import { Button, PageHero, Paper, Select, Stack, Text } from '@iplik/ui';
 import { Can } from '@/modules/auth';
 import { Link } from 'react-router';
 import { ListPagination } from '../components/ListPagination';
@@ -24,15 +24,17 @@ export function ShipmentListPage() {
 
   return (
     <Stack>
-      <Group justify="space-between">
-        <Title order={1} size="h2">
-          {t('shipment.list.title')}
-        </Title>
-        <Can permission="SHIPMENT_CREATE">
-          <Button component={Link} to="/panel/sevkiyat/yeni">
-            {t('create.open')}
-          </Button>
-        </Can>
+      <PageHero
+        title={t('shipment.list.title')}
+        actions={
+          <Can permission="SHIPMENT_CREATE">
+            <Button component={Link} to="/panel/sevkiyat/yeni" variant="white" color="brand">
+              {t('create.open')}
+            </Button>
+          </Can>
+        }
+      />
+      <Paper p="md" withBorder>
         <Select
           label={t('shipment.list.statusFilter')}
           placeholder={t('shipment.list.allStatuses')}
@@ -42,8 +44,9 @@ export function ShipmentListPage() {
             filter.setStatus(SHIPMENT_STATUSES.find((status) => status === value));
           }}
           clearable
+          maw={320}
         />
-      </Group>
+      </Paper>
       <QueryState query={query}>
         {(page) =>
           page.items.length === 0 ? (

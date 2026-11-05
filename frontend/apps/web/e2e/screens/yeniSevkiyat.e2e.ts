@@ -13,7 +13,7 @@ test.describe('Yeni sevkiyat', { tag: '@panel' }, () => {
       await pick(page, /Şoför/, 'Mert Kaya');
       await page.getByRole('button', { name: 'Taslak oluştur' }).click();
       await expect(page.getByRole('heading', { name: 'SVK-2026-0046' })).toBeVisible();
-      await expect(page.getByText('Taslak', { exact: true })).toBeVisible();
+      await expect(page.getByTestId('shipment-status')).toHaveText('Taslak');
     },
   );
 

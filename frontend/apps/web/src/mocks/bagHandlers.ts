@@ -102,6 +102,19 @@ export function createBagHandlers(permissions: readonly Permission[]) {
       bagsByLot.set(lot.lotId, [...created.map((bag) => ({ bag, printCount: 0 })), ...existing]);
       return HttpResponse.json({ bags: created }, { status: 201 });
     }),
+    http.post(`${BAGS_PATH}/void`, async ({ request }) => {
+      if (!canCreate) return forbidden();
+      const body = (await request.json()) as { uniqueKeys: string[]; reason: string };
+      const selected = allBags().filter((item) => body.uniqueKeys.includes(item.bag.uniqueKey));
+      if (selected.some((item) => !['CREATED', 'VOID'].includes(item.bag.status))) {
+        return problem(409, 'BAG_NOT_VOIDABLE', 'Yalnızca depodaki çuval iptal edilebilir');
+      }
+      const toVoid = selected.filter((item) => item.bag.status === 'CREATED');
+      toVoid.forEach((item) => {
+        item.bag = { ...item.bag, status: 'VOID' };
+      });
+      return HttpResponse.json({ voidedCount: toVoid.length });
+    }),
     http.post(`${BAGS_PATH}/labels`, async ({ request }) => {
       if (!canCreate) return forbidden();
       const body = (await request.json()) as PrintBody;

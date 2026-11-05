@@ -211,6 +211,7 @@ export {
   listLotBags,
   PackageType,
   printBagLabels,
+  voidBags,
 } from './bags';
 export type {
   BagView,
@@ -220,6 +221,8 @@ export type {
   LockedLotView,
   LotBagsResponse,
   PrintLabelsRequest,
+  VoidBagsRequest,
+  VoidBagsResponse,
 } from './bags';
 export { listTareStandards, saveTareStandard } from './masterData';
 export type {

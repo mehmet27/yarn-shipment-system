@@ -1,6 +1,7 @@
 import type { ShipmentDetail } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { PageHero, Paper, ProgressSteps, SimpleGrid, Stack, Text } from '@iplik/ui';
+import { FieldValueText } from './FieldValueText';
 import { toProgressDone } from './progressSteps';
 import { findBagCount, findSealNo } from './shipmentViews';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
@@ -40,13 +41,9 @@ export function FieldShipmentSummary({ shipment }: FieldShipmentSummaryProps) {
       <Paper withBorder p="md" radius="md">
         <SimpleGrid cols={2}>
           <Text c="dimmed">{t('field.bagCount')}</Text>
-          <Text fw={700} size="xl">
-            {text(findBagCount(shipment))}
-          </Text>
+          <FieldValueText field={findBagCount(shipment)} text={text} />
           <Text c="dimmed">{t('field.sealNo')}</Text>
-          <Text fw={700} size="xl">
-            {text(findSealNo(shipment))}
-          </Text>
+          <FieldValueText field={findSealNo(shipment)} text={text} />
         </SimpleGrid>
       </Paper>
     </Stack>

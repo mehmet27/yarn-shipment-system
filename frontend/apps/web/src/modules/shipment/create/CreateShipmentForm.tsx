@@ -5,7 +5,12 @@ import { useState } from 'react';
 import { useCreateShipment } from '../hooks/useCreateShipment';
 import { CreateFields } from './CreateFields';
 import type { CreateDraft, CreateError } from './createDraft';
-import { EMPTY_CREATE_DRAFT, toCreateRequest, validateCreate } from './createDraft';
+import {
+  EMPTY_CREATE_DRAFT,
+  toCreateRequest,
+  validateCreate,
+  validateCreateFields,
+} from './createDraft';
 
 export type CreateShipmentFormProps = { onCreated: (shipmentId: string) => void };
 
@@ -13,11 +18,13 @@ export type CreateShipmentFormProps = { onCreated: (shipmentId: string) => void 
 export function CreateShipmentForm({ onCreated }: CreateShipmentFormProps) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<CreateDraft>(EMPTY_CREATE_DRAFT);
-  const [error, setError] = useState<CreateError>();
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<'site' | 'subcontractor', CreateError>>
+  >({});
   const mutation = useCreateShipment();
   const submit = () => {
     const validation = validateCreate(draft);
-    setError(validation);
+    setFieldErrors(validateCreateFields(draft));
     const request = toCreateRequest(draft);
     if (validation === undefined && request !== undefined) {
       mutation.mutate(request, {
@@ -30,8 +37,7 @@ export function CreateShipmentForm({ onCreated }: CreateShipmentFormProps) {
   const failure = mutation.isError ? toProblem(mutation.error).code : undefined;
   return (
     <Stack>
-      <CreateFields draft={draft} onChange={setDraft} />
-      {error !== undefined && <Alert color="red">{t(`create.errors.${error}`)}</Alert>}
+      <CreateFields draft={draft} onChange={setDraft} errors={fieldErrors} />
       {failure !== undefined && (
         <Alert color="red">
           {t(failure === 'VALIDATION_FAILED' ? 'create.invalid' : 'create.failed')}

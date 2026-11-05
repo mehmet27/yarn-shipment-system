@@ -36,6 +36,7 @@ export function CreateBagsForm({ lotId, onCreated }: CreateBagsFormProps) {
     <Stack>
       <Group align="flex-end">
         <Select
+          w={{ base: '100%', sm: 'auto' }}
           label={t('bag.packageType')}
           data={PACKAGE_TYPES.map((value) => ({ value, label: t(`bag.packageTypes.${value}`) }))}
           value={packageType}
@@ -45,6 +46,7 @@ export function CreateBagsForm({ lotId, onCreated }: CreateBagsFormProps) {
           allowDeselect={false}
         />
         <NumberInput
+          w={{ base: '100%', sm: 'auto' }}
           label={t('bag.count')}
           min={1}
           max={MAX_COUNT}

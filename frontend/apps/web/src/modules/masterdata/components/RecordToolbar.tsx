@@ -20,8 +20,11 @@ export function RecordToolbar({
   const { t } = useTranslation();
   return (
     <Stack>
-      <Button onClick={onAdd}>{t('masterData.add')}</Button>
+      <Button onClick={onAdd} w={{ base: '100%', sm: 'fit-content' }}>
+        {t('masterData.add')}
+      </Button>
       <TextInput
+        maw={{ base: '100%', sm: 420 }}
         placeholder={t('masterData.search')}
         value={search}
         onChange={(event) => {

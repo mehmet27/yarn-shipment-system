@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Title } from '@iplik/ui';
+import { Button, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
+import { Link } from 'react-router';
 import { Can, useCurrentUser } from '@/modules/auth';
 import { DashboardSection } from '@/modules/report';
 
@@ -11,7 +12,24 @@ export function PanelHomePage() {
       <Title order={1} size="h2">
         {t('home.welcome', { name: user?.fullName ?? '' })}
       </Title>
-      <Can permission="REPORT_VIEW">
+      <Can
+        permission="REPORT_VIEW"
+        fallback={
+          <Stack>
+            <Text c="dimmed">{t('home.shortcuts')}</Text>
+            <SimpleGrid cols={{ base: 1, sm: 2 }}>
+              <Button component={Link} to="/panel/sevkiyat" size="lg" variant="light">
+                {t('nav.shipments')}
+              </Button>
+              <Can permission="BAG_CREATE">
+                <Button component={Link} to="/panel/cuvallar" size="lg" variant="light">
+                  {t('nav.bags')}
+                </Button>
+              </Can>
+            </SimpleGrid>
+          </Stack>
+        }
+      >
         <DashboardSection />
       </Can>
     </Stack>

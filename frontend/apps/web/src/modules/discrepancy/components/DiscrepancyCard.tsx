@@ -7,7 +7,14 @@ import { toSeverityColor } from './discrepancyColor';
 import { summaryOf } from './discrepancyText';
 
 /** Dar ekranda liste satırı: tek dokunuşla açılan büyük kart, solda önem rengi. */
-export function DiscrepancyCard({ discrepancy }: { discrepancy: DiscrepancyView }) {
+export function DiscrepancyCard({
+  discrepancy,
+  sequence,
+}: {
+  discrepancy: DiscrepancyView;
+  /** Aynı sevkiyatta aynı özetli birden çok kayıt varsa "2/4" gibi sıra bilgisi. */
+  sequence?: { index: number; total: number } | undefined;
+}) {
   const { t } = useTranslation();
   return (
     <Paper
@@ -30,7 +37,10 @@ export function DiscrepancyCard({ discrepancy }: { discrepancy: DiscrepancyView 
           </Text>
           <DiscrepancyBadges discrepancy={discrepancy} />
         </Group>
-        <Text fw={500}>{t(`discrepancy.type.${discrepancy.type}`)}</Text>
+        <Text fw={500}>
+          {t(`discrepancy.type.${discrepancy.type}`)}
+          {sequence === undefined ? '' : ` (${String(sequence.index)}/${String(sequence.total)})`}
+        </Text>
         <Text size="sm" c="dimmed">
           {[
             summaryOf(t, discrepancy),

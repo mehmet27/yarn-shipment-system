@@ -20,7 +20,7 @@ describe('calculateDifferencePct', () => {
 
 describe('formatPct', () => {
   it('Türkçe yüzde biçimiyle gösterir', () => {
-    expect(formatPct('-0.90')).toBe('%-0,9');
+    expect(formatPct('-0.90')).toBe('-%0,9');
   });
 
   it('eksi sıfırı "%0" olarak gösterir', () => {

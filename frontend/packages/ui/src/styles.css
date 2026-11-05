@@ -26,3 +26,18 @@ body {
 .panel-nav-link:not([data-active]):active {
   background-color: color-mix(in srgb, white 14%, transparent);
 }
+
+/* Soluk yazı ve ipuçları açık zeminde okunur kalsın (WCAG AA ~4.5:1): Mantine varsayılanı gray-6 yetersiz. */
+:root {
+  --mantine-color-dimmed: var(--mantine-color-gray-7);
+}
+
+.mantine-Input-input::placeholder,
+.mantine-Select-input::placeholder {
+  color: var(--mantine-color-gray-7);
+  opacity: 1;
+}
+
+.mantine-InputWrapper-description {
+  color: var(--mantine-color-gray-7);
+}

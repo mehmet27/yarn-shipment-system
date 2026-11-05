@@ -29,10 +29,10 @@ export function ShipmentCard({ shipment, to }: ShipmentCardProps) {
       }}
     >
       <Stack gap={4}>
-        <Group justify="space-between">
-          <Text fw={700} size="lg">
-            {shipment.shipmentNo}
-          </Text>
+        <Text fw={700} size="lg">
+          {shipment.shipmentNo}
+        </Text>
+        <Group>
           <ShipmentStatusBadge status={shipment.status} />
         </Group>
         <Text fw={500}>{shipment.subcontractorTitle}</Text>

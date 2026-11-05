@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Anchor, Stack, Text, Title } from '@iplik/ui';
+import { Alert, Anchor, PageHero, Stack, Text } from '@iplik/ui';
 import { usePermission } from '@/modules/auth';
 import { Link, useNavigate, useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
@@ -22,12 +22,7 @@ export function DeliveryReceiptPage() {
       <QueryState query={query}>
         {(shipment) => (
           <Stack>
-            <Stack gap={2}>
-              <Title order={1} size="h3">
-                {t('delivery.title')}
-              </Title>
-              <Text c="dimmed">{shipment.shipmentNo}</Text>
-            </Stack>
+            <PageHero title={t('delivery.title')} subtitle={shipment.shipmentNo} />
             {canRecord && (
               <Text size="sm" c="dimmed">
                 {t('delivery.blindHint')}

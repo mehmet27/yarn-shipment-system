@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Anchor, Stack, Text, Title } from '@iplik/ui';
+import { Anchor, PageHero, Paper, Stack } from '@iplik/ui';
 import { Link, useNavigate } from 'react-router';
 import { CreateShipmentForm } from '../create/CreateShipmentForm';
 
@@ -12,17 +12,14 @@ export function CreateShipmentPage() {
       <Anchor component={Link} to="/panel/sevkiyat">
         {t('create.back')}
       </Anchor>
-      <Stack gap={2}>
-        <Title order={1} size="h3">
-          {t('create.title')}
-        </Title>
-        <Text c="dimmed">{t('create.hint')}</Text>
-      </Stack>
-      <CreateShipmentForm
-        onCreated={(shipmentId) => {
-          void navigate(`/panel/sevkiyat/${shipmentId}`);
-        }}
-      />
+      <PageHero title={t('create.title')} subtitle={t('create.hint')} />
+      <Paper withBorder p="lg" radius="md" maw={560}>
+        <CreateShipmentForm
+          onCreated={(shipmentId) => {
+            void navigate(`/panel/sevkiyat/${shipmentId}`);
+          }}
+        />
+      </Paper>
     </Stack>
   );
 }

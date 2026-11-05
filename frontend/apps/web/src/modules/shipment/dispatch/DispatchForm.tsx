@@ -43,7 +43,7 @@ export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
     if (request !== undefined) mutation.mutate(request, { onSuccess: onSaved });
   };
   return (
-    <Stack maw={480}>
+    <Stack>
       <Text size="sm" c="dimmed">
         {t('dispatch.hint')}
       </Text>

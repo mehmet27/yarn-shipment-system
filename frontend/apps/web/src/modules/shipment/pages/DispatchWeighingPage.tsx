@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Anchor, Stack, Text, Title } from '@iplik/ui';
+import { Alert, Anchor, PageHero, Paper, Stack } from '@iplik/ui';
 import { Link, useNavigate, useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
 import { DispatchForm } from '../dispatch/DispatchForm';
@@ -20,19 +20,16 @@ export function DispatchWeighingPage() {
       <QueryState query={query}>
         {(shipment) => (
           <Stack>
-            <Stack gap={2}>
-              <Title order={1} size="h3">
-                {t('dispatch.title')}
-              </Title>
-              <Text c="dimmed">{shipment.shipmentNo}</Text>
-            </Stack>
+            <PageHero title={t('dispatch.title')} subtitle={shipment.shipmentNo} />
             {shipment.allowedActions.includes('RECORD_DISPATCH') ? (
-              <DispatchForm
-                shipmentId={shipment.shipmentId}
-                onSaved={() => {
-                  void navigate(back);
-                }}
-              />
+              <Paper withBorder p="lg" radius="md" maw={560}>
+                <DispatchForm
+                  shipmentId={shipment.shipmentId}
+                  onSaved={() => {
+                    void navigate(back);
+                  }}
+                />
+              </Paper>
             ) : (
               <Alert color="yellow">{t('dispatch.notDraft')}</Alert>
             )}

@@ -66,7 +66,7 @@ class ShipmentFileControllerTest {
         List<DispatchBag> bags = dispatch
                 ? List.of(new DispatchBag(UUID.randomUUID(), "K-1", PackageType.BAG, "LOT-1", "A", ScanMethod.SCAN, AT))
                 : null;
-        List<DeliveryScan> scans = delivery ? List.of(new DeliveryScan("K-1", true, ScanMethod.LIST, AT)) : null;
+        List<DeliveryScan> scans = delivery ? List.of(new DeliveryScan("K-1", true, ScanMethod.LIST, AT, null)) : null;
         when(getShipmentBagsUseCase.getBags(any())).thenReturn(new ShipmentBags(audience, bags, scans));
     }
 

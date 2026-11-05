@@ -803,6 +803,7 @@ export interface DeliveryScanView {
   scannedKey: string;
   /** Anahtar çıkış listesinde var mıydı; yalnızca INTERNAL görünümünde dolu olur */
   matched?: boolean;
+  packageType?: PackagingType;
   scanMethod: ScanMethod;
   scannedAt: string;
 }

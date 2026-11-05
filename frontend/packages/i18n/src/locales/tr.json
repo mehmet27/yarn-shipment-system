@@ -147,6 +147,7 @@
       "lot": "Lot",
       "matched": "Eşleşti",
       "unmatched": "Eşleşmedi",
+      "byType": "Türe göre: {{summary}}",
       "removeFromShipment": "Sevkiyattan çıkar",
       "removeFailed": "Çuval çıkarılamadı. Lütfen tekrar deneyin.",
       "assign": {

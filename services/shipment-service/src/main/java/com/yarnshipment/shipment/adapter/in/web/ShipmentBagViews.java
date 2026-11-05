@@ -52,6 +52,12 @@ final class ShipmentBagViews {
     private static DeliveryScanView toView(DeliveryScan scan, boolean showMatch) {
         DeliveryScanView view = new DeliveryScanView(
                 scan.scannedKey(), ScanMethod.valueOf(scan.scanMethod().name()), WebMappings.utc(scan.scannedAt()));
-        return showMatch ? view.matched(scan.matched()) : view;
+        if (!showMatch) {
+            return view;
+        }
+        if (scan.packageType() != null) {
+            view.packageType(PackagingType.valueOf(scan.packageType().name()));
+        }
+        return view.matched(scan.matched());
     }
 }

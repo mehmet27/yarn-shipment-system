@@ -2,13 +2,14 @@ import type { AuditRecordView } from '@iplik/api-client/audit';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Badge, Group, Paper, Stack, Text } from '@iplik/ui';
 import { AuditActor } from './AuditActor';
-import { useActionLabel, useEntityLabel } from './auditText';
+import { useActionLabel, useEntityLabel, useServiceLabel } from './auditText';
 
 /** Dar ekranda denetim kayıtları: tablo yerine her kayıt bir kart. */
 export function AuditCards({ records }: { records: AuditRecordView[] }) {
   const { t } = useTranslation();
   const actionLabel = useActionLabel();
   const entityLabel = useEntityLabel();
+  const serviceLabel = useServiceLabel();
   return (
     <Stack gap="sm">
       {records.map((record) => (
@@ -24,7 +25,11 @@ export function AuditCards({ records }: { records: AuditRecordView[] }) {
               {formatDateTime(record.occurredAt)}
             </Text>
             <Text size="sm">
-              <AuditActor actor={record.actor} /> · {entityLabel(record.entity)}
+              <AuditActor actor={record.actor} /> ·{' '}
+              <span title={record.entity?.id}>{entityLabel(record.entity)}</span>
+            </Text>
+            <Text size="xs" c="dimmed" title={record.sourceService}>
+              {t('audit.col.source')}: {serviceLabel(record.sourceService)}
             </Text>
           </Stack>
         </Paper>

@@ -440,12 +440,23 @@
       "Evidence": "Kanıt",
       "Discrepancy": "Uyuşmazlık"
     },
+    "service": {
+      "shipment-service": "Sevkiyat",
+      "bag-service": "Çuval",
+      "discrepancy-service": "Uyuşmazlık",
+      "evidence-service": "Kanıt (belge, fotoğraf)",
+      "master-data-service": "Tanımlar",
+      "notification-service": "Bildirim",
+      "reporting-service": "Rapor",
+      "audit-service": "Denetim",
+      "gateway": "Giriş kapısı"
+    },
     "col": {
       "time": "Zaman",
-      "actor": "Yapan",
-      "action": "İşlem",
-      "entity": "Kayıt",
-      "source": "Servis"
+      "actor": "İşlemi yapan",
+      "action": "Ne yapıldı",
+      "entity": "Hangi kayıt",
+      "source": "Hangi bölüm"
     },
     "chain": {
       "ok": "Zincir doğrulandı ({{at}}).",

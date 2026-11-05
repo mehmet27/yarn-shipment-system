@@ -3,13 +3,14 @@ import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Badge, Table, useMediaQuery } from '@iplik/ui';
 import { AuditActor } from './AuditActor';
 import { AuditCards } from './AuditCards';
-import { useActionLabel, useEntityLabel } from './auditText';
+import { useActionLabel, useEntityLabel, useServiceLabel } from './auditText';
 
 /** Denetim kayıtları: geniş ekranda tablo, dar ekranda kartlar. */
 export function AuditTable({ records }: { records: AuditRecordView[] }) {
   const { t } = useTranslation();
   const actionLabel = useActionLabel();
   const entityLabel = useEntityLabel();
+  const serviceLabel = useServiceLabel();
   const isDesktop = useMediaQuery('(min-width: 48em)', true, { getInitialValueInEffect: false });
   if (!isDesktop) return <AuditCards records={records} />;
   return (
@@ -37,8 +38,12 @@ export function AuditTable({ records }: { records: AuditRecordView[] }) {
                   <Badge color="red">{t('audit.denied')}</Badge>
                 ) : null}
               </Table.Td>
-              <Table.Td>{entityLabel(record.entity)}</Table.Td>
-              <Table.Td>{record.sourceService}</Table.Td>
+              <Table.Td>
+                <span title={record.entity?.id}>{entityLabel(record.entity)}</span>
+              </Table.Td>
+              <Table.Td>
+                <span title={record.sourceService}>{serviceLabel(record.sourceService)}</span>
+              </Table.Td>
             </Table.Tr>
           ))}
         </Table.Tbody>

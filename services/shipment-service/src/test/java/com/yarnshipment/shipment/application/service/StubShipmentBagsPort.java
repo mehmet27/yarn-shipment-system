@@ -30,6 +30,6 @@ final class StubShipmentBagsPort implements ShipmentBagsPort {
     @Override
     public List<DeliveryScan> findDeliveryScans(UUID shipmentId) {
         reads.add("delivery");
-        return List.of(new DeliveryScan("K-1", true, ScanMethod.SCAN, AT));
+        return List.of(new DeliveryScan("K-1", true, ScanMethod.SCAN, AT, null));
     }
 }

@@ -22,9 +22,11 @@ final class ShipmentBagsAdapter implements ShipmentBagsPort {
             WHERE shipment_id = ? AND removed_at IS NULL
             ORDER BY assigned_at, id""";
     private static final String SELECT_DELIVERY_SCANS = """
-            SELECT s.scanned_key, s.matched, s.scan_method, s.scanned_at
+            SELECT s.scanned_key, s.matched, s.scan_method, s.scanned_at, b.package_type
             FROM delivery_scan s
             JOIN delivery_receipt r ON r.id = s.delivery_receipt_id
+            LEFT JOIN shipment_bag b
+                ON b.shipment_id = r.shipment_id AND b.unique_key = s.scanned_key AND b.removed_at IS NULL
             WHERE r.shipment_id = ?
             ORDER BY s.scanned_at, s.id""";
 
@@ -62,10 +64,12 @@ final class ShipmentBagsAdapter implements ShipmentBagsPort {
     }
 
     private static DeliveryScan toDeliveryScan(ResultSet rs) throws SQLException {
+        String type = rs.getString("package_type");
         return new DeliveryScan(
                 rs.getString("scanned_key"),
                 rs.getBoolean("matched"),
                 ScanMethod.valueOf(rs.getString("scan_method")),
-                rs.getTimestamp("scanned_at").toInstant());
+                rs.getTimestamp("scanned_at").toInstant(),
+                type == null ? null : PackageType.valueOf(type));
     }
 }

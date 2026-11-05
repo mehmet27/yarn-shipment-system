@@ -3047,6 +3047,9 @@ components:
         matched:
           description: Anahtar çıkış listesinde var mıydı; yalnızca INTERNAL görünümünde dolu olur
           type: boolean
+        # Eşleşen çıkış çuvalının ambalaj türü; yalnızca INTERNAL görünümünde ve eşleşmede dolu olur
+        packageType:
+          $ref: '#/components/schemas/PackagingType'
         scanMethod:
           $ref: '#/components/schemas/ScanMethod'
         scannedAt:

@@ -1,7 +1,8 @@
 import type { DispatchBagView, ShipmentBagsResponse } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Badge, Button, Group, Paper, Stack, Text, Title } from '@iplik/ui';
-import { formatDateTime } from './formatDateTime';
+import { Button, Group, Paper, Stack, Text, Title } from '@iplik/ui';
+import { DeliveryScanRow } from './DeliveryScanRow';
+import { TypeSummary } from './TypeSummary';
 
 /** Backend'in verdiği listeler çizilir; hangisinin geleceğine rol değil yanıt karar verir. */
 export function BagSections({
@@ -18,6 +19,7 @@ export function BagSections({
       {dispatchBags !== undefined && (
         <Stack gap="xs">
           <Title order={5}>{t('shipment.bags.dispatch', { count: dispatchBags.length })}</Title>
+          <TypeSummary types={dispatchBags.map((bag) => bag.packageType)} />
           {dispatchBags.map((bag) => (
             <Paper key={bag.bagId} withBorder p="sm">
               <Group justify="space-between" wrap="nowrap">
@@ -46,18 +48,9 @@ export function BagSections({
       {deliveryScans !== undefined && (
         <Stack gap="xs">
           <Title order={5}>{t('shipment.bags.delivery', { count: deliveryScans.length })}</Title>
+          <TypeSummary types={deliveryScans.flatMap((scan) => scan.packageType ?? [])} />
           {deliveryScans.map((scan) => (
-            <Paper key={`${scan.scannedKey}-${scan.scannedAt}`} withBorder p="sm">
-              <Text fw={600}>{scan.scannedKey}</Text>
-              <Text size="sm" c="dimmed">
-                {formatDateTime(scan.scannedAt)}
-              </Text>
-              {scan.matched !== undefined && (
-                <Badge color={scan.matched ? 'green' : 'red'}>
-                  {t(scan.matched ? 'shipment.bags.matched' : 'shipment.bags.unmatched')}
-                </Badge>
-              )}
-            </Paper>
+            <DeliveryScanRow key={`${scan.scannedKey}-${scan.scannedAt}`} scan={scan} />
           ))}
         </Stack>
       )}

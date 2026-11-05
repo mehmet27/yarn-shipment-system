@@ -1,6 +1,6 @@
 package com.yarnshipment.shipment.application.port.out;
 
-import com.yarnshipment.shipment.domain.model.PackageType;
+import com.yarnshipment.shipment.domain.model.DispatchBag.PackageType;
 import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import java.util.Map;
 import java.util.UUID;

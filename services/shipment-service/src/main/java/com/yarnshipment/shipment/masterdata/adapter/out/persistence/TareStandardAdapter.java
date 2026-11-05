@@ -1,7 +1,7 @@
 package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 
 import com.yarnshipment.shipment.application.port.out.TareBasisPort;
-import com.yarnshipment.shipment.domain.model.PackageType;
+import com.yarnshipment.shipment.domain.model.DispatchBag.PackageType;
 import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import com.yarnshipment.shipment.masterdata.application.port.out.TareStandardPort;
 import com.yarnshipment.shipment.masterdata.domain.catalog.PackagingType;

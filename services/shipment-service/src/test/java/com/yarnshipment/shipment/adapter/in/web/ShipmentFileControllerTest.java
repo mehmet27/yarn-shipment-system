@@ -13,7 +13,7 @@ import com.yarnshipment.shipment.application.port.in.ShipmentBags;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.domain.model.DeliveryScan;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
-import com.yarnshipment.shipment.domain.model.PackageType;
+import com.yarnshipment.shipment.domain.model.DispatchBag.PackageType;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.model.StatusChange;

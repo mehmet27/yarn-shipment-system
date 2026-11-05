@@ -5,7 +5,7 @@ import com.yarnshipment.shipment.domain.bag.BagReservationException;
 import com.yarnshipment.shipment.domain.bag.BagReservationException.Reason;
 import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
 import com.yarnshipment.shipment.domain.bag.ReservedBag;
-import com.yarnshipment.shipment.domain.model.PackageType;
+import com.yarnshipment.shipment.domain.model.DispatchBag.PackageType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

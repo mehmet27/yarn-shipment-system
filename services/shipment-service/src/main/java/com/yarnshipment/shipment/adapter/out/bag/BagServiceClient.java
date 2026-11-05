@@ -6,7 +6,7 @@ import com.yarnshipment.shipment.domain.bag.BagReservationException;
 import com.yarnshipment.shipment.domain.bag.BagReservationException.Reason;
 import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
 import com.yarnshipment.shipment.domain.bag.ReservedBag;
-import com.yarnshipment.shipment.domain.model.PackageType;
+import com.yarnshipment.shipment.domain.model.DispatchBag.PackageType;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;

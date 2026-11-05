@@ -3,7 +3,7 @@ package com.yarnshipment.shipment.application.service;
 import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
 import com.yarnshipment.shipment.domain.model.DeliveryScan;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
-import com.yarnshipment.shipment.domain.model.PackageType;
+import com.yarnshipment.shipment.domain.model.DispatchBag.PackageType;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
 import java.time.Instant;
 import java.util.ArrayList;

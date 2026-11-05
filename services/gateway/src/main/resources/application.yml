@@ -47,6 +47,22 @@ spring:
               filters:
                 # Girişsiz uç: oturum çerezi servise gitmez, token da eklenmez.
                 - RemoveRequestHeader=Cookie
+            # Marka ayarı: okuma girişsizdir (giriş sayfası da markalı olsun), yazma oturumlu ve token'lıdır.
+            - id: branding-read
+              uri: ${SHIPMENT_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/v1/branding
+                - Method=GET
+              filters:
+                - RemoveRequestHeader=Cookie
+            - id: branding-write
+              uri: ${SHIPMENT_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/v1/branding
+                - Method=PUT
+              filters:
+                - RemoveRequestHeader=Cookie
+                - TokenRelay=
             - id: bag-service
               uri: ${BAG_SERVICE_URL:http://localhost:8084}
               predicates:

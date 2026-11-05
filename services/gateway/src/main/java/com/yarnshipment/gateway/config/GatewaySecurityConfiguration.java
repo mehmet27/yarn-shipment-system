@@ -9,6 +9,7 @@ import com.yarnshipment.gateway.web.ReturnToSuccessHandler;
 import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -30,6 +31,8 @@ public class GatewaySecurityConfiguration {
     private static final String LOGIN_PATH = "/oauth2/authorization/keycloak";
     /** Girişsiz çağrılan "şifremi unuttum" uçları; oturum ya da çerez taşımaz, bu yüzden CSRF dışıdır. */
     private static final String PASSWORD_RESET_PATHS = "/api/v1/password-reset/**";
+    /** Marka ayarının okunması girişsizdir; yazma (PUT) oturum ve CSRF ister. */
+    private static final String BRANDING_PATH = "/api/v1/branding";
 
     @Bean
     SecurityFilterChain gatewaySecurityFilterChain(
@@ -44,6 +47,8 @@ public class GatewaySecurityConfiguration {
         http.authorizeHttpRequests(requests -> requests.dispatcherTypeMatchers(DispatcherType.ERROR)
                         .permitAll()
                         .requestMatchers("/actuator/health/**", PASSWORD_RESET_PATHS)
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, BRANDING_PATH)
                         .permitAll()
                         .anyRequest()
                         .authenticated())

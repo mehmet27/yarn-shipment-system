@@ -36,6 +36,7 @@ tags:
   - name: LoginAccounts
   - name: LoginAccountAccess
   - name: PasswordReset
+  - name: Branding
   - name: CurrentUser
 security:
   - bearerAuth: []
@@ -787,6 +788,46 @@ paths:
           $ref: '#/components/responses/NotFound'
         '502':
           $ref: '#/components/responses/BadGateway'
+  /api/v1/branding:
+    get:
+      tags: [Branding]
+      operationId: getBranding
+      summary: Kurulumun marka ayarı (firma adı, ana renk, logo)
+      description: |
+        Girişsiz çağrılır; giriş sayfası da markalı olsun diye. Hiç kaydedilmemişse varsayılan ana renk döner (`companyName` ve `logoDataUrl` yoktur). Yanıt önbelleğe alınmaz.
+      security: []
+      responses:
+        '200':
+          description: Marka ayarı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandingView'
+    put:
+      tags: [Branding]
+      operationId: saveBranding
+      summary: Marka ayarını kaydeder
+      description: |
+        Yalnızca yönetici (SETTINGS_MANAGE). Tek kayıt vardır; tüm alanlar yazılır (boş bırakılan `companyName` ve `logoDataUrl` silinir). Aynı istek tekrarlanırsa sonuç değişmez. Ana renk `#rrggbb` olmalı; logo png, jpeg, webp ya da svg base64 data adresi ve en çok 200 000 karakterdir. Geçersiz değer `INVALID_MASTER_DATA`. Değişiklik denetim kaydına düşer.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandingSaveRequest'
+      responses:
+        '200':
+          description: Kaydedildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandingView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /api/v1/password-reset/request:
     post:
       tags: [PasswordReset]
@@ -2683,6 +2724,30 @@ components:
           $ref: '#/components/schemas/Kg'
         maxDeviationPct:
           $ref: '#/components/schemas/Pct'
+    BrandingView:
+      type: object
+      required: [primaryColor]
+      properties:
+        companyName:
+          type: string
+        primaryColor:
+          type: string
+          pattern: '^#[0-9a-f]{6}$'
+        logoDataUrl:
+          type: string
+    BrandingSaveRequest:
+      type: object
+      required: [primaryColor]
+      properties:
+        companyName:
+          type: string
+          maxLength: 80
+        primaryColor:
+          type: string
+          pattern: '^#[0-9a-fA-F]{6}$'
+        logoDataUrl:
+          type: string
+          maxLength: 200000
     TareStandardView:
       type: object
       required: [id, siteId, siteName, packagingType, standardTareKg, maxDeviationPct]

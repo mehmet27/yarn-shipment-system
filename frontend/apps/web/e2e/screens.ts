@@ -44,7 +44,7 @@ export const SCREENS: readonly Screen[] = [
     name: 'Çuval ve etiket',
     role: 'WAREHOUSE',
     path: '/panel/cuvallar',
-    ready: 'Partinin çuvalları',
+    ready: 'Partinin ambalajları',
   },
   { name: 'Uyuşmazlıklar', role: 'ADMIN', path: '/panel/uyusmazliklar', ready: 'Uyuşmazlıklar' },
   {

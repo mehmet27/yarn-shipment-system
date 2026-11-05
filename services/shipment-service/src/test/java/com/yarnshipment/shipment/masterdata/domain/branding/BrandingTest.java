@@ -25,7 +25,8 @@ class BrandingTest {
     @Test
     @DisplayName("Firma adının kenar boşlukları atılır")
     void shouldTrimName() {
-        assertThat(new Branding(" Gencer Fabric ", "#112233", LOGO).companyName()).isEqualTo("Gencer Fabric");
+        assertThat(new Branding(" Gencer Fabric ", "#112233", LOGO).companyName())
+                .isEqualTo("Gencer Fabric");
     }
 
     @Test
@@ -49,8 +50,8 @@ class BrandingTest {
                 .isInstanceOf(InvalidMasterDataException.class);
         assertThatThrownBy(() -> new Branding(null, "#112233", "https://example.com/logo.png"))
                 .isInstanceOf(InvalidMasterDataException.class);
-        assertThatThrownBy(() -> new Branding(
-                        null, "#112233", "data:image/png;base64," + "A".repeat(Branding.MAX_LOGO_LENGTH)))
+        assertThatThrownBy(() ->
+                        new Branding(null, "#112233", "data:image/png;base64," + "A".repeat(Branding.MAX_LOGO_LENGTH)))
                 .isInstanceOf(InvalidMasterDataException.class);
     }
 }

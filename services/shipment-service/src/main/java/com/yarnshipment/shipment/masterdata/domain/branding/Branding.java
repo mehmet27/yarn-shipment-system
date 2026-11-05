@@ -21,12 +21,13 @@ public record Branding(
     /** Marka ayarı kaydedilmemişse kullanılan ana renk (arayüzdeki varsayılanla aynıdır). */
     public static final String DEFAULT_COLOR = "#17527a";
 
-    public static final Branding DEFAULT = new Branding(null, DEFAULT_COLOR, null);
-
     static final int MAX_NAME_LENGTH = 80;
     static final int MAX_LOGO_LENGTH = 200_000;
     private static final Pattern COLOR = Pattern.compile("#[0-9a-fA-F]{6}");
     private static final Pattern LOGO = Pattern.compile("data:image/(png|jpeg|webp|svg\\+xml);base64,[A-Za-z0-9+/=]+");
+
+    /** Desenler tanımlandıktan sonra gelmeli: kurucu bunları kullanır (sınıf başlatma sırası). */
+    public static final Branding DEFAULT = new Branding(null, DEFAULT_COLOR, null);
 
     public Branding {
         Objects.requireNonNull(primaryColor, "primaryColor");

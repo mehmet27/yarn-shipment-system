@@ -21,12 +21,11 @@ describe('Denetim kaydı ekranı', () => {
     expect(router.state.location.search).toBe('?varlik=Evidence');
   });
 
-  it('yapan kişiyi UUID yerine rolüyle yazar', async () => {
+  it('yapan kişiyi UUID yerine ad soyadıyla yazar', async () => {
     server.use(...createHandlers('ADMIN'));
     renderApp('/panel/denetim');
-    expect(await screen.findAllByText('Depo')).not.toHaveLength(0);
+    expect(await screen.findAllByText('Ayşe Demir')).not.toHaveLength(0);
     expect(screen.queryByText(/00000000-0000-7000/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Depo ·/)).not.toBeInTheDocument();
   });
 
   it('izni olmayan rol sayfayı göremez', async () => {

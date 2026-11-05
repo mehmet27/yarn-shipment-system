@@ -535,6 +535,16 @@ export interface ChangeLoginAccountRoleRequest {
   role: StaffRole;
 }
 
+export interface UserNameView {
+  id: string;
+  /** Ad soyad; profilde yoksa giriş adı */
+  name: string;
+}
+
+export interface UserNameListResponse {
+  items: UserNameView[];
+}
+
 export interface LoginAccountPageResponse {
   items: LoginAccountView[];
   page: PageMetadata;
@@ -1066,6 +1076,15 @@ size?: SizeParameter;
 q?: SearchTextParameter;
 };
 
+export type ListUserNamesParams = {
+/**
+ * Kullanıcı kimlikleri (en çok 100)
+ * @minItems 1
+ * @maxItems 100
+ */
+ids: string[];
+};
+
 export type ListVehiclesParams = {
 /**
  * @minimum 0
@@ -1512,6 +1531,22 @@ export const createStaffLoginAccount = (
       {url: `/api/v1/master-data/login-accounts`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: staffLoginAccountRequest
+    },
+      );
+    }
+
+/**
+ * Denetim kaydı gibi ekranlarda kimliği ada çevirir. Yönetici (USER_MANAGE) ve denetim görüntüleyen roller
+ * (AUDIT_VIEW) okur; yalnızca ad soyad (yoksa giriş adı) döner, telefon ve e-posta dönmez. Keycloak'ta
+ * bulunmayan kimlik yanıtta olmaz. Keycloak'a ulaşılamazsa 502 `LOGIN_ACCOUNT_UNAVAILABLE`.
+ * @summary Kullanıcı kimliklerinin okunur adları
+ */
+export const listUserNames = (
+    params: ListUserNamesParams,
+ ) => {
+      return customInstance<UserNameListResponse>(
+      {url: `/api/v1/master-data/user-names`, method: 'GET',
+        params
     },
       );
     }
@@ -2185,6 +2220,7 @@ export type CreateDriverLoginAccountResult = NonNullable<Awaited<ReturnType<type
 export type CreateSubcontractorLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createSubcontractorLoginAccount>>>
 export type ListLoginAccountsResult = NonNullable<Awaited<ReturnType<typeof listLoginAccounts>>>
 export type CreateStaffLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createStaffLoginAccount>>>
+export type ListUserNamesResult = NonNullable<Awaited<ReturnType<typeof listUserNames>>>
 export type ChangeLoginAccountRoleResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountRole>>>
 export type ChangeLoginAccountEnabledResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountEnabled>>>
 export type StartLoginAccountPasswordResetResult = NonNullable<Awaited<ReturnType<typeof startLoginAccountPasswordReset>>>

@@ -7,4 +7,7 @@ export type {
   ListAuditRecordsParams,
 } from './generated/auditService';
 
+/** Denetim satırlarındaki kullanıcı kimliklerini ad soyada çevirir. */
+export { listUserNames } from './generated/shipmentService';
+
 export const AUDIT_LOG_PATH = '/api/v1/audit-log';

@@ -3,6 +3,8 @@ import type { AuditRecordView } from '@iplik/api-client/audit';
 import { AUDIT_LOG_PATH } from '@iplik/api-client/audit';
 import { http, HttpResponse } from 'msw';
 
+const USER_NAMES_PATH = '/api/v1/master-data/user-names';
+const MOCK_ACTOR_ID = '00000000-0000-7000-8000-0000000000aa';
 const BASE_TIME = Date.parse('2026-11-01T09:00:00Z');
 const ENTITIES = ['Shipment', 'Evidence', 'Discrepancy'] as const;
 const ACTIONS = ['shipment.dispatched', 'evidence.uploaded', 'discrepancy.opened'] as const;
@@ -14,7 +16,7 @@ const RECORDS: AuditRecordView[] = Array.from({ length: 25 }, (_, index) => ({
   recordedAt: new Date(BASE_TIME - index * 60_000 + 1000).toISOString(),
   sourceService: SERVICES[index % 3] ?? 'shipment-service',
   eventId: `00000000-0000-7000-8000-${String(index).padStart(12, '0')}`,
-  actor: { role: 'WAREHOUSE', userId: '00000000-0000-7000-8000-0000000000aa' },
+  actor: { role: 'WAREHOUSE', userId: MOCK_ACTOR_ID },
   action: ACTIONS[index % 3] ?? 'shipment.dispatched',
   entity: {
     type: ENTITIES[index % 3] ?? 'Shipment',
@@ -51,6 +53,13 @@ export function createAuditHandlers(permissions: readonly Permission[]) {
           totalElements: matching.length,
           totalPages: Math.ceil(matching.length / size),
         },
+      });
+    }),
+    http.get(USER_NAMES_PATH, ({ request }) => {
+      if (!canView) return forbidden();
+      const ids = new URL(request.url).searchParams.getAll('ids');
+      return HttpResponse.json({
+        items: ids.flatMap((id) => (id === MOCK_ACTOR_ID ? [{ id, name: 'Ayşe Demir' }] : [])),
       });
     }),
     http.get(`${AUDIT_LOG_PATH}/chain-checks`, () =>

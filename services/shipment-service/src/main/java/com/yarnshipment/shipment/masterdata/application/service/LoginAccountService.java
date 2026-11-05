@@ -7,6 +7,7 @@ import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateDr
 import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateSubcontractorLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.IssueActivationCodeUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ListUserNamesUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.LoginAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
@@ -16,8 +17,12 @@ import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
 import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -30,7 +35,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public final class LoginAccountService
-        implements CreateDriverLoginAccountUseCase, CreateSubcontractorLoginAccountUseCase, ListLoginAccountsUseCase {
+        implements CreateDriverLoginAccountUseCase,
+                CreateSubcontractorLoginAccountUseCase,
+                ListLoginAccountsUseCase,
+                ListUserNamesUseCase {
 
     private final LoginAccountTargetPort targets;
     private final LoginAccountPort accounts;
@@ -70,6 +78,21 @@ public final class LoginAccountService
         List<LoginAccountSummary> items =
                 matching.stream().skip(offset).limit(query.size()).toList();
         return new MasterDataPage<>(items, query.page(), query.size(), matching.size());
+    }
+
+    @Override
+    public Map<UUID, String> listUserNames(Collection<UUID> userIds) {
+        Map<String, UUID> wanted = new HashMap<>();
+        userIds.forEach(id -> wanted.put(id.toString(), id));
+        Map<UUID, String> names = new HashMap<>();
+        for (LoginAccountSummary account : accounts.findAll()) {
+            UUID userId = wanted.get(account.id().toLowerCase(Locale.ROOT));
+            if (userId != null) {
+                String fullName = account.fullName();
+                names.put(userId, fullName == null || fullName.isBlank() ? account.username() : fullName);
+            }
+        }
+        return names;
     }
 
     private void requireActiveSites(List<UUID> siteIds) {

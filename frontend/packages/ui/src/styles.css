@@ -20,3 +20,9 @@ body {
   white-space: normal;
   text-align: center;
 }
+
+/* Koyu yan menüde üzerine gelinen bağlantı: Mantine varsayılanı açık gri zemin verip beyaz yazıyı siliyordu. */
+.panel-nav-link:not([data-active]):hover,
+.panel-nav-link:not([data-active]):active {
+  background-color: color-mix(in srgb, white 14%, transparent);
+}

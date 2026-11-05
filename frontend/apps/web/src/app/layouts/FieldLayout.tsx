@@ -1,8 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { AppShell, BRAND_GRADIENT, Group, Text } from '@iplik/ui';
 import { Outlet } from 'react-router';
-import { ChangePasswordButton } from './ChangePasswordButton';
-import { LogoutButton } from './LogoutButton';
+import { UserMenu } from './UserMenu';
 
 const HEADER_HEIGHT_PX = 56;
 
@@ -14,10 +13,7 @@ export function FieldLayout() {
       <AppShell.Header c="white" style={{ background: BRAND_GRADIENT }}>
         <Group h="100%" px="sm" justify="space-between">
           <Text fw={700}>{t('nav.field')}</Text>
-          <Group gap={0}>
-            <ChangePasswordButton />
-            <LogoutButton />
-          </Group>
+          <UserMenu />
         </Group>
       </AppShell.Header>
       <AppShell.Main>

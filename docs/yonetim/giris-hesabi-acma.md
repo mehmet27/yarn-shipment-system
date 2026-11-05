@@ -107,3 +107,12 @@ Bağlantıyı Keycloak giriş teması `yarnshipment` ekler (`deploy/keycloak/the
 dosyası temayı seçer. Daha önce kurulmuş Keycloak'ta **Realm settings → Themes → Login theme = yarnshipment** seçin
 (tema dosyaları docker-compose ile bağlanır). Bağlantının gideceği adres `resources/js/frontend-config.js` içindeki
 `FRONTEND_URL` değeridir; canlıda bunu uygulamanın adresiyle değiştirin.
+
+### Giriş ve şifre değiştirme ekranlarının görünümü
+
+Aynı `yarnshipment` teması iki ekranın da görünümünü uygulamayla eşler (`resources/js/branding.js`): marka gradyanlı
+arka plan, beyaz kart, marka renkli düğme ve firma adı. Renk ve ad `resources/js/frontend-config.js` içindeki
+`YARNSHIPMENT_BRAND_COLOR` ve `YARNSHIPMENT_BRAND_NAME` değerlerinden gelir. Her firmanın kurulumunda bu iki değeri,
+uygulamadaki **Görünüm** ekranında seçilen renk ve adla aynı yapın; Keycloak sayfası uygulamanın dışında olduğu için
+ekrandaki değişiklik oraya kendiliğinden yansımaz. Stil PatternFly 5 sınıflarına bağlıdır (Keycloak 26.x); Keycloak'ı
+yükseltirken giriş ekranına bir kez bakın.

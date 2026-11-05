@@ -1,10 +1,20 @@
 import type { ShipmentDetail } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Group, Paper, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
+import { Group, Paper, ProgressSteps, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
 import { findDriverName, findSealNo } from './shipmentViews';
 import { useFieldText } from './useFieldText';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
+import { toProgressDone } from './progressSteps';
 import { toStatusColor } from './statusColor';
+
+const STEP_STATUSES = [
+  'DRAFT',
+  'LOADED',
+  'IN_TRANSIT',
+  'AWAITING_DELIVERY',
+  'CHECKING',
+  'COMPLETED',
+] as const;
 
 export type ShipmentHeaderProps = {
   shipment: ShipmentDetail;
@@ -33,6 +43,16 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
           </Title>
           <ShipmentStatusBadge status={shipment.status} />
         </Group>
+        {shipment.status === 'CANCELLED' ? null : (
+          <ProgressSteps
+            label={t('shipment.progress.steps')}
+            steps={STEP_STATUSES.map((status) => t(`shipment.progress.step.${status}`))}
+            current={toProgressDone(shipment.status) - 1}
+          />
+        )}
+        <Text c="brand.8" fw={600}>
+          {t('shipment.progress.current', { step: t(`shipment.nextStep.${shipment.status}`) })}
+        </Text>
         <SimpleGrid cols={{ base: 2, md: 4 }}>
           {facts.map(({ labelKey, value }) => (
             <Stack key={labelKey} gap={2}>

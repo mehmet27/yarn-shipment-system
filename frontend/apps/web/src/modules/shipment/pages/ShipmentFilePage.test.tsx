@@ -12,7 +12,9 @@ describe('ShipmentFilePage', () => {
     const netRow = screen.getByRole('row', { name: /Net/ });
     expect(within(netRow).getByText('1.982,5 kg')).toBeInTheDocument();
     expect(within(netRow).getByText('1.968 kg')).toBeInTheDocument();
-    expect(screen.getByText('%-0,73')).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('row', { name: /Fark/ })).getByText('%-0,73'),
+    ).toBeInTheDocument();
   });
 
   it('teslim tartımı yoksa farkı hesaplamaz', async () => {

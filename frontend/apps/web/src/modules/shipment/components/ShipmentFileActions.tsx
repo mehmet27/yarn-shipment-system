@@ -1,6 +1,6 @@
 import type { ShipmentAction } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Button } from '@iplik/ui';
+import { ActionBar, Button } from '@iplik/ui';
 import { Link } from 'react-router';
 import { CancelShipmentForm } from './CancelShipmentForm';
 
@@ -16,9 +16,11 @@ export function ShipmentFileActions({
   return (
     <>
       {actions.includes('RECORD_DISPATCH') && (
-        <Button component={Link} to="cikis" relative="path" w="fit-content">
-          {t('shipment.file.recordDispatch')}
-        </Button>
+        <ActionBar>
+          <Button component={Link} to="cikis" relative="path">
+            {t('shipment.file.recordDispatch')}
+          </Button>
+        </ActionBar>
       )}
       {actions.includes('CANCEL') && <CancelShipmentForm shipmentId={shipmentId} />}
     </>

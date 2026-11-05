@@ -13,7 +13,8 @@ import java.util.UUID;
 /** Çuval servisini taklit eder: istenen anahtarları ve bırakılan sevkiyatları kaydeder, istenirse reddeder. */
 final class RecordingBagReservationPort implements BagReservationPort {
 
-    private static final ReservedBag BAG = new ReservedBag(UUID.randomUUID(), "BAG-0001", PackageType.BAG, "P-2026-0001", "A");
+    private static final ReservedBag BAG =
+            new ReservedBag(UUID.randomUUID(), "BAG-0001", PackageType.BAG, "P-2026-0001", "A");
 
     private final List<String> reservedKeys = new ArrayList<>();
     private final List<UUID> released = new ArrayList<>();

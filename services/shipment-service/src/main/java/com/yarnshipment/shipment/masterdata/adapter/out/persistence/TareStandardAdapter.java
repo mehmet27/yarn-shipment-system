@@ -97,8 +97,8 @@ final class TareStandardAdapter implements TareStandardPort, TareBasisPort {
                         rs.getBigDecimal("standard_tare_kg"),
                         rs.getBigDecimal("max_deviation_pct")))
                 .list()) {
-            BigDecimal typeExpected = standard.tareKg()
-                    .multiply(BigDecimal.valueOf(packageCounts.getOrDefault(standard.type(), 0)));
+            BigDecimal typeExpected =
+                    standard.tareKg().multiply(BigDecimal.valueOf(packageCounts.getOrDefault(standard.type(), 0)));
             expected = expected.add(typeExpected);
             weightedPct = weightedPct.add(typeExpected.multiply(standard.maxDeviationPct()));
         }

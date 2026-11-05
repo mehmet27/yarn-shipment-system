@@ -9,6 +9,7 @@ export {
   Button,
   Center,
   Checkbox,
+  ColorInput,
   Container,
   FileButton,
   Group,

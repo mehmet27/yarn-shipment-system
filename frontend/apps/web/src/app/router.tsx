@@ -1,6 +1,7 @@
 import { RequireAuth, RequirePermission } from '@/modules/auth';
 import { auditPanelRoutes } from '@/modules/audit';
 import { bagPanelRoutes } from '@/modules/bag';
+import { brandingPanelRoutes } from '@/modules/branding';
 import { discrepancyPanelRoutes } from '@/modules/discrepancy';
 import { ForgotPasswordPage } from '@/modules/passwordreset';
 import { masterDataPanelRoutes } from '@/modules/masterdata';
@@ -39,6 +40,7 @@ const routes: RouteObject[] = [
       { index: true, element: <PanelHomePage /> },
       ...shipmentPanelRoutes,
       ...discrepancyPanelRoutes,
+      ...brandingPanelRoutes,
       ...masterDataPanelRoutes,
       ...bagPanelRoutes,
       ...usersPanelRoutes,

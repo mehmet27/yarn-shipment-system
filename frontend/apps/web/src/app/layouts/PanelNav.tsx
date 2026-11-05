@@ -35,6 +35,12 @@ const ITEMS: readonly PanelNavItem[] = [
     icon: 'settings',
     permission: 'SETTINGS_MANAGE',
   },
+  {
+    to: '/panel/gorunum',
+    labelKey: 'nav.branding',
+    icon: 'settings',
+    permission: 'SETTINGS_MANAGE',
+  },
   { to: '/panel/denetim', labelKey: 'nav.audit', icon: 'audit', permission: 'AUDIT_VIEW' },
   { to: '/panel/kullanicilar', labelKey: 'nav.users', icon: 'users', permission: 'USER_MANAGE' },
 ];

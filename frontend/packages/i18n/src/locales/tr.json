@@ -24,7 +24,8 @@
     "lots": "Partiler",
     "users": "Kullanıcılar",
     "reports": "Raporlar",
-    "audit": "Denetim kaydı"
+    "audit": "Denetim kaydı",
+    "branding": "Görünüm"
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}"
@@ -410,7 +411,11 @@
     "all": "Hepsi",
     "empty": "Denetim kaydı yok.",
     "denied": "Reddedildi",
-    "entity": { "Shipment": "Sevkiyat", "Evidence": "Kanıt", "Discrepancy": "Uyuşmazlık" },
+    "entity": {
+      "Shipment": "Sevkiyat",
+      "Evidence": "Kanıt",
+      "Discrepancy": "Uyuşmazlık"
+    },
     "col": {
       "time": "Zaman",
       "actor": "Yapan",
@@ -1037,6 +1042,43 @@
       "WEAK_PASSWORD": "Şifre kurallara uymuyor; daha uzun ve tahmin edilmesi zor bir şifre seçin.",
       "SMS_UNAVAILABLE": "SMS şu an gönderilemiyor. Lütfen biraz sonra tekrar deneyin.",
       "unknown": "İşlem yapılamadı. Lütfen tekrar deneyin."
+    }
+  },
+  "branding": {
+    "title": "Görünüm ve marka",
+    "intro": "Uygulamanın rengini, firma adını ve logosunu bu kurulum için belirleyin. Değişiklik herkese hemen yansır.",
+    "companyName": "Firma adı",
+    "companyNameHint": "Üst barda ve giriş sayfasında görünür. Boş bırakırsanız ürün adı kullanılır.",
+    "primaryColor": "Ana renk",
+    "primaryColorHint": "Menü, başlık ve düğme tonları bu renkten üretilir. Metin okunabilirliği için gerekirse otomatik koyulaştırılır.",
+    "logo": {
+      "label": "Logo",
+      "none": "Logo seçilmedi.",
+      "alt": "Seçili logo",
+      "choose": "Logo seç",
+      "change": "Logoyu değiştir",
+      "remove": "Logoyu kaldır",
+      "hint": "PNG, JPEG, WEBP veya SVG; en çok {{kb}} KB.",
+      "errors": {
+        "type": "Yalnızca PNG, JPEG, WEBP veya SVG yüklenebilir.",
+        "size": "Logo en çok {{kb}} KB olabilir.",
+        "read": "Dosya okunamadı; başka bir dosya deneyin."
+      }
+    },
+    "preview": {
+      "title": "Önizleme",
+      "sample": "Örnek ekran",
+      "button": "Örnek düğme"
+    },
+    "submit": "Kaydet",
+    "reset": "Varsayılana dön",
+    "saved": "Görünüm kaydedildi.",
+    "failed": "Görünüm kaydedilemedi; tekrar deneyin.",
+    "loadFailed": "Görünüm ayarı yüklenemedi.",
+    "errors": {
+      "color": "Rengi #rrggbb biçiminde girin.",
+      "name": "Firma adı en çok 80 karakter olabilir.",
+      "invalid": "Girilen değerler geçersiz; renk ve logoyu kontrol edin."
     }
   }
 }

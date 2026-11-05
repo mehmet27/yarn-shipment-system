@@ -21,7 +21,7 @@ test.describe('Saha: şoför', { tag: '@saha' }, () => {
       await openAs('DRIVER', '/saha/sevkiyat/shp-0010');
       await page.getByRole('button', { name: 'Yükü teslim aldım' }).click();
       await page.getByRole('dialog').getByRole('button', { name: 'Evet, teslim aldım' }).click();
-      await expect(page.getByText('Yolda', { exact: true })).toBeVisible();
+      await expect(page.getByTestId('shipment-status')).toHaveText('Yolda');
       await page.getByRole('button', { name: 'Vardım, mühür sağlam' }).click();
       await expect(page.getByText('Teslim bekliyor', { exact: true })).toBeVisible();
     },
@@ -40,6 +40,6 @@ test.describe('Saha: şoför', { tag: '@saha' }, () => {
     await expect(dialog).toContainText('Bu adım geri alınamaz.');
     await dialog.getByRole('button', { name: 'Vazgeç' }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(page.getByText('Yüklendi', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('shipment-status')).toHaveText('Yüklendi');
   });
 });

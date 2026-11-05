@@ -2,14 +2,13 @@ import { usePermission } from '@/modules/auth';
 import { QualityClaimsSection } from '@/modules/claim';
 import { EvidenceUpload } from '@/modules/evidence';
 import { useTranslation } from '@iplik/i18n';
-import { Anchor, Button, Group, Paper, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
+import { ActionBar, Anchor, Button, Stack } from '@iplik/ui';
 import { Link, useParams } from 'react-router';
 import { ArrivalDeclaration } from '../components/ArrivalDeclaration';
 import { PickupConfirmation } from '../components/PickupConfirmation';
 import { QueryState } from '../components/QueryState';
-import { findBagCount, findSealNo, isDelivered } from '../components/shipmentViews';
-import { ShipmentStatusBadge } from '../components/ShipmentStatusBadge';
-import { useFieldText } from '../components/useFieldText';
+import { FieldShipmentSummary } from '../components/FieldShipmentSummary';
+import { isDelivered } from '../components/shipmentViews';
 import { useShipment } from '../hooks/useShipment';
 
 /** Şoför ekranı: yalnızca çuval sayısı ve mühür no (yetkilendirme Y1); kilo hiç gelmez. */
@@ -17,7 +16,6 @@ export function FieldShipmentPage() {
   const { t } = useTranslation();
   const { shipmentId = '' } = useParams();
   const query = useShipment(shipmentId);
-  const text = useFieldText();
   const canViewClaims = usePermission('DISCREPANCY_VIEW');
   return (
     <Stack>
@@ -27,25 +25,7 @@ export function FieldShipmentPage() {
       <QueryState query={query}>
         {(shipment) => (
           <Stack>
-            <Group justify="space-between">
-              <Title order={1} size="h3">
-                {shipment.shipmentNo}
-              </Title>
-              <ShipmentStatusBadge status={shipment.status} />
-            </Group>
-            <Text>{shipment.subcontractorTitle}</Text>
-            <Paper withBorder p="md">
-              <SimpleGrid cols={2}>
-                <Text c="dimmed">{t('field.bagCount')}</Text>
-                <Text fw={700} size="xl">
-                  {text(findBagCount(shipment))}
-                </Text>
-                <Text c="dimmed">{t('field.sealNo')}</Text>
-                <Text fw={700} size="xl">
-                  {text(findSealNo(shipment))}
-                </Text>
-              </SimpleGrid>
-            </Paper>
+            <FieldShipmentSummary shipment={shipment} />
             {shipment.allowedActions.includes('CONFIRM_PICKUP') && (
               <PickupConfirmation shipmentId={shipment.shipmentId} />
             )}
@@ -54,9 +34,11 @@ export function FieldShipmentPage() {
             )}
             <EvidenceUpload shipmentId={shipment.shipmentId} />
             {shipment.allowedActions.includes('RECORD_DELIVERY') && (
-              <Button size="xl" fullWidth component={Link} to="teslim" relative="path">
-                {t('field.recordDelivery')}
-              </Button>
+              <ActionBar>
+                <Button size="xl" fullWidth component={Link} to="teslim" relative="path">
+                  {t('field.recordDelivery')}
+                </Button>
+              </ActionBar>
             )}
             {canViewClaims && isDelivered(shipment) && (
               <QualityClaimsSection shipmentId={shipment.shipmentId} />

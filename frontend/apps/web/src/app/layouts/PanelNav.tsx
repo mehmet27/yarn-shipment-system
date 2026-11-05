@@ -47,8 +47,13 @@ const ITEMS: readonly PanelNavItem[] = [
 
 const NAV_LINK_STYLES = { label: { fontWeight: 500 } } as const;
 
+export type PanelNavProps = {
+  /** Bir bağlantıya tıklanınca çağrılır; mobilde menüyü kapatmak için. */
+  readonly onNavigate: () => void;
+};
+
 /** Panel yan menüsü: her bağlantı yalnızca yetkisi olan kullanıcıya görünür. */
-export function PanelNav() {
+export function PanelNav({ onNavigate }: PanelNavProps) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   return ITEMS.map((item) => {
@@ -57,6 +62,7 @@ export function PanelNav() {
         key={item.to}
         component={RouterNavLink}
         to={item.to}
+        onClick={onNavigate}
         label={t(item.labelKey)}
         leftSection={<NavIcon name={item.icon} />}
         active={pathname.startsWith(item.to)}

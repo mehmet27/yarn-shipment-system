@@ -16,6 +16,7 @@
   },
   "nav": {
     "panel": "Yönetim Paneli",
+    "toggle": "Yan menü",
     "field": "Saha",
     "shipments": "Sevkiyatlar",
     "masterData": "Tanımlar",

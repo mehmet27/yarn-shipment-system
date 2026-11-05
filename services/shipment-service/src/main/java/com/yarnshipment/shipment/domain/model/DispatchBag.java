@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.domain.model;
 
+import com.yarnshipment.shipment.domain.packaging.PackageType;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -23,14 +24,6 @@ public record DispatchBag(
         String qualityGradeCode,
         ScanMethod scanMethod,
         Instant assignedAt) {
-
-    /** Ambalaj türü; bag-service'teki türle aynı değerleri taşır. Standart dara türe göre seçilir. */
-    public enum PackageType {
-        BAG,
-        BOX,
-        PALLET,
-        BOBBIN
-    }
 
     public DispatchBag {
         Objects.requireNonNull(bagId, "bagId");

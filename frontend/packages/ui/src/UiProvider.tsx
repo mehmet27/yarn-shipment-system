@@ -8,7 +8,7 @@ export type UiProviderProps = {
   /** Testlerde geçiş animasyonlarını ve portal'ları kapatır. */
   env?: 'default' | 'test';
   /** Kurulumun marka rengi (`#rrggbb`); verilmezse varsayılan renk kullanılır. */
-  brandColor?: string;
+  brandColor?: string | undefined;
 };
 
 export function UiProvider({ children, env = 'default', brandColor }: UiProviderProps) {

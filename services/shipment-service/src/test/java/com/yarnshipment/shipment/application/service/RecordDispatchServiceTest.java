@@ -16,13 +16,15 @@ import com.yarnshipment.shipment.domain.model.DeliveryScan;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
+import com.yarnshipment.shipment.domain.model.PackageType;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,11 +40,15 @@ class RecordDispatchServiceTest {
     private final FixedBagCountPort bagsPort =
             new FixedBagCountPort(TestDispatches.measurement().bagCount());
     private boolean hasTareStandard;
+    private Map<PackageType, Integer> lastCounts = Map.of();
     private final RecordDispatchService service = new RecordDispatchService(
             new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
             commandPort,
             bagsPort,
-            (siteId, bagCount) -> hasTareStandard ? TestDispatches.tareBasis(bagCount) : null,
+            (siteId, counts) -> {
+                lastCounts = counts;
+                return hasTareStandard ? TestDispatches.tareBasis(total(counts)) : null;
+            },
             clock);
     private final Actor warehouse = TestTokens.actor("warehouse");
 
@@ -119,6 +125,22 @@ class RecordDispatchServiceTest {
     }
 
     @Test
+    @DisplayName("Dara standardı sevkiyattaki ambalajların türüne göre sorulur")
+    void shouldAskTareBasisPerPackageType() {
+        queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
+        int total = TestDispatches.measurement().bagCount();
+        bagsPort.boxes = 1;
+
+        service.recordDispatch(command(warehouse));
+
+        assertThat(lastCounts).containsEntry(PackageType.BOX, 1).containsEntry(PackageType.BAG, total - 1);
+    }
+
+    private static int total(Map<PackageType, Integer> counts) {
+        return counts.values().stream().mapToInt(Integer::intValue).sum();
+    }
+
+    @Test
     @DisplayName("Lokasyonun çuval standardı varsa çıkış tartımına beklenen dara ve sapma eklenir")
     void shouldAttachTareBasis() {
         queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
@@ -148,6 +170,7 @@ class RecordDispatchServiceTest {
 
     private static final class FixedBagCountPort implements ShipmentBagsPort {
         private int assigned;
+        private int boxes;
 
         FixedBagCountPort(int assigned) {
             this.assigned = assigned;
@@ -155,8 +178,12 @@ class RecordDispatchServiceTest {
 
         @Override
         public List<DispatchBag> findDispatchBags(UUID shipmentId) {
-            return Collections.nCopies(
-                    assigned, new DispatchBag(UUID.randomUUID(), "K", "L", "A", ScanMethod.SCAN, NOW));
+            List<DispatchBag> bags = new ArrayList<>();
+            for (int index = 0; index < assigned; index++) {
+                PackageType type = index < boxes ? PackageType.BOX : PackageType.BAG;
+                bags.add(new DispatchBag(UUID.randomUUID(), "K", type, "L", "A", ScanMethod.SCAN, NOW));
+            }
+            return bags;
         }
 
         @Override

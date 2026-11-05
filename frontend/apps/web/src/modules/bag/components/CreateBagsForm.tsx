@@ -5,6 +5,7 @@ import { Alert, Button, Group, NumberInput, Select, Stack } from '@iplik/ui';
 import { useState } from 'react';
 import { useCreateBags } from '../hooks/useCreateBags';
 import { bagErrorKey } from './bagErrors';
+import { CreatedNotice } from './CreatedNotice';
 
 const PACKAGE_TYPES = Object.values(PackageTypes);
 const MAX_COUNT = 200;
@@ -58,13 +59,11 @@ export function CreateBagsForm({ lotId, onCreated }: CreateBagsFormProps) {
           }}
         />
         <Button onClick={submit} loading={mutation.isPending} disabled={count === ''}>
-          {t('bag.create')}
+          {t('bag.create', { item: t(`bag.packageTypes.${packageType}`) })}
         </Button>
       </Group>
       {mutation.isSuccess && (
-        <Alert color="green" role="status">
-          {t('bag.created', { count: mutation.data.length })}
-        </Alert>
+        <CreatedNotice count={mutation.data.length} packageType={mutation.variables.packageType} />
       )}
       {mutation.isError && (
         <Alert color="red" role="alert">

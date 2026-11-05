@@ -5,6 +5,7 @@ import com.yarnshipment.shipment.domain.bag.BagReservationException;
 import com.yarnshipment.shipment.domain.bag.BagReservationException.Reason;
 import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
 import com.yarnshipment.shipment.domain.bag.ReservedBag;
+import com.yarnshipment.shipment.domain.model.PackageType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -12,7 +13,7 @@ import java.util.UUID;
 /** Çuval servisini taklit eder: istenen anahtarları ve bırakılan sevkiyatları kaydeder, istenirse reddeder. */
 final class RecordingBagReservationPort implements BagReservationPort {
 
-    private static final ReservedBag BAG = new ReservedBag(UUID.randomUUID(), "BAG-0001", "P-2026-0001", "A");
+    private static final ReservedBag BAG = new ReservedBag(UUID.randomUUID(), "BAG-0001", PackageType.BAG, "P-2026-0001", "A");
 
     private final List<String> reservedKeys = new ArrayList<>();
     private final List<UUID> released = new ArrayList<>();

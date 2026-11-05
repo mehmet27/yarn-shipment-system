@@ -7,15 +7,17 @@ import { bagErrorKey } from './bagErrors';
 export type PrintLabelsBarProps = {
   uniqueKeys: string[];
   /** Seçilenlerden en az birinin etiketi daha önce basıldı mı? */
-  hasReprint: boolean;
+  /** Seçilenlerden etiketi daha önce basılmış olanların sayısı; 0 ise gerekçe sorulmaz. */
+  reprintCount: number;
   onPrinted: (pdf: Blob) => void;
 };
 
 /** Seçili çuvalların etiketini basar; yeniden baskıda gerekçe ister. */
-export function PrintLabelsBar({ uniqueKeys, hasReprint, onPrinted }: PrintLabelsBarProps) {
+export function PrintLabelsBar({ uniqueKeys, reprintCount, onPrinted }: PrintLabelsBarProps) {
   const { t } = useTranslation();
   const [reason, setReason] = useState('');
   const mutation = usePrintLabels();
+  const hasReprint = reprintCount > 0;
   const isReasonMissing = hasReprint && reason.trim() === '';
   const print = () => {
     const reprintReason = hasReprint ? { reprintReason: reason.trim() } : {};
@@ -34,7 +36,7 @@ export function PrintLabelsBar({ uniqueKeys, hasReprint, onPrinted }: PrintLabel
       {hasReprint && (
         <TextInput
           label={t('bag.reprintReason')}
-          description={t('bag.reprintHint')}
+          description={t('bag.reprintHint', { count: reprintCount })}
           value={reason}
           onChange={(event) => {
             setReason(event.currentTarget.value);
@@ -52,7 +54,11 @@ export function PrintLabelsBar({ uniqueKeys, hasReprint, onPrinted }: PrintLabel
           {t('bag.print')}
         </Button>
       </Group>
-      {mutation.isError && <Alert color="red">{t(bagErrorKey(mutation.error))}</Alert>}
+      {mutation.isError && (
+        <Alert color="red" role="alert">
+          {t(bagErrorKey(mutation.error))}
+        </Alert>
+      )}
     </Stack>
   );
 }

@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.application.service;
 import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
 import com.yarnshipment.shipment.domain.model.DeliveryScan;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
+import com.yarnshipment.shipment.domain.model.PackageType;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ final class StubShipmentBagsPort implements ShipmentBagsPort {
     @Override
     public List<DispatchBag> findDispatchBags(UUID shipmentId) {
         reads.add("dispatch");
-        return List.of(new DispatchBag(UUID.randomUUID(), "K-1", "LOT-1", "A", ScanMethod.SCAN, AT));
+        return List.of(new DispatchBag(UUID.randomUUID(), "K-1", PackageType.BAG, "LOT-1", "A", ScanMethod.SCAN, AT));
     }
 
     @Override

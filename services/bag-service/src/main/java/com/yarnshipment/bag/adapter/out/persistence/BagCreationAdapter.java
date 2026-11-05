@@ -57,7 +57,7 @@ final class BagCreationAdapter implements BagCreationPort {
     private Bag insertOne(NewBags newBags, UUID actorUserId, Timestamp at) {
         for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             UUID id = ids.next();
-            String key = keys.next();
+            String key = keys.next(newBags.packageType());
             int inserted;
             try {
                 inserted = jdbc.sql(INSERT)

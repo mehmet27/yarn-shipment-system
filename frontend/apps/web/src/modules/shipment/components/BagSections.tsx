@@ -1,4 +1,4 @@
-import type { ShipmentBagsResponse } from '@iplik/api-client';
+import type { DispatchBagView, ShipmentBagsResponse } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Badge, Button, Group, Paper, Stack, Text, Title } from '@iplik/ui';
 import { formatDateTime } from './formatDateTime';
@@ -24,7 +24,7 @@ export function BagSections({
                 <div>
                   <Text fw={600}>{bag.uniqueKey}</Text>
                   <Text size="sm" c="dimmed">
-                    {t('shipment.bags.lot')} {bag.lotNo} · {bag.qualityGradeCode}
+                    {bagDetail(t, bag)}
                   </Text>
                 </div>
                 {onRemove !== undefined && (
@@ -63,4 +63,12 @@ export function BagSections({
       )}
     </Stack>
   );
+}
+
+/** Çıkış listesindeki satırın ikinci satırı: ambalaj türü, parti ve kalite. */
+type Translate = ReturnType<typeof useTranslation>['t'];
+
+function bagDetail(t: Translate, bag: DispatchBagView): string {
+  const type = t(`bag.packageTypes.${bag.packageType}`);
+  return `${type} · ${t('shipment.bags.lot')} ${bag.lotNo} · ${bag.qualityGradeCode}`;
 }

@@ -62,7 +62,7 @@ final class PdfLabelRenderer implements LabelRenderer {
         for (BagLabel label : labels) {
             document.newPage();
             PdfContentByte canvas = writer.getDirectContent();
-            drawQualityBand(canvas, label.bag().qualityGradeCode());
+            drawQualityBand(canvas, label.bag().qualityGradeCode(), label.bag().packageType());
             new QrSymbol(label.bag().uniqueKey()).draw(canvas, MARGIN, CONTENT_TOP, QR_SIZE);
             drawDetails(canvas, label);
         }
@@ -70,7 +70,7 @@ final class PdfLabelRenderer implements LabelRenderer {
         return out.toByteArray();
     }
 
-    private void drawQualityBand(PdfContentByte canvas, String grade) {
+    private void drawQualityBand(PdfContentByte canvas, String grade, PackageType packageType) {
         Color color = GRADE_COLORS.getOrDefault(grade, MUTED);
         boolean filled = FILLED_GRADE.equals(grade);
         canvas.saveState();
@@ -84,7 +84,7 @@ final class PdfLabelRenderer implements LabelRenderer {
             canvas.stroke();
         }
         canvas.restoreState();
-        String text = "KALİTE " + grade.toUpperCase(Locale.ROOT);
+        String text = "KALİTE " + grade.toUpperCase(Locale.ROOT) + " · " + bandName(packageType);
         Line line = new Line(text, fonts.bold(), GRADE_SIZE, filled ? Color.WHITE : color);
         write(canvas, line, Anchor.centered(WIDTH / 2, BAND_BOTTOM + BAND_HEIGHT / 2 - GRADE_BASELINE_OFFSET));
     }
@@ -109,6 +109,16 @@ final class PdfLabelRenderer implements LabelRenderer {
         float valueBaseline = baseline - value.size() - 1;
         write(canvas, value, Anchor.left(DETAILS_LEFT, valueBaseline));
         return valueBaseline - LINE_SPACING;
+    }
+
+    /** Bantta büyük harfle yazılır; koli, palet ve bobin çuvalla karışmasın diye tür her etikette bantta görünür. */
+    private static String bandName(PackageType packageType) {
+        return switch (packageType) {
+            case BAG -> "ÇUVAL";
+            case BOX -> "KOLİ";
+            case PALLET -> "PALET";
+            case BOBBIN -> "BOBİN";
+        };
     }
 
     private static String packageName(PackageType packageType) {

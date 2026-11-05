@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.shipment.domain.bag.BagAssignment;
 import com.yarnshipment.shipment.domain.bag.ReservedBag;
+import com.yarnshipment.shipment.domain.model.PackageType;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
 import java.time.Instant;
 import java.util.List;
@@ -38,7 +39,7 @@ class ShipmentBagRemovalAdapterTest {
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-00000000a001");
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-00000000d001");
     private static final Instant AT = Instant.parse("2026-10-23T09:00:00Z");
-    private static final ReservedBag BAG = new ReservedBag(UUID.randomUUID(), "BAG-0001", "P-1", "A");
+    private static final ReservedBag BAG = new ReservedBag(UUID.randomUUID(), "BAG-0001", PackageType.BAG, "P-1", "A");
     private static final BagAssignment ASSIGNMENT = new BagAssignment(SHIPMENT, List.of(BAG), ScanMethod.SCAN);
     private static final String INSERT_SHIPMENT = """
             INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status,

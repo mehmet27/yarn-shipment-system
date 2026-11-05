@@ -38,7 +38,7 @@ export function LotWorkspace({ lotId }: { lotId: string }) {
           <Stack>
             <PrintLabelsBar
               uniqueKeys={[...selected]}
-              hasReprint={hasReprint(bags, selected)}
+              reprintCount={reprintCount(bags, selected)}
               onPrinted={(file) => {
                 setSelected(new Set());
                 setPdf(file);
@@ -65,8 +65,8 @@ export function LotWorkspace({ lotId }: { lotId: string }) {
   );
 }
 
-function hasReprint(bags: readonly LabeledBagView[], selected: ReadonlySet<string>): boolean {
-  return bags.some(
+function reprintCount(bags: readonly LabeledBagView[], selected: ReadonlySet<string>): number {
+  return bags.filter(
     (item) => isPrintable(item) && item.printCount > 0 && selected.has(item.bag.uniqueKey),
-  );
+  ).length;
 }

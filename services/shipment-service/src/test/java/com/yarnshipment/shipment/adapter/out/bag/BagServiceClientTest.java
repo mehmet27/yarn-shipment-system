@@ -8,6 +8,7 @@ import com.yarnshipment.shipment.domain.bag.BagReservationException;
 import com.yarnshipment.shipment.domain.bag.BagReservationException.Reason;
 import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
 import com.yarnshipment.shipment.domain.bag.ReservedBag;
+import com.yarnshipment.shipment.domain.model.PackageType;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -47,12 +48,13 @@ class BagServiceClientTest {
     void shouldMapReservedBags() throws Exception {
         BagServiceClient client = clientAnswering(
                 OK,
-                "{\"bags\":[{\"id\":\"" + BAG_ID + "\",\"uniqueKey\":\"BAG-0001\",\"lotNo\":\"P-1\","
+                "{\"bags\":[{\"id\":\"" + BAG_ID + "\",\"uniqueKey\":\"BAG-0001\","
+                        + "\"packageType\":\"BAG\",\"lotNo\":\"P-1\","
                         + "\"qualityGradeCode\":\"A\",\"status\":\"RESERVED\"}]}");
 
         List<ReservedBag> bags = client.reserve(SHIPMENT, List.of("BAG-0001"));
 
-        assertThat(bags).containsExactly(new ReservedBag(BAG_ID, "BAG-0001", "P-1", "A"));
+        assertThat(bags).containsExactly(new ReservedBag(BAG_ID, "BAG-0001", PackageType.BAG, "P-1", "A"));
         assertThat(requestBody.get()).contains(SHIPMENT.toString()).contains("BAG-0001");
     }
 

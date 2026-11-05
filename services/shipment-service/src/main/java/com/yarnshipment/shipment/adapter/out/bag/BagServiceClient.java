@@ -6,6 +6,7 @@ import com.yarnshipment.shipment.domain.bag.BagReservationException;
 import com.yarnshipment.shipment.domain.bag.BagReservationException.Reason;
 import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
 import com.yarnshipment.shipment.domain.bag.ReservedBag;
+import com.yarnshipment.shipment.domain.model.PackageType;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;
@@ -60,7 +61,8 @@ final class BagServiceClient implements BagReservationPort {
                 throw new BagServiceUnavailableException("Empty reservation response");
             }
             return response.bags().stream()
-                    .map(bag -> new ReservedBag(bag.id(), bag.uniqueKey(), bag.lotNo(), bag.qualityGradeCode()))
+                    .map(bag -> new ReservedBag(
+                            bag.id(), bag.uniqueKey(), bag.packageType(), bag.lotNo(), bag.qualityGradeCode()))
                     .toList();
         } catch (RestClientResponseException exception) {
             throw translate(exception);
@@ -122,5 +124,6 @@ final class BagServiceClient implements BagReservationPort {
 
     private record ReserveResponse(List<ReservedBagBody> bags) {}
 
-    private record ReservedBagBody(UUID id, String uniqueKey, String lotNo, String qualityGradeCode) {}
+    private record ReservedBagBody(
+            UUID id, String uniqueKey, PackageType packageType, String lotNo, String qualityGradeCode) {}
 }

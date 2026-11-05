@@ -16,7 +16,7 @@ export function LotBagTable({ bags, selected, onToggle, onToggleAll }: LotBagTab
   const isAllSelected = printable.length > 0 && printable.every((key) => selected.has(key));
   if (bags.length === 0) return <Text c="dimmed">{t('bag.empty')}</Text>;
   return (
-    <Table.ScrollContainer minWidth={320}>
+    <Table.ScrollContainer minWidth={400}>
       <Table striped>
         <Table.Thead>
           <Table.Tr>
@@ -30,6 +30,7 @@ export function LotBagTable({ bags, selected, onToggle, onToggleAll }: LotBagTab
               />
             </Table.Th>
             <Table.Th>{t('bag.uniqueKey')}</Table.Th>
+            <Table.Th>{t('bag.package')}</Table.Th>
             <Table.Th>{t('bag.status')}</Table.Th>
             <Table.Th>{t('bag.prints')}</Table.Th>
           </Table.Tr>
@@ -48,6 +49,7 @@ export function LotBagTable({ bags, selected, onToggle, onToggleAll }: LotBagTab
                 />
               </Table.Td>
               <Table.Td ff="monospace">{item.bag.uniqueKey}</Table.Td>
+              <Table.Td>{t(`bag.packageTypes.${item.bag.packageType}`)}</Table.Td>
               <Table.Td>{t(`bag.statuses.${item.bag.status}`)}</Table.Td>
               <Table.Td>
                 {item.printCount === 0

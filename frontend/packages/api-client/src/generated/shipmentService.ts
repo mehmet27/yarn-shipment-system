@@ -640,6 +640,22 @@ export interface TareStandardSaveRequest {
   maxDeviationPct: Pct;
 }
 
+export interface BrandingView {
+  companyName?: string;
+  /** @pattern ^#[0-9a-f]{6}$ */
+  primaryColor: string;
+  logoDataUrl?: string;
+}
+
+export interface BrandingSaveRequest {
+  /** @maxLength 80 */
+  companyName?: string;
+  /** @pattern ^#[0-9a-fA-F]{6}$ */
+  primaryColor: string;
+  /** @maxLength 200000 */
+  logoDataUrl?: string;
+}
+
 export interface TareStandardView {
   id: string;
   siteId: string;
@@ -1553,6 +1569,34 @@ export const startLoginAccountPasswordReset = (
     }
 
 /**
+ * Girişsiz çağrılır; giriş sayfası da markalı olsun diye. Hiç kaydedilmemişse varsayılan ana renk döner (`companyName` ve `logoDataUrl` yoktur). Yanıt önbelleğe alınmaz.
+ * @summary Kurulumun marka ayarı (firma adı, ana renk, logo)
+ */
+export const getBranding = (
+
+ ) => {
+      return customInstance<BrandingView>(
+      {url: `/api/v1/branding`, method: 'GET'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (SETTINGS_MANAGE). Tek kayıt vardır; tüm alanlar yazılır (boş bırakılan `companyName` ve `logoDataUrl` silinir). Aynı istek tekrarlanırsa sonuç değişmez. Ana renk `#rrggbb` olmalı; logo png, jpeg, webp ya da svg base64 data adresi ve en çok 200 000 karakterdir. Geçersiz değer `INVALID_MASTER_DATA`. Değişiklik denetim kaydına düşer.
+ * @summary Marka ayarını kaydeder
+ */
+export const saveBranding = (
+    brandingSaveRequest: BrandingSaveRequest,
+ ) => {
+      return customInstance<BrandingView>(
+      {url: `/api/v1/branding`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: brandingSaveRequest
+    },
+      );
+    }
+
+/**
  * Girişsiz çağrılır. Giriş adı ne olursa olsun aynı 202 yanıtı döner; böylece hangi giriş adlarının var olduğu
  * anlaşılmaz. Hesap varsa, açıksa ve telefonu kayıtlıysa altı haneli kod SMS'le gider (10 dakika geçerli,
  * dakikada en çok bir kez).
@@ -2144,6 +2188,8 @@ export type CreateStaffLoginAccountResult = NonNullable<Awaited<ReturnType<typeo
 export type ChangeLoginAccountRoleResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountRole>>>
 export type ChangeLoginAccountEnabledResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountEnabled>>>
 export type StartLoginAccountPasswordResetResult = NonNullable<Awaited<ReturnType<typeof startLoginAccountPasswordReset>>>
+export type GetBrandingResult = NonNullable<Awaited<ReturnType<typeof getBranding>>>
+export type SaveBrandingResult = NonNullable<Awaited<ReturnType<typeof saveBranding>>>
 export type RequestPasswordResetResult = NonNullable<Awaited<ReturnType<typeof requestPasswordReset>>>
 export type ConfirmPasswordResetResult = NonNullable<Awaited<ReturnType<typeof confirmPasswordReset>>>
 export type ActivateDriverResult = NonNullable<Awaited<ReturnType<typeof activateDriver>>>

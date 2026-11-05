@@ -63,6 +63,8 @@ yarnshipment:
       - /actuator/health/**
       - /actuator/info
       - /api/v1/password-reset/**
+      # Giriş sayfası da marka rengini okur; yazma ucu yöntem güvenliğiyle (SETTINGS_MANAGE) korunur.
+      - /api/v1/branding
   outbox:
     # EVT-03/04: outbox_event satırları bu konuya CloudEvents olarak yayınlanır.
     topic: shipment.events.v1

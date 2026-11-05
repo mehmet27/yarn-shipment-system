@@ -8,6 +8,7 @@ export {
   listLockedLots,
   listLotBags,
   PackageType,
+  voidBags,
 } from './generated/bagService';
 export type {
   BagView,
@@ -17,6 +18,8 @@ export type {
   LockedLotView,
   LotBagsResponse,
   PrintLabelsRequest,
+  VoidBagsRequest,
+  VoidBagsResponse,
 } from './generated/bagService';
 
 export const BAGS_PATH = '/api/v1/bags';

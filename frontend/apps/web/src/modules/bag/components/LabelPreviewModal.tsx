@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Anchor, Button, Group, Modal } from '@iplik/ui';
+import { Anchor, Button, Group, Modal, Text } from '@iplik/ui';
 import { useEffect, useMemo, useRef } from 'react';
 
 export type LabelPreviewModalProps = {
@@ -23,23 +23,34 @@ export function LabelPreviewModal({ pdf, onClose }: LabelPreviewModalProps) {
     },
     [url],
   );
+  // Telefon ve tablet tarayıcıları PDF'i sayfa içinde göstermez; orada düğmeler öne çıkar.
+  const canEmbed = !('pdfViewerEnabled' in navigator) || navigator.pdfViewerEnabled;
   return (
     <Modal opened={url !== undefined} onClose={onClose} title={t('bag.previewTitle')} size="xl">
       {url !== undefined && (
         <>
-          <iframe
-            ref={frame}
-            src={url}
-            title={t('bag.previewTitle')}
-            style={{ width: '100%', height: '60vh', border: 0 }}
-          />
+          {canEmbed ? (
+            <iframe
+              ref={frame}
+              src={url}
+              title={t('bag.previewTitle')}
+              style={{ width: '100%', height: '60vh', border: 0 }}
+            />
+          ) : (
+            <Text>{t('bag.noEmbed')}</Text>
+          )}
           <Group justify="flex-end" mt="md">
             <Anchor href={url} download={FILE_NAME}>
               {t('bag.download')}
             </Anchor>
-            <Button onClick={() => frame.current?.contentWindow?.print()}>
-              {t('bag.printNow')}
-            </Button>
+            <Anchor href={url} target="_blank" rel="noopener">
+              {t('bag.openTab')}
+            </Anchor>
+            {canEmbed && (
+              <Button onClick={() => frame.current?.contentWindow?.print()}>
+                {t('bag.printNow')}
+              </Button>
+            )}
           </Group>
         </>
       )}

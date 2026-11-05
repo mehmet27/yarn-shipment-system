@@ -99,6 +99,56 @@ describe('Çuval ve etiket ekranı', () => {
     expect(screen.getByRole('button', { name: 'Etiketleri bas' })).toBeDisabled();
   });
 
+  it('yeni üretilen çuvalları gerekçeyle iptal eder; iptal edilenler İptal süzgecinde görünür', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    renderApp('/panel/cuvallar');
+    const count = await screen.findByRole('textbox', { name: 'Adet' });
+    await userEvent.clear(count);
+    await userEvent.type(count, '2');
+    await userEvent.click(screen.getByRole('button', { name: 'Çuval oluştur' }));
+    expect(await screen.findByText('2 ambalaj seçili')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Seçilenleri iptal et' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Çuval iptali' });
+    const confirm = within(dialog).getByRole('button', { name: '2 ambalajı iptal et' });
+    expect(confirm).toBeDisabled();
+    await userEvent.type(
+      within(dialog).getByLabelText(/İptal gerekçesi/),
+      'Yanlış sayıda üretildi',
+    );
+    await userEvent.click(confirm);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Çuval iptali' })).not.toBeInTheDocument();
+    });
+    await userEvent.click(screen.getByRole('radio', { name: 'İptal' }));
+    await waitFor(() => {
+      expect(screen.getAllByText('İptal', { selector: 'td' })).toHaveLength(2);
+    });
+  });
+
+  it('durum süzgeci listeyi daraltır ve basılmamışları seçer', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    renderApp('/panel/cuvallar');
+    const count = await screen.findByRole('textbox', { name: 'Adet' });
+    await userEvent.clear(count);
+    await userEvent.type(count, '2');
+    await userEvent.click(screen.getByRole('button', { name: 'Çuval oluştur' }));
+    await waitFor(() => {
+      expect(screen.getAllByText('Basılmadı')).toHaveLength(2);
+    });
+
+    await userEvent.click(screen.getByRole('radio', { name: 'Basılmış' }));
+    await waitFor(() => {
+      expect(screen.queryByText('Basılmadı')).not.toBeInTheDocument();
+    });
+    expect(screen.getByText(PRINTED_KEY)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Basılmamışları seç' }));
+    expect(await screen.findByText('2 ambalaj seçili')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Yeniden baskı gerekçesi/)).not.toBeInTheDocument();
+  });
+
   it('yetkisi olmayan rol menüde ekranı görmez ve adrese gidince engellenir', async () => {
     server.use(...createHandlers('QUALITY'));
     const { router } = renderApp('/panel/cuvallar');

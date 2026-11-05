@@ -4,6 +4,7 @@ const KNOWN_CODES = new Set([
   'LOT_NOT_LOCKED',
   'LABEL_REPRINT_REASON_REQUIRED',
   'BAG_NOT_AVAILABLE',
+  'BAG_NOT_VOIDABLE',
 ]);
 
 /** Hata kodunun çeviri anahtarı; bilinmeyen kod genel mesaja düşer (FE-API-05). */

@@ -40,11 +40,8 @@ export {
   listSubcontractors,
   listVehicles,
 } from './masterData';
-export type {
-  CreateShipmentRequest,
-  CreateShipmentResponse,
-  ListDriversParams,
-} from './masterData';
+export type { CreateShipmentRequest, CreateShipmentResponse } from './masterData';
+export type { ListDriversParams } from './masterData';
 export { getShipmentBags, getShipmentHistory } from './masterData';
 export type {
   DeliveryScanView,
@@ -211,6 +208,7 @@ export {
   listLotBags,
   PackageType,
   printBagLabels,
+  voidBags,
 } from './bags';
 export type {
   BagView,
@@ -220,15 +218,12 @@ export type {
   LockedLotView,
   LotBagsResponse,
   PrintLabelsRequest,
+  VoidBagsRequest,
+  VoidBagsResponse,
 } from './bags';
 export { listTareStandards, saveTareStandard } from './masterData';
-export type {
-  PackagingType,
-  TareStandardListResponse,
-  TareStandardSaveRequest,
-  TareStandardView,
-} from './masterData';
-
+export type { PackagingType, TareStandardListResponse } from './masterData';
+export type { TareStandardSaveRequest, TareStandardView } from './masterData';
 export {
   getDashboard,
   getDriverReport,

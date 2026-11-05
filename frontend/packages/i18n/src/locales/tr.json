@@ -759,6 +759,23 @@
     "printedTimes": "{{count}} kez",
     "select": "{{key}} seç",
     "selectAll": "Tümünü seç",
+    "selectUnprinted": "Basılmamışları seç",
+    "filter": {
+      "label": "Çuval durumu",
+      "ALL": "Tümü",
+      "UNPRINTED": "Basılmamış",
+      "PRINTED": "Basılmış",
+      "VOID": "İptal"
+    },
+    "void": {
+      "open": "Seçilenleri iptal et",
+      "blocked": "Sevkiyata ayrılmış çuval iptal edilemez; seçimden çıkarın.",
+      "title": "Çuval iptali",
+      "warning": "{{count}} ambalaj iptal edilecek. İptal edilen çuvalın etiketi bir daha basılmaz ve işlem geri alınamaz.",
+      "reason": "İptal gerekçesi",
+      "cancel": "Vazgeç",
+      "confirm": "{{count}} ambalajı iptal et"
+    },
     "selectedCount": "{{count}} ambalaj seçili",
     "print": "Etiketleri bas",
     "reprintReason": "Yeniden baskı gerekçesi",
@@ -766,6 +783,8 @@
     "previewTitle": "Etiketler",
     "printNow": "Yazdır",
     "download": "PDF'i indir",
+    "openTab": "Yeni sekmede aç",
+    "noEmbed": "Bu cihaz etiketleri sayfa içinde gösteremiyor. PDF'i yeni sekmede açın ya da indirip yazdırın.",
     "close": "Kapat",
     "packageTypesLower": {
       "BAG": "çuval",
@@ -790,6 +809,7 @@
       "LOT_NOT_LOCKED": "Kalite kilitlenmeden ambalaj üretilemez. Önce Partiler ekranından partinin kalitesini kilitleyin.",
       "LABEL_REPRINT_REASON_REQUIRED": "Yeniden baskı için gerekçe yazın.",
       "BAG_NOT_AVAILABLE": "Yola çıkmış ya da iptal edilmiş ambalajın etiketi basılamaz.",
+      "BAG_NOT_VOIDABLE": "Yalnızca depodaki ambalaj iptal edilebilir. Sevkiyata ayrılmış ya da yola çıkmış ambalaj iptal edilemez.",
       "unexpected": "İşlem tamamlanamadı. Lütfen tekrar deneyin."
     }
   },

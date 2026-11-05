@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.bag.application.port.out.BagCreationPort;
 import com.yarnshipment.bag.domain.model.Bag;
+import com.yarnshipment.bag.domain.model.BagNotVoidableException;
 import com.yarnshipment.bag.domain.model.BagStatus;
 import com.yarnshipment.bag.domain.model.LockedLot;
 import com.yarnshipment.bag.domain.model.LotNotLockedException;
@@ -29,6 +30,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @Import({
     BagCreationAdapter.class,
     BagQueryAdapter.class,
+    BagVoidAdapter.class,
     LotQueryAdapter.class,
     UniqueKeyGenerator.class,
     UuidV7Generator.class
@@ -51,6 +53,9 @@ class BagCreationAdaptersTest {
 
     @Autowired
     private BagQueryAdapter bags;
+
+    @Autowired
+    private BagVoidAdapter voids;
 
     @Autowired
     private LotQueryAdapter lots;
@@ -109,5 +114,20 @@ class BagCreationAdaptersTest {
         assertThatThrownBy(() -> creations.create(newBags, ACTOR, NOW))
                 .isInstanceOf(LotNotLockedException.class)
                 .hasMessageContaining(unlockedLotId.toString());
+    }
+
+    @Test
+    @DisplayName("Depodaki çuval iptal edilir ve durumu VOID olur; sevkiyata ayrılmış çuval iptal edilemez")
+    void shouldVoidBagsInWarehouseOnly() {
+        LockedLot lot = lots.findLocked(LOT_A).orElseThrow();
+        List<Bag> created = creations.create(new BagCreationPort.NewBags(lot, PackageType.BAG, 2), ACTOR, NOW);
+
+        voids.voidBags(created, "Yanlış üretildi", ACTOR, NOW);
+
+        assertThat(bags.findByUniqueKeys(created.stream().map(Bag::uniqueKey).toList()))
+                .extracting(Bag::status)
+                .containsOnly(BagStatus.VOID);
+        assertThatThrownBy(() -> voids.voidBags(created, "Tekrar", ACTOR, NOW))
+                .isInstanceOf(BagNotVoidableException.class);
     }
 }

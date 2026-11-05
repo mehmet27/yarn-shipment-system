@@ -146,6 +146,28 @@ export interface ReleaseBagsRequest {
   reason: string;
 }
 
+export interface VoidBagsRequest {
+  /**
+     * @minItems 1
+     * @maxItems 200
+     * @items.minLength 1
+     * @items.maxLength 100
+     */
+  uniqueKeys: string[];
+  /**
+     * İptal gerekçesi; yalnızca boşluktan oluşamaz
+     * @minLength 1
+     * @maxLength 500
+     * @pattern .*\S.*
+     */
+  reason: string;
+}
+
+export interface VoidBagsResponse {
+  /** @minimum 0 */
+  voidedCount: number;
+}
+
 export interface ReleaseBagsResponse {
   /** @minimum 0 */
   releasedCount: number;
@@ -215,6 +237,23 @@ export const listLotBags = (
  ) => {
       return customInstance<LotBagsResponse>(
       {url: `/api/v1/bags/lots/${lotId}/bags`, method: 'GET'
+    },
+      );
+    }
+
+/**
+ * Yalnızca depodaki (`CREATED`) çuval iptal edilir; gerekçe zorunludur. Çuval kaydı silinmez, durumu `VOID` olur ve
+ * etiketi bir daha basılmaz. Sevkiyata ayrılmış ya da yola çıkmış çuval iptal edilemez (`BAG_NOT_VOIDABLE`). Zaten
+ * iptal edilmiş çuval sayılmaz. Hepsi ya da hiçbiri.
+ * @summary Yanlış üretilen, depodaki çuvalları iptal eder
+ */
+export const voidBags = (
+    voidBagsRequest: VoidBagsRequest,
+ ) => {
+      return customInstance<VoidBagsResponse>(
+      {url: `/api/v1/bags/void`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: voidBagsRequest
     },
       );
     }
@@ -291,6 +330,7 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 export type CreateBagsResult = NonNullable<Awaited<ReturnType<typeof createBags>>>
 export type ListLockedLotsResult = NonNullable<Awaited<ReturnType<typeof listLockedLots>>>
 export type ListLotBagsResult = NonNullable<Awaited<ReturnType<typeof listLotBags>>>
+export type VoidBagsResult = NonNullable<Awaited<ReturnType<typeof voidBags>>>
 export type PrintLabelsResult = NonNullable<Awaited<ReturnType<typeof printLabels>>>
 export type GetBagResult = NonNullable<Awaited<ReturnType<typeof getBag>>>
 export type ReserveBagsResult = NonNullable<Awaited<ReturnType<typeof reserveBags>>>

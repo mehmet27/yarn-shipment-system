@@ -15,7 +15,7 @@ export function AuditActor({ actor }: { actor: AuditRecordView['actor'] }) {
       : t(`users.role.${actor.role}`, { defaultValue: actor.role });
   return (
     <span title={actor.userId}>
-      {role ?? '—'}
+      {role ?? t('audit.actorUser')}
       {short === undefined ? '' : ` · ${short}`}
     </span>
   );

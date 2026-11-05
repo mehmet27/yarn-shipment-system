@@ -414,6 +414,7 @@
     "all": "Hepsi",
     "empty": "Denetim kaydı yok.",
     "denied": "Reddedildi",
+    "actorUser": "Kullanıcı",
     "actionName": {
       "comparison-completed": "Karşılaştırma tamamlandı",
       "discrepancy-opened": "Uyuşmazlık açıldı",

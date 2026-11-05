@@ -2,12 +2,13 @@ import type { AuditRecordView } from '@iplik/api-client/audit';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Badge, Group, Paper, Stack, Text } from '@iplik/ui';
 import { AuditActor } from './AuditActor';
-import { entityLabel, useActionLabel } from './auditText';
+import { useActionLabel, useEntityLabel } from './auditText';
 
 /** Dar ekranda denetim kayıtları: tablo yerine her kayıt bir kart. */
 export function AuditCards({ records }: { records: AuditRecordView[] }) {
   const { t } = useTranslation();
   const actionLabel = useActionLabel();
+  const entityLabel = useEntityLabel();
   return (
     <Stack gap="sm">
       {records.map((record) => (

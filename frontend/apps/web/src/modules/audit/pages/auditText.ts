@@ -3,11 +3,18 @@ import { useTranslation } from '@iplik/i18n';
 
 export const SHORT_ID_LENGTH = 8;
 
-export function entityLabel(entity: AuditEntity | undefined): string {
-  if (entity === undefined) return '—';
-  return entity.id === undefined
-    ? entity.type
-    : `${entity.type} ${entity.id.slice(0, SHORT_ID_LENGTH)}`;
+const KNOWN_ENTITIES = ['Shipment', 'Evidence', 'Discrepancy'];
+
+/** Kayıt türü Türkçe ("Kanıt 01a1a6d0"); bilinmeyen tür olduğu gibi yazılır. */
+export function useEntityLabel(): (entity: AuditEntity | undefined) => string {
+  const { t } = useTranslation();
+  return (entity) => {
+    if (entity === undefined) return '—';
+    const type = KNOWN_ENTITIES.includes(entity.type)
+      ? t(`audit.entity.${entity.type}`)
+      : entity.type;
+    return entity.id === undefined ? type : `${type} ${entity.id.slice(0, SHORT_ID_LENGTH)}`;
+  };
 }
 
 /** "com.yarnshipment.discrepancy.discrepancy-opened.v1" biçimindeki olay adı. */

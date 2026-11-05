@@ -1,26 +1,10 @@
 import { useTranslation } from '@iplik/i18n';
-import type { DiscrepancyView } from '@iplik/api-client';
 import { PageHero, Stack, Text } from '@iplik/ui';
 import { ListPagination, QueryState } from '@/modules/shipment';
 import { DiscrepancyCard } from '../components/DiscrepancyCard';
 import { useDiscrepancies } from '../hooks/useDiscrepancies';
 import { DiscrepancyFilters } from '../components/DiscrepancyFilters';
 import { PAGE_SIZE, useDiscrepancyFilter } from '../hooks/useDiscrepancyFilter';
-
-/** Aynı sevkiyat ve kuralda özdeş görünen kayıtlara sıra numarası verir (ayırt edilebilsinler). */
-function sequences(items: DiscrepancyView[]): Map<string, { index: number; total: number }> {
-  const groups = new Map<string, string[]>();
-  for (const item of items) {
-    const key = `${item.shipmentId}|${item.ruleCode}|${item.expectedValue ?? ''}|${item.actualValue ?? ''}`;
-    groups.set(key, [...(groups.get(key) ?? []), item.id]);
-  }
-  const result = new Map<string, { index: number; total: number }>();
-  for (const ids of groups.values()) {
-    if (ids.length < 2) continue;
-    ids.forEach((id, i) => result.set(id, { index: i + 1, total: ids.length }));
-  }
-  return result;
-}
 
 export function DiscrepancyListPage() {
   const { t } = useTranslation();
@@ -42,12 +26,8 @@ export function DiscrepancyListPage() {
             <Text c="dimmed">{t('discrepancy.list.empty')}</Text>
           ) : (
             <Stack>
-              {page.items.map((item, _i, all) => (
-                <DiscrepancyCard
-                  key={item.id}
-                  discrepancy={item}
-                  sequence={sequences(all).get(item.id)}
-                />
+              {page.items.map((item) => (
+                <DiscrepancyCard key={item.id} discrepancy={item} />
               ))}
               <ListPagination
                 total={page.page.totalPages}

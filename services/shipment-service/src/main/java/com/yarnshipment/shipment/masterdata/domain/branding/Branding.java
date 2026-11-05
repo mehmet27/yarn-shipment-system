@@ -14,7 +14,9 @@ import org.jspecify.annotations.Nullable;
  * @param logoDataUrl logo, base64 {@code data:image/...} adresi; en çok 200 000 karakter
  */
 public record Branding(
-        @Nullable String companyName, String primaryColor, @Nullable String logoDataUrl) {
+        @Nullable String companyName,
+        String primaryColor,
+        @Nullable String logoDataUrl) {
 
     /** Marka ayarı kaydedilmemişse kullanılan ana renk (arayüzdeki varsayılanla aynıdır). */
     public static final String DEFAULT_COLOR = "#17527a";

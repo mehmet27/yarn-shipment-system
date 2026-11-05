@@ -29,7 +29,8 @@
     "branding": "Görünüm"
   },
   "home": {
-    "welcome": "Hoş geldiniz, {{name}}"
+    "welcome": "Hoş geldiniz, {{name}}",
+    "shortcuts": "Sık kullanılan ekranlar"
   },
   "common": {
     "notRecorded": "Kaydedilmedi",
@@ -298,6 +299,7 @@
   "create": {
     "open": "Yeni sevkiyat",
     "title": "Yeni sevkiyat",
+    "selectPlaceholder": "Seçin",
     "hint": "Lokasyon ve fasoncuyu seçin; şoför ve araç sonradan da atanabilir.",
     "site": "Lokasyon",
     "subcontractor": "Fasoncu",
@@ -412,6 +414,26 @@
     "all": "Hepsi",
     "empty": "Denetim kaydı yok.",
     "denied": "Reddedildi",
+    "actorUser": "Kullanıcı",
+    "actionName": {
+      "comparison-completed": "Karşılaştırma tamamlandı",
+      "discrepancy-opened": "Uyuşmazlık açıldı",
+      "discrepancy-resolved": "Uyuşmazlık çözüldü",
+      "evidence-invalidated": "Kanıt geçersiz sayıldı",
+      "evidence-reuse-detected": "Kanıt tekrar kullanımı tespit edildi",
+      "evidence-uploaded": "Kanıt yüklendi",
+      "ticket-read": "Tartı fişi okundu",
+      "ticket-unverified": "Tartı fişi doğrulanamadı",
+      "lot-quality-locked": "Parti kalitesi kilitlendi",
+      "delivery-received": "Teslim alındı",
+      "shipment-arrived": "Sevkiyat vardı",
+      "shipment-cancelled": "Sevkiyat iptal edildi",
+      "shipment-completed": "Sevkiyat tamamlandı",
+      "shipment-created": "Sevkiyat oluşturuldu",
+      "shipment-dispatched": "Sevkiyat yola çıktı",
+      "shipment-loaded": "Sevkiyat yüklendi",
+      "other": "Diğer"
+    },
     "entity": {
       "Shipment": "Sevkiyat",
       "Evidence": "Kanıt",

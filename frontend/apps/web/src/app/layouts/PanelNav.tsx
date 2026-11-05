@@ -38,7 +38,7 @@ const ITEMS: readonly PanelNavItem[] = [
   {
     to: '/panel/gorunum',
     labelKey: 'nav.branding',
-    icon: 'settings',
+    icon: 'branding',
     permission: 'SETTINGS_MANAGE',
   },
   { to: '/panel/denetim', labelKey: 'nav.audit', icon: 'audit', permission: 'AUDIT_VIEW' },

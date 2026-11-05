@@ -39,7 +39,7 @@ describe('WeightComparison dara sapması', () => {
       }),
     );
     expect(screen.getByText('Dara sapması')).toBeInTheDocument();
-    expect(screen.getByText('%-10')).toBeInTheDocument();
+    expect(screen.getByText('-%10')).toBeInTheDocument();
     expect(screen.getByText('Standart dışı')).toBeInTheDocument();
   });
 

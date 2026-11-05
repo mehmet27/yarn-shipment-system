@@ -5,7 +5,7 @@ import { LoginAccountCard } from './LoginAccountCard';
 import { LoginAccountRow } from './LoginAccountRow';
 
 const DESKTOP_QUERY = '(min-width: 48em)';
-const TABLE_MIN_WIDTH = 900;
+const TABLE_MIN_WIDTH = 1100;
 
 export type LoginAccountTableProps = { accounts: readonly LoginAccountView[] };
 

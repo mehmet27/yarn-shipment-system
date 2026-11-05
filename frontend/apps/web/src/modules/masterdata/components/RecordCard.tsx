@@ -31,7 +31,7 @@ export function RecordCard({ kind, record, onEdit }: RecordCardProps) {
               : t('masterData.ownerOf', { title: record.ownerTitle })}
           </Text>
         )}
-        <Group grow>
+        <Group grow maw={{ base: '100%', sm: 360 }}>
           <Button
             variant="default"
             onClick={() => {

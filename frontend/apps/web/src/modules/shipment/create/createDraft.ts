@@ -24,6 +24,18 @@ export function validateCreate(draft: CreateDraft): CreateError | undefined {
   return draft.subcontractor === undefined ? 'subcontractorRequired' : undefined;
 }
 
+/** Tüm eksik zorunlu alanlar birden döner; hata mesajı ilgili alanın altında gösterilir. */
+export function validateCreateFields(
+  draft: CreateDraft,
+): Partial<Record<'site' | 'subcontractor', CreateError>> {
+  return {
+    ...(draft.site === undefined ? { site: 'siteRequired' as const } : {}),
+    ...(draft.subcontractor === undefined
+      ? { subcontractor: 'subcontractorRequired' as const }
+      : {}),
+  };
+}
+
 /** Fasoncu değişince önceki fasoncunun şoförü seçili kalmaz. */
 export function withSubcontractor(draft: CreateDraft, subcontractor: MasterOption | undefined) {
   return { ...draft, subcontractor, driver: undefined };

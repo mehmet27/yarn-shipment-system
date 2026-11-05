@@ -14,7 +14,7 @@ export function AccountActions({ account }: { account: LoginAccountView }) {
   const { data: me } = useCurrentUser();
   const isOwn = me?.userId === account.id;
   return (
-    <Group gap="xs" align="flex-start">
+    <Group gap="xs" align="flex-start" wrap="nowrap">
       <ResetPasswordButton account={account} />
       {!isOwn && <ToggleEnabledButton account={account} />}
       {!isOwn && hasChangeableRole(account) && <ChangeRoleButton account={account} />}

@@ -35,8 +35,9 @@ function isNumericString(value: string): value is `${number}` {
   return NUMERIC_PATTERN.test(value);
 }
 
-/** "-0.90" → "%-0,9" (Türkçede yüzde işareti başa yazılır). */
+/** "-0.90" → "-%0,9" (Türkçede yüzde işareti başa yazılır, eksi işareti ondan önce gelir). */
 export function formatPct(pct: string): string {
   const formatted = PCT_FORMAT.format(toNumericString(pct));
-  return `%${formatted === '-0' ? '0' : formatted}`;
+  if (formatted === '-0') return '%0';
+  return formatted.startsWith('-') ? `-%${formatted.slice(1)}` : `%${formatted}`;
 }

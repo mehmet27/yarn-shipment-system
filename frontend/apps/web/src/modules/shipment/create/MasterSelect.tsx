@@ -1,3 +1,4 @@
+import { useTranslation } from '@iplik/i18n';
 import { Select, useDebouncedValue } from '@iplik/ui';
 import { useState } from 'react';
 import type { MasterKind, MasterOption } from '../hooks/useMasterOptions';
@@ -11,6 +12,7 @@ export type MasterSelectProps = {
   value: MasterOption | undefined;
   onChange: (option: MasterOption | undefined) => void;
   isRequired?: boolean;
+  error?: string;
   subcontractorId?: string;
 };
 
@@ -21,8 +23,10 @@ export function MasterSelect({
   value,
   onChange,
   isRequired = false,
+  error,
   subcontractorId,
 }: MasterSelectProps) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [q] = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   const query = useMasterOptions(kind, q, subcontractorId);
@@ -34,6 +38,8 @@ export function MasterSelect({
   return (
     <Select
       label={label}
+      placeholder={t('create.selectPlaceholder')}
+      error={error}
       data={options}
       value={value?.value ?? null}
       onChange={(next) => {

@@ -79,15 +79,27 @@ export function formatFactValue(
   return isQuantity ? kgText(value) : value;
 }
 
+/** Beklenen/gerçek değer özeti; eksik fotoğrafta yalnızca beklenen tür (hangi fotoğraf eksik) yazılır. */
+function factSummary(
+  t: Translate,
+  facts: {
+    type: DiscrepancyView['type'];
+    expected?: string | undefined;
+    actual?: string | undefined;
+  },
+): string | undefined {
+  const { type, expected, actual } = facts;
+  if (expected === undefined) return undefined;
+  if (actual === undefined) return type === 'PHOTO' ? expected : undefined;
+  return `${t('discrepancy.facts.expected')} ${expected}, ${t('discrepancy.facts.actual').toLocaleLowerCase('tr')} ${actual}`;
+}
+
 /** Liste kartındaki özet: fark varsa kg ve yüzde, yoksa kural ve beklenen/gerçek değer (H-23). */
 export function summaryOf(t: Translate, d: DiscrepancyView): string {
   const difference = formatDifference(d.diffKg, d.diffPct);
   if (difference !== '') return difference;
   const expected = formatFactValue(t, d.type, d.expectedValue);
   const actual = formatFactValue(t, d.type, d.actualValue);
-  const values =
-    expected === undefined || actual === undefined
-      ? undefined
-      : `${t('discrepancy.facts.expected')} ${expected}, ${t('discrepancy.facts.actual').toLocaleLowerCase('tr')} ${actual}`;
+  const values = factSummary(t, { type: d.type, expected, actual });
   return [ruleLabel(t, d.ruleCode), values].filter((part) => part !== undefined).join(' · ');
 }

@@ -11,6 +11,9 @@ export function ErrorPage({ reason }: ErrorPageProps) {
   return (
     <Center h="100vh">
       <Stack align="center">
+        <Text fw={700} size="xl" c="brand.7">
+          {t('app.name')}
+        </Text>
         <Text size="lg">{t(`error.${reason}`)}</Text>
         <Button component={Link} to="/">
           {t('error.backHome')}

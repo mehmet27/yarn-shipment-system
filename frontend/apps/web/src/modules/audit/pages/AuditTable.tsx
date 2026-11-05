@@ -1,19 +1,17 @@
-import type { AuditEntity, AuditRecordView } from '@iplik/api-client/audit';
+import type { AuditRecordView } from '@iplik/api-client/audit';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Badge, Table } from '@iplik/ui';
+import { Badge, Table, useMediaQuery } from '@iplik/ui';
+import { AuditActor } from './AuditActor';
+import { AuditCards } from './AuditCards';
+import { useActionLabel, useEntityLabel } from './auditText';
 
-const SHORT_ID_LENGTH = 8;
-
-function entityLabel(entity: AuditEntity | undefined): string {
-  if (entity === undefined) return '—';
-  return entity.id === undefined
-    ? entity.type
-    : `${entity.type} ${entity.id.slice(0, SHORT_ID_LENGTH)}`;
-}
-
-/** Denetim kayıtlarını tablo olarak gösterir; dar ekranda yatay kaydırılır. */
+/** Denetim kayıtları: geniş ekranda tablo, dar ekranda kartlar. */
 export function AuditTable({ records }: { records: AuditRecordView[] }) {
   const { t } = useTranslation();
+  const actionLabel = useActionLabel();
+  const entityLabel = useEntityLabel();
+  const isDesktop = useMediaQuery('(min-width: 48em)', true, { getInitialValueInEffect: false });
+  if (!isDesktop) return <AuditCards records={records} />;
   return (
     <Table.ScrollContainer minWidth={640}>
       <Table>
@@ -31,10 +29,10 @@ export function AuditTable({ records }: { records: AuditRecordView[] }) {
             <Table.Tr key={record.id}>
               <Table.Td>{formatDateTime(record.occurredAt)}</Table.Td>
               <Table.Td>
-                {record.actor.role ?? record.actor.clientId ?? record.actor.userId ?? '—'}
+                <AuditActor actor={record.actor} />
               </Table.Td>
               <Table.Td>
-                {record.action}{' '}
+                <span title={record.action}>{actionLabel(record.action)}</span>{' '}
                 {record.decision === 'DENIED' ? (
                   <Badge color="red">{t('audit.denied')}</Badge>
                 ) : null}

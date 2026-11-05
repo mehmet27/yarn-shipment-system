@@ -9,7 +9,9 @@ import com.yarnshipment.bag.application.port.in.CreateBagsUseCase;
 import com.yarnshipment.bag.application.port.in.ListLockedLotsUseCase;
 import com.yarnshipment.bag.application.port.in.ListLotBagsUseCase;
 import com.yarnshipment.bag.application.port.in.PrintLabelsUseCase;
+import com.yarnshipment.bag.application.port.in.VoidBagsUseCase;
 import com.yarnshipment.bag.domain.model.Bag;
+import com.yarnshipment.bag.domain.model.BagNotVoidableException;
 import com.yarnshipment.bag.domain.model.BagStatus;
 import com.yarnshipment.bag.domain.model.LabelReprintReasonRequiredException;
 import com.yarnshipment.bag.domain.model.LabeledBag;
@@ -35,7 +37,7 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 /** Çuval üretimi ve etiket basımı uçlarının sözleşmesi, hata kodları ve izin denetimi. */
-@WebMvcTest(controllers = {BagCreationController.class, LabelController.class})
+@WebMvcTest(controllers = {BagCreationController.class, LabelController.class, BagVoidController.class})
 class BagProductionControllerTest {
 
     private static final UUID LOT_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000101");
@@ -44,6 +46,8 @@ class BagProductionControllerTest {
     private static final int BAG_COUNT = 4;
     private static final int PRINT_COUNT = 2;
     private static final String PRINT_BODY = "{\"uniqueKeys\":[\"BAG-7K3M-Q9XD\"]}";
+    private static final String VOID_BODY =
+            "{\"uniqueKeys\":[\"BAG-7K3M-Q9XD\"],\"reason\":\"Yanlış sayıda üretildi\"}";
 
     private final MockMvcTester mvc;
 
@@ -58,6 +62,9 @@ class BagProductionControllerTest {
 
     @MockitoBean
     private PrintLabelsUseCase printLabelsUseCase;
+
+    @MockitoBean
+    private VoidBagsUseCase voidBagsUseCase;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -158,6 +165,38 @@ class BagProductionControllerTest {
     }
 
     @Test
+    @DisplayName("Depo personeli yanlış üretilen çuvalı gerekçeyle iptal eder; iptal edilen sayı döner")
+    void shouldVoidBags() {
+        when(voidBagsUseCase.voidBags(any())).thenReturn(1);
+
+        MvcTestResult result = post("/api/v1/bags/void", VOID_BODY, TestTokens.token("warehouse").build());
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        assertThat(result).bodyJson().extractingPath("$.voidedCount").isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("İptal gerekçesi boşluktan oluşamaz")
+    void shouldRejectBlankVoidReason() {
+        String body = "{\"uniqueKeys\":[\"BAG-7K3M-Q9XD\"],\"reason\":\"   \"}";
+
+        assertThat(post("/api/v1/bags/void", body, TestTokens.token("warehouse").build()))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    @DisplayName("Depoda olmayan çuvalın iptali BAG_NOT_VOIDABLE koduyla 409 döner")
+    void shouldReturnConflictForShippedBag() {
+        when(voidBagsUseCase.voidBags(any()))
+                .thenThrow(new BagNotVoidableException("BAG-7K3M-Q9XD", BagStatus.SHIPPED));
+
+        MvcTestResult result = post("/api/v1/bags/void", VOID_BODY, TestTokens.token("warehouse").build());
+
+        assertThat(result).hasStatus(HttpStatus.CONFLICT);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("BAG_NOT_VOIDABLE");
+    }
+
+    @Test
     @DisplayName("Kalite, yönetici, şoför ve fasoncu çuval üretemez ve etiket basamaz")
     void shouldForbidRolesWithoutBagCreate() {
         for (Jwt jwt : List.of(
@@ -167,6 +206,7 @@ class BagProductionControllerTest {
                 TestTokens.subcontractorToken())) {
             assertThat(post("/api/v1/bags", CREATE_BODY, jwt)).hasStatus(HttpStatus.FORBIDDEN);
             assertThat(post("/api/v1/bags/labels", PRINT_BODY, jwt)).hasStatus(HttpStatus.FORBIDDEN);
+            assertThat(post("/api/v1/bags/void", VOID_BODY, jwt)).hasStatus(HttpStatus.FORBIDDEN);
             assertThat(get("/api/v1/bags/lots", jwt)).hasStatus(HttpStatus.FORBIDDEN);
         }
     }

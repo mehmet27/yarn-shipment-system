@@ -3,6 +3,7 @@ package com.yarnshipment.bag.adapter.in.web;
 import com.yarnshipment.bag.application.port.in.BagNotFoundException;
 import com.yarnshipment.bag.domain.model.BagAlreadyReservedException;
 import com.yarnshipment.bag.domain.model.BagNotAvailableException;
+import com.yarnshipment.bag.domain.model.BagNotVoidableException;
 import com.yarnshipment.bag.domain.model.LabelReprintReasonRequiredException;
 import com.yarnshipment.bag.domain.model.LotNotLockedException;
 import com.yarnshipment.common.web.problem.ProblemFactory;
@@ -34,6 +35,11 @@ public final class BagExceptionHandler {
     @ExceptionHandler(BagNotAvailableException.class)
     public ProblemDetail handleNotAvailable(HttpServletRequest request) {
         return problem(request, HttpStatus.CONFLICT, "BAG_NOT_AVAILABLE");
+    }
+
+    @ExceptionHandler(BagNotVoidableException.class)
+    public ProblemDetail handleNotVoidable(HttpServletRequest request) {
+        return problem(request, HttpStatus.CONFLICT, "BAG_NOT_VOIDABLE");
     }
 
     @ExceptionHandler(BagAlreadyReservedException.class)

@@ -14,6 +14,8 @@ tags:
     description: Çuval (Unique Key) üretimi
   - name: Labels
     description: Çuval etiketi basımı
+  - name: BagVoid
+    description: Yanlış üretilen çuvalın iptali
 security:
   - bearerAuth: []
 paths:
@@ -94,6 +96,42 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '409':
           description: Parti yok ya da kalitesi kilitli değil (LOT_NOT_LOCKED)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/v1/bags/void:
+    post:
+      tags: [BagVoid]
+      operationId: voidBags
+      summary: Yanlış üretilen, depodaki çuvalları iptal eder
+      description: |
+        Yalnızca depodaki (`CREATED`) çuval iptal edilir; gerekçe zorunludur. Çuval kaydı silinmez, durumu `VOID` olur ve
+        etiketi bir daha basılmaz. Sevkiyata ayrılmış ya da yola çıkmış çuval iptal edilemez (`BAG_NOT_VOIDABLE`). Zaten
+        iptal edilmiş çuval sayılmaz. Hepsi ya da hiçbiri.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoidBagsRequest'
+      responses:
+        '200':
+          description: Çuvallar iptal edildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoidBagsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Çuval depoda değil (BAG_NOT_VOIDABLE)
           content:
             application/problem+json:
               schema:
@@ -448,6 +486,33 @@ components:
           type: string
           minLength: 1
           maxLength: 500
+    VoidBagsRequest:
+      type: object
+      required: [uniqueKeys, reason]
+      properties:
+        uniqueKeys:
+          type: array
+          minItems: 1
+          maxItems: 200
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+          pattern: '.*\S.*'
+          description: İptal gerekçesi; yalnızca boşluktan oluşamaz
+    VoidBagsResponse:
+      type: object
+      required: [voidedCount]
+      properties:
+        voidedCount:
+          type: integer
+          format: int32
+          minimum: 0
     ReleaseBagsResponse:
       type: object
       required: [releasedCount]

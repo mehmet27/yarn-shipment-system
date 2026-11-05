@@ -84,7 +84,7 @@ class BagCreationAdaptersTest {
         List<Bag> created = creations.create(new BagCreationPort.NewBags(lot, PackageType.BOX, NEW_BAGS), ACTOR, NOW);
 
         assertThat(created).hasSize(NEW_BAGS).allSatisfy(bag -> {
-            assertThat(bag.uniqueKey()).matches("BAG-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}");
+            assertThat(bag.uniqueKey()).matches("BOX-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}");
             assertThat(bag.status()).isEqualTo(BagStatus.CREATED);
             assertThat(bag.qualityGradeCode()).isEqualTo("A");
             assertThat(bag.lotNo()).isEqualTo("P-2026-0001");

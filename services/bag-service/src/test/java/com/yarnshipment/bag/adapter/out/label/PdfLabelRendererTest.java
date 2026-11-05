@@ -37,8 +37,8 @@ class PdfLabelRendererTest {
         assertThat(reader.getNumberOfPages()).isEqualTo(2);
         assertThat(reader.getPageSize(1).getWidth()).isCloseTo(LABEL_WIDTH_POINTS, Offset.offset(TOLERANCE));
         PdfTextExtractor text = new PdfTextExtractor(reader);
-        assertThat(text.getTextFromPage(1)).contains("KALİTE A", "BAG-7K3M-Q9XD", "P-2026-0001", "Çuval");
-        assertThat(text.getTextFromPage(2)).contains("KALİTE B", "BAG-2P4R-HJ8W", "Palet");
+        assertThat(text.getTextFromPage(1)).contains("KALİTE A · ÇUVAL", "BAG-7K3M-Q9XD", "P-2026-0001", "Çuval");
+        assertThat(text.getTextFromPage(2)).contains("KALİTE B · PALET", "BAG-2P4R-HJ8W", "Palet");
         assertThat(text.getTextFromPage(1)).doesNotContain("YENİDEN BASKI");
     }
 
@@ -48,7 +48,7 @@ class PdfLabelRendererTest {
         byte[] pdf = renderer.render(List.of(new BagLabel(bag("BAG-7K3M-Q9XD", "C", PackageType.BOBBIN), THIRD_PRINT)));
 
         String page = new PdfTextExtractor(new PdfReader(pdf)).getTextFromPage(1);
-        assertThat(page).contains("YENİDEN BASKI", "3. baskı", "KALİTE C", "Bobin");
+        assertThat(page).contains("YENİDEN BASKI", "3. baskı", "KALİTE C · BOBİN", "Bobin");
     }
 
     private static Bag bag(String key, String grade, PackageType packageType) {

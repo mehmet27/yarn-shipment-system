@@ -6,6 +6,7 @@ import com.yarnshipment.shipment.domain.bag.BagAssignment;
 import com.yarnshipment.shipment.domain.bag.ReservedBag;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
+import com.yarnshipment.shipment.domain.packaging.PackageType;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -55,8 +56,8 @@ class BagAssignmentAdapterTest {
         BagAssignment assignment = new BagAssignment(
                 DRAFT,
                 List.of(
-                        new ReservedBag(UUID.randomUUID(), "BAG-0001", "P-2026-0001", "A"),
-                        new ReservedBag(UUID.randomUUID(), "BAG-0002", "P-2026-0001", "A")),
+                        new ReservedBag(UUID.randomUUID(), "BAG-0001", PackageType.BAG, "P-2026-0001", "A"),
+                        new ReservedBag(UUID.randomUUID(), "BAG-0002", PackageType.BOX, "P-2026-0001", "A")),
                 ScanMethod.LIST);
 
         int first = assignments.assign(assignment, ACTOR, NOW);

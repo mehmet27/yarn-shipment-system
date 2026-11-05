@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.domain.model;
 
+import com.yarnshipment.shipment.domain.packaging.PackageType;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -9,6 +10,7 @@ import java.util.UUID;
  *
  * @param bagId çuval kimliği
  * @param uniqueKey çuvalın tekil anahtarı
+ * @param packageType ambalaj türü (çuval, koli, palet, bobin)
  * @param lotNo parti numarası
  * @param qualityGradeCode kalite sınıfı
  * @param scanMethod atamanın yapılış yöntemi
@@ -17,6 +19,7 @@ import java.util.UUID;
 public record DispatchBag(
         UUID bagId,
         String uniqueKey,
+        PackageType packageType,
         String lotNo,
         String qualityGradeCode,
         ScanMethod scanMethod,
@@ -25,6 +28,7 @@ public record DispatchBag(
     public DispatchBag {
         Objects.requireNonNull(bagId, "bagId");
         Objects.requireNonNull(uniqueKey, "uniqueKey");
+        Objects.requireNonNull(packageType, "packageType");
         Objects.requireNonNull(lotNo, "lotNo");
         Objects.requireNonNull(qualityGradeCode, "qualityGradeCode");
         Objects.requireNonNull(scanMethod, "scanMethod");

@@ -1,5 +1,6 @@
 package com.yarnshipment.bag.adapter.out.persistence;
 
+import com.yarnshipment.bag.domain.model.PackageType;
 import java.security.SecureRandom;
 import org.springframework.stereotype.Component;
 
@@ -11,15 +12,15 @@ import org.springframework.stereotype.Component;
 @Component
 final class UniqueKeyGenerator {
 
-    private static final String PREFIX = "BAG-";
     private static final char[] ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ".toCharArray();
     private static final int GROUP_LENGTH = 4;
     private static final int GROUP_COUNT = 2;
 
     private final SecureRandom random = new SecureRandom();
 
-    String next() {
-        StringBuilder key = new StringBuilder(PREFIX);
+    /** Anahtarın öneki ambalaj türünü söyler (BAG-, BOX-, PAL-, BOB-); etiket okunmadan da tür ayırt edilir. */
+    String next(PackageType packageType) {
+        StringBuilder key = new StringBuilder(prefix(packageType));
         for (int group = 0; group < GROUP_COUNT; group++) {
             if (group > 0) {
                 key.append('-');
@@ -29,5 +30,14 @@ final class UniqueKeyGenerator {
             }
         }
         return key.toString();
+    }
+
+    static String prefix(PackageType packageType) {
+        return switch (packageType) {
+            case BAG -> "BAG-";
+            case BOX -> "BOX-";
+            case PALLET -> "PAL-";
+            case BOBBIN -> "BOB-";
+        };
     }
 }

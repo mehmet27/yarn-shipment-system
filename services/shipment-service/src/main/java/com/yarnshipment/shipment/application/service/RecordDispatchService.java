@@ -7,11 +7,16 @@ import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
 import com.yarnshipment.shipment.application.port.out.DispatchCommandPort;
 import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
 import com.yarnshipment.shipment.application.port.out.TareBasisPort;
+import com.yarnshipment.shipment.domain.model.DispatchBag;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
+import com.yarnshipment.shipment.domain.packaging.PackageType;
 import java.time.Clock;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,10 +61,24 @@ public class RecordDispatchService implements RecordDispatchUseCase {
                         != command.measurement().bagCount()) {
             throw new InvalidDispatchException("bagCount", "differs from assigned bags");
         }
-        TareBasis tareBasis = tareBasisPort.findBagTareBasis(
-                shipment.siteId(), command.measurement().bagCount());
+        TareBasis tareBasis = tareBasisPort.findTareBasis(
+                shipment.siteId(), packageCounts(shipment, command.measurement().bagCount()));
         dispatchCommandPort.recordDispatch(
                 shipment.recordDispatch(command.measurement(), clock.instant(), tareBasis), actor.userId());
+    }
+
+    /**
+     * Atanan ambalajların tür başına adedi. Atama listesi tartıdaki adetle uyuşmuyorsa (eski kayıt gibi) hepsi çuval
+     * sayılır; önceki davranış korunur.
+     */
+    private Map<PackageType, Integer> packageCounts(Shipment shipment, int bagCount) {
+        List<DispatchBag> assigned = bagsPort.findDispatchBags(shipment.id());
+        if (assigned.size() != bagCount) {
+            return Map.of(PackageType.BAG, bagCount);
+        }
+        Map<PackageType, Integer> counts = new EnumMap<>(PackageType.class);
+        assigned.forEach(bag -> counts.merge(bag.packageType(), 1, Integer::sum));
+        return counts;
     }
 
     private boolean isRepeatedRequest(Shipment shipment) {

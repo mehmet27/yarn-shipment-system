@@ -2,17 +2,20 @@ package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 
 import com.yarnshipment.shipment.application.port.out.TareBasisPort;
 import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
+import com.yarnshipment.shipment.domain.packaging.PackageType;
 import com.yarnshipment.shipment.masterdata.application.port.out.TareStandardPort;
 import com.yarnshipment.shipment.masterdata.domain.catalog.PackagingType;
 import com.yarnshipment.shipment.masterdata.domain.catalog.TareStandard;
 import com.yarnshipment.shipment.masterdata.domain.catalog.TareStandardDetails;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -39,9 +42,9 @@ final class TareStandardAdapter implements TareStandardPort, TareBasisPort {
             ON CONFLICT (site_id, packaging_type) DO UPDATE
                 SET standard_tare_kg = EXCLUDED.standard_tare_kg, max_deviation_pct = EXCLUDED.max_deviation_pct,
                     updated_at = EXCLUDED.created_at, updated_by = EXCLUDED.created_by""";
-    private static final String BAG_STANDARD = """
-            SELECT standard_tare_kg, max_deviation_pct FROM md_tare_standard
-            WHERE site_id = ? AND packaging_type = 'BAG'""";
+    private static final String SITE_STANDARDS = """
+            SELECT packaging_type, standard_tare_kg, max_deviation_pct FROM md_tare_standard
+            WHERE site_id = ? AND standard_tare_kg > 0""";
 
     private final JdbcClient jdbc;
     private final Clock clock;
@@ -84,14 +87,29 @@ final class TareStandardAdapter implements TareStandardPort, TareBasisPort {
     }
 
     @Override
-    public @Nullable TareBasis findBagTareBasis(UUID siteId, int bagCount) {
-        return jdbc.sql(BAG_STANDARD)
+    public @Nullable TareBasis findTareBasis(UUID siteId, Map<PackageType, Integer> packageCounts) {
+        BigDecimal expected = BigDecimal.ZERO;
+        BigDecimal weightedPct = BigDecimal.ZERO;
+        for (TypeStandard standard : jdbc.sql(SITE_STANDARDS)
                 .param(siteId)
-                .query((rs, rowNumber) -> TareBasis.of(
-                        rs.getBigDecimal("standard_tare_kg"), rs.getBigDecimal("max_deviation_pct"), bagCount))
-                .optional()
-                .orElse(null);
+                .query((rs, rowNumber) -> new TypeStandard(
+                        PackageType.valueOf(rs.getString("packaging_type")),
+                        rs.getBigDecimal("standard_tare_kg"),
+                        rs.getBigDecimal("max_deviation_pct")))
+                .list()) {
+            BigDecimal typeExpected =
+                    standard.tareKg().multiply(BigDecimal.valueOf(packageCounts.getOrDefault(standard.type(), 0)));
+            expected = expected.add(typeExpected);
+            weightedPct = weightedPct.add(typeExpected.multiply(standard.maxDeviationPct()));
+        }
+        if (expected.signum() == 0) {
+            return null;
+        }
+        return new TareBasis(expected, weightedPct.divide(expected, 2, RoundingMode.HALF_UP));
     }
+
+    /** Türün standart darası; izin verilen sapma, beklenen dara ağırlığıyla ortalanarak tek yüzdeye indirilir. */
+    private record TypeStandard(PackageType type, BigDecimal tareKg, BigDecimal maxDeviationPct) {}
 
     private static TareStandard tareStandard(ResultSet rs) throws SQLException {
         BigDecimal tare = rs.getBigDecimal("standard_tare_kg");

@@ -20,7 +20,7 @@ describe('Çuval ve etiket ekranı', () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/cuvallar');
     expect(await screen.findByRole('combobox', { name: 'Parti' })).toHaveValue(
-      'P-2026-0001 · Kalite A · 1 çuval',
+      'P-2026-0001 · Kalite A · 1 ambalaj',
     );
     const count = screen.getByRole('textbox', { name: 'Adet' });
     await userEvent.clear(count);
@@ -28,7 +28,7 @@ describe('Çuval ve etiket ekranı', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Çuval oluştur' }));
 
     expect(await screen.findByRole('status')).toHaveTextContent(/^3 çuval oluşturuldu/);
-    expect(await screen.findByText('3 çuval seçili')).toBeInTheDocument();
+    expect(await screen.findByText('3 ambalaj seçili')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getAllByText('Basılmadı')).toHaveLength(3);
     });
@@ -46,6 +46,17 @@ describe('Çuval ve etiket ekranı', () => {
     });
   });
 
+  it('koli seçilince düğme, mesaj ve anahtar öneki koli olur', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    renderApp('/panel/cuvallar');
+    await userEvent.click(await screen.findByRole('combobox', { name: 'Ambalaj' }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Koli' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Koli oluştur' }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent(/^10 koli oluşturuldu/);
+    expect(await screen.findAllByText(/^BOX-/)).toHaveLength(10);
+  });
+
   it('kalitesi kilitlenmemiş parti için anlaşılır uyarı gösterir, çuval eklemez', async () => {
     server.use(
       http.post(BAGS_PATH, () =>
@@ -60,7 +71,7 @@ describe('Çuval ve etiket ekranı', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Çuval oluştur' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Kalite kilitlenmeden çuval üretilemez. Önce Partiler ekranından partinin kalitesini kilitleyin.',
+      'Kalite kilitlenmeden ambalaj üretilemez. Önce Partiler ekranından partinin kalitesini kilitleyin.',
     );
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(screen.getAllByText('1 kez')).toHaveLength(1);

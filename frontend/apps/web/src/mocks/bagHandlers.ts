@@ -53,6 +53,13 @@ function seedBags(): Map<string, LabeledBagView[]> {
   return new Map([[LOTS[0]?.lotId ?? '', [printed]]]);
 }
 
+const KEY_PREFIX: Record<PackageType, string> = {
+  BAG: 'BAG',
+  BOX: 'BOX',
+  PALLET: 'PAL',
+  BOBBIN: 'BOB',
+};
+
 type CreateBody = { lotId: string; packageType: PackageType; count: number };
 type PrintBody = { uniqueKeys: string[]; reprintReason?: string };
 
@@ -85,7 +92,7 @@ export function createBagHandlers(permissions: readonly Permission[]) {
       }
       const created = Array.from({ length: body.count }, () => ({
         id: crypto.randomUUID(),
-        uniqueKey: `BAG-${randomGroup()}-${randomGroup()}`,
+        uniqueKey: `${KEY_PREFIX[body.packageType]}-${randomGroup()}-${randomGroup()}`,
         packageType: body.packageType,
         lotNo: lot.lotNo,
         qualityGradeCode: lot.qualityGradeCode,

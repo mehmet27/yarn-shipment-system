@@ -792,6 +792,7 @@ export interface ShipmentHistoryResponse {
 export interface DispatchBagView {
   bagId: string;
   uniqueKey: string;
+  packageType: PackagingType;
   lotNo: string;
   qualityGradeCode: string;
   scanMethod: ScanMethod;

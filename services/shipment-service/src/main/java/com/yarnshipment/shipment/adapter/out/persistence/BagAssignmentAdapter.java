@@ -14,9 +14,10 @@ import org.springframework.stereotype.Component;
 final class BagAssignmentAdapter implements BagAssignmentPort {
 
     private static final String INSERT = """
-            INSERT INTO shipment_bag (id, shipment_id, bag_id, unique_key, lot_no, quality_grade_code, scan_method,
-                                      assigned_at, assigned_by, created_at, created_by)
-            VALUES (:id, :shipmentId, :bagId, :uniqueKey, :lotNo, :grade, :method, :at, :actor, :at, :actor)
+            INSERT INTO shipment_bag (id, shipment_id, bag_id, unique_key, package_type, lot_no, quality_grade_code,
+                                      scan_method, assigned_at, assigned_by, created_at, created_by)
+            VALUES (:id, :shipmentId, :bagId, :uniqueKey, :packageType, :lotNo, :grade, :method, :at, :actor, :at,
+                    :actor)
             ON CONFLICT (shipment_id, bag_id) WHERE removed_at IS NULL DO NOTHING""";
 
     private final JdbcClient jdbc;
@@ -38,6 +39,7 @@ final class BagAssignmentAdapter implements BagAssignmentPort {
                     .param("shipmentId", assignment.shipmentId())
                     .param("bagId", bag.bagId())
                     .param("uniqueKey", bag.uniqueKey())
+                    .param("packageType", bag.packageType().name())
                     .param("lotNo", bag.lotNo())
                     .param("grade", bag.qualityGradeCode())
                     .param("method", assignment.scanMethod().name())

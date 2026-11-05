@@ -3020,13 +3020,15 @@ components:
             $ref: '#/components/schemas/DeliveryScanView'
     DispatchBagView:
       type: object
-      required: [bagId, uniqueKey, lotNo, qualityGradeCode, scanMethod, assignedAt]
+      required: [bagId, uniqueKey, packageType, lotNo, qualityGradeCode, scanMethod, assignedAt]
       properties:
         bagId:
           type: string
           format: uuid
         uniqueKey:
           type: string
+        packageType:
+          $ref: '#/components/schemas/PackagingType'
         lotNo:
           type: string
         qualityGradeCode:

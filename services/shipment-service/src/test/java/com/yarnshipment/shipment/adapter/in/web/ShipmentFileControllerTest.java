@@ -16,6 +16,7 @@ import com.yarnshipment.shipment.domain.model.DispatchBag;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.model.StatusChange;
+import com.yarnshipment.shipment.domain.packaging.PackageType;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -62,8 +63,9 @@ class ShipmentFileControllerTest {
     }
 
     private void givenBags(ShipmentAudience audience, boolean dispatch, boolean delivery) {
-        List<DispatchBag> bags =
-                dispatch ? List.of(new DispatchBag(UUID.randomUUID(), "K-1", "LOT-1", "A", ScanMethod.SCAN, AT)) : null;
+        List<DispatchBag> bags = dispatch
+                ? List.of(new DispatchBag(UUID.randomUUID(), "K-1", PackageType.BAG, "LOT-1", "A", ScanMethod.SCAN, AT))
+                : null;
         List<DeliveryScan> scans = delivery ? List.of(new DeliveryScan("K-1", true, ScanMethod.LIST, AT)) : null;
         when(getShipmentBagsUseCase.getBags(any())).thenReturn(new ShipmentBags(audience, bags, scans));
     }

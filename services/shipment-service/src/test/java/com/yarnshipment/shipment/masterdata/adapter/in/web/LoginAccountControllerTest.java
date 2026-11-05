@@ -103,7 +103,9 @@ class LoginAccountControllerTest {
         UUID id = UUID.fromString("0192f0a0-0000-7000-8000-0000000000aa");
         when(listUserNames.listUserNames(any())).thenReturn(Map.of(id, "Ayşe Demir"));
 
-        MvcTestResult result = get("/api/v1/master-data/user-names?ids=" + id, TestTokens.token("quality").build());
+        MvcTestResult result = get(
+                "/api/v1/master-data/user-names?ids=" + id,
+                TestTokens.token("quality").build());
 
         assertThat(result).hasStatus(HttpStatus.OK);
         assertThat(result).bodyJson().extractingPath("$.items[0].name").isEqualTo("Ayşe Demir");

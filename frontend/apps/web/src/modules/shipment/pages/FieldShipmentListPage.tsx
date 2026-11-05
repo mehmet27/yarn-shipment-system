@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Text, Title } from '@iplik/ui';
+import { EmptyState, PageHero, Stack } from '@iplik/ui';
 import { QueryState } from '../components/QueryState';
 import { ShipmentCard } from '../components/ShipmentCard';
 import { useShipments } from '../hooks/useShipments';
@@ -12,13 +12,11 @@ export function FieldShipmentListPage() {
   const query = useShipments({ page: 0, size: FIELD_PAGE_SIZE });
   return (
     <Stack>
-      <Title order={1} size="h3">
-        {t('field.myShipments')}
-      </Title>
+      <PageHero title={t('field.myShipments')} />
       <QueryState query={query}>
         {(page) =>
           page.items.length === 0 ? (
-            <Text c="dimmed">{t('field.empty')}</Text>
+            <EmptyState title={t('field.empty')} />
           ) : (
             <Stack gap="sm">
               {page.items.map((shipment) => (

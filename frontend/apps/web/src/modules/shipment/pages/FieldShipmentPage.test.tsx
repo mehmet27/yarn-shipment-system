@@ -29,7 +29,7 @@ describe('FieldShipmentPage', () => {
     renderApp('/saha/sevkiyat/shp-0010');
     await userEvent.click(await screen.findByRole('button', { name: 'Yükü teslim aldım' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Evet, teslim aldım' }));
-    expect(await screen.findByText('Yolda')).toBeInTheDocument();
+    expect(await screen.findByTestId('shipment-status')).toHaveTextContent('Yolda');
     expect(screen.queryByRole('button', { name: 'Yükü teslim aldım' })).not.toBeInTheDocument();
   });
 
@@ -57,8 +57,7 @@ describe('FieldShipmentPage', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Yükü teslim aldım' }));
     expect(await screen.findByText(/Bu adım geri alınamaz/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Vazgeç' }));
-    expect(screen.getByText('Yüklendi')).toBeInTheDocument();
-    expect(screen.queryByText('Yolda')).not.toBeInTheDocument();
+    expect(screen.getByTestId('shipment-status')).toHaveTextContent('Yüklendi');
   });
 
   it('geçersiz sevkiyat kimliği için "bulunamadı" gösterir', async () => {

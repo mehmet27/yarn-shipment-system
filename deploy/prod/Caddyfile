@@ -1,0 +1,18 @@
+# TLS sertifikasını Caddy kendiliğinden alır ve yeniler (Let's Encrypt). 80 ve 443 numaralı portlar dışarıya açık olmalıdır.
+{
+	email {$ACME_EMAIL}
+}
+
+{$APP_HOST} {
+	encode zstd gzip
+	reverse_proxy web:80
+}
+
+{$AUTH_HOST} {
+	reverse_proxy keycloak:8080
+}
+
+# Kanıt dosyaları (fotoğraf, belge): tarayıcı önceden imzalı adreslerle doğrudan buraya yükler/indirir.
+{$FILES_HOST} {
+	reverse_proxy minio:9000
+}

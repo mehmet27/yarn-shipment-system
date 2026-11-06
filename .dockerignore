@@ -1,0 +1,7 @@
+.git
+**/target
+**/node_modules
+frontend/apps/web/dist
+deploy/.env
+deploy/prod/.env
+docs

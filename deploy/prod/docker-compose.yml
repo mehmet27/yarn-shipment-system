@@ -1,0 +1,299 @@
+# Üretim kurulumu (tek sunucu). Kullanım: ./deploy/prod/install.sh  (ayrıntı: DEPLOY.md)
+# Dışarıya yalnızca Caddy'nin 80/443 portları açılır; veritabanı, Redis, Kafka, MinIO ve servisler iç ağda kalır.
+name: yarn-shipment-prod
+
+x-service-env: &service-env
+  DB_URL: jdbc:postgresql://postgres:5432/yarnshipment
+  DB_USER: yarnshipment
+  DB_PASSWORD: ${DB_PASSWORD:?.env içinde DB_PASSWORD tanımlayın}
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  # Token'daki "iss" tarayıcının gördüğü adresle aynı olmalıdır; servisler bu adrese iç ağda Caddy üzerinden ulaşır.
+  KEYCLOAK_ISSUER_URI: https://${AUTH_HOST:?.env içinde AUTH_HOST tanımlayın}/realms/yarnshipment
+
+x-service: &service
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+    kafka:
+      condition: service_healthy
+
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      APP_HOST: ${APP_HOST}
+      AUTH_HOST: ${AUTH_HOST}
+      FILES_HOST: ${FILES_HOST}
+      ACME_EMAIL: ${ACME_EMAIL:?.env içinde ACME_EMAIL tanımlayın}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      default:
+        # Konteynerler genel adresleri (token issuer, MinIO yükleme adresi) iç ağda Caddy'ye çözer; geçerli sertifika sayesinde TLS doğrulaması geçer.
+        aliases:
+          - ${APP_HOST}
+          - ${AUTH_HOST}
+          - ${FILES_HOST}
+
+  web:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/web.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - gateway
+
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?.env içinde POSTGRES_PASSWORD tanımlayın}
+      # initdb betiği yarnshipment kullanıcısının şifresi olarak bunu okur.
+      LOCAL_DB_PASSWORD: ${DB_PASSWORD}
+      TZ: UTC
+      PGTZ: UTC
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ../postgres/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    # Gateway oturumları; veri kalıcı değildir (Redis yeniden başlayınca kullanıcılar yeniden giriş yapar).
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?.env içinde REDIS_PASSWORD tanımlayın}", "--save", ""]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  kafka:
+    image: apache/kafka:4.1.0
+    restart: unless-stopped
+    # Tek düğüm KRaft (pilot ölçeği için yeterli). Konular ilk olayla kendiliğinden açılır.
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+
+  minio:
+    image: chainguard/minio:latest-dev@sha256:d217f9474062b905846b25f59763a408b1bed15a2c5f931e7b0d099b38334698
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${EVIDENCE_STORAGE_ACCESS_KEY:?.env içinde EVIDENCE_STORAGE_ACCESS_KEY tanımlayın}
+      MINIO_ROOT_PASSWORD: ${EVIDENCE_STORAGE_SECRET_KEY:?.env içinde EVIDENCE_STORAGE_SECRET_KEY tanımlayın}
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "mc ready local"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio-init:
+    image: chainguard/minio-client:latest-dev@sha256:78e1d95a22be2ce6704d3d00605b907f4c65a59dd8e0f70669371570e2167570
+    entrypoint: >
+      /bin/sh -c "mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+      mc mb --ignore-existing local/evidence"
+    environment:
+      MINIO_ROOT_USER: ${EVIDENCE_STORAGE_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${EVIDENCE_STORAGE_SECRET_KEY}
+    depends_on:
+      minio:
+        condition: service_healthy
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    restart: unless-stopped
+    command: ["start", "--import-realm"]
+    environment:
+      KC_HOSTNAME: https://${AUTH_HOST}
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HEALTH_ENABLED: "true"
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/yarnshipment
+      KC_DB_SCHEMA: keycloak
+      KC_DB_USERNAME: yarnshipment
+      KC_DB_PASSWORD: ${DB_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?.env içinde KEYCLOAK_ADMIN_PASSWORD tanımlayın}
+      # Realm dosyasındaki ${...} yer tutucuları bu ortam değişkenlerinden doldurulur.
+      APP_URL: https://${APP_HOST}
+      GATEWAY_CLIENT_SECRET: ${GATEWAY_CLIENT_SECRET:?.env içinde GATEWAY_CLIENT_SECRET tanımlayın}
+      KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?.env içinde KEYCLOAK_ADMIN_CLIENT_SECRET tanımlayın}
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:?.env içinde INITIAL_ADMIN_EMAIL tanımlayın}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?.env içinde INITIAL_ADMIN_PASSWORD tanımlayın}
+      KEYCLOAK_SMTP_HOST: ${KEYCLOAK_SMTP_HOST}
+      KEYCLOAK_SMTP_PORT: ${KEYCLOAK_SMTP_PORT}
+      KEYCLOAK_SMTP_FROM: ${KEYCLOAK_SMTP_FROM}
+      KEYCLOAK_SMTP_AUTH: ${KEYCLOAK_SMTP_AUTH}
+      KEYCLOAK_SMTP_USER: ${KEYCLOAK_SMTP_USER}
+      KEYCLOAK_SMTP_PASSWORD: ${KEYCLOAK_SMTP_PASSWORD}
+      KEYCLOAK_SMTP_SSL: ${KEYCLOAK_SMTP_SSL}
+      KEYCLOAK_SMTP_STARTTLS: ${KEYCLOAK_SMTP_STARTTLS}
+    volumes:
+      # Yalnızca realm yoksa içe aktarılır (test kullanıcısı içermeyen üretim realm'i).
+      - ../keycloak/yarnshipment-realm-prod.json:/opt/keycloak/data/import/yarnshipment-realm.json:ro
+      - ../keycloak/themes/yarnshipment:/opt/keycloak/themes/yarnshipment:ro
+      # Giriş sayfasının uygulama adresi (install.sh .env'den üretir).
+      - ./generated/frontend-config.js:/opt/keycloak/themes/yarnshipment/login/resources/js/frontend-config.js:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # İmajda curl yok; yönetim portundan (9000) hazır olma ucu bash ile sorgulanır.
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"status\": \"UP\"' <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  shipment-service:
+    <<: *service
+    build:
+      context: ../..
+      dockerfile: deploy/docker/service.Dockerfile
+      args: { MODULE: shipment-service }
+    environment:
+      <<: *service-env
+      YARNSHIPMENT_BAG_SERVICE_URL: http://bag-service:8084
+      YARNSHIPMENT_EVIDENCE_SERVICE_URL: http://evidence-service:8086
+      # Giriş hesabı açma: Keycloak yönetim API'si (iç ağ).
+      YARNSHIPMENT_KEYCLOAK_ADMIN_URL: http://keycloak:8080
+      YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET}
+      # SMS sağlayıcısı henüz bağlı değil: şifre sıfırlama SMS'i 503 döner (DEPLOY.md, "Bilinen sınırlar").
+      YARNSHIPMENT_SMS_PROVIDER: none
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+      keycloak: { condition: service_healthy }
+
+  bag-service:
+    <<: *service
+    build:
+      context: ../..
+      dockerfile: deploy/docker/service.Dockerfile
+      args: { MODULE: bag-service }
+    environment:
+      <<: *service-env
+
+  discrepancy-service:
+    <<: *service
+    build:
+      context: ../..
+      dockerfile: deploy/docker/service.Dockerfile
+      args: { MODULE: discrepancy-service }
+    environment:
+      <<: *service-env
+      YARNSHIPMENT_EVIDENCE_SERVICE_URL: http://evidence-service:8086
+
+  evidence-service:
+    <<: *service
+    build:
+      context: ../..
+      dockerfile: deploy/docker/service.Dockerfile
+      args: { MODULE: evidence-service }
+    environment:
+      <<: *service-env
+      YARNSHIPMENT_SHIPMENT_SERVICE_URL: http://shipment-service:8083
+      # Yükleme/indirme adresleri tarayıcıya verildiği için genel adres kullanılır.
+      EVIDENCE_STORAGE_ENDPOINT: https://${FILES_HOST}
+      EVIDENCE_STORAGE_BUCKET: evidence
+      EVIDENCE_STORAGE_ACCESS_KEY: ${EVIDENCE_STORAGE_ACCESS_KEY}
+      EVIDENCE_STORAGE_SECRET_KEY: ${EVIDENCE_STORAGE_SECRET_KEY}
+      TICKET_READING_ENABLED: ${TICKET_READING_ENABLED:-false}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+      minio-init: { condition: service_completed_successfully }
+
+  reporting-service:
+    <<: *service
+    build:
+      context: ../..
+      dockerfile: deploy/docker/service.Dockerfile
+      args: { MODULE: reporting-service }
+    environment:
+      <<: *service-env
+
+  audit-service:
+    <<: *service
+    build:
+      context: ../..
+      dockerfile: deploy/docker/service.Dockerfile
+      args: { MODULE: audit-service }
+    environment:
+      <<: *service-env
+
+  gateway:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/service.Dockerfile
+      args: { MODULE: gateway }
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_ISSUER_URI: https://${AUTH_HOST}/realms/yarnshipment
+      GATEWAY_CLIENT_SECRET: ${GATEWAY_CLIENT_SECRET}
+      GATEWAY_PUBLIC_URL: https://${APP_HOST}
+      GATEWAY_POST_LOGIN_URL: https://${APP_HOST}/
+      GATEWAY_POST_LOGOUT_URL: https://${APP_HOST}/
+      # TLS'i Caddy sonlandırır; X-Forwarded-* başlıklarına güven (Secure çerez, doğru yönlendirme adresi).
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SHIPMENT_SERVICE_URL: http://shipment-service:8083
+      BAG_SERVICE_URL: http://bag-service:8084
+      DISCREPANCY_SERVICE_URL: http://discrepancy-service:8085
+      EVIDENCE_SERVICE_URL: http://evidence-service:8086
+      REPORTING_SERVICE_URL: http://reporting-service:8087
+      AUDIT_SERVICE_URL: http://audit-service:8088
+    depends_on:
+      redis: { condition: service_healthy }
+      keycloak: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && printf 'GET /actuator/health HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
+volumes:
+  postgres-data:
+  kafka-data:
+  minio-data:
+  caddy-data:
+  caddy-config:

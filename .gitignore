@@ -10,6 +10,8 @@ target/
 # Yerel gizli bilgiler (SEC-14)
 .env
 deploy/.env
+deploy/prod/.env
 
 # İşletim sistemi
 .DS_Store
+deploy/prod/generated/

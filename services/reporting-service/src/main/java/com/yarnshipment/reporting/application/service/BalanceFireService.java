@@ -1,7 +1,10 @@
 package com.yarnshipment.reporting.application.service;
 
-import com.yarnshipment.reporting.application.port.in.BalanceFireReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ImportOpeningBalanceUseCase;
+import com.yarnshipment.reporting.application.port.in.ListBalanceMatrixUseCase;
+import com.yarnshipment.reporting.application.port.in.ListFireReportUseCase;
+import com.yarnshipment.reporting.application.port.in.ListToInvoiceUseCase;
+import com.yarnshipment.reporting.application.port.in.ListYarnVsFabricUseCase;
 import com.yarnshipment.reporting.application.port.in.ReportQuery;
 import com.yarnshipment.reporting.application.port.out.BalanceFirePort;
 import com.yarnshipment.reporting.domain.model.BalanceMatrixRow;
@@ -20,7 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Bakiye matrisi, fire raporları ve açılış bakiyesi içe aktarma. Kapsam dışı kullanıcı boş rapor alır. */
 @Service
-public class BalanceFireService implements BalanceFireReportUseCase, ImportOpeningBalanceUseCase {
+public class BalanceFireService
+        implements ListBalanceMatrixUseCase,
+                ListFireReportUseCase,
+                ListYarnVsFabricUseCase,
+                ListToInvoiceUseCase,
+                ImportOpeningBalanceUseCase {
 
     private final BalanceFirePort port;
     private final ReportAccess access;

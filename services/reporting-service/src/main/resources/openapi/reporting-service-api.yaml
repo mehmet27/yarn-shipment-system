@@ -19,6 +19,7 @@ servers:
   - url: /
 tags:
   - name: Reports
+  - name: BalanceFire
 security:
   - bearerAuth: []
 paths:
@@ -122,7 +123,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
   /api/v1/reports/balance-matrix:
     get:
-      tags: [Reports]
+      tags: [BalanceFire]
       operationId: getBalanceMatrix
       summary: İplik cinsi x fasoncu bakiye matrisi
       description: BALANCE_VIEW gerekir. balanceKg hareketlerin işaretli toplamıdır.
@@ -145,7 +146,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
   /api/v1/reports/fire:
     get:
-      tags: [Reports]
+      tags: [BalanceFire]
       operationId: getFireReport
       summary: Sevkiyat bazında fire dosyaları
       description: REPORT_VIEW gerekir. Dönem tamamlanma tarihine göredir. Oranlar kesirdir (0.0400 = %4).
@@ -176,7 +177,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
   /api/v1/reports/yarn-vs-fabric:
     get:
-      tags: [Reports]
+      tags: [BalanceFire]
       operationId: getYarnVsFabricReport
       summary: Fasoncu bazında giden iplik ve gelen kumaş
       description: REPORT_VIEW gerekir.
@@ -201,7 +202,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
   /api/v1/reports/to-invoice:
     get:
-      tags: [Reports]
+      tags: [BalanceFire]
       operationId: getToInvoiceReport
       summary: Faturalanacak fire dosyaları
       description: REPORT_VIEW gerekir. Eksik kilo sıfırdan büyük ve durum TO_INVOICE olanlar.
@@ -226,7 +227,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
   /api/v1/reports/balance/opening-import:
     post:
-      tags: [Reports]
+      tags: [BalanceFire]
       operationId: importOpeningBalance
       summary: Açılış bakiyesini OPENING hareketi olarak içe aktarır
       description: BALANCE_VIEW gerekir. (fasoncu, iplik cinsi) için OPENING varsa satır atlanır.

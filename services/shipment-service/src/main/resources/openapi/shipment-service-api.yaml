@@ -1985,6 +1985,11 @@ components:
         - DISCREPANCY_RESOLVE
         - AUDIT_VIEW
         - REPORT_VIEW
+        - BALANCE_VIEW
+        - FABRIC_RECEIPT_RECORD
+        - YARN_RETURN_RECORD
+        - FIRE_RATE_EDIT
+        - INVOICE_MARK
     CurrentUserResponse:
       type: object
       required: [userId, fullName, roles, permissions, siteIds, mfaVerified]

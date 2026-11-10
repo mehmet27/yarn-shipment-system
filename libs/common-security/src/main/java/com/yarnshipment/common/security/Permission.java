@@ -35,6 +35,17 @@ public enum Permission implements GrantedAuthority {
     DISCREPANCY_VIEW(AccessType.READ),
     DISCREPANCY_RESOLVE(AccessType.WRITE),
 
+    /** Fasoncu bakiye ekranı ve bakiye hareketleri. */
+    BALANCE_VIEW(AccessType.READ),
+    /** Gelen kumaşı sevkiyata kaydeder. */
+    FABRIC_RECEIPT_RECORD(AccessType.WRITE),
+    /** Fasoncudan dönen veya fasoncudan gelen iplik. */
+    YARN_RETURN_RECORD(AccessType.WRITE),
+    /** Sevkiyatın fire oranını değiştirir. */
+    FIRE_RATE_EDIT(AccessType.WRITE),
+    /** Fire dosyasında "fatura edildi" işareti ve dosya kapatma. */
+    INVOICE_MARK(AccessType.WRITE),
+
     AUDIT_VIEW(AccessType.READ),
     REPORT_VIEW(AccessType.READ);
 

@@ -41,6 +41,18 @@ const ITEMS: readonly PanelNavItem[] = [
     icon: 'branding',
     permission: 'SETTINGS_MANAGE',
   },
+  {
+    to: '/panel/bakiye',
+    labelKey: 'nav.balances',
+    icon: 'balances',
+    permission: 'BALANCE_VIEW',
+  },
+  {
+    to: '/panel/faturalanacaklar',
+    labelKey: 'nav.toInvoice',
+    icon: 'invoices',
+    permission: 'INVOICE_MARK',
+  },
   { to: '/panel/denetim', labelKey: 'nav.audit', icon: 'audit', permission: 'AUDIT_VIEW' },
   { to: '/panel/kullanicilar', labelKey: 'nav.users', icon: 'users', permission: 'USER_MANAGE' },
 ];

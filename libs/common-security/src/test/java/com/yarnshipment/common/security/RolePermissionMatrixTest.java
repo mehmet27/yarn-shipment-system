@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 class RolePermissionMatrixTest {
 
     @Test
-    @DisplayName("Müdürün yazma izni yalnızca sevkiyat açma, iptal ve tamamlamadır")
+    @DisplayName("Müdürün yazma izni sevkiyat yaşam döngüsü, kumaş, iplik dönüşü, fire oranı ve fatura işaretidir")
     void shouldLimitManagerWritesToShipmentLifecycle() {
         // when
         Set<Permission> permissions = RolePermissionMatrix.permissionsOf(List.of(Role.MANAGER));
@@ -21,7 +21,27 @@ class RolePermissionMatrixTest {
         // then
         assertThat(permissions.stream().filter(Permission::isWrite))
                 .containsExactlyInAnyOrder(
-                        Permission.SHIPMENT_CREATE, Permission.SHIPMENT_CANCEL, Permission.SHIPMENT_COMPLETE);
+                        Permission.SHIPMENT_CREATE,
+                        Permission.SHIPMENT_CANCEL,
+                        Permission.SHIPMENT_COMPLETE,
+                        Permission.FABRIC_RECEIPT_RECORD,
+                        Permission.YARN_RETURN_RECORD,
+                        Permission.FIRE_RATE_EDIT,
+                        Permission.INVOICE_MARK);
+    }
+
+    @Test
+    @DisplayName("Bakiye, kumaş girişi, iplik dönüşü, fire oranı ve fatura izinleri bölüm 3.3 matrisine uyar")
+    void shouldFollowBalanceAndFirePermissionMatrix() {
+        // when / then
+        assertThat(rolesHaving(Permission.BALANCE_VIEW))
+                .containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER, Role.QUALITY);
+        assertThat(rolesHaving(Permission.FABRIC_RECEIPT_RECORD))
+                .containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER, Role.QUALITY);
+        assertThat(rolesHaving(Permission.YARN_RETURN_RECORD))
+                .containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE);
+        assertThat(rolesHaving(Permission.FIRE_RATE_EDIT)).containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER);
+        assertThat(rolesHaving(Permission.INVOICE_MARK)).containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER);
     }
 
     @Test

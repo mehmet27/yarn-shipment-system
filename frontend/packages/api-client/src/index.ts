@@ -131,7 +131,7 @@ export type {
   QualityGradeCreateRequest,
   QualityGradeUpdateRequest,
   QualityGradeView,
-  YarnSupplierRequest,
+  YarnSupplierCreateRequest,
   YarnSupplierView,
 } from './masterData';
 export {

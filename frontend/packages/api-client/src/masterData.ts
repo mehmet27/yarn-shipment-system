@@ -124,7 +124,7 @@ export type {
   QualityGradeCreateRequest,
   QualityGradeUpdateRequest,
   QualityGradeView,
-  YarnSupplierRequest,
+  YarnSupplierCreateRequest,
   YarnSupplierView,
 } from './generated/shipmentService';
 

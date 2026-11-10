@@ -2123,6 +2123,12 @@ components:
         - DISCREPANCY_RESOLVE
         - AUDIT_VIEW
         - REPORT_VIEW
+        - FABRIC_RECEIPT_RECORD
+        - YARN_RETURN_RECORD
+        - FIRE_RATE_EDIT
+        - INVOICE_MARK
+        - BALANCE_VIEW
+        - WEIGHT_MISMATCH_RESOLVE
     CurrentUserResponse:
       type: object
       required: [userId, fullName, roles, permissions, siteIds, mfaVerified]

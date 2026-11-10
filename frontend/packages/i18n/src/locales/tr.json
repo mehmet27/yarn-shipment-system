@@ -884,7 +884,50 @@
       "summary": "Özet",
       "subcontractors": "Fasoncular",
       "shipments": "Sevkiyat dökümü",
-      "balance": "Fasoncu bakiye"
+      "balance": "Fasoncu bakiye",
+      "balanceMatrix": "Bakiye matrisi",
+      "fire": "Fire raporu",
+      "yarnVsFabric": "Giden iplik ↔ gelen kumaş",
+      "toInvoice": "Faturalanacaklar"
+    },
+    "matrix": {
+      "yarnType": "İplik cinsi",
+      "inTransit": "Yolda",
+      "empty": "Bakiye kaydı yok."
+    },
+    "fire": {
+      "allSubcontractors": "Tüm fasoncular",
+      "empty": "Bu dönemde kayıt yok.",
+      "sent": "Gönderilen (G)",
+      "returnedYarn": "Dönen iplik (D)",
+      "fabric": "Gelen kumaş (K)",
+      "fireRate": "Fire oranı",
+      "expectedFabric": "Beklenen kumaş",
+      "actualFireRate": "Gerçekleşen fire",
+      "shortage": "Hatalı kg",
+      "invoiceNo": "Fatura no",
+      "invoicedAt": "Fatura tarihi",
+      "status": {
+        "AWAITING_FABRIC": "Kumaş bekleniyor",
+        "TO_INVOICE": "Faturalanacak",
+        "CLOSED": "Kapandı"
+      }
+    },
+    "opening": {
+      "title": "Açılış bakiyesi yükle",
+      "hint": "Her satır: fasoncu;iplik;kg (noktalı virgül ya da sekmeyle). Fasoncu adı tanımlarla aynı olmalıdır.",
+      "asOf": "Bakiye tarihi",
+      "data": "Satırlar",
+      "netKg": "Net kg",
+      "submit": "{{count}} satırı yükle",
+      "lineError": "Satır {{line}}: {{reason}}",
+      "error": {
+        "format": "fasoncu;iplik;kg biçiminde olmalı",
+        "unknown": "fasoncu bulunamadı",
+        "kg": "kilo geçersiz"
+      },
+      "failed": "Açılış bakiyesi yüklenemedi.",
+      "result": "{{imported}} satır yüklendi, {{skipped}} satır atlandı."
     },
     "parties": {
       "subcontractor": "Fasoncu",
@@ -956,7 +999,11 @@
         "largest": "En büyük farklar",
         "subcontractors": "Fasoncular",
         "shipments": "Sevkiyat dökümü",
-        "balance": "Fasoncu bakiye"
+        "balance": "Fasoncu bakiye",
+        "balanceMatrix": "Bakiye matrisi",
+        "fire": "Fire raporu",
+        "yarnVsFabric": "İplik-kumaş",
+        "toInvoice": "Faturalanacaklar"
       },
       "signature": {
         "prepared": "Hazırlayan",

@@ -120,6 +120,135 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+  /api/v1/reports/balance-matrix:
+    get:
+      tags: [Reports]
+      operationId: getBalanceMatrix
+      summary: İplik cinsi x fasoncu bakiye matrisi
+      description: BALANCE_VIEW gerekir. balanceKg hareketlerin işaretli toplamıdır.
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Satırlar
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BalanceMatrixRowView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/reports/fire:
+    get:
+      tags: [Reports]
+      operationId: getFireReport
+      summary: Sevkiyat bazında fire dosyaları
+      description: REPORT_VIEW gerekir. Dönem tamamlanma tarihine göredir. Oranlar kesirdir (0.0400 = %4).
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/SiteId'
+        - name: subcontractorId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Satırlar
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FireRowView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/reports/yarn-vs-fabric:
+    get:
+      tags: [Reports]
+      operationId: getYarnVsFabricReport
+      summary: Fasoncu bazında giden iplik ve gelen kumaş
+      description: REPORT_VIEW gerekir.
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Satırlar
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/YarnVsFabricRowView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/reports/to-invoice:
+    get:
+      tags: [Reports]
+      operationId: getToInvoiceReport
+      summary: Faturalanacak fire dosyaları
+      description: REPORT_VIEW gerekir. Eksik kilo sıfırdan büyük ve durum TO_INVOICE olanlar.
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Satırlar
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FireRowView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/reports/balance/opening-import:
+    post:
+      tags: [Reports]
+      operationId: importOpeningBalance
+      summary: Açılış bakiyesini OPENING hareketi olarak içe aktarır
+      description: BALANCE_VIEW gerekir. (fasoncu, iplik cinsi) için OPENING varsa satır atlanır.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpeningImportRequest'
+      responses:
+        '200':
+          description: Özet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpeningImportResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 components:
   securitySchemes:
     bearerAuth:
@@ -394,3 +523,65 @@ components:
         differenceKg:
           type: string
           description: Teslim edilmiş sevkiyatlarda çıkış − teslim (fire)
+    BalanceMatrixRowView:
+      type: object
+      required: [yarnType, subcontractorId, subcontractorName, balanceKg, inTransitKg]
+      properties:
+        yarnType: {type: string}
+        subcontractorId: {type: string, format: uuid}
+        subcontractorName: {type: string}
+        balanceKg: {type: string, description: Net kg, 3 ondalık, işaretli}
+        inTransitKg: {type: string, description: Henüz teslim edilmemiş DISPATCH kilosu}
+    FireRowView:
+      type: object
+      required: [shipmentId, shipmentNo, subcontractorId, subcontractorName, sentKg, returnedYarnKg, fabricKg, fireRate, expectedFabricKg, actualFireRate, shortageKg, status]
+      properties:
+        shipmentId: {type: string, format: uuid}
+        shipmentNo: {type: string}
+        subcontractorId: {type: string, format: uuid}
+        subcontractorName: {type: string}
+        sentKg: {type: string}
+        returnedYarnKg: {type: string}
+        fabricKg: {type: string}
+        fireRate: {type: string, description: Kesir, 4 ondalık}
+        expectedFabricKg: {type: string}
+        actualFireRate: {type: string, description: Kesir, 4 ondalık}
+        shortageKg: {type: string}
+        status: {type: string, enum: [AWAITING_FABRIC, TO_INVOICE, CLOSED]}
+        invoiceNo: {type: string, nullable: true}
+        invoicedAt: {type: string, format: date-time, nullable: true}
+    YarnVsFabricRowView:
+      type: object
+      required: [subcontractorId, subcontractorName, sentKg, returnedYarnKg, fabricKg, actualFireRate, shortageKg]
+      properties:
+        subcontractorId: {type: string, format: uuid}
+        subcontractorName: {type: string}
+        sentKg: {type: string}
+        returnedYarnKg: {type: string}
+        fabricKg: {type: string}
+        actualFireRate: {type: string}
+        shortageKg: {type: string}
+    OpeningRowRequest:
+      type: object
+      required: [subcontractorId, subcontractorName, yarnType, netKg]
+      properties:
+        subcontractorId: {type: string, format: uuid}
+        subcontractorName: {type: string, minLength: 1}
+        yarnType: {type: string, minLength: 1}
+        netKg: {type: string, pattern: '^-?\d{1,11}(\.\d{1,3})?$'}
+    OpeningImportRequest:
+      type: object
+      required: [asOf, rows]
+      properties:
+        asOf: {type: string, format: date}
+        rows:
+          type: array
+          maxItems: 5000
+          items:
+            $ref: '#/components/schemas/OpeningRowRequest'
+    OpeningImportResult:
+      type: object
+      required: [imported, skipped]
+      properties:
+        imported: {type: integer, format: int32}
+        skipped: {type: integer, format: int32}

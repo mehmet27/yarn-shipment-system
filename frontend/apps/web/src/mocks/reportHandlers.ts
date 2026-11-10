@@ -1,9 +1,12 @@
 import type {
+  BalanceMatrixCell,
   DashboardView,
+  FireRowView,
   PartyStatsView,
   Permission,
   ShipmentRowView,
   SubcontractorBalanceView,
+  YarnVsFabricRowView,
 } from '@iplik/api-client';
 import { REPORTS_PATH } from '@iplik/api-client';
 import { http, HttpResponse } from 'msw';
@@ -93,6 +96,74 @@ const MOCK_BALANCES: SubcontractorBalanceView[] = [
   },
 ];
 
+const SUB_A = 'f9e8d7c6-0000-7000-8000-000000000009';
+const MOCK_MATRIX: BalanceMatrixCell[] = [
+  {
+    yarnType: '30/1 Penye',
+    subcontractorId: SUB_A,
+    subcontractorName: 'Kırıkhan Tekstil',
+    balanceKg: '1982.500',
+    inTransitKg: '500.000',
+  },
+  {
+    yarnType: '30/1 Penye',
+    subcontractorId: 'sub-b',
+    subcontractorName: 'Aksu Dokuma',
+    balanceKg: '1000.000',
+    inTransitKg: '0.000',
+  },
+  {
+    yarnType: '20/1 Süprem',
+    subcontractorId: SUB_A,
+    subcontractorName: 'Kırıkhan Tekstil',
+    balanceKg: '750.250',
+    inTransitKg: '0.000',
+  },
+];
+const MOCK_FIRE: FireRowView[] = [
+  {
+    shipmentId: 'shp-0007',
+    shipmentNo: 'SV-2026-0007',
+    subcontractorId: SUB_A,
+    subcontractorName: 'Kırıkhan Tekstil',
+    sentKg: '1000.000',
+    returnedYarnKg: '0.000',
+    fabricKg: '900.000',
+    fireRate: '0.04',
+    expectedFabricKg: '960.000',
+    actualFireRate: '0.10',
+    shortageKg: '60.000',
+    status: 'TO_INVOICE',
+  },
+  {
+    shipmentId: 'shp-0008',
+    shipmentNo: 'SV-2026-0008',
+    subcontractorId: 'sub-b',
+    subcontractorName: 'Aksu Dokuma',
+    sentKg: '2000.000',
+    returnedYarnKg: '0.000',
+    fabricKg: '1920.000',
+    fireRate: '0.04',
+    expectedFabricKg: '1920.000',
+    actualFireRate: '0.04',
+    shortageKg: '0.000',
+    status: 'CLOSED',
+    invoiceNo: 'F-1',
+    invoicedAt: '2026-11-05T09:00:00Z',
+  },
+];
+const MOCK_YARN_VS_FABRIC: YarnVsFabricRowView[] = [
+  {
+    subcontractorId: SUB_A,
+    subcontractorName: 'Kırıkhan Tekstil',
+    sentKg: '1000.000',
+    returnedYarnKg: '0.000',
+    fabricKg: '900.000',
+    actualFireRate: '0.10',
+    shortageKg: '60.000',
+  },
+];
+
 /** Raporlar yalnızca REPORT_VIEW izniyle; backend gibi izinsizse 403 döner. */
 export function createReportHandlers(permissions: readonly Permission[]) {
   const canView = permissions.includes('REPORT_VIEW');
@@ -114,5 +185,21 @@ export function createReportHandlers(permissions: readonly Permission[]) {
     http.get(`${REPORTS_PATH}/subcontractor-balance`, () =>
       canView ? HttpResponse.json(MOCK_BALANCES) : denied(),
     ),
+    http.get(`${REPORTS_PATH}/balance-matrix`, () =>
+      canView ? HttpResponse.json(MOCK_MATRIX) : denied(),
+    ),
+    http.get(`${REPORTS_PATH}/fire`, () => (canView ? HttpResponse.json(MOCK_FIRE) : denied())),
+    http.get(`${REPORTS_PATH}/yarn-vs-fabric`, () =>
+      canView ? HttpResponse.json(MOCK_YARN_VS_FABRIC) : denied(),
+    ),
+    http.get(`${REPORTS_PATH}/to-invoice`, () =>
+      canView
+        ? HttpResponse.json(MOCK_FIRE.filter((row) => row.status === 'TO_INVOICE'))
+        : denied(),
+    ),
+    http.post(`${REPORTS_PATH}/balance/opening-import`, async ({ request }) => {
+      const body = (await request.json()) as { rows: unknown[] };
+      return canView ? HttpResponse.json({ imported: body.rows.length, skipped: 0 }) : denied();
+    }),
   ];
 }

@@ -3,11 +3,15 @@ import { Tabs } from '@iplik/ui';
 import { useState } from 'react';
 import type { ReportKind } from '../hooks/usePartyReport';
 import { REPORT_KINDS } from '../hooks/usePartyReport';
+import { BalanceMatrixPanel } from './BalanceMatrixPanel';
 import { BalancePanel } from './BalancePanel';
+import { FirePanel } from './FirePanel';
 import type { ReportPanelProps } from './reportPanelProps';
 import { ShipmentsPanel } from './ShipmentsPanel';
 import { SubcontractorPanel } from './SubcontractorPanel';
 import { SummaryPanel } from './SummaryPanel';
+import { ToInvoicePanel } from './ToInvoicePanel';
+import { YarnVsFabricPanel } from './YarnVsFabricPanel';
 
 type ReportTabsProps = Pick<ReportPanelProps, 'params'> & { isOnlyDiscrepant: boolean };
 
@@ -49,6 +53,18 @@ export function ReportTabs({ params, isOnlyDiscrepant }: ReportTabsProps) {
       </Tabs.Panel>
       <Tabs.Panel value="balance" pt="md">
         <BalancePanel params={params} isEnabled={kind === 'balance'} />
+      </Tabs.Panel>
+      <Tabs.Panel value="balanceMatrix" pt="md">
+        <BalanceMatrixPanel params={params} isEnabled={kind === 'balanceMatrix'} />
+      </Tabs.Panel>
+      <Tabs.Panel value="fire" pt="md">
+        <FirePanel params={params} isEnabled={kind === 'fire'} />
+      </Tabs.Panel>
+      <Tabs.Panel value="yarnVsFabric" pt="md">
+        <YarnVsFabricPanel params={params} isEnabled={kind === 'yarnVsFabric'} />
+      </Tabs.Panel>
+      <Tabs.Panel value="toInvoice" pt="md">
+        <ToInvoicePanel params={params} isEnabled={kind === 'toInvoice'} />
       </Tabs.Panel>
     </Tabs>
   );

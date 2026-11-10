@@ -16,3 +16,16 @@ const SHORT_ID_LENGTH = 8;
 export function shortId(id: string): string {
   return id.slice(0, SHORT_ID_LENGTH);
 }
+
+const kg3 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const pct2 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/** Üç ondalıklı Türkçe kilo, ör. `1.982,500 kg`. */
+export function formatKg3(value: string | number): string {
+  return `${kg3.format(Number(value))} kg`;
+}
+
+/** Sunucu oranı kesir (0,04) ya da yüzde olabilir; fire oranı kesir olarak gelir: `0.0403` → `%4,03`. */
+export function formatFireRate(value: string | number): string {
+  return `%${pct2.format(Number(value) * 100)}`;
+}

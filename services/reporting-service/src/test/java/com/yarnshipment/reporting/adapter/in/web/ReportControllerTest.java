@@ -44,6 +44,12 @@ class ReportControllerTest {
     private ListSubcontractorBalanceUseCase listBalances;
 
     @MockitoBean
+    private com.yarnshipment.reporting.application.port.in.BalanceFireReportUseCase balanceFire;
+
+    @MockitoBean
+    private com.yarnshipment.reporting.application.port.in.ImportOpeningBalanceUseCase importOpening;
+
+    @MockitoBean
     private JwtDecoder jwtDecoder;
 
     @Autowired

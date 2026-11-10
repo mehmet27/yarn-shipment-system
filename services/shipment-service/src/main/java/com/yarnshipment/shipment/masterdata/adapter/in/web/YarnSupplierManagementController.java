@@ -45,7 +45,8 @@ public class YarnSupplierManagementController implements YarnSupplierManagementA
     @Override
     @PreAuthorize("hasAuthority('MASTER_DATA_MANAGE')")
     public ResponseEntity<YarnSupplierView> updateYarnSupplier(UUID yarnSupplierId, YarnSupplierUpdateRequest request) {
-        var updated = update.updateYarnSupplier(currentActorProvider.getCurrentActor(), yarnSupplierId, request.getName());
+        var updated =
+                update.updateYarnSupplier(currentActorProvider.getCurrentActor(), yarnSupplierId, request.getName());
         return ResponseEntity.ok(CatalogPages.view(updated));
     }
 

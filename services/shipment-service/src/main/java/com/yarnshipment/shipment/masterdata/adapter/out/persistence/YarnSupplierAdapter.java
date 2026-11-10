@@ -25,9 +25,8 @@ final class YarnSupplierAdapter implements YarnSupplierPort {
 
     private static final String SET_ACTOR = "SELECT set_config('app.actor_id', ?, true)";
     private static final String COLUMNS = "id, name, active";
-    private static final String LIST =
-            "FROM md_yarn_supplier WHERE (active OR :includeInactive)"
-                    + " AND (CAST(:pattern AS text) IS NULL OR name ILIKE :pattern ESCAPE '\\')";
+    private static final String LIST = "FROM md_yarn_supplier WHERE (active OR :includeInactive)"
+            + " AND (CAST(:pattern AS text) IS NULL OR name ILIKE :pattern ESCAPE '\\')";
     private static final String INSERT = """
             INSERT INTO md_yarn_supplier (id, name, created_at, created_by)
             VALUES (:id, :name, :at, :actor)""";

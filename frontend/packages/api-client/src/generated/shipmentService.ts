@@ -791,6 +791,23 @@ export interface WarehouseShipmentView {
 export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView;
 
 /**
+ * Fasoncu. Beklenen yükü içermez.
+ */
+export interface SubcontractorShipmentView {
+  audience: Audience;
+  shipmentId: string;
+  shipmentNo: string;
+  siteId: string;
+  status: ShipmentStatus;
+  subcontractorTitle: string;
+  driverName?: string;
+  plateNo?: string;
+  dispatchWeighing?: WeighingView;
+  createdAt: string;
+  allowedActions: ShipmentAction[];
+}
+
+/**
  * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE) ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da düzeltilecek kayıt bu arada değişti (CORRECTION_CONFLICT)
  */
 export type ConflictResponse = Problem;

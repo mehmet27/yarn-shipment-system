@@ -26,7 +26,7 @@ final class ShipmentServiceClient implements ShipmentAccessPort {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
     private static final Set<String> LOCKED_STATUSES = Set.of("COMPLETED", "CANCELLED");
-    private static final Set<String> COMPARED_STATUSES = Set.of("IN_REVIEW", "COMPLETED");
+    private static final String COMPLETED = "COMPLETED";
 
     private final RestClient client;
 
@@ -55,7 +55,7 @@ final class ShipmentServiceClient implements ShipmentAccessPort {
                     shipmentId,
                     view.siteId(),
                     LOCKED_STATUSES.contains(view.status()),
-                    COMPARED_STATUSES.contains(view.status()));
+                    COMPLETED.equals(view.status()));
         } catch (RestClientResponseException exception) {
             if (isNotVisible(exception.getStatusCode())) {
                 throw new ShipmentNotAccessibleException(shipmentId);

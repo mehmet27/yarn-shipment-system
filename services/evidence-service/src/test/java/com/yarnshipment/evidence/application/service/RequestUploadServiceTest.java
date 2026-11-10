@@ -103,20 +103,21 @@ class RequestUploadServiceTest {
     }
 
     @Test
-    @DisplayName("Şoför, sahipliği shipment-service doğruladığı sevkiyata plaka fotoğrafı yükleyebilir")
-    void shouldLetDriverUploadForVisibleShipment() {
+    @DisplayName("Müdür teslim bekleyen sevkiyata irsaliye yükleyebilir; depo yükleyemez")
+    void shouldLetManagerUploadWaybill() {
         openShipment(false);
         when(storage.presignUpload(any())).thenReturn(new PresignedUpload("u", Map.of(), TestUploads.expiry()));
 
-        UploadTicket ticket =
-                request.requestUpload(command(TestTokens.actor(TestTokens.driverToken()), EvidenceType.VEHICLE_PLATE));
+        UploadTicket ticket = request.requestUpload(command(TestTokens.actor("manager"), EvidenceType.WAYBILL));
 
         assertThat(ticket.evidenceId()).isNotNull();
+        assertThatThrownBy(() -> request.requestUpload(command(TestTokens.actor("warehouse"), EvidenceType.WAYBILL)))
+                .isInstanceOf(UploadNotAllowedException.class);
     }
 
     @Test
-    @DisplayName("İtiraz fotoğrafı tamamlanmış sevkiyata eklenir; karşılaştırılmamış ya da iptal sevkiyata eklenmez")
-    void shouldAllowClaimEvidenceAfterComparison() {
+    @DisplayName("İtiraz fotoğrafı tamamlanmış sevkiyata eklenir; irsaliye ve iptal sevkiyata itiraz eklenmez")
+    void shouldAllowClaimEvidenceAfterCompletion() {
         Actor subcontractor = TestTokens.actor(TestTokens.subcontractorToken());
         when(storage.presignUpload(any())).thenReturn(new PresignedUpload("u", Map.of(), TestUploads.expiry()));
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
@@ -125,7 +126,7 @@ class RequestUploadServiceTest {
         assertThat(request.requestUpload(command(subcontractor, EvidenceType.QUALITY_CLAIM))
                         .evidenceId())
                 .isNotNull();
-        assertThatThrownBy(() -> request.requestUpload(command(subcontractor, EvidenceType.DELIVERY_BAGS)))
+        assertThatThrownBy(() -> request.requestUpload(command(TestTokens.actor("manager"), EvidenceType.WAYBILL)))
                 .isInstanceOf(ShipmentLockedException.class);
 
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))

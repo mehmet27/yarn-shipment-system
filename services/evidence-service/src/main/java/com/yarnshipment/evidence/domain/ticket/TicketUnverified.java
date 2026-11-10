@@ -11,7 +11,7 @@ import java.util.UUID;
  *
  * @param evidenceId son denemenin fotoğrafı
  * @param shipmentId sevkiyat
- * @param evidenceType {@code DISPATCH_SCALE} veya {@code DELIVERY_SCALE}
+ * @param evidenceType {@code DISPATCH_SCALE}
  * @param reason seçilen gerekçe
  * @param declaredAt gerekçenin seçildiği zaman
  */

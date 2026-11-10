@@ -20,8 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TicketReadingController implements TicketReadingsApi {
 
-    private static final String SCALE_UPLOAD =
-            "hasAnyAuthority('EVIDENCE_UPLOAD_DISPATCH', 'EVIDENCE_UPLOAD_DELIVERY')";
+    private static final String SCALE_UPLOAD = "hasAuthority('EVIDENCE_UPLOAD_DISPATCH')";
 
     private final ReadTicketUseCase readTicket;
     private final DeclareTicketUnverifiedUseCase declareUnverified;

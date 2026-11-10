@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.common.security.Actor;
-import com.yarnshipment.common.security.scope.ScopeGuard;
 import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.CancelShipmentCommand;
@@ -13,7 +12,6 @@ import com.yarnshipment.shipment.application.port.out.WeightDecisionPort;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.InvalidWeightDecisionException;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
-import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentDispatched;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.model.WeightDecision;
@@ -30,6 +28,7 @@ import org.junit.jupiter.api.Test;
 class ResolveWeightMismatchServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-11-10T10:00:00Z");
+    private static final int SCALE = 3;
 
     private final InMemoryShipmentQueryPort queryPort = new InMemoryShipmentQueryPort();
     private final List<String> calls = new ArrayList<>();
@@ -54,36 +53,13 @@ class ResolveWeightMismatchServiceTest {
             BigDecimal measuredKg = acceptance.measuredKg();
             ShipmentDispatched event = acceptance.event();
             acceptedLines.addAll(acceptance.scaledLines());
-            calls.add("accept:" + measuredKg.setScale(3).toPlainString() + ":"
-                    + event.netKg().setScale(3).toPlainString());
+            calls.add("accept:" + measuredKg.setScale(SCALE).toPlainString() + ":"
+                    + event.netKg().setScale(SCALE).toPlainString());
         }
     };
 
     private final ResolveWeightMismatchService service = new ResolveWeightMismatchService(
-            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
-            port,
-            cancel -> cancels.add(cancel),
-            clock);
-
-    private Shipment mismatched() {
-        Shipment base = TestShipments.shipment(ShipmentStatus.WEIGHT_MISMATCH);
-        return new Shipment(
-                base.id(),
-                base.shipmentNo(),
-                base.siteId(),
-                base.status(),
-                base.parties(),
-                base.planned(),
-                base.dispatchWeighing(),
-                null,
-                base.createdAt(),
-                new Shipment.RecipeState(
-                        List.of(
-                                new RecipeLine(1, null, "VİSKON", null, new BigDecimal("1000.000")),
-                                new RecipeLine(2, null, "POLY", null, new BigDecimal("982.500"))),
-                        new BigDecimal("0.0400"),
-                        null));
-    }
+            ServiceTestSupport.loader(queryPort, clock), port, cancel -> cancels.add(cancel), clock);
 
     private ResolveWeightMismatchCommand command(WeightDecision decision, String reason) {
         return new ResolveWeightMismatchCommand(manager, TestShipments.SHIPMENT_ID, decision, reason);
@@ -92,7 +68,7 @@ class ResolveWeightMismatchServiceTest {
     @Test
     @DisplayName("İptal kararı gerekçeyle iptal akışını çalıştırır")
     void shouldCancelThroughCancellationFlow() {
-        queryPort.add(mismatched());
+        queryPort.add(RecipeFixtures.mismatched());
 
         service.resolve(command(WeightDecision.CANCEL, "Yanlış yükleme"));
 
@@ -105,7 +81,7 @@ class ResolveWeightMismatchServiceTest {
     @Test
     @DisplayName("Çuval ekle/çıkar kararı sevkiyatı taslağa döndürür")
     void shouldSendBackToDraft() {
-        queryPort.add(mismatched());
+        queryPort.add(RecipeFixtures.mismatched());
 
         service.resolve(command(WeightDecision.ADD_REMOVE_BAGS, "Çuval eksik"));
 
@@ -116,7 +92,7 @@ class ResolveWeightMismatchServiceTest {
     @Test
     @DisplayName("Reçeteyi güncelle kararı satırları tartılan net'e eşitler ve sevkiyatı yola çıkarır")
     void shouldScaleRecipeToWeighedNet() {
-        queryPort.add(mismatched());
+        queryPort.add(RecipeFixtures.mismatched());
 
         service.resolve(command(WeightDecision.UPDATE_RECIPE, "Fark kabul edildi"));
 
@@ -131,7 +107,7 @@ class ResolveWeightMismatchServiceTest {
     @Test
     @DisplayName("Gerekçesiz karar reddedilir ve hiçbir şey yazılmaz")
     void shouldRequireReason() {
-        queryPort.add(mismatched());
+        queryPort.add(RecipeFixtures.mismatched());
 
         assertThatThrownBy(() -> service.resolve(command(WeightDecision.UPDATE_RECIPE, "  ")))
                 .isInstanceOf(InvalidWeightDecisionException.class);

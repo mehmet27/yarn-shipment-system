@@ -36,15 +36,15 @@ class ShipmentCreationAdapterTest {
     private static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-00000000c001");
     private static final Instant NOW = Instant.parse("2026-10-21T09:00:00Z");
 
+    private static final List<RecipeLine> LINES = List.of(
+            new RecipeLine(1, null, "36/1 VİSKON", null, new BigDecimal("19488.000")),
+            new RecipeLine(2, null, "70 DENYE POLY", null, new BigDecimal("13492.000")));
+
     @MockitoBean
     private JwtDecoder jwtDecoder;
 
     @Autowired
     private ShipmentCreationAdapter adapter;
-
-    private static final List<RecipeLine> LINES = List.of(
-            new RecipeLine(1, null, "36/1 VİSKON", null, new BigDecimal("19488.000")),
-            new RecipeLine(2, null, "70 DENYE POLY", null, new BigDecimal("13492.000")));
 
     @Autowired
     private JdbcTemplate jdbc;

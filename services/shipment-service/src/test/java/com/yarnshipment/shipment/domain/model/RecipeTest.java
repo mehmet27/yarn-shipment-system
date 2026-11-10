@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 
 class RecipeTest {
 
+    private static final int THIRD = 3;
+
     private static RecipeLine line(int no, String kg) {
         return new RecipeLine(no, null, "iplik " + no, null, new BigDecimal(kg));
     }
@@ -17,7 +19,7 @@ class RecipeTest {
     @Test
     @DisplayName("Reçete toplamı satır kiloları toplamıdır")
     void shouldSumLines() {
-        assertThat(Recipe.totalKg(List.of(line(1, "19488.000"), line(2, "13492.000"), line(3, "2036.000"))))
+        assertThat(Recipe.totalKg(List.of(line(1, "19488.000"), line(2, "13492.000"), line(THIRD, "2036.000"))))
                 .isEqualByComparingTo("35016.000");
     }
 
@@ -25,7 +27,7 @@ class RecipeTest {
     @DisplayName("Satırlar tartıya orantılı ölçeklenir ve toplam tam olarak tartıya eşit olur")
     void shouldScaleLinesAndKeepExactTotal() {
         List<RecipeLine> scaled = Recipe.scaleTo(
-                List.of(line(1, "100.000"), line(2, "100.000"), line(3, "100.000")), new BigDecimal("200.000"));
+                List.of(line(1, "100.000"), line(2, "100.000"), line(THIRD, "100.000")), new BigDecimal("200.000"));
 
         assertThat(Recipe.totalKg(scaled)).isEqualByComparingTo("200.000");
         assertThat(scaled)

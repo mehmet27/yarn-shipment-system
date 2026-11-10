@@ -12,10 +12,11 @@ import org.junit.jupiter.api.Test;
 
 class WeightCheckTest {
 
+    private static final int BAG_COUNT = 40;
     private static final Instant NOW = Instant.parse("2026-11-10T09:00:00Z");
 
     private static DispatchMeasurement measurement(String gross, String tare) {
-        return new DispatchMeasurement(new BigDecimal(gross), new BigDecimal(tare), 40, "KF-1");
+        return new DispatchMeasurement(new BigDecimal(gross), new BigDecimal(tare), BAG_COUNT, "KF-1");
     }
 
     @Test

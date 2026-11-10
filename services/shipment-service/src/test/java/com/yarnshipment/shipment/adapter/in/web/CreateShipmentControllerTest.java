@@ -71,12 +71,16 @@ class CreateShipmentControllerTest {
         assertThat(result).hasStatus(HttpStatus.CREATED);
         assertThat(result).bodyJson().extractingPath("$.shipmentNo").isEqualTo("SV-20261021-ABCD1234");
         verify(createShipmentUseCase)
-                .createShipment(argThat(
-                        (CreateShipmentCommand command) -> command.siteId().equals(TestTokens.SITE_ID)
-                                && "Örnek Tekstil".equals(command.parties().subcontractorTitle())
-                                && command.lines().size() == 1
-                                && command.lines().getFirst().lineNo() == 1
-                                && new java.math.BigDecimal("0.0500").compareTo(command.fireRate()) == 0));
+                .createShipment(argThat((CreateShipmentCommand command) -> matchesValidBody(command)));
+    }
+
+    private static boolean matchesValidBody(CreateShipmentCommand command) {
+        boolean header = command.siteId().equals(TestTokens.SITE_ID)
+                && "Örnek Tekstil".equals(command.parties().subcontractorTitle());
+        boolean lines =
+                command.lines().size() == 1 && command.lines().getFirst().lineNo() == 1;
+        boolean fire = new java.math.BigDecimal("0.0500").compareTo(command.fireRate()) == 0;
+        return header && lines && fire;
     }
 
     @Test

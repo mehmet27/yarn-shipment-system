@@ -5,22 +5,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.common.security.scope.OutOfScopeAccessException;
-import com.yarnshipment.common.security.scope.ScopeGuard;
 import com.yarnshipment.shipment.TestDispatches;
 import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
-import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
-import com.yarnshipment.shipment.domain.model.DispatchMeasurement;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
-import com.yarnshipment.shipment.domain.model.ShipmentSettings;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.packaging.PackageType;
-import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -46,7 +41,7 @@ class RecordDispatchServiceTest {
     private boolean hasTareStandard;
     private Map<PackageType, Integer> lastCounts = Map.of();
     private final RecordDispatchService service = new RecordDispatchService(
-            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
+            ServiceTestSupport.loader(queryPort, clock),
             commandPort,
             bagsPort,
             (siteId, counts) -> {
@@ -58,7 +53,7 @@ class RecordDispatchServiceTest {
     private final Actor warehouse = TestTokens.actor("warehouse");
 
     private RecordDispatchCommand command(Actor actor) {
-        return new RecordDispatchCommand(actor, TestShipments.SHIPMENT_ID, KEY, TestDispatches.measurement());
+        return ServiceTestSupport.dispatchCommand(actor, KEY, TestDispatches.measurement());
     }
 
     @Test
@@ -78,16 +73,10 @@ class RecordDispatchServiceTest {
     @DisplayName("Tartılan net beklenenden toleransın ötesinde saparsa kayıt uyuşmazlık olarak işaretlenir")
     void shouldFlagMismatchOutsideTolerance() {
         queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
-        settings.save(
-                new ShipmentSettings(ShipmentSettings.DEFAULTS.defaultFireRate(), new BigDecimal("0.400")),
-                UUID.randomUUID());
+        ServiceTestSupport.saveTolerance(settings, "0.400");
 
-        service.recordDispatch(new RecordDispatchCommand(
-                warehouse,
-                TestShipments.SHIPMENT_ID,
-                KEY,
-                new DispatchMeasurement(
-                        new BigDecimal("2001.000"), new BigDecimal("18.000"), 40, "KF-1", "Stok yetmedi")));
+        service.recordDispatch(ServiceTestSupport.dispatchCommand(
+                warehouse, KEY, ServiceTestSupport.measurement("2001.000", "Stok yetmedi")));
 
         assertThat(commandPort.recordings()).singleElement().satisfies(recording -> {
             assertThat(recording.toStatus()).isEqualTo(ShipmentStatus.WEIGHT_MISMATCH);
@@ -101,15 +90,10 @@ class RecordDispatchServiceTest {
     @DisplayName("Fark toleransın içindeyse sevkiyat normal şekilde yola çıkar")
     void shouldAcceptDifferenceWithinTolerance() {
         queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
-        settings.save(
-                new ShipmentSettings(ShipmentSettings.DEFAULTS.defaultFireRate(), new BigDecimal("0.500")),
-                UUID.randomUUID());
+        ServiceTestSupport.saveTolerance(settings, "0.500");
 
-        service.recordDispatch(new RecordDispatchCommand(
-                warehouse,
-                TestShipments.SHIPMENT_ID,
-                KEY,
-                new DispatchMeasurement(new BigDecimal("2001.000"), new BigDecimal("18.000"), 40, "KF-1")));
+        service.recordDispatch(
+                ServiceTestSupport.dispatchCommand(warehouse, KEY, ServiceTestSupport.measurement("2001.000", null)));
 
         assertThat(commandPort.recordings()).singleElement().satisfies(recording -> {
             assertThat(recording.toStatus()).isEqualTo(ShipmentStatus.AWAITING_DELIVERY);

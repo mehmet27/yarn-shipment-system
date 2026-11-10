@@ -32,10 +32,10 @@ class CreateShipmentServiceTest {
     private static final UUID KEY = UUID.fromString("0192f0a0-0000-7000-8000-0000000000cc");
     private static final UUID OTHER_SITE = UUID.fromString("0192f0a0-0000-7000-8000-0000000000ff");
 
-    private static final BigDecimal FIRE = new BigDecimal("0.0400");
+    private static final BigDecimal FIRE = ServiceTestSupport.decimal("0.0400");
     private static final List<RecipeLine> LINES = List.of(
-            new RecipeLine(1, null, "36/1 VİSKON", null, new BigDecimal("19488.000")),
-            new RecipeLine(2, UUID.randomUUID(), null, null, new BigDecimal("13492.000")));
+            RecipeFixtures.recipeLine(1, null, "36/1 VİSKON", ServiceTestSupport.decimal("19488.000")),
+            RecipeFixtures.recipeLine(2, UUID.randomUUID(), null, ServiceTestSupport.decimal("13492.000")));
 
     private final List<NewShipment> created = new ArrayList<>();
     private final ShipmentCreationPort port = (shipment, actorUserId) -> {
@@ -52,8 +52,7 @@ class CreateShipmentServiceTest {
     }
 
     private CreateShipmentCommand command(UUID siteId, @Nullable BigDecimal fireRate) {
-        ShipmentParties parties =
-                new ShipmentParties(TestShipments.SUBCONTRACTOR_ID, "Örnek Tekstil", null, null, null);
+        ShipmentParties parties = RecipeFixtures.parties("Örnek Tekstil", null, null);
         return new CreateShipmentCommand(warehouse, KEY, siteId, parties, null, LINES, fireRate);
     }
 
@@ -83,19 +82,20 @@ class CreateShipmentServiceTest {
     @Test
     @DisplayName("Verilen fire oranı varsayılanın yerine geçer; 0.20 üstü, reçetesiz ve ölçüsüz değerler reddedilir")
     void shouldUseGivenFireRateAndRejectInvalidInput() {
-        service.createShipment(command(TestTokens.SITE_ID, new BigDecimal("0.0750")));
+        service.createShipment(command(TestTokens.SITE_ID, ServiceTestSupport.decimal("0.0750")));
 
         assertThat(created)
                 .singleElement()
                 .satisfies(shipment -> assertThat(shipment.fireRate()).isEqualByComparingTo("0.0750"));
-        assertThatThrownBy(() -> service.createShipment(command(TestTokens.SITE_ID, new BigDecimal("0.2100"))))
+        assertThatThrownBy(
+                        () -> service.createShipment(command(TestTokens.SITE_ID, ServiceTestSupport.decimal("0.2100"))))
                 .isInstanceOf(InvalidNewShipmentException.class);
-        ShipmentParties parties = new ShipmentParties(TestShipments.SUBCONTRACTOR_ID, "Örnek", null, null, null);
+        ShipmentParties parties = RecipeFixtures.parties("Örnek", null, null);
         assertThatThrownBy(() -> new NewShipment(TestTokens.SITE_ID, parties, null, List.of(), FIRE, NOW))
                 .isInstanceOf(InvalidNewShipmentException.class);
-        assertThatThrownBy(() -> new RecipeLine(1, null, "x", null, BigDecimal.ZERO))
+        assertThatThrownBy(() -> RecipeFixtures.recipeLine(1, null, "x", BigDecimal.ZERO))
                 .isInstanceOf(InvalidNewShipmentException.class);
-        assertThatThrownBy(() -> new RecipeLine(1, null, null, null, BigDecimal.ONE))
+        assertThatThrownBy(() -> RecipeFixtures.recipeLine(1, null, BigDecimal.ONE))
                 .isInstanceOf(InvalidNewShipmentException.class);
     }
 
@@ -110,10 +110,8 @@ class CreateShipmentServiceTest {
     @Test
     @DisplayName("Şoför kimliği adsız ya da araç kimliği plakasız verilirse reddedilir")
     void shouldRejectUnpairedDriverOrVehicle() {
-        ShipmentParties noName =
-                new ShipmentParties(TestShipments.SUBCONTRACTOR_ID, "Örnek", UUID.randomUUID(), null, null);
-        ShipmentParties plateOnly =
-                new ShipmentParties(TestShipments.SUBCONTRACTOR_ID, "Örnek", null, null, "34ABC123");
+        ShipmentParties noName = RecipeFixtures.parties("Örnek", UUID.randomUUID(), null);
+        ShipmentParties plateOnly = RecipeFixtures.parties("Örnek", null, "34ABC123");
 
         assertThatThrownBy(() -> new NewShipment(TestTokens.SITE_ID, noName, null, LINES, FIRE, NOW))
                 .isInstanceOf(InvalidNewShipmentException.class)

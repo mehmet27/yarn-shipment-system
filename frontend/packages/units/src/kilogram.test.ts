@@ -65,5 +65,6 @@ describe('sumKg ve formatSignedKg', () => {
   it('işaretli farkı Türkçe biçimler', () => {
     expect(formatSignedKg('-12.500')).toBe('-12,5 kg');
     expect(formatSignedKg('7.000')).toBe('+7 kg');
+    expect(formatSignedKg('x')).toBe('x');
   });
 });

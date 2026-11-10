@@ -45,7 +45,7 @@ test.describe('Genel', { tag: '@panel' }, () => {
       'Sayfa yüklenemedi. Bağlantınızı kontrol edip yeniden deneyin.',
     );
     await page.getByRole('button', { name: 'Yeniden dene' }).click();
-    await expect(page.getByRole('cell', { name: '1.982,5 kg' })).toBeVisible();
+    await expect(page.getByRole('row', { name: /^Net/ }).getByText('1.982,5 kg')).toBeVisible();
     // Bilerek üretilen hata; başka hata olmamalı.
     expect(browserErrors.every((error) => error.includes('geçici çizim hatası'))).toBe(true);
     browserErrors.length = 0;

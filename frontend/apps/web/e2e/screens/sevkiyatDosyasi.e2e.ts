@@ -3,7 +3,7 @@ import { expect, test } from '../support/test';
 test.describe('Sevkiyat dosyası', { tag: '@panel' }, () => {
   test('sekmeler arasında gezilir', async ({ page, openAs }) => {
     await openAs('QUALITY', '/panel/sevkiyat/shp-0007');
-    await expect(page.getByRole('cell', { name: '1.982,5 kg' })).toBeVisible();
+    await expect(page.getByRole('row', { name: /^Net/ }).getByText('1.982,5 kg')).toBeVisible();
     for (const tab of ['Çuvallar', 'Geçmiş', 'Kanıtlar']) {
       await page.getByRole('tab', { name: tab }).click();
       await expect(page.getByRole('tabpanel', { name: tab })).toBeVisible();
@@ -58,7 +58,7 @@ test.describe('Sevkiyat dosyası', { tag: '@panel' }, () => {
     openAs,
   }) => {
     await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0007');
-    await expect(page.getByRole('cell', { name: '1.982,5 kg' })).toBeVisible();
+    await expect(page.getByRole('row', { name: /^Net/ }).getByText('1.982,5 kg')).toBeVisible();
     await expect(page.getByText('IRS-0007')).toBeVisible();
   });
 

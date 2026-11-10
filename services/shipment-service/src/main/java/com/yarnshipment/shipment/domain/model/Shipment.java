@@ -20,9 +20,7 @@ import org.jspecify.annotations.Nullable;
  * @param dispatchWeighing geçerli çıkış tartımı; henüz girilmediyse {@code null}
  * @param waybillNo tamamlarken girilen irsaliye numarası
  * @param createdAt oluşturma zamanı
- * @param lines reçete satırları
- * @param fireRate fire oranı (0.04 = %4)
- * @param weightCheck son kantar karşılaştırması; uyuşmazlık olmadıysa {@code null}
+ * @param recipe reçete satırları, fire oranı ve son kantar karşılaştırması
  */
 public record Shipment(
         UUID id,
@@ -34,34 +32,29 @@ public record Shipment(
         @Nullable Weighing dispatchWeighing,
         @Nullable String waybillNo,
         Instant createdAt,
-        List<RecipeLine> lines,
-        BigDecimal fireRate,
-        @Nullable WeightCheck weightCheck) {
+        RecipeState recipe) {
 
-    /** Reçetesiz (eski) kayıt: varsayılan fire oranı, uyuşmazlık yok. */
-    public Shipment(
-            UUID id,
-            String shipmentNo,
-            UUID siteId,
-            ShipmentStatus status,
-            ShipmentParties parties,
-            PlannedLoad planned,
-            @Nullable Weighing dispatchWeighing,
-            @Nullable String waybillNo,
-            Instant createdAt) {
-        this(
-                id,
-                shipmentNo,
-                siteId,
-                status,
-                parties,
-                planned,
-                dispatchWeighing,
-                waybillNo,
-                createdAt,
-                List.of(),
-                ShipmentSettings.DEFAULTS.defaultFireRate(),
-                null);
+    /**
+     * Reçete tarafı.
+     *
+     * @param lines reçete satırları
+     * @param fireRate fire oranı (0.04 = %4)
+     * @param weightCheck son kantar karşılaştırması; uyuşmazlık olmadıysa {@code null}
+     */
+    public record RecipeState(
+            List<RecipeLine> lines,
+            BigDecimal fireRate,
+            @Nullable WeightCheck weightCheck) {
+
+        /** Reçetesiz (eski) kayıt: varsayılan fire oranı, uyuşmazlık yok. */
+        public static final RecipeState LEGACY =
+                new RecipeState(List.of(), ShipmentSettings.DEFAULTS.defaultFireRate(), null);
+
+        public RecipeState {
+            Objects.requireNonNull(lines, "lines");
+            Objects.requireNonNull(fireRate, "fireRate");
+            lines = List.copyOf(lines);
+        }
     }
 
     public Shipment {
@@ -72,9 +65,19 @@ public record Shipment(
         Objects.requireNonNull(parties, "parties");
         Objects.requireNonNull(planned, "planned");
         Objects.requireNonNull(createdAt, "createdAt");
-        Objects.requireNonNull(lines, "lines");
-        Objects.requireNonNull(fireRate, "fireRate");
-        lines = List.copyOf(lines);
+        Objects.requireNonNull(recipe, "recipe");
+    }
+
+    public List<RecipeLine> lines() {
+        return recipe.lines();
+    }
+
+    public BigDecimal fireRate() {
+        return recipe.fireRate();
+    }
+
+    public @Nullable WeightCheck weightCheck() {
+        return recipe.weightCheck();
     }
 
     public UUID subcontractorId() {

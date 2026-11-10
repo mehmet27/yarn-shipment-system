@@ -12,21 +12,21 @@ import java.util.UUID;
 public interface WeightDecisionPort {
 
     /** Açık (kararsız) uyuşmazlık kaydına kararı yazar. */
-    void recordDecision(UUID shipmentId, WeightDecision decision, String reason, UUID actorUserId, Instant at);
+    void recordDecision(UUID shipmentId, WeightDecision decision, String reason, Audit audit);
 
     /** WEIGHT_MISMATCH → DRAFT. Arada durum değiştiyse {@code InvalidShipmentStatusException}. */
-    void backToDraft(UUID shipmentId, String reason, UUID actorUserId, Instant at);
+    void backToDraft(UUID shipmentId, String reason, Audit audit);
 
     /**
      * Reçete satırlarını ve beklenen net'i tartıya eşitler, WEIGHT_MISMATCH → AWAITING_DELIVERY geçirir ve
      * çıkış olayını yazar.
      */
-    void acceptRecipe(
-            UUID shipmentId,
-            List<RecipeLine> scaledLines,
-            BigDecimal measuredKg,
-            ShipmentDispatched event,
-            String reason,
-            UUID actorUserId,
-            Instant at);
+    void acceptRecipe(RecipeAcceptance acceptance, String reason, Audit audit);
+
+    /** Kararı veren kullanıcı ve an. */
+    record Audit(UUID actorUserId, Instant at) {}
+
+    /** Reçetenin tartıya eşitlenmesi: ölçülen net, ölçeklenmiş satırlar ve yazılacak çıkış olayı. */
+    record RecipeAcceptance(
+            UUID shipmentId, List<RecipeLine> scaledLines, BigDecimal measuredKg, ShipmentDispatched event) {}
 }

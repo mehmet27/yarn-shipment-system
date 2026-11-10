@@ -7,10 +7,8 @@ import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.ShipmentDispatched;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.model.WeightDecision;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
@@ -39,7 +37,9 @@ final class WeightDecisionAdapter implements WeightDecisionPort {
     }
 
     @Override
-    public void recordDecision(UUID shipmentId, WeightDecision decision, String reason, UUID actorUserId, Instant at) {
+    public void recordDecision(UUID shipmentId, WeightDecision decision, String reason, Audit audit) {
+        UUID actorUserId = audit.actorUserId();
+        Instant at = audit.at();
         transitions.actAs(actorUserId);
         int updated = jdbc.sql(RECORD_DECISION)
                 .param("decision", decision.name())
@@ -54,7 +54,9 @@ final class WeightDecisionAdapter implements WeightDecisionPort {
     }
 
     @Override
-    public void backToDraft(UUID shipmentId, String reason, UUID actorUserId, Instant at) {
+    public void backToDraft(UUID shipmentId, String reason, Audit audit) {
+        UUID actorUserId = audit.actorUserId();
+        Instant at = audit.at();
         transitions.actAs(actorUserId);
         transitions.changeStatus(new Transition(
                 shipmentId,
@@ -66,27 +68,15 @@ final class WeightDecisionAdapter implements WeightDecisionPort {
     }
 
     @Override
-    public void acceptRecipe(
-            UUID shipmentId,
-            List<RecipeLine> scaledLines,
-            BigDecimal measuredKg,
-            ShipmentDispatched event,
-            String reason,
-            UUID actorUserId,
-            Instant at) {
+    public void acceptRecipe(RecipeAcceptance acceptance, String reason, Audit audit) {
+        UUID shipmentId = acceptance.shipmentId();
+        UUID actorUserId = audit.actorUserId();
+        Instant at = audit.at();
         Timestamp when = Timestamp.from(at);
         transitions.actAs(actorUserId);
-        for (RecipeLine line : scaledLines) {
-            jdbc.sql(UPDATE_LINE)
-                    .param("netKg", line.netKg())
-                    .param("at", when)
-                    .param("actor", actorUserId)
-                    .param("shipmentId", shipmentId)
-                    .param("lineNo", line.lineNo())
-                    .update();
-        }
+        updateLines(acceptance, when, actorUserId);
         jdbc.sql(UPDATE_PLANNED)
-                .param("netKg", measuredKg)
+                .param("netKg", acceptance.measuredKg())
                 .param("at", when)
                 .param("actor", actorUserId)
                 .param("shipmentId", shipmentId)
@@ -99,6 +89,18 @@ final class WeightDecisionAdapter implements WeightDecisionPort {
                 when,
                 reason);
         transitions.changeStatus(transition);
-        transitions.publish(transition, ShipmentDispatched.TYPE, event);
+        transitions.publish(transition, ShipmentDispatched.TYPE, acceptance.event());
+    }
+
+    private void updateLines(RecipeAcceptance acceptance, Timestamp when, UUID actorUserId) {
+        for (RecipeLine line : acceptance.scaledLines()) {
+            jdbc.sql(UPDATE_LINE)
+                    .param("netKg", line.netKg())
+                    .param("at", when)
+                    .param("actor", actorUserId)
+                    .param("shipmentId", acceptance.shipmentId())
+                    .param("lineNo", line.lineNo())
+                    .update();
+        }
     }
 }

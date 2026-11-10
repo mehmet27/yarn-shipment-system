@@ -20,6 +20,8 @@ public record DispatchMeasurement(
         @Nullable String scaleTicketNo,
         @Nullable String shortfallReason) {
 
+    private static final int MAX_REASON_LENGTH = 500;
+
     public DispatchMeasurement(BigDecimal grossKg, BigDecimal tareKg, int bagCount, @Nullable String scaleTicketNo) {
         this(grossKg, tareKg, bagCount, scaleTicketNo, null);
     }
@@ -33,7 +35,7 @@ public record DispatchMeasurement(
         if (bagCount <= 0) {
             throw new InvalidDispatchException("bagCount", "not positive");
         }
-        if (shortfallReason != null && (shortfallReason.isBlank() || shortfallReason.length() > 500)) {
+        if (shortfallReason != null && (shortfallReason.isBlank() || shortfallReason.length() > MAX_REASON_LENGTH)) {
             throw new InvalidDispatchException("shortfallReason", "blank or too long");
         }
         shortfallReason = shortfallReason == null ? null : shortfallReason.strip();

@@ -20,8 +20,7 @@ final class ShipmentMapper {
                 sides.dispatchWeighing(entity.getId()),
                 entity.getWaybillNo(),
                 entity.getCreatedAt(),
-                recipes.lines(entity.getId()),
-                entity.getFireRate(),
-                recipes.weightCheck(entity.getId()));
+                new Shipment.RecipeState(
+                        recipes.lines(entity.getId()), entity.getFireRate(), recipes.weightCheck(entity.getId())));
     }
 }

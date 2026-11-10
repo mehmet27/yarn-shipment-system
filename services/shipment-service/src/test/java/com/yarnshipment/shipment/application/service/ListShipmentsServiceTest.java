@@ -44,7 +44,8 @@ class ListShipmentsServiceTest {
                 own.planned(),
                 own.dispatchWeighing(),
                 null,
-                own.createdAt()));
+                own.createdAt(),
+                Shipment.RecipeState.LEGACY));
         Actor actor = TestTokens.CONVERTER.toActor(TestTokens.subcontractorToken());
 
         // when

@@ -23,9 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Depo çıkış tartımı; sevkiyat teslim bekliyor durumuna geçer. Net, beklenen net'ten kantar toleransından fazla
- * saparsa sevkiyat bunun yerine WEIGHT_MISMATCH olur ve müdür karar verir. Sevkiyat DRAFT'tan çıktıysa ve tartım zaten varsa
- * ikinci istek yeni kayıt üretmez, ilk sonuç (204) tekrar döner (API-04). Lokasyonun çuval standardı varsa tartıma
- * kopyalanır; sapma uyarısı kaydı engellemez. Tartılan çuval sayısı sevkiyata atanmış çuval sayısına eşit olmalıdır.
+ * saparsa sevkiyat bunun yerine WEIGHT_MISMATCH olur ve müdür karar verir. Sevkiyat DRAFT'tan çıktıysa ve tartım
+ * zaten varsa ikinci istek yeni kayıt üretmez, ilk sonuç (204) tekrar döner (API-04). Lokasyonun çuval standardı
+ * varsa tartıma kopyalanır; sapma uyarısı kaydı engellemez. Tartılan çuval sayısı sevkiyata atanmış çuval sayısına eşit
+ * olmalıdır.
  */
 @Service
 public class RecordDispatchService implements RecordDispatchUseCase {

@@ -65,12 +65,14 @@ final class DispatchCommandAdapter implements DispatchCommandPort {
             transitions.publish(transition, ShipmentDispatched.TYPE, ShipmentDispatched.of(recording));
             return;
         }
-        insertWeightCheck(recording, mismatch, weighingId, transition.at(), actorUserId);
+        insertWeightCheck(recording, mismatch, weighingId, transition);
         transitions.publish(transition, WeightMismatchDetected.TYPE, WeightMismatchDetected.of(recording, mismatch));
     }
 
     private void insertWeightCheck(
-            DispatchRecording recording, WeightCheck check, UUID weighingId, Timestamp at, UUID actor) {
+            DispatchRecording recording, WeightCheck check, UUID weighingId, Transition transition) {
+        Timestamp at = transition.at();
+        UUID actor = transition.actorUserId();
         jdbc.sql(INSERT_WEIGHT_CHECK)
                 .param("id", transitions.nextId())
                 .param("shipmentId", recording.shipmentId())

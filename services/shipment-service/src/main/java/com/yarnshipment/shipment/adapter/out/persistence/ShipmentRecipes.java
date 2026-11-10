@@ -2,6 +2,8 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 
 import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.WeightCheck;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,33 +36,37 @@ final class ShipmentRecipes {
         Map<UUID, List<RecipeLine>> lines = new HashMap<>();
         jdbc.sql(LINES)
                 .param("ids", shipmentIds)
-                .query((rs, row) -> {
-                    RecipeLine line = new RecipeLine(
-                            rs.getInt("line_no"),
-                            rs.getObject("yarn_type_id", UUID.class),
-                            rs.getString("yarn_type_text"),
-                            rs.getObject("lot_id", UUID.class),
-                            rs.getBigDecimal("net_kg"));
-                    lines.computeIfAbsent(rs.getObject("shipment_id", UUID.class), id -> new ArrayList<>())
-                            .add(line);
-                    return line;
-                })
+                .query((rs, row) -> collectLine(lines, rs))
                 .list();
         Map<UUID, WeightCheck> checks = new HashMap<>();
         jdbc.sql(LATEST_CHECKS)
                 .param("ids", shipmentIds)
-                .query((rs, row) -> {
-                    WeightCheck check = new WeightCheck(
-                            rs.getBigDecimal("empty_kg"),
-                            rs.getBigDecimal("loaded_kg"),
-                            rs.getBigDecimal("expected_kg"),
-                            rs.getBigDecimal("tolerance_kg"),
-                            rs.getString("shortfall_reason"));
-                    checks.put(rs.getObject("shipment_id", UUID.class), check);
-                    return check;
-                })
+                .query((rs, row) -> collectCheck(checks, rs))
                 .list();
         return new ShipmentRecipes(lines, checks);
+    }
+
+    private static RecipeLine collectLine(Map<UUID, List<RecipeLine>> lines, ResultSet rs) throws SQLException {
+        RecipeLine line = new RecipeLine(
+                rs.getInt("line_no"),
+                rs.getObject("yarn_type_id", UUID.class),
+                rs.getString("yarn_type_text"),
+                rs.getObject("lot_id", UUID.class),
+                rs.getBigDecimal("net_kg"));
+        lines.computeIfAbsent(rs.getObject("shipment_id", UUID.class), id -> new ArrayList<>())
+                .add(line);
+        return line;
+    }
+
+    private static WeightCheck collectCheck(Map<UUID, WeightCheck> checks, ResultSet rs) throws SQLException {
+        WeightCheck check = new WeightCheck(
+                rs.getBigDecimal("empty_kg"),
+                rs.getBigDecimal("loaded_kg"),
+                rs.getBigDecimal("expected_kg"),
+                rs.getBigDecimal("tolerance_kg"),
+                rs.getString("shortfall_reason"));
+        checks.put(rs.getObject("shipment_id", UUID.class), check);
+        return check;
     }
 
     List<RecipeLine> lines(UUID shipmentId) {

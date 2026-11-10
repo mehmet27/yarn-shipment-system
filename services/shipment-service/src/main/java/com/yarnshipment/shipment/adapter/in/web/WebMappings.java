@@ -21,6 +21,7 @@ import org.jspecify.annotations.Nullable;
 final class WebMappings {
 
     private static final int KG_SCALE = 3;
+    private static final int FIRE_SCALE = 4;
 
     private WebMappings() {}
 
@@ -31,7 +32,7 @@ final class WebMappings {
 
     /** Fire oranı dize olarak, dört ondalıkla: {@code "0.0400"}. */
     static String fireRate(BigDecimal value) {
-        return value.setScale(4, RoundingMode.HALF_UP).toPlainString();
+        return value.setScale(FIRE_SCALE, RoundingMode.HALF_UP).toPlainString();
     }
 
     static List<RecipeLineView> lines(List<RecipeLine> lines) {

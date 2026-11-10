@@ -40,26 +40,20 @@ class ResolveWeightMismatchServiceTest {
 
     private final WeightDecisionPort port = new WeightDecisionPort() {
         @Override
-        public void recordDecision(
-                UUID shipmentId, WeightDecision decision, String reason, UUID actorUserId, Instant at) {
+        public void recordDecision(UUID shipmentId, WeightDecision decision, String reason, Audit audit) {
             calls.add("decision:" + decision + ":" + reason);
         }
 
         @Override
-        public void backToDraft(UUID shipmentId, String reason, UUID actorUserId, Instant at) {
+        public void backToDraft(UUID shipmentId, String reason, Audit audit) {
             calls.add("draft");
         }
 
         @Override
-        public void acceptRecipe(
-                UUID shipmentId,
-                List<RecipeLine> scaledLines,
-                BigDecimal measuredKg,
-                ShipmentDispatched event,
-                String reason,
-                UUID actorUserId,
-                Instant at) {
-            acceptedLines.addAll(scaledLines);
+        public void acceptRecipe(RecipeAcceptance acceptance, String reason, Audit audit) {
+            BigDecimal measuredKg = acceptance.measuredKg();
+            ShipmentDispatched event = acceptance.event();
+            acceptedLines.addAll(acceptance.scaledLines());
             calls.add("accept:" + measuredKg.setScale(3).toPlainString() + ":"
                     + event.netKg().setScale(3).toPlainString());
         }
@@ -83,11 +77,12 @@ class ResolveWeightMismatchServiceTest {
                 base.dispatchWeighing(),
                 null,
                 base.createdAt(),
-                List.of(
-                        new RecipeLine(1, null, "VİSKON", null, new BigDecimal("1000.000")),
-                        new RecipeLine(2, null, "POLY", null, new BigDecimal("982.500"))),
-                new BigDecimal("0.0400"),
-                null);
+                new Shipment.RecipeState(
+                        List.of(
+                                new RecipeLine(1, null, "VİSKON", null, new BigDecimal("1000.000")),
+                                new RecipeLine(2, null, "POLY", null, new BigDecimal("982.500"))),
+                        new BigDecimal("0.0400"),
+                        null));
     }
 
     private ResolveWeightMismatchCommand command(WeightDecision decision, String reason) {

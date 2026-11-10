@@ -16,7 +16,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Sevkiyat taslağı oluşturur; fire oranı verilmezse ayardaki varsayılan kullanılır. Lokasyon, kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır (GEN-07). */
+/**
+ * Sevkiyat taslağı oluşturur; fire oranı verilmezse ayardaki varsayılan kullanılır. Lokasyon, kullanıcının yetkili
+ * olduğu lokasyonlardan biri olmalıdır (GEN-07).
+ */
 @Service
 public class CreateShipmentService implements CreateShipmentUseCase {
 

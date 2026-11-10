@@ -60,25 +60,34 @@ public class ResolveWeightMismatchService implements ResolveWeightMismatchUseCas
         }
         Instant now = clock.instant();
         UUID actorId = actor.userId();
-        decisionPort.recordDecision(shipment.id(), command.decision(), reason, actorId, now);
+        WeightDecisionPort.Audit audit = new WeightDecisionPort.Audit(actorId, now);
+        decisionPort.recordDecision(shipment.id(), command.decision(), reason, audit);
         switch (command.decision()) {
             case CANCEL ->
                 cancelShipment.cancelShipment(
                         new CancelShipmentCommand(actor, shipment.id(), reason, UUID.randomUUID()));
-            case ADD_REMOVE_BAGS -> decisionPort.backToDraft(shipment.id(), reason, actorId, now);
-            case UPDATE_RECIPE -> acceptRecipe(shipment, reason, actorId, now);
+            case ADD_REMOVE_BAGS -> decisionPort.backToDraft(shipment.id(), reason, audit);
+            case UPDATE_RECIPE -> acceptRecipe(shipment, reason, audit);
         }
     }
 
-    private void acceptRecipe(Shipment shipment, String reason, UUID actorId, Instant now) {
+    private void acceptRecipe(Shipment shipment, String reason, WeightDecisionPort.Audit audit) {
         Weighing weighing = shipment.dispatchWeighing();
         if (weighing == null || shipment.lines().isEmpty()) {
             throw new InvalidWeightDecisionException("recipe", "no weighing or recipe lines");
         }
         BigDecimal measured = weighing.netKg();
         ShipmentDispatched event = new ShipmentDispatched(
-                shipment.id(), shipment.siteId(), shipment.subcontractorId(), weighing.bagCount(), measured, now);
+                shipment.id(),
+                shipment.siteId(),
+                shipment.subcontractorId(),
+                weighing.bagCount(),
+                measured,
+                audit.at());
         decisionPort.acceptRecipe(
-                shipment.id(), Recipe.scaleTo(shipment.lines(), measured), measured, event, reason, actorId, now);
+                new WeightDecisionPort.RecipeAcceptance(
+                        shipment.id(), Recipe.scaleTo(shipment.lines(), measured), measured, event),
+                reason,
+                audit);
     }
 }

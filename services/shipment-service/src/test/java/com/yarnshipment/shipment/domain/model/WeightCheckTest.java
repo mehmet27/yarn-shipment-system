@@ -64,7 +64,8 @@ class WeightCheckTest {
                 PlannedLoad.NONE,
                 null,
                 null,
-                NOW);
+                NOW,
+                Shipment.RecipeState.LEGACY);
 
         assertThat(unplanned
                         .recordDispatch(measurement("500.000", "18.000"), NOW, null, BigDecimal.ZERO)

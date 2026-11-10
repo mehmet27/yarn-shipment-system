@@ -81,7 +81,8 @@ class RecordCorrectionServiceTest {
                 base.planned(),
                 base.dispatchWeighing(),
                 null,
-                NOW));
+                NOW,
+                Shipment.RecipeState.LEGACY));
 
         assertThatThrownBy(() -> service.recordCorrection(command(other)))
                 .isInstanceOf(InvalidCorrectionException.class);

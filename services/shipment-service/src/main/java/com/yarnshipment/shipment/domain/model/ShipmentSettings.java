@@ -14,26 +14,28 @@ public record ShipmentSettings(BigDecimal defaultFireRate, BigDecimal weightTole
     public static final BigDecimal MAX_FIRE_RATE = new BigDecimal("0.20");
     public static final ShipmentSettings DEFAULTS =
             new ShipmentSettings(new BigDecimal("0.0400"), new BigDecimal("0.000"));
+    private static final int FIRE_RATE_SCALE = 4;
+    private static final int TOLERANCE_SCALE = 3;
 
     public ShipmentSettings {
         Objects.requireNonNull(defaultFireRate, "defaultFireRate");
         Objects.requireNonNull(weightToleranceKg, "weightToleranceKg");
         requireFireRate(defaultFireRate, "defaultFireRate");
         if (weightToleranceKg.signum() < 0
-                || weightToleranceKg.stripTrailingZeros().scale() > 3) {
+                || weightToleranceKg.stripTrailingZeros().scale() > TOLERANCE_SCALE) {
             throw new InvalidNewShipmentException("weightToleranceKg", "must be >= 0 with at most 3 decimals");
         }
-        defaultFireRate = defaultFireRate.setScale(4);
-        weightToleranceKg = weightToleranceKg.setScale(3);
+        defaultFireRate = defaultFireRate.setScale(FIRE_RATE_SCALE);
+        weightToleranceKg = weightToleranceKg.setScale(TOLERANCE_SCALE);
     }
 
     /** Fire oranı 0..%20 ve en çok 4 ondalık olmalıdır. */
     public static BigDecimal requireFireRate(BigDecimal rate, String field) {
         if (rate.signum() < 0
                 || rate.compareTo(MAX_FIRE_RATE) > 0
-                || rate.stripTrailingZeros().scale() > 4) {
+                || rate.stripTrailingZeros().scale() > FIRE_RATE_SCALE) {
             throw new InvalidNewShipmentException(field, "fire rate must be between 0 and 0.20");
         }
-        return rate.setScale(4);
+        return rate.setScale(FIRE_RATE_SCALE);
     }
 }

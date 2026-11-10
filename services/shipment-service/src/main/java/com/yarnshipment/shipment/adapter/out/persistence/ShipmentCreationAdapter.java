@@ -52,6 +52,22 @@ final class ShipmentCreationAdapter implements ShipmentCreationPort {
         Timestamp at = Timestamp.from(shipment.createdAt());
         ShipmentParties parties = shipment.parties();
         transitions.actAs(actorUserId);
+        insertShipment(shipment, new CreatedShipment(id, shipmentNo), at, actorUserId);
+        insertLines(shipment, id, at, actorUserId);
+        Transition creation = new Transition(id, ShipmentStatus.DRAFT, ShipmentStatus.DRAFT, actorUserId, at);
+        transitions.appendInitialHistory(creation);
+        transitions.publish(
+                creation,
+                ShipmentCreated.TYPE,
+                new ShipmentCreated(
+                        id, shipmentNo, shipment.siteId(), parties.subcontractorId(), shipment.createdAt()));
+        return new CreatedShipment(id, shipmentNo);
+    }
+
+    private void insertShipment(NewShipment shipment, CreatedShipment created, Timestamp at, UUID actorUserId) {
+        UUID id = created.id();
+        String shipmentNo = created.shipmentNo();
+        ShipmentParties parties = shipment.parties();
         jdbc.sql(INSERT_SHIPMENT)
                 .param("id", id)
                 .param("siteId", shipment.siteId())
@@ -67,6 +83,9 @@ final class ShipmentCreationAdapter implements ShipmentCreationPort {
                 .param("at", at)
                 .param("actor", actorUserId)
                 .update();
+    }
+
+    private void insertLines(NewShipment shipment, UUID id, Timestamp at, UUID actorUserId) {
         for (RecipeLine line : shipment.lines()) {
             jdbc.sql(INSERT_LINE)
                     .param("id", transitions.nextId())
@@ -80,14 +99,6 @@ final class ShipmentCreationAdapter implements ShipmentCreationPort {
                     .param("actor", actorUserId)
                     .update();
         }
-        Transition creation = new Transition(id, ShipmentStatus.DRAFT, ShipmentStatus.DRAFT, actorUserId, at);
-        transitions.appendInitialHistory(creation);
-        transitions.publish(
-                creation,
-                ShipmentCreated.TYPE,
-                new ShipmentCreated(
-                        id, shipmentNo, shipment.siteId(), parties.subcontractorId(), shipment.createdAt()));
-        return new CreatedShipment(id, shipmentNo);
     }
 
     private static String shipmentNo(NewShipment shipment, UUID id) {

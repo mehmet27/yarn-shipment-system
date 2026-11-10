@@ -2,7 +2,11 @@ import { fillFields } from '../support/form';
 import { expect, test } from '../support/test';
 import { captureTicket } from '../support/ticket';
 
-const WEIGHING = { 'Brüt (kg)': '2.000', 'Dara (kg)': '17,5', 'Çuval sayısı': '40' };
+const WEIGHING = {
+  'Dolu araç tartısı (brüt)': '2.000',
+  'Boş araç tartısı (dara)': '17,5',
+  'Çuval sayısı': '40',
+};
 
 test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
   test(

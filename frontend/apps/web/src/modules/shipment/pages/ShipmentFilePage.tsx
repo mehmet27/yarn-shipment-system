@@ -2,16 +2,14 @@ import { useTranslation } from '@iplik/i18n';
 import { Stack, Tabs, Text } from '@iplik/ui';
 import { usePermission } from '@/modules/auth';
 import { QualityClaimsSection } from '@/modules/claim';
-import { EvidenceUpload } from '@/modules/evidence';
 import { useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
 import { BagsTab } from '../components/BagsTab';
 import { CorrectionsTab, useCanSeeCorrections } from '../corrections/CorrectionsTab';
 import { HistoryTab } from '../components/HistoryTab';
-import { ShipmentFileActions } from '../components/ShipmentFileActions';
-import { ShipmentHeader } from '../components/ShipmentHeader';
-import { DispatchWeighingPanel } from '../components/DispatchWeighingPanel';
-import { findDispatchWeighing, isCompleted } from '../components/shipmentViews';
+import { ShipmentFileTop } from '../components/ShipmentFileTop';
+import { isCompleted } from '../components/shipmentViews';
+import { WeightsPanel } from '../components/WeightsPanel';
 import { useShipment } from '../hooks/useShipment';
 
 const PENDING_TABS = ['evidence'] as const;
@@ -27,9 +25,7 @@ export function ShipmentFilePage() {
     <QueryState query={query}>
       {(shipment) => (
         <Stack>
-          <ShipmentHeader shipment={shipment} />
-          <ShipmentFileActions shipmentId={shipmentId} actions={shipment.allowedActions} />
-          <EvidenceUpload shipmentId={shipmentId} />
+          <ShipmentFileTop shipment={shipment} />
           <Tabs defaultValue="weights" keepMounted={false}>
             <Tabs.List>
               <Tabs.Tab value="weights">{t('shipment.file.tabs.weights')}</Tabs.Tab>
@@ -46,7 +42,7 @@ export function ShipmentFilePage() {
               ))}
             </Tabs.List>
             <Tabs.Panel value="weights" pt="md">
-              <DispatchWeighingPanel weighing={findDispatchWeighing(shipment)} />
+              <WeightsPanel shipment={shipment} />
             </Tabs.Panel>
             <Tabs.Panel value="bags" pt="md">
               <BagsTab

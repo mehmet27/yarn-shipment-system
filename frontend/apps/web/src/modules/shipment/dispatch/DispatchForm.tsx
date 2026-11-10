@@ -18,6 +18,7 @@ const FIELDS = [
   { name: 'tareKg', inputMode: 'decimal' },
   { name: 'bagCount', inputMode: 'numeric' },
   { name: 'scaleTicketNo', inputMode: 'text' },
+  { name: 'shortfallReason', inputMode: 'text' },
 ] as const satisfies readonly { name: Exclude<keyof DispatchDraft, 'ticket'>; inputMode: string }[];
 
 function failureKey(error: unknown): string {
@@ -46,10 +47,14 @@ export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
       <Text size="sm" c="dimmed">
         {t('dispatch.hint')}
       </Text>
+      <Text size="sm" c="dimmed">
+        {t('dispatch.mismatchNotice')}
+      </Text>
       {FIELDS.map(({ name, inputMode }) => (
         <TextInput
           key={name}
           inputMode={inputMode}
+          {...(name === 'shortfallReason' ? { maxLength: 500 } : {})}
           label={t(`dispatch.${name}`)}
           value={draft[name]}
           onChange={(event) => {

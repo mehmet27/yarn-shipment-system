@@ -23,8 +23,8 @@ describe('DispatchWeighingPage', () => {
         .catch(() => screen.findByRole('button', { name: 'Çıkış tartısını gir' })),
     );
     await fill({
-      'Brüt (kg)': '2.000',
-      'Dara (kg)': '17,5',
+      'Dolu araç tartısı (brüt)': '2.000',
+      'Boş araç tartısı (dara)': '17,5',
       'Çuval sayısı': '40',
     });
     expect(screen.getByText('Net: 1.982,5 kg')).toBeInTheDocument();
@@ -48,8 +48,8 @@ describe('DispatchWeighingPage', () => {
     renderApp('/panel/sevkiyat/shp-0001/cikis');
     await screen.findByRole('button', { name: 'Kaydet' });
     await fill({
-      'Brüt (kg)': '2.000',
-      'Dara (kg)': '17',
+      'Dolu araç tartısı (brüt)': '2.000',
+      'Boş araç tartısı (dara)': '17',
       'Çuval sayısı': '40',
     });
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
@@ -71,7 +71,11 @@ describe('DispatchWeighingPage', () => {
     });
     renderApp('/panel/sevkiyat/shp-0001/cikis');
     await screen.findByRole('button', { name: 'Kaydet' });
-    await fill({ 'Brüt (kg)': '2.000', 'Dara (kg)': '17', 'Çuval sayısı': '40' });
+    await fill({
+      'Dolu araç tartısı (brüt)': '2.000',
+      'Boş araç tartısı (dara)': '17',
+      'Çuval sayısı': '40',
+    });
     for (let attempt = 0; attempt < 3; attempt++) {
       await captureTicket(false);
       await screen.findByText('Kilo bilgisi okunamadı, lütfen tekrar çekin');
@@ -94,7 +98,11 @@ describe('DispatchWeighingPage', () => {
     );
     renderApp('/panel/sevkiyat/shp-0001/cikis');
     await screen.findByRole('button', { name: 'Kaydet' });
-    await fill({ 'Brüt (kg)': '2.000', 'Dara (kg)': '17', 'Çuval sayısı': '40' });
+    await fill({
+      'Dolu araç tartısı (brüt)': '2.000',
+      'Boş araç tartısı (dara)': '17',
+      'Çuval sayısı': '40',
+    });
     for (let attempt = 0; attempt < 3; attempt++) {
       await captureTicket(false);
       await screen.findByText('Kilo bilgisi okunamadı, lütfen tekrar çekin');
@@ -118,7 +126,11 @@ describe('DispatchWeighingPage', () => {
     );
     renderApp('/panel/sevkiyat/shp-0001/cikis');
     await screen.findByRole('button', { name: 'Kaydet' });
-    await fill({ 'Brüt (kg)': '2.000', 'Dara (kg)': '17', 'Çuval sayısı': '40' });
+    await fill({
+      'Dolu araç tartısı (brüt)': '2.000',
+      'Boş araç tartısı (dara)': '17',
+      'Çuval sayısı': '40',
+    });
     await captureTicket();
     expect(await screen.findByText(/okuma servisi şu an kapalı/)).toBeInTheDocument();
   });

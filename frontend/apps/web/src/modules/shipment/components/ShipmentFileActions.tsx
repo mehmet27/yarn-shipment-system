@@ -4,6 +4,7 @@ import { ActionBar, Button } from '@iplik/ui';
 import { Link } from 'react-router';
 import { CancelShipmentForm } from './CancelShipmentForm';
 import { CompleteShipmentForm } from './CompleteShipmentForm';
+import { WeightDecisionForm } from './WeightDecisionForm';
 
 /** Sevkiyat dosyasındaki eylemler; yalnızca `allowedActions` listesindekiler görünür (FE-SEC-03). */
 export function ShipmentFileActions({
@@ -23,6 +24,7 @@ export function ShipmentFileActions({
           </Button>
         </ActionBar>
       )}
+      {actions.includes('DECIDE_WEIGHT_MISMATCH') && <WeightDecisionForm shipmentId={shipmentId} />}
       {actions.includes('COMPLETE') && <CompleteShipmentForm shipmentId={shipmentId} />}
       {actions.includes('CANCEL') && <CancelShipmentForm shipmentId={shipmentId} />}
     </>

@@ -9,6 +9,7 @@ export type DispatchDraft = {
   tareKg: string;
   bagCount: string;
   scaleTicketNo: string;
+  shortfallReason: string;
   ticket: TicketOutcome | undefined;
 };
 
@@ -20,6 +21,7 @@ export const EMPTY_DISPATCH_DRAFT: DispatchDraft = {
   tareKg: '',
   bagCount: '',
   scaleTicketNo: '',
+  shortfallReason: '',
   ticket: undefined,
 };
 
@@ -53,10 +55,12 @@ export function toDispatchRequest(draft: DispatchDraft): DispatchWeighingRequest
   if (typeof weighing === 'string' || bagCount === undefined) return undefined;
   if (draft.ticket === undefined) return undefined;
   const scaleTicketNo = draft.scaleTicketNo.trim();
+  const shortfallReason = draft.shortfallReason.trim();
   return {
     grossKg: weighing.grossKg,
     tareKg: weighing.tareKg,
     bagCount,
     ...(scaleTicketNo === '' ? {} : { scaleTicketNo }),
+    ...(shortfallReason === '' ? {} : { shortfallReason }),
   };
 }

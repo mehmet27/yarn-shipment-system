@@ -1,4 +1,4 @@
-import type { ShipmentDetail, Weighing } from '@iplik/api-client';
+import type { RecipeLineView, ShipmentDetail, WeightCheckView, Weighing } from '@iplik/api-client';
 
 /** Görünümde olmayan alan için gösterilecek metnin i18n anahtarı. */
 export type MissingKey = 'common.notRecorded';
@@ -27,4 +27,18 @@ export function findDriverName(shipment: ShipmentDetail): FieldValue {
 /** Kalite itirazı sevkiyat tamamlandıktan (irsaliye yüklendikten) sonra açılır; asıl kontrol backend'dedir. */
 export function isCompleted(shipment: ShipmentDetail): boolean {
   return shipment.status === 'COMPLETED';
+}
+
+/** Reçete satırları ve fire oranı yalnızca iç ve depo görünümündedir; fasoncuya verilmez. */
+export function findRecipe(
+  shipment: ShipmentDetail,
+): { lines: readonly RecipeLineView[]; fireRate: number | undefined } | undefined {
+  const lines = 'lines' in shipment ? shipment.lines : undefined;
+  if (lines === undefined) return undefined;
+  return { lines, fireRate: 'fireRate' in shipment ? shipment.fireRate : undefined };
+}
+
+/** Kantar uyuşmazlığında beklenen, tartılan ve fark. */
+export function findWeightCheck(shipment: ShipmentDetail): WeightCheckView | undefined {
+  return 'weightCheck' in shipment ? shipment.weightCheck : undefined;
 }

@@ -9,7 +9,7 @@ describe('ShipmentFilePage', () => {
   it('tamamlanan sevkiyatta çıkış tartısını ve irsaliye numarasını gösterir', async () => {
     renderApp('/panel/sevkiyat/shp-0007');
     expect(await screen.findByRole('heading', { name: 'SVK-2026-0007' })).toBeInTheDocument();
-    const netRow = screen.getByRole('row', { name: /Net/ });
+    const netRow = screen.getByRole('row', { name: /^Net/ });
     expect(within(netRow).getByText('1.982,5 kg')).toBeInTheDocument();
     expect(screen.getByText('IRS-0007')).toBeInTheDocument();
   });

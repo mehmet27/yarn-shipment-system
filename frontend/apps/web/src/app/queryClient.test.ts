@@ -18,7 +18,7 @@ describe('createQueryClient', () => {
     server.use(
       http.get(ME_PATH, () => {
         meCalls += 1;
-        return meCalls === 1 ? HttpResponse.json(createMockUser('DRIVER')) : expired();
+        return meCalls === 1 ? HttpResponse.json(createMockUser('SUBCONTRACTOR')) : expired();
       }),
       http.get(`${SHIPMENTS_PATH}/x`, expired),
     );

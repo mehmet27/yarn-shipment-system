@@ -13,7 +13,6 @@ export type {
 
 export { getShipmentBags, getShipmentHistory } from './generated/shipmentService';
 export type {
-  DeliveryScanView,
   DispatchBagView,
   ShipmentBagsResponse,
   ShipmentHistoryResponse,
@@ -66,10 +65,7 @@ export type { CancelShipmentRequest } from './generated/shipmentService';
 
 export { removeShipmentBag } from './generated/shipmentService';
 
-export {
-  createDriverLoginAccount,
-  createSubcontractorLoginAccount,
-} from './generated/shipmentService';
+export { createSubcontractorLoginAccount } from './generated/shipmentService';
 export type { LoginAccountRequest } from './generated/shipmentService';
 export {
   changeLoginAccountEnabled,

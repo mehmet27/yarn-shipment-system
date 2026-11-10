@@ -3,7 +3,7 @@ import type { Kilogram } from '@iplik/units';
 import { UiProvider } from '@iplik/ui';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { WeightComparison } from './WeightComparison';
+import { DispatchWeighingPanel } from './DispatchWeighingPanel';
 
 const kg = (value: string) => value as Kilogram;
 
@@ -18,18 +18,16 @@ function weighing(extra: Partial<Weighing>): Weighing {
   };
 }
 
-function renderWith(dispatchWeighing: Weighing, dispatchHidden = false) {
+function renderWith(value: Weighing | undefined) {
   return render(
     <UiProvider env="test">
-      <WeightComparison
-        weighings={{ dispatchWeighing, hidden: { dispatch: dispatchHidden, delivery: false } }}
-      />
+      <DispatchWeighingPanel weighing={value} />
     </UiProvider>,
   );
 }
 
-describe('WeightComparison dara sapması', () => {
-  it('sınır aşıldığında sapmayı ve uyarı rozetini gösterir', () => {
+describe('DispatchWeighingPanel', () => {
+  it('sınır aşıldığında dara sapmasını ve uyarı rozetini gösterir', () => {
     renderWith(
       weighing({
         expectedTareKg: kg('20.000'),
@@ -56,8 +54,14 @@ describe('WeightComparison dara sapması', () => {
     expect(screen.queryByText('Standart dışı')).not.toBeInTheDocument();
   });
 
-  it('standart tanımsızsa sapma satırı yoktur', () => {
+  it('çuval sayısını gösterir; standart tanımsızsa sapma satırı yoktur', () => {
     renderWith(weighing({}));
+    expect(screen.getByText('40')).toBeInTheDocument();
     expect(screen.queryByText('Dara sapması')).not.toBeInTheDocument();
+  });
+
+  it('çıkış tartısı yoksa kaydedilmedi yazar', () => {
+    renderWith(undefined);
+    expect(screen.getByText('Çıkış tartısı henüz girilmedi')).toBeInTheDocument();
   });
 });

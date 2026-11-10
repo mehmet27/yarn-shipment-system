@@ -10,8 +10,8 @@ import { CorrectionsTab, useCanSeeCorrections } from '../corrections/Corrections
 import { HistoryTab } from '../components/HistoryTab';
 import { ShipmentFileActions } from '../components/ShipmentFileActions';
 import { ShipmentHeader } from '../components/ShipmentHeader';
-import { isDelivered, toWeighings } from '../components/shipmentViews';
-import { WeightComparison } from '../components/WeightComparison';
+import { DispatchWeighingPanel } from '../components/DispatchWeighingPanel';
+import { findDispatchWeighing, isCompleted } from '../components/shipmentViews';
 import { useShipment } from '../hooks/useShipment';
 
 const PENDING_TABS = ['evidence'] as const;
@@ -38,7 +38,7 @@ export function ShipmentFilePage() {
               {canSeeCorrections && shipment.audience === 'INTERNAL' && (
                 <Tabs.Tab value="corrections">{t('shipment.file.tabs.corrections')}</Tabs.Tab>
               )}
-              {canViewClaims && isDelivered(shipment) && (
+              {canViewClaims && isCompleted(shipment) && (
                 <Tabs.Tab value="claims">{t('shipment.file.tabs.claims')}</Tabs.Tab>
               )}
               {PENDING_TABS.map((tab) => (
@@ -46,7 +46,7 @@ export function ShipmentFilePage() {
               ))}
             </Tabs.List>
             <Tabs.Panel value="weights" pt="md">
-              <WeightComparison weighings={toWeighings(shipment)} />
+              <DispatchWeighingPanel weighing={findDispatchWeighing(shipment)} />
             </Tabs.Panel>
             <Tabs.Panel value="bags" pt="md">
               <BagsTab

@@ -1,5 +1,4 @@
 import type {
-  DeliveryScanView,
   DispatchBagView,
   InternalShipmentView,
   Role,
@@ -9,8 +8,6 @@ import type {
 import { SHIPMENT_STATUSES } from '@iplik/api-client';
 
 const HOUR_MS = 3_600_000;
-/** Backend sistem adımlarını sıfır UUID ile kaydeder (ör. karşılaştırma sonrası İncelemede). */
-const SYSTEM_ACTOR_ID = '00000000-0000-0000-0000-000000000000';
 
 /** Durum sırası boyunca (iptal hariç) taslaktan mevcut duruma saatlik geçişler üretir. */
 export function toHistory(shipment: InternalShipmentView): StatusChangeView[] {
@@ -20,7 +17,7 @@ export function toHistory(shipment: InternalShipmentView): StatusChangeView[] {
     ...(index === 0 ? {} : { fromStatus: SHIPMENT_STATUSES[index - 1] }),
     toStatus,
     changedAt: new Date(start + index * HOUR_MS).toISOString(),
-    changedBy: toStatus === 'IN_REVIEW' ? SYSTEM_ACTOR_ID : 'user-warehouse',
+    changedBy: toStatus === 'COMPLETED' ? 'user-manager' : 'user-warehouse',
   }));
 }
 
@@ -37,32 +34,16 @@ function dispatchBags(shipment: InternalShipmentView): DispatchBagView[] {
   }));
 }
 
-function deliveryScans(shipment: InternalShipmentView, isInternal: boolean): DeliveryScanView[] {
-  if (shipment.deliveryWeighing === undefined) return [];
-  return dispatchBags(shipment).map((bag) => ({
-    scannedKey: bag.uniqueKey,
-    scanMethod: 'SCAN',
-    scannedAt: shipment.createdAt,
-    ...(isInternal ? { matched: true } : {}),
-  }));
-}
-
-/** Kör giriş: çıkış listesi yalnızca INTERNAL/WAREHOUSE, teslim okutmaları INTERNAL/SUBCONTRACTOR görür. */
+/** Çıkış çuvalları her iç rolün ve fasoncunun görünümündedir. */
 export function toBagsView(shipment: InternalShipmentView, role: Role): ShipmentBagsResponse {
   switch (role) {
     case 'WAREHOUSE':
       return { audience: 'WAREHOUSE', dispatchBags: dispatchBags(shipment) };
     case 'SUBCONTRACTOR':
-      return { audience: 'SUBCONTRACTOR', deliveryScans: deliveryScans(shipment, false) };
-    case 'DRIVER':
-      return { audience: 'DRIVER' };
+      return { audience: 'SUBCONTRACTOR', dispatchBags: dispatchBags(shipment) };
     case 'ADMIN':
     case 'MANAGER':
     case 'QUALITY':
-      return {
-        audience: 'INTERNAL',
-        dispatchBags: dispatchBags(shipment),
-        deliveryScans: deliveryScans(shipment, true),
-      };
+      return { audience: 'INTERNAL', dispatchBags: dispatchBags(shipment) };
   }
 }

@@ -14,7 +14,7 @@ async function fill(values: Record<string, string>) {
 }
 
 describe('DispatchWeighingPage', () => {
-  it('depo çıkış tartısını ve mührü kaydeder, sevkiyat Yüklendi olur', async () => {
+  it('depo çıkış tartısını kaydeder, sevkiyat Fasoncuya yolda olur', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/sevkiyat/shp-0001');
     await userEvent.click(
@@ -26,14 +26,13 @@ describe('DispatchWeighingPage', () => {
       'Brüt (kg)': '2.000',
       'Dara (kg)': '17,5',
       'Çuval sayısı': '40',
-      'Mühür numarası': 'M-NEW',
     });
     expect(screen.getByText('Net: 1.982,5 kg')).toBeInTheDocument();
     await captureTicket();
     expect(await screen.findByText('Fiş okundu')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(
-      await screen.findByText('Yüklendi', { selector: '.mantine-Badge-label' }),
+      await screen.findByText('Fasoncuya yolda', { selector: '.mantine-Badge-label' }),
     ).toBeInTheDocument();
   });
 
@@ -44,24 +43,6 @@ describe('DispatchWeighingPage', () => {
     expect(await screen.findByText('Kiloyu 1.982,5 biçiminde girin.')).toBeInTheDocument();
   });
 
-  it('kullanılmış mühürde 409 mesajı gösterir', async () => {
-    server.use(...createHandlers('WAREHOUSE'));
-    renderApp('/panel/sevkiyat/shp-0001/cikis');
-    await screen.findByRole('button', { name: 'Kaydet' });
-    await fill({
-      'Brüt (kg)': '2.000',
-      'Dara (kg)': '17',
-      'Çuval sayısı': '40',
-      'Mühür numarası': 'M-0002',
-    });
-    await captureTicket();
-    await screen.findByText('Fiş okundu');
-    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
-    expect(
-      await screen.findByText('Bu mühür numarası başka bir sevkiyatta kullanılmış.'),
-    ).toBeInTheDocument();
-  });
-
   it('fiş çekilmeden kaydetmez', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/sevkiyat/shp-0001/cikis');
@@ -70,7 +51,6 @@ describe('DispatchWeighingPage', () => {
       'Brüt (kg)': '2.000',
       'Dara (kg)': '17',
       'Çuval sayısı': '40',
-      'Mühür numarası': 'M-NEW',
     });
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(

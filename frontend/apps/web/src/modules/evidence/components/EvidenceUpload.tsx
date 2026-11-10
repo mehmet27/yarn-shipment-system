@@ -10,12 +10,16 @@ import type { FileProblem } from '../uploadTypes';
 import { uploadErrorKey } from '../uploadErrors';
 import { UploadButtons } from './UploadButtons';
 
+/** İrsaliye yalnızca tamamlama formundan, kendi akışıyla yüklenir. */
+const OWN_FLOW_TYPES: ReadonlySet<EvidenceType> = new Set(['WAYBILL']);
+
 /** Kullanıcının izni olan kanıt türleriyle fotoğraf/belge yükler; izni yoksa hiç görünmez. */
 export function EvidenceUpload({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
   const user = useCurrentUser();
-  const allowed = Object.values(EVIDENCE_TYPES).filter((type) =>
-    user.data?.permissions.includes(UPLOAD_PERMISSION_BY_TYPE[type]),
+  const allowed = Object.values(EVIDENCE_TYPES).filter(
+    (type) =>
+      !OWN_FLOW_TYPES.has(type) && user.data?.permissions.includes(UPLOAD_PERMISSION_BY_TYPE[type]),
   );
   const [selected, setSelected] = useState<EvidenceType>();
   const [problem, setProblem] = useState<FileProblem>();

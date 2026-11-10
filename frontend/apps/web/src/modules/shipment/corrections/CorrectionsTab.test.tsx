@@ -36,9 +36,9 @@ describe('Gerekçeli düzeltme', () => {
     renderApp(COMPLETED_FILE);
     await userEvent.click(await screen.findByRole('tab', { name: 'Düzeltmeler' }));
     await userEvent.click(await screen.findByRole('combobox', { name: /^Ne düzeltilecek/ }));
-    await userEvent.click(await screen.findByRole('option', { name: 'Çıkış mühür numarası' }));
-    await userEvent.clear(screen.getByLabelText('Doğru mühür numarası'));
-    await userEvent.type(screen.getByLabelText('Doğru mühür numarası'), 'M-9999');
+    await userEvent.click(await screen.findByRole('option', { name: 'Çıkış tartısı' }));
+    await userEvent.clear(screen.getByLabelText('Brüt'));
+    await userEvent.type(screen.getByLabelText('Brüt'), '2001');
     await userEvent.click(screen.getByRole('button', { name: 'Düzeltmeyi kaydet' }));
 
     expect(await screen.findByText('Gerekçe yazın.')).toBeInTheDocument();

@@ -5,13 +5,13 @@ import { useRecords } from '../hooks/useRecords';
 const OWNER_PAGE_SIZE = 100;
 
 export type AccountOwnerSelectProps = {
-  kind: 'driver' | 'subcontractor';
+  kind: 'subcontractor';
   value: string | undefined;
   onChange: (recordId: string | undefined) => void;
   error?: string | undefined;
 };
 
-/** Giriş hesabının bağlanacağı etkin şoför ya da fasoncu kaydı; hesap o kişinin sevkiyatlarını görür. */
+/** Giriş hesabının bağlanacağı etkin fasoncu kaydı; hesap o kişinin sevkiyatlarını görür. */
 export function AccountOwnerSelect({ kind, value, onChange, error }: AccountOwnerSelectProps) {
   const { t } = useTranslation();
   const query = useRecords(kind, {

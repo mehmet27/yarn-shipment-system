@@ -7,7 +7,6 @@ const SHIPMENT_COUNT = 45;
 const SUBCONTRACTORS = ['Aydın Örme', 'Bursa Tekstil', 'Çorlu Boya'] as const;
 const DRIVERS = ['Şahin Şoför', 'Mert Kaya', 'Ali Demir'] as const;
 const DISPATCHED: ReadonlySet<ShipmentStatus> = new Set(SHIPMENT_STATUSES.slice(1));
-const DELIVERED: ReadonlySet<ShipmentStatus> = new Set(['CHECKING', 'IN_REVIEW', 'COMPLETED']);
 
 function kg(value: string): Kilogram {
   if (!isKilogram(value)) throw new RangeError(`Invalid kilogram value=${value}`);
@@ -32,13 +31,26 @@ function pick<T>(values: readonly T[], index: number): T {
   return value;
 }
 
+/** Backend ShipmentAccessPolicy'nin durum tablosu; izne göre süzme toPermittedView'dadır. */
+export function allowedActionsOf(status: ShipmentStatus): InternalShipmentView['allowedActions'] {
+  switch (status) {
+    case 'DRAFT':
+      return ['ASSIGN_BAGS', 'RECORD_DISPATCH', 'CANCEL'];
+    case 'AWAITING_DELIVERY':
+      return ['COMPLETE', 'CANCEL'];
+    case 'COMPLETED':
+      return ['OPEN_QUALITY_CLAIM', 'CREATE_CORRECTION'];
+    case 'CANCELLED':
+      return [];
+  }
+}
+
 function createShipment(index: number): InternalShipmentView {
   const status = pick(SHIPMENT_STATUSES, index);
   const no = String(index + 1).padStart(4, '0');
   const dispatch = weighing('2000.000', '17.500', 40);
   return {
     audience: 'INTERNAL',
-    randomCheckSelected: false,
     shipmentId: `shp-${no}`,
     shipmentNo: `SVK-2026-${no}`,
     siteId: 'site-merkez',
@@ -50,11 +62,9 @@ function createShipment(index: number): InternalShipmentView {
     plannedBagCount: 40,
     plannedNetKg: kg('1982.500'),
     createdAt: new Date(Date.UTC(2026, 9, 20, 6) - index * 3_600_000).toISOString(),
-    allowedActions: status === 'DRAFT' ? ['ASSIGN_BAGS', 'RECORD_DISPATCH', 'CANCEL'] : [],
-    ...(DISPATCHED.has(status) && status !== 'CANCELLED'
-      ? { dispatchSealNo: `M-${no}`, dispatchWeighing: dispatch }
-      : {}),
-    ...(DELIVERED.has(status) ? { deliveryWeighing: weighing('1985.000', '17.000', 40) } : {}),
+    allowedActions: allowedActionsOf(status),
+    ...(DISPATCHED.has(status) && status !== 'CANCELLED' ? { dispatchWeighing: dispatch } : {}),
+    ...(status === 'COMPLETED' ? { waybillNo: `IRS-${no}` } : {}),
   };
 }
 

@@ -4,8 +4,6 @@ import { useState } from 'react';
 import type { ReportKind } from '../hooks/usePartyReport';
 import { REPORT_KINDS } from '../hooks/usePartyReport';
 import { BalancePanel } from './BalancePanel';
-import { DriverPanel } from './DriverPanel';
-import { PairPanel } from './PairPanel';
 import type { ReportPanelProps } from './reportPanelProps';
 import { ShipmentsPanel } from './ShipmentsPanel';
 import { SubcontractorPanel } from './SubcontractorPanel';
@@ -13,7 +11,7 @@ import { SummaryPanel } from './SummaryPanel';
 
 type ReportTabsProps = Pick<ReportPanelProps, 'params'> & { isOnlyDiscrepant: boolean };
 
-/** Özet, şoför, fasoncu ve eşleşme sekmeleri; yalnızca açık sekme veri çeker. */
+/** Özet, fasoncu, sevkiyat dökümü ve bakiye sekmeleri; yalnızca açık sekme veri çeker. */
 export function ReportTabs({ params, isOnlyDiscrepant }: ReportTabsProps) {
   const { t } = useTranslation();
   const [kind, setKind] = useState<ReportKind>('summary');
@@ -35,24 +33,10 @@ export function ReportTabs({ params, isOnlyDiscrepant }: ReportTabsProps) {
       <Tabs.Panel value="summary" pt="md">
         <SummaryPanel params={params} isEnabled={kind === 'summary'} />
       </Tabs.Panel>
-      <Tabs.Panel value="drivers" pt="md">
-        <DriverPanel
-          params={params}
-          isEnabled={kind === 'drivers'}
-          isOnlyDiscrepant={isOnlyDiscrepant}
-        />
-      </Tabs.Panel>
       <Tabs.Panel value="subcontractors" pt="md">
         <SubcontractorPanel
           params={params}
           isEnabled={kind === 'subcontractors'}
-          isOnlyDiscrepant={isOnlyDiscrepant}
-        />
-      </Tabs.Panel>
-      <Tabs.Panel value="pairs" pt="md">
-        <PairPanel
-          params={params}
-          isEnabled={kind === 'pairs'}
           isOnlyDiscrepant={isOnlyDiscrepant}
         />
       </Tabs.Panel>

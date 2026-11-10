@@ -1,7 +1,5 @@
 export {
   getDashboard,
-  getDriverReport,
-  getPairReport,
   getShipmentReport,
   getSubcontractorBalanceReport,
   getSubcontractorReport,
@@ -12,7 +10,6 @@ export type {
   LargestDifferenceView,
   OpenDiscrepanciesView,
   OverdueDiscrepancyView,
-  PairStatsView,
   PartyStatsView,
   ShipmentRowView,
   SubcontractorBalanceView,

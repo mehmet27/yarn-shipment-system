@@ -1,6 +1,5 @@
 import type {
   CurrentUser,
-  DriverShipmentView,
   InternalShipmentView,
   Permission,
   Role,
@@ -28,47 +27,17 @@ function toBase(shipment: InternalShipmentView) {
 }
 
 function toWarehouseView(shipment: InternalShipmentView): WarehouseShipmentView {
-  const { deliveryWeighing, deliverySealCondition, lockedAt, ...rest } = shipment;
-  return { ...rest, audience: 'WAREHOUSE' };
+  return { ...shipment, audience: 'WAREHOUSE' };
 }
 
 function toSubcontractorView(shipment: InternalShipmentView): SubcontractorShipmentView {
-  const { driverName, deliveryWeighing, deliverySealCondition } = shipment;
+  const { driverName, dispatchWeighing } = shipment;
   return {
     ...toBase(shipment),
-    allowedActions: shipment.status === 'AWAITING_DELIVERY' ? ['RECORD_DELIVERY'] : [],
+    allowedActions: shipment.status === 'COMPLETED' ? ['OPEN_QUALITY_CLAIM'] : [],
     audience: 'SUBCONTRACTOR',
     ...(driverName === undefined ? {} : { driverName }),
-    ...(deliveryWeighing === undefined ? {} : { deliveryWeighing }),
-    ...(deliverySealCondition === undefined ? {} : { deliverySealCondition }),
-  };
-}
-
-/** Şoförün yapabileceği beyan duruma bağlıdır (yetkilendirme analizi, durum tablosu). */
-function toDriverActions(shipment: InternalShipmentView): ShipmentAction[] {
-  switch (shipment.status) {
-    case 'LOADED':
-      return ['CONFIRM_PICKUP'];
-    case 'IN_TRANSIT':
-      return ['DECLARE_ARRIVAL'];
-    case 'DRAFT':
-    case 'AWAITING_DELIVERY':
-    case 'CHECKING':
-    case 'IN_REVIEW':
-    case 'COMPLETED':
-    case 'CANCELLED':
-      return [];
-  }
-}
-
-function toDriverView(shipment: InternalShipmentView): DriverShipmentView {
-  const { dispatchWeighing, dispatchSealNo } = shipment;
-  return {
-    ...toBase(shipment),
-    allowedActions: toDriverActions(shipment),
-    audience: 'DRIVER',
-    ...(dispatchWeighing === undefined ? {} : { dispatchBagCount: dispatchWeighing.bagCount }),
-    ...(dispatchSealNo === undefined ? {} : { dispatchSealNo }),
+    ...(dispatchWeighing === undefined ? {} : { dispatchWeighing }),
   };
 }
 
@@ -79,8 +48,6 @@ export function toDetailView(shipment: InternalShipmentView, role: Role): Shipme
       return toWarehouseView(shipment);
     case 'SUBCONTRACTOR':
       return toSubcontractorView(shipment);
-    case 'DRIVER':
-      return toDriverView(shipment);
     case 'ADMIN':
     case 'QUALITY':
     case 'MANAGER':
@@ -93,9 +60,7 @@ const ACTION_PERMISSION: Readonly<Record<ShipmentAction, Permission>> = {
   ASSIGN_BAGS: 'SHIPMENT_CREATE',
   RECORD_DISPATCH: 'DISPATCH_RECORD',
   CANCEL: 'SHIPMENT_CANCEL',
-  CONFIRM_PICKUP: 'DRIVER_DECLARATION_RECORD',
-  DECLARE_ARRIVAL: 'DRIVER_DECLARATION_RECORD',
-  RECORD_DELIVERY: 'DELIVERY_RECORD',
+  COMPLETE: 'SHIPMENT_COMPLETE',
   OPEN_QUALITY_CLAIM: 'QUALITY_CLAIM_OPEN',
   CREATE_CORRECTION: 'CORRECTION_CREATE',
 };
@@ -119,10 +84,8 @@ export function toSummary(shipment: InternalShipmentView): ShipmentSummary {
   };
 }
 
-/** Sahiplik kapsamı (SEC-03): şoför ve fasoncu yalnızca kendi sevkiyatlarını görür. */
+/** Sahiplik kapsamı (SEC-03): fasoncu yalnızca kendi sevkiyatlarını görür. */
 export function isInScope(shipment: InternalShipmentView, user: CurrentUser): boolean {
-  // Sahte veride şoför kimliği yok; ad eşleşmesi yeterli.
-  if (user.driverId !== undefined) return shipment.driverName === user.fullName;
   if (user.subcontractorId !== undefined) return shipment.subcontractorId === user.subcontractorId;
   return true;
 }

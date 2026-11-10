@@ -5,9 +5,9 @@ import type {
   Weighing,
 } from '@iplik/api-client';
 import { calculateNetKg, isKilogram } from '@iplik/units';
-import { isMockSealUsed, patchMockShipment } from './mockStore';
+import { patchMockShipment } from './mockStore';
 
-type Outcome = { oldValue: string; newValue: string } | 'INVALID_CORRECTION' | 'SEAL_ALREADY_USED';
+type Outcome = { oldValue: string; newValue: string } | 'INVALID_CORRECTION';
 
 /** Sahte API'nin düzeltme kayıtları; backend gibi Admin'in kaydı aynı anda onaylanmış sayılır. */
 let corrections = new Map<string, CorrectionView[]>();
@@ -19,13 +19,12 @@ export function listMockCorrections(shipmentId: string): CorrectionView[] {
 const weighingText = (w: Pick<Weighing, 'grossKg' | 'tareKg' | 'netKg'>) =>
   `gross=${w.grossKg} tare=${w.tareKg} net=${w.netKg}`;
 
-/** Tartım düzeltmesi: brüt ve dara değişir, net yeniden hesaplanır. */
+/** Çıkış tartısı düzeltmesi: brüt ve dara değişir, net yeniden hesaplanır. */
 function correctWeighing(
   shipment: InternalShipmentView,
   request: RecordCorrectionRequest,
 ): Outcome {
-  const key = request.target === 'DISPATCH_WEIGHING' ? 'dispatchWeighing' : 'deliveryWeighing';
-  const current = shipment[key];
+  const current = shipment.dispatchWeighing;
   const { grossKg, tareKg } = request;
   if (current === undefined || grossKg === undefined || tareKg === undefined) {
     return 'INVALID_CORRECTION';
@@ -36,20 +35,8 @@ function correctWeighing(
   const next = { ...current, grossKg, tareKg, netKg };
   const outcome = { oldValue: weighingText(current), newValue: weighingText(next) };
   if (outcome.oldValue === outcome.newValue) return 'INVALID_CORRECTION';
-  patchMockShipment(shipment.shipmentId, { [key]: next });
+  patchMockShipment(shipment.shipmentId, { dispatchWeighing: next });
   return outcome;
-}
-
-/** Çıkış mühür numarası düzeltmesi; teslim mührü sahte veride tutulmaz. */
-function correctSeal(shipment: InternalShipmentView, request: RecordCorrectionRequest): Outcome {
-  const oldValue = request.target === 'DISPATCH_SEAL_NO' ? shipment.dispatchSealNo : undefined;
-  const newValue = request.sealNo?.trim();
-  if (oldValue === undefined || newValue === undefined || newValue === oldValue) {
-    return 'INVALID_CORRECTION';
-  }
-  if (isMockSealUsed(newValue, shipment.shipmentId)) return 'SEAL_ALREADY_USED';
-  patchMockShipment(shipment.shipmentId, { dispatchSealNo: newValue });
-  return { oldValue, newValue };
 }
 
 /** Hata kodu ya da kaydedilen düzeltme. */
@@ -59,9 +46,7 @@ export function recordMockCorrection(
   userId: string,
 ): CorrectionView | Exclude<Outcome, object> {
   if (shipment.status === 'CANCELLED') return 'INVALID_CORRECTION';
-  const isWeighing =
-    request.target === 'DISPATCH_WEIGHING' || request.target === 'DELIVERY_WEIGHING';
-  const outcome = isWeighing ? correctWeighing(shipment, request) : correctSeal(shipment, request);
+  const outcome = correctWeighing(shipment, request);
   if (typeof outcome === 'string') return outcome;
   const view: CorrectionView = {
     id: crypto.randomUUID(),

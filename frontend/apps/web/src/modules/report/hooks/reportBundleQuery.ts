@@ -1,8 +1,6 @@
 import type { GetDashboardParams } from '@iplik/api-client';
 import {
   getDashboard,
-  getDriverReport,
-  getPairReport,
   getShipmentReport,
   getSubcontractorBalanceReport,
   getSubcontractorReport,
@@ -16,11 +14,9 @@ export function reportBundleQuery(params: GetDashboardParams) {
     queryKey: [REPORTS_PATH, 'bundle', params],
     staleTime: 0,
     queryFn: async (): Promise<ReportBundle> => {
-      const [dashboard, drivers, subcontractors, pairs, shipments, balances] = await Promise.all([
+      const [dashboard, subcontractors, shipments, balances] = await Promise.all([
         getDashboard(params),
-        getDriverReport(params),
         getSubcontractorReport(params),
-        getPairReport(params),
         getShipmentReport(params),
         getSubcontractorBalanceReport(params),
       ]);
@@ -28,9 +24,7 @@ export function reportBundleQuery(params: GetDashboardParams) {
         from: dashboard.from,
         to: dashboard.to,
         dashboard,
-        drivers,
         subcontractors,
-        pairs,
         shipments,
         balances,
       };

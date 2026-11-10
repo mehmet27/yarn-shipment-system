@@ -12,12 +12,13 @@
  *
  * Kurallar:
  * - Boyut üst sınırı 20 MB; türler `image/jpeg`, `image/png`, `image/heic`, `application/pdf`.
- * - Kanıt türüne göre yükleme izni aşamaya bağlıdır (sevk, sürücü, teslim, şikâyet).
+ * - Kanıt türüne göre yükleme izni aşamaya bağlıdır (sevk, tamamlama, şikâyet). İrsaliye (`WAYBILL`) sevkiyatı
+ *   tamamlama izniyle (müdür, admin) teslim bekleyen sevkiyata yüklenir.
  * - Aynı dosya başka bir sevkiyatta daha önce yüklenmişse kayıt yine alınır, ama tekrar kullanım olayı üretilir
  *   ve ilgili uyuşmazlık otomatik açılır.
  * - Zamanlar ISO 8601 UTC (API-03).
  *
- * Kantar fişi okuma: `DISPATCH_SCALE` ve `DELIVERY_SCALE` kanıtları onaylandıktan sonra
+ * Kantar fişi okuma: `DISPATCH_SCALE` kanıtı onaylandıktan sonra
  * `POST /api/v1/evidence/{evidenceId}/ticket-reading` ile okunur. Cevap `UNREADABLE` ise brüt veya dara güvenle
  * okunamamıştır ve istemci yeniden çekim ister. Okuma kapalıysa ya da modele ulaşılamazsa 503
  * `TICKET_READING_UNAVAILABLE` döner; istemci okumasız devam eder. Üç denemede kilo okunamazsa kullanıcı gerekçe
@@ -47,11 +48,7 @@ export const EvidenceType = {
   DISPATCH_SCALE: 'DISPATCH_SCALE',
   BAG_OVERVIEW: 'BAG_OVERVIEW',
   BAG_LABEL: 'BAG_LABEL',
-  SEAL: 'SEAL',
-  VEHICLE_PLATE: 'VEHICLE_PLATE',
-  DELIVERY_SCALE: 'DELIVERY_SCALE',
-  DELIVERY_BAGS: 'DELIVERY_BAGS',
-  SIGNED_DELIVERY_DOC: 'SIGNED_DELIVERY_DOC',
+  WAYBILL: 'WAYBILL',
   QUALITY_CLAIM: 'QUALITY_CLAIM',
   LAB_RESULT: 'LAB_RESULT',
 } as const;

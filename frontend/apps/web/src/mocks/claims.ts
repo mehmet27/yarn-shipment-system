@@ -12,9 +12,9 @@ const DELIVERED_KEYS = ['BAG-0001', 'BAG-0002', 'BAG-0003'] as const;
 
 type Seed = { shipmentId: string; discrepancyId: string; bagKey: string };
 
-/** shp-0022 açık itirazlı (fasoncu sub-0), shipment-3 kapanmış kalite uyuşmazlığı disc-3'ün itirazı. */
+/** shp-0019 açık itirazlı (fasoncu sub-0), shipment-3 kapanmış kalite uyuşmazlığı disc-3'ün itirazı. */
 const SEEDS: readonly Seed[] = [
-  { shipmentId: 'shp-0022', discrepancyId: 'disc-claim-0022', bagKey: 'BAG-0003' },
+  { shipmentId: 'shp-0019', discrepancyId: 'disc-claim-0019', bagKey: 'BAG-0003' },
   { shipmentId: 'shipment-3', discrepancyId: 'disc-3', bagKey: 'BAG-0001' },
 ];
 

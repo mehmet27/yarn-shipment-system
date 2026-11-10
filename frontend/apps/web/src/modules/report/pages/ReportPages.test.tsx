@@ -36,20 +36,18 @@ describe('Panel ana sayfası ve raporlar', () => {
     expect(await screen.findByTestId('stat-total')).toBeInTheDocument();
   });
 
-  it('şoför raporu oranı yüzde olarak gösterir; sekmeler fasoncu ve eşleşmeyi açar', async () => {
+  it('fasoncu raporu oranı yüzde olarak gösterir; döküm sekmesi açılır', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/raporlar');
-    await userEvent.click(await screen.findByRole('tab', { name: 'Şoförler' }));
+    await userEvent.click(await screen.findByRole('tab', { name: 'Fasoncular' }));
     const row = await screen.findByRole('row', { name: /a1b2c3d4/ });
     expect(within(row).getByText('%50,00')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('tab', { name: 'Eşleşmeler' }));
-    expect(await screen.findByText('f9e8d7c6')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('tab', { name: 'Fasoncular' }));
-    expect((await screen.findAllByText('a1b2c3d4')).length).toBeGreaterThan(0);
+    await userEvent.click(screen.getByRole('tab', { name: 'Sevkiyat dökümü' }));
+    expect((await screen.findAllByText('f9e8d7c6')).length).toBeGreaterThan(0);
   });
 
   it('rapor yetkisi olmayan kullanıcı raporlar adresinde engellenir', async () => {
-    server.use(...createHandlers('DRIVER'));
+    server.use(...createHandlers('SUBCONTRACTOR'));
     const { router } = renderApp('/panel/raporlar');
     await waitFor(() => {
       expect(router.state.location.pathname).not.toBe('/panel/raporlar');
@@ -60,7 +58,7 @@ describe('Panel ana sayfası ve raporlar', () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/raporlar');
     expect(await screen.findByTestId('stat-total')).toHaveTextContent('12');
-    await userEvent.click(screen.getByRole('tab', { name: 'Şoförler' }));
+    await userEvent.click(screen.getByRole('tab', { name: 'Fasoncular' }));
     const total = await screen.findByTestId('party-total');
     expect(total).toHaveTextContent('7');
     expect(total).toHaveTextContent('%28,57');
@@ -69,7 +67,7 @@ describe('Panel ana sayfası ve raporlar', () => {
   it('"yalnızca uyuşmazlıklılar" anahtarı uyuşmazlığı olmayan satırı gizler', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/raporlar');
-    await userEvent.click(await screen.findByRole('tab', { name: 'Şoförler' }));
+    await userEvent.click(await screen.findByRole('tab', { name: 'Fasoncular' }));
     await screen.findByText('b2c3d4e5');
     await userEvent.click(screen.getByLabelText('Yalnızca uyuşmazlıklılar'));
     expect(screen.queryByText('b2c3d4e5')).not.toBeInTheDocument();
@@ -113,19 +111,19 @@ describe('Panel ana sayfası ve raporlar', () => {
     vi.unstubAllGlobals();
   });
 
-  it('şoför ve fasoncu adlarını tanım listesinden çözer', async () => {
+  it('fasoncu adlarını tanım listesinden çözer', async () => {
     server.use(
-      http.get('/api/v1/master-data/drivers', () =>
+      http.get('/api/v1/master-data/subcontractors', () =>
         HttpResponse.json({
-          items: [{ id: 'a1b2c3d4-0000-7000-8000-000000000001', fullName: 'Ali Veli' }],
+          items: [{ id: 'a1b2c3d4-0000-7000-8000-000000000001', title: 'Aydın Örme' }],
           page: { number: 0, size: 100, totalElements: 1, totalPages: 1 },
         }),
       ),
       ...createHandlers('MANAGER'),
     );
     renderApp('/panel/raporlar');
-    await userEvent.click(await screen.findByRole('tab', { name: 'Şoförler' }));
-    expect(await screen.findByText('Ali Veli')).toBeInTheDocument();
+    await userEvent.click(await screen.findByRole('tab', { name: 'Fasoncular' }));
+    expect(await screen.findByText('Aydın Örme')).toBeInTheDocument();
     expect(screen.getByText('b2c3d4e5')).toBeInTheDocument();
   });
 

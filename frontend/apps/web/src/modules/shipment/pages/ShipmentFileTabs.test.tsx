@@ -10,14 +10,13 @@ describe('Sevkiyat dosyası sekmeleri', () => {
     server.use(...createHandlers('ADMIN'));
     renderApp('/panel/sevkiyat/shp-0003');
     await userEvent.click(await screen.findByRole('tab', { name: 'Geçmiş' }));
-    expect(await screen.findByText('Taslak → Yüklendi')).toBeInTheDocument();
+    expect(await screen.findByText('Taslak → Fasoncuya yolda')).toBeInTheDocument();
   });
 
-  it('depo çuval sekmesinde yalnızca çıkış listesini görür', async () => {
+  it('depo çuval sekmesinde çıkış listesini görür', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/sevkiyat/shp-0003');
     await userEvent.click(await screen.findByRole('tab', { name: 'Çuvallar' }));
     expect(await screen.findByText(/Çıkıştaki çuvallar/)).toBeInTheDocument();
-    expect(screen.queryByText(/Teslimde okutulanlar/)).not.toBeInTheDocument();
   });
 });

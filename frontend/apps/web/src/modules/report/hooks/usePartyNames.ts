@@ -1,4 +1,4 @@
-import { listDrivers, listSubcontractors } from '@iplik/api-client';
+import { listSubcontractors } from '@iplik/api-client';
 import { useQuery } from '@tanstack/react-query';
 import { shortId } from '../format';
 
@@ -24,20 +24,18 @@ export type PartyNames = {
   nameOf: (id: string) => string;
 };
 
-/** Şoför ve fasoncu adlarını tanım listelerinden çözer; liste alınamazsa kimlik kısaltması kalır. */
+/** Fasoncu adlarını tanım listelerinden çözer; liste alınamazsa kimlik kısaltması kalır. */
 export function usePartyNames(): PartyNames {
   const query = useQuery({
     queryKey: ['/api/v1/master-data', 'report-names'],
     staleTime: NAMES_STALE_MS,
     queryFn: async () => {
-      const [drivers, subcontractors] = await Promise.all([
-        fetchAll((page) => listDrivers({ page, size: PAGE_SIZE })),
-        fetchAll((page) => listSubcontractors({ page, size: PAGE_SIZE })),
-      ]);
-      return new Map<string, string>([
-        ...drivers.map((row): [string, string] => [row.id, row.fullName]),
-        ...subcontractors.map((row): [string, string] => [row.id, row.title]),
-      ]);
+      const subcontractors = await fetchAll((page) =>
+        listSubcontractors({ page, size: PAGE_SIZE }),
+      );
+      return new Map<string, string>(
+        subcontractors.map((row): [string, string] => [row.id, row.title]),
+      );
     },
   });
   const names = query.data;

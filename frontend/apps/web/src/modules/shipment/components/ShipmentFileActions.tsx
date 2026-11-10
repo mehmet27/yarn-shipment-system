@@ -3,6 +3,7 @@ import { useTranslation } from '@iplik/i18n';
 import { ActionBar, Button } from '@iplik/ui';
 import { Link } from 'react-router';
 import { CancelShipmentForm } from './CancelShipmentForm';
+import { CompleteShipmentForm } from './CompleteShipmentForm';
 
 /** Sevkiyat dosyasındaki eylemler; yalnızca `allowedActions` listesindekiler görünür (FE-SEC-03). */
 export function ShipmentFileActions({
@@ -22,6 +23,7 @@ export function ShipmentFileActions({
           </Button>
         </ActionBar>
       )}
+      {actions.includes('COMPLETE') && <CompleteShipmentForm shipmentId={shipmentId} />}
       {actions.includes('CANCEL') && <CancelShipmentForm shipmentId={shipmentId} />}
     </>
   );

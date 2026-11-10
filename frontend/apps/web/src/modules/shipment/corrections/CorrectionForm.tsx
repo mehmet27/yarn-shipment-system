@@ -8,12 +8,11 @@ import type { CorrectionDraft, CorrectionError } from './correctionDraft';
 import {
   correctableTargets,
   EMPTY_CORRECTION_DRAFT,
-  isWeighingTarget,
   MAX_REASON_LENGTH,
   toCorrectionRequest,
 } from './correctionDraft';
 
-const SERVER_CODES = ['INVALID_CORRECTION', 'SEAL_ALREADY_USED', 'CORRECTION_CONFLICT'] as const;
+const SERVER_CODES = ['INVALID_CORRECTION', 'CORRECTION_CONFLICT'] as const;
 
 function serverErrorKey(error: unknown): string {
   const code = SERVER_CODES.find((candidate) => candidate === toProblem(error).code);
@@ -25,21 +24,19 @@ const toInputKg = (kg: string) => String(Number(kg)).replace('.', ',');
 
 /** Seçilen tartımın güncel değerleri forma yazılır; Admin yalnızca değişeni düzeltir. */
 function draftFor(shipment: InternalShipmentView, target: CorrectionTarget): CorrectionDraft {
-  const weighing =
-    target === 'DISPATCH_WEIGHING' ? shipment.dispatchWeighing : shipment.deliveryWeighing;
+  const weighing = shipment.dispatchWeighing;
   return {
     ...EMPTY_CORRECTION_DRAFT,
     target,
-    grossKg: isWeighingTarget(target) && weighing !== undefined ? toInputKg(weighing.grossKg) : '',
-    tareKg: isWeighingTarget(target) && weighing !== undefined ? toInputKg(weighing.tareKg) : '',
-    sealNo: target === 'DISPATCH_SEAL_NO' ? (shipment.dispatchSealNo ?? '') : '',
+    grossKg: weighing === undefined ? '' : toInputKg(weighing.grossKg),
+    tareKg: weighing === undefined ? '' : toInputKg(weighing.tareKg),
   };
 }
 
 /** Taslak alanları; hedef değişince seçilen kaydın güncel değeri yazılır. */
 function useCorrectionDraft(shipment: InternalShipmentView) {
   const [draft, setDraft] = useState<CorrectionDraft>(EMPTY_CORRECTION_DRAFT);
-  const text = (name: 'grossKg' | 'tareKg' | 'sealNo' | 'reason') => ({
+  const text = (name: 'grossKg' | 'tareKg' | 'reason') => ({
     value: draft[name],
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
       const { value } = event.currentTarget;
@@ -55,7 +52,7 @@ function useCorrectionDraft(shipment: InternalShipmentView) {
   return { draft, text, selectTarget, reset };
 }
 
-/** Admin: kilitli sevkiyatta da tartım ya da mühür numarasını gerekçeyle düzeltir; eski değer saklanır. */
+/** Admin: kilitli sevkiyatta da çıkış tartımını gerekçeyle düzeltir; eski değer saklanır. */
 export function CorrectionForm({ shipment }: { shipment: InternalShipmentView }) {
   const { t } = useTranslation();
   const { draft, text, selectTarget, reset } = useCorrectionDraft(shipment);
@@ -82,14 +79,11 @@ export function CorrectionForm({ shipment }: { shipment: InternalShipmentView })
           }}
           withAsterisk
         />
-        {isWeighingTarget(draft.target) && (
+        {draft.target !== undefined && (
           <Group grow>
             <TextInput label={t('shipment.file.gross')} inputMode="decimal" {...text('grossKg')} />
             <TextInput label={t('shipment.file.tare')} inputMode="decimal" {...text('tareKg')} />
           </Group>
-        )}
-        {draft.target !== undefined && !isWeighingTarget(draft.target) && (
-          <TextInput label={t('shipment.correction.sealNo')} maxLength={64} {...text('sealNo')} />
         )}
         <TextInput
           label={t('shipment.correction.reason')}

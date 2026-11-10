@@ -11,14 +11,16 @@ test.describe('Sevkiyat listesi', { tag: '@panel' }, () => {
 
   test('durum filtresi listeyi daraltır ve adrese yazılır', async ({ page, openAs }) => {
     await openAs('WAREHOUSE', '/panel/sevkiyat');
-    await pick(page, 'Durum', 'Yolda');
-    await expect(page).toHaveURL(/durum=IN_TRANSIT/);
-    await expect(page.getByRole('link', { name: 'SVK-2026-0003' })).toBeVisible();
+    await pick(page, 'Durum', 'Fasoncuya yolda');
+    await expect(page).toHaveURL(/durum=AWAITING_DELIVERY/);
+    await expect(page.getByRole('link', { name: 'SVK-2026-0002' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'SVK-2026-0001' })).toHaveCount(0);
   });
 
-  test('yönetici (müdür) yeni sevkiyat butonunu görmez', async ({ page, openAs }) => {
+  test('müdür yeni sevkiyat açabilir, kalite açamaz', async ({ page, openAs }) => {
     await openAs('MANAGER', '/panel/sevkiyat');
+    await expect(page.getByRole('link', { name: 'Yeni sevkiyat' })).toBeVisible();
+    await openAs('QUALITY', '/panel/sevkiyat');
     await expect(page.getByRole('link', { name: 'SVK-2026-0001' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Yeni sevkiyat' })).toHaveCount(0);
   });

@@ -9,8 +9,9 @@
  * - Kilo değerleri ondalık dize olarak taşınır, ör. `"1982.500"` (API-03).
  * - Zamanlar ISO 8601 UTC (API-03).
  * - Liste uçları sayfalıdır, `page` 0'dan başlar (API-06).
- * - Kör giriş (SEC-05): fasoncu ve şoför görünümlerinde karşı tarafın tartı alanları ve beklenen çuval
- *   sayısı hiç yer almaz; depo görünümünde teslim alanları yer almaz. Görünüm `audience` alanıyla ayrılır.
+ * - Akış (saha analizi, 10.11.2026): müdür sevkiyatı açar (DRAFT), depo çıkış tartımını girer
+ *   (AWAITING_DELIVERY), irsaliye müdüre ulaşınca müdür sevkiyatı tamamlar (COMPLETED). Görünüm `audience`
+ *   alanıyla ayrılır; fasoncu görünümünde beklenen yük yer almaz.
  * - Butonlar yalnızca `allowedActions` listesine göre gösterilir (FE-SEC-03).
  *
  * OpenAPI spec version: 1.0.0
@@ -41,7 +42,6 @@ export type Role = typeof Role[keyof typeof Role];
 export const Role = {
   ADMIN: 'ADMIN',
   WAREHOUSE: 'WAREHOUSE',
-  DRIVER: 'DRIVER',
   SUBCONTRACTOR: 'SUBCONTRACTOR',
   QUALITY: 'QUALITY',
   MANAGER: 'MANAGER',
@@ -60,15 +60,10 @@ export const Permission = {
   SHIPMENT_VIEW: 'SHIPMENT_VIEW',
   SHIPMENT_CREATE: 'SHIPMENT_CREATE',
   SHIPMENT_CANCEL: 'SHIPMENT_CANCEL',
+  SHIPMENT_COMPLETE: 'SHIPMENT_COMPLETE',
   DISPATCH_RECORD: 'DISPATCH_RECORD',
   DISPATCH_VIEW: 'DISPATCH_VIEW',
-  DRIVER_DECLARATION_RECORD: 'DRIVER_DECLARATION_RECORD',
-  DRIVER_DECLARATION_VIEW: 'DRIVER_DECLARATION_VIEW',
-  DELIVERY_RECORD: 'DELIVERY_RECORD',
-  DELIVERY_VIEW: 'DELIVERY_VIEW',
   EVIDENCE_UPLOAD_DISPATCH: 'EVIDENCE_UPLOAD_DISPATCH',
-  EVIDENCE_UPLOAD_DRIVER: 'EVIDENCE_UPLOAD_DRIVER',
-  EVIDENCE_UPLOAD_DELIVERY: 'EVIDENCE_UPLOAD_DELIVERY',
   EVIDENCE_UPLOAD_CLAIM: 'EVIDENCE_UPLOAD_CLAIM',
   EVIDENCE_VIEW: 'EVIDENCE_VIEW',
   EVIDENCE_INVALIDATE: 'EVIDENCE_INVALIDATE',
@@ -88,8 +83,6 @@ export interface CurrentUserResponse {
   siteIds: string[];
   /** Yalnızca fasoncu kullanıcılarında */
   subcontractorId?: string;
-  /** Yalnızca şoför kullanıcılarında */
-  driverId?: string;
   mfaVerified: boolean;
 }
 
@@ -98,11 +91,7 @@ export type ShipmentStatus = typeof ShipmentStatus[keyof typeof ShipmentStatus];
 
 export const ShipmentStatus = {
   DRAFT: 'DRAFT',
-  LOADED: 'LOADED',
-  IN_TRANSIT: 'IN_TRANSIT',
   AWAITING_DELIVERY: 'AWAITING_DELIVERY',
-  CHECKING: 'CHECKING',
-  IN_REVIEW: 'IN_REVIEW',
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED',
 } as const;
@@ -117,9 +106,7 @@ export const ShipmentAction = {
   ASSIGN_BAGS: 'ASSIGN_BAGS',
   RECORD_DISPATCH: 'RECORD_DISPATCH',
   CANCEL: 'CANCEL',
-  CONFIRM_PICKUP: 'CONFIRM_PICKUP',
-  DECLARE_ARRIVAL: 'DECLARE_ARRIVAL',
-  RECORD_DELIVERY: 'RECORD_DELIVERY',
+  COMPLETE: 'COMPLETE',
   OPEN_QUALITY_CLAIM: 'OPEN_QUALITY_CLAIM',
   CREATE_CORRECTION: 'CREATE_CORRECTION',
 } as const;
@@ -132,7 +119,7 @@ export interface PageMetadata {
 }
 
 /**
- * Liste satırı. Kör girişe tabi alan taşımaz, bu yüzden tüm rollerde aynıdır.
+ * Liste satırı; tüm rollerde aynıdır.
  */
 export interface ShipmentSummaryView {
   shipmentId: string;
@@ -162,7 +149,6 @@ export const Audience = {
   INTERNAL: 'INTERNAL',
   WAREHOUSE: 'WAREHOUSE',
   SUBCONTRACTOR: 'SUBCONTRACTOR',
-  DRIVER: 'DRIVER',
 } as const;
 
 /**
@@ -184,15 +170,6 @@ export interface WeighingView {
   tareAlert?: boolean;
 }
 
-export type SealCondition = typeof SealCondition[keyof typeof SealCondition];
-
-
-export const SealCondition = {
-  INTACT: 'INTACT',
-  DAMAGED: 'DAMAGED',
-  MISSING: 'MISSING',
-} as const;
-
 /**
  * Çuval anahtarının nasıl girildiği
  */
@@ -205,76 +182,23 @@ export const ScanMethod = {
   MANUAL: 'MANUAL',
 } as const;
 
-export interface ArrivalDeclarationRequest {
-  /** Varışta mühür sağlam mı; hasarlı ya da yoksa false */
-  sealIntact: boolean;
-}
-
 /**
- * İrsaliye üzerindeki değerler (fasoncunun okuduğu haliyle)
- */
-export interface DeliveryDocument {
-  /** @maxLength 64 */
-  shipmentNo?: string;
-  date?: string;
-  netKg?: Kg;
-  /** @minimum 0 */
-  bagCount?: number;
-  /** evidence-service'e yüklenmiş imzalı irsaliye fotoğrafı */
-  signedDocumentEvidenceId?: string;
-}
-
-export interface DeliveryReceiptRequest {
-  grossKg: Kg;
-  tareKg: Kg;
-  /**
-     * Tartılan çuval sayısı
-     * @minimum 1
-     */
-  bagCount: number;
-  sealCondition: SealCondition;
-  /**
-     * Mühür üzerindeki numara; mühür yoksa (MISSING) boş bırakılır
-     * @minLength 1
-     * @maxLength 64
-     */
-  sealNo?: string;
-  /**
-     * Okutulan çuval anahtarları; tekrar edenler bir kez sayılır
-     * @maxItems 2000
-     * @items.minLength 1
-     * @items.maxLength 64
-     */
-  bagUniqueKeys: string[];
-  scanMethod?: ScanMethod;
-  document?: DeliveryDocument;
-}
-
-/**
- * Düzeltilen kayıt: çıkış ya da teslim tartımı (brüt ve dara), çıkış ya da teslim mühür numarası
+ * Düzeltilen kayıt: çıkış tartımı (brüt ve dara)
  */
 export type CorrectionTarget = typeof CorrectionTarget[keyof typeof CorrectionTarget];
 
 
 export const CorrectionTarget = {
   DISPATCH_WEIGHING: 'DISPATCH_WEIGHING',
-  DELIVERY_WEIGHING: 'DELIVERY_WEIGHING',
-  DISPATCH_SEAL_NO: 'DISPATCH_SEAL_NO',
-  DELIVERY_SEAL_NO: 'DELIVERY_SEAL_NO',
 } as const;
 
 /**
- * Tartım düzeltmesinde grossKg ve tareKg, mühür düzeltmesinde sealNo zorunludur.
+ * Brüt ve dara tartım düzeltmesinde zorunludur; eksikse 400 INVALID_CORRECTION döner.
  */
 export interface RecordCorrectionRequest {
   target: CorrectionTarget;
   grossKg?: Kg;
   tareKg?: Kg;
-  /**
-     * @minLength 1
-     * @maxLength 64
-     */
-  sealNo?: string;
   /**
      * @minLength 1
      * @maxLength 500
@@ -292,7 +216,7 @@ export const CorrectionViewStatus = {
 } as const;
 
 /**
- * Bir düzeltme. Tartımda değerler `gross=… tare=… net=…` biçimindedir (kilo, üç ondalık), mühürde numaradır.
+ * Bir düzeltme. Değerler `gross=… tare=… net=…` biçimindedir (kilo, üç ondalık).
  */
 export interface CorrectionView {
   id: string;
@@ -308,6 +232,17 @@ export interface CorrectionView {
 
 export interface CorrectionListResponse {
   items: CorrectionView[];
+}
+
+export interface CompleteShipmentRequest {
+  /**
+     * Müdüre ulaşan irsaliyenin numarası
+     * @minLength 1
+     * @maxLength 64
+     */
+  waybillNo: string;
+  /** evidence-service'e WAYBILL türüyle yüklenen irsaliye belgesinin kimliği */
+  waybillEvidenceId: string;
 }
 
 export interface CancelShipmentRequest {
@@ -799,21 +734,10 @@ export interface DispatchBagView {
   assignedAt: string;
 }
 
-export interface DeliveryScanView {
-  scannedKey: string;
-  /** Anahtar çıkış listesinde var mıydı; yalnızca INTERNAL görünümünde dolu olur */
-  matched?: boolean;
-  packageType?: PackagingType;
-  scanMethod: ScanMethod;
-  scannedAt: string;
-}
-
 export interface ShipmentBagsResponse {
   audience: Audience;
-  /** Çıkışta atanan çuvallar; yalnızca INTERNAL ve WAREHOUSE görünümünde */
-  dispatchBags?: DispatchBagView[];
-  /** Teslimde okutulan anahtarlar; yalnızca INTERNAL ve SUBCONTRACTOR görünümünde */
-  deliveryScans?: DeliveryScanView[];
+  /** Çıkışta atanan çuvallar */
+  dispatchBags: DispatchBagView[];
 }
 
 export interface DispatchWeighingRequest {
@@ -830,12 +754,6 @@ export interface DispatchWeighingRequest {
      * @maxLength 64
      */
   scaleTicketNo?: string;
-  /**
-     * Araca vurulan mühür numarası
-     * @minLength 1
-     * @maxLength 64
-     */
-  sealNo: string;
 }
 
 export type InternalShipmentViewAudience = typeof InternalShipmentViewAudience[keyof typeof InternalShipmentViewAudience];
@@ -846,7 +764,7 @@ export const InternalShipmentViewAudience = {
 } as const;
 
 /**
- * Admin, kalite ve yönetici. Her iki tarafın verisini içerir.
+ * Admin, kalite ve müdür.
  */
 export interface InternalShipmentView {
   audience: InternalShipmentViewAudience;
@@ -861,11 +779,8 @@ export interface InternalShipmentView {
   plannedBagCount?: number;
   plannedNetKg?: Kg;
   dispatchWeighing?: WeighingView;
-  dispatchSealNo?: string;
-  deliveryWeighing?: WeighingView;
-  deliverySealCondition?: SealCondition;
-  randomCheckSelected: boolean;
-  lockedAt?: string;
+  /** Tamamlanırken girilen irsaliye numarası */
+  waybillNo?: string;
   createdAt: string;
   allowedActions: ShipmentAction[];
 }
@@ -878,7 +793,7 @@ export const WarehouseShipmentViewAudience = {
 } as const;
 
 /**
- * Depo. Teslim tarafının alanlarını hiç içermez (kör giriş).
+ * Depo.
  */
 export interface WarehouseShipmentView {
   audience: WarehouseShipmentViewAudience;
@@ -893,8 +808,8 @@ export interface WarehouseShipmentView {
   plannedBagCount?: number;
   plannedNetKg?: Kg;
   dispatchWeighing?: WeighingView;
-  dispatchSealNo?: string;
-  randomCheckSelected: boolean;
+  /** Tamamlanırken girilen irsaliye numarası */
+  waybillNo?: string;
   createdAt: string;
   allowedActions: ShipmentAction[];
 }
@@ -907,7 +822,7 @@ export const SubcontractorShipmentViewAudience = {
 } as const;
 
 /**
- * Fasoncu. Çıkış tartısı, beklenen çuval sayısı ve rastgele kontrol seçimi alanlarını hiç içermez (SEC-05, SEC-08). Karşılaştırma sonucu discrepancy-service'ten okunur.
+ * Fasoncu. Beklenen yükü içermez.
  */
 export interface SubcontractorShipmentView {
   audience: SubcontractorShipmentViewAudience;
@@ -918,40 +833,15 @@ export interface SubcontractorShipmentView {
   subcontractorTitle: string;
   driverName?: string;
   plateNo?: string;
-  deliveryWeighing?: WeighingView;
-  deliverySealCondition?: SealCondition;
-  createdAt: string;
-  allowedActions: ShipmentAction[];
-}
-
-export type DriverShipmentViewAudience = typeof DriverShipmentViewAudience[keyof typeof DriverShipmentViewAudience];
-
-
-export const DriverShipmentViewAudience = {
-  DRIVER: 'DRIVER',
-} as const;
-
-/**
- * Şoför. Kilo alanı içermez; yalnızca çıkıştaki çuval sayısı ve mühür numarası (karar Y1, SEC-05).
- */
-export interface DriverShipmentView {
-  audience: DriverShipmentViewAudience;
-  shipmentId: string;
-  shipmentNo: string;
-  siteId: string;
-  status: ShipmentStatus;
-  subcontractorTitle: string;
-  plateNo?: string;
-  dispatchBagCount?: number;
-  dispatchSealNo?: string;
+  dispatchWeighing?: WeighingView;
   createdAt: string;
   allowedActions: ShipmentAction[];
 }
 
 /**
- * İsteyenin rolüne göre dört görünümden biri (API-09, SEC-05).
+ * İsteyenin rolüne göre üç görünümden biri (API-09).
  */
-export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView | DriverShipmentView;
+export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView;
 
 /**
  * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE) ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da düzeltilecek kayıt bu arada değişti (CORRECTION_CONFLICT)
@@ -1232,7 +1122,7 @@ export const createShipment = (
     }
 
 /**
- * Fasoncu yalnızca kendi, şoför yalnızca kendisine atanmış, iç kullanıcılar yalnızca yetkili oldukları lokasyonlardaki sevkiyatları görür. Filtre sorguya eklenir (SEC-03).
+ * Fasoncu yalnızca kendi, iç kullanıcılar yalnızca yetkili oldukları lokasyonlardaki sevkiyatları görür. Filtre sorguya eklenir (SEC-03).
  * @summary Kapsamdaki sevkiyatlar, en yeni önce
  */
 export const listShipments = (
@@ -1258,66 +1148,10 @@ export const getShipment = (
     }
 
 /**
- * Gövde yoktur; şoför çıkışta kaydedilen çuval sayısını ve mühür numarasını onaylar. Yalnızca sevkiyata
- * atanmış şoför çağırabilir (`allowedActions` içinde `CONFIRM_PICKUP`). Aynı sevkiyat için tekrar gönderilen
- * istek (zayıf bağlantıda yeniden deneme) yeni kayıt oluşturmaz ve yine 204 döner.
- * @summary Şoför yükü teslim aldığını beyan eder (LOADED → IN_TRANSIT)
- */
-export const confirmPickup = (
-    shipmentId: string,
- ) => {
-      return customInstance<void>(
-      {url: `/api/v1/shipments/${shipmentId}/pickup-confirmation`, method: 'POST'
-    },
-      );
-    }
-
-/**
- * Şoför varış zamanını (sunucu saati) ve mührün sağlam olup olmadığını bildirir. Yalnızca sevkiyata atanmış
- * şoför çağırabilir (`allowedActions` içinde `DECLARE_ARRIVAL`). Mühür hasarlı beyanı sevkiyatı durdurmaz;
- * karşılaştırma discrepancy-service'tedir. Aynı sevkiyat için tekrar gönderilen istek (zayıf bağlantıda
- * yeniden deneme) yeni kayıt oluşturmaz ve yine 204 döner.
- * @summary Şoför fasoncuya vardığını beyan eder (IN_TRANSIT → AWAITING_DELIVERY)
- */
-export const declareArrival = (
-    shipmentId: string,
-    arrivalDeclarationRequest: ArrivalDeclarationRequest,
- ) => {
-      return customInstance<void>(
-      {url: `/api/v1/shipments/${shipmentId}/arrival-declaration`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: arrivalDeclarationRequest
-    },
-      );
-    }
-
-/**
- * Fasoncu çıkış tartısını, beklenen yükü ve çıkış mühür numarasını görmeden kendi ölçümünü girer (SEC-05).
- * Gönderilen tutanak kilitlenir, değişiklik yalnızca düzeltme talebiyle yapılır. Okutulan anahtar listede
- * yoksa da saklanır; eşleşme karşılaştırması discrepancy-service'tedir. Aynı sevkiyat için tekrar gönderilen
- * istek yeni kayıt oluşturmaz ve yine 204 döner. `signedDocumentEvidenceId` verilirse evidence-service'te bu
- * sevkiyata ait, türü `SIGNED_DELIVERY_DOC` olan bir kanıt olmalıdır; aksi halde 422
- * `DELIVERY_EVIDENCE_INVALID` döner.
- * @summary Fasoncu kör teslim girişini gönderir (AWAITING_DELIVERY → CHECKING)
- */
-export const submitDeliveryReceipt = (
-    shipmentId: string,
-    deliveryReceiptRequest: DeliveryReceiptRequest,
- ) => {
-      return customInstance<void>(
-      {url: `/api/v1/shipments/${shipmentId}/delivery-receipt`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: deliveryReceiptRequest
-    },
-      );
-    }
-
-/**
- * Depo çalışanı kantar fişindeki brüt, dara ve çuval sayısını ile araca vurulan mühür numarasını girer.
- * Net kilo brüt ile daradan hesaplanır. Mühür numarası tek kullanımlıktır: başka bir sevkiyatın çıkışında
- * kullanılmışsa 409 döner. Kayıtla birlikte sevkiyat yüklendi sayılır. Aynı sevkiyat için tekrar gönderilen
+ * Depo çalışanı kantar fişindeki brüt, dara ve çuval sayısını girer. Net kilo brüt ile daradan hesaplanır.
+ * Kayıtla birlikte sevkiyat çıkış yapmış ve teslim bekliyor sayılır. Aynı sevkiyat için tekrar gönderilen
  * istek yeni kayıt oluşturmaz ve yine 204 döner.
- * @summary Depo çıkış tartımını ve mührü kaydeder (DRAFT → LOADED)
+ * @summary Depo çıkış tartımını kaydeder (DRAFT → AWAITING_DELIVERY)
  */
 export const recordDispatchWeighing = (
     shipmentId: string,
@@ -1327,6 +1161,25 @@ export const recordDispatchWeighing = (
       {url: `/api/v1/shipments/${shipmentId}/dispatch-weighing`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: dispatchWeighingRequest
+    },
+      );
+    }
+
+/**
+ * Müdür irsaliye belgesini önce evidence-service'e WAYBILL türüyle yükler, sonra irsaliye numarası ve belgenin
+ * kimliğiyle bu ucu çağırır; sevkiyat tamamlanır ve kilitlenir. Belge yoksa, başka sevkiyata aitse ya da irsaliye
+ * değilse 422 WAYBILL_EVIDENCE_INVALID döner. Aynı irsaliye numarasıyla tekrar gönderilen istek yeni kayıt
+ * oluşturmaz ve yine 204 döner.
+ * @summary İrsaliye müdüre ulaştı, sevkiyatı tamamlar (AWAITING_DELIVERY → COMPLETED)
+ */
+export const completeShipment = (
+    shipmentId: string,
+    completeShipmentRequest: CompleteShipmentRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/completion`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: completeShipmentRequest
     },
       );
     }
@@ -1467,27 +1320,6 @@ export const deactivateDriver = (
  * (hesap açık kalır; yönetici sıfırlamayı yeniden başlatır). Kayıt etkin olmalı, `siteIds` etkin lokasyonlardan oluşmalıdır (`INVALID_MASTER_DATA`). Kayıt için
  * hesap zaten varsa ya da giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak'a ulaşılamazsa ya da
  * yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
- * @summary Şoför için giriş hesabı açar
- */
-export const createDriverLoginAccount = (
-    driverId: string,
-    loginAccountRequest: LoginAccountRequest,
- ) => {
-      return customInstance<void>(
-      {url: `/api/v1/master-data/drivers/${driverId}/login-account`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: loginAccountRequest
-    },
-      );
-    }
-
-/**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Keycloak'ta kullanıcıyı şifresiz; rol, telefon ve kimlik/lokasyon
- * öznitelikleriyle açar. Şifre üretilmez ve hiçbir yanıtta yer almaz: kişiye SMS ile bir kod gider, kişi giriş
- * sayfasındaki "Şifremi unuttum" ile kodu girip kendi şifresini belirler. SMS gidemezse 502 `SMS_UNAVAILABLE`
- * (hesap açık kalır; yönetici sıfırlamayı yeniden başlatır). Kayıt etkin olmalı, `siteIds` etkin lokasyonlardan oluşmalıdır (`INVALID_MASTER_DATA`). Kayıt için
- * hesap zaten varsa ya da giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak'a ulaşılamazsa ya da
- * yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
  * @summary Fasoncu için giriş hesabı açar
  */
 export const createSubcontractorLoginAccount = (
@@ -1556,7 +1388,7 @@ export const listUserNames = (
 /**
  * Yalnızca yönetici (USER_MANAGE). Kullanıcının fabrika içi rolünü (depo, kalite, müdür, yönetici) yenisiyle
  * değiştirir ve açık oturumlarını kapatır; kişi yeni rolle yeniden giriş yapar. Kişi kendi rolünü değiştiremez
- * (400 `INVALID_MASTER_DATA`, `userId`). Şoför ve fasoncu hesapları kayda bağlı olduğundan değiştirilemez
+ * (400 `INVALID_MASTER_DATA`, `userId`). Fasoncu hesapları kayda bağlı olduğundan değiştirilemez
  * (409 `LOGIN_ACCOUNT_ROLE_LOCKED`). Kullanıcı yoksa 404 `LOGIN_ACCOUNT_NOT_FOUND`.
  * @summary Fabrika içi hesabın rolünü değiştirir
  */
@@ -2091,12 +1923,12 @@ export const getShipmentHistory = (
     }
 
 /**
- * Yalnızca yönetici (SHIPMENT_CANCEL). Taslak (DRAFT) ya da çıkış tartımı yapılmış (LOADED) sevkiyat iptal
- * edilir; gerekçe zorunludur. Sevkiyata atanmış çuvallar bag-service'te serbest bırakılır ve yeniden
+ * Müdür ya da yönetici (SHIPMENT_CANCEL). Taslak (DRAFT) ya da teslim bekleyen (AWAITING_DELIVERY) sevkiyat
+ * iptal edilir, ör. kantar farkı nedeniyle durdurulan sevkiyat; gerekçe zorunludur. Sevkiyata atanmış çuvallar bag-service'te serbest bırakılır ve yeniden
  * kullanılabilir olur. Çuval servisi yanıt vermezse iptal de yapılmaz (`BAG_SERVICE_UNAVAILABLE`) ve istek
- * güvenle tekrarlanır. Zaten iptal edilmiş sevkiyata gelen istek başarılı döner. Yola çıkmış sevkiyat
- * iptal edilemez (`INVALID_SHIPMENT_STATUS`).
- * @summary Yola çıkmamış sevkiyatı iptal eder
+ * güvenle tekrarlanır. Zaten iptal edilmiş sevkiyata gelen istek başarılı döner. Tamamlanmış sevkiyat iptal
+ * edilemez (`INVALID_SHIPMENT_STATUS`).
+ * @summary Tamamlanmamış sevkiyatı iptal eder
  */
 export const cancelShipment = (
     shipmentId: string,
@@ -2114,10 +1946,10 @@ export const cancelShipment = (
  * Yalnızca Admin (CORRECTION_CREATE). Tamamlanıp kilitlenmiş sevkiyatta da çalışır (rapor 7.8). Kayıt
  * güncellenmez: yeni satır eklenir, eski değer hem eski satırda hem düzeltme kaydında saklanır. Tartım
  * düzeltmesinde brüt ve dara birlikte gönderilir; çuval sayısı ve tartım zamanı aynen kalır. Düzeltilecek kayıt
- * yoksa, yeni değer eskisiyle aynıysa ya da gerekçe boşsa `INVALID_CORRECTION`; mühür numarası başka sevkiyatta
- * kullanılmışsa `SEAL_ALREADY_USED`; kayıt bu arada başka düzeltmeyle değiştiyse `CORRECTION_CONFLICT`. Aynı
+ * yoksa, yeni değer eskisiyle aynıysa ya da gerekçe boşsa `INVALID_CORRECTION`; kayıt bu arada başka
+ * düzeltmeyle değiştiyse `CORRECTION_CONFLICT`. Aynı
  * `Idempotency-Key` ile tekrar gelen istek düzeltmeyi yeniden uygulamaz, ilk kaydı döner.
- * @summary Tartım ya da mühür numarasını gerekçeyle düzeltir
+ * @summary Çıkış tartımını gerekçeyle düzeltir
  */
 export const recordCorrection = (
     shipmentId: string,
@@ -2166,9 +1998,7 @@ export const assignShipmentBags = (
     }
 
 /**
- * Kör giriş (SEC-05): çıkışta atanan çuval listesi (`dispatchBags`) fasoncu ve şoför görünümünde,
- * teslimde okutulanlar (`deliveryScans`) depo ve şoför görünümünde hiç yer almaz. Teslim okutmaları teslim
- * kaydı gönderildikten sonra oluşur; önce boştur. Listeler sayfalanmaz: bir sevkiyatın çuval sayısıyla sınırlıdır.
+ * Çıkışta atanan çuvallar. Liste sayfalanmaz: bir sevkiyatın çuval sayısıyla sınırlıdır.
  * @summary Sevkiyatın çuvalları, isteyenin görünümüyle
  */
 export const getShipmentBags = (
@@ -2205,10 +2035,8 @@ export type GetCurrentUserResult = NonNullable<Awaited<ReturnType<typeof getCurr
 export type CreateShipmentResult = NonNullable<Awaited<ReturnType<typeof createShipment>>>
 export type ListShipmentsResult = NonNullable<Awaited<ReturnType<typeof listShipments>>>
 export type GetShipmentResult = NonNullable<Awaited<ReturnType<typeof getShipment>>>
-export type ConfirmPickupResult = NonNullable<Awaited<ReturnType<typeof confirmPickup>>>
-export type DeclareArrivalResult = NonNullable<Awaited<ReturnType<typeof declareArrival>>>
-export type SubmitDeliveryReceiptResult = NonNullable<Awaited<ReturnType<typeof submitDeliveryReceipt>>>
 export type RecordDispatchWeighingResult = NonNullable<Awaited<ReturnType<typeof recordDispatchWeighing>>>
+export type CompleteShipmentResult = NonNullable<Awaited<ReturnType<typeof completeShipment>>>
 export type ListSubcontractorsResult = NonNullable<Awaited<ReturnType<typeof listSubcontractors>>>
 export type CreateSubcontractorResult = NonNullable<Awaited<ReturnType<typeof createSubcontractor>>>
 export type UpdateSubcontractorResult = NonNullable<Awaited<ReturnType<typeof updateSubcontractor>>>
@@ -2218,7 +2046,6 @@ export type ListDriversResult = NonNullable<Awaited<ReturnType<typeof listDriver
 export type CreateDriverResult = NonNullable<Awaited<ReturnType<typeof createDriver>>>
 export type UpdateDriverResult = NonNullable<Awaited<ReturnType<typeof updateDriver>>>
 export type DeactivateDriverResult = NonNullable<Awaited<ReturnType<typeof deactivateDriver>>>
-export type CreateDriverLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createDriverLoginAccount>>>
 export type CreateSubcontractorLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createSubcontractorLoginAccount>>>
 export type ListLoginAccountsResult = NonNullable<Awaited<ReturnType<typeof listLoginAccounts>>>
 export type CreateStaffLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createStaffLoginAccount>>>

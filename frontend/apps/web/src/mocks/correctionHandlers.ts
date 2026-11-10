@@ -27,7 +27,6 @@ function readCorrection(json: unknown): RecordCorrectionRequest | undefined {
     reason: json.reason,
     ...(grossKg === undefined ? {} : { grossKg }),
     ...(tareKg === undefined ? {} : { tareKg }),
-    ...(typeof json.sealNo === 'string' ? { sealNo: json.sealNo } : {}),
   };
 }
 
@@ -51,7 +50,6 @@ export function createCorrectionHandlers(permissions: readonly Permission[], use
       if (body === undefined) return problem(400, 'INVALID_REQUEST');
       const result = recordMockCorrection(shipment, body, userId);
       if (result === 'INVALID_CORRECTION') return problem(400, result);
-      if (result === 'SEAL_ALREADY_USED') return problem(409, result);
       return HttpResponse.json(result, { status: 201 });
     }),
   ];

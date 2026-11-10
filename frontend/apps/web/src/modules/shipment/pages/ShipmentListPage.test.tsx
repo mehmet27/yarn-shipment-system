@@ -44,7 +44,7 @@ describe('ShipmentListPage', () => {
     await userEvent.click(await screen.findByRole('option', { name: 'Tamamlandı' }));
     expect(router.state.location.search).toBe('?durum=COMPLETED');
     const table = await screen.findByRole('table');
-    expect(await within(table).findAllByText('Tamamlandı')).toHaveLength(5);
+    expect(await within(table).findAllByText('Tamamlandı')).toHaveLength(11);
   });
 
   it('sonraki sayfaya geçince sayfa numarasını adrese yazar', async () => {

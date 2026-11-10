@@ -1,14 +1,10 @@
 import type { Kilogram } from '@iplik/units';
 import { isKilogram } from '@iplik/units';
 import type {
-  ArrivalDeclarationRequest,
+  CompleteShipmentRequest,
   DispatchWeighingRequest as GeneratedDispatchWeighingRequest,
-  DeliveryDocument as GeneratedDeliveryDocument,
-  DeliveryReceiptRequest as GeneratedDeliveryReceiptRequest,
-  DriverShipmentView as GeneratedDriverView,
   InternalShipmentView as GeneratedInternalView,
   ListShipmentsParams,
-  SealCondition,
   ShipmentAction,
   ShipmentDetailResponse,
   ShipmentPageResponse,
@@ -19,14 +15,11 @@ import type {
   WeighingView,
 } from './generated/shipmentService';
 import {
-  confirmPickup,
-  declareArrival,
+  completeShipment,
   getShipment as getGeneratedShipment,
   listShipments,
   recordDispatchWeighing,
-  SealCondition as SealConditionValues,
   ShipmentStatus as ShipmentStatusValues,
-  submitDeliveryReceipt,
 } from './generated/shipmentService';
 
 /**
@@ -42,7 +35,7 @@ export type Weighing = Omit<WeighingView, 'grossKg' | 'tareKg' | 'netKg'> & {
 type WithWeighings<T, K extends keyof T> = Omit<T, K> & Partial<Record<K, Weighing>>;
 
 export type InternalShipmentView = Omit<
-  WithWeighings<GeneratedInternalView, 'dispatchWeighing' | 'deliveryWeighing'>,
+  WithWeighings<GeneratedInternalView, 'dispatchWeighing'>,
   'plannedNetKg'
 > & { plannedNetKg?: Kilogram };
 export type WarehouseShipmentView = Omit<
@@ -51,19 +44,17 @@ export type WarehouseShipmentView = Omit<
 > & { plannedNetKg?: Kilogram };
 export type SubcontractorShipmentView = WithWeighings<
   GeneratedSubcontractorView,
-  'deliveryWeighing'
+  'dispatchWeighing'
 >;
-export type DriverShipmentView = GeneratedDriverView;
 export type ShipmentDetail =
-  InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView | DriverShipmentView;
+  InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView;
 
 export type ShipmentSummary = ShipmentSummaryView;
 export type Page<T> = { items: readonly T[]; page: ShipmentPageResponse['page'] };
 export type PageInfo = ShipmentPageResponse['page'];
-export type { ListShipmentsParams, SealCondition, ShipmentAction, ShipmentStatus };
+export type { ListShipmentsParams, ShipmentAction, ShipmentStatus };
 
 export const SHIPMENTS_PATH = '/api/v1/shipments';
-export const SEAL_CONDITIONS: readonly SealCondition[] = Object.values(SealConditionValues);
 export const SHIPMENT_STATUSES: readonly ShipmentStatus[] = Object.values(ShipmentStatusValues);
 
 function isWeighing(weighing: WeighingView): weighing is Weighing {
@@ -83,8 +74,7 @@ function hasValidKilograms(shipment: ShipmentDetailResponse): shipment is Shipme
     case 'INTERNAL':
       return (
         isValidOptionalKg(shipment.plannedNetKg) &&
-        isValidOptionalWeighing(shipment.dispatchWeighing) &&
-        isValidOptionalWeighing(shipment.deliveryWeighing)
+        isValidOptionalWeighing(shipment.dispatchWeighing)
       );
     case 'WAREHOUSE':
       return (
@@ -92,9 +82,7 @@ function hasValidKilograms(shipment: ShipmentDetailResponse): shipment is Shipme
         isValidOptionalWeighing(shipment.dispatchWeighing)
       );
     case 'SUBCONTRACTOR':
-      return isValidOptionalWeighing(shipment.deliveryWeighing);
-    case 'DRIVER':
-      return true;
+      return isValidOptionalWeighing(shipment.dispatchWeighing);
   }
 }
 
@@ -107,12 +95,6 @@ export async function getShipment(shipmentId: string): Promise<ShipmentDetail> {
   return shipment;
 }
 
-export type DeliveryDocument = Omit<GeneratedDeliveryDocument, 'netKg'> & { netKg?: Kilogram };
-export type DeliveryReceiptRequest = Omit<
-  GeneratedDeliveryReceiptRequest,
-  'grossKg' | 'tareKg' | 'document'
-> & { grossKg: Kilogram; tareKg: Kilogram; document?: DeliveryDocument };
-
 export type DispatchWeighingRequest = Omit<
   GeneratedDispatchWeighingRequest,
   'grossKg' | 'tareKg'
@@ -121,12 +103,6 @@ export type DispatchWeighingRequest = Omit<
   tareKg: Kilogram;
 };
 
-export type { ArrivalDeclarationRequest };
+export type { CompleteShipmentRequest };
 
-export {
-  confirmPickup,
-  declareArrival,
-  listShipments,
-  recordDispatchWeighing,
-  submitDeliveryReceipt,
-};
+export { completeShipment, listShipments, recordDispatchWeighing };

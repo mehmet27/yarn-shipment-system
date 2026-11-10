@@ -25,7 +25,6 @@ export function ShipmentsPanel({ params, isEnabled, isOnlyDiscrepant = false }: 
                   <Table.Tr>
                     <Table.Th>{t('report.export.shipmentNo')}</Table.Th>
                     <Table.Th>{t('report.parties.subcontractor')}</Table.Th>
-                    <Table.Th>{t('report.parties.driver')}</Table.Th>
                     <Table.Th>{t('report.export.status')}</Table.Th>
                     <Table.Th>{t('report.dashboard.dispatchNet')}</Table.Th>
                     <Table.Th>{t('report.dashboard.deliveryNet')}</Table.Th>

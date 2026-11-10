@@ -12,9 +12,8 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'SHIPMENT_VIEW',
     'SHIPMENT_CREATE',
     'SHIPMENT_CANCEL',
+    'SHIPMENT_COMPLETE',
     'DISPATCH_VIEW',
-    'DRIVER_DECLARATION_VIEW',
-    'DELIVERY_VIEW',
     'EVIDENCE_VIEW',
     'EVIDENCE_INVALIDATE',
     'CORRECTION_CREATE',
@@ -31,25 +30,12 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'SHIPMENT_CREATE',
     'DISPATCH_RECORD',
     'DISPATCH_VIEW',
-    'DRIVER_DECLARATION_VIEW',
-    'DELIVERY_VIEW',
     'EVIDENCE_UPLOAD_DISPATCH',
-    'EVIDENCE_VIEW',
-  ],
-  DRIVER: [
-    'SHIPMENT_VIEW',
-    'DISPATCH_VIEW',
-    'DRIVER_DECLARATION_RECORD',
-    'DRIVER_DECLARATION_VIEW',
-    'EVIDENCE_UPLOAD_DRIVER',
     'EVIDENCE_VIEW',
   ],
   SUBCONTRACTOR: [
     'SHIPMENT_VIEW',
     'DISPATCH_VIEW',
-    'DELIVERY_RECORD',
-    'DELIVERY_VIEW',
-    'EVIDENCE_UPLOAD_DELIVERY',
     'EVIDENCE_UPLOAD_CLAIM',
     'EVIDENCE_VIEW',
     'QUALITY_CLAIM_OPEN',
@@ -60,8 +46,6 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'LOT_QUALITY_LOCK',
     'SHIPMENT_VIEW',
     'DISPATCH_VIEW',
-    'DRIVER_DECLARATION_VIEW',
-    'DELIVERY_VIEW',
     'EVIDENCE_UPLOAD_CLAIM',
     'EVIDENCE_VIEW',
     'QUALITY_CLAIM_OPEN',
@@ -73,9 +57,10 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
   MANAGER: [
     'MASTER_DATA_VIEW',
     'SHIPMENT_VIEW',
+    'SHIPMENT_CREATE',
+    'SHIPMENT_CANCEL',
+    'SHIPMENT_COMPLETE',
     'DISPATCH_VIEW',
-    'DRIVER_DECLARATION_VIEW',
-    'DELIVERY_VIEW',
     'EVIDENCE_VIEW',
     'DISCREPANCY_VIEW',
     'AUDIT_VIEW',
@@ -86,16 +71,12 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
 const FULL_NAMES: Readonly<Record<Role, string>> = {
   ADMIN: 'Ayşe Yönetici',
   WAREHOUSE: 'Deniz Depo',
-  DRIVER: 'Şahin Şoför',
   SUBCONTRACTOR: 'Fatma Fasoncu',
   QUALITY: 'Kemal Kalite',
   MANAGER: 'Yusuf Müdür',
 };
 
-const SCOPE_BY_ROLE: Readonly<
-  Partial<Record<Role, Pick<CurrentUser, 'driverId' | 'subcontractorId'>>>
-> = {
-  DRIVER: { driverId: 'drv-0' },
+const SCOPE_BY_ROLE: Readonly<Partial<Record<Role, Pick<CurrentUser, 'subcontractorId'>>>> = {
   SUBCONTRACTOR: { subcontractorId: 'sub-0' },
 };
 

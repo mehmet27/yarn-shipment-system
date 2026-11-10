@@ -21,7 +21,6 @@ export function shipmentsTable(
     headers: [
       t('report.export.shipmentNo'),
       t('report.parties.subcontractor'),
-      t('report.parties.driver'),
       t('report.export.status'),
       t('report.dashboard.dispatchNet'),
       t('report.dashboard.deliveryNet'),
@@ -35,7 +34,6 @@ export function shipmentsTable(
     rows: visible.map((row) => [
       text(row.shipmentNo),
       text(meta.nameOf(row.subcontractorId)),
-      text(row.driverId === undefined ? '' : meta.nameOf(row.driverId)),
       text(t(`shipment.status.${row.status}`)),
       optionalKg(row.dispatchNetKg),
       optionalKg(row.deliveryNetKg),
@@ -51,7 +49,6 @@ export function shipmentsTable(
       : {
           total: [
             text(t('report.export.total')),
-            text(''),
             text(''),
             count(visible.length),
             kg(sumKg(visible.map((row) => row.dispatchNetKg))),

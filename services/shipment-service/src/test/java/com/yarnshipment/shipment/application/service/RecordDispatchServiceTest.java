@@ -8,6 +8,7 @@ import com.yarnshipment.common.security.scope.OutOfScopeAccessException;
 import com.yarnshipment.shipment.TestDispatches;
 import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
+import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
 import com.yarnshipment.shipment.domain.model.DispatchBag;

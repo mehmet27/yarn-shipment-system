@@ -95,7 +95,7 @@ class CreateShipmentServiceTest {
                 .isInstanceOf(InvalidNewShipmentException.class);
         assertThatThrownBy(() -> RecipeFixtures.recipeLine(1, null, "x", BigDecimal.ZERO))
                 .isInstanceOf(InvalidNewShipmentException.class);
-        assertThatThrownBy(() -> RecipeFixtures.recipeLine(1, null, BigDecimal.ONE))
+        assertThatThrownBy(() -> RecipeFixtures.recipeLine(1, null, null, BigDecimal.ONE))
                 .isInstanceOf(InvalidNewShipmentException.class);
     }
 

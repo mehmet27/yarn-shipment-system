@@ -37,9 +37,8 @@ final class RecipeFixtures {
                 base.createdAt(),
                 new Shipment.RecipeState(
                         List.of(
-                                recipeLine(
-                                        1, null, "VİSKON", ServiceTestSupport.ServiceTestSupport.decimal("1000.000")),
-                                recipeLine(2, null, "POLY", ServiceTestSupport.ServiceTestSupport.decimal("982.500"))),
+                                recipeLine(1, null, "VİSKON", ServiceTestSupport.decimal("1000.000")),
+                                recipeLine(2, null, "POLY", ServiceTestSupport.decimal("982.500"))),
                         ServiceTestSupport.decimal("0.0400"),
                         null));
     }

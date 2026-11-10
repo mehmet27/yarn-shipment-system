@@ -41,7 +41,7 @@ public record YarnVsFabricRow(
                 shortage.setScale(FireFile.KG_SCALE, RoundingMode.HALF_UP));
     }
 
-    private static BigDecimal sum(List<FireFile> files, java.util.function.Function<FireFile, BigDecimal> f) {
-        return files.stream().map(f).reduce(BigDecimal.ZERO, BigDecimal::add);
+    private static BigDecimal sum(List<FireFile> files, java.util.function.Function<FireFile, BigDecimal> getter) {
+        return files.stream().map(getter).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

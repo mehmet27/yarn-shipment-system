@@ -14,6 +14,7 @@ import org.jspecify.annotations.Nullable;
  * @param fabricKg K, gelen kumaş
  * @param fireRate f, kesir (0,0400)
  */
+@SuppressWarnings("checkstyle:RecordComponentNumber")
 public record FireFile(
         UUID shipmentId,
         String shipmentNo,
@@ -46,16 +47,16 @@ public record FireFile(
         return actualFireRate(baseKg(), fabricKg);
     }
 
-    /** H = max(0, B − K), 3 ondalık. Ara yuvarlama yapılmaz. */
-    public BigDecimal shortageKg() {
-        BigDecimal exact = baseKg().multiply(BigDecimal.ONE.subtract(fireRate)).subtract(fabricKg);
-        return exact.max(BigDecimal.ZERO).setScale(KG_SCALE, RoundingMode.HALF_UP);
-    }
-
     public static BigDecimal actualFireRate(BigDecimal baseKg, BigDecimal fabricKg) {
         if (baseKg.signum() <= 0) {
             return BigDecimal.ZERO.setScale(RATE_SCALE);
         }
         return baseKg.subtract(fabricKg).divide(baseKg, RATE_SCALE, RoundingMode.HALF_UP);
+    }
+
+    /** H = max(0, B − K), 3 ondalık. Ara yuvarlama yapılmaz. */
+    public BigDecimal shortageKg() {
+        BigDecimal exact = baseKg().multiply(BigDecimal.ONE.subtract(fireRate)).subtract(fabricKg);
+        return exact.max(BigDecimal.ZERO).setScale(KG_SCALE, RoundingMode.HALF_UP);
     }
 }

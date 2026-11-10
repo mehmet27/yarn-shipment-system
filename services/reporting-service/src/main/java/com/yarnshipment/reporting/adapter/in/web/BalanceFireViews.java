@@ -25,36 +25,36 @@ final class BalanceFireViews {
                 row.inTransitKg().toPlainString());
     }
 
-    static FireRowView toView(FireFile f) {
+    static FireRowView toView(FireFile file) {
         var view = new FireRowView(
-                f.shipmentId(),
-                f.shipmentNo(),
-                f.subcontractorId(),
-                f.subcontractorName(),
-                f.sentKg().toPlainString(),
-                f.returnedYarnKg().toPlainString(),
-                f.fabricKg().toPlainString(),
-                f.fireRate().toPlainString(),
-                f.expectedFabricKg().toPlainString(),
-                f.actualFireRate().toPlainString(),
-                f.shortageKg().toPlainString(),
-                FireRowView.StatusEnum.fromValue(f.status()));
-        view.setInvoiceNo(f.invoiceNo());
-        if (f.invoicedAt() != null) {
-            view.setInvoicedAt(f.invoicedAt().atOffset(ZoneOffset.UTC));
+                file.shipmentId(),
+                file.shipmentNo(),
+                file.subcontractorId(),
+                file.subcontractorName(),
+                file.sentKg().toPlainString(),
+                file.returnedYarnKg().toPlainString(),
+                file.fabricKg().toPlainString(),
+                file.fireRate().toPlainString(),
+                file.expectedFabricKg().toPlainString(),
+                file.actualFireRate().toPlainString(),
+                file.shortageKg().toPlainString(),
+                FireRowView.StatusEnum.fromValue(file.status()));
+        view.setInvoiceNo(file.invoiceNo());
+        if (file.invoicedAt() != null) {
+            view.setInvoicedAt(file.invoicedAt().atOffset(ZoneOffset.UTC));
         }
         return view;
     }
 
-    static YarnVsFabricRowView toView(YarnVsFabricRow r) {
+    static YarnVsFabricRowView toView(YarnVsFabricRow row) {
         return new YarnVsFabricRowView(
-                r.subcontractorId(),
-                r.subcontractorName(),
-                r.sentKg().toPlainString(),
-                r.returnedYarnKg().toPlainString(),
-                r.fabricKg().toPlainString(),
-                r.actualFireRate().toPlainString(),
-                r.shortageKg().toPlainString());
+                row.subcontractorId(),
+                row.subcontractorName(),
+                row.sentKg().toPlainString(),
+                row.returnedYarnKg().toPlainString(),
+                row.fabricKg().toPlainString(),
+                row.actualFireRate().toPlainString(),
+                row.shortageKg().toPlainString());
     }
 
     static OpeningBalanceRow toDomain(OpeningRowRequest row) {

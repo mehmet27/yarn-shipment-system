@@ -11,12 +11,18 @@ import org.jspecify.annotations.Nullable;
  * @param tareKg dara
  * @param bagCount tartılan çuval sayısı
  * @param scaleTicketNo kantar fişi numarası
+ * @param shortfallReason deponun eksik yükleme nedeni (stok yetmedi gibi); müdürün kararına girdi olur
  */
 public record DispatchMeasurement(
         BigDecimal grossKg,
         BigDecimal tareKg,
         int bagCount,
-        @Nullable String scaleTicketNo) {
+        @Nullable String scaleTicketNo,
+        @Nullable String shortfallReason) {
+
+    public DispatchMeasurement(BigDecimal grossKg, BigDecimal tareKg, int bagCount, @Nullable String scaleTicketNo) {
+        this(grossKg, tareKg, bagCount, scaleTicketNo, null);
+    }
 
     public DispatchMeasurement {
         Objects.requireNonNull(grossKg, "grossKg");
@@ -27,5 +33,9 @@ public record DispatchMeasurement(
         if (bagCount <= 0) {
             throw new InvalidDispatchException("bagCount", "not positive");
         }
+        if (shortfallReason != null && (shortfallReason.isBlank() || shortfallReason.length() > 500)) {
+            throw new InvalidDispatchException("shortfallReason", "blank or too long");
+        }
+        shortfallReason = shortfallReason == null ? null : shortfallReason.strip();
     }
 }

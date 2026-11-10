@@ -9,6 +9,7 @@ import com.yarnshipment.shipment.domain.completion.InvalidCompletionException;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidNewShipmentException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
+import com.yarnshipment.shipment.domain.model.InvalidWeightDecisionException;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicatePlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicateSubcontractorException;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
@@ -70,6 +71,14 @@ public final class ShipmentExceptionHandler {
     @ExceptionHandler(InvalidDispatchException.class)
     public ProblemDetail handleInvalidDispatch(InvalidDispatchException exception, HttpServletRequest request) {
         ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_DISPATCH");
+        problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
+        return problem;
+    }
+
+    @ExceptionHandler(InvalidWeightDecisionException.class)
+    public ProblemDetail handleInvalidWeightDecision(
+            InvalidWeightDecisionException exception, HttpServletRequest request) {
+        ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_WEIGHT_DECISION");
         problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
         return problem;
     }

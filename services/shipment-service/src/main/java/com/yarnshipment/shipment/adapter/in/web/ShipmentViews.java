@@ -38,6 +38,9 @@ final class ShipmentViews {
                 .dispatchWeighing(WebMappings.weighing(shipment.dispatchWeighing()))
                 .waybillNo(shipment.waybillNo())
                 .createdAt(WebMappings.utc(shipment.createdAt()))
+                .fireRate(WebMappings.fireRate(shipment.fireRate()))
+                .lines(WebMappings.lines(shipment.lines()))
+                .weightCheck(WebMappings.weightCheck(shipment.weightCheck()))
                 .allowedActions(WebMappings.actions(details.allowedActions()));
     }
 
@@ -58,6 +61,9 @@ final class ShipmentViews {
                 .dispatchWeighing(WebMappings.weighing(shipment.dispatchWeighing()))
                 .waybillNo(shipment.waybillNo())
                 .createdAt(WebMappings.utc(shipment.createdAt()))
+                .fireRate(WebMappings.fireRate(shipment.fireRate()))
+                .lines(WebMappings.lines(shipment.lines()))
+                .weightCheck(WebMappings.weightCheck(shipment.weightCheck()))
                 .allowedActions(WebMappings.actions(details.allowedActions()));
     }
 

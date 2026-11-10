@@ -33,7 +33,9 @@ class CreateShipmentControllerTest {
     private static final String URI = "/api/v1/shipments";
     private static final String KEY = "0192f0a0-0000-7000-8000-0000000000dd";
     private static final String VALID_BODY = "{\"siteId\": \"" + TestTokens.SITE_ID + "\", \"subcontractorId\": \""
-            + TestTokens.SUBCONTRACTOR_ID + "\", \"subcontractorTitle\": \"Örnek Tekstil\"}";
+            + TestTokens.SUBCONTRACTOR_ID + "\", \"subcontractorTitle\": \"Örnek Tekstil\","
+            + " \"fireRate\": \"0.0500\", \"lines\": [{\"yarnTypeText\": \"36/1 VİSKON\","
+            + " \"netKg\": \"19488.000\"}]}";
 
     private final MockMvcTester mvc;
 
@@ -59,19 +61,43 @@ class CreateShipmentControllerTest {
     }
 
     @Test
-    @DisplayName("Depo çalışanı taslak oluşturur: 201 döner ve numara gövdede gelir")
+    @DisplayName("Müdür taslak oluşturur: 201 döner ve numara gövdede gelir")
     void shouldCreateShipment() {
         when(createShipmentUseCase.createShipment(any()))
                 .thenReturn(new CreatedShipment(TestShipments.SHIPMENT_ID, "SV-20261021-ABCD1234"));
 
-        MvcTestResult result = post(TestTokens.token("warehouse").build(), VALID_BODY);
+        MvcTestResult result = post(TestTokens.token("manager").build(), VALID_BODY);
 
         assertThat(result).hasStatus(HttpStatus.CREATED);
         assertThat(result).bodyJson().extractingPath("$.shipmentNo").isEqualTo("SV-20261021-ABCD1234");
         verify(createShipmentUseCase)
                 .createShipment(argThat(
                         (CreateShipmentCommand command) -> command.siteId().equals(TestTokens.SITE_ID)
-                                && "Örnek Tekstil".equals(command.parties().subcontractorTitle())));
+                                && "Örnek Tekstil".equals(command.parties().subcontractorTitle())
+                                && command.lines().size() == 1
+                                && command.lines().getFirst().lineNo() == 1
+                                && new java.math.BigDecimal("0.0500").compareTo(command.fireRate()) == 0));
+    }
+
+    @Test
+    @DisplayName("Depo çalışanı sevkiyat açamaz (A3): 403")
+    void shouldRejectWarehouse() {
+        MvcTestResult result = post(TestTokens.token("warehouse").build(), VALID_BODY);
+
+        assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
+        verifyNoInteractions(createShipmentUseCase);
+    }
+
+    @Test
+    @DisplayName("Reçetesiz istek 400 alır")
+    void shouldRejectMissingLines() {
+        MvcTestResult result = post(
+                TestTokens.token("manager").build(),
+                "{\"siteId\": \"" + TestTokens.SITE_ID + "\", \"subcontractorId\": \""
+                        + TestTokens.SUBCONTRACTOR_ID + "\", \"subcontractorTitle\": \"X\", \"lines\": []}");
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+        verifyNoInteractions(createShipmentUseCase);
     }
 
     @Test
@@ -87,7 +113,7 @@ class CreateShipmentControllerTest {
     @DisplayName("Eksik zorunlu alan 400 alır")
     void shouldRejectMissingField() {
         MvcTestResult result =
-                post(TestTokens.token("warehouse").build(), "{\"siteId\": \"" + TestTokens.SITE_ID + "\"}");
+                post(TestTokens.token("manager").build(), "{\"siteId\": \"" + TestTokens.SITE_ID + "\"}");
 
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(createShipmentUseCase);
@@ -99,7 +125,7 @@ class CreateShipmentControllerTest {
         when(createShipmentUseCase.createShipment(any()))
                 .thenThrow(new InvalidNewShipmentException("driverId", "unpaired"));
 
-        MvcTestResult result = post(TestTokens.token("warehouse").build(), VALID_BODY);
+        MvcTestResult result = post(TestTokens.token("manager").build(), VALID_BODY);
 
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("INVALID_SHIPMENT");

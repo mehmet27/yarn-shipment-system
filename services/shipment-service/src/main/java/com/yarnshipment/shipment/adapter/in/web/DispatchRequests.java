@@ -14,7 +14,6 @@ final class DispatchRequests {
                 new BigDecimal(request.getGrossKg()),
                 new BigDecimal(request.getTareKg()),
                 request.getBagCount(),
-                request.getScaleTicketNo(),
-                request.getSealNo());
+                request.getScaleTicketNo());
     }
 }

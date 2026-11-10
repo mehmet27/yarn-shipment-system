@@ -49,10 +49,6 @@ class CorrectionAdapterTest {
             INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, scale_ticket_no, weighed_at,
                                   entered_by, created_at, created_by)
             VALUES (?, ?, 'DISPATCH', 2000.5, 18, 40, 'F-1', now(), ?, now(), ?)""";
-    private static final String INSERT_SEAL = """
-            INSERT INTO seal (id, shipment_id, side, seal_no, seal_condition, recorded_by, recorded_at, created_at,
-                              created_by)
-            VALUES (gen_random_uuid(), ?, 'DISPATCH', ?, 'INTACT', ?, now(), now(), ?)""";
     private static final String CURRENT_WEIGHING = """
             SELECT gross_kg FROM weighing
             WHERE shipment_id = ? AND side = 'DISPATCH' AND superseded_by IS NULL""";
@@ -71,14 +67,12 @@ class CorrectionAdapterTest {
         PostgresTestDatabase.register(registry);
     }
 
-    /** İki tamamlanmış ve kilitli sevkiyat; mühürleri M-0001 ve M-0009. */
+    /** İki tamamlanmış ve kilitli sevkiyat; yalnızca ilkinin çıkış tartımı var. */
     @BeforeEach
     void insertLockedShipments() {
         jdbc.update(INSERT_SHIPMENT, SHIPMENT, "SV-5", WAREHOUSE);
         jdbc.update(INSERT_SHIPMENT, OTHER, "SV-6", WAREHOUSE);
         jdbc.update(INSERT_WEIGHING, WEIGHING, SHIPMENT, WAREHOUSE, WAREHOUSE);
-        jdbc.update(INSERT_SEAL, SHIPMENT, "M-0001", WAREHOUSE, WAREHOUSE);
-        jdbc.update(INSERT_SEAL, OTHER, "M-0009", WAREHOUSE, WAREHOUSE);
         jdbc.update("UPDATE shipment SET locked_at = now() WHERE id IN (?, ?)", SHIPMENT, OTHER);
     }
 
@@ -128,8 +122,9 @@ class CorrectionAdapterTest {
         assertThatThrownBy(() -> adapter.recordCorrection(
                         correction(CorrectionTarget.DISPATCH_WEIGHING, stale, RECORDED), ADMIN))
                 .isInstanceOf(CorrectionConflictException.class);
-        assertThatThrownBy(() -> adapter.recordCorrection(
-                        correction(CorrectionTarget.DELIVERY_WEIGHING, RECORDED, stale), ADMIN))
+        Correction withoutWeighing = new Correction(
+                UUID.randomUUID(), OTHER, CorrectionTarget.DISPATCH_WEIGHING, RECORDED, stale, "Fiş", NOW);
+        assertThatThrownBy(() -> adapter.recordCorrection(withoutWeighing, ADMIN))
                 .isInstanceOf(CorrectionConflictException.class);
     }
 }

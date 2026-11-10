@@ -11,7 +11,6 @@ import com.yarnshipment.shipment.application.port.in.GetShipmentHistoryUseCase;
 import com.yarnshipment.shipment.application.port.in.ShipmentAudience;
 import com.yarnshipment.shipment.application.port.in.ShipmentBags;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
-import com.yarnshipment.shipment.domain.model.DeliveryScan;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
@@ -62,12 +61,10 @@ class ShipmentFileControllerTest {
                 .exchange();
     }
 
-    private void givenBags(ShipmentAudience audience, boolean dispatch, boolean delivery) {
-        List<DispatchBag> bags = dispatch
-                ? List.of(new DispatchBag(UUID.randomUUID(), "K-1", PackageType.BAG, "LOT-1", "A", ScanMethod.SCAN, AT))
-                : null;
-        List<DeliveryScan> scans = delivery ? List.of(new DeliveryScan("K-1", true, ScanMethod.LIST, AT, null)) : null;
-        when(getShipmentBagsUseCase.getBags(any())).thenReturn(new ShipmentBags(audience, bags, scans));
+    private void givenBags(ShipmentAudience audience) {
+        List<DispatchBag> bags =
+                List.of(new DispatchBag(UUID.randomUUID(), "K-1", PackageType.BAG, "LOT-1", "A", ScanMethod.SCAN, AT));
+        when(getShipmentBagsUseCase.getBags(any())).thenReturn(new ShipmentBags(audience, bags));
     }
 
     @Test
@@ -77,7 +74,12 @@ class ShipmentFileControllerTest {
         when(getShipmentHistoryUseCase.getHistory(any()))
                 .thenReturn(List.of(
                         new StatusChange(null, ShipmentStatus.DRAFT, AT, user, null),
-                        new StatusChange(ShipmentStatus.DRAFT, ShipmentStatus.LOADED, AT.plusSeconds(1), user, null)));
+                        new StatusChange(
+                                ShipmentStatus.DRAFT,
+                                ShipmentStatus.AWAITING_DELIVERY,
+                                AT.plusSeconds(1),
+                                user,
+                                null)));
 
         MvcTestResult result =
                 get(BASE + "/history", TestTokens.token("warehouse").build());
@@ -101,49 +103,18 @@ class ShipmentFileControllerTest {
     }
 
     @Test
-    @DisplayName("Depo görünümünde teslim okutmaları JSON'da hiç yoktur")
-    void shouldHideDeliveryScansFromWarehouse() {
-        givenBags(ShipmentAudience.WAREHOUSE, true, false);
+    @DisplayName("Çıkışta atanan çuvallar görünüm türüyle döner")
+    void shouldReturnDispatchBags() {
+        givenBags(ShipmentAudience.WAREHOUSE);
 
         MvcTestResult result = get(BASE + "/bags", TestTokens.token("warehouse").build());
 
+        assertThat(result).hasStatusOk();
+        assertThat(result).bodyJson().extractingPath("$.audience").isEqualTo("WAREHOUSE");
         assertThat(result)
                 .bodyJson()
                 .extractingPath("$.dispatchBags[0].uniqueKey")
                 .isEqualTo("K-1");
-        assertThat(result).bodyJson().doesNotHavePath("$.deliveryScans");
-    }
-
-    @Test
-    @DisplayName("Fasoncu görünümünde çıkış çuvalları ve matched alanı JSON'da hiç yoktur")
-    void shouldHideDispatchBagsAndMatchFromSubcontractor() {
-        givenBags(ShipmentAudience.SUBCONTRACTOR, false, true);
-
-        MvcTestResult result = get(BASE + "/bags", TestTokens.subcontractorToken());
-
-        assertThat(result).bodyJson().doesNotHavePath("$.dispatchBags");
-        assertThat(result)
-                .bodyJson()
-                .extractingPath("$.deliveryScans[0].scannedKey")
-                .isEqualTo("K-1");
-        assertThat(result).bodyJson().doesNotHavePath("$.deliveryScans[0].matched");
-    }
-
-    @Test
-    @DisplayName("İç görünüm ikisini ve matched alanını içerir; şoför görünümünde ikisi de yoktur")
-    void shouldShowEverythingInternallyAndNothingToDriver() {
-        givenBags(ShipmentAudience.INTERNAL, true, true);
-        MvcTestResult internal = get(BASE + "/bags", TestTokens.token("manager").build());
-        givenBags(ShipmentAudience.DRIVER, false, false);
-        MvcTestResult driver = get(BASE + "/bags", TestTokens.driverToken());
-
-        assertThat(internal)
-                .bodyJson()
-                .extractingPath("$.deliveryScans[0].matched")
-                .isEqualTo(true);
-        assertThat(internal).bodyJson().hasPath("$.dispatchBags");
-        assertThat(driver).bodyJson().doesNotHavePath("$.dispatchBags");
-        assertThat(driver).bodyJson().doesNotHavePath("$.deliveryScans");
     }
 
     @Test

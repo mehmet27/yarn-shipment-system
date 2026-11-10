@@ -87,7 +87,8 @@ class ShipmentCancellationControllerTest {
                 .when(cancelShipmentUseCase)
                 .cancelShipment(any());
         MvcTestResult invalid = post(admin, BODY);
-        doThrow(new InvalidShipmentStatusException(SHIPMENT, ShipmentStatus.IN_TRANSIT, ShipmentStatus.CANCELLED))
+        doThrow(new InvalidShipmentStatusException(
+                        SHIPMENT, ShipmentStatus.AWAITING_DELIVERY, ShipmentStatus.CANCELLED))
                 .when(cancelShipmentUseCase)
                 .cancelShipment(any());
         MvcTestResult conflict = post(admin, BODY);

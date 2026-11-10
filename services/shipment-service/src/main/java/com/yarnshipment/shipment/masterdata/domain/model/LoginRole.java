@@ -2,7 +2,6 @@ package com.yarnshipment.shipment.masterdata.domain.model;
 
 /** Giriş hesabının Keycloak rolü ve kaydı işaret eden token özniteliği. */
 public enum LoginRole {
-    DRIVER("driver", "driver_id"),
     SUBCONTRACTOR("subcontractor", "subcontractor_id");
 
     private final String realmRole;

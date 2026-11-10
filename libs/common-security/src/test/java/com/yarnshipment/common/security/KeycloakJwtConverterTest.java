@@ -78,7 +78,6 @@ class KeycloakJwtConverterTest {
 
         // then
         assertThat(actor.subcontractorId()).isEqualTo(TestTokens.SUBCONTRACTOR_ID);
-        assertThat(actor.driverId()).isNull();
     }
 
     @Test
@@ -97,24 +96,12 @@ class KeycloakJwtConverterTest {
     @DisplayName("Dış rolle iç rolü birleştiren token reddedilir")
     void shouldRejectMixedExternalAndInternalRoles() {
         // given
-        Jwt jwt = TestTokens.withRoles("driver", "warehouse")
-                .claim(TokenClaims.DRIVER_ID, TestTokens.DRIVER_ID.toString())
+        Jwt jwt = TestTokens.withRoles("subcontractor", "warehouse")
+                .claim(TokenClaims.SUBCONTRACTOR_ID, TestTokens.SUBCONTRACTOR_ID.toString())
                 .build();
 
         // when / then
         assertThatThrownBy(() -> converter.toActor(jwt)).isInstanceOf(InvalidBearerTokenException.class);
-    }
-
-    @Test
-    @DisplayName("Şoför ve fasoncu rolü aynı hesapta olamaz")
-    void shouldRejectDriverCombinedWithSubcontractor() {
-        // given
-        Jwt jwt = TestTokens.withRoles("driver", "subcontractor").build();
-
-        // when / then
-        assertThatThrownBy(() -> converter.toActor(jwt))
-                .isInstanceOf(InvalidBearerTokenException.class)
-                .hasMessageContaining("Driver and subcontractor");
     }
 
     @Test

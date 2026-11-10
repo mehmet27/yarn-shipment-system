@@ -12,7 +12,6 @@ import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
-import com.yarnshipment.shipment.domain.model.DeliveryScan;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
@@ -65,14 +64,14 @@ class RecordDispatchServiceTest {
 
         assertThat(commandPort.recordings()).singleElement().satisfies(recording -> {
             assertThat(recording.recordedAt()).isEqualTo(NOW);
-            assertThat(recording.sealNo()).isEqualTo("M-0001");
+            assertThat(recording.scaleTicketNo()).isEqualTo("KF-1");
         });
     }
 
     @Test
     @DisplayName("Aynı çıkış kaydının tekrarı yeni kayıt oluşturmaz ve hata vermez")
     void shouldIgnoreRepeatedDispatch() {
-        queryPort.add(TestShipments.shipment(ShipmentStatus.LOADED));
+        queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
         commandPort.addExisting(TestShipments.shipment(ShipmentStatus.DRAFT)
                 .recordDispatch(command(warehouse).measurement(), NOW));
 
@@ -84,7 +83,7 @@ class RecordDispatchServiceTest {
     @Test
     @DisplayName("Kaydı olmayan ve taslak olmayan sevkiyatta 409 hatası verilir")
     void shouldRejectDispatchOutsideDraft() {
-        queryPort.add(TestShipments.shipment(ShipmentStatus.IN_TRANSIT));
+        queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
 
         assertThatThrownBy(() -> service.recordDispatch(command(warehouse)))
                 .isInstanceOf(InvalidShipmentStatusException.class);
@@ -184,11 +183,6 @@ class RecordDispatchServiceTest {
                 bags.add(new DispatchBag(UUID.randomUUID(), "K", type, "L", "A", ScanMethod.SCAN, NOW));
             }
             return bags;
-        }
-
-        @Override
-        public List<DeliveryScan> findDeliveryScans(UUID shipmentId) {
-            return List.of();
         }
     }
 }

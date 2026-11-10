@@ -1,27 +1,31 @@
 package com.yarnshipment.shipment.domain.model;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Şoför yükü teslim aldı, sevkiyat yolda (olay kataloğu: SevkiyatYolaCikti). Kişisel veri taşımaz (EVT-08).
+ * Depo çıkış yaptı, sevkiyat teslim bekliyor (olay kataloğu: SevkiyatCikisYapti). Kişisel veri taşımaz (EVT-08).
  *
  * @param shipmentId sevkiyat
  * @param siteId çıkış lokasyonu
- * @param driverId şoför
- * @param bagCount onaylanan çuval sayısı
- * @param dispatchedAt beyan zamanı
+ * @param subcontractorId ipliğin gittiği fasoncu
+ * @param bagCount tartılan çuval sayısı
+ * @param netKg çıkış net kilosu
+ * @param dispatchedAt kayıt zamanı
  */
-public record ShipmentDispatched(UUID shipmentId, UUID siteId, UUID driverId, int bagCount, Instant dispatchedAt) {
+public record ShipmentDispatched(
+        UUID shipmentId, UUID siteId, UUID subcontractorId, int bagCount, BigDecimal netKg, Instant dispatchedAt) {
 
-    public static final String TYPE = "com.yarnshipment.shipment.shipment-dispatched.v1";
+    public static final String TYPE = "com.yarnshipment.shipment.shipment-dispatched.v2";
 
-    public static ShipmentDispatched of(PickupConfirmation confirmation) {
+    public static ShipmentDispatched of(DispatchRecording recording) {
         return new ShipmentDispatched(
-                confirmation.shipmentId(),
-                confirmation.siteId(),
-                confirmation.driverId(),
-                confirmation.bagCount(),
-                confirmation.declaredAt());
+                recording.shipmentId(),
+                recording.siteId(),
+                recording.subcontractorId(),
+                recording.weighing().bagCount(),
+                recording.weighing().netKg(),
+                recording.recordedAt());
     }
 }

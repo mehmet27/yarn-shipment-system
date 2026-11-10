@@ -4,8 +4,8 @@ import org.springframework.security.core.GrantedAuthority;
 
 /**
  * Endpoint'lerin istediği ince taneli izinler. Spring Security'de yetki adı izin adının kendisidir:
- * {@code @PreAuthorize("hasAuthority('DISPATCH_RECORD')")}. Veriye bağlı kurallar (kendi sevkiyatı, kör giriş,
- * durum) burada değil, kapsam kontrolünde ve ilgili serviste uygulanır.
+ * {@code @PreAuthorize("hasAuthority('DISPATCH_RECORD')")}. Veriye bağlı kurallar (kendi sevkiyatı, durum) burada
+ * değil, kapsam kontrolünde ve ilgili serviste uygulanır.
  */
 public enum Permission implements GrantedAuthority {
     MASTER_DATA_VIEW(AccessType.READ),
@@ -19,19 +19,13 @@ public enum Permission implements GrantedAuthority {
     SHIPMENT_VIEW(AccessType.READ),
     SHIPMENT_CREATE(AccessType.WRITE),
     SHIPMENT_CANCEL(AccessType.WRITE),
+    /** İrsaliye müdüre ulaştı: teslim bekleyen sevkiyatı tamamlar. */
+    SHIPMENT_COMPLETE(AccessType.WRITE),
 
     DISPATCH_RECORD(AccessType.WRITE),
     DISPATCH_VIEW(AccessType.READ),
 
-    DRIVER_DECLARATION_RECORD(AccessType.WRITE),
-    DRIVER_DECLARATION_VIEW(AccessType.READ),
-
-    DELIVERY_RECORD(AccessType.WRITE),
-    DELIVERY_VIEW(AccessType.READ),
-
     EVIDENCE_UPLOAD_DISPATCH(AccessType.WRITE),
-    EVIDENCE_UPLOAD_DRIVER(AccessType.WRITE),
-    EVIDENCE_UPLOAD_DELIVERY(AccessType.WRITE),
     EVIDENCE_UPLOAD_CLAIM(AccessType.WRITE),
     EVIDENCE_VIEW(AccessType.READ),
     EVIDENCE_INVALIDATE(AccessType.WRITE),
@@ -42,10 +36,7 @@ public enum Permission implements GrantedAuthority {
     DISCREPANCY_RESOLVE(AccessType.WRITE),
 
     AUDIT_VIEW(AccessType.READ),
-    REPORT_VIEW(AccessType.READ),
-
-    /** Yalnızca SYSTEM: olaydan tetiklenen karşılaştırma. */
-    COMPARISON_RUN(AccessType.WRITE);
+    REPORT_VIEW(AccessType.READ);
 
     private final AccessType accessType;
 
@@ -53,7 +44,7 @@ public enum Permission implements GrantedAuthority {
         this.accessType = accessType;
     }
 
-    /** Veri oluşturan veya değiştiren izin mi? MANAGER rolünün hiçbir yazma izni olmamalı. */
+    /** Veri oluşturan veya değiştiren izin mi? */
     public boolean isWrite() {
         return accessType == AccessType.WRITE;
     }

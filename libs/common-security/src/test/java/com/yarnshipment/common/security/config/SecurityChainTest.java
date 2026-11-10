@@ -3,6 +3,7 @@ package com.yarnshipment.common.security.config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.common.security.TestTokens;
+import com.yarnshipment.common.security.TokenClaims;
 import com.yarnshipment.common.security.audit.SecurityAuditEvent;
 import com.yarnshipment.common.security.config.SecurityTestApplication.RecordingAuditPublisher;
 import com.yarnshipment.common.security.config.SecurityTestApplication.StubJwtDecoder;
@@ -78,8 +79,9 @@ class SecurityChainTest {
     @DisplayName("Kural ihlali olan token (karışık roller) 401 alır")
     void shouldRejectTokenViolatingRoleRules() {
         // given
-        String token = jwtDecoder.register(
-                TestTokens.withRoles("driver", "subcontractor").build());
+        String token = jwtDecoder.register(TestTokens.withRoles("subcontractor", "warehouse")
+                .claim(TokenClaims.SUBCONTRACTOR_ID, TestTokens.SUBCONTRACTOR_ID.toString())
+                .build());
 
         // when / then
         assertThat(get("/test/shipments", token)).hasStatus(HttpStatus.UNAUTHORIZED);
@@ -99,7 +101,7 @@ class SecurityChainTest {
     @DisplayName("İzni olmayan rol 403 alır ve ret audit'e yazılır")
     void shouldDenyAndAuditMissingPermission() {
         // given
-        String token = jwtDecoder.register(TestTokens.withRoles("manager").build());
+        String token = jwtDecoder.register(TestTokens.withRoles("quality").build());
 
         // when
         MvcTestResult result = mvc.post()

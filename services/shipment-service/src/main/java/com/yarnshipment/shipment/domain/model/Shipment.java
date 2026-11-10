@@ -13,11 +13,10 @@ import org.jspecify.annotations.Nullable;
  * @param shipmentNo insan okunur numara
  * @param siteId çıkış lokasyonu (GEN-07)
  * @param status durum
- * @param parties fasoncu, şoför, araç
+ * @param parties fasoncu, teslim alan, araç
  * @param planned beklenen yük
- * @param dispatch çıkış tarafının verisi
- * @param delivery teslim tarafının verisi
- * @param randomCheckSelected rastgele fiziki kontrol için seçildi mi (SEC-08)
+ * @param dispatchWeighing geçerli çıkış tartımı; henüz girilmediyse {@code null}
+ * @param waybillNo tamamlarken girilen irsaliye numarası
  * @param createdAt oluşturma zamanı
  */
 public record Shipment(
@@ -27,9 +26,8 @@ public record Shipment(
         ShipmentStatus status,
         ShipmentParties parties,
         PlannedLoad planned,
-        ShipmentSide dispatch,
-        ShipmentSide delivery,
-        boolean randomCheckSelected,
+        @Nullable Weighing dispatchWeighing,
+        @Nullable String waybillNo,
         Instant createdAt) {
 
     public Shipment {
@@ -39,8 +37,6 @@ public record Shipment(
         Objects.requireNonNull(status, "status");
         Objects.requireNonNull(parties, "parties");
         Objects.requireNonNull(planned, "planned");
-        Objects.requireNonNull(dispatch, "dispatch");
-        Objects.requireNonNull(delivery, "delivery");
         Objects.requireNonNull(createdAt, "createdAt");
     }
 
@@ -48,18 +44,14 @@ public record Shipment(
         return parties.subcontractorId();
     }
 
-    public @Nullable UUID driverId() {
-        return parties.driverId();
-    }
-
     /** Çuvallar yalnızca çıkış tartımından önce (DRAFT) atanabilir. */
     public void requireBagsAssignable() {
         if (status != ShipmentStatus.DRAFT) {
-            throw new InvalidShipmentStatusException(id, status, ShipmentStatus.LOADED);
+            throw new InvalidShipmentStatusException(id, status, ShipmentStatus.AWAITING_DELIVERY);
         }
     }
 
-    /** Depo çıkış tartımını ve mührü kaydetti (DRAFT → LOADED). */
+    /** Depo çıkış tartımını kaydetti (DRAFT → AWAITING_DELIVERY). */
     public DispatchRecording recordDispatch(DispatchMeasurement measurement, Instant recordedAt) {
         return recordDispatch(measurement, recordedAt, null);
     }
@@ -68,52 +60,11 @@ public record Shipment(
     public DispatchRecording recordDispatch(
             DispatchMeasurement measurement, Instant recordedAt, @Nullable TareBasis tareBasis) {
         if (status != ShipmentStatus.DRAFT) {
-            throw new InvalidShipmentStatusException(id, status, ShipmentStatus.LOADED);
+            throw new InvalidShipmentStatusException(id, status, ShipmentStatus.AWAITING_DELIVERY);
         }
         Weighing weighing = new Weighing(
                 measurement.grossKg(), measurement.tareKg(), measurement.bagCount(), recordedAt, tareBasis);
         return new DispatchRecording(
-                id, siteId, weighing, measurement.scaleTicketNo(), measurement.sealNo(), recordedAt);
-    }
-
-    /**
-     * Şoför yükü teslim aldı (LOADED → IN_TRANSIT). Onaylanan çuval sayısı çıkış tartısından, yoksa beklenen yükten
-     * alınır.
-     */
-    public PickupConfirmation confirmPickup(UUID declaringDriverId, Instant declaredAt) {
-        if (status != ShipmentStatus.LOADED) {
-            throw new InvalidShipmentStatusException(id, status, ShipmentStatus.IN_TRANSIT);
-        }
-        return new PickupConfirmation(id, siteId, declaringDriverId, loadedBagCount(), dispatch.sealNo(), declaredAt);
-    }
-
-    /** Yola çıkışta onaylanan çuval sayısı: çıkış tartısındaki sayı, tartı yoksa beklenen yük. */
-    public int loadedBagCount() {
-        Weighing weighing = dispatch.weighing();
-        if (weighing != null) {
-            return weighing.bagCount();
-        }
-        Integer plannedBags = planned.bagCount();
-        return plannedBags == null ? 0 : plannedBags;
-    }
-
-    /** Fasoncu kör teslim girişini gönderdi (AWAITING_DELIVERY → CHECKING). */
-    public DeliveryReceipt receiveDelivery(UUID receivedBy, DeliveryMeasurement measurement, Instant receivedAt) {
-        if (status != ShipmentStatus.AWAITING_DELIVERY) {
-            throw new InvalidShipmentStatusException(id, status, ShipmentStatus.CHECKING);
-        }
-        Weighing weighing =
-                new Weighing(measurement.grossKg(), measurement.tareKg(), measurement.bagCount(), receivedAt);
-        return new DeliveryReceipt(
-                id,
-                siteId,
-                shipmentNo,
-                parties.plateNo(),
-                parties.subcontractorId(),
-                receivedBy,
-                receivedAt,
-                weighing,
-                measurement,
-                dispatch);
+                id, siteId, parties.subcontractorId(), weighing, measurement.scaleTicketNo(), recordedAt);
     }
 }

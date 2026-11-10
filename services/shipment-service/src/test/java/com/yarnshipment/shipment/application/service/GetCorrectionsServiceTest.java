@@ -34,7 +34,7 @@ class GetCorrectionsServiceTest {
         queryPort.add(TestShipments.shipment(ShipmentStatus.COMPLETED));
         Correction correction = Correction.of(
                 TestShipments.shipment(ShipmentStatus.COMPLETED),
-                TestCorrections.sealNo("M-0002"),
+                TestCorrections.dispatchWeighing("2010.500", "18.000"),
                 UUID.randomUUID(),
                 NOW);
         corrections.recordCorrection(correction, UUID.randomUUID());
@@ -42,7 +42,7 @@ class GetCorrectionsServiceTest {
         assertThat(service.getCorrections(
                         new GetShipmentHistoryQuery(TestTokens.actor("manager"), TestShipments.SHIPMENT_ID)))
                 .singleElement()
-                .satisfies(saved -> assertThat(saved.newValue()).isEqualTo("M-0002"));
+                .satisfies(saved -> assertThat(saved.newValue()).isEqualTo("gross=2010.500 tare=18.000 net=1992.500"));
         assertThatThrownBy(() -> service.getCorrections(
                         new GetShipmentHistoryQuery(TestTokens.actor("manager"), UUID.randomUUID())))
                 .isInstanceOf(ShipmentNotFoundException.class);

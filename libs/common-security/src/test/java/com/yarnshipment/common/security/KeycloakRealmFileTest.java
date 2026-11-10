@@ -99,8 +99,7 @@ class KeycloakRealmFileTest {
 
         // then
         assertThat(claims)
-                .containsExactlyInAnyOrder(
-                        TokenClaims.ROLES, TokenClaims.SUBCONTRACTOR_ID, TokenClaims.DRIVER_ID, TokenClaims.SITE_IDS);
+                .containsExactlyInAnyOrder(TokenClaims.ROLES, TokenClaims.SUBCONTRACTOR_ID, TokenClaims.SITE_IDS);
         assertThat(mappersOf(GATEWAY).stream().map(Mapper::name)).contains("audience-yarnshipment-api");
     }
 
@@ -137,8 +136,7 @@ class KeycloakRealmFileTest {
                 .collect(Collectors.toMap(User::username, user -> converter.toActor(tokenOf(user))));
 
         // then
-        assertThat(actors).containsOnlyKeys("admin", "depo", "kalite", "mudur", "sofor", "fasoncu");
-        assertThat(actors).extractingByKey("sofor").extracting(Actor::driverId).isEqualTo(TestTokens.DRIVER_ID);
+        assertThat(actors).containsOnlyKeys("admin", "depo", "kalite", "mudur", "fasoncu");
         assertThat(actors)
                 .extractingByKey("fasoncu")
                 .extracting(Actor::subcontractorId)

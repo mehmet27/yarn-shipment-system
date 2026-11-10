@@ -58,11 +58,7 @@ class LocalSampleDataTest {
         assertThat(all.totalElements()).isEqualTo(SAMPLE_COUNT);
         assertThat(all.shipments().stream().map(Shipment::status).collect(Collectors.toSet()))
                 .containsExactlyInAnyOrder(
-                        ShipmentStatus.DRAFT,
-                        ShipmentStatus.LOADED,
-                        ShipmentStatus.IN_TRANSIT,
-                        ShipmentStatus.AWAITING_DELIVERY,
-                        ShipmentStatus.CHECKING);
+                        ShipmentStatus.DRAFT, ShipmentStatus.AWAITING_DELIVERY, ShipmentStatus.COMPLETED);
         assertThat(all.shipments().stream().map(Shipment::siteId).collect(Collectors.toSet()))
                 .containsExactlyInAnyOrder(SITE_A, SITE_B);
     }
@@ -70,8 +66,8 @@ class LocalSampleDataTest {
     @Test
     @DisplayName("Fasoncu kullanıcısı yalnızca kendi örnek sevkiyatlarını görür")
     void shouldScopeSampleShipmentsToSubcontractor() {
-        ShipmentSlice own = adapter.findShipments(
-                AccessScope.restrictedTo(Set.of(SITE_A), DEMO_SUBCONTRACTOR, null), Set.of(), ALL);
+        ShipmentSlice own =
+                adapter.findShipments(AccessScope.restrictedTo(Set.of(SITE_A), DEMO_SUBCONTRACTOR), Set.of(), ALL);
 
         assertThat(own.shipments())
                 .isNotEmpty()
@@ -79,12 +75,15 @@ class LocalSampleDataTest {
     }
 
     @Test
-    @DisplayName("Kontrol aşamasındaki örnekte iki tarafın tartımı ve mührü vardır")
-    void shouldCarryBothSidesInCheckingSample() {
+    @DisplayName("Tamamlanmış örnek kilitlidir, irsaliye numarası ve çıkış tartımı vardır")
+    void shouldCarryWaybillAndDispatchInCompletedSample() {
+        String waybill = jdbc.queryForObject(
+                "SELECT e_waybill_no FROM shipment WHERE status = 'COMPLETED' AND locked_at IS NOT NULL", String.class);
         Long weighings = jdbc.queryForObject(
-                "SELECT count(*) FROM weighing w JOIN shipment s ON s.id = w.shipment_id WHERE s.status = 'CHECKING'",
+                "SELECT count(*) FROM weighing w JOIN shipment s ON s.id = w.shipment_id WHERE s.status = 'COMPLETED'",
                 Long.class);
 
-        assertThat(weighings).isEqualTo(2L);
+        assertThat(waybill).startsWith("IRS-SEED-");
+        assertThat(weighings).isEqualTo(1L);
     }
 }

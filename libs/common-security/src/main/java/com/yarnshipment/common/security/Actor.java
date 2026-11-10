@@ -16,7 +16,6 @@ import org.jspecify.annotations.Nullable;
  * @param roles MFA kuralı uygulandıktan sonra geçerli roller
  * @param permissions rollerin {@link RolePermissionMatrix} ile açılmış izinleri
  * @param subcontractorId yalnızca fasoncu kullanıcılarında dolu ({@code subcontractor_id} claim)
- * @param driverId yalnızca şoför kullanıcılarında dolu ({@code driver_id} claim)
  * @param siteIds kullanıcının yetkili olduğu lokasyonlar ({@code site_ids} claim, GEN-07)
  * @param mfaVerified oturum iki adımlı doğrulamayla açıldı mı
  */
@@ -26,7 +25,6 @@ public record Actor(
         Set<Role> roles,
         Set<Permission> permissions,
         @Nullable UUID subcontractorId,
-        @Nullable UUID driverId,
         Set<UUID> siteIds,
         boolean mfaVerified)
         implements Serializable {
@@ -38,7 +36,6 @@ public record Actor(
         permissions = Set.copyOf(permissions);
         siteIds = Set.copyOf(siteIds);
         requireScopeId(roles, Role.SUBCONTRACTOR, subcontractorId);
-        requireScopeId(roles, Role.DRIVER, driverId);
     }
 
     public boolean hasRole(Role role) {
@@ -64,6 +61,6 @@ public record Actor(
     @Override
     public String toString() {
         return "Actor[userId=" + userId + ", username=***, roles=" + roles + ", subcontractorId=" + subcontractorId
-                + ", driverId=" + driverId + ", siteIds=" + siteIds + ", mfaVerified=" + mfaVerified + "]";
+                + ", siteIds=" + siteIds + ", mfaVerified=" + mfaVerified + "]";
     }
 }

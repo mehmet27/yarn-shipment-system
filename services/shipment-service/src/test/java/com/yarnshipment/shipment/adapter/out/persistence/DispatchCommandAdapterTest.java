@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.shipment.domain.model.DispatchRecording;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
-import com.yarnshipment.shipment.domain.model.SealAlreadyUsedException;
 import com.yarnshipment.shipment.domain.model.Weighing;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -33,7 +32,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 class DispatchCommandAdapterTest {
 
     private static final UUID SHIPMENT = UUID.fromString("0192f0a0-0000-7000-8000-000000000301");
-    private static final UUID OTHER_SHIPMENT = UUID.fromString("0192f0a0-0000-7000-8000-000000000302");
+    private static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000303");
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-00000000a001");
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-00000000d001");
     private static final Instant NOW = Instant.parse("2026-10-22T09:00:00Z");
@@ -58,18 +57,17 @@ class DispatchCommandAdapterTest {
     }
 
     @BeforeEach
-    void insertDraftShipments() {
-        jdbc.update(INSERT_SHIPMENT, SHIPMENT, SITE, "SV-D1", UUID.randomUUID(), USER);
-        jdbc.update(INSERT_SHIPMENT, OTHER_SHIPMENT, SITE, "SV-D2", UUID.randomUUID(), USER);
+    void insertDraftShipment() {
+        jdbc.update(INSERT_SHIPMENT, SHIPMENT, SITE, "SV-D1", SUBCONTRACTOR, USER);
     }
 
     @Test
-    @DisplayName("Çıkış kaydı durumu LOADED yapar; tartım, mühür, geçmiş ve olay aynı transaction'da yazılır")
+    @DisplayName("Çıkış kaydı durumu AWAITING_DELIVERY yapar; tartım, geçmiş ve olay aynı transaction'da yazılır")
     void shouldRecordDispatch() {
-        adapter.recordDispatch(recording(SHIPMENT, "M-0001"), USER);
+        adapter.recordDispatch(recording(SHIPMENT), USER);
 
         assertThat(jdbc.queryForObject("SELECT status FROM shipment WHERE id = ?", String.class, SHIPMENT))
-                .isEqualTo("LOADED");
+                .isEqualTo("AWAITING_DELIVERY");
         assertThat(adapter.hasDispatchWeighing(SHIPMENT)).isTrue();
         assertThat(jdbc.queryForObject(
                         "SELECT net_kg::text || ':' || scale_ticket_no FROM weighing WHERE shipment_id = ?",
@@ -77,13 +75,8 @@ class DispatchCommandAdapterTest {
                         SHIPMENT))
                 .isEqualTo("1982.500:KF-1");
         assertThat(jdbc.queryForObject(
-                        "SELECT seal_no || ':' || seal_condition FROM seal WHERE shipment_id = ? AND side = 'DISPATCH'",
-                        String.class,
-                        SHIPMENT))
-                .isEqualTo("M-0001:INTACT");
-        assertThat(jdbc.queryForObject(
                         "SELECT to_status FROM shipment_status_history WHERE shipment_id = ?", String.class, SHIPMENT))
-                .isEqualTo("LOADED");
+                .isEqualTo("AWAITING_DELIVERY");
         assertThat(jdbc.queryForObject(
                         "SELECT payload ->> 'bagCount' FROM outbox_event WHERE aggregate_id = ?",
                         String.class,
@@ -92,20 +85,11 @@ class DispatchCommandAdapterTest {
     }
 
     @Test
-    @DisplayName("Başka sevkiyatın çıkışında kullanılmış mühür SealAlreadyUsedException verir")
-    void shouldRejectSealUsedByAnotherShipment() {
-        adapter.recordDispatch(recording(SHIPMENT, "M-0001"), USER);
-
-        assertThatThrownBy(() -> adapter.recordDispatch(recording(OTHER_SHIPMENT, "M-0001"), USER))
-                .isInstanceOf(SealAlreadyUsedException.class);
-    }
-
-    @Test
     @DisplayName("Durum arada değiştiyse çıkış yazılmaz ve 409 hatası verilir")
     void shouldRejectWhenStatusChanged() {
-        adapter.recordDispatch(recording(SHIPMENT, "M-0001"), USER);
+        adapter.recordDispatch(recording(SHIPMENT), USER);
 
-        assertThatThrownBy(() -> adapter.recordDispatch(recording(SHIPMENT, "M-0002"), USER))
+        assertThatThrownBy(() -> adapter.recordDispatch(recording(SHIPMENT), USER))
                 .isInstanceOf(InvalidShipmentStatusException.class);
     }
 
@@ -115,8 +99,8 @@ class DispatchCommandAdapterTest {
         assertThat(adapter.hasDispatchWeighing(SHIPMENT)).isFalse();
     }
 
-    private static DispatchRecording recording(UUID shipment, String sealNo) {
+    private static DispatchRecording recording(UUID shipment) {
         Weighing weighing = new Weighing(new BigDecimal("2000.500"), new BigDecimal("18.000"), BAGS, NOW);
-        return new DispatchRecording(shipment, SITE, weighing, "KF-1", sealNo, NOW);
+        return new DispatchRecording(shipment, SITE, SUBCONTRACTOR, weighing, "KF-1", NOW);
     }
 }

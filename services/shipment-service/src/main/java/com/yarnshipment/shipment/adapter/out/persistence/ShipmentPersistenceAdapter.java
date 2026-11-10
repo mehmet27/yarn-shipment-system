@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
-/** {@link ShipmentQueryPort}'un JPA uygulaması. Tartım ve mühürler sayfa başına tek sorguyla toplu okunur. */
+/** {@link ShipmentQueryPort}'un JPA uygulaması. Çıkış tartımları sayfa başına tek sorguyla toplu okunur. */
 @Component
 final class ShipmentPersistenceAdapter implements ShipmentQueryPort {
 
@@ -20,13 +20,10 @@ final class ShipmentPersistenceAdapter implements ShipmentQueryPort {
 
     private final ShipmentJpaRepository shipments;
     private final WeighingJpaRepository weighings;
-    private final SealJpaRepository seals;
 
-    ShipmentPersistenceAdapter(
-            ShipmentJpaRepository shipments, WeighingJpaRepository weighings, SealJpaRepository seals) {
+    ShipmentPersistenceAdapter(ShipmentJpaRepository shipments, WeighingJpaRepository weighings) {
         this.shipments = shipments;
         this.weighings = weighings;
-        this.seals = seals;
     }
 
     @Override
@@ -49,9 +46,7 @@ final class ShipmentPersistenceAdapter implements ShipmentQueryPort {
             return List.of();
         }
         List<UUID> ids = entities.stream().map(ShipmentJpaEntity::getId).toList();
-        ShipmentSides sides = new ShipmentSides(
-                weighings.findByShipmentIdInAndSupersededByIsNull(ids),
-                seals.findByShipmentIdInAndSupersededByIsNull(ids));
+        ShipmentSides sides = new ShipmentSides(weighings.findByShipmentIdInAndSupersededByIsNull(ids));
         return entities.stream()
                 .map(entity -> ShipmentMapper.toDomain(entity, sides))
                 .toList();

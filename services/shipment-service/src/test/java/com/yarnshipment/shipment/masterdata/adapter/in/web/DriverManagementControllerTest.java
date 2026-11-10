@@ -12,7 +12,6 @@ import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.ChangeDriverStatusUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateDriverUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.UpdateDriverUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateDriverLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.Driver;
 import com.yarnshipment.shipment.masterdata.domain.model.DriverDetails;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
@@ -50,9 +49,6 @@ class DriverManagementControllerTest {
 
     @MockitoBean
     private ChangeDriverStatusUseCase driverStatus;
-
-    @MockitoBean
-    private CreateDriverLoginAccountUseCase driverLoginAccount;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -117,7 +113,7 @@ class DriverManagementControllerTest {
     @Test
     @DisplayName("Şoför rolü 403 alır; pasife alma ve etkinleştirme 204 döner")
     void shouldForbidDriverRoleAndToggleStatus() throws Exception {
-        MvcTestResult forbidden = post(TestTokens.driverToken(), DRIVERS, "{\"fullName\": \"X\"}");
+        MvcTestResult forbidden = post(TestTokens.subcontractorToken(), DRIVERS, "{\"fullName\": \"X\"}");
         MvcTestResult off = send(mvc.post().uri(DRIVERS + "/" + ID + "/deactivate"), admin(), null);
         MvcTestResult on = send(mvc.post().uri(DRIVERS + "/" + ID + "/activate"), admin(), null);
 

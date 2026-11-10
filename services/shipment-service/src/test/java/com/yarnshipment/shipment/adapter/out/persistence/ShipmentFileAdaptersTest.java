@@ -2,7 +2,6 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.yarnshipment.shipment.domain.model.DeliveryScan;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.model.StatusChange;
@@ -26,12 +25,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 class ShipmentFileAdaptersTest {
 
     private static final PostgresTestDatabase DATABASE = PostgresTestDatabase.startIsolated();
-    /** Örnek veride kontrol aşamasındaki (CHECKING) sevkiyat. */
-    private static final UUID CHECKING = UUID.fromString("0192f0a0-0000-7000-8000-0000000a0006");
+    /** Örnek veride tamamlanmış (COMPLETED) sevkiyat. */
+    private static final UUID COMPLETED = UUID.fromString("0192f0a0-0000-7000-8000-0000000a0006");
 
     private static final UUID DRAFT = UUID.fromString("0192f0a0-0000-7000-8000-0000000a0001");
     private static final int BAGS_PER_SHIPMENT = 5;
-    private static final int MATCHED_SCANS = 4;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -51,16 +49,11 @@ class ShipmentFileAdaptersTest {
     @Test
     @DisplayName("Geçmiş eskiden yeniye gelir; ilk satırın önceki durumu yoktur")
     void shouldReadHistoryOldestFirst() {
-        List<StatusChange> changes = history.findHistory(CHECKING);
+        List<StatusChange> changes = history.findHistory(COMPLETED);
 
         assertThat(changes)
                 .extracting(StatusChange::to)
-                .containsExactly(
-                        ShipmentStatus.DRAFT,
-                        ShipmentStatus.LOADED,
-                        ShipmentStatus.IN_TRANSIT,
-                        ShipmentStatus.AWAITING_DELIVERY,
-                        ShipmentStatus.CHECKING);
+                .containsExactly(ShipmentStatus.DRAFT, ShipmentStatus.AWAITING_DELIVERY, ShipmentStatus.COMPLETED);
         assertThat(changes.getFirst().from()).isNull();
         assertThat(changes.get(1).from()).isEqualTo(ShipmentStatus.DRAFT);
     }
@@ -68,7 +61,7 @@ class ShipmentFileAdaptersTest {
     @Test
     @DisplayName("Çıkış çuvalları atanmış olanlardır; taslakta yoktur")
     void shouldReadDispatchBags() {
-        List<DispatchBag> assigned = bags.findDispatchBags(CHECKING);
+        List<DispatchBag> assigned = bags.findDispatchBags(COMPLETED);
 
         assertThat(assigned)
                 .hasSize(BAGS_PER_SHIPMENT)
@@ -76,15 +69,5 @@ class ShipmentFileAdaptersTest {
                 .first()
                 .isEqualTo("BAG-6-1");
         assertThat(bags.findDispatchBags(DRAFT)).isEmpty();
-    }
-
-    @Test
-    @DisplayName("Teslim okutmaları dört eşleşen ve bir eşleşmeyen anahtarla gelir; teslimi olmayanda boştur")
-    void shouldReadDeliveryScans() {
-        List<DeliveryScan> scans = bags.findDeliveryScans(CHECKING);
-
-        assertThat(scans).hasSize(BAGS_PER_SHIPMENT);
-        assertThat(scans.stream().filter(DeliveryScan::matched)).hasSize(MATCHED_SCANS);
-        assertThat(bags.findDeliveryScans(DRAFT)).isEmpty();
     }
 }

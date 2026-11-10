@@ -39,7 +39,8 @@ class RecordCorrectionServiceTest {
     }
 
     private RecordCorrectionCommand command(UUID shipmentId) {
-        return new RecordCorrectionCommand(admin, shipmentId, KEY, TestCorrections.sealNo("M-0002"));
+        return new RecordCorrectionCommand(
+                admin, shipmentId, KEY, TestCorrections.dispatchWeighing("2010.500", "18.000"));
     }
 
     @Test
@@ -51,7 +52,7 @@ class RecordCorrectionServiceTest {
             assertThat(correction.id()).isEqualTo(KEY);
             assertThat(correction.correctedAt()).isEqualTo(NOW);
         });
-        assertThat(saved.oldValue()).isEqualTo("M-0001");
+        assertThat(saved.oldValue()).isEqualTo("gross=2000.500 tare=18.000 net=1982.500");
         assertThat(saved.requestedBy()).isEqualTo(admin.userId());
         assertThat(corrections.findCorrections(TestShipments.SHIPMENT_ID)).containsExactly(saved);
     }
@@ -78,9 +79,8 @@ class RecordCorrectionServiceTest {
                 base.status(),
                 base.parties(),
                 base.planned(),
-                base.dispatch(),
-                base.delivery(),
-                false,
+                base.dispatchWeighing(),
+                null,
                 NOW));
 
         assertThatThrownBy(() -> service.recordCorrection(command(other)))

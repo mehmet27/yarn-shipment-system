@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
+import com.yarnshipment.shipment.application.port.in.CompleteShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.GetShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsUseCase;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
@@ -15,8 +16,6 @@ import com.yarnshipment.shipment.application.port.in.ShipmentDetails;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.in.ShipmentPage;
 import com.yarnshipment.shipment.application.port.in.ShipmentPage.ShipmentListItem;
-import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptUseCase;
-import com.yarnshipment.shipment.application.port.in.driver.ConfirmPickupUseCase;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.util.List;
 import java.util.Set;
@@ -33,13 +32,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
-/** Sözleşme ve kör giriş testi (SEC-07): her görünümde yasaklı alanlar JSON'da hiç bulunmaz. */
+/** Sözleşme testi: her görünümde yasaklı alanlar JSON'da hiç bulunmaz. */
 @WebMvcTest(controllers = {ShipmentController.class, CurrentUserController.class})
 class ShipmentControllerTest {
 
     private static final String DETAIL_URI = "/api/v1/shipments/" + TestShipments.SHIPMENT_ID;
     private static final List<String> DISPATCH_FIELDS =
-            List.of("dispatchWeighing", "plannedNetKg", "plannedBagCount", "randomCheckSelected", "dispatchBagCount");
+            List.of("plannedNetKg", "plannedBagCount", "subcontractorId", "waybillNo");
 
     private static final int PAGE_SIZE = 20;
 
@@ -52,13 +51,10 @@ class ShipmentControllerTest {
     private GetShipmentUseCase getShipmentUseCase;
 
     @MockitoBean
-    private ConfirmPickupUseCase confirmPickupUseCase;
-
-    @MockitoBean
     private RecordDispatchUseCase recordDispatchUseCase;
 
     @MockitoBean
-    private SubmitDeliveryReceiptUseCase submitDeliveryReceiptUseCase;
+    private CompleteShipmentUseCase completeShipmentUseCase;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -69,8 +65,8 @@ class ShipmentControllerTest {
     }
 
     @Test
-    @DisplayName("Fasoncu görünümünde çıkış tartısı, beklenen yük ve rastgele kontrol alanları hiç yoktur")
-    void shouldHideDispatchFieldsFromSubcontractor() {
+    @DisplayName("Fasoncu görünümünde çıkış tartısı vardır; beklenen yük ve irsaliye alanları hiç yoktur")
+    void shouldHidePlannedFieldsFromSubcontractor() {
         // given
         givenDetails(ShipmentAudience.SUBCONTRACTOR);
 
@@ -80,30 +76,13 @@ class ShipmentControllerTest {
         // then
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.audience").isEqualTo("SUBCONTRACTOR");
-        assertThat(result).bodyJson().extractingPath("$.deliveryWeighing.netKg").isEqualTo("1977.250");
+        assertThat(result).bodyJson().extractingPath("$.dispatchWeighing.netKg").isEqualTo("1982.500");
         DISPATCH_FIELDS.forEach(field -> assertThat(result).bodyJson().doesNotHavePath("$." + field));
-        assertThat(result).bodyJson().doesNotHavePath("$.dispatchSealNo");
     }
 
     @Test
-    @DisplayName("Şoför görünümünde kilo yoktur, yalnızca çuval sayısı ve mühür numarası vardır")
-    void shouldShowOnlyBagCountAndSealToDriver() {
-        // given
-        givenDetails(ShipmentAudience.DRIVER);
-
-        // when
-        MvcTestResult result = get(DETAIL_URI, TestTokens.driverToken());
-
-        // then
-        assertThat(result).bodyJson().extractingPath("$.dispatchBagCount").isEqualTo(TestShipments.BAG_COUNT);
-        assertThat(result).bodyJson().extractingPath("$.dispatchSealNo").isEqualTo("M-0001");
-        List.of("dispatchWeighing", "deliveryWeighing", "plannedNetKg", "plannedBagCount", "randomCheckSelected")
-                .forEach(field -> assertThat(result).bodyJson().doesNotHavePath("$." + field));
-    }
-
-    @Test
-    @DisplayName("Depo görünümünde teslim tarafının alanları hiç yoktur")
-    void shouldHideDeliveryFieldsFromWarehouse() {
+    @DisplayName("Depo görünümü çıkış tartısını içerir")
+    void shouldShowDispatchToWarehouse() {
         // given
         givenDetails(ShipmentAudience.WAREHOUSE);
 
@@ -112,13 +91,12 @@ class ShipmentControllerTest {
 
         // then
         assertThat(result).bodyJson().extractingPath("$.dispatchWeighing.netKg").isEqualTo("1982.500");
-        assertThat(result).bodyJson().doesNotHavePath("$.deliveryWeighing");
-        assertThat(result).bodyJson().doesNotHavePath("$.deliverySealCondition");
+        assertThat(result).bodyJson().extractingPath("$.audience").isEqualTo("WAREHOUSE");
     }
 
     @Test
-    @DisplayName("İç görünüm iki tarafı da içerir, kilolar üç ondalıklı dizedir")
-    void shouldShowBothSidesToInternalAudience() {
+    @DisplayName("İç görünüm beklenen yükü ve irsaliyeyi içerir, kilolar üç ondalıklı dizedir")
+    void shouldShowEverythingToInternalAudience() {
         // given
         givenDetails(ShipmentAudience.INTERNAL);
 
@@ -131,7 +109,7 @@ class ShipmentControllerTest {
                 .bodyJson()
                 .extractingPath("$.dispatchWeighing.grossKg")
                 .isEqualTo("2000.500");
-        assertThat(result).bodyJson().extractingPath("$.deliverySealCondition").isEqualTo("INTACT");
+        assertThat(result).bodyJson().extractingPath("$.waybillNo").isEqualTo(TestShipments.WAYBILL_NO);
         assertThat(result).bodyJson().extractingPath("$.createdAt").isEqualTo("2026-10-21T06:00:00Z");
     }
 
@@ -213,7 +191,7 @@ class ShipmentControllerTest {
                 .bodyJson()
                 .extractingPath("$.subcontractorId")
                 .isEqualTo(TestShipments.SUBCONTRACTOR_ID.toString());
-        assertThat(result).bodyJson().extractingPath("$.permissions").asArray().contains("DELIVERY_RECORD");
+        assertThat(result).bodyJson().extractingPath("$.permissions").asArray().contains("QUALITY_CLAIM_OPEN");
     }
 
     @Test
@@ -225,7 +203,7 @@ class ShipmentControllerTest {
 
     private void givenDetails(ShipmentAudience audience) {
         ShipmentDetails details =
-                new ShipmentDetails(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY), audience, Set.of());
+                new ShipmentDetails(TestShipments.shipment(ShipmentStatus.COMPLETED), audience, Set.of());
         when(getShipmentUseCase.getShipment(any())).thenReturn(details);
     }
 

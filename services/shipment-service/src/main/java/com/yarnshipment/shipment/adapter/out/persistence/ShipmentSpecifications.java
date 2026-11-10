@@ -40,11 +40,8 @@ final class ShipmentSpecifications {
                         ? builder.disjunction()
                         : root.get("siteId").in(scope.siteIds()));
         UUID subcontractorId = scope.subcontractorId();
-        UUID driverId = scope.driverId();
         if (subcontractorId != null) {
             predicates.add(builder.equal(root.get("parties").get("subcontractorId"), subcontractorId));
-        } else if (driverId != null) {
-            predicates.add(builder.equal(root.get("parties").get("driverId"), driverId));
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.yarnshipment.shipment.adapter.in.web;
 
-import com.yarnshipment.shipment.adapter.in.web.api.model.SealCondition;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentAction;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentStatus;
 import com.yarnshipment.shipment.adapter.in.web.api.model.WeighingView;
@@ -40,11 +39,6 @@ final class WebMappings {
 
     static ShipmentStatus status(com.yarnshipment.shipment.domain.model.ShipmentStatus status) {
         return ShipmentStatus.valueOf(status.name());
-    }
-
-    static @Nullable SealCondition sealCondition(
-            com.yarnshipment.shipment.domain.model.@Nullable SealCondition condition) {
-        return condition == null ? null : SealCondition.valueOf(condition.name());
     }
 
     static List<ShipmentAction> actions(

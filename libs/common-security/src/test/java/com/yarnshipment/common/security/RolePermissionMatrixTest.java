@@ -13,13 +13,15 @@ import org.junit.jupiter.params.provider.EnumSource;
 class RolePermissionMatrixTest {
 
     @Test
-    @DisplayName("Yönetici salt okur: hiçbir yazma izni yoktur")
-    void shouldGiveManagerOnlyReadPermissions() {
+    @DisplayName("Müdürün yazma izni yalnızca sevkiyat açma, iptal ve tamamlamadır")
+    void shouldLimitManagerWritesToShipmentLifecycle() {
         // when
         Set<Permission> permissions = RolePermissionMatrix.permissionsOf(List.of(Role.MANAGER));
 
         // then
-        assertThat(permissions).isNotEmpty().noneMatch(Permission::isWrite);
+        assertThat(permissions.stream().filter(Permission::isWrite))
+                .containsExactlyInAnyOrder(
+                        Permission.SHIPMENT_CREATE, Permission.SHIPMENT_CANCEL, Permission.SHIPMENT_COMPLETE);
     }
 
     @Test
@@ -33,19 +35,11 @@ class RolePermissionMatrixTest {
     }
 
     @Test
-    @DisplayName("Karşılaştırmayı yalnızca sistem hesabı tetikler")
-    void shouldAllowOnlySystemToRunComparison() {
-        // when / then
-        assertThat(rolesHaving(Permission.COMPARISON_RUN)).containsExactly(Role.SYSTEM);
-    }
-
-    @Test
-    @DisplayName("Çıkış tartısını yalnızca depo, teslim tartısını yalnızca fasoncu girer")
-    void shouldSeparateDispatchAndDeliveryRecording() {
+    @DisplayName("Çıkış tartısını yalnızca depo girer; sevkiyatı müdür ve admin tamamlar")
+    void shouldSeparateDispatchAndCompletion() {
         // when / then
         assertThat(rolesHaving(Permission.DISPATCH_RECORD)).containsExactly(Role.WAREHOUSE);
-        assertThat(rolesHaving(Permission.DELIVERY_RECORD)).containsExactly(Role.SUBCONTRACTOR);
-        assertThat(rolesHaving(Permission.DRIVER_DECLARATION_RECORD)).containsExactly(Role.DRIVER);
+        assertThat(rolesHaving(Permission.SHIPMENT_COMPLETE)).containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER);
     }
 
     @Test

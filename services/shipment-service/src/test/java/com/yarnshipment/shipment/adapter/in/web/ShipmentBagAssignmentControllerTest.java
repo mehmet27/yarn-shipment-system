@@ -134,14 +134,14 @@ class ShipmentBagAssignmentControllerTest {
     @Test
     @DisplayName("DISPATCH_RECORD izni olmayan rol (şoför) 403 alır")
     void shouldForbidDriver() {
-        assertThat(post(BODY, TestTokens.driverToken())).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(BODY, TestTokens.subcontractorToken())).hasStatus(HttpStatus.FORBIDDEN);
     }
 
     @Test
     @DisplayName("Çuval çıkarma 204 döner ve komut sevkiyat ile anahtarı taşır; şoför 403 alır")
     void shouldRemoveBag() {
         MvcTestResult removed = delete(TestTokens.token("warehouse").build());
-        MvcTestResult denied = delete(TestTokens.driverToken());
+        MvcTestResult denied = delete(TestTokens.subcontractorToken());
 
         assertThat(removed).hasStatus(HttpStatus.NO_CONTENT);
         assertThat(denied).hasStatus(HttpStatus.FORBIDDEN);

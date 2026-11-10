@@ -42,9 +42,8 @@ class ListShipmentsServiceTest {
                 ShipmentStatus.DRAFT,
                 new ShipmentParties(UUID.randomUUID(), "Başka", null, null, null),
                 own.planned(),
-                own.dispatch(),
-                own.delivery(),
-                false,
+                own.dispatchWeighing(),
+                null,
                 own.createdAt()));
         Actor actor = TestTokens.CONVERTER.toActor(TestTokens.subcontractorToken());
 

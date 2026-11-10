@@ -3,7 +3,6 @@ package com.yarnshipment.shipment.masterdata.application.service;
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
-import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateDriverLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateSubcontractorLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.IssueActivationCodeUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
@@ -28,17 +27,14 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
- * Şoför ve fasoncu için giriş hesabı açar ve giriş hesaplarını listeler. Kayıt ve lokasyonlar etkin olmalıdır; hesap
+ * Fasoncu için giriş hesabı açar ve giriş hesaplarını listeler. Kayıt ve lokasyonlar etkin olmalıdır; hesap
  * Keycloak'ta şifresiz tek çağrı dizisiyle açılır ve yarım kalırsa geri alınır, ardından şifre belirleme kodu SMS'le
  * gider. Yerel veritabanına yazılmadığı için transaction
  * açılmaz. Kullanıcı sayısı küçük olduğundan liste Keycloak'tan bütün olarak alınır, arama ve sayfalama burada yapılır.
  */
 @Service
 public final class LoginAccountService
-        implements CreateDriverLoginAccountUseCase,
-                CreateSubcontractorLoginAccountUseCase,
-                ListLoginAccountsUseCase,
-                ListUserNamesUseCase {
+        implements CreateSubcontractorLoginAccountUseCase, ListLoginAccountsUseCase, ListUserNamesUseCase {
 
     private final LoginAccountTargetPort targets;
     private final LoginAccountPort accounts;
@@ -49,13 +45,6 @@ public final class LoginAccountService
         this.targets = targets;
         this.accounts = accounts;
         this.activation = activation;
-    }
-
-    @Override
-    public void createDriverLoginAccount(Actor actor, UUID driverId, LoginAccountRequest request) {
-        String name = targets.findActiveDriverName(driverId)
-                .orElseThrow(() -> new MasterDataNotFoundException("Driver", driverId));
-        open(LoginRole.DRIVER, driverId, name, request);
     }
 
     @Override

@@ -1,20 +1,15 @@
 package com.yarnshipment.shipment.domain.correction;
 
-import com.yarnshipment.shipment.domain.correction.CorrectedValue.SealNo;
 import com.yarnshipment.shipment.domain.correction.CorrectedValue.Weight;
 import com.yarnshipment.shipment.domain.model.Shipment;
-import com.yarnshipment.shipment.domain.model.ShipmentSide;
 import java.util.Optional;
 
 /**
- * Düzeltilebilen kayıt. Tartım ve mühür hiç güncellenmez; düzeltme yeni satır ekler, eskisi {@code superseded_by} ile
- * saklanır (DOM-16).
+ * Düzeltilebilen kayıt. Tartım hiç güncellenmez; düzeltme yeni satır ekler, eskisi {@code superseded_by} ile saklanır
+ * (DOM-16).
  */
 public enum CorrectionTarget {
-    DISPATCH_WEIGHING("WEIGHING", "DISPATCH"),
-    DELIVERY_WEIGHING("WEIGHING", "DELIVERY"),
-    DISPATCH_SEAL_NO("SEAL", "DISPATCH"),
-    DELIVERY_SEAL_NO("SEAL", "DELIVERY");
+    DISPATCH_WEIGHING("WEIGHING", "DISPATCH");
 
     private final String entityType;
     private final String side;
@@ -29,21 +24,13 @@ public enum CorrectionTarget {
         return entityType;
     }
 
-    /** Tartım ve mühür tablolarındaki {@code side} değeri. */
+    /** Tartım tablosundaki {@code side} değeri. */
     public String side() {
         return side;
     }
 
-    public boolean isWeighing() {
-        return "WEIGHING".equals(entityType);
-    }
-
     /** Sevkiyattaki geçerli değer; kayıt hiç girilmediyse boş. */
     public Optional<CorrectedValue> currentValue(Shipment shipment) {
-        ShipmentSide data = "DISPATCH".equals(side) ? shipment.dispatch() : shipment.delivery();
-        if (isWeighing()) {
-            return Optional.ofNullable(data.weighing()).map(w -> new Weight(w.grossKg(), w.tareKg()));
-        }
-        return Optional.ofNullable(data.sealNo()).map(SealNo::new);
+        return Optional.ofNullable(shipment.dispatchWeighing()).map(w -> new Weight(w.grossKg(), w.tareKg()));
     }
 }

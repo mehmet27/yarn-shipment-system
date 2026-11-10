@@ -39,23 +39,9 @@ class ScopeGuardTest {
         Actor actor = converter.toActor(TestTokens.subcontractor());
 
         // when / then
-        assertThat(scopeGuard.isInScope(actor, shipment(TestTokens.SUBCONTRACTOR_ID, null)))
+        assertThat(scopeGuard.isInScope(actor, shipment(TestTokens.SUBCONTRACTOR_ID)))
                 .isTrue();
-        assertThat(scopeGuard.isInScope(actor, shipment(UUID.randomUUID(), null)))
-                .isFalse();
-    }
-
-    @Test
-    @DisplayName("Şoför yalnızca kendisine atanmış sevkiyata erişir")
-    void shouldLimitDriverToAssignedRecords() {
-        // given
-        Actor actor = converter.toActor(TestTokens.driver());
-
-        // when / then
-        assertThat(scopeGuard.isInScope(actor, shipment(null, TestTokens.DRIVER_ID)))
-                .isTrue();
-        assertThat(scopeGuard.isInScope(actor, shipment(null, UUID.randomUUID())))
-                .isFalse();
+        assertThat(scopeGuard.isInScope(actor, shipment(UUID.randomUUID()))).isFalse();
     }
 
     @Test
@@ -63,12 +49,10 @@ class ScopeGuardTest {
     void shouldLimitInternalUserToOwnSites() {
         // given
         Actor actor = converter.toActor(TestTokens.withRoles("warehouse").build());
-        ScopedResource otherSite =
-                new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.OTHER_SITE_ID, null, null);
+        ScopedResource otherSite = new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.OTHER_SITE_ID, null);
 
         // when / then
-        assertThat(scopeGuard.isInScope(actor, shipment(UUID.randomUUID(), null)))
-                .isTrue();
+        assertThat(scopeGuard.isInScope(actor, shipment(UUID.randomUUID()))).isTrue();
         assertThat(scopeGuard.isInScope(actor, otherSite)).isFalse();
     }
 
@@ -85,8 +69,7 @@ class ScopeGuardTest {
 
         // then
         assertThat(scope.isUnrestricted()).isFalse();
-        assertThat(scopeGuard.isInScope(actor, shipment(UUID.randomUUID(), null)))
-                .isFalse();
+        assertThat(scopeGuard.isInScope(actor, shipment(UUID.randomUUID()))).isFalse();
     }
 
     @Test
@@ -99,14 +82,12 @@ class ScopeGuardTest {
                 Set.of(Role.SYSTEM),
                 RolePermissionMatrix.permissionsOf(Set.of(Role.SYSTEM)),
                 null,
-                null,
                 Set.of(),
                 false);
 
         // when / then
         assertThat(scopeGuard.scopeOf(system)).isEqualTo(AccessScope.UNRESTRICTED);
-        assertThat(scopeGuard.isInScope(system, shipment(UUID.randomUUID(), null)))
-                .isTrue();
+        assertThat(scopeGuard.isInScope(system, shipment(UUID.randomUUID()))).isTrue();
     }
 
     @Test
@@ -114,7 +95,7 @@ class ScopeGuardTest {
     void shouldAuditAndRejectOutOfScopeAccess() {
         // given
         Actor actor = converter.toActor(TestTokens.subcontractor());
-        ScopedResource resource = shipment(UUID.randomUUID(), null);
+        ScopedResource resource = shipment(UUID.randomUUID());
 
         // when / then
         assertThatThrownBy(() -> scopeGuard.validateInScope(actor, resource, "SHIPMENT_VIEW"))
@@ -134,13 +115,13 @@ class ScopeGuardTest {
         Actor actor = converter.toActor(TestTokens.subcontractor());
 
         // when
-        scopeGuard.validateInScope(actor, shipment(TestTokens.SUBCONTRACTOR_ID, null), "SHIPMENT_VIEW");
+        scopeGuard.validateInScope(actor, shipment(TestTokens.SUBCONTRACTOR_ID), "SHIPMENT_VIEW");
 
         // then
         assertThat(published).isEmpty();
     }
 
-    private static ScopedResource shipment(@Nullable UUID subcontractorId, @Nullable UUID driverId) {
-        return new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.SITE_ID, subcontractorId, driverId);
+    private static ScopedResource shipment(@Nullable UUID subcontractorId) {
+        return new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.SITE_ID, subcontractorId);
     }
 }

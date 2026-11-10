@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.yarnshipment.common.security.scope.AccessScope;
 import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort.PageRequest;
 import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort.ShipmentSlice;
-import com.yarnshipment.shipment.domain.model.SealCondition;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.model.Weighing;
@@ -49,10 +48,6 @@ class ShipmentPersistenceAdapterTest {
             INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, weighed_at, entered_by,
                                   created_at, created_by)
             VALUES (?, ?, 'DISPATCH', ?::numeric, 18, 40, now(), ?, now(), ?)""";
-    private static final String INSERT_SEAL = """
-            INSERT INTO seal (id, shipment_id, side, seal_no, seal_condition, recorded_by, recorded_at,
-                              created_at, created_by)
-            VALUES (?, ?, 'DISPATCH', 'M-0001', 'INTACT', ?, now(), now(), ?)""";
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -70,7 +65,7 @@ class ShipmentPersistenceAdapterTest {
 
     @BeforeEach
     void insertShipments() {
-        insertShipment(new ShipmentRow(FIRST, SITE_A, SUBCONTRACTOR, "IN_TRANSIT", "2026-10-21T06:00:00Z"));
+        insertShipment(new ShipmentRow(FIRST, SITE_A, SUBCONTRACTOR, "AWAITING_DELIVERY", "2026-10-21T06:00:00Z"));
         insertShipment(new ShipmentRow(SECOND, SITE_A, OTHER_SUBCONTRACTOR, "DRAFT", "2026-10-21T07:00:00Z"));
         insertShipment(new ShipmentRow(THIRD, SITE_B, SUBCONTRACTOR, "DRAFT", "2026-10-21T08:00:00Z"));
         insertWeighing(UUID.fromString("0192f0a0-0000-7000-8000-0000000000e1"), "1000.000");
@@ -80,20 +75,18 @@ class ShipmentPersistenceAdapterTest {
                 "UPDATE weighing SET superseded_by = ? WHERE id = ?",
                 current,
                 UUID.fromString("0192f0a0-0000-7000-8000-0000000000e1"));
-        jdbc.update(INSERT_SEAL, UUID.fromString("0192f0a0-0000-7000-8000-0000000000f1"), FIRST, USER, USER);
     }
 
     @Test
-    @DisplayName("Sevkiyat geçerli tartım ve mühürüyle okunur; düzeltilmiş tartım görünmez")
-    void shouldReadShipmentWithCurrentWeighingAndSeal() {
+    @DisplayName("Sevkiyat geçerli çıkış tartımıyla okunur; düzeltilmiş tartım görünmez")
+    void shouldReadShipmentWithCurrentWeighing() {
         Shipment shipment = adapter.findShipment(FIRST).orElseThrow();
 
-        assertThat(shipment.status()).isEqualTo(ShipmentStatus.IN_TRANSIT);
-        assertThat(shipment.dispatch().weighing())
+        assertThat(shipment.status()).isEqualTo(ShipmentStatus.AWAITING_DELIVERY);
+        assertThat(shipment.dispatchWeighing())
                 .extracting(Weighing::grossKg)
                 .satisfies(gross -> assertThat(gross).isEqualByComparingTo(new BigDecimal("1010.5")));
-        assertThat(shipment.dispatch().sealCondition()).isEqualTo(SealCondition.INTACT);
-        assertThat(shipment.delivery().weighing()).isNull();
+        assertThat(shipment.waybillNo()).isNull();
     }
 
     @Test
@@ -106,7 +99,7 @@ class ShipmentPersistenceAdapterTest {
     @DisplayName("Liste lokasyon kapsamına göre süzülür, en yeni önce gelir")
     void shouldFilterBySitesNewestFirst() {
         ShipmentSlice slice =
-                adapter.findShipments(AccessScope.restrictedTo(Set.of(SITE_A), null, null), Set.of(), FIRST_PAGE);
+                adapter.findShipments(AccessScope.restrictedTo(Set.of(SITE_A), null), Set.of(), FIRST_PAGE);
 
         assertThat(slice.shipments()).extracting(Shipment::id).containsExactly(SECOND, FIRST);
         assertThat(slice.totalElements()).isEqualTo(2);
@@ -116,7 +109,7 @@ class ShipmentPersistenceAdapterTest {
     @DisplayName("Fasoncu yalnızca kendi sevkiyatlarını, istenen durumda görür")
     void shouldFilterBySubcontractorAndStatus() {
         ShipmentSlice slice = adapter.findShipments(
-                AccessScope.restrictedTo(Set.of(SITE_A, SITE_B), SUBCONTRACTOR, null),
+                AccessScope.restrictedTo(Set.of(SITE_A, SITE_B), SUBCONTRACTOR),
                 Set.of(ShipmentStatus.DRAFT),
                 FIRST_PAGE);
 
@@ -126,8 +119,7 @@ class ShipmentPersistenceAdapterTest {
     @Test
     @DisplayName("Lokasyonu olmayan kapsam hiçbir kayıt görmez")
     void shouldReturnNothingForScopeWithoutSites() {
-        ShipmentSlice slice =
-                adapter.findShipments(AccessScope.restrictedTo(Set.of(), null, null), Set.of(), FIRST_PAGE);
+        ShipmentSlice slice = adapter.findShipments(AccessScope.restrictedTo(Set.of(), null), Set.of(), FIRST_PAGE);
 
         assertThat(slice.shipments()).isEmpty();
         assertThat(slice.totalElements()).isZero();

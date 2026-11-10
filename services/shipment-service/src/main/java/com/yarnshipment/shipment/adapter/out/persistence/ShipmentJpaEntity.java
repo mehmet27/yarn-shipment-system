@@ -41,8 +41,8 @@ class ShipmentJpaEntity {
     @Column(name = "planned_bag_count")
     private @Nullable Integer plannedBagCount;
 
-    @Column(name = "random_check_selected")
-    private boolean randomCheckSelected;
+    @Column(name = "e_waybill_no", columnDefinition = TEXT)
+    private @Nullable String waybillNo;
 
     @Column(name = "created_at")
     private Instant createdAt;
@@ -81,8 +81,9 @@ class ShipmentJpaEntity {
         return plannedBagCount;
     }
 
-    boolean isRandomCheckSelected() {
-        return randomCheckSelected;
+    @Nullable
+    String getWaybillNo() {
+        return waybillNo;
     }
 
     Instant getCreatedAt() {

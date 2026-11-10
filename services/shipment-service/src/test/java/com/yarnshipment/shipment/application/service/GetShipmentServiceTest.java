@@ -10,7 +10,6 @@ import com.yarnshipment.common.security.scope.ScopeGuard;
 import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.GetShipmentQuery;
-import com.yarnshipment.shipment.application.port.in.ShipmentAction;
 import com.yarnshipment.shipment.application.port.in.ShipmentAudience;
 import com.yarnshipment.shipment.application.port.in.ShipmentDetails;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
@@ -33,7 +32,7 @@ class GetShipmentServiceTest {
     private final GetShipmentService getService = new GetShipmentService(port, scopeGuard, policy);
 
     @Test
-    @DisplayName("Fasoncu kendi sevkiyatını kendi görünümü ve işlemleriyle alır")
+    @DisplayName("Fasoncu kendi sevkiyatını kendi görünümüyle ve işlemsiz alır")
     void shouldReturnOwnShipmentWithSubcontractorAudience() {
         // given
         port.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
@@ -44,7 +43,7 @@ class GetShipmentServiceTest {
 
         // then
         assertThat(details.audience()).isEqualTo(ShipmentAudience.SUBCONTRACTOR);
-        assertThat(details.allowedActions()).containsExactly(ShipmentAction.RECORD_DELIVERY);
+        assertThat(details.allowedActions()).isEmpty();
     }
 
     @Test

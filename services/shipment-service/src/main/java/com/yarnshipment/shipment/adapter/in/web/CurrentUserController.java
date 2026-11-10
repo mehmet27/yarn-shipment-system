@@ -43,15 +43,12 @@ public class CurrentUserController implements CurrentUserApi {
                 .permissions(permissions(actor))
                 .siteIds(List.copyOf(actor.siteIds()))
                 .subcontractorId(actor.subcontractorId())
-                .driverId(actor.driverId())
                 .mfaVerified(actor.mfaVerified());
         return ResponseEntity.ok(response);
     }
 
-    /** COMPARISON_RUN yalnızca SYSTEM içindir ve sözleşmede yoktur. */
     private static List<Permission> permissions(Actor actor) {
         return actor.permissions().stream()
-                .filter(permission -> permission != com.yarnshipment.common.security.Permission.COMPARISON_RUN)
                 .sorted()
                 .map(permission -> Permission.valueOf(permission.name()))
                 .toList();

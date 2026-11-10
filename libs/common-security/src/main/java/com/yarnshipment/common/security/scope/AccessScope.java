@@ -10,28 +10,23 @@ import org.jspecify.annotations.Nullable;
  *
  * @param siteIds yalnızca bu lokasyonlar; {@code allSites} değilse boş küme hiçbir kayıt anlamına gelir
  * @param subcontractorId doluysa yalnızca bu fasoncunun kayıtları
- * @param driverId doluysa yalnızca bu şoförün kayıtları
  * @param allSites lokasyon kısıtı yok; yalnızca {@link #UNRESTRICTED} (SYSTEM) için doğrudur
  */
-public record AccessScope(
-        Set<UUID> siteIds,
-        @Nullable UUID subcontractorId,
-        @Nullable UUID driverId,
-        boolean allSites) {
+public record AccessScope(Set<UUID> siteIds, @Nullable UUID subcontractorId, boolean allSites) {
 
     /** Kısıtsız kapsam; yalnızca SYSTEM rolüne verilir. */
-    public static final AccessScope UNRESTRICTED = new AccessScope(Set.of(), null, null, true);
+    public static final AccessScope UNRESTRICTED = new AccessScope(Set.of(), null, true);
 
     public AccessScope {
         siteIds = Set.copyOf(siteIds);
     }
 
     /** Lokasyon ve sahiplik kısıtlı kapsam. {@code site_ids} claim'i boş kullanıcı hiçbir kaydı görmez. */
-    public static AccessScope restrictedTo(Set<UUID> siteIds, @Nullable UUID subcontractorId, @Nullable UUID driverId) {
-        return new AccessScope(siteIds, subcontractorId, driverId, false);
+    public static AccessScope restrictedTo(Set<UUID> siteIds, @Nullable UUID subcontractorId) {
+        return new AccessScope(siteIds, subcontractorId, false);
     }
 
     public boolean isUnrestricted() {
-        return allSites && subcontractorId == null && driverId == null;
+        return allSites && subcontractorId == null;
     }
 }

@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Sevkiyatın iptali (DRAFT ya da LOADED → CANCELLED).
+ * Sevkiyatın iptali (DRAFT ya da AWAITING_DELIVERY → CANCELLED).
  *
  * @param shipmentId sevkiyat
  * @param siteId çıkış lokasyonu
@@ -29,10 +29,13 @@ public record Cancellation(
         Objects.requireNonNull(cancelledAt, "cancelledAt");
     }
 
-    /** Henüz yola çıkmamış sevkiyat iptal edilir (DRAFT ya da LOADED → CANCELLED); gerekçe zorunludur. */
+    /**
+     * Tamamlanmamış sevkiyat iptal edilir (DRAFT ya da AWAITING_DELIVERY → CANCELLED); gerekçe zorunludur. Kantar
+     * farkı nedeniyle durdurulan sevkiyatı müdür böyle iptal eder ve yenisini açar.
+     */
     public static Cancellation of(Shipment shipment, String reason, Instant cancelledAt) {
         ShipmentStatus status = shipment.status();
-        if (status != ShipmentStatus.DRAFT && status != ShipmentStatus.LOADED) {
+        if (status != ShipmentStatus.DRAFT && status != ShipmentStatus.AWAITING_DELIVERY) {
             throw new InvalidShipmentStatusException(shipment.id(), status, ShipmentStatus.CANCELLED);
         }
         String text = reason.strip();

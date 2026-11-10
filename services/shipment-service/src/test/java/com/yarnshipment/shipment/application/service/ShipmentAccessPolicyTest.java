@@ -16,13 +16,11 @@ class ShipmentAccessPolicyTest {
     private final ShipmentAccessPolicy policy = new ShipmentAccessPolicy();
 
     @Test
-    @DisplayName("Görünüm role göre seçilir: dış roller kendi görünümünü, depo kör görünümü alır")
+    @DisplayName("Görünüm role göre seçilir: fasoncu kendi görünümünü, depo depo görünümünü alır")
     void shouldChooseAudienceByRole() {
         // when / then
         assertThat(policy.audienceOf(TestTokens.actor(TestTokens.subcontractorToken())))
                 .isEqualTo(ShipmentAudience.SUBCONTRACTOR);
-        assertThat(policy.audienceOf(TestTokens.actor(TestTokens.driverToken())))
-                .isEqualTo(ShipmentAudience.DRIVER);
         assertThat(policy.audienceOf(TestTokens.actor("warehouse"))).isEqualTo(ShipmentAudience.WAREHOUSE);
         assertThat(policy.audienceOf(TestTokens.actor("manager"))).isEqualTo(ShipmentAudience.INTERNAL);
         assertThat(policy.audienceOf(TestTokens.actor("warehouse", "quality"))).isEqualTo(ShipmentAudience.INTERNAL);
@@ -37,34 +35,32 @@ class ShipmentAccessPolicyTest {
     }
 
     @Test
-    @DisplayName("Teslim bekleyen sevkiyatta fasoncu yalnızca teslim girer")
-    void shouldAllowSubcontractorDeliveryWhenAwaiting() {
+    @DisplayName("Teslim bekleyen sevkiyatta fasoncu hiçbir işlem yapamaz")
+    void shouldAllowSubcontractorNothingWhenAwaiting() {
         // when / then
         assertThat(policy.allowedActions(
                         TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY),
                         TestTokens.actor(TestTokens.subcontractorToken())))
-                .containsExactly(ShipmentAction.RECORD_DELIVERY);
-    }
-
-    @Test
-    @DisplayName("Şoför yüklenmiş sevkiyatı teslim alır, yoldakinde varış bildirir")
-    void shouldAllowDriverDeclarationsByStatus() {
-        // given
-        Actor driver = TestTokens.actor(TestTokens.driverToken());
-
-        // when / then
-        assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.LOADED), driver))
-                .containsExactly(ShipmentAction.CONFIRM_PICKUP);
-        assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.IN_TRANSIT), driver))
-                .containsExactly(ShipmentAction.DECLARE_ARRIVAL);
-    }
-
-    @Test
-    @DisplayName("Yönetici hiçbir işlem yapamaz; iptal edilmiş sevkiyatta kimse işlem yapamaz")
-    void shouldAllowNoActionsForManagerOrCancelledShipment() {
-        // when / then
-        assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.DRAFT), TestTokens.actor("manager")))
                 .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Müdür taslağa çuval ekler ya da iptal eder; teslim bekleyeni tamamlar ya da iptal eder")
+    void shouldAllowManagerLifecycleActions() {
+        // given
+        Actor manager = TestTokens.actor("manager");
+
+        // when / then
+        assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.DRAFT), manager))
+                .containsExactlyInAnyOrder(ShipmentAction.ASSIGN_BAGS, ShipmentAction.CANCEL);
+        assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY), manager))
+                .containsExactlyInAnyOrder(ShipmentAction.COMPLETE, ShipmentAction.CANCEL);
+    }
+
+    @Test
+    @DisplayName("İptal edilmiş sevkiyatta kimse işlem yapamaz")
+    void shouldAllowNoActionsForCancelledShipment() {
+        // when / then
         assertThat(policy.allowedActions(
                         TestShipments.shipment(ShipmentStatus.CANCELLED), TestTokens.mfaActor("admin")))
                 .isEmpty();

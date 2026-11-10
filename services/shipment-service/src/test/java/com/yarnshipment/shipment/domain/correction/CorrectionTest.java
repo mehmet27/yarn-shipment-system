@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import com.yarnshipment.shipment.TestShipments;
-import com.yarnshipment.shipment.domain.correction.CorrectedValue.SealNo;
 import com.yarnshipment.shipment.domain.correction.CorrectedValue.Weight;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
@@ -47,51 +46,36 @@ class CorrectionTest {
     }
 
     @Test
-    @DisplayName("Mühür numarası kırpılarak düzeltilir")
-    void shouldCorrectSealNo() {
-        Correction correction = Correction.of(
-                COMPLETED,
-                request(CorrectionTarget.DISPATCH_SEAL_NO, new SealNo(" M-0002 "), "Yanlış yazılmış"),
-                ID,
-                NOW);
-
-        assertThat(correction.oldValue()).isEqualTo(new SealNo("M-0001"));
-        assertThat(correction.newValue().text()).isEqualTo("M-0002");
-    }
-
-    @Test
     @DisplayName("Aynı değer, boş gerekçe, girilmemiş kayıt ve iptal edilmiş sevkiyat reddedilir")
     void shouldRejectInvalidCorrections() {
         Weight same = new Weight(new BigDecimal("2000.500"), new BigDecimal("18.000"));
-        SealNo seal = new SealNo("M-0002");
+        Weight other = new Weight(new BigDecimal("2001.000"), new BigDecimal("18.000"));
 
         assertThat(rejected(COMPLETED, request(CorrectionTarget.DISPATCH_WEIGHING, same, "Gerekçe"))
                         .field())
                 .isEqualTo("value");
-        assertThat(rejected(COMPLETED, request(CorrectionTarget.DISPATCH_SEAL_NO, seal, "  "))
+        assertThat(rejected(COMPLETED, request(CorrectionTarget.DISPATCH_WEIGHING, other, "  "))
                         .field())
                 .isEqualTo("reason");
-        assertThat(rejected(COMPLETED, request(CorrectionTarget.DELIVERY_SEAL_NO, seal, "Gerekçe"))
+        assertThat(rejected(
+                                TestShipments.withoutDispatch(ShipmentStatus.DRAFT),
+                                request(CorrectionTarget.DISPATCH_WEIGHING, other, "Gerekçe"))
                         .field())
                 .isEqualTo("target");
         assertThat(rejected(
                                 TestShipments.shipment(ShipmentStatus.CANCELLED),
-                                request(CorrectionTarget.DISPATCH_SEAL_NO, seal, "Gerekçe"))
+                                request(CorrectionTarget.DISPATCH_WEIGHING, other, "Gerekçe"))
                         .field())
                 .isEqualTo("target");
-        assertThat(rejected(COMPLETED, request(CorrectionTarget.DISPATCH_WEIGHING, seal, "Gerekçe"))
-                        .field())
-                .isEqualTo("grossKg");
     }
 
     @Test
-    @DisplayName("Darası brütü aşan, üç ondalıktan hassas tartım ve boş mühür numarası geçersizdir")
+    @DisplayName("Darası brütü aşan ve üç ondalıktan hassas tartım geçersizdir")
     void shouldValidateValues() {
         assertThatThrownBy(() -> new Weight(new BigDecimal("10"), new BigDecimal("11")))
                 .isInstanceOf(InvalidCorrectionException.class);
         assertThatThrownBy(() -> new Weight(new BigDecimal("10.0001"), BigDecimal.ONE))
                 .isInstanceOf(InvalidCorrectionException.class);
-        assertThatThrownBy(() -> new SealNo("   ")).isInstanceOf(InvalidCorrectionException.class);
         assertThat(new Weight(new BigDecimal("950"), BigDecimal.ZERO))
                 .isEqualTo(new Weight(new BigDecimal("950.000"), new BigDecimal("0.0")));
     }

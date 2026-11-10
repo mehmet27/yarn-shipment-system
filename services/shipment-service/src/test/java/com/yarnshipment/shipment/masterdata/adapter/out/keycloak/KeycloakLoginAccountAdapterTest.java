@@ -39,7 +39,7 @@ class KeycloakLoginAccountAdapterTest {
             "ali@ornek.com",
             new PhoneNumber("+905321234567"),
             "Ali Yılmaz",
-            LoginRole.DRIVER,
+            LoginRole.SUBCONTRACTOR,
             OWNER,
             List.of(SITE));
 
@@ -71,14 +71,14 @@ class KeycloakLoginAccountAdapterTest {
                 .containsExactly(
                         "POST /realms/yarnshipment/protocol/openid-connect/token",
                         "GET " + USERS,
-                        "GET /admin/realms/yarnshipment/roles/driver",
+                        "GET /admin/realms/yarnshipment/roles/subcontractor",
                         "POST " + USERS,
                         "POST " + USERS + "/" + NEW_ID + "/role-mappings/realm");
         String user = bodies.get(USER_CALL);
         assertThat(user)
                 .contains("\"username\":\"ali.yilmaz\"")
                 .contains("\"email\":\"ali@ornek.com\"")
-                .contains("\"driver_id\":[\"" + OWNER + "\"]")
+                .contains("\"subcontractor_id\":[\"" + OWNER + "\"]")
                 .contains("\"site_ids\":[\"" + SITE + "\"]")
                 .contains("\"phone_number\":[\"+905321234567\"]")
                 .contains("UPDATE_PASSWORD")
@@ -145,7 +145,7 @@ class KeycloakLoginAccountAdapterTest {
         } else if (method.equals("GET") && path.endsWith("/users")) {
             reply(exchange, OK, existingUsers);
         } else if (method.equals("GET")) {
-            reply(exchange, OK, "{\"id\":\"r-1\",\"name\":\"driver\"}");
+            reply(exchange, OK, "{\"id\":\"r-1\",\"name\":\"subcontractor\"}");
         } else if (method.equals("POST") && path.endsWith("/users")) {
             exchange.getResponseHeaders().add("Location", "http://kc" + USERS + "/" + NEW_ID);
             reply(exchange, createStatus, "");

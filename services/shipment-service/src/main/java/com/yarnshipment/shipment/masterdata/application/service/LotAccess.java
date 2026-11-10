@@ -40,6 +40,6 @@ final class LotAccess {
             return;
         }
         scopeGuard.validateInScope(
-                actor, new ScopedResource("Site", siteId, siteId, null, null), Permission.LOT_QUALITY_LOCK.name());
+                actor, new ScopedResource("Site", siteId, siteId, null), Permission.LOT_QUALITY_LOCK.name());
     }
 }

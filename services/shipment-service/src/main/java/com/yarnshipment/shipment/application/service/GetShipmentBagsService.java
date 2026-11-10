@@ -7,14 +7,10 @@ import com.yarnshipment.shipment.application.port.in.GetShipmentBagsUseCase;
 import com.yarnshipment.shipment.application.port.in.ShipmentAudience;
 import com.yarnshipment.shipment.application.port.in.ShipmentBags;
 import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Kör giriş (SEC-05): çıkış çuvalları fasoncuya ve şoföre, teslim okutmaları depoya ve şoföre hiç okunmaz; yani
- * yasaklı veri sorgulanıp sonradan gizlenmez, hiç yüklenmez.
- */
+/** Sevkiyata atanmış çuvalları kapsam kontrolünden sonra döner. */
 @Service
 public class GetShipmentBagsService implements GetShipmentBagsUseCase {
 
@@ -35,12 +31,6 @@ public class GetShipmentBagsService implements GetShipmentBagsUseCase {
         Actor actor = query.actor();
         shipments.load(actor, query.shipmentId(), Permission.SHIPMENT_VIEW);
         ShipmentAudience audience = accessPolicy.audienceOf(actor);
-        UUID id = query.shipmentId();
-        return switch (audience) {
-            case INTERNAL -> new ShipmentBags(audience, bagsPort.findDispatchBags(id), bagsPort.findDeliveryScans(id));
-            case WAREHOUSE -> new ShipmentBags(audience, bagsPort.findDispatchBags(id), null);
-            case SUBCONTRACTOR -> new ShipmentBags(audience, null, bagsPort.findDeliveryScans(id));
-            case DRIVER -> new ShipmentBags(audience, null, null);
-        };
+        return new ShipmentBags(audience, bagsPort.findDispatchBags(query.shipmentId()));
     }
 }

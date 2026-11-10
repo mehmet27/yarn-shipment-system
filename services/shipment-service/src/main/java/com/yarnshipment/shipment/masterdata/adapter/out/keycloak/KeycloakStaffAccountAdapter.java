@@ -58,7 +58,7 @@ final class KeycloakStaffAccountAdapter implements StaffAccountPort {
         List<Map<String, Object>> current = currentRealmRoles(token, userId);
         Set<String> names = new HashSet<>();
         current.forEach(mapping -> names.add(String.valueOf(mapping.get("name"))));
-        if (names.contains(LoginRole.DRIVER.realmRole()) || names.contains(LoginRole.SUBCONTRACTOR.realmRole())) {
+        if (names.contains(LoginRole.SUBCONTRACTOR.realmRole())) {
             throw new LoginAccountRoleLockedException();
         }
         if (!names.contains(role.realmRole())) {

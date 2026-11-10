@@ -6,28 +6,28 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Çıkış tartımı ve mührün kaydı; sevkiyat DRAFT'tan LOADED'a geçer.
+ * Çıkış tartımının kaydı; sevkiyat DRAFT'tan AWAITING_DELIVERY'ye geçer.
  *
  * @param shipmentId sevkiyat
  * @param siteId çıkış lokasyonu
+ * @param subcontractorId ipliğin gittiği fasoncu
  * @param weighing kantar tartımı
  * @param scaleTicketNo kantar fişi numarası
- * @param sealNo mühür numarası
  * @param recordedAt sunucunun kaydı aldığı zaman (DOM-11)
  */
 public record DispatchRecording(
         UUID shipmentId,
         UUID siteId,
+        UUID subcontractorId,
         Weighing weighing,
         @Nullable String scaleTicketNo,
-        String sealNo,
         Instant recordedAt) {
 
     public DispatchRecording {
         Objects.requireNonNull(shipmentId, "shipmentId");
         Objects.requireNonNull(siteId, "siteId");
+        Objects.requireNonNull(subcontractorId, "subcontractorId");
         Objects.requireNonNull(weighing, "weighing");
-        Objects.requireNonNull(sealNo, "sealNo");
         Objects.requireNonNull(recordedAt, "recordedAt");
     }
 
@@ -36,6 +36,6 @@ public record DispatchRecording(
     }
 
     public ShipmentStatus toStatus() {
-        return ShipmentStatus.LOADED;
+        return ShipmentStatus.AWAITING_DELIVERY;
     }
 }

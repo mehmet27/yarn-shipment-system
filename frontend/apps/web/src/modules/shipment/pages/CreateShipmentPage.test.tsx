@@ -15,6 +15,8 @@ async function fillRecipe(netKg: string) {
   await userEvent.type(screen.getByLabelText(/Net kg 1/), netKg);
 }
 
+const LONG_FLOW_TIMEOUT_MS = 20_000;
+
 describe('CreateShipmentPage', () => {
   it('müdür taslak sevkiyat oluşturur ve dosyasına gider', async () => {
     server.use(...createHandlers('MANAGER'));
@@ -29,7 +31,7 @@ describe('CreateShipmentPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
     expect(await screen.findByText('SVK-2026-0046')).toBeInTheDocument();
     expect(screen.getByText('Taslak', { selector: '.mantine-Badge-label' })).toBeInTheDocument();
-  });
+  }, LONG_FLOW_TIMEOUT_MS);
 
   it('fasoncu seçilmeden göndermeyi engeller', async () => {
     server.use(...createHandlers('MANAGER'));

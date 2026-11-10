@@ -100,7 +100,7 @@ class DiscrepancyDecisionControllerTest {
                         RESOLVE_BODY,
                         TestTokens.token("warehouse").build()))
                 .hasStatus(HttpStatus.FORBIDDEN);
-        assertThat(post(ONE + "/resolve", RESOLVE_BODY, TestTokens.driverToken()))
+        assertThat(post(ONE + "/resolve", RESOLVE_BODY, TestTokens.unknownRoleToken()))
                 .hasStatus(HttpStatus.FORBIDDEN);
     }
 

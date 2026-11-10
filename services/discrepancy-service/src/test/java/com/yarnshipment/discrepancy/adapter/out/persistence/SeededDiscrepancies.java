@@ -3,16 +3,13 @@ package com.yarnshipment.discrepancy.adapter.out.persistence;
 import com.yarnshipment.common.security.scope.AccessScope;
 import com.yarnshipment.discrepancy.TestComparisons;
 import com.yarnshipment.discrepancy.application.port.in.ListDiscrepanciesQuery.Filter;
-import com.yarnshipment.discrepancy.application.port.out.CompletedComparison;
-import com.yarnshipment.discrepancy.domain.model.Comparison;
-import com.yarnshipment.discrepancy.domain.model.ComparisonInput;
+import com.yarnshipment.discrepancy.domain.model.ComparisonRule;
 import com.yarnshipment.discrepancy.domain.model.Discrepancy;
-import com.yarnshipment.discrepancy.domain.model.DispatchFigures;
-import com.yarnshipment.discrepancy.domain.model.DocumentFigures;
+import com.yarnshipment.discrepancy.domain.model.Finding;
 import com.yarnshipment.discrepancy.domain.model.Resolution;
 import com.yarnshipment.discrepancy.domain.model.Severity;
-import com.yarnshipment.discrepancy.domain.model.ToleranceBands;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /** Gerçek şemaya iki uyuşmazlık açar: çıkış tartısı yok (Kırmızı) ve imzalı belge yok (Sarı). */
@@ -28,14 +25,14 @@ final class SeededDiscrepancies {
 
     private SeededDiscrepancies() {}
 
-    static void seed(ComparisonAdapter comparisons) {
-        ComparisonInput input = TestComparisons.input(
-                new DispatchFigures(null, TestComparisons.BAGS, TestComparisons.SEAL),
-                TestComparisons.delivery(TestComparisons.DISPATCH_KG),
-                TestComparisons.KEYS,
-                DocumentFigures.NONE);
-        comparisons.saveComparison(new CompletedComparison(
-                input, Comparison.compare(input, ToleranceBands.REPORT_DEFAULT), NOW, DUE, ACTOR));
+    static void seed(ComparisonSeeder comparisons) {
+        comparisons.seed(
+                null,
+                List.of(
+                        Finding.of(ComparisonRule.QUANTITY_DISPATCH_MISSING, null, TestComparisons.DISPATCH_KG),
+                        Finding.of(ComparisonRule.DOCUMENT_MISSING, null, null)),
+                NOW,
+                DUE);
     }
 
     static Discrepancy find(DiscrepancyQueryAdapter queries, Severity severity) {

@@ -7,6 +7,7 @@ import com.yarnshipment.discrepancy.domain.ticket.TicketReuse;
 import com.yarnshipment.discrepancy.domain.ticket.TicketSide;
 import com.yarnshipment.discrepancy.domain.ticket.WeighingEntries;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -33,6 +34,10 @@ public final class TicketChecks {
     private static final BigDecimal SAME_TICKET_KG = BigDecimal.ONE;
 
     private static final Pattern PLATE_NOISE = Pattern.compile("[\\s-]");
+
+    private static final BigDecimal HUNDRED = new BigDecimal("100");
+    private static final int PCT_SCALE = 2;
+    private static final int RATIO_SCALE = 6;
 
     private TicketChecks() {}
 
@@ -75,7 +80,7 @@ public final class TicketChecks {
             return null;
         }
         BigDecimal diffKg = entered.netKg().subtract(read.netKg());
-        BigDecimal diffPct = Comparison.percentage(diffKg, entered.netKg());
+        BigDecimal diffPct = percentage(diffKg, entered.netKg());
         Severity severity = bands.classify(diffPct) == Band.RED ? Severity.RED : Severity.YELLOW;
         return new Finding(
                 DiscrepancyType.DOCUMENT, severity, ruleCode, entered.toString(), read.toString(), diffKg, diffPct);
@@ -103,7 +108,7 @@ public final class TicketChecks {
             return;
         }
         BigDecimal diffKg = dispatch.netKg().subtract(delivery.netKg());
-        BigDecimal diffPct = Comparison.percentage(diffKg, dispatch.netKg());
+        BigDecimal diffPct = percentage(diffKg, dispatch.netKg());
         Band band = bands.classify(diffPct);
         if (band != Band.GREEN) {
             findings.add(new Finding(
@@ -134,5 +139,15 @@ public final class TicketChecks {
         }
         String compact = PLATE_NOISE.matcher(value).replaceAll("").toUpperCase(Locale.ROOT);
         return compact.isEmpty() ? null : compact;
+    }
+
+    /** Çıkış sıfırsa karşı taraftaki herhangi bir kilo sonsuz fark sayılır; iki taraf da sıfırsa fark yoktur. */
+    static BigDecimal percentage(BigDecimal diffKg, BigDecimal base) {
+        if (base.signum() == 0) {
+            return diffKg.signum() == 0 ? BigDecimal.ZERO.setScale(PCT_SCALE) : HUNDRED.setScale(PCT_SCALE);
+        }
+        return diffKg.divide(base, RATIO_SCALE, RoundingMode.HALF_UP)
+                .multiply(HUNDRED)
+                .setScale(PCT_SCALE, RoundingMode.HALF_UP);
     }
 }

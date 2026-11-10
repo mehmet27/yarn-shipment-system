@@ -1,17 +1,12 @@
 package com.yarnshipment.discrepancy;
 
-import com.yarnshipment.discrepancy.domain.model.ComparisonInput;
-import com.yarnshipment.discrepancy.domain.model.DeliveryFigures;
-import com.yarnshipment.discrepancy.domain.model.DispatchFigures;
-import com.yarnshipment.discrepancy.domain.model.DocumentFigures;
-import com.yarnshipment.discrepancy.domain.model.SealCondition;
 import com.yarnshipment.discrepancy.domain.rule.WatchedShipment;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/** Her alanı tutan, uyuşmazlık üretmeyen örnek karşılaştırma girdisi; testler yalnızca bozduğu alanı değiştirir. */
+/** Testlerde kullanılan örnek sevkiyat: kimlik, lokasyon, fasoncu, çıkış kilosu ve çuval anahtarları. */
 public final class TestComparisons {
 
     public static final UUID SHIPMENT = UUID.fromString("0192f0a0-0000-7000-8000-000000000301");
@@ -27,39 +22,8 @@ public final class TestComparisons {
 
     private TestComparisons() {}
 
-    public static DispatchFigures dispatch() {
-        return new DispatchFigures(DISPATCH_KG, BAGS, SEAL);
-    }
-
-    public static DeliveryFigures delivery(BigDecimal netKg) {
-        return new DeliveryFigures(netKg, BAGS, SEAL, SealCondition.INTACT);
-    }
-
-    public static DocumentFigures document() {
-        return new DocumentFigures(SHIPMENT_NO, DISPATCH_KG, BAGS, EVIDENCE);
-    }
-
     /** Sevkiyat olaylarından izlenen bu sevkiyat; yola çıkışı bilinmiyor. */
     public static WatchedShipment watched() {
         return new WatchedShipment(SHIPMENT, SHIPMENT_NO, SITE, SUBCONTRACTOR, null);
-    }
-
-    public static ComparisonInput clean() {
-        return input(dispatch(), delivery(DISPATCH_KG), KEYS, document());
-    }
-
-    public static ComparisonInput input(
-            DispatchFigures dispatch, DeliveryFigures delivery, List<String> scannedKeys, DocumentFigures document) {
-        return new ComparisonInput(
-                SHIPMENT,
-                SITE,
-                SHIPMENT_NO,
-                RECEIVED_AT,
-                dispatch,
-                delivery,
-                KEYS,
-                scannedKeys,
-                document,
-                SUBCONTRACTOR);
     }
 }

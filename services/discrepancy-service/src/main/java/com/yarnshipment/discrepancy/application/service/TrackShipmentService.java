@@ -21,7 +21,6 @@ public class TrackShipmentService implements TrackShipmentUseCase {
     public void trackShipment(TrackShipmentCommand command) {
         switch (command.milestone()) {
             case DISPATCHED -> watchPort.recordDispatched(command.shipmentId(), command.at());
-            case ARRIVED -> watchPort.recordArrived(command.shipmentId(), command.at());
             case CLOSED -> watchPort.recordClosed(command.shipmentId(), command.at());
         }
     }

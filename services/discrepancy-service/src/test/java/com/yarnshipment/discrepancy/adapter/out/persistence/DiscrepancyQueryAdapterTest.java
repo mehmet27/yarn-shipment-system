@@ -26,7 +26,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Uyuşmazlık listesi, migration'larla kurulan gerçek şemada ve uygulama rolüyle. */
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({ComparisonAdapter.class, DiscrepancyWriter.class, DiscrepancyQueryAdapter.class, UuidV7Generator.class})
+@Import({ComparisonSeeder.class, DiscrepancyWriter.class, DiscrepancyQueryAdapter.class, UuidV7Generator.class})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class DiscrepancyQueryAdapterTest {
 
@@ -37,7 +37,7 @@ class DiscrepancyQueryAdapterTest {
     private JwtDecoder jwtDecoder;
 
     @Autowired
-    private ComparisonAdapter comparisons;
+    private ComparisonSeeder comparisons;
 
     @Autowired
     private DiscrepancyQueryAdapter queries;
@@ -55,8 +55,8 @@ class DiscrepancyQueryAdapterTest {
     @Test
     @DisplayName("Liste kapsama ve süzgeçlere uyar; vadesi aynı olanlarda Kırmızı önce gelir")
     void shouldListWithinScopeAndFilters() {
-        AccessScope ownSite = AccessScope.restrictedTo(Set.of(SeededDiscrepancies.SITE), null, null);
-        AccessScope otherSite = AccessScope.restrictedTo(Set.of(UUID.randomUUID()), null, null);
+        AccessScope ownSite = AccessScope.restrictedTo(Set.of(SeededDiscrepancies.SITE), null);
+        AccessScope otherSite = AccessScope.restrictedTo(Set.of(UUID.randomUUID()), null);
 
         DiscrepancyPage all = queries.findDiscrepancies(NO_FILTER, ownSite, 0, PAGE_SIZE);
         DiscrepancyPage red =
@@ -86,9 +86,8 @@ class DiscrepancyQueryAdapterTest {
     @Test
     @DisplayName("Fasoncu kapsamı uyuşmazlıkları fasoncu kimliğiyle süzer; kayıt fasoncuyu taşır")
     void shouldFilterBySubcontractor() {
-        AccessScope own =
-                AccessScope.restrictedTo(Set.of(SeededDiscrepancies.SITE), TestComparisons.SUBCONTRACTOR, null);
-        AccessScope other = AccessScope.restrictedTo(Set.of(SeededDiscrepancies.SITE), UUID.randomUUID(), null);
+        AccessScope own = AccessScope.restrictedTo(Set.of(SeededDiscrepancies.SITE), TestComparisons.SUBCONTRACTOR);
+        AccessScope other = AccessScope.restrictedTo(Set.of(SeededDiscrepancies.SITE), UUID.randomUUID());
 
         DiscrepancyPage mine = queries.findDiscrepancies(NO_FILTER, own, 0, PAGE_SIZE);
 

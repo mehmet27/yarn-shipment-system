@@ -31,10 +31,6 @@ final class ShipmentWatchAdapter implements ShipmentWatchPort {
             UPDATE shipment_watch
                SET dispatched_at = :at, updated_at = :at, updated_by = :actor, version = version + 1
              WHERE shipment_id = :shipmentId AND dispatched_at IS NULL""";
-    private static final String SET_ARRIVED = """
-            UPDATE shipment_watch
-               SET arrived_at = :at, updated_at = :at, updated_by = :actor, version = version + 1
-             WHERE shipment_id = :shipmentId AND arrived_at IS NULL""";
     private static final String SET_CLOSED = """
             UPDATE shipment_watch
                SET closed_at = :at, updated_at = :at, updated_by = :actor, version = version + 1
@@ -47,7 +43,7 @@ final class ShipmentWatchAdapter implements ShipmentWatchPort {
     private static final String FIND = "SELECT " + COLUMNS + " FROM shipment_watch WHERE shipment_id = :shipmentId";
     private static final String FIND_IN_TRANSIT = "SELECT " + COLUMNS + """
              FROM shipment_watch
-            WHERE dispatched_at < :before AND arrived_at IS NULL AND closed_at IS NULL
+            WHERE dispatched_at < :before AND closed_at IS NULL
               AND transit_alerted_at IS NULL
             ORDER BY dispatched_at
             LIMIT :limit""";
@@ -73,11 +69,6 @@ final class ShipmentWatchAdapter implements ShipmentWatchPort {
     @Override
     public void recordDispatched(UUID shipmentId, Instant dispatchedAt) {
         mark(SET_DISPATCHED, shipmentId, dispatchedAt);
-    }
-
-    @Override
-    public void recordArrived(UUID shipmentId, Instant arrivedAt) {
-        mark(SET_ARRIVED, shipmentId, arrivedAt);
     }
 
     @Override

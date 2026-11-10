@@ -3,11 +3,9 @@ package com.yarnshipment.discrepancy.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -84,21 +82,6 @@ class DiscrepancyQueryServicesTest {
                         argThat(scope -> TestTokens.SUBCONTRACTOR_ID.equals(scope.subcontractorId())),
                         eq(0),
                         eq(PAGE_SIZE));
-    }
-
-    @Test
-    @DisplayName("Şoför uyuşmazlık göremez; liste sorgusu hiç çalışmaz")
-    void shouldHideFromDriver() {
-        when(queries.findDiscrepancy(TestDiscrepancies.ID))
-                .thenReturn(Optional.of(TestDiscrepancies.open(TestTokens.SITE_ID)));
-        Actor driver = TestTokens.actor(TestTokens.driverToken());
-
-        assertThatThrownBy(() -> get.getDiscrepancy(new GetDiscrepancyQuery(driver, TestDiscrepancies.ID)))
-                .isInstanceOf(OutOfScopeAccessException.class);
-        assertThat(list.listDiscrepancies(new ListDiscrepanciesQuery(driver, NO_FILTER, 0, PAGE_SIZE))
-                        .items())
-                .isEmpty();
-        verify(queries, never()).findDiscrepancies(any(), any(), anyInt(), anyInt());
     }
 
     @Test

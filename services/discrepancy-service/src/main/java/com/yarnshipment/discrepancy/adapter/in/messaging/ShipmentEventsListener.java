@@ -2,15 +2,11 @@ package com.yarnshipment.discrepancy.adapter.in.messaging;
 
 import com.yarnshipment.common.outbox.CloudEventHeaders;
 import com.yarnshipment.common.outbox.IncomingEvent;
-import com.yarnshipment.discrepancy.application.port.in.CompareDeliveryCommand;
-import com.yarnshipment.discrepancy.application.port.in.CompareDeliveryUseCase;
 import com.yarnshipment.discrepancy.application.port.in.RegisterShipmentCommand;
 import com.yarnshipment.discrepancy.application.port.in.RegisterShipmentUseCase;
 import com.yarnshipment.discrepancy.application.port.in.TrackShipmentCommand;
 import com.yarnshipment.discrepancy.application.port.in.TrackShipmentCommand.Milestone;
 import com.yarnshipment.discrepancy.application.port.in.TrackShipmentUseCase;
-import com.yarnshipment.events.shipment.DeliveryReceived;
-import com.yarnshipment.events.shipment.ShipmentArrived;
 import com.yarnshipment.events.shipment.ShipmentCancelled;
 import com.yarnshipment.events.shipment.ShipmentCompleted;
 import com.yarnshipment.events.shipment.ShipmentCreated;
@@ -25,9 +21,8 @@ import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * {@code shipment.events.v1} dinleyicisi. Teslim girişini karşılaştırmaya çevirir; oluşturma, yola çıkış, varış,
- * tamamlanma ve iptal olaylarıyla sevkiyatı zaman ve fotoğraf kuralları için izler. Diğer olaylar kullanılmaz ve
- * onaylanır.
+ * {@code shipment.events.v1} dinleyicisi. Oluşturma, çıkış, tamamlanma ve iptal olaylarıyla sevkiyatı zaman ve
+ * fotoğraf kuralları için izler. Diğer olaylar kullanılmaz ve onaylanır.
  */
 @Component
 final class ShipmentEventsListener {
@@ -37,15 +32,10 @@ final class ShipmentEventsListener {
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build();
 
-    private final CompareDeliveryUseCase compareDeliveryUseCase;
     private final RegisterShipmentUseCase registerShipmentUseCase;
     private final TrackShipmentUseCase trackShipmentUseCase;
 
-    ShipmentEventsListener(
-            CompareDeliveryUseCase compareDeliveryUseCase,
-            RegisterShipmentUseCase registerShipmentUseCase,
-            TrackShipmentUseCase trackShipmentUseCase) {
-        this.compareDeliveryUseCase = compareDeliveryUseCase;
+    ShipmentEventsListener(RegisterShipmentUseCase registerShipmentUseCase, TrackShipmentUseCase trackShipmentUseCase) {
         this.registerShipmentUseCase = registerShipmentUseCase;
         this.trackShipmentUseCase = trackShipmentUseCase;
     }
@@ -54,15 +44,10 @@ final class ShipmentEventsListener {
     void onShipmentEvent(ConsumerRecord<String, String> record) {
         IncomingEvent event = CloudEventHeaders.read(record);
         switch (event.type()) {
-            case DeliveryReceived.TYPE -> onDeliveryReceived(event);
             case ShipmentCreated.TYPE -> onCreated(event);
             case ShipmentDispatched.TYPE -> {
                 ShipmentDispatched dispatched = EVENT_READER.readValue(event.data(), ShipmentDispatched.class);
                 track(dispatched.shipmentId(), Milestone.DISPATCHED, dispatched.dispatchedAt());
-            }
-            case ShipmentArrived.TYPE -> {
-                ShipmentArrived arrived = EVENT_READER.readValue(event.data(), ShipmentArrived.class);
-                track(arrived.shipmentId(), Milestone.ARRIVED, arrived.arrivedAt());
             }
             case ShipmentCompleted.TYPE -> {
                 ShipmentCompleted completed = EVENT_READER.readValue(event.data(), ShipmentCompleted.class);
@@ -78,16 +63,6 @@ final class ShipmentEventsListener {
         }
     }
 
-    private void onDeliveryReceived(IncomingEvent event) {
-        DeliveryReceived delivery = EVENT_READER.readValue(event.data(), DeliveryReceived.class);
-        compareDeliveryUseCase.compareDelivery(new CompareDeliveryCommand(
-                event.id(),
-                event.type(),
-                actorOf(event),
-                DeliveryReceivedMapper.toInput(delivery),
-                DeliveryReceivedMapper.toEntries(delivery)));
-    }
-
     private void onCreated(IncomingEvent event) {
         ShipmentCreated created = EVENT_READER.readValue(event.data(), ShipmentCreated.class);
         registerShipmentUseCase.registerShipment(new RegisterShipmentCommand(
@@ -100,14 +75,5 @@ final class ShipmentEventsListener {
 
     private void track(UUID shipmentId, Milestone milestone, Instant at) {
         trackShipmentUseCase.trackShipment(new TrackShipmentCommand(shipmentId, milestone, at));
-    }
-
-    /** Teslim girişini fasoncu yapar; olay her zaman onun kimliğini taşır (ShipmentTransitionWriter). */
-    private static UUID actorOf(IncomingEvent event) {
-        String actorId = event.actorId();
-        if (actorId == null) {
-            throw new IllegalArgumentException("DeliveryReceived without actorId eventId=" + event.id());
-        }
-        return UUID.fromString(actorId);
     }
 }

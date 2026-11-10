@@ -28,7 +28,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-    ComparisonAdapter.class,
+    ComparisonSeeder.class,
     DiscrepancyWriter.class,
     QualityClaimAdapter.class,
     QualityClaimWriter.class,
@@ -42,7 +42,7 @@ class QualityClaimAdapterTest {
     private JwtDecoder jwtDecoder;
 
     @Autowired
-    private ComparisonAdapter comparisons;
+    private ComparisonSeeder comparisons;
 
     @Autowired
     private QualityClaimAdapter claims;

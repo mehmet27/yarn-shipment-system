@@ -146,7 +146,7 @@ class QualityClaimControllerTest {
         assertThat(post(INSPECTIONS, "{\"kind\":\"SAMPLE\"}", manager)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(CLAIMS, OPEN_BODY, warehouse)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(CLAIMS, OPEN_BODY, manager)).hasStatus(HttpStatus.FORBIDDEN);
-        assertThat(post(CLAIMS, OPEN_BODY, TestTokens.driverToken())).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(CLAIMS, OPEN_BODY, TestTokens.unknownRoleToken())).hasStatus(HttpStatus.FORBIDDEN);
     }
 
     private static ClaimFile file() {

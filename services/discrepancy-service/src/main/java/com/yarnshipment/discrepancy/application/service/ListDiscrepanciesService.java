@@ -29,7 +29,7 @@ public class ListDiscrepanciesService implements ListDiscrepanciesUseCase {
     public DiscrepancyPage listDiscrepancies(ListDiscrepanciesQuery query) {
         AccessScope scope = scopeGuard.scopeOf(query.actor());
         boolean noSites = !scope.allSites() && scope.siteIds().isEmpty();
-        if (scope.driverId() != null || noSites) {
+        if (noSites) {
             return DiscrepancyPage.empty(query.page(), query.size());
         }
         return queryPort.findDiscrepancies(query.filter(), scope, query.page(), query.size());

@@ -1,13 +1,10 @@
 package com.yarnshipment.discrepancy.adapter.out.persistence;
 
 import com.yarnshipment.discrepancy.TestComparisons;
-import com.yarnshipment.discrepancy.application.port.out.CompletedComparison;
 import com.yarnshipment.discrepancy.application.port.out.NewQualityClaim;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRequest;
 import com.yarnshipment.discrepancy.domain.claim.ClaimTarget;
 import com.yarnshipment.discrepancy.domain.claim.QualityClaim;
-import com.yarnshipment.discrepancy.domain.model.Comparison;
-import com.yarnshipment.discrepancy.domain.model.ToleranceBands;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -22,13 +19,8 @@ final class SeededClaims {
 
     private SeededClaims() {}
 
-    static void deliver(ComparisonAdapter comparisons) {
-        comparisons.saveComparison(new CompletedComparison(
-                TestComparisons.clean(),
-                Comparison.compare(TestComparisons.clean(), ToleranceBands.REPORT_DEFAULT),
-                TestComparisons.RECEIVED_AT,
-                DUE,
-                ACTOR));
+    static void deliver(ComparisonSeeder comparisons) {
+        comparisons.seed(TestComparisons.DISPATCH_KG, List.of(), TestComparisons.RECEIVED_AT, DUE);
     }
 
     static QualityClaim open(QualityClaimAdapter claims) {

@@ -2,7 +2,6 @@ package com.yarnshipment.discrepancy.domain.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.yarnshipment.discrepancy.TestComparisons;
 import com.yarnshipment.discrepancy.TestTickets;
 import com.yarnshipment.discrepancy.domain.ticket.ShipmentTickets;
 import com.yarnshipment.discrepancy.domain.ticket.TicketReuse;
@@ -139,22 +138,6 @@ class TicketChecksTest {
         assertThat(findings.getFirst().severity()).isEqualTo(Severity.RED);
         assertThat(findings.getFirst().expectedValue()).isEqualTo(other.toString());
         assertThat(findings.getFirst().actualValue()).isEqualTo(TestTickets.TICKET_NO);
-    }
-
-    @Test
-    @DisplayName("Fiş bulguları elle karşılaştırmanın sonucuna eklenir; miktar bandı değişmez")
-    void shouldAppendToComparisonResult() {
-        ComparisonResult base = Comparison.compare(TestComparisons.clean(), BANDS);
-        List<Finding> extra = TicketChecks.compare(
-                TestTickets.entries(),
-                TestTickets.both(TestTickets.weights(), TestTickets.weights("2050.000", "100.000")),
-                BANDS);
-
-        ComparisonResult result = base.plus(extra);
-
-        assertThat(result.clean()).isFalse();
-        assertThat(result.quantityBand()).isEqualTo(Band.GREEN);
-        assertThat(result.findings()).hasSize(extra.size());
     }
 
     private static Finding only(List<Finding> findings) {

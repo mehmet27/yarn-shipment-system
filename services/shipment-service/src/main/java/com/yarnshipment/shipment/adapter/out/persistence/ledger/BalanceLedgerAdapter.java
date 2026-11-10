@@ -111,7 +111,7 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
                         params)
                 .param("limit", query.size())
                 .param("offset", (long) query.page() * query.size())
-                .query(BalanceLedgerAdapter::toMovement)
+                .query((rs, rowNumber) -> toMovement(rs))
                 .list();
         return new MovementPage(items, query.page(), query.size(), total);
     }
@@ -182,7 +182,7 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
         return bound;
     }
 
-    private static BalanceMovement toMovement(ResultSet rs, int row) throws SQLException {
+    private static BalanceMovement toMovement(ResultSet rs) throws SQLException {
         return new BalanceMovement(
                 rs.getObject("id", UUID.class),
                 rs.getObject("subcontractor_id", UUID.class),

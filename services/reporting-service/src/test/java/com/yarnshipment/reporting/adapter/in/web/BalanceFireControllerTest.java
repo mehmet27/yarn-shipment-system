@@ -116,9 +116,9 @@ class BalanceFireControllerTest {
     @DisplayName("Açılış bakiyesi içe aktarılan ve atlanan satırları döner")
     void shouldImportOpeningBalance() {
         when(importOpening.importOpening(any(), any())).thenReturn(new OpeningImportResult(1, 0));
-        String row = "{\"subcontractorId\":\"%s\",\"subcontractorName\":\"A\","
+        String row = "{\"subcontractorId\":\"" + UUID.randomUUID() + "\",\"subcontractorName\":\"A\","
                 + "\"yarnType\":\"Viskon\",\"netKg\":\"10.500\"}";
-        String body = "{\"asOf\":\"2026-11-09\",\"rows\":[" + row.formatted(UUID.randomUUID()) + "]}";
+        String body = "{\"asOf\":\"2026-11-09\",\"rows\":[" + row + "]}";
 
         MvcTestResult result = mvc.post()
                 .uri(BASE + "/balance/opening-import")

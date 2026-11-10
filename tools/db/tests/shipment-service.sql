@@ -26,8 +26,6 @@ VALUES ('00000000-0000-7000-8000-000000000101', gen_random_uuid(), 'S-1', gen_ra
 -- İzinsiz durum geçişi reddedilir.
 SELECT pg_temp.expect_error($$UPDATE shipment SET status = 'COMPLETED'
     WHERE id = '00000000-0000-7000-8000-000000000101'$$, 'YS003');
-UPDATE shipment SET status = 'LOADED' WHERE id = '00000000-0000-7000-8000-000000000101';
-
 INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, weighed_at, entered_by, created_at,
                       created_by)
 VALUES ('00000000-0000-7000-8000-000000000201', '00000000-0000-7000-8000-000000000101', 'DISPATCH', 2010.500, 28.000,
@@ -40,7 +38,12 @@ END $$;
 -- Dara bruttan büyük olamaz.
 SELECT pg_temp.expect_error($$INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count,
     weighed_at, entered_by, created_at, created_by) VALUES (gen_random_uuid(),
-    '00000000-0000-7000-8000-000000000101', 'DELIVERY', 10, 20, 1, now(), gen_random_uuid(), now(),
+    '00000000-0000-7000-8000-000000000101', 'DISPATCH', 10, 20, 1, now(), gen_random_uuid(), now(),
+    gen_random_uuid())$$, '23514');
+-- Teslim tarafı tartımı artık yoktur.
+SELECT pg_temp.expect_error($$INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count,
+    weighed_at, entered_by, created_at, created_by) VALUES (gen_random_uuid(),
+    '00000000-0000-7000-8000-000000000101', 'DELIVERY', 20, 10, 1, now(), gen_random_uuid(), now(),
     gen_random_uuid())$$, '23514');
 -- Tartım güncellenmez; aynı taraf için ikinci geçerli tartım eklenemez.
 SELECT pg_temp.expect_error($$UPDATE weighing SET gross_kg = 2100
@@ -49,42 +52,29 @@ SELECT pg_temp.expect_error($$INSERT INTO weighing (id, shipment_id, side, gross
     weighed_at, entered_by, created_at, created_by) VALUES (gen_random_uuid(),
     '00000000-0000-7000-8000-000000000101', 'DISPATCH', 2000, 28, 40, now(), gen_random_uuid(), now(),
     gen_random_uuid())$$, '23P01');
--- Mühür numarası tek kullanımlıktır.
-INSERT INTO seal (id, shipment_id, side, seal_no, seal_condition, recorded_by, recorded_at, created_at, created_by)
-VALUES (gen_random_uuid(), '00000000-0000-7000-8000-000000000101', 'DISPATCH', 'M-1', 'INTACT', gen_random_uuid(),
-        now(), now(), gen_random_uuid());
-INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status, created_at, created_by)
-VALUES ('00000000-0000-7000-8000-000000000102', gen_random_uuid(), 'S-2', gen_random_uuid(), 'Fasoncu B', 'DRAFT',
-        now(), gen_random_uuid());
-SELECT pg_temp.expect_error($$INSERT INTO seal (id, shipment_id, side, seal_no, seal_condition, recorded_by,
-    recorded_at, created_at, created_by) VALUES (gen_random_uuid(), '00000000-0000-7000-8000-000000000102',
-    'DISPATCH', 'M-1', 'INTACT', gen_random_uuid(), now(), now(), gen_random_uuid())$$, '23P01');
 
--- Kör teslim girişi gönderildikten sonra okutma eklenemez.
-INSERT INTO delivery_receipt (id, shipment_id, received_by, received_at, submitted_at, created_at, created_by)
-VALUES ('00000000-0000-7000-8000-000000000301', '00000000-0000-7000-8000-000000000101', gen_random_uuid(), now(),
-        now(), now(), gen_random_uuid());
-SELECT pg_temp.expect_error($$INSERT INTO delivery_scan (id, delivery_receipt_id, scanned_key, matched,
-    scan_method, scanned_at, created_at, created_by) VALUES (gen_random_uuid(),
-    '00000000-0000-7000-8000-000000000301', 'K-1', true, 'SCAN', now(), now(), gen_random_uuid())$$, 'YS003');
-SELECT pg_temp.expect_error($$UPDATE delivery_receipt SET doc_net_kg = 1
-    WHERE id = '00000000-0000-7000-8000-000000000301'$$, 'YS003');
-
--- Sevkiyatı kilitle: kilitli sevkiyata bağlı satır eklenemez.
-UPDATE shipment SET status = 'IN_TRANSIT' WHERE id = '00000000-0000-7000-8000-000000000101';
+-- Kaldırılan ara durumlar yazılamaz; taslak yalnızca fasoncuya yolda olur.
+SELECT pg_temp.expect_error($$UPDATE shipment SET status = 'LOADED'
+    WHERE id = '00000000-0000-7000-8000-000000000101'$$, 'YS003');
 UPDATE shipment SET status = 'AWAITING_DELIVERY' WHERE id = '00000000-0000-7000-8000-000000000101';
-UPDATE shipment SET status = 'CHECKING' WHERE id = '00000000-0000-7000-8000-000000000101';
-UPDATE shipment SET status = 'COMPLETED', locked_at = now() WHERE id = '00000000-0000-7000-8000-000000000101';
+SELECT pg_temp.expect_error($$UPDATE shipment SET status = 'DRAFT'
+    WHERE id = '00000000-0000-7000-8000-000000000101'$$, 'YS003');
+
+-- Sevkiyat irsaliyeyle tamamlanır ve kilitlenir: kilitli sevkiyat değişmez.
+UPDATE shipment SET status = 'COMPLETED', e_waybill_no = 'IRS-1', waybill_evidence_id = gen_random_uuid(),
+                    locked_at = now()
+WHERE id = '00000000-0000-7000-8000-000000000101';
 SELECT pg_temp.expect_error($$UPDATE shipment SET e_waybill_no = 'X'
     WHERE id = '00000000-0000-7000-8000-000000000101'$$, 'YS003');
-SELECT pg_temp.expect_error($$INSERT INTO seal (id, shipment_id, side, seal_no, seal_condition, recorded_by,
-    recorded_at, created_at, created_by) VALUES (gen_random_uuid(), '00000000-0000-7000-8000-000000000101',
-    'DELIVERY', 'M-1', 'INTACT', gen_random_uuid(), now(), now(), gen_random_uuid())$$, 'YS003');
-
+SELECT pg_temp.expect_error($$INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count,
+    weighed_at, entered_by, created_at, created_by) VALUES (gen_random_uuid(),
+    '00000000-0000-7000-8000-000000000101', 'DISPATCH', 101, 10, 2, now(), gen_random_uuid(), now(),
+    gen_random_uuid())$$, 'YS003');
 
 -- Durum geçmişi yalnızca eklenir.
 INSERT INTO shipment_status_history (id, created_at, shipment_id, from_status, to_status, changed_by, changed_at)
-VALUES (gen_random_uuid(), now(), '00000000-0000-7000-8000-000000000101', 'DRAFT', 'LOADED', gen_random_uuid(), now());
+VALUES (gen_random_uuid(), now(), '00000000-0000-7000-8000-000000000101', 'DRAFT', 'AWAITING_DELIVERY',
+        gen_random_uuid(), now());
 
 -- Outbox: yalnızca published_at doldurulabilir; olay tipi CloudEvents biçimindedir.
 INSERT INTO outbox_event (id, created_at, aggregate_type, aggregate_id, event_type, payload, occurred_at)
@@ -116,7 +106,7 @@ END;
 $$;
 GRANT EXECUTE ON FUNCTION pg_temp.expect_error(text, text) TO PUBLIC;
 INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status, created_at, created_by)
-VALUES ('00000000-0000-7000-8000-000000000103', gen_random_uuid(), 'S-3', gen_random_uuid(), 'Fasoncu C', 'CHECKING',
+VALUES ('00000000-0000-7000-8000-000000000103', gen_random_uuid(), 'S-3', gen_random_uuid(), 'Fasoncu C', 'AWAITING_DELIVERY',
         now(), gen_random_uuid());
 INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, weighed_at, entered_by, created_at,
                       created_by)

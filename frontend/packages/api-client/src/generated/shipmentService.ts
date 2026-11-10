@@ -94,6 +94,7 @@ export const ShipmentStatus = {
   AWAITING_DELIVERY: 'AWAITING_DELIVERY',
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED',
+  WEIGHT_MISMATCH: 'WEIGHT_MISMATCH',
 } as const;
 
 /**
@@ -107,6 +108,7 @@ export const ShipmentAction = {
   RECORD_DISPATCH: 'RECORD_DISPATCH',
   CANCEL: 'CANCEL',
   COMPLETE: 'COMPLETE',
+  DECIDE_WEIGHT_MISMATCH: 'DECIDE_WEIGHT_MISMATCH',
   OPEN_QUALITY_CLAIM: 'OPEN_QUALITY_CLAIM',
   CREATE_CORRECTION: 'CREATE_CORRECTION',
 } as const;
@@ -292,6 +294,59 @@ export interface CreateShipmentRequest {
      * @maxLength 20
      */
   plateNo?: string;
+  /** Reçete satırları; en az bir satır */
+  lines: RecipeLine[];
+  /** Fire oranı, kesir olarak (0.04 = %4); 0 ile 0.20 arası */
+  fireRate: number;
+}
+
+/** Reçete satırı: iplik cinsi kimliği ya da serbest metin, isteğe bağlı lot, net kg. */
+export interface RecipeLine {
+  yarnTypeId?: string;
+  /** @maxLength 200 */
+  yarnTypeText?: string;
+  lotId?: string;
+  netKg: Kg;
+}
+
+export interface RecipeLineView {
+  yarnTypeId?: string;
+  yarnTypeText?: string;
+  yarnTypeName?: string;
+  lotId?: string;
+  lotNo?: string;
+  netKg: Kg;
+}
+
+/** Kantar uyuşmazlığı ölçümü: beklenen, tartılan ve fark. */
+export interface WeightCheckView {
+  expectedKg: Kg;
+  measuredKg: Kg;
+  /** İşaretli fark: tartılan eksi beklenen */
+  diffKg: string;
+  shortfallReason?: string;
+}
+
+export type WeightDecision = typeof WeightDecision[keyof typeof WeightDecision];
+
+export const WeightDecision = {
+  CANCEL: 'CANCEL',
+  ADD_REMOVE_BAGS: 'ADD_REMOVE_BAGS',
+  UPDATE_RECIPE: 'UPDATE_RECIPE',
+} as const;
+
+export interface WeightDecisionRequest {
+  decision: WeightDecision;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  reason: string;
+}
+
+export interface FireRateSettingView {
+  /** Varsayılan fire oranı, kesir olarak (0.04 = %4) */
+  fireRate: number;
 }
 
 export interface CreateShipmentResponse {
@@ -754,6 +809,11 @@ export interface DispatchWeighingRequest {
      * @maxLength 64
      */
   scaleTicketNo?: string;
+  /**
+     * Eksik gönderim nedeni
+     * @maxLength 500
+     */
+  shortfallReason?: string;
 }
 
 export type InternalShipmentViewAudience = typeof InternalShipmentViewAudience[keyof typeof InternalShipmentViewAudience];
@@ -778,6 +838,9 @@ export interface InternalShipmentView {
   plateNo?: string;
   plannedBagCount?: number;
   plannedNetKg?: Kg;
+  lines?: RecipeLineView[];
+  fireRate?: number;
+  weightCheck?: WeightCheckView;
   dispatchWeighing?: WeighingView;
   /** Tamamlanırken girilen irsaliye numarası */
   waybillNo?: string;
@@ -807,6 +870,9 @@ export interface WarehouseShipmentView {
   plateNo?: string;
   plannedBagCount?: number;
   plannedNetKg?: Kg;
+  lines?: RecipeLineView[];
+  fireRate?: number;
+  weightCheck?: WeightCheckView;
   dispatchWeighing?: WeighingView;
   /** Tamamlanırken girilen irsaliye numarası */
   waybillNo?: string;
@@ -2093,3 +2159,29 @@ export type ListCorrectionsResult = NonNullable<Awaited<ReturnType<typeof listCo
 export type AssignShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof assignShipmentBags>>>
 export type GetShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof getShipmentBags>>>
 export type RemoveShipmentBagResult = NonNullable<Awaited<ReturnType<typeof removeShipmentBag>>>
+
+/**
+ * Müdür ya da yönetici. Kantar uyuşmazlığındaki (WEIGHT_MISMATCH) sevkiyat için karar verir; gerekçe zorunludur.
+ * @summary Kantar uyuşmazlığı kararı
+ */
+export const decideWeightMismatch = (
+    shipmentId: string,
+    weightDecisionRequest: WeightDecisionRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/weight-decision`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: weightDecisionRequest
+    },
+      );
+    }
+
+/**
+ * @summary Varsayılan fire oranı ayarı
+ */
+export const getFireRateSetting = () => {
+      return customInstance<FireRateSettingView>(
+      {url: `/api/v1/settings/fire-rate`, method: 'GET'
+    },
+      );
+    }

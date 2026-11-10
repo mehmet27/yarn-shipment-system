@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { Kilogram } from './kilogram';
-import { calculateNetKg, formatKg, isKilogram, parseKg } from './kilogram';
+import {
+  calculateNetKg,
+  formatKg,
+  formatKgText,
+  formatSignedKg,
+  isKilogram,
+  parseKg,
+  sumKg,
+} from './kilogram';
 
 const kg = (value: string) => value as Kilogram;
 
@@ -43,5 +51,19 @@ describe('isKilogram', () => {
   it('yalnızca API biçimini kabul eder', () => {
     expect(isKilogram('1982.500')).toBe(true);
     expect(isKilogram('1982,5')).toBe(false);
+  });
+});
+
+describe('sumKg ve formatSignedKg', () => {
+  it('kiloları toplar, boş listede 0 verir', () => {
+    expect(sumKg([kg('19488.000'), kg('13492.000'), kg('2036.000')])).toBe('35016.000');
+    expect(sumKg([])).toBe('0.000');
+    expect(formatKgText('1982.500')).toBe('1.982,5 kg');
+    expect(formatKgText('x')).toBe('x');
+  });
+
+  it('işaretli farkı Türkçe biçimler', () => {
+    expect(formatSignedKg('-12.500')).toBe('-12,5 kg');
+    expect(formatSignedKg('7.000')).toBe('+7 kg');
   });
 });

@@ -54,7 +54,19 @@ export type {
   AssignShipmentBagsResponse,
 } from './generated/shipmentService';
 
-export { cancelShipment } from './generated/shipmentService';
+export {
+  cancelShipment,
+  decideWeightMismatch,
+  getFireRateSetting,
+} from './generated/shipmentService';
+export type {
+  FireRateSettingView,
+  RecipeLine,
+  RecipeLineView,
+  WeightCheckView,
+  WeightDecision,
+  WeightDecisionRequest,
+} from './generated/shipmentService';
 export { CorrectionTarget, listCorrections, recordCorrection } from './generated/shipmentService';
 export type {
   CorrectionListResponse,

@@ -66,7 +66,9 @@ class WeightCheckTest {
                 null,
                 NOW);
 
-        assertThat(unplanned.recordDispatch(measurement("500.000", "18.000"), NOW, null, BigDecimal.ZERO).mismatch())
+        assertThat(unplanned
+                        .recordDispatch(measurement("500.000", "18.000"), NOW, null, BigDecimal.ZERO)
+                        .mismatch())
                 .isNull();
     }
 

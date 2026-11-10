@@ -24,11 +24,13 @@ class RecipeTest {
     @Test
     @DisplayName("Satırlar tartıya orantılı ölçeklenir ve toplam tam olarak tartıya eşit olur")
     void shouldScaleLinesAndKeepExactTotal() {
-        List<RecipeLine> scaled =
-                Recipe.scaleTo(List.of(line(1, "100.000"), line(2, "100.000"), line(3, "100.000")), new BigDecimal("200.000"));
+        List<RecipeLine> scaled = Recipe.scaleTo(
+                List.of(line(1, "100.000"), line(2, "100.000"), line(3, "100.000")), new BigDecimal("200.000"));
 
         assertThat(Recipe.totalKg(scaled)).isEqualByComparingTo("200.000");
-        assertThat(scaled).extracting(RecipeLine::netKg).allSatisfy(kg -> assertThat(kg).isPositive());
+        assertThat(scaled)
+                .extracting(RecipeLine::netKg)
+                .allSatisfy(kg -> assertThat(kg).isPositive());
         assertThat(scaled.get(0).netKg()).isEqualByComparingTo("66.667");
         assertThat(scaled.get(2).netKg()).isEqualByComparingTo("66.666");
     }

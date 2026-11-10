@@ -31,7 +31,10 @@ class ShipmentStatusTest {
         "DRAFT, COMPLETED",
         "WEIGHT_MISMATCH, COMPLETED",
         "AWAITING_DELIVERY, WEIGHT_MISMATCH",
-        "AWAITING_DELIVERY, DRAFT", "COMPLETED, CANCELLED", "CANCELLED, DRAFT"})
+        "AWAITING_DELIVERY, DRAFT",
+        "COMPLETED, CANCELLED",
+        "CANCELLED, DRAFT"
+    })
     @DisplayName("Tanımsız geçiş reddedilir")
     void shouldRejectUndocumentedTransitions(ShipmentStatus from, ShipmentStatus to) {
         // when / then

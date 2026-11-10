@@ -19,7 +19,8 @@ public record ShipmentSettings(BigDecimal defaultFireRate, BigDecimal weightTole
         Objects.requireNonNull(defaultFireRate, "defaultFireRate");
         Objects.requireNonNull(weightToleranceKg, "weightToleranceKg");
         requireFireRate(defaultFireRate, "defaultFireRate");
-        if (weightToleranceKg.signum() < 0 || weightToleranceKg.stripTrailingZeros().scale() > 3) {
+        if (weightToleranceKg.signum() < 0
+                || weightToleranceKg.stripTrailingZeros().scale() > 3) {
             throw new InvalidNewShipmentException("weightToleranceKg", "must be >= 0 with at most 3 decimals");
         }
         defaultFireRate = defaultFireRate.setScale(4);

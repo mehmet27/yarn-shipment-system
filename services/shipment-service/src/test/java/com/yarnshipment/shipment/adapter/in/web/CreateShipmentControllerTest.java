@@ -93,8 +93,8 @@ class CreateShipmentControllerTest {
     void shouldRejectMissingLines() {
         MvcTestResult result = post(
                 TestTokens.token("manager").build(),
-                "{\"siteId\": \"" + TestTokens.SITE_ID + "\", \"subcontractorId\": \""
-                        + TestTokens.SUBCONTRACTOR_ID + "\", \"subcontractorTitle\": \"X\", \"lines\": []}");
+                "{\"siteId\": \"" + TestTokens.SITE_ID + "\", \"subcontractorId\": \"" + TestTokens.SUBCONTRACTOR_ID
+                        + "\", \"subcontractorTitle\": \"X\", \"lines\": []}");
 
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(createShipmentUseCase);

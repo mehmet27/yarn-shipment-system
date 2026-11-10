@@ -117,20 +117,10 @@ public record Shipment(
         BigDecimal expected = planned.netKg();
         if (toleranceKg != null && expected != null) {
             WeightCheck candidate = new WeightCheck(
-                    measurement.tareKg(),
-                    measurement.grossKg(),
-                    expected,
-                    toleranceKg,
-                    measurement.shortfallReason());
+                    measurement.tareKg(), measurement.grossKg(), expected, toleranceKg, measurement.shortfallReason());
             check = candidate.exceedsTolerance() ? candidate : null;
         }
         return new DispatchRecording(
-                id,
-                siteId,
-                parties.subcontractorId(),
-                weighing,
-                measurement.scaleTicketNo(),
-                recordedAt,
-                check);
+                id, siteId, parties.subcontractorId(), weighing, measurement.scaleTicketNo(), recordedAt, check);
     }
 }

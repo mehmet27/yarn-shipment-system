@@ -242,7 +242,9 @@ const MAX_FIRE_RATE = 0.2;
 const FIRE_RATE_PATTERN = /^0\.\d{1,4}$|^[01]$/;
 
 function readFireRate(value: unknown): string | undefined {
-  return typeof value === 'string' && FIRE_RATE_PATTERN.test(value) && Number(value) <= MAX_FIRE_RATE
+  return typeof value === 'string' &&
+    FIRE_RATE_PATTERN.test(value) &&
+    Number(value) <= MAX_FIRE_RATE
     ? value
     : undefined;
 }

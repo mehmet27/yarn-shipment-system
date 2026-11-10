@@ -13,12 +13,12 @@ import com.yarnshipment.shipment.application.port.in.CreatedShipment;
 import com.yarnshipment.shipment.application.port.out.ShipmentCreationPort;
 import com.yarnshipment.shipment.domain.model.InvalidNewShipmentException;
 import com.yarnshipment.shipment.domain.model.NewShipment;
+import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.ShipmentParties;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import com.yarnshipment.shipment.domain.model.RecipeLine;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -85,8 +85,9 @@ class CreateShipmentServiceTest {
     void shouldUseGivenFireRateAndRejectInvalidInput() {
         service.createShipment(command(TestTokens.SITE_ID, new BigDecimal("0.0750")));
 
-        assertThat(created).singleElement().satisfies(shipment -> assertThat(shipment.fireRate())
-                .isEqualByComparingTo("0.0750"));
+        assertThat(created)
+                .singleElement()
+                .satisfies(shipment -> assertThat(shipment.fireRate()).isEqualByComparingTo("0.0750"));
         assertThatThrownBy(() -> service.createShipment(command(TestTokens.SITE_ID, new BigDecimal("0.2100"))))
                 .isInstanceOf(InvalidNewShipmentException.class);
         ShipmentParties parties = new ShipmentParties(TestShipments.SUBCONTRACTOR_ID, "Örnek", null, null, null);

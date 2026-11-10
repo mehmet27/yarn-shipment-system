@@ -57,7 +57,12 @@ final class WeightDecisionAdapter implements WeightDecisionPort {
     public void backToDraft(UUID shipmentId, String reason, UUID actorUserId, Instant at) {
         transitions.actAs(actorUserId);
         transitions.changeStatus(new Transition(
-                shipmentId, ShipmentStatus.WEIGHT_MISMATCH, ShipmentStatus.DRAFT, actorUserId, Timestamp.from(at), reason));
+                shipmentId,
+                ShipmentStatus.WEIGHT_MISMATCH,
+                ShipmentStatus.DRAFT,
+                actorUserId,
+                Timestamp.from(at),
+                reason));
     }
 
     @Override
@@ -87,7 +92,12 @@ final class WeightDecisionAdapter implements WeightDecisionPort {
                 .param("shipmentId", shipmentId)
                 .update();
         Transition transition = new Transition(
-                shipmentId, ShipmentStatus.WEIGHT_MISMATCH, ShipmentStatus.AWAITING_DELIVERY, actorUserId, when, reason);
+                shipmentId,
+                ShipmentStatus.WEIGHT_MISMATCH,
+                ShipmentStatus.AWAITING_DELIVERY,
+                actorUserId,
+                when,
+                reason);
         transitions.changeStatus(transition);
         transitions.publish(transition, ShipmentDispatched.TYPE, event);
     }

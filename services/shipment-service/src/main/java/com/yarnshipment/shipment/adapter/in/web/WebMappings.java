@@ -1,8 +1,8 @@
 package com.yarnshipment.shipment.adapter.in.web;
 
+import com.yarnshipment.shipment.adapter.in.web.api.model.RecipeLineView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentAction;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentStatus;
-import com.yarnshipment.shipment.adapter.in.web.api.model.RecipeLineView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.WeighingView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.WeightCheckView;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
@@ -52,7 +52,9 @@ final class WebMappings {
         return new WeightCheckView()
                 .expectedKg(kg(check.expectedKg()))
                 .measuredKg(kg(check.measuredKg()))
-                .diffKg(check.diffKg().setScale(KG_SCALE, RoundingMode.UNNECESSARY).toPlainString())
+                .diffKg(check.diffKg()
+                        .setScale(KG_SCALE, RoundingMode.UNNECESSARY)
+                        .toPlainString())
                 .shortfallReason(check.shortfallReason());
     }
 

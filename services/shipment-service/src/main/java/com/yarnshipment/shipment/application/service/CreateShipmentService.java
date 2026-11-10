@@ -43,12 +43,7 @@ public class CreateShipmentService implements CreateShipmentUseCase {
                 ? command.fireRate()
                 : settingsPort.find().defaultFireRate();
         NewShipment shipment = new NewShipment(
-                command.siteId(),
-                command.parties(),
-                command.vehicleId(),
-                command.lines(),
-                fireRate,
-                clock.instant());
+                command.siteId(), command.parties(), command.vehicleId(), command.lines(), fireRate, clock.instant());
         ScopedResource target = new ScopedResource(
                 RESOURCE_TYPE,
                 UUID.randomUUID(),

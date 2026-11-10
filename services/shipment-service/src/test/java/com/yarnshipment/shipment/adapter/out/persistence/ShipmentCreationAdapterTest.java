@@ -59,7 +59,8 @@ class ShipmentCreationAdapterTest {
     void shouldCreateDraftWithHistoryAndOutbox() {
         ShipmentParties parties = new ShipmentParties(SUBCONTRACTOR, "Örnek Tekstil", null, null, null);
 
-        CreatedShipment created = adapter.create(new NewShipment(SITE, parties, null, LINES, new BigDecimal("0.0400"), NOW), USER);
+        CreatedShipment created =
+                adapter.create(new NewShipment(SITE, parties, null, LINES, new BigDecimal("0.0400"), NOW), USER);
 
         assertThat(created.shipmentNo()).startsWith("SV-20261021-");
         assertThat(jdbc.queryForObject("SELECT status FROM shipment WHERE id = ?", String.class, created.id()))
@@ -82,13 +83,16 @@ class ShipmentCreationAdapterTest {
     void shouldStoreRecipeLinesAndFireRate() {
         ShipmentParties parties = new ShipmentParties(SUBCONTRACTOR, "Örnek Tekstil", null, null, null);
 
-        CreatedShipment created = adapter.create(new NewShipment(SITE, parties, null, LINES, new BigDecimal("0.0600"), NOW), USER);
+        CreatedShipment created =
+                adapter.create(new NewShipment(SITE, parties, null, LINES, new BigDecimal("0.0600"), NOW), USER);
 
-        assertThat(jdbc.queryForObject("SELECT planned_net_kg FROM shipment WHERE id = ?", BigDecimal.class, created.id()))
+        assertThat(jdbc.queryForObject(
+                        "SELECT planned_net_kg FROM shipment WHERE id = ?", BigDecimal.class, created.id()))
                 .isEqualByComparingTo("32980.000");
         assertThat(jdbc.queryForObject("SELECT fire_rate FROM shipment WHERE id = ?", BigDecimal.class, created.id()))
                 .isEqualByComparingTo("0.0600");
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM shipment_line WHERE shipment_id = ?", Long.class, created.id()))
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM shipment_line WHERE shipment_id = ?", Long.class, created.id()))
                 .isEqualTo(2L);
     }
 
@@ -99,7 +103,8 @@ class ShipmentCreationAdapterTest {
         UUID vehicle = UUID.randomUUID();
         ShipmentParties parties = new ShipmentParties(SUBCONTRACTOR, "Örnek Tekstil", driver, "Ali Yılmaz", "34ABC123");
 
-        CreatedShipment created = adapter.create(new NewShipment(SITE, parties, vehicle, LINES, new BigDecimal("0.0400"), NOW), USER);
+        CreatedShipment created =
+                adapter.create(new NewShipment(SITE, parties, vehicle, LINES, new BigDecimal("0.0400"), NOW), USER);
 
         assertThat(jdbc.queryForObject("SELECT plate_no FROM shipment WHERE id = ?", String.class, created.id()))
                 .isEqualTo("34ABC123");

@@ -62,8 +62,9 @@ public class ResolveWeightMismatchService implements ResolveWeightMismatchUseCas
         UUID actorId = actor.userId();
         decisionPort.recordDecision(shipment.id(), command.decision(), reason, actorId, now);
         switch (command.decision()) {
-            case CANCEL -> cancelShipment.cancelShipment(
-                    new CancelShipmentCommand(actor, shipment.id(), reason, UUID.randomUUID()));
+            case CANCEL ->
+                cancelShipment.cancelShipment(
+                        new CancelShipmentCommand(actor, shipment.id(), reason, UUID.randomUUID()));
             case ADD_REMOVE_BAGS -> decisionPort.backToDraft(shipment.id(), reason, actorId, now);
             case UPDATE_RECIPE -> acceptRecipe(shipment, reason, actorId, now);
         }

@@ -60,7 +60,8 @@ class ResolveWeightMismatchServiceTest {
                 UUID actorUserId,
                 Instant at) {
             acceptedLines.addAll(scaledLines);
-            calls.add("accept:" + measuredKg.setScale(3).toPlainString() + ":" + event.netKg().setScale(3).toPlainString());
+            calls.add("accept:" + measuredKg.setScale(3).toPlainString() + ":"
+                    + event.netKg().setScale(3).toPlainString());
         }
     };
 
@@ -101,7 +102,9 @@ class ResolveWeightMismatchServiceTest {
         service.resolve(command(WeightDecision.CANCEL, "Yanlış yükleme"));
 
         assertThat(calls).containsExactly("decision:CANCEL:Yanlış yükleme");
-        assertThat(cancels).singleElement().satisfies(cancel -> assertThat(cancel.reason()).isEqualTo("Yanlış yükleme"));
+        assertThat(cancels)
+                .singleElement()
+                .satisfies(cancel -> assertThat(cancel.reason()).isEqualTo("Yanlış yükleme"));
     }
 
     @Test
@@ -123,7 +126,10 @@ class ResolveWeightMismatchServiceTest {
         service.resolve(command(WeightDecision.UPDATE_RECIPE, "Fark kabul edildi"));
 
         assertThat(calls).last().isEqualTo("accept:1982.500:1982.500");
-        assertThat(acceptedLines.stream().map(RecipeLine::netKg).reduce(BigDecimal::add).orElseThrow())
+        assertThat(acceptedLines.stream()
+                        .map(RecipeLine::netKg)
+                        .reduce(BigDecimal::add)
+                        .orElseThrow())
                 .isEqualByComparingTo("1982.500");
     }
 

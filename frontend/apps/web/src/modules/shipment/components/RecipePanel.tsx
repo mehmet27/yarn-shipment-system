@@ -46,7 +46,9 @@ export function RecipePanel({ lines, fireRate }: RecipePanelProps) {
       </Table.ScrollContainer>
       {fireRate !== undefined && (
         <Text fw={600}>
-          {t('shipment.file.recipe.fireRate', { rate: formatPct(fireRateToPctInput(fireRate).replace(',', '.')) })}
+          {t('shipment.file.recipe.fireRate', {
+            rate: formatPct(fireRateToPctInput(fireRate).replace(',', '.')),
+          })}
         </Text>
       )}
     </Stack>

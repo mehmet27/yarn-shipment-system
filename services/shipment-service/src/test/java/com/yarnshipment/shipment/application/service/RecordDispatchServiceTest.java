@@ -24,10 +24,10 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -78,18 +78,22 @@ class RecordDispatchServiceTest {
     @DisplayName("Tartılan net beklenenden toleransın ötesinde saparsa kayıt uyuşmazlık olarak işaretlenir")
     void shouldFlagMismatchOutsideTolerance() {
         queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
-        settings.save(new ShipmentSettings(ShipmentSettings.DEFAULTS.defaultFireRate(), new BigDecimal("0.400")), UUID.randomUUID());
+        settings.save(
+                new ShipmentSettings(ShipmentSettings.DEFAULTS.defaultFireRate(), new BigDecimal("0.400")),
+                UUID.randomUUID());
 
         service.recordDispatch(new RecordDispatchCommand(
                 warehouse,
                 TestShipments.SHIPMENT_ID,
                 KEY,
-                new DispatchMeasurement(new BigDecimal("2001.000"), new BigDecimal("18.000"), 40, "KF-1", "Stok yetmedi")));
+                new DispatchMeasurement(
+                        new BigDecimal("2001.000"), new BigDecimal("18.000"), 40, "KF-1", "Stok yetmedi")));
 
         assertThat(commandPort.recordings()).singleElement().satisfies(recording -> {
             assertThat(recording.toStatus()).isEqualTo(ShipmentStatus.WEIGHT_MISMATCH);
             assertThat(Objects.requireNonNull(recording.mismatch()).diffKg()).isEqualByComparingTo("0.500");
-            assertThat(Objects.requireNonNull(recording.mismatch()).shortfallReason()).isEqualTo("Stok yetmedi");
+            assertThat(Objects.requireNonNull(recording.mismatch()).shortfallReason())
+                    .isEqualTo("Stok yetmedi");
         });
     }
 
@@ -97,7 +101,9 @@ class RecordDispatchServiceTest {
     @DisplayName("Fark toleransın içindeyse sevkiyat normal şekilde yola çıkar")
     void shouldAcceptDifferenceWithinTolerance() {
         queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
-        settings.save(new ShipmentSettings(ShipmentSettings.DEFAULTS.defaultFireRate(), new BigDecimal("0.500")), UUID.randomUUID());
+        settings.save(
+                new ShipmentSettings(ShipmentSettings.DEFAULTS.defaultFireRate(), new BigDecimal("0.500")),
+                UUID.randomUUID());
 
         service.recordDispatch(new RecordDispatchCommand(
                 warehouse,

@@ -4,9 +4,9 @@ import com.yarnshipment.shipment.adapter.out.persistence.ShipmentTransitionWrite
 import com.yarnshipment.shipment.application.port.out.DispatchCommandPort;
 import com.yarnshipment.shipment.domain.model.DispatchRecording;
 import com.yarnshipment.shipment.domain.model.ShipmentDispatched;
+import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import com.yarnshipment.shipment.domain.model.WeightCheck;
 import com.yarnshipment.shipment.domain.model.WeightMismatchDetected;
-import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.UUID;

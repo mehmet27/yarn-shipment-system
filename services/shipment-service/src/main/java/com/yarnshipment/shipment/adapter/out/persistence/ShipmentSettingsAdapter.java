@@ -35,11 +35,13 @@ final class ShipmentSettingsAdapter implements ShipmentSettingsPort {
 
     @Override
     public ShipmentSettings find() {
-        Map<String, String> values = jdbc.sql(SELECT)
-                .query((rs, row) -> Map.entry(rs.getString("key"), rs.getString("value")))
-                .list()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<String, String> values =
+                jdbc
+                        .sql(SELECT)
+                        .query((rs, row) -> Map.entry(rs.getString("key"), rs.getString("value")))
+                        .list()
+                        .stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         ShipmentSettings defaults = ShipmentSettings.DEFAULTS;
         return new ShipmentSettings(
                 number(values, FIRE_RATE_KEY, defaults.defaultFireRate()),

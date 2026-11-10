@@ -24,7 +24,9 @@ export function ShipmentFileActions({
           </Button>
         </ActionBar>
       )}
-      {actions.includes('RESOLVE_WEIGHT_MISMATCH') && <WeightDecisionForm shipmentId={shipmentId} />}
+      {actions.includes('RESOLVE_WEIGHT_MISMATCH') && (
+        <WeightDecisionForm shipmentId={shipmentId} />
+      )}
       {actions.includes('COMPLETE') && <CompleteShipmentForm shipmentId={shipmentId} />}
       {actions.includes('CANCEL') && <CancelShipmentForm shipmentId={shipmentId} />}
     </>

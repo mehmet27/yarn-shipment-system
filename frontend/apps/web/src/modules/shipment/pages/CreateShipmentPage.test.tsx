@@ -18,20 +18,24 @@ async function fillRecipe(netKg: string) {
 const LONG_FLOW_TIMEOUT_MS = 20_000;
 
 describe('CreateShipmentPage', () => {
-  it('müdür taslak sevkiyat oluşturur ve dosyasına gider', async () => {
-    server.use(...createHandlers('MANAGER'));
-    renderApp('/panel/sevkiyat');
-    await userEvent.click(await screen.findByRole('link', { name: 'Yeni sevkiyat' }));
-    await pick('Lokasyon', 'Merkez Depo');
-    await pick('Fasoncu', 'Bursa Tekstil');
-    await pick('Şoför', 'Mert Kaya');
-    await fillRecipe('2.036');
-    expect(screen.getByLabelText(/Fire oranı/)).toHaveValue('4');
-    expect(screen.getByTestId('recipe-total')).toHaveTextContent('2.036 kg');
-    await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
-    expect(await screen.findByText('SVK-2026-0046')).toBeInTheDocument();
-    expect(screen.getByText('Taslak', { selector: '.mantine-Badge-label' })).toBeInTheDocument();
-  }, LONG_FLOW_TIMEOUT_MS);
+  it(
+    'müdür taslak sevkiyat oluşturur ve dosyasına gider',
+    async () => {
+      server.use(...createHandlers('MANAGER'));
+      renderApp('/panel/sevkiyat');
+      await userEvent.click(await screen.findByRole('link', { name: 'Yeni sevkiyat' }));
+      await pick('Lokasyon', 'Merkez Depo');
+      await pick('Fasoncu', 'Bursa Tekstil');
+      await pick('Şoför', 'Mert Kaya');
+      await fillRecipe('2.036');
+      expect(screen.getByLabelText(/Fire oranı/)).toHaveValue('4');
+      expect(screen.getByTestId('recipe-total')).toHaveTextContent('2.036 kg');
+      await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
+      expect(await screen.findByText('SVK-2026-0046')).toBeInTheDocument();
+      expect(screen.getByText('Taslak', { selector: '.mantine-Badge-label' })).toBeInTheDocument();
+    },
+    LONG_FLOW_TIMEOUT_MS,
+  );
 
   it('fasoncu seçilmeden göndermeyi engeller', async () => {
     server.use(...createHandlers('MANAGER'));

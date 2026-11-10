@@ -68,7 +68,7 @@ public class CatalogListController implements CatalogListsApi {
     public ResponseEntity<YarnSupplierPageResponse> listYarnSuppliers(
             Integer page, Integer size, @Nullable String search, MasterDataStatusFilter status) {
         return ResponseEntity.ok(
-                CatalogPages.yarnSuppliers(yarnSuppliers.listYarnSuppliers(query(page, size, search, status))));
+                YarnSupplierPages.yarnSuppliers(yarnSuppliers.listYarnSuppliers(query(page, size, search, status))));
     }
 
     @Override

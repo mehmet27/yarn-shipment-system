@@ -41,13 +41,12 @@ class InspectionServicesTest {
     @Test
     @DisplayName("İtiraz dosyası süreyi, itirazları ve kontrollerini döner")
     void shouldReadShipmentClaims() {
-        when(ports.claims.findClaims(TestDiscrepancies.SHIPMENT))
-                .thenReturn(List.of(TestClaims.claim()));
+        when(ports.claims.findClaims(TestDiscrepancies.SHIPMENT)).thenReturn(List.of(TestClaims.claim()));
         when(ports.inspections.findInspections(TestDiscrepancies.ID))
                 .thenReturn(List.of(TestClaims.pending(InspectionKind.SAMPLE)));
 
-        ShipmentClaims file = get.getShipmentClaims(new GetShipmentClaimsQuery(
-                TestTokens.actor("quality"), TestDiscrepancies.SHIPMENT));
+        ShipmentClaims file = get.getShipmentClaims(
+                new GetShipmentClaimsQuery(TestTokens.actor("quality"), TestDiscrepancies.SHIPMENT));
 
         assertThat(file.windowOpen()).isTrue();
         assertThat(file.deadline()).isEqualTo(TestClaims.target().deadline());

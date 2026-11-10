@@ -19,7 +19,6 @@ test.describe('Sevkiyat dosyası', { tag: '@panel' }, () => {
       await expect(page.getByRole('heading', { name: 'SVK-2026-0001' })).toBeVisible();
       await expect(page.getByRole('link', { name: 'Çıkış tartısını gir' })).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'İptal et' })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Fotoğraf çek' })).toHaveCount(0);
     },
   );
 

@@ -54,5 +54,4 @@ public final class LoginAccountService implements ListLoginAccountsUseCase, List
         }
         return names;
     }
-
 }

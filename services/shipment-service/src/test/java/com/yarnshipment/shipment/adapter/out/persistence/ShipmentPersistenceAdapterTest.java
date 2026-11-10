@@ -98,8 +98,7 @@ class ShipmentPersistenceAdapterTest {
     @Test
     @DisplayName("Liste lokasyon kapsamına göre süzülür, en yeni önce gelir")
     void shouldFilterBySitesNewestFirst() {
-        ShipmentSlice slice =
-                adapter.findShipments(AccessScope.restrictedTo(Set.of(SITE_A)), Set.of(), FIRST_PAGE);
+        ShipmentSlice slice = adapter.findShipments(AccessScope.restrictedTo(Set.of(SITE_A)), Set.of(), FIRST_PAGE);
 
         assertThat(slice.shipments()).extracting(Shipment::id).containsExactly(SECOND, FIRST);
         assertThat(slice.totalElements()).isEqualTo(2);
@@ -109,9 +108,7 @@ class ShipmentPersistenceAdapterTest {
     @DisplayName("İstenen durumdaki sevkiyatlar lokasyon kapsamında gelir")
     void shouldFilterByStatusWithinSites() {
         ShipmentSlice slice = adapter.findShipments(
-                AccessScope.restrictedTo(Set.of(SITE_A, SITE_B)),
-                Set.of(ShipmentStatus.DRAFT),
-                FIRST_PAGE);
+                AccessScope.restrictedTo(Set.of(SITE_A, SITE_B)), Set.of(ShipmentStatus.DRAFT), FIRST_PAGE);
 
         assertThat(slice.shipments()).extracting(Shipment::id).containsExactly(THIRD, SECOND);
     }

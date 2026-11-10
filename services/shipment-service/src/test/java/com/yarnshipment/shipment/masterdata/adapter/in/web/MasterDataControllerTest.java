@@ -113,8 +113,8 @@ class MasterDataControllerTest {
         // when
         MvcTestResult result = mvc.get()
                 .uri("/api/v1/master-data/sites")
-                .with(SecurityMockMvcRequestPostProcessors.authentication(
-                        TestTokens.CONVERTER.convert(TestTokens.token("offline_access").build())))
+                .with(SecurityMockMvcRequestPostProcessors.authentication(TestTokens.CONVERTER.convert(
+                        TestTokens.token("offline_access").build())))
                 .exchange();
 
         // then

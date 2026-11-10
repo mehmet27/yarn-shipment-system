@@ -15,8 +15,7 @@ class EvidenceVisibilityTest {
     @DisplayName("Kanıt görme izni olan rol kanıtı görür")
     void shouldLetEveryViewerSeeEvidence(String role) {
         // when / then
-        assertThat(EvidenceVisibility.mayView(TestTokens.actor(role)))
-                .isTrue();
+        assertThat(EvidenceVisibility.mayView(TestTokens.actor(role))).isTrue();
     }
 
     @ParameterizedTest

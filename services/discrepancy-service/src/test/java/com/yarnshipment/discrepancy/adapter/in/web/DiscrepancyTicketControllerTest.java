@@ -118,7 +118,8 @@ class DiscrepancyTicketControllerTest {
         assertThat(missing).hasStatus(HttpStatus.NOT_FOUND);
         assertThat(missing).bodyJson().extractingPath("$.code").isEqualTo("TICKET_READING_NOT_FOUND");
 
-        assertThat(post(evidenceId, "{}", TestTokens.token("warehouse").build())).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(evidenceId, "{}", TestTokens.token("warehouse").build()))
+                .hasStatus(HttpStatus.FORBIDDEN);
     }
 
     private MvcTestResult get(Jwt jwt) {

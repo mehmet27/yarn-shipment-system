@@ -14,7 +14,11 @@ import org.jspecify.annotations.Nullable;
  * @param at adımın zamanı
  * @param netKg çıkış net kilosu; yalnızca {@link Milestone#DISPATCHED} için dolu olabilir
  */
-public record TrackShipmentCommand(UUID shipmentId, Milestone milestone, Instant at, @Nullable BigDecimal netKg) {
+public record TrackShipmentCommand(
+        UUID shipmentId,
+        Milestone milestone,
+        Instant at,
+        @Nullable BigDecimal netKg) {
 
     /** Kilosuz adım. */
     public TrackShipmentCommand(UUID shipmentId, Milestone milestone, Instant at) {

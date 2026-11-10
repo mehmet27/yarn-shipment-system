@@ -127,8 +127,7 @@ class SecurityChainTest {
         String token = jwtDecoder.register(TestTokens.withRoles("warehouse").build());
 
         // when / then
-        assertThat(get("/test/shipments/in-site/" + TestTokens.SITE_ID, token))
-                .hasStatusOk();
+        assertThat(get("/test/shipments/in-site/" + TestTokens.SITE_ID, token)).hasStatusOk();
     }
 
     @Test

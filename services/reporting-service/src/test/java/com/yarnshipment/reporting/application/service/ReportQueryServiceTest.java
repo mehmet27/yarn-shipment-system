@@ -79,8 +79,7 @@ class ReportQueryServiceTest {
     }
 
     @Test
-    @DisplayName(
-            "Sevkiyat dökümü ve fasoncu bakiyesi yönetici kapsamıyla sorgulanır; lokasyonsuz kullanıcı boş alır")
+    @DisplayName("Sevkiyat dökümü ve fasoncu bakiyesi yönetici kapsamıyla sorgulanır; lokasyonsuz kullanıcı boş alır")
     void shouldListShipmentAndBalanceReports() {
         service.listShipmentReport(query(TestTokens.actor("manager")));
         service.listSubcontractorBalance(query(TestTokens.actor("manager")));

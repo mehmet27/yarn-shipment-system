@@ -98,8 +98,7 @@ class KeycloakRealmFileTest {
                 .collect(Collectors.toSet());
 
         // then
-        assertThat(claims)
-                .containsExactlyInAnyOrder(TokenClaims.ROLES, TokenClaims.SITE_IDS);
+        assertThat(claims).containsExactlyInAnyOrder(TokenClaims.ROLES, TokenClaims.SITE_IDS);
         assertThat(mappersOf(GATEWAY).stream().map(Mapper::name)).contains("audience-yarnshipment-api");
     }
 

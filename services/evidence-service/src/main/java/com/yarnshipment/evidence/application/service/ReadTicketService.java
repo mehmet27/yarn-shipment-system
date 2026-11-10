@@ -58,8 +58,7 @@ public final class ReadTicketService implements ReadTicketUseCase {
         UploadIntent intent = intents.findIntent(command.evidenceId())
                 .filter(found -> found.requestedBy().equals(command.actor().userId()))
                 .orElseThrow(() -> new UploadIntentNotFoundException(command.evidenceId()));
-        scopeGuard.validateInScope(
-                command.actor(), ShipmentScopes.of(intent.shipmentId(), intent.siteId()), ACTION);
+        scopeGuard.validateInScope(command.actor(), ShipmentScopes.of(intent.shipmentId(), intent.siteId()), ACTION);
         if (!TicketReading.isReadable(intent.file().type())) {
             throw new TicketReadingNotSupportedException(intent.id());
         }

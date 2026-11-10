@@ -81,8 +81,7 @@ class ScopeGuardTest {
     void shouldAuditAndRejectOutOfScopeAccess() {
         // given
         Actor actor = converter.toActor(TestTokens.withRoles("warehouse").build());
-        ScopedResource resource =
-                new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.OTHER_SITE_ID);
+        ScopedResource resource = new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.OTHER_SITE_ID);
 
         // when / then
         assertThatThrownBy(() -> scopeGuard.validateInScope(actor, resource, "SHIPMENT_VIEW"))

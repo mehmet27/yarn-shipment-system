@@ -72,5 +72,4 @@ final class KeycloakLoginAccountAdapter implements LoginAccountPort {
             throw exception;
         }
     }
-
 }

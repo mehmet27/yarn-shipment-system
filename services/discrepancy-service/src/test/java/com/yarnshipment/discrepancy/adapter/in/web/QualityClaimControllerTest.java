@@ -121,8 +121,7 @@ class QualityClaimControllerTest {
 
         MvcTestResult result = mvc.get()
                 .uri(CLAIMS + "/shipments/" + TestDiscrepancies.SHIPMENT)
-                .with(SecurityMockMvcRequestPostProcessors.authentication(
-                        TestTokens.CONVERTER.convert(manager())))
+                .with(SecurityMockMvcRequestPostProcessors.authentication(TestTokens.CONVERTER.convert(manager())))
                 .exchange();
 
         assertThat(result).hasStatusOk();
@@ -162,8 +161,7 @@ class QualityClaimControllerTest {
     }
 
     private static ClaimFile file() {
-        return new ClaimFile(
-                TestClaims.claim(), TestDiscrepancies.open(TestTokens.SITE_ID), List.of());
+        return new ClaimFile(TestClaims.claim(), TestDiscrepancies.open(TestTokens.SITE_ID), List.of());
     }
 
     private static Jwt manager() {

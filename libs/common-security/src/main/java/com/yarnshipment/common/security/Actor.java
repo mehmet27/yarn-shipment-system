@@ -49,7 +49,7 @@ public record Actor(
     /** SEC-13: kullanıcı adı kişisel veridir. */
     @Override
     public String toString() {
-        return "Actor[userId=" + userId + ", username=***, roles=" + roles + ", siteIds=" + siteIds
-                + ", mfaVerified=" + mfaVerified + "]";
+        return "Actor[userId=" + userId + ", username=***, roles=" + roles + ", siteIds=" + siteIds + ", mfaVerified="
+                + mfaVerified + "]";
     }
 }

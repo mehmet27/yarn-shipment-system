@@ -10,10 +10,7 @@ import java.util.UUID;
  * @param resourceId kaynağın kimliği
  * @param siteId kaydın lokasyonu (GEN-07)
  */
-public record ScopedResource(
-        String resourceType,
-        UUID resourceId,
-        UUID siteId) {
+public record ScopedResource(String resourceType, UUID resourceId, UUID siteId) {
 
     public ScopedResource {
         Objects.requireNonNull(resourceType, "resourceType");

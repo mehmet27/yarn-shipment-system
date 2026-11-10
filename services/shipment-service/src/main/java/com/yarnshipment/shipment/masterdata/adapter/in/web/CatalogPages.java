@@ -8,10 +8,13 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.ProductView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.QualityGradePageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.QualityGradeView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.TareStandardView;
+import com.yarnshipment.shipment.adapter.in.web.api.model.YarnSupplierPageResponse;
+import com.yarnshipment.shipment.adapter.in.web.api.model.YarnSupplierView;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.domain.catalog.Product;
 import com.yarnshipment.shipment.masterdata.domain.catalog.QualityGrade;
 import com.yarnshipment.shipment.masterdata.domain.catalog.TareStandard;
+import com.yarnshipment.shipment.masterdata.domain.catalog.YarnSupplier;
 import com.yarnshipment.shipment.masterdata.domain.lot.ProductionLot;
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -35,6 +38,10 @@ final class CatalogPages {
         return new QualityGradeView(item.id(), item.code(), item.details().name())
                 .labelColor(item.details().labelColor())
                 .active(item.active());
+    }
+
+    static YarnSupplierView view(YarnSupplier item) {
+        return new YarnSupplierView(item.id(), item.name()).active(item.active());
     }
 
     static TareStandardView view(TareStandard item) {
@@ -68,6 +75,8 @@ final class CatalogPages {
                         item.labels().qualityGradeName(),
                         item.details().productionDate(),
                         item.active())
+                .yarnSupplierId(item.details().yarnSupplierId())
+                .yarnSupplierName(item.labels().yarnSupplierName())
                 .qualityLockedAt(lockedAt == null ? null : lockedAt.atOffset(ZoneOffset.UTC));
     }
 
@@ -78,6 +87,11 @@ final class CatalogPages {
 
     static QualityGradePageResponse qualityGrades(MasterDataPage<QualityGrade> page) {
         return new QualityGradePageResponse(
+                page.items().stream().map(CatalogPages::view).toList(), MasterDataPages.metadata(page));
+    }
+
+    static YarnSupplierPageResponse yarnSuppliers(MasterDataPage<YarnSupplier> page) {
+        return new YarnSupplierPageResponse(
                 page.items().stream().map(CatalogPages::view).toList(), MasterDataPages.metadata(page));
     }
 

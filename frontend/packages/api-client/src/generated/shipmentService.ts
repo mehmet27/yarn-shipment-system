@@ -45,6 +45,7 @@ export const Role = {
   SUBCONTRACTOR: 'SUBCONTRACTOR',
   QUALITY: 'QUALITY',
   MANAGER: 'MANAGER',
+  GENERAL_MANAGER: 'GENERAL_MANAGER',
 } as const;
 
 export type Permission = typeof Permission[keyof typeof Permission];
@@ -73,6 +74,12 @@ export const Permission = {
   DISCREPANCY_RESOLVE: 'DISCREPANCY_RESOLVE',
   AUDIT_VIEW: 'AUDIT_VIEW',
   REPORT_VIEW: 'REPORT_VIEW',
+  FABRIC_RECEIPT_RECORD: 'FABRIC_RECEIPT_RECORD',
+  YARN_RETURN_RECORD: 'YARN_RETURN_RECORD',
+  FIRE_RATE_EDIT: 'FIRE_RATE_EDIT',
+  INVOICE_MARK: 'INVOICE_MARK',
+  BALANCE_VIEW: 'BALANCE_VIEW',
+  WEIGHT_MISMATCH_RESOLVE: 'WEIGHT_MISMATCH_RESOLVE',
 } as const;
 
 export interface CurrentUserResponse {
@@ -409,6 +416,7 @@ export const StaffRole = {
   WAREHOUSE: 'WAREHOUSE',
   QUALITY: 'QUALITY',
   MANAGER: 'MANAGER',
+  GENERAL_MANAGER: 'GENERAL_MANAGER',
 } as const;
 
 export interface StaffLoginAccountRequest {
@@ -522,6 +530,26 @@ export interface SiteView {
 
 export interface SitePageResponse {
   items: SiteView[];
+  page: PageMetadata;
+}
+
+export interface YarnSupplierRequest {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+}
+
+export interface YarnSupplierView {
+  /** Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir */
+  active?: boolean;
+  id: string;
+  name: string;
+}
+
+export interface YarnSupplierPageResponse {
+  items: YarnSupplierView[];
   page: PageMetadata;
 }
 
@@ -668,6 +696,8 @@ export interface LotCreateRequest {
   lotNo: string;
   productId: string;
   qualityGradeId: string;
+  /** İsteğe bağlı iplik tedarikçisi */
+  yarnSupplierId?: string;
   productionDate: string;
 }
 
@@ -680,6 +710,8 @@ export interface LotUpdateRequest {
   lotNo: string;
   productId: string;
   qualityGradeId: string;
+  /** İsteğe bağlı iplik tedarikçisi */
+  yarnSupplierId?: string;
   productionDate: string;
 }
 
@@ -694,6 +726,8 @@ export interface LotView {
   qualityGradeId: string;
   qualityGradeCode: string;
   qualityGradeName: string;
+  yarnSupplierId?: string;
+  yarnSupplierName?: string;
   productionDate: string;
   /** Kalitenin kilitlendiği an; boşsa parti kilitsizdir ve düzenlenebilir */
   qualityLockedAt?: string;
@@ -1000,6 +1034,28 @@ status?: StatusFilterParameter;
 };
 
 export type ListSitesParams = {
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
+};
+
+export type ListYarnSuppliersParams = {
 /**
  * @minimum 0
  */
@@ -1650,6 +1706,77 @@ export const activateSite = (
  ) => {
       return customInstance<void>(
       {url: `/api/v1/master-data/sites/${siteId}/activate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * İplik tedarikçisi seçimi için; ada göre sıralı. Arama `q` ile adda yapılır.
+ * @summary İplik tedarikçisi listesi
+ */
+export const listYarnSuppliers = (
+    params?: ListYarnSuppliersParams,
+ ) => {
+      return customInstance<YarnSupplierPageResponse>(
+      {url: `/api/v1/master-data/yarn-suppliers`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Ad boş olamaz.
+ * @summary İplik tedarikçisi ekler
+ */
+export const createYarnSupplier = (
+    yarnSupplierRequest: YarnSupplierRequest,
+ ) => {
+      return customInstance<YarnSupplierView>(
+      {url: `/api/v1/master-data/yarn-suppliers`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: yarnSupplierRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE).
+ * @summary İplik tedarikçisi günceller
+ */
+export const updateYarnSupplier = (
+    yarnSupplierId: string,
+    yarnSupplierRequest: YarnSupplierRequest,
+ ) => {
+      return customInstance<YarnSupplierView>(
+      {url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: yarnSupplierRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Tekrarı zararsızdır.
+ * @summary İplik tedarikçisi pasife alır
+ */
+export const deactivateYarnSupplier = (
+    yarnSupplierId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}/deactivate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Tekrarı zararsızdır.
+ * @summary İplik tedarikçisi yeniden etkinleştirir
+ */
+export const activateYarnSupplier = (
+    yarnSupplierId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}/activate`, method: 'POST'
     },
       );
     }

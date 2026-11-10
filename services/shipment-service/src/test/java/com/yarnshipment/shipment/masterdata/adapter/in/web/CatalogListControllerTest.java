@@ -8,6 +8,8 @@ import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.catalog.ListProductsUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.catalog.ListQualityGradesUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.catalog.ListYarnSuppliersUseCase;
+import com.yarnshipment.shipment.masterdata.domain.catalog.YarnSupplier;
 import com.yarnshipment.shipment.masterdata.application.port.in.lot.ListLotsUseCase;
 import com.yarnshipment.shipment.masterdata.domain.catalog.Product;
 import com.yarnshipment.shipment.masterdata.domain.catalog.ProductDetails;
@@ -45,6 +47,9 @@ class CatalogListControllerTest {
     private ListQualityGradesUseCase qualityGrades;
 
     @MockitoBean
+    private ListYarnSuppliersUseCase yarnSuppliers;
+
+    @MockitoBean
     private ListLotsUseCase lots;
 
     @MockitoBean
@@ -74,6 +79,23 @@ class CatalogListControllerTest {
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.items[0].code").isEqualTo("PES-30-1");
         assertThat(result).bodyJson().extractingPath("$.items[0].yarnCount").isEqualTo("Ne 30/1");
+        assertThat(denied).hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    @DisplayName("İplik tedarikçisi listesi adı döner; pasifleri yalnızca yönetici ister")
+    void shouldListYarnSuppliers() {
+        // given
+        when(yarnSuppliers.listYarnSuppliers(any()))
+                .thenReturn(new MasterDataPage<>(List.of(new YarnSupplier(ID, "Şireci", true)), 0, SIZE, 1));
+
+        // when
+        MvcTestResult result = get("/api/v1/master-data/yarn-suppliers", "warehouse");
+        MvcTestResult denied = get("/api/v1/master-data/yarn-suppliers?status=ALL", "quality");
+
+        // then
+        assertThat(result).hasStatusOk();
+        assertThat(result).bodyJson().extractingPath("$.items[0].name").isEqualTo("Şireci");
         assertThat(denied).hasStatus(HttpStatus.FORBIDDEN);
     }
 

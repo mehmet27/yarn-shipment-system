@@ -47,6 +47,16 @@ const SEED: readonly LoginAccountView[] = [
     createdAt: '2026-01-05T08:15:00Z',
   },
   {
+    id: 'kc-genelmudur',
+    username: 'genelmudur',
+    fullName: 'Genel Müdür',
+    email: 'genelmudur@iplik.local',
+    roles: ['GENERAL_MANAGER'],
+    enabled: true,
+    passwordChangeRequired: false,
+    createdAt: '2026-01-05T08:20:00Z',
+  },
+  {
     id: 'kc-fasoncu',
     username: 'fasoncu',
     fullName: 'Aydın Örme',

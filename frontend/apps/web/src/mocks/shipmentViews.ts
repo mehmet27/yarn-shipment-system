@@ -51,6 +51,7 @@ export function toDetailView(shipment: InternalShipmentView, role: Role): Shipme
     case 'ADMIN':
     case 'QUALITY':
     case 'MANAGER':
+    case 'GENERAL_MANAGER':
       return shipment;
   }
 }

@@ -1,7 +1,13 @@
 import type { LoginAccountView, StaffRole } from '@iplik/api-client';
 
 /** Sonradan rolü değiştirilebilen fabrika içi roller (sunucudaki StaffRole). */
-export const STAFF_ROLES: readonly StaffRole[] = ['ADMIN', 'WAREHOUSE', 'QUALITY', 'MANAGER'];
+export const STAFF_ROLES: readonly StaffRole[] = [
+  'ADMIN',
+  'WAREHOUSE',
+  'QUALITY',
+  'MANAGER',
+  'GENERAL_MANAGER',
+];
 
 /** Fasoncu hesapları bir kayda bağlıdır; hesap açarken kayıt seçilir, rol sonradan değişmez. */
 export type RecordKind = 'SUBCONTRACTOR';

@@ -2,7 +2,8 @@ import { expect, test as base } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
 /** Sahte API rolleri (src/mocks/users.ts). */
-export type Role = 'ADMIN' | 'WAREHOUSE' | 'SUBCONTRACTOR' | 'QUALITY' | 'MANAGER';
+export type Role =
+  'ADMIN' | 'WAREHOUSE' | 'SUBCONTRACTOR' | 'QUALITY' | 'MANAGER' | 'GENERAL_MANAGER';
 
 type AppFixtures = {
   /** Sayfayı verilen rolle açar: sahte API rolü ilk açılışta adresten okur. */

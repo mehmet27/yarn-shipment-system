@@ -17,6 +17,7 @@ const MAX_LENGTH: Readonly<Record<ManagedKind, number>> = {
   site: 200,
   product: 200,
   qualityGrade: 200,
+  yarnSupplier: 200,
 };
 
 /** TR plaka: il kodu 01-81, 1-3 harf, 2-4 rakam (ör. 34 ABC 123). */

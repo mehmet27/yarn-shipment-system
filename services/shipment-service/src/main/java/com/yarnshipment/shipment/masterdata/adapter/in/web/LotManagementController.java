@@ -49,7 +49,7 @@ public class LotManagementController implements LotManagementApi {
     @PreAuthorize(LOT_ACCESS)
     public ResponseEntity<LotView> createLot(UUID idempotencyKey, LotCreateRequest request) {
         var details = new LotDetails(
-                request.getLotNo(), request.getProductId(), request.getQualityGradeId(), request.getProductionDate());
+                request.getLotNo(), request.getProductId(), request.getQualityGradeId(), request.getProductionDate(), request.getYarnSupplierId());
         var created = create.createLot(currentActorProvider.getCurrentActor(), request.getSiteId(), details);
         return ResponseEntity.status(HttpStatus.CREATED).body(CatalogPages.view(created));
     }
@@ -58,7 +58,7 @@ public class LotManagementController implements LotManagementApi {
     @PreAuthorize(LOT_ACCESS)
     public ResponseEntity<LotView> updateLot(UUID lotId, LotUpdateRequest request) {
         var details = new LotDetails(
-                request.getLotNo(), request.getProductId(), request.getQualityGradeId(), request.getProductionDate());
+                request.getLotNo(), request.getProductId(), request.getQualityGradeId(), request.getProductionDate(), request.getYarnSupplierId());
         return ResponseEntity.ok(
                 CatalogPages.view(update.updateLot(currentActorProvider.getCurrentActor(), lotId, details)));
     }

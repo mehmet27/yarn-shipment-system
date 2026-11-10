@@ -95,19 +95,24 @@ export {
   activateLot,
   activateProduct,
   activateQualityGrade,
+  activateYarnSupplier,
   createLot,
   createProduct,
   createQualityGrade,
+  createYarnSupplier,
   deactivateLot,
   deactivateProduct,
   deactivateQualityGrade,
+  deactivateYarnSupplier,
   listLots,
   listProducts,
   listQualityGrades,
+  listYarnSuppliers,
   lockLotQuality,
   updateLot,
   updateProduct,
   updateQualityGrade,
+  updateYarnSupplier,
 } from './generated/shipmentService';
 export type {
   LotCreateRequest,
@@ -119,6 +124,8 @@ export type {
   QualityGradeCreateRequest,
   QualityGradeUpdateRequest,
   QualityGradeView,
+  YarnSupplierRequest,
+  YarnSupplierView,
 } from './generated/shipmentService';
 
 export { listTareStandards, saveTareStandard } from './generated/shipmentService';

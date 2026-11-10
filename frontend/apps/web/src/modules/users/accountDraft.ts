@@ -17,8 +17,7 @@ export type AccountDraft = {
   siteIds: readonly string[];
 };
 
-export type AccountField =
-  'username' | 'fullName' | 'phone' | 'email' | 'role' | 'sites';
+export type AccountField = 'username' | 'fullName' | 'phone' | 'email' | 'role' | 'sites';
 
 export const EMPTY_DRAFT: AccountDraft = {
   username: '',

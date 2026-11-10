@@ -38,12 +38,12 @@ export function AccountFields({ draft, onChange: change, errorText }: AccountFie
         data-autofocus
       />
       <TextInput
-          label={t('users.field.fullName')}
-          value={draft.fullName}
-          onChange={(event) => {
-            change({ fullName: event.currentTarget.value });
-          }}
-          error={errorText('fullName')}
+        label={t('users.field.fullName')}
+        value={draft.fullName}
+        onChange={(event) => {
+          change({ fullName: event.currentTarget.value });
+        }}
+        error={errorText('fullName')}
         withAsterisk
       />
       <ContactFields draft={draft} onChange={change} errorText={errorText} />

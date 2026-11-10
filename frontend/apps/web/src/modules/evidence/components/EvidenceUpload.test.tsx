@@ -21,7 +21,9 @@ describe('EvidenceUpload', () => {
       http.get('/api/v1/me', () =>
         HttpResponse.json({
           ...user,
-          permissions: user.permissions.filter((permission) => !permission.startsWith('EVIDENCE_UPLOAD')),
+          permissions: user.permissions.filter(
+            (permission) => !permission.startsWith('EVIDENCE_UPLOAD'),
+          ),
         }),
       ),
     );

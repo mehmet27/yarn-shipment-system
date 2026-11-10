@@ -41,8 +41,7 @@ export type WarehouseShipmentView = Omit<
   WithWeighings<GeneratedWarehouseView, 'dispatchWeighing'>,
   'plannedNetKg'
 > & { plannedNetKg?: Kilogram };
-export type ShipmentDetail =
-  InternalShipmentView | WarehouseShipmentView;
+export type ShipmentDetail = InternalShipmentView | WarehouseShipmentView;
 
 export type ShipmentSummary = ShipmentSummaryView;
 export type Page<T> = { items: readonly T[]; page: ShipmentPageResponse['page'] };

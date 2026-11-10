@@ -79,9 +79,7 @@ function targetProblem(shipmentId: unknown, role: Role): Response | undefined {
       : problem(409, 'QUALITY_CLAIM_NOT_AVAILABLE');
   }
   if (!isInScope(shipment, createMockUser(role))) return problem(403, 'OUT_OF_SCOPE');
-  return shipment.status === 'COMPLETED'
-    ? undefined
-    : problem(409, 'QUALITY_CLAIM_NOT_AVAILABLE');
+  return shipment.status === 'COMPLETED' ? undefined : problem(409, 'QUALITY_CLAIM_NOT_AVAILABLE');
 }
 
 function claimProblem(request: OpenQualityClaimRequest): Response | undefined {

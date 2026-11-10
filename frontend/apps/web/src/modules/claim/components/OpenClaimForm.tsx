@@ -24,7 +24,11 @@ export function OpenClaimForm({ shipmentId, onDone }: OpenClaimFormProps) {
   const mutation = useOpenClaim(shipmentId);
   const claimedKg = parseKg(kgText);
   const isKgInvalid = kgText.trim() !== '' && (claimedKg === undefined || isZero(claimedKg));
-  const canSubmit = claimedKg !== undefined && !isZero(claimedKg) && description.trim() !== '' && evidenceIds.length > 0;
+  const canSubmit =
+    claimedKg !== undefined &&
+    !isZero(claimedKg) &&
+    description.trim() !== '' &&
+    evidenceIds.length > 0;
   return (
     <Paper withBorder p="md" component="section" aria-label={t('claim.open.title')}>
       <Stack>

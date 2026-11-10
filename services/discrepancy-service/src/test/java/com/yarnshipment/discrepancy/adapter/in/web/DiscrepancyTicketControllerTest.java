@@ -71,9 +71,9 @@ class DiscrepancyTicketControllerTest {
         assertThat(result).bodyJson().extractingPath("$[0].enteredNetKg").isEqualTo("1990.000");
         assertThat(result).bodyJson().extractingPath("$[0].allowedActions[0]").isEqualTo("MARK_MISREAD");
 
-        MvcTestResult subcontractor = get(TestTokens.subcontractorToken());
-        assertThat(subcontractor).hasStatusOk();
-        assertThat(subcontractor)
+        MvcTestResult manager = get(TestTokens.token("manager").build());
+        assertThat(manager).hasStatusOk();
+        assertThat(manager)
                 .bodyJson()
                 .extractingPath("$[0].allowedActions")
                 .asArray()
@@ -118,7 +118,7 @@ class DiscrepancyTicketControllerTest {
         assertThat(missing).hasStatus(HttpStatus.NOT_FOUND);
         assertThat(missing).bodyJson().extractingPath("$.code").isEqualTo("TICKET_READING_NOT_FOUND");
 
-        assertThat(post(evidenceId, "{}", TestTokens.subcontractorToken())).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(evidenceId, "{}", TestTokens.token("warehouse").build())).hasStatus(HttpStatus.FORBIDDEN);
     }
 
     private MvcTestResult get(Jwt jwt) {

@@ -60,18 +60,6 @@ export const SCREENS: readonly Screen[] = [
     ready: 'UY-2026-0001',
   },
   {
-    name: 'Saha listesi (fasoncu)',
-    role: 'SUBCONTRACTOR',
-    path: '/saha',
-    ready: 'Bana atanan sevkiyatlar',
-  },
-  {
-    name: 'Saha sevkiyatı (fasoncu)',
-    role: 'SUBCONTRACTOR',
-    path: '/saha/sevkiyat/shp-0010',
-    ready: 'SVK-2026-0010',
-  },
-  {
     name: 'Kullanıcılar',
     role: 'ADMIN',
     path: '/panel/kullanicilar',

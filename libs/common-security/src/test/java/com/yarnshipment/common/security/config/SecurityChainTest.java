@@ -3,11 +3,9 @@ package com.yarnshipment.common.security.config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.common.security.TestTokens;
-import com.yarnshipment.common.security.TokenClaims;
 import com.yarnshipment.common.security.audit.SecurityAuditEvent;
 import com.yarnshipment.common.security.config.SecurityTestApplication.RecordingAuditPublisher;
 import com.yarnshipment.common.security.config.SecurityTestApplication.StubJwtDecoder;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -76,18 +74,6 @@ class SecurityChainTest {
     }
 
     @Test
-    @DisplayName("Kural ihlali olan token (karışık roller) 401 alır")
-    void shouldRejectTokenViolatingRoleRules() {
-        // given
-        String token = jwtDecoder.register(TestTokens.withRoles("subcontractor", "warehouse")
-                .claim(TokenClaims.SUBCONTRACTOR_ID, TestTokens.SUBCONTRACTOR_ID.toString())
-                .build());
-
-        // when / then
-        assertThat(get("/test/shipments", token)).hasStatus(HttpStatus.UNAUTHORIZED);
-    }
-
-    @Test
     @DisplayName("İzni olan rol uca erişir")
     void shouldAllowPermittedRole() {
         // given
@@ -118,13 +104,13 @@ class SecurityChainTest {
     }
 
     @Test
-    @DisplayName("Başka fasoncunun kaydı 404 değil 403 OUT_OF_SCOPE döner")
+    @DisplayName("Başka lokasyonun kaydı 404 değil 403 OUT_OF_SCOPE döner")
     void shouldReturnForbiddenForOutOfScopeRecord() {
         // given
-        String token = jwtDecoder.register(TestTokens.subcontractor());
+        String token = jwtDecoder.register(TestTokens.withRoles("warehouse").build());
 
         // when
-        MvcTestResult result = get("/test/shipments/of-subcontractor/" + UUID.randomUUID(), token);
+        MvcTestResult result = get("/test/shipments/in-site/" + TestTokens.OTHER_SITE_ID, token);
 
         // then
         assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
@@ -135,13 +121,13 @@ class SecurityChainTest {
     }
 
     @Test
-    @DisplayName("Fasoncu kendi kaydına erişir")
+    @DisplayName("Kullanıcı kendi lokasyonunun kaydına erişir")
     void shouldAllowOwnRecord() {
         // given
-        String token = jwtDecoder.register(TestTokens.subcontractor());
+        String token = jwtDecoder.register(TestTokens.withRoles("warehouse").build());
 
         // when / then
-        assertThat(get("/test/shipments/of-subcontractor/" + TestTokens.SUBCONTRACTOR_ID, token))
+        assertThat(get("/test/shipments/in-site/" + TestTokens.SITE_ID, token))
                 .hasStatusOk();
     }
 

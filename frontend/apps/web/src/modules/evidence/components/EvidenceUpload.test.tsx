@@ -1,6 +1,8 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { http, HttpResponse } from 'msw';
 import { createHandlers } from '@/mocks/handlers';
+import { createMockUser } from '@/mocks/users';
 import { server } from '@/mocks/server';
 import { renderApp } from '@/test/renderApp';
 
@@ -14,6 +16,15 @@ describe('EvidenceUpload', () => {
 
   it('yükleme izni olmayan kullanıcıda hiç görünmez', async () => {
     server.use(...createHandlers('MANAGER'));
+    const user = createMockUser('MANAGER');
+    server.use(
+      http.get('/api/v1/me', () =>
+        HttpResponse.json({
+          ...user,
+          permissions: user.permissions.filter((permission) => !permission.startsWith('EVIDENCE_UPLOAD')),
+        }),
+      ),
+    );
     renderApp('/panel/sevkiyat/shp-0007');
     await screen.findByText('Kilolar');
     expect(screen.queryByRole('button', { name: 'Fotoğraf çek' })).not.toBeInTheDocument();

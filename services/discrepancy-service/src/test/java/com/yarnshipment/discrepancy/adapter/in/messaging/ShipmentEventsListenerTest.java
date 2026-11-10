@@ -1,7 +1,6 @@
 package com.yarnshipment.discrepancy.adapter.in.messaging;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -18,6 +17,7 @@ import com.yarnshipment.events.shipment.ShipmentCompleted;
 import com.yarnshipment.events.shipment.ShipmentCreated;
 import com.yarnshipment.events.shipment.ShipmentDispatched;
 import com.yarnshipment.events.shipment.ShipmentEvents;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -74,8 +74,11 @@ class ShipmentEventsListenerTest {
                 "{\"shipmentId\":\"%s\",\"siteId\":\"%s\",\"cancelledAt\":%s}".formatted(shipment, site, time),
                 Map.of()));
 
-        verify(track).trackShipment(new TrackShipmentCommand(TestComparisons.SHIPMENT, Milestone.DISPATCHED, AT));
-        verify(track, times(2)).trackShipment(new TrackShipmentCommand(TestComparisons.SHIPMENT, Milestone.CLOSED, AT));
+        verify(track)
+                .trackShipment(new TrackShipmentCommand(
+                        TestComparisons.SHIPMENT, Milestone.DISPATCHED, AT, new BigDecimal("10.5")));
+        verify(track).trackShipment(new TrackShipmentCommand(TestComparisons.SHIPMENT, Milestone.COMPLETED, AT));
+        verify(track).trackShipment(new TrackShipmentCommand(TestComparisons.SHIPMENT, Milestone.CLOSED, AT));
         verifyNoInteractions(register);
     }
 

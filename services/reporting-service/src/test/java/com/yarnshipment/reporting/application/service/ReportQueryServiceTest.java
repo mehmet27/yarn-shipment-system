@@ -50,12 +50,12 @@ class ReportQueryServiceTest {
     }
 
     @Test
-    @DisplayName("Fasoncu rapor görmez, sorgu çalışmaz")
-    void shouldReturnEmptyForExternalRoles() {
-        Dashboard dashboard = service.getDashboard(query(TestTokens.actor(TestTokens.subcontractorToken())));
+    @DisplayName("Lokasyonu olmayan kullanıcı rapor görmez, sorgu çalışmaz")
+    void shouldReturnEmptyWithoutSites() {
+        Dashboard dashboard = service.getDashboard(query(TestTokens.actor(TestTokens.noSiteToken())));
 
         assertThat(dashboard.shipments().total()).isZero();
-        assertThat(service.listSubcontractorReport(query(TestTokens.actor(TestTokens.subcontractorToken()))))
+        assertThat(service.listSubcontractorReport(query(TestTokens.actor(TestTokens.noSiteToken()))))
                 .isEmpty();
         verifyNoInteractions(queryPort);
     }
@@ -80,16 +80,16 @@ class ReportQueryServiceTest {
 
     @Test
     @DisplayName(
-            "Sevkiyat dökümü ve fasoncu bakiyesi yönetici kapsamıyla, döküm limitiyle sorgulanır; dış roller boş alır")
+            "Sevkiyat dökümü ve fasoncu bakiyesi yönetici kapsamıyla sorgulanır; lokasyonsuz kullanıcı boş alır")
     void shouldListShipmentAndBalanceReports() {
         service.listShipmentReport(query(TestTokens.actor("manager")));
         service.listSubcontractorBalance(query(TestTokens.actor("manager")));
 
         verify(queryPort).findShipments(any(), any(), eq(ReportQueryService.SHIPMENT_REPORT_LIMIT));
         verify(queryPort).findSubcontractorBalances(any(), any());
-        assertThat(service.listShipmentReport(query(TestTokens.actor(TestTokens.subcontractorToken()))))
+        assertThat(service.listShipmentReport(query(TestTokens.actor(TestTokens.noSiteToken()))))
                 .isEmpty();
-        assertThat(service.listSubcontractorBalance(query(TestTokens.actor(TestTokens.subcontractorToken()))))
+        assertThat(service.listSubcontractorBalance(query(TestTokens.actor(TestTokens.noSiteToken()))))
                 .isEmpty();
     }
 

@@ -11,14 +11,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 class EvidenceVisibilityTest {
 
     @ParameterizedTest
-    @ValueSource(strings = {"warehouse", "manager", "quality", "admin", "subcontractor"})
+    @ValueSource(strings = {"warehouse", "manager", "quality", "admin"})
     @DisplayName("Kanıt görme izni olan rol kanıtı görür")
     void shouldLetEveryViewerSeeEvidence(String role) {
         // when / then
-        assertThat(EvidenceVisibility.mayView(
-                        "subcontractor".equals(role)
-                                ? TestTokens.actor(TestTokens.subcontractorToken())
-                                : TestTokens.actor(role)))
+        assertThat(EvidenceVisibility.mayView(TestTokens.actor(role)))
                 .isTrue();
     }
 

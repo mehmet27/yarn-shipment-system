@@ -5,6 +5,7 @@ import type {
   Role,
 } from '@iplik/api-client';
 import { InspectionKind, QUALITY_CLAIMS_PATH } from '@iplik/api-client';
+import { isKilogram, subtractKg } from '@iplik/units';
 import { http, HttpResponse } from 'msw';
 import type { InspectionRequest } from './claims';
 import {
@@ -12,15 +13,14 @@ import {
   addMockInspection,
   findMockClaim,
   listMockClaims,
+  MOCK_SHIPMENT_NET_KG,
   mockDeadline,
-  mockDeliveredKeys,
   recordMockResult,
 } from './claims';
 import { findMockShipment } from './mockStore';
 import { isInScope } from './shipmentViews';
 import { createMockUser } from './users';
 
-const DELIVERED = ['CHECKING', 'IN_REVIEW', 'COMPLETED'];
 const problem = (status: number, code: string) =>
   HttpResponse.json({ status, code, title: code }, { status });
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -31,10 +31,19 @@ const isOpen = (claim: QualityClaimView) => claim.status === 'OPEN' || claim.sta
 
 function readOpen(json: unknown): OpenQualityClaimRequest | undefined {
   if (!isRecord(json)) return undefined;
-  const { shipmentId, description, bagKeys, evidenceIds } = json;
+  const { shipmentId, description, claimedKg, evidenceIds, fabricReceiptId } = json;
   if (typeof shipmentId !== 'string' || typeof description !== 'string') return undefined;
-  if (!isStringList(bagKeys) || !isStringList(evidenceIds) || description === '') return undefined;
-  return { shipmentId, description, bagKeys, evidenceIds };
+  if (typeof claimedKg !== 'string' || !isKilogram(claimedKg) || Number(claimedKg) <= 0) {
+    return undefined;
+  }
+  if (!isStringList(evidenceIds) || description === '') return undefined;
+  return {
+    shipmentId,
+    description,
+    claimedKg,
+    evidenceIds,
+    ...(typeof fabricReceiptId === 'string' ? { fabricReceiptId } : {}),
+  };
 }
 
 function readInspection(json: unknown): InspectionRequest | undefined {
@@ -61,7 +70,7 @@ function resultProblem(inspection: InspectionView, body: ResultBody): Response |
     : undefined;
 }
 
-/** Teslim edilmemiş ya da kapsam dışı sevkiyatın itiraz dosyası yoktur (backend ClaimAccess). */
+/** Tamamlanmamış ya da kapsam dışı sevkiyatın itiraz dosyası yoktur (backend ClaimAccess). */
 function targetProblem(shipmentId: unknown, role: Role): Response | undefined {
   const shipment = findMockShipment(shipmentId);
   if (shipment === undefined) {
@@ -70,22 +79,17 @@ function targetProblem(shipmentId: unknown, role: Role): Response | undefined {
       : problem(409, 'QUALITY_CLAIM_NOT_AVAILABLE');
   }
   if (!isInScope(shipment, createMockUser(role))) return problem(403, 'OUT_OF_SCOPE');
-  return DELIVERED.includes(shipment.status)
+  return shipment.status === 'COMPLETED'
     ? undefined
     : problem(409, 'QUALITY_CLAIM_NOT_AVAILABLE');
 }
 
 function claimProblem(request: OpenQualityClaimRequest): Response | undefined {
-  const delivered = mockDeliveredKeys();
-  const claimed = new Set(listMockClaims(request.shipmentId).flatMap((claim) => claim.bagKeys));
-  if (request.bagKeys.length === 0 || request.bagKeys.some((key) => !delivered.includes(key))) {
-    return problem(400, 'QUALITY_CLAIM_BAG_NOT_DELIVERED');
-  }
-  if (request.bagKeys.some((key) => claimed.has(key))) {
-    return problem(409, 'QUALITY_CLAIM_BAG_ALREADY_CLAIMED');
-  }
-  return request.evidenceIds.length === 0
-    ? problem(400, 'QUALITY_CLAIM_EVIDENCE_REQUIRED')
+  if (request.evidenceIds.length === 0) return problem(400, 'QUALITY_CLAIM_EVIDENCE_REQUIRED');
+  const { claimedKg } = request;
+  const net = MOCK_SHIPMENT_NET_KG;
+  return isKilogram(claimedKg) && subtractKg(claimedKg, net).gt(0)
+    ? problem(409, 'CLAIM_EXCEEDS_SHIPMENT_WEIGHT')
     : undefined;
 }
 
@@ -109,15 +113,12 @@ export function createClaimHandlers(role: Role) {
       const failure = targetProblem(params.shipmentId, role);
       if (failure !== undefined) return failure;
       const claims = listMockClaims(String(params.shipmentId));
-      const claimed = new Set(claims.flatMap((claim) => claim.bagKeys));
-      const hasUnclaimed = mockDeliveredKeys().some((key) => !claimed.has(key));
       return HttpResponse.json({
         shipmentId: String(params.shipmentId),
         deadlineAt: mockDeadline(),
         windowOpen: true,
-        deliveredKeys: mockDeliveredKeys(),
         claims: claims.map(toView),
-        allowedActions: hasUnclaimed && has('QUALITY_CLAIM_OPEN') ? ['OPEN_CLAIM'] : [],
+        allowedActions: has('QUALITY_CLAIM_OPEN') ? ['OPEN_CLAIM'] : [],
       });
     }),
     http.post(QUALITY_CLAIMS_PATH, async ({ request }) => {

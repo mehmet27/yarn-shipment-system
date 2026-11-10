@@ -26,7 +26,7 @@ otomatik uygulanmaz.
 - [ ] ADMIN kullanıcısı parolayla giriş yapınca OTP kurulum ekranı gelir.
 - [ ] Giriş sonrası `GET /api/v1/me` izinleri içinde ADMIN izinleri görünür; token'da `acr` = `2`.
 - [ ] OTP'siz oturum (ör. akış devre dışıyken alınmış token) ADMIN/QUALITY izinlerini **alamaz** (403).
-- [ ] WAREHOUSE / MANAGER / SUBCONTRACTOR / DRIVER girişinde OTP istenmez.
+- [ ] WAREHOUSE / MANAGER / DRIVER girişinde OTP istenmez.
 - [ ] Yedek: en az iki ADMIN'in OTP cihazı kayıtlı; kurtarma kodu süreci yazılı.
 
 ## 4. Geri alma

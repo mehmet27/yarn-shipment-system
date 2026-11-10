@@ -1,60 +1,31 @@
 package com.yarnshipment.shipment.masterdata.application.service;
 
-import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
-import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateSubcontractorLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.account.IssueActivationCodeUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListUserNamesUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.account.LoginAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
-import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
-import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
-import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
-import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
-import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
-import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
- * Fasoncu için giriş hesabı açar ve giriş hesaplarını listeler. Kayıt ve lokasyonlar etkin olmalıdır; hesap
- * Keycloak'ta şifresiz tek çağrı dizisiyle açılır ve yarım kalırsa geri alınır, ardından şifre belirleme kodu SMS'le
- * gider. Yerel veritabanına yazılmadığı için transaction
- * açılmaz. Kullanıcı sayısı küçük olduğundan liste Keycloak'tan bütün olarak alınır, arama ve sayfalama burada yapılır.
+ * Giriş hesaplarını listeler (KR-17: fasoncuya giriş hesabı açılmaz). Yerel veritabanına yazılmadığı için
+ * transaction açılmaz. Kullanıcı sayısı küçük olduğundan liste Keycloak'tan
+ * bütün olarak alınır, arama ve sayfalama burada yapılır.
  */
 @Service
-public final class LoginAccountService
-        implements CreateSubcontractorLoginAccountUseCase, ListLoginAccountsUseCase, ListUserNamesUseCase {
+public final class LoginAccountService implements ListLoginAccountsUseCase, ListUserNamesUseCase {
 
-    private final LoginAccountTargetPort targets;
     private final LoginAccountPort accounts;
-    private final IssueActivationCodeUseCase activation;
 
-    public LoginAccountService(
-            LoginAccountTargetPort targets, LoginAccountPort accounts, IssueActivationCodeUseCase activation) {
-        this.targets = targets;
+    public LoginAccountService(LoginAccountPort accounts) {
         this.accounts = accounts;
-        this.activation = activation;
-    }
-
-    @Override
-    public void createSubcontractorLoginAccount(Actor actor, UUID subcontractorId, LoginAccountRequest request) {
-        Optional<String> title = targets.findActiveSubcontractorTitle(subcontractorId);
-        open(
-                LoginRole.SUBCONTRACTOR,
-                subcontractorId,
-                title.orElseThrow(() -> new MasterDataNotFoundException("Subcontractor", subcontractorId)),
-                request);
     }
 
     @Override
@@ -84,17 +55,4 @@ public final class LoginAccountService
         return names;
     }
 
-    private void requireActiveSites(List<UUID> siteIds) {
-        if (siteIds.isEmpty() || !targets.findActiveSiteIds(siteIds).containsAll(new HashSet<>(siteIds))) {
-            throw new InvalidMasterDataException("siteIds", "empty or unknown or inactive");
-        }
-    }
-
-    private void open(LoginRole role, UUID ownerId, String displayName, LoginAccountRequest request) {
-        PhoneNumber phone = PhoneNumber.parse(request.phone());
-        requireActiveSites(request.siteIds());
-        UUID userId = accounts.create(new LoginAccountSpec(
-                request.username(), request.email(), phone, displayName, role, ownerId, request.siteIds()));
-        activation.issueActivationCode(userId, request.username(), phone);
-    }
 }

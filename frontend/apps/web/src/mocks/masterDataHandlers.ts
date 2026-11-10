@@ -2,7 +2,6 @@ import type { Permission } from '@iplik/api-client';
 import { http, HttpResponse } from 'msw';
 import type { MasterKind, MockRecord, MockValues } from './masterData';
 import { listTareStandards, saveTareStandard } from './tareStandards';
-import { addMockLoginAccount, isMockUsernameTaken } from './loginAccounts';
 import {
   createMasterRecord,
   isDuplicateCode,
@@ -116,29 +115,6 @@ function listHandler(kind: MasterKind, canManage: boolean) {
   });
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-/** Hesap açar; Kullanıcılar ekranındaki giriş adları (ör. `admin`) alınmış sayılır, 409 yolu böyle denenir. */
-function openLoginAccount(kind: MasterKind, ownerId: string, body: unknown) {
-  const fields = isRecord(body) ? body : {};
-  const username = textField(fields, 'username') ?? '';
-  if (username === '') return problem(400, 'INVALID_MASTER_DATA', 'Geçersiz kayıt');
-  if (isMockUsernameTaken(username)) {
-    return problem(409, 'LOGIN_ACCOUNT_EXISTS', 'Giriş adı alınmış');
-  }
-  const owner = listMasterRecords(kind).find((record) => record.id === ownerId);
-  addMockLoginAccount({
-    username,
-    email: textField(fields, 'email') ?? '',
-    phone: textField(fields, 'phone') ?? '',
-    fullName: owner?.label ?? username,
-    role: 'SUBCONTRACTOR',
-  });
-  return new HttpResponse(null, { status: 201 });
-}
-
 /** Backend'deki doğrulamalar: TR plaka deseni, tekil plaka ve tekil fasoncu ünvanı. */
 function conflictOf(kind: MasterKind, label: string, exceptId?: string) {
   if (kind === 'vehicle' && !isValidPlate(label)) {
@@ -178,11 +154,6 @@ function writeHandlers(kind: MasterKind, canManage: boolean) {
       if (conflict !== undefined) return conflict;
       const updated = updateMasterRecord(kind, id, values);
       return updated === undefined ? notFound() : HttpResponse.json(toView(kind, updated));
-    }),
-    http.post(`${path}/:id/login-account`, async ({ params, request }) => {
-      if (!canManage) return denied();
-      if (kind !== 'subcontractor') return notFound();
-      return openLoginAccount(kind, String(params.id), await request.json());
     }),
     ...(['deactivate', 'activate'] as const).map((action) =>
       http.post(`${path}/:id/${action}`, ({ params }) => {

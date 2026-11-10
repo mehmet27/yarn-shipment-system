@@ -29,7 +29,7 @@ public final class ScopedShipmentLoader {
         Shipment shipment =
                 shipmentQueryPort.findShipment(shipmentId).orElseThrow(() -> new ShipmentNotFoundException(shipmentId));
         ScopedResource resource =
-                new ScopedResource(RESOURCE_TYPE, shipment.id(), shipment.siteId(), shipment.subcontractorId());
+                new ScopedResource(RESOURCE_TYPE, shipment.id(), shipment.siteId());
         scopeGuard.validateInScope(actor, resource, permission.name());
         return shipment;
     }

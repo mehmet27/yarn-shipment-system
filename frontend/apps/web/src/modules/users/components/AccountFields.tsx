@@ -1,9 +1,8 @@
 import { useTranslation } from '@iplik/i18n';
 import { Stack, TextInput } from '@iplik/ui';
-import { AccountOwnerSelect, SiteField } from '@/modules/masterdata';
+import { SiteField } from '@/modules/masterdata';
 import type { AccountDraft, AccountField } from '../accountDraft';
-import { recordSlugOf } from '../staffRoles';
-import { AccountKindSelect } from './AccountKindSelect';
+import { StaffRoleSelect } from './StaffRoleSelect';
 import { ContactFields } from './ContactFields';
 
 export type AccountFieldsProps = {
@@ -13,33 +12,20 @@ export type AccountFieldsProps = {
 };
 
 /**
- * Hesap açma formunun alanları; hata metinleri üstten gelir. Şoför ve fasoncuda ad kaydın kendisinden gelir, bu
- * yüzden kayıt seçilir; fabrika içi rollerde ad yazılır. Şifre alanı yoktur: kişi SMS koduyla kendisi belirler.
+ * Hesap açma formunun alanları; hata metinleri üstten gelir. Şifre alanı yoktur: kişi SMS koduyla kendisi belirler.
  */
 export function AccountFields({ draft, onChange: change, errorText }: AccountFieldsProps) {
   const { t } = useTranslation();
   const kind = draft.kind;
-  const slug = recordSlugOf(kind);
   return (
     <Stack>
-      <AccountKindSelect
+      <StaffRoleSelect
         value={kind}
         onChange={(next) => {
-          change({ kind: next, recordId: undefined });
+          change({ kind: next });
         }}
         error={errorText('role')}
       />
-      {slug !== undefined && (
-        <AccountOwnerSelect
-          key={slug}
-          kind={slug}
-          value={draft.recordId}
-          onChange={(recordId) => {
-            change({ recordId });
-          }}
-          error={errorText('record')}
-        />
-      )}
       <TextInput
         label={t('masterData.loginAccount.username')}
         description={t('masterData.loginAccount.usernameHint')}
@@ -51,17 +37,15 @@ export function AccountFields({ draft, onChange: change, errorText }: AccountFie
         withAsterisk
         data-autofocus
       />
-      {slug === undefined && (
-        <TextInput
+      <TextInput
           label={t('users.field.fullName')}
           value={draft.fullName}
           onChange={(event) => {
             change({ fullName: event.currentTarget.value });
           }}
           error={errorText('fullName')}
-          withAsterisk
-        />
-      )}
+        withAsterisk
+      />
       <ContactFields draft={draft} onChange={change} errorText={errorText} />
       <SiteField
         selected={draft.siteIds}

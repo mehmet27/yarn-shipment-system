@@ -1,7 +1,6 @@
 package com.yarnshipment.common.security.config;
 
 import com.yarnshipment.common.security.CurrentActorProvider;
-import com.yarnshipment.common.security.TestTokens;
 import com.yarnshipment.common.security.scope.ScopeGuard;
 import com.yarnshipment.common.security.scope.ScopedResource;
 import java.util.UUID;
@@ -40,11 +39,11 @@ class SecuredTestController {
         // Yalnızca yetki kontrolü denenir.
     }
 
-    @GetMapping("/of-subcontractor/{subcontractorId}")
+    @GetMapping("/in-site/{siteId}")
     @PreAuthorize("hasAuthority('SHIPMENT_VIEW')")
-    public String getShipment(@PathVariable UUID subcontractorId) {
+    public String getShipment(@PathVariable UUID siteId) {
         ScopedResource shipment =
-                new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.SITE_ID, subcontractorId);
+                new ScopedResource("Shipment", UUID.randomUUID(), siteId);
         scopeGuard.validateInScope(currentActorProvider.getCurrentActor(), shipment, "SHIPMENT_VIEW");
         return shipment.reference();
     }

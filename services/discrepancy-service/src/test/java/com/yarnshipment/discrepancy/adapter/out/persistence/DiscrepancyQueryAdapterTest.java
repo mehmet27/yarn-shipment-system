@@ -3,7 +3,6 @@ package com.yarnshipment.discrepancy.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.common.security.scope.AccessScope;
-import com.yarnshipment.discrepancy.TestComparisons;
 import com.yarnshipment.discrepancy.application.port.in.DiscrepancyPage;
 import com.yarnshipment.discrepancy.application.port.in.ListDiscrepanciesQuery.Filter;
 import com.yarnshipment.discrepancy.domain.model.Severity;
@@ -55,8 +54,8 @@ class DiscrepancyQueryAdapterTest {
     @Test
     @DisplayName("Liste kapsama ve süzgeçlere uyar; vadesi aynı olanlarda Kırmızı önce gelir")
     void shouldListWithinScopeAndFilters() {
-        AccessScope ownSite = AccessScope.restrictedTo(Set.of(SeededDiscrepancies.SITE), null);
-        AccessScope otherSite = AccessScope.restrictedTo(Set.of(UUID.randomUUID()), null);
+        AccessScope ownSite = AccessScope.restrictedTo(Set.of(SeededDiscrepancies.SITE));
+        AccessScope otherSite = AccessScope.restrictedTo(Set.of(UUID.randomUUID()));
 
         DiscrepancyPage all = queries.findDiscrepancies(NO_FILTER, ownSite, 0, PAGE_SIZE);
         DiscrepancyPage red =
@@ -81,20 +80,5 @@ class DiscrepancyQueryAdapterTest {
 
         // Tohum kayıtların vadesi 30.10.2026'dadır ve ikisi de hâlâ açıktır.
         assertThat(result.items()).hasSize(2);
-    }
-
-    @Test
-    @DisplayName("Fasoncu kapsamı uyuşmazlıkları fasoncu kimliğiyle süzer; kayıt fasoncuyu taşır")
-    void shouldFilterBySubcontractor() {
-        AccessScope own = AccessScope.restrictedTo(Set.of(SeededDiscrepancies.SITE), TestComparisons.SUBCONTRACTOR);
-        AccessScope other = AccessScope.restrictedTo(Set.of(SeededDiscrepancies.SITE), UUID.randomUUID());
-
-        DiscrepancyPage mine = queries.findDiscrepancies(NO_FILTER, own, 0, PAGE_SIZE);
-
-        assertThat(mine.totalElements()).isEqualTo(2);
-        assertThat(mine.items())
-                .allSatisfy(item -> assertThat(item.subcontractorId()).isEqualTo(TestComparisons.SUBCONTRACTOR));
-        assertThat(queries.findDiscrepancies(NO_FILTER, other, 0, PAGE_SIZE).items())
-                .isEmpty();
     }
 }

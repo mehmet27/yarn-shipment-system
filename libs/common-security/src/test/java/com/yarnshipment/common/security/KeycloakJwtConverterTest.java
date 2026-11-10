@@ -29,7 +29,6 @@ class KeycloakJwtConverterTest {
         assertThat(actor.roles()).containsExactly(Role.WAREHOUSE);
         assertThat(actor.hasPermission(Permission.DISPATCH_RECORD)).isTrue();
         assertThat(actor.siteIds()).containsExactly(TestTokens.SITE_ID);
-        assertThat(actor.subcontractorId()).isNull();
         assertThat(actor.toString()).doesNotContain("test.user");
     }
 
@@ -68,40 +67,6 @@ class KeycloakJwtConverterTest {
         // then
         assertThat(byAmr.roles()).containsExactly(Role.ADMIN);
         assertThat(byAcr.roles()).containsExactly(Role.QUALITY);
-    }
-
-    @Test
-    @DisplayName("Fasoncu kapsamı subcontractor_id claim'inden gelir")
-    void shouldReadSubcontractorScope() {
-        // when
-        Actor actor = converter.toActor(TestTokens.subcontractor());
-
-        // then
-        assertThat(actor.subcontractorId()).isEqualTo(TestTokens.SUBCONTRACTOR_ID);
-    }
-
-    @Test
-    @DisplayName("Kapsam claim'i olmayan fasoncu token'ı reddedilir")
-    void shouldRejectSubcontractorWithoutScopeClaim() {
-        // given
-        Jwt jwt = TestTokens.withRoles("subcontractor").build();
-
-        // when / then
-        assertThatThrownBy(() -> converter.toActor(jwt))
-                .isInstanceOf(InvalidBearerTokenException.class)
-                .hasMessageContaining(TokenClaims.SUBCONTRACTOR_ID);
-    }
-
-    @Test
-    @DisplayName("Dış rolle iç rolü birleştiren token reddedilir")
-    void shouldRejectMixedExternalAndInternalRoles() {
-        // given
-        Jwt jwt = TestTokens.withRoles("subcontractor", "warehouse")
-                .claim(TokenClaims.SUBCONTRACTOR_ID, TestTokens.SUBCONTRACTOR_ID.toString())
-                .build();
-
-        // when / then
-        assertThatThrownBy(() -> converter.toActor(jwt)).isInstanceOf(InvalidBearerTokenException.class);
     }
 
     @Test

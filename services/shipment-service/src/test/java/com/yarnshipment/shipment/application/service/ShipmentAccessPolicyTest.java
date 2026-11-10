@@ -16,11 +16,9 @@ class ShipmentAccessPolicyTest {
     private final ShipmentAccessPolicy policy = new ShipmentAccessPolicy();
 
     @Test
-    @DisplayName("Görünüm role göre seçilir: fasoncu kendi görünümünü, depo depo görünümünü alır")
+    @DisplayName("Görünüm role göre seçilir: depo depo görünümünü alır")
     void shouldChooseAudienceByRole() {
         // when / then
-        assertThat(policy.audienceOf(TestTokens.actor(TestTokens.subcontractorToken())))
-                .isEqualTo(ShipmentAudience.SUBCONTRACTOR);
         assertThat(policy.audienceOf(TestTokens.actor("warehouse"))).isEqualTo(ShipmentAudience.WAREHOUSE);
         assertThat(policy.audienceOf(TestTokens.actor("manager"))).isEqualTo(ShipmentAudience.INTERNAL);
         assertThat(policy.audienceOf(TestTokens.actor("warehouse", "quality"))).isEqualTo(ShipmentAudience.INTERNAL);
@@ -32,16 +30,6 @@ class ShipmentAccessPolicyTest {
         // when / then
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.DRAFT), TestTokens.actor("warehouse")))
                 .containsExactlyInAnyOrder(ShipmentAction.ASSIGN_BAGS, ShipmentAction.RECORD_DISPATCH);
-    }
-
-    @Test
-    @DisplayName("Teslim bekleyen sevkiyatta fasoncu hiçbir işlem yapamaz")
-    void shouldAllowSubcontractorNothingWhenAwaiting() {
-        // when / then
-        assertThat(policy.allowedActions(
-                        TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY),
-                        TestTokens.actor(TestTokens.subcontractorToken())))
-                .isEmpty();
     }
 
     @Test

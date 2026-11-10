@@ -114,7 +114,7 @@ class MasterDataControllerTest {
         MvcTestResult result = mvc.get()
                 .uri("/api/v1/master-data/sites")
                 .with(SecurityMockMvcRequestPostProcessors.authentication(
-                        TestTokens.CONVERTER.convert(TestTokens.subcontractorToken())))
+                        TestTokens.CONVERTER.convert(TestTokens.token("offline_access").build())))
                 .exchange();
 
         // then

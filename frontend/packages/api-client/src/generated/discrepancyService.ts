@@ -231,22 +231,22 @@ export const InspectionKind = {
 export interface OpenQualityClaimRequest {
   shipmentId: string;
   /**
+     * İtiraz edilen kilo (kg), en çok 3 ondalıklı, 0'dan büyük; sevkiyatın net ağırlığını aşamaz
+     * @pattern ^\d+(\.\d{1,3})?$
+     */
+  claimedKg: string;
+  /**
      * @minLength 1
      * @maxLength 2000
      */
   description: string;
   /**
      * @minItems 1
-     * @maxItems 500
-     * @items.minLength 1
-     * @items.maxLength 64
-     */
-  bagKeys: string[];
-  /**
-     * @minItems 1
      * @maxItems 20
      */
   evidenceIds: string[];
+  /** Kumaş girişi (isteğe bağlı) */
+  fabricReceiptId?: string;
 }
 
 export interface RequestInspectionRequest {
@@ -302,7 +302,9 @@ export interface QualityClaimView {
   resolution?: Resolution;
   resolutionNote?: string;
   description: string;
-  bagKeys: string[];
+  /** İtiraz edilen kilo (kg), 3 ondalıklı dize */
+  claimedKg: string;
+  fabricReceiptId?: string;
   evidenceIds: string[];
   openedBy: string;
   openedAt: string;
@@ -321,11 +323,9 @@ export const ShipmentClaimsViewAllowedActionsItem = {
 
 export interface ShipmentClaimsView {
   shipmentId: string;
-  /** İtirazın açılabileceği son an (teslim + 3 iş günü) */
+  /** İtirazın açılabileceği son an (tamamlanma + 3 iş günü) */
   deadlineAt: string;
   windowOpen: boolean;
-  /** Teslimde okutulan çuval anahtarları */
-  deliveredKeys: string[];
   claims: QualityClaimView[];
   /** Bu kullanıcının bu sevkiyatta yapabileceği eylemler (FE-SEC-03) */
   allowedActions?: ShipmentClaimsViewAllowedActionsItem[];

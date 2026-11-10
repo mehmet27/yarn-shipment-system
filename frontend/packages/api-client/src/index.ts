@@ -22,7 +22,6 @@ export type {
   ShipmentDetail,
   ShipmentStatus,
   ShipmentSummary,
-  SubcontractorShipmentView,
   WarehouseShipmentView,
   Weighing,
 } from './shipments';
@@ -77,7 +76,6 @@ export {
   changeLoginAccountRole,
   confirmPasswordReset,
   createStaffLoginAccount,
-  createSubcontractorLoginAccount,
   listLoginAccounts,
   removeShipmentBag,
   requestPasswordReset,
@@ -88,7 +86,6 @@ export type {
   ChangeLoginAccountRoleRequest,
   ListLoginAccountsParams,
   LoginAccountPageResponse,
-  LoginAccountRequest,
   LoginAccountView,
   PasswordResetConfirmRequest,
   PasswordResetRequest,

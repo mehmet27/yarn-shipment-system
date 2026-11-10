@@ -59,7 +59,6 @@ Test kullanıcıları (hepsinin şifresi `KEYCLOAK_TEST_USER_PASSWORD`):
 | `depo` | warehouse | A lokasyonu |
 | `kalite` | quality | iki lokasyon |
 | `mudur` | manager | iki lokasyon |
-| `fasoncu` | subcontractor | A lokasyonu, kendi fasoncu kimliği |
 
 Token'ların servislerin beklediği claim'leri taşıdığını doğrulamak için (Node 22):
 
@@ -116,7 +115,7 @@ Fasoncu ve şoför yönetimi yalnızca yöneticidedir (`MASTER_DATA_MANAGE`): `P
 | `KEYCLOAK_ISSUER_URI` | `http://localhost:8180/realms/yarnshipment` |
 | `SERVER_PORT` | `8083` |
 | `YARNSHIPMENT_BAG_SERVICE_URL` | `http://localhost:8084` (çuval atama için bag-service; istek sahibinin token'ı iletilir, bu yüzden bag-service de çalışıyor olmalı) |
-| `YARNSHIPMENT_KEYCLOAK_ADMIN_URL` / `YARNSHIPMENT_KEYCLOAK_ADMIN_REALM` / `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_ID` | `http://localhost:8180` / `yarnshipment` / `yarnshipment-admin` (fasoncuya giriş hesabı açan servis hesabı) |
+| `YARNSHIPMENT_KEYCLOAK_ADMIN_URL` / `YARNSHIPMENT_KEYCLOAK_ADMIN_REALM` / `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_ID` | `http://localhost:8180` / `yarnshipment` / `yarnshipment-admin` (fabrika içi giriş hesabı açan servis hesabı) |
 | `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET` | boş (boşsa hesap açma uçları 502 `LOGIN_ACCOUNT_UNAVAILABLE` döner); yerel değer `deploy/.env` içindeki `KEYCLOAK_ADMIN_CLIENT_SECRET` (varsayılan `local-admin-client-secret`) |
 
 Persistence testleri Testcontainers ile gerçek PostgreSQL'e karşı çalışır; `./mvnw verify` için Docker açık olmalıdır.
@@ -175,11 +174,11 @@ Teslim tartısı kaldırıldığı için çıkış–teslim otomatik karşılaş
 
 ### Kalite itirazı ve numune/lab
 
-Kalite (ve geçiş döneminde fasoncu hesabı), tamamlanmış sevkiyatın çuvalları için kalite itirazı açar (`POST /api/v1/quality-claims`, `QUALITY_CLAIM_OPEN`). Pencere tamamlanmadan itibaren 3 iş günüdür (Europe/Istanbul); itirazda çuval anahtarları, açıklama ve en az bir `QUALITY_CLAIM` fotoğrafı zorunludur. Fotoğrafların bu sevkiyata ait olduğu evidence-service'e isteyenin token'ıyla sorulur. Her itiraz `QUALITY` türünde Kırmızı bir uyuşmazlık (`QUALITY_CLAIM` kuralı, son tarih 5 iş günü) açar; aynı çuvala ikinci itiraz açılamaz. Kalite (`DISCREPANCY_RESOLVE`) itiraz üzerinden numune (`SAMPLE`) ya da laboratuvar (`LAB`) kontrolü ister ve sonucu bir kez girer; lab sonucunda `LAB_RESULT` belgesi zorunludur. Karar mevcut uyuşmazlık akışıyla (`CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED`) verilir.
+Fabrika personeli (kalite, müdür, admin; fasoncu sisteme giriş yapmaz, KR-17) tamamlanmış sevkiyat için **kilogram bazlı** kalite itirazı açar (`POST /api/v1/quality-claims`, `QUALITY_CLAIM_OPEN`). Hedef sevkiyat `shipment_watch` izinden okunur (`comparison_input` artık okunmaz). Pencere tamamlanmadan itibaren 3 iş günüdür (Europe/Istanbul); itirazda `claimedKg` (sıfırdan büyük, en çok 3 ondalık, sevkiyatın çıkış net kilosunu aşamaz), açıklama ve en az bir `QUALITY_CLAIM` fotoğrafı zorunludur; `fabricReceiptId` isteğe bağlıdır (kumaş girişi henüz yok). Fotoğrafların bu sevkiyata ait olduğu evidence-service'e isteyenin token'ıyla sorulur. Her itiraz `QUALITY` türünde Kırmızı bir uyuşmazlık (`QUALITY_CLAIM` kuralı, son tarih 5 iş günü) açar. Kalite (`DISCREPANCY_RESOLVE`) itiraz üzerinden numune (`SAMPLE`) ya da laboratuvar (`LAB`) kontrolü ister ve sonucu bir kez girer; lab sonucunda `LAB_RESULT` belgesi zorunludur. Karar mevcut uyuşmazlık akışıyla (`CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED`) verilir; haklı itirazın bakiye düzeltmesi (`CLAIM_ADJUSTMENT`) ayrı ledger işindedir.
 
 | Kod | HTTP | Anlamı |
 |---|---|---|
-| `QUALITY_CLAIM_NOT_AVAILABLE` | 409 | Sevkiyat tamamlanmamış ya da eski kayıtta lokasyon/fasoncu bilgisi eksik |
+| `QUALITY_CLAIM_NOT_AVAILABLE` | 409 | Sevkiyat tamamlanmamış ya da çıkış kilosu bilinmiyor |
 | `QUALITY_CLAIM_WINDOW_CLOSED` | 409 | 3 iş günlük süre doldu |
 | `QUALITY_CLAIM_BAG_NOT_DELIVERED` / `_BAG_ALREADY_CLAIMED` | 400 / 409 | Çuval sevkiyatta yok / zaten itiraz edilmiş |
 | `QUALITY_CLAIM_EVIDENCE_REQUIRED` / `_EVIDENCE_INVALID` | 400 | Fotoğraf yok / başka sevkiyata ait ya da türü yanlış |

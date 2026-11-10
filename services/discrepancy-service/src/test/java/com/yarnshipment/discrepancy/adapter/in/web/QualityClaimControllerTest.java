@@ -37,7 +37,7 @@ class QualityClaimControllerTest {
     private static final String CLAIMS = "/api/v1/quality-claims";
     private static final String INSPECTIONS = CLAIMS + "/" + TestClaims.CLAIM_ID + "/inspections";
     private static final String OPEN_BODY = "{\"shipmentId\":\"" + TestDiscrepancies.SHIPMENT
-            + "\",\"description\":\"B kalite\",\"bagKeys\":[\"UK-0002\"],\"evidenceIds\":[\"" + TestClaims.PHOTO
+            + "\",\"description\":\"B kalite\",\"claimedKg\":\"120.5\",\"evidenceIds\":[\"" + TestClaims.PHOTO
             + "\"]}";
 
     private final MockMvcTester mvc;
@@ -63,13 +63,15 @@ class QualityClaimControllerTest {
     }
 
     @Test
-    @DisplayName("Fasoncu itiraz açar ve 201 alır; süre dolmuşsa QUALITY_CLAIM_WINDOW_CLOSED ile 409 alır")
+    @DisplayName("Müdür itiraz açar ve 201 alır; süre dolmuşsa QUALITY_CLAIM_WINDOW_CLOSED ile 409 alır")
     void shouldOpenClaim() {
         when(openQualityClaim.openQualityClaim(any())).thenReturn(file());
 
-        MvcTestResult created = post(CLAIMS, OPEN_BODY, TestTokens.subcontractorToken());
+        MvcTestResult created = post(CLAIMS, OPEN_BODY, manager());
         assertThat(created).hasStatus(HttpStatus.CREATED);
         assertThat(created).bodyJson().extractingPath("$.discrepancyNo").isEqualTo("UY-SV-3-1");
+        assertThat(created).bodyJson().extractingPath("$.claimedKg").isEqualTo("120.500");
+        assertThat(created).bodyJson().doesNotHavePath("$.bagKeys");
         assertThat(created)
                 .bodyJson()
                 .extractingPath("$.allowedActions")
@@ -78,22 +80,37 @@ class QualityClaimControllerTest {
 
         when(openQualityClaim.openQualityClaim(any()))
                 .thenThrow(new ClaimRejectedException(ClaimRejection.WINDOW_CLOSED, "test"));
-        MvcTestResult late = post(CLAIMS, OPEN_BODY, TestTokens.subcontractorToken());
+        MvcTestResult late = post(CLAIMS, OPEN_BODY, manager());
         assertThat(late).hasStatus(HttpStatus.CONFLICT);
         assertThat(late).bodyJson().extractingPath("$.code").isEqualTo("QUALITY_CLAIM_WINDOW_CLOSED");
     }
 
     @Test
-    @DisplayName("Fotoğrafsız ya da çuvalsız istek 400 alır; kanıt kuralı QUALITY_CLAIM_EVIDENCE_INVALID ile 400 alır")
+    @DisplayName("Fotoğrafsız ya da kilosuz istek 400 alır; kanıt kuralı QUALITY_CLAIM_EVIDENCE_INVALID ile 400 alır")
     void shouldValidateOpenRequest() {
         String noPhoto = OPEN_BODY.replace("\"" + TestClaims.PHOTO + "\"", "");
         when(openQualityClaim.openQualityClaim(any()))
                 .thenThrow(new ClaimRejectedException(ClaimRejection.EVIDENCE_INVALID, "test"));
 
-        assertThat(post(CLAIMS, noPhoto, TestTokens.subcontractorToken())).hasStatus(HttpStatus.BAD_REQUEST);
-        MvcTestResult invalid = post(CLAIMS, OPEN_BODY, TestTokens.subcontractorToken());
+        assertThat(post(CLAIMS, noPhoto, manager())).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post(CLAIMS, OPEN_BODY.replace("\"claimedKg\":\"120.5\",", ""), manager()))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post(CLAIMS, OPEN_BODY.replace("120.5", "-1"), manager())).hasStatus(HttpStatus.BAD_REQUEST);
+        MvcTestResult invalid = post(CLAIMS, OPEN_BODY, manager());
         assertThat(invalid).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(invalid).bodyJson().extractingPath("$.code").isEqualTo("QUALITY_CLAIM_EVIDENCE_INVALID");
+    }
+
+    @Test
+    @DisplayName("Sevkiyat kilosunu aşan itiraz QUALITY_CLAIM_CLAIM_EXCEEDS_SHIPMENT_WEIGHT ile 400 alır")
+    void shouldRejectClaimAboveShipmentWeight() {
+        when(openQualityClaim.openQualityClaim(any()))
+                .thenThrow(new ClaimRejectedException(ClaimRejection.CLAIM_EXCEEDS_SHIPMENT_WEIGHT, "test"));
+
+        MvcTestResult result = post(CLAIMS, OPEN_BODY, manager());
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("QUALITY_CLAIM_CLAIM_EXCEEDS_SHIPMENT_WEIGHT");
     }
 
     @Test
@@ -105,16 +122,14 @@ class QualityClaimControllerTest {
         MvcTestResult result = mvc.get()
                 .uri(CLAIMS + "/shipments/" + TestDiscrepancies.SHIPMENT)
                 .with(SecurityMockMvcRequestPostProcessors.authentication(
-                        TestTokens.CONVERTER.convert(TestTokens.subcontractorToken())))
+                        TestTokens.CONVERTER.convert(manager())))
                 .exchange();
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.allowedActions[0]").isEqualTo("OPEN_CLAIM");
-        assertThat(result)
-                .bodyJson()
-                .extractingPath("$.deliveredKeys")
-                .asArray()
-                .hasSize(2);
+        assertThat(result).bodyJson().extractingPath("$.shipmentNetKg").isEqualTo("2000.000");
+        assertThat(result).bodyJson().doesNotHavePath("$.deliveredKeys");
+        assertThat(result).bodyJson().extractingPath("$.claims[0].claimedKg").isEqualTo("120.500");
     }
 
     @Test
@@ -135,23 +150,24 @@ class QualityClaimControllerTest {
     }
 
     @Test
-    @DisplayName("Fasoncu, depo ve yönetici kontrol isteyemez; depo ve yönetici itiraz açamaz")
+    @DisplayName("Depo ve yönetici kontrol isteyemez; depo itiraz açamaz")
     void shouldCheckPermissions() {
-        Jwt manager = TestTokens.token("manager").build();
+        Jwt manager = manager();
         Jwt warehouse = TestTokens.token("warehouse").build();
 
-        assertThat(post(INSPECTIONS, "{\"kind\":\"SAMPLE\"}", TestTokens.subcontractorToken()))
-                .hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(INSPECTIONS, "{\"kind\":\"SAMPLE\"}", warehouse)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(INSPECTIONS, "{\"kind\":\"SAMPLE\"}", manager)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(CLAIMS, OPEN_BODY, warehouse)).hasStatus(HttpStatus.FORBIDDEN);
-        assertThat(post(CLAIMS, OPEN_BODY, manager)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(CLAIMS, OPEN_BODY, TestTokens.unknownRoleToken())).hasStatus(HttpStatus.FORBIDDEN);
     }
 
     private static ClaimFile file() {
         return new ClaimFile(
-                TestClaims.claim(List.of("UK-0002")), TestDiscrepancies.open(TestTokens.SITE_ID), List.of());
+                TestClaims.claim(), TestDiscrepancies.open(TestTokens.SITE_ID), List.of());
+    }
+
+    private static Jwt manager() {
+        return TestTokens.token("manager").build();
     }
 
     private static Jwt quality() {

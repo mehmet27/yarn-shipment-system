@@ -52,7 +52,6 @@ final class DiscrepancyQueryAdapter implements DiscrepancyQueryPort {
         if (!scope.allSites()) {
             where.add("site_id IN (:siteIds)", "siteIds", scope.siteIds());
         }
-        where.add("subcontractor_id = :subcontractorId", "subcontractorId", scope.subcontractorId());
         where.add("status = :status", "status", name(filter.status()));
         where.add("severity = :severity", "severity", name(filter.severity()));
         where.add("assignee_id = :assigneeId", "assigneeId", filter.assigneeId());

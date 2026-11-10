@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 class RolePermissionMatrixTest {
 
     @Test
-    @DisplayName("Müdürün yazma izni yalnızca sevkiyat açma, iptal ve tamamlamadır")
+    @DisplayName("Müdürün yazma izni yalnızca sevkiyat yaşam döngüsü ve kalite itirazıdır")
     void shouldLimitManagerWritesToShipmentLifecycle() {
         // when
         Set<Permission> permissions = RolePermissionMatrix.permissionsOf(List.of(Role.MANAGER));
@@ -21,7 +21,11 @@ class RolePermissionMatrixTest {
         // then
         assertThat(permissions.stream().filter(Permission::isWrite))
                 .containsExactlyInAnyOrder(
-                        Permission.SHIPMENT_CREATE, Permission.SHIPMENT_CANCEL, Permission.SHIPMENT_COMPLETE);
+                        Permission.SHIPMENT_CREATE,
+                        Permission.SHIPMENT_CANCEL,
+                        Permission.SHIPMENT_COMPLETE,
+                        Permission.EVIDENCE_UPLOAD_CLAIM,
+                        Permission.QUALITY_CLAIM_OPEN);
     }
 
     @Test

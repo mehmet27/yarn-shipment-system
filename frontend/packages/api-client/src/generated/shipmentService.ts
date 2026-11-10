@@ -42,7 +42,6 @@ export type Role = typeof Role[keyof typeof Role];
 export const Role = {
   ADMIN: 'ADMIN',
   WAREHOUSE: 'WAREHOUSE',
-  SUBCONTRACTOR: 'SUBCONTRACTOR',
   QUALITY: 'QUALITY',
   MANAGER: 'MANAGER',
 } as const;
@@ -81,8 +80,6 @@ export interface CurrentUserResponse {
   roles: Role[];
   permissions: Permission[];
   siteIds: string[];
-  /** Yalnızca fasoncu kullanıcılarında */
-  subcontractorId?: string;
   mfaVerified: boolean;
 }
 
@@ -148,7 +145,6 @@ export type Audience = typeof Audience[keyof typeof Audience];
 export const Audience = {
   INTERNAL: 'INTERNAL',
   WAREHOUSE: 'WAREHOUSE',
-  SUBCONTRACTOR: 'SUBCONTRACTOR',
 } as const;
 
 /**
@@ -350,31 +346,6 @@ export interface DriverView {
 export interface DriverPageResponse {
   items: DriverView[];
   page: PageMetadata;
-}
-
-export interface LoginAccountRequest {
-  /**
-     * Giriş adı; küçük harf, rakam, nokta, alt çizgi ve tire
-     * @pattern ^[a-z0-9][a-z0-9._-]{2,63}$
-     */
-  username: string;
-  /**
-     * Cep telefonu (ör. 0532 123 45 67 ya da +905321234567); şifre kodu bu numaraya SMS'le gider
-     * @minLength 7
-     * @maxLength 20
-     */
-  phone: string;
-  /**
-     * İsteğe bağlı; şoför ve fasoncunun e-postası olmayabilir
-     * @maxLength 255
-     */
-  email?: string;
-  /**
-     * Kişinin sevkiyatlarını göreceği etkin lokasyonlar
-     * @minItems 1
-     * @maxItems 100
-     */
-  siteIds: string[];
 }
 
 /**
@@ -814,34 +785,10 @@ export interface WarehouseShipmentView {
   allowedActions: ShipmentAction[];
 }
 
-export type SubcontractorShipmentViewAudience = typeof SubcontractorShipmentViewAudience[keyof typeof SubcontractorShipmentViewAudience];
-
-
-export const SubcontractorShipmentViewAudience = {
-  SUBCONTRACTOR: 'SUBCONTRACTOR',
-} as const;
-
 /**
- * Fasoncu. Beklenen yükü içermez.
+ * İsteyenin rolüne göre iki görünümden biri (API-09).
  */
-export interface SubcontractorShipmentView {
-  audience: SubcontractorShipmentViewAudience;
-  shipmentId: string;
-  shipmentNo: string;
-  siteId: string;
-  status: ShipmentStatus;
-  subcontractorTitle: string;
-  driverName?: string;
-  plateNo?: string;
-  dispatchWeighing?: WeighingView;
-  createdAt: string;
-  allowedActions: ShipmentAction[];
-}
-
-/**
- * İsteyenin rolüne göre üç görünümden biri (API-09).
- */
-export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView;
+export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView;
 
 /**
  * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE) ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da düzeltilecek kayıt bu arada değişti (CORRECTION_CONFLICT)
@@ -1309,27 +1256,6 @@ export const deactivateDriver = (
  ) => {
       return customInstance<void>(
       {url: `/api/v1/master-data/drivers/${driverId}/deactivate`, method: 'POST'
-    },
-      );
-    }
-
-/**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Keycloak'ta kullanıcıyı şifresiz; rol, telefon ve kimlik/lokasyon
- * öznitelikleriyle açar. Şifre üretilmez ve hiçbir yanıtta yer almaz: kişiye SMS ile bir kod gider, kişi giriş
- * sayfasındaki "Şifremi unuttum" ile kodu girip kendi şifresini belirler. SMS gidemezse 502 `SMS_UNAVAILABLE`
- * (hesap açık kalır; yönetici sıfırlamayı yeniden başlatır). Kayıt etkin olmalı, `siteIds` etkin lokasyonlardan oluşmalıdır (`INVALID_MASTER_DATA`). Kayıt için
- * hesap zaten varsa ya da giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak'a ulaşılamazsa ya da
- * yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
- * @summary Fasoncu için giriş hesabı açar
- */
-export const createSubcontractorLoginAccount = (
-    subcontractorId: string,
-    loginAccountRequest: LoginAccountRequest,
- ) => {
-      return customInstance<void>(
-      {url: `/api/v1/master-data/subcontractors/${subcontractorId}/login-account`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: loginAccountRequest
     },
       );
     }
@@ -2046,7 +1972,6 @@ export type ListDriversResult = NonNullable<Awaited<ReturnType<typeof listDriver
 export type CreateDriverResult = NonNullable<Awaited<ReturnType<typeof createDriver>>>
 export type UpdateDriverResult = NonNullable<Awaited<ReturnType<typeof updateDriver>>>
 export type DeactivateDriverResult = NonNullable<Awaited<ReturnType<typeof deactivateDriver>>>
-export type CreateSubcontractorLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createSubcontractorLoginAccount>>>
 export type ListLoginAccountsResult = NonNullable<Awaited<ReturnType<typeof listLoginAccounts>>>
 export type CreateStaffLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createStaffLoginAccount>>>
 export type ListUserNamesResult = NonNullable<Awaited<ReturnType<typeof listUserNames>>>

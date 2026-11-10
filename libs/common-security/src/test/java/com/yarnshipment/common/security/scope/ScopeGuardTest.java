@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -33,26 +32,14 @@ class ScopeGuardTest {
             new KeycloakJwtConverter(new SecurityProperties(Set.of(), Set.of("otp"), Set.of("2"), List.of()));
 
     @Test
-    @DisplayName("Fasoncu kendi sevkiyatına erişir, başka fasoncununkine erişemez")
-    void shouldLimitSubcontractorToOwnRecords() {
-        // given
-        Actor actor = converter.toActor(TestTokens.subcontractor());
-
-        // when / then
-        assertThat(scopeGuard.isInScope(actor, shipment(TestTokens.SUBCONTRACTOR_ID)))
-                .isTrue();
-        assertThat(scopeGuard.isInScope(actor, shipment(UUID.randomUUID()))).isFalse();
-    }
-
-    @Test
     @DisplayName("İç kullanıcı yalnızca yetkili olduğu lokasyondaki kayda erişir")
     void shouldLimitInternalUserToOwnSites() {
         // given
         Actor actor = converter.toActor(TestTokens.withRoles("warehouse").build());
-        ScopedResource otherSite = new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.OTHER_SITE_ID, null);
+        ScopedResource otherSite = new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.OTHER_SITE_ID);
 
         // when / then
-        assertThat(scopeGuard.isInScope(actor, shipment(UUID.randomUUID()))).isTrue();
+        assertThat(scopeGuard.isInScope(actor, shipment())).isTrue();
         assertThat(scopeGuard.isInScope(actor, otherSite)).isFalse();
     }
 
@@ -69,7 +56,7 @@ class ScopeGuardTest {
 
         // then
         assertThat(scope.isUnrestricted()).isFalse();
-        assertThat(scopeGuard.isInScope(actor, shipment(UUID.randomUUID()))).isFalse();
+        assertThat(scopeGuard.isInScope(actor, shipment())).isFalse();
     }
 
     @Test
@@ -81,21 +68,21 @@ class ScopeGuardTest {
                 "svc",
                 Set.of(Role.SYSTEM),
                 RolePermissionMatrix.permissionsOf(Set.of(Role.SYSTEM)),
-                null,
                 Set.of(),
                 false);
 
         // when / then
         assertThat(scopeGuard.scopeOf(system)).isEqualTo(AccessScope.UNRESTRICTED);
-        assertThat(scopeGuard.isInScope(system, shipment(UUID.randomUUID()))).isTrue();
+        assertThat(scopeGuard.isInScope(system, shipment())).isTrue();
     }
 
     @Test
     @DisplayName("Kapsam dışı erişim 403 istisnası fırlatır ve audit'e yazılır")
     void shouldAuditAndRejectOutOfScopeAccess() {
         // given
-        Actor actor = converter.toActor(TestTokens.subcontractor());
-        ScopedResource resource = shipment(UUID.randomUUID());
+        Actor actor = converter.toActor(TestTokens.withRoles("warehouse").build());
+        ScopedResource resource =
+                new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.OTHER_SITE_ID);
 
         // when / then
         assertThatThrownBy(() -> scopeGuard.validateInScope(actor, resource, "SHIPMENT_VIEW"))
@@ -112,16 +99,16 @@ class ScopeGuardTest {
     @DisplayName("Kapsam içindeki erişim audit'e ret yazmaz")
     void shouldNotAuditInScopeAccess() {
         // given
-        Actor actor = converter.toActor(TestTokens.subcontractor());
+        Actor actor = converter.toActor(TestTokens.withRoles("warehouse").build());
 
         // when
-        scopeGuard.validateInScope(actor, shipment(TestTokens.SUBCONTRACTOR_ID), "SHIPMENT_VIEW");
+        scopeGuard.validateInScope(actor, shipment(), "SHIPMENT_VIEW");
 
         // then
         assertThat(published).isEmpty();
     }
 
-    private static ScopedResource shipment(@Nullable UUID subcontractorId) {
-        return new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.SITE_ID, subcontractorId);
+    private static ScopedResource shipment() {
+        return new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.SITE_ID);
     }
 }

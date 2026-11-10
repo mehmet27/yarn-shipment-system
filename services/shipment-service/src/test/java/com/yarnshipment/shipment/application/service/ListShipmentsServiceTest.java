@@ -30,7 +30,7 @@ class ListShipmentsServiceTest {
     private final ListShipmentsService listService = new ListShipmentsService(port, scopeGuard, policy);
 
     @Test
-    @DisplayName("Liste fasoncunun kapsamıyla sorgulanır ve sayfalanır")
+    @DisplayName("Liste kullanıcının lokasyon kapsamıyla sorgulanır ve sayfalanır")
     void shouldListWithinActorScope() {
         // given
         Shipment own = TestShipments.shipment(ShipmentStatus.DRAFT);
@@ -38,20 +38,20 @@ class ListShipmentsServiceTest {
         port.add(new Shipment(
                 UUID.randomUUID(),
                 "SV-2",
-                own.siteId(),
+                UUID.randomUUID(),
                 ShipmentStatus.DRAFT,
                 new ShipmentParties(UUID.randomUUID(), "Başka", null, null, null),
                 own.planned(),
                 own.dispatchWeighing(),
                 null,
                 own.createdAt()));
-        Actor actor = TestTokens.CONVERTER.toActor(TestTokens.subcontractorToken());
+        Actor actor = TestTokens.CONVERTER.toActor(TestTokens.token("warehouse").build());
 
         // when
         ShipmentPage page = listService.listShipments(new ListShipmentsQuery(actor, Set.of(), 0, PAGE_SIZE));
 
         // then
-        assertThat(port.lastScope().subcontractorId()).isEqualTo(TestShipments.SUBCONTRACTOR_ID);
+        assertThat(port.lastScope().siteIds()).containsExactly(TestTokens.SITE_ID);
         assertThat(page.items())
                 .singleElement()
                 .satisfies(item -> assertThat(item.shipment()).isEqualTo(own));

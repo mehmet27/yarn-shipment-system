@@ -3,7 +3,6 @@ package com.yarnshipment.shipment.adapter.in.web;
 import com.yarnshipment.shipment.adapter.in.web.api.model.Audience;
 import com.yarnshipment.shipment.adapter.in.web.api.model.InternalShipmentView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentDetailResponse;
-import com.yarnshipment.shipment.adapter.in.web.api.model.SubcontractorShipmentView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.WarehouseShipmentView;
 import com.yarnshipment.shipment.application.port.in.ShipmentDetails;
 import com.yarnshipment.shipment.domain.model.Shipment;
@@ -17,7 +16,6 @@ final class ShipmentViews {
         return switch (details.audience()) {
             case INTERNAL -> toInternal(details);
             case WAREHOUSE -> toWarehouse(details);
-            case SUBCONTRACTOR -> toSubcontractor(details);
         };
     }
 
@@ -57,22 +55,6 @@ final class ShipmentViews {
                 .plannedNetKg(WebMappings.kgOrNull(shipment.planned().netKg()))
                 .dispatchWeighing(WebMappings.weighing(shipment.dispatchWeighing()))
                 .waybillNo(shipment.waybillNo())
-                .createdAt(WebMappings.utc(shipment.createdAt()))
-                .allowedActions(WebMappings.actions(details.allowedActions()));
-    }
-
-    private static SubcontractorShipmentView toSubcontractor(ShipmentDetails details) {
-        Shipment shipment = details.shipment();
-        return new SubcontractorShipmentView()
-                .audience(Audience.SUBCONTRACTOR)
-                .shipmentId(shipment.id())
-                .shipmentNo(shipment.shipmentNo())
-                .siteId(shipment.siteId())
-                .status(WebMappings.status(shipment.status()))
-                .subcontractorTitle(shipment.parties().subcontractorTitle())
-                .driverName(shipment.parties().driverName())
-                .plateNo(shipment.parties().plateNo())
-                .dispatchWeighing(WebMappings.weighing(shipment.dispatchWeighing()))
                 .createdAt(WebMappings.utc(shipment.createdAt()))
                 .allowedActions(WebMappings.actions(details.allowedActions()));
     }

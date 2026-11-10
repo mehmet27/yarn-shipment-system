@@ -58,6 +58,7 @@ export function toDetailView(shipment: InternalShipmentView, role: Role): Shipme
 /** ShipmentAction'daki izin eşlemesi (backend ShipmentAccessPolicy). */
 const ACTION_PERMISSION: Readonly<Record<ShipmentAction, Permission>> = {
   ASSIGN_BAGS: 'SHIPMENT_CREATE',
+  DECIDE_WEIGHT_MISMATCH: 'SHIPMENT_CANCEL',
   RECORD_DISPATCH: 'DISPATCH_RECORD',
   CANCEL: 'SHIPMENT_CANCEL',
   COMPLETE: 'SHIPMENT_COMPLETE',
@@ -69,8 +70,10 @@ const ACTION_PERMISSION: Readonly<Record<ShipmentAction, Permission>> = {
 export function toPermittedView(view: ShipmentDetail, permissions: readonly Permission[]) {
   return {
     ...view,
-    allowedActions: view.allowedActions.filter((action) =>
-      permissions.includes(ACTION_PERMISSION[action]),
+    allowedActions: view.allowedActions.filter(
+      (action) =>
+        permissions.includes(ACTION_PERMISSION[action]) ||
+        (action === 'ASSIGN_BAGS' && permissions.includes('DISPATCH_RECORD')),
     ),
   };
 }

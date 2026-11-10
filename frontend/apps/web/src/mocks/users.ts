@@ -27,7 +27,6 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'MASTER_DATA_VIEW',
     'BAG_CREATE',
     'SHIPMENT_VIEW',
-    'SHIPMENT_CREATE',
     'DISPATCH_RECORD',
     'DISPATCH_VIEW',
     'EVIDENCE_UPLOAD_DISPATCH',

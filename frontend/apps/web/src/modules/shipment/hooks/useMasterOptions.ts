@@ -1,10 +1,17 @@
-import { listDrivers, listSites, listSubcontractors, listVehicles } from '@iplik/api-client';
+import {
+  listDrivers,
+  listLots,
+  listProducts,
+  listSites,
+  listSubcontractors,
+  listVehicles,
+} from '@iplik/api-client';
 import { useQuery } from '@tanstack/react-query';
 
 export const MASTER_DATA_PATH = '/api/v1/master-data';
 const OPTION_PAGE_SIZE = 20;
 
-export type MasterKind = 'subcontractor' | 'driver' | 'vehicle' | 'site';
+export type MasterKind = 'subcontractor' | 'driver' | 'vehicle' | 'site' | 'product' | 'lot';
 export type MasterOption = { value: string; label: string };
 
 type Search = { q?: string; size: number };
@@ -34,6 +41,10 @@ async function fetchOptions(
       }));
     case 'site':
       return (await listSites(search)).items.map((row) => ({ value: row.id, label: row.name }));
+    case 'product':
+      return (await listProducts(search)).items.map((row) => ({ value: row.id, label: row.name }));
+    case 'lot':
+      return (await listLots(search)).items.map((row) => ({ value: row.id, label: row.lotNo }));
   }
 }
 

@@ -54,7 +54,8 @@
       "DRAFT": "Taslak",
       "AWAITING_DELIVERY": "Fasoncuya yolda",
       "COMPLETED": "Tamamlandı",
-      "CANCELLED": "İptal"
+      "CANCELLED": "İptal",
+      "WEIGHT_MISMATCH": "Kantar uyuşmazlığı"
     },
     "list": {
       "title": "Sevkiyatlar",
@@ -67,7 +68,8 @@
       "DRAFT": "Çuvallar ve çıkış tartısı bekleniyor",
       "AWAITING_DELIVERY": "Fasoncuya ulaşınca irsaliye yüklenip tamamlanacak",
       "COMPLETED": "Süreç tamamlandı",
-      "CANCELLED": "İptal edildi"
+      "CANCELLED": "İptal edildi",
+      "WEIGHT_MISMATCH": "Müdür kararı bekleniyor"
     },
     "progress": {
       "label": "{{done}} / {{total}} adım",
@@ -121,7 +123,24 @@
       "tareAlert": "Standart dışı",
       "recordDispatch": "Çıkış tartısını gir",
       "dispatchNotRecorded": "Çıkış tartısı henüz girilmedi",
-      "bagCount": "Çuval"
+      "bagCount": "Çuval",
+      "recipe": {
+        "title": "Reçete",
+        "yarnType": "İplik cinsi",
+        "lot": "Lot",
+        "netKg": "Net kg",
+        "total": "Toplam",
+        "fireRate": "Fire oranı: {{rate}}",
+        "empty": "Reçete satırı yok."
+      },
+      "weightCheck": {
+        "title": "Kantar uyuşmazlığı",
+        "expected": "Beklenen",
+        "measured": "Tartılan",
+        "diff": "Fark",
+        "shortfallReason": "Eksik gönderim nedeni",
+        "blocked": "Sevkiyat kantar uyuşmazlığı nedeniyle yola çıkamaz; müdür kararı bekleniyor."
+      }
     },
     "history": {
       "label": "Durum geçmişi",
@@ -187,6 +206,26 @@
         "EVIDENCE_SERVICE_UNAVAILABLE": "Fotoğraf servisi yanıt vermiyor; tamamlama yapılmadı. Lütfen tekrar deneyin.",
         "unknown": "Sevkiyat tamamlanamadı. Lütfen tekrar deneyin."
       }
+    },
+    "weightDecision": {
+      "title": "Müdür kararı",
+      "decision": "Karar",
+      "reason": "Gerekçe",
+      "submit": "Kararı kaydet",
+      "options": {
+        "CANCEL": "İptal et",
+        "ADD_REMOVE_BAGS": "Çuval ekle-çıkar",
+        "UPDATE_RECIPE": "Reçeteyi güncelle"
+      },
+      "hints": {
+        "CANCEL": "Sevkiyat iptal olur, çuvallar serbest kalır.",
+        "ADD_REMOVE_BAGS": "Sevkiyat taslağa döner; depo çuvalları düzeltip yeniden tartar.",
+        "UPDATE_RECIPE": "Reçete kilosu tartıya eşitlenir ve sevkiyat yola çıkar."
+      },
+      "errors": {
+        "INVALID_SHIPMENT_STATUS": "Sevkiyat artık kantar uyuşmazlığında değil.",
+        "unknown": "Karar kaydedilemedi. Lütfen tekrar deneyin."
+      }
     }
   },
   "field": {
@@ -198,7 +237,7 @@
   },
   "dispatch": {
     "title": "Çıkış tartısı",
-    "hint": "Kantar fişindeki brüt, dara ve çuval sayısını girin. Kayıtla sevkiyat fasoncuya yola çıkmış sayılır.",
+    "hint": "Önce boş araç (dara), yükleme sonrası dolu araç (brüt) tartısını girin. Net, beklenen yükle tutarsa sevkiyat fasoncuya yola çıkmış sayılır.",
     "bagCount": "Çuval sayısı",
     "scaleTicketNo": "Kantar fişi no (isteğe bağlı)",
     "net": "Net: {{net}}",
@@ -212,14 +251,16 @@
       "invalidBagCount": "Çuval sayısı 1 veya daha büyük bir tam sayı olmalı.",
       "ticketRequired": "Devam etmek için kantar fişinin fotoğrafı gerekli."
     },
-    "grossKg": "Brüt (kg)",
-    "tareKg": "Dara (kg)"
+    "grossKg": "Dolu araç tartısı (brüt)",
+    "tareKg": "Boş araç tartısı (dara)",
+    "shortfallReason": "Eksik gönderim nedeni (isteğe bağlı)",
+    "mismatchNotice": "Net kilo beklenenle tutmazsa sevkiyat kantar uyuşmazlığına düşer ve müdür karar verir."
   },
   "create": {
     "open": "Yeni sevkiyat",
     "title": "Yeni sevkiyat",
     "selectPlaceholder": "Seçin",
-    "hint": "Lokasyon ve fasoncuyu seçin; şoför ve araç sonradan da atanabilir.",
+    "hint": "Lokasyon, fasoncu, reçete ve fire oranını girin; şoför ve araç sonradan da atanabilir.",
     "site": "Lokasyon",
     "subcontractor": "Fasoncu",
     "driver": "Şoför (isteğe bağlı)",
@@ -230,8 +271,25 @@
     "invalid": "Seçimler geçersiz. Lütfen kontrol edin.",
     "errors": {
       "siteRequired": "Lokasyon seçin.",
-      "subcontractorRequired": "Fasoncu seçin."
-    }
+      "subcontractorRequired": "Fasoncu seçin.",
+      "linesRequired": "En az bir reçete satırı girin.",
+      "lineYarnRequired": "Her satırda iplik cinsi seçin ya da yazın.",
+      "lineKgInvalid": "Net kg 0'dan büyük olmalı (ör. 1.982,5).",
+      "fireRateInvalid": "Fire oranı 0 ile 20 arasında, en çok 2 ondalıklı olmalı."
+    },
+    "recipe": {
+      "title": "Reçete satırları",
+      "yarnType": "İplik cinsi",
+      "yarnTypePlaceholder": "Listeden seçin",
+      "yarnTypeText": "ya da serbest metin",
+      "lot": "Lot (isteğe bağlı)",
+      "netKg": "Net kg",
+      "add": "Satır ekle",
+      "remove": "{{index}}. satırı sil",
+      "total": "Toplam net: {{total}}"
+    },
+    "fireRate": "Fire oranı (%)",
+    "fireRateHint": "0 ile 20 arasında, en çok 2 ondalık."
   },
   "masterData": {
     "title": "Tanımlar",

@@ -11,7 +11,10 @@ const HOUR_MS = 3_600_000;
 
 /** Durum sırası boyunca (iptal hariç) taslaktan mevcut duruma saatlik geçişler üretir. */
 export function toHistory(shipment: InternalShipmentView): StatusChangeView[] {
-  const target = shipment.status === 'CANCELLED' ? 0 : SHIPMENT_STATUSES.indexOf(shipment.status);
+  const target =
+    shipment.status === 'CANCELLED' || shipment.status === 'WEIGHT_MISMATCH'
+      ? 0
+      : SHIPMENT_STATUSES.indexOf(shipment.status);
   const start = new Date(shipment.createdAt).getTime();
   return SHIPMENT_STATUSES.slice(0, target + 1).map((toStatus, index) => ({
     ...(index === 0 ? {} : { fromStatus: SHIPMENT_STATUSES[index - 1] }),

@@ -3,8 +3,9 @@ import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Stack } from '@iplik/ui';
 import { useState } from 'react';
 import { useCreateShipment } from '../hooks/useCreateShipment';
+import { useFireRateDefault } from '../hooks/useFireRateDefault';
 import { CreateFields } from './CreateFields';
-import type { CreateDraft, CreateError } from './createDraft';
+import type { CreateDraft, CreateFieldErrors } from './createDraft';
 import {
   EMPTY_CREATE_DRAFT,
   toCreateRequest,
@@ -18,14 +19,13 @@ export type CreateShipmentFormProps = { onCreated: (shipmentId: string) => void 
 export function CreateShipmentForm({ onCreated }: CreateShipmentFormProps) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<CreateDraft>(EMPTY_CREATE_DRAFT);
-  const [fieldErrors, setFieldErrors] = useState<
-    Partial<Record<'site' | 'subcontractor', CreateError>>
-  >({});
+  const [fieldErrors, setFieldErrors] = useState<CreateFieldErrors>({});
+  const defaultFirePct = useFireRateDefault();
   const mutation = useCreateShipment();
   const submit = () => {
-    const validation = validateCreate(draft);
-    setFieldErrors(validateCreateFields(draft));
-    const request = toCreateRequest(draft);
+    const validation = validateCreate(draft, defaultFirePct);
+    setFieldErrors(validateCreateFields(draft, defaultFirePct));
+    const request = toCreateRequest(draft, defaultFirePct);
     if (validation === undefined && request !== undefined) {
       mutation.mutate(request, {
         onSuccess: (created) => {
@@ -37,7 +37,12 @@ export function CreateShipmentForm({ onCreated }: CreateShipmentFormProps) {
   const failure = mutation.isError ? toProblem(mutation.error).code : undefined;
   return (
     <Stack>
-      <CreateFields draft={draft} onChange={setDraft} errors={fieldErrors} />
+      <CreateFields
+        draft={draft}
+        onChange={setDraft}
+        errors={fieldErrors}
+        defaultFirePct={defaultFirePct}
+      />
       {failure !== undefined && (
         <Alert color="red">
           {t(failure === 'VALIDATION_FAILED' ? 'create.invalid' : 'create.failed')}

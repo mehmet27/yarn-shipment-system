@@ -1,33 +1,39 @@
 import { describe, expect, it } from 'vitest';
 import {
   EMPTY_CREATE_DRAFT,
+  newLine,
   toCreateRequest,
+  totalNetKg,
   validateCreate,
+  validateCreateFields,
   withSubcontractor,
 } from './createDraft';
 
 const site = { value: 'site-merkez', label: 'Merkez Depo' };
 const subcontractor = { value: 'sub-1', label: 'Bursa Tekstil' };
+const line = { ...newLine(), yarnText: '20 denye likra', netKg: '2.036' };
+const base = { ...EMPTY_CREATE_DRAFT, site, subcontractor, lines: [line] };
 
 describe('createDraft', () => {
   it('lokasyon ve fasoncu zorunludur', () => {
     expect(validateCreate(EMPTY_CREATE_DRAFT)).toBe('siteRequired');
     expect(validateCreate({ ...EMPTY_CREATE_DRAFT, site })).toBe('subcontractorRequired');
-    expect(validateCreate({ ...EMPTY_CREATE_DRAFT, site, subcontractor })).toBeUndefined();
+    expect(validateCreate(base)).toBeUndefined();
   });
 
   it('şoför ve araç boşsa istekte yer almaz', () => {
-    expect(toCreateRequest({ ...EMPTY_CREATE_DRAFT, site, subcontractor })).toEqual({
+    expect(toCreateRequest(base)).toEqual({
       siteId: 'site-merkez',
       subcontractorId: 'sub-1',
       subcontractorTitle: 'Bursa Tekstil',
+      lines: [{ netKg: '2036.000', yarnTypeText: '20 denye likra' }],
+      fireRate: 0.04,
     });
   });
 
   it('şoför ve araç seçilmişse kimlik ve adı birlikte gider', () => {
     const draft = {
-      site,
-      subcontractor,
+      ...base,
       driver: { value: 'drv-1', label: 'Mert Kaya' },
       vehicle: { value: 'veh-0', label: '34 ABC 123' },
     };
@@ -42,5 +48,51 @@ describe('createDraft', () => {
   it('fasoncu değişince şoför temizlenir', () => {
     const draft = { ...EMPTY_CREATE_DRAFT, driver: { value: 'drv-1', label: 'Mert Kaya' } };
     expect(withSubcontractor(draft, subcontractor).driver).toBeUndefined();
+  });
+
+  it('en az bir geçerli reçete satırı gerekir', () => {
+    expect(validateCreate({ ...base, lines: [] })).toBe('linesRequired');
+    expect(validateCreate({ ...base, lines: [newLine()] })).toBe('lineYarnRequired');
+    expect(validateCreate({ ...base, lines: [{ ...line, netKg: '0' }] })).toBe('lineKgInvalid');
+    expect(validateCreate({ ...base, lines: [{ ...line, netKg: '' }] })).toBe('lineKgInvalid');
+  });
+
+  it('satır liste kimliği ya da serbest metin, lot isteğe bağlı gider', () => {
+    const request = toCreateRequest({
+      ...base,
+      lines: [
+        {
+          ...newLine(),
+          yarn: { value: 'prd-1', label: 'Viskon' },
+          lot: { value: 'lot-1', label: 'L1' },
+          netKg: '19.488',
+        },
+        line,
+      ],
+    });
+    expect(request?.lines).toEqual([
+      { yarnTypeId: 'prd-1', lotId: 'lot-1', netKg: '19488.000' },
+      { yarnTypeText: '20 denye likra', netKg: '2036.000' },
+    ]);
+  });
+
+  it('fire oranı yüzdeden kesire çevrilir ve 0-20 dışı reddedilir', () => {
+    expect(toCreateRequest({ ...base, fireRatePct: '4,5' })?.fireRate).toBe(0.045);
+    expect(toCreateRequest(base, '3')?.fireRate).toBe(0.03);
+    expect(validateCreateFields({ ...base, fireRatePct: '21' }).fireRate).toBe('fireRateInvalid');
+    expect(validateCreateFields({ ...base, fireRatePct: '4,123' }).fireRate).toBe(
+      'fireRateInvalid',
+    );
+    expect(validateCreateFields({ ...base, fireRatePct: '0' }).fireRate).toBeUndefined();
+  });
+
+  it('canlı toplam geçerli satırları toplar', () => {
+    expect(
+      totalNetKg([
+        { ...line, netKg: '19.488' },
+        { ...line, netKg: '13.492' },
+        { ...line, netKg: 'x' },
+      ]),
+    ).toBe('32980.000');
   });
 });

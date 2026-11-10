@@ -1,12 +1,19 @@
 # yarn-shipment-system
 
-İplik sevkiyat, teslimat ve kalite kontrol sistemi.
+İplik sevkiyat, fasoncu bakiyesi ve kalite kontrol sistemi.
+
+**Kasım 2026 süreç değişikliği.** Sahada şoför uygulaması, teslim tartısı, mühür ve kör sayım kullanılmadığı için bu
+adımlar sistemden kaldırıldı. Akış artık şöyledir: müdür sevkiyatı açar → depo çuvalları atar ve kantarda çıkış
+tartısını girer (sevkiyat `AWAITING_DELIVERY`, "Fasoncuya yolda") → sevkiyat fasoncuya ulaşınca müdür irsaliyeyi
+yükleyip numarasını yazar ve sevkiyatı tamamlar (`COMPLETED`). Ayrıntılı süreç analizi ve sonraki adımlar
+(fire, fasoncu bakiyesi, kumaş/iplik dönüşü, fatura işareti) için proje dokümanına bakın.
 
 ## Dokümanlar
 
 - [Java 25 kod standartları](docs/standartlar/java-kod-standartlari.md): projedeki tüm Java kodu için bağlayıcı kurallar.
 - [React ve TypeScript kod standartları](docs/standartlar/react-typescript-kod-standartlari.md): frontend kodu için bağlayıcı kurallar.
 - [Veritabanı tasarımı](docs/veritabani-tasarimi.md): servis başına PostgreSQL 17 veritabanları ve tablolar.
+- [Süreç analizi v2](docs/analiz/surec-analizi-v2.md): Kasım 2026 saha incelemesinden sonraki iş akışı, roller, kurallar ve yol haritası.
 
 ## Derleme
 
@@ -52,7 +59,6 @@ Test kullanıcıları (hepsinin şifresi `KEYCLOAK_TEST_USER_PASSWORD`):
 | `depo` | warehouse | A lokasyonu |
 | `kalite` | quality | iki lokasyon |
 | `mudur` | manager | iki lokasyon |
-| `sofor` | driver | A lokasyonu, kendi şoför kimliği |
 | `fasoncu` | subcontractor | A lokasyonu, kendi fasoncu kimliği |
 
 Token'ların servislerin beklediği claim'leri taşıdığını doğrulamak için (Node 22):
@@ -91,17 +97,17 @@ export YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET=<deploy/.env içindeki KEYCLOAK
 `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET` verilmezse servis yine açılır, ama Tanımlar ekranındaki "Giriş hesabı aç"
 502 `LOGIN_ACCOUNT_UNAVAILABLE` ("Giriş sistemine ulaşılamadı") döner.
 
-`local` profilinde ayrıca yerel örnek veri yüklenir (`db/seed-local/R__local_sample_shipments.sql`): iki lokasyonda, taslaktan kontrole kadar her durumda yedi sevkiyat; kimlikler yerel Keycloak kullanıcılarıyla eşleşir (fasoncu ve şoför kendi sevkiyatlarını görür). Dosya tekrarlanabilir migration'dır, kayıtlar iki kez eklenmez. Üretim profilinde bu konum yoktur.
+`local` profilinde ayrıca yerel örnek veri yüklenir (`db/seed-local/R__local_sample_shipments.sql`): iki lokasyonda, taslak, fasoncuya yolda, tamamlandı ve iptal durumlarında örnek sevkiyatlar; kimlikler yerel Keycloak kullanıcılarıyla eşleşir (fasoncu kendi sevkiyatlarını görür). Dosya tekrarlanabilir migration'dır, kayıtlar iki kez eklenmez. Üretim profilinde bu konum yoktur.
 
-Sevkiyat iptali (`POST /api/v1/shipments/{id}/cancel`, `Idempotency-Key` ve `reason` ister) yalnızca yöneticidedir (`SHIPMENT_CANCEL`) ve yalnızca taslak ya da çıkış tartımı yapılmış sevkiyatta çalışır. İptal, sevkiyattaki çuvalları bag-service'te serbest bırakır; çuval servisi yanıt vermezse iptal de yapılmaz (502 `BAG_SERVICE_UNAVAILABLE`) ve istek güvenle tekrarlanır.
+Sevkiyat iptali (`POST /api/v1/shipments/{id}/cancel`, `Idempotency-Key` ve `reason` ister) yalnızca yöneticidedir (`SHIPMENT_CANCEL`) ve yalnızca taslak ya da fasoncuya yoldaki (`AWAITING_DELIVERY`) sevkiyatta çalışır. Kantar beklenen yükü tutmazsa müdür sevkiyatı iptal edip yenisini açar ya da tartıdan önce çuval ekleyip çıkarır. İptal, sevkiyattaki çuvalları bag-service'te serbest bırakır; çuval servisi yanıt vermezse iptal de yapılmaz (502 `BAG_SERVICE_UNAVAILABLE`) ve istek güvenle tekrarlanır.
 
-Şoför fasoncuya varınca `POST /api/v1/shipments/{id}/arrival-declaration` (`Idempotency-Key` ve `sealIntact` ister) ile varışını beyan eder (`DRIVER_DECLARATION_RECORD`; yalnızca yoldaki sevkiyatta). Sevkiyat teslim beklemeye geçer, fasoncunun kör teslim girişi açılır. Mühür hasarlı beyanı akışı durdurmaz, `shipment-arrived.v1` olayıyla karşılaştırmaya gider.
+Sevkiyat fasoncuya ulaşınca müdür irsaliyeyi `WAYBILL` türünde kanıt olarak yükler, sonra `POST /api/v1/shipments/{id}/completion` (`Idempotency-Key`, gövde `{waybillNo, waybillEvidenceId}`) ile sevkiyatı tamamlar (`SHIPMENT_COMPLETE`; yalnızca `AWAITING_DELIVERY` durumunda). Kanıt evidence-service'ten doğrulanır: yoksa, başka sevkiyata aitse ya da türü `WAYBILL` değilse `422 WAYBILL_EVIDENCE_INVALID`, servise ulaşılamazsa `502 EVIDENCE_SERVICE_UNAVAILABLE`. Tamamlanan sevkiyat kilitlenir, `shipment-completed` olayı yayınlanır; sonraki değişiklik yalnızca gerekçeli düzeltmeyle yapılır.
 
 Taslak sevkiyata yanlış okutulan çuval `DELETE /api/v1/shipments/{id}/bags/{uniqueKey}` ile çıkarılır (`DISPATCH_RECORD`; yalnızca çıkış tartımından önce). Satır silinmez, `removed_at` ile işaretlenir; bag-service'te rezervasyon bırakılır (`POST /api/v1/bags/reservations/release` içinde `uniqueKeys`) ve çuval başka sevkiyata atanabilir olur. Çuval listede yoksa da 204 döner. Sevkiyatın tamamını bırakmak (`uniqueKeys` olmadan) yine yalnızca `SHIPMENT_CANCEL` ile yapılır.
 
-Ana veri listeleri (`GET /api/v1/master-data/{sites,subcontractors,drivers,vehicles}`, `q` ile arama, sayfalı) `md_*` tablolarından okunur; yerel örnek veri iki lokasyon, üç fasoncu, üç şoför ve üç araç içerir. Lokasyon listesi isteyenin kapsamıyla süzülür. 
+Ana veri listeleri (`GET /api/v1/master-data/{sites,subcontractors,drivers,vehicles}`, `q` ile arama, sayfalı) `md_*` tablolarından okunur; yerel örnek veri iki lokasyon, üç fasoncu, üç şoför ve üç araç içerir (şoför ve araç yalnızca kayıt bilgisidir; şoför sisteme girmez). Lokasyon listesi isteyenin kapsamıyla süzülür. 
 
-Fasoncu ve şoför yönetimi yalnızca yöneticidedir (`MASTER_DATA_MANAGE`): `POST /api/v1/master-data/{subcontractors,drivers}` (`Idempotency-Key` ister), `PUT .../{id}`, `POST .../{id}/deactivate` ve `.../activate`. Kayıt silinmez, pasife alınır; pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez. Pasife alınmış kayıtları yönetici `?status=ALL` ile listeler (diğer roller 403 alır); yanıttaki `active` alanı durumu gösterir. Her değişiklik `audit_local`'e değiştiren kullanıcıyla düşer. Şoförün fasoncusu verilirse etkin olmalıdır. Araç ve lokasyon için aynı uçlar vardır (`/api/v1/master-data/{vehicles,sites}`); plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`), kullanılmış plaka 409 `DUPLICATE_PLATE` verir. Fasoncu ünvanı tektir (büyük/küçük harf ve baş/son boşluk yok sayılır); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Şoför ve fasoncunun giriş hesabı Keycloak'ta ayrıca açılır: [adımlar](docs/yonetim/giris-hesabi-acma.md). Otomatik hesap açma sonraki iştir.
+Fasoncu ve şoför yönetimi yalnızca yöneticidedir (`MASTER_DATA_MANAGE`): `POST /api/v1/master-data/{subcontractors,drivers}` (`Idempotency-Key` ister), `PUT .../{id}`, `POST .../{id}/deactivate` ve `.../activate`. Kayıt silinmez, pasife alınır; pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez. Pasife alınmış kayıtları yönetici `?status=ALL` ile listeler (diğer roller 403 alır); yanıttaki `active` alanı durumu gösterir. Her değişiklik `audit_local`'e değiştiren kullanıcıyla düşer. Şoförün fasoncusu verilirse etkin olmalıdır. Araç ve lokasyon için aynı uçlar vardır (`/api/v1/master-data/{vehicles,sites}`); plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`), kullanılmış plaka 409 `DUPLICATE_PLATE` verir. Fasoncu ünvanı tektir (büyük/küçük harf ve baş/son boşluk yok sayılır); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Fasoncunun giriş hesabı (geçiş dönemi; yeni süreçte fasoncu sisteme girmeyecek) Keycloak'ta ayrıca açılır: [adımlar](docs/yonetim/giris-hesabi-acma.md). Otomatik hesap açma sonraki iştir.
 
 | Değişken | Varsayılan |
 |---|---|
@@ -110,7 +116,7 @@ Fasoncu ve şoför yönetimi yalnızca yöneticidedir (`MASTER_DATA_MANAGE`): `P
 | `KEYCLOAK_ISSUER_URI` | `http://localhost:8180/realms/yarnshipment` |
 | `SERVER_PORT` | `8083` |
 | `YARNSHIPMENT_BAG_SERVICE_URL` | `http://localhost:8084` (çuval atama için bag-service; istek sahibinin token'ı iletilir, bu yüzden bag-service de çalışıyor olmalı) |
-| `YARNSHIPMENT_KEYCLOAK_ADMIN_URL` / `YARNSHIPMENT_KEYCLOAK_ADMIN_REALM` / `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_ID` | `http://localhost:8180` / `yarnshipment` / `yarnshipment-admin` (şoför ve fasoncuya giriş hesabı açan servis hesabı) |
+| `YARNSHIPMENT_KEYCLOAK_ADMIN_URL` / `YARNSHIPMENT_KEYCLOAK_ADMIN_REALM` / `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_ID` | `http://localhost:8180` / `yarnshipment` / `yarnshipment-admin` (fasoncuya giriş hesabı açan servis hesabı) |
 | `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET` | boş (boşsa hesap açma uçları 502 `LOGIN_ACCOUNT_UNAVAILABLE` döner); yerel değer `deploy/.env` içindeki `KEYCLOAK_ADMIN_CLIENT_SECRET` (varsayılan `local-admin-client-secret`) |
 
 Persistence testleri Testcontainers ile gerçek PostgreSQL'e karşı çalışır; `./mvnw verify` için Docker açık olmalıdır.
@@ -163,31 +169,19 @@ Servis iş verisiyle aynı transaction'da `outbox_event` tablosuna yazdığı ol
 
 Servis `yarnshipment.outbox.topic` (ör. `shipment.events.v1`) ve `yarnshipment.outbox.source` verirse yayıncı açılır; `yarnshipment.outbox.enabled=false` kapatır. Tüketen servisler `ProcessedEvents.markProcessed(eventId, type)` ile olayı işlemle aynı transaction'da kaydeder; ikinci kez gelen olay `false` döner (EVT-05). Kafka Compose ile `localhost:9092` adresinde açılır; shipment-service `KAFKA_BOOTSTRAP_SERVERS` ile başka adrese yönlendirilir.
 
-## discrepancy-service (otomatik karşılaştırma)
+## discrepancy-service (uyuşmazlık ve kalite itirazı)
 
-Servis `shipment.events.v1` konusundaki teslim girişi olayını (`delivery-received.v1`) dinler ve çıkışla teslimi karşılaştırır. Olay sözleşmeleri `libs/event-contracts` altındadır; shipment-service'teki sözleşme testi yayınlanan olayın bu kayda kayıpsız okunduğunu denetler.
-
-| Kural | Tolerans | Öncelik |
-|---|---|---|
-| Net kilo farkı | `tolerance_rule` genel kuralı; yoksa Yeşil ≤ %0,5, Sarı ≤ %1,5 (mutlak fark) | Sarı / Kırmızı |
-| Çıkış tartısı yok | yok | Kırmızı |
-| Çuval sayısı, Unique Key listesi | sıfır | Kırmızı |
-| Mühür hasarlı/yok, mühür no farklı | sıfır | Kırmızı |
-| İmzalı irsaliye yok, irsaliye alanları teslimle tutmuyor | sıfır | Sarı |
-
-Her bulgu bir `discrepancy` satırı (`UY-<sevkiyat no>-<sıra>`, durum `OPEN`, son tarih 5 iş günü) ve `OPENED` geçmiş kaydı açar. Satır, olay bağlamındaki fasoncu kimliğini (`subcontractor_id`) taşır; fasoncu listede ve detayda yalnızca kendi sevkiyatlarının uyuşmazlıklarını görür, şoför hiçbirini görmez. Girdi, uyuşmazlıklar ve `comparison-completed.v1` olayı (`discrepancy.events.v1`) aynı transaction'da yazılır. Aynı olay ya da aynı sevkiyatın ikinci teslim olayı tekrar karşılaştırılmaz. Geçici hata üç kez yeniden denenir; bozuk ya da eksik olay doğrudan `shipment.events.v1.DLT` konusuna gider.
-
-shipment-service `discrepancy.events.v1` konusunu dinler: temiz sonuç sevkiyatı `CHECKING` → `COMPLETED` yapar ve `shipment-completed.v1` yayınlar, uyuşmazlık `IN_REVIEW`'a alır. Geçiş geçmişte sistem hesabıyla (`00000000-0000-0000-0000-000000000000`) görünür. Tutanakta imzalı irsaliye yoksa karşılaştırma `DOCUMENT_MISSING` (Sarı) açar. Belge sonradan yüklenince (`evidence-uploaded.v1`, tür `SIGNED_DELIVERY_DOC`) bu uyuşmazlık sistem hesabıyla `DATA_ERROR` kararıyla kapanır; son açık uyuşmazlıksa sevkiyat tamamlanır. İrsaliye alanlarının tutmadığı belge uyuşmazlıkları insan kararı bekler.
+Teslim tartısı kaldırıldığı için çıkış–teslim otomatik karşılaştırması artık çalışmaz; `comparison_input` ve eski uyuşmazlık kayıtları geçmiş için salt okunur tutulur. Servisin bugünkü işi uyuşmazlık kayıtlarının yönetimi (atama, not, karar) ve kalite itirazıdır. Kantar uyuşmazlığı ve fasoncu bakiyesi kuralları yeni süreç analizinde tanımlıdır ve sonraki işlerde eklenecektir.
 
 ### Kalite itirazı ve numune/lab
 
-Fasoncu ya da Kalite, teslim karşılaştırması bittikten sonra teslimde okutulmuş çuvallar için kalite itirazı açar (`POST /api/v1/quality-claims`, `QUALITY_CLAIM_OPEN`). Pencere teslimden itibaren 3 iş günüdür (Europe/Istanbul); itirazda çuval anahtarları, açıklama ve en az bir `QUALITY_CLAIM` fotoğrafı zorunludur. Fotoğrafların bu sevkiyata ait olduğu evidence-service'e isteyenin token'ıyla sorulur. Her itiraz `QUALITY` türünde Kırmızı bir uyuşmazlık (`QUALITY_CLAIM` kuralı, son tarih 5 iş günü) açar; aynı çuvala ikinci itiraz açılamaz. Kalite (`DISCREPANCY_RESOLVE`) itiraz üzerinden numune (`SAMPLE`) ya da laboratuvar (`LAB`) kontrolü ister ve sonucu bir kez girer; lab sonucunda `LAB_RESULT` belgesi zorunludur. Karar mevcut uyuşmazlık akışıyla (`CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED`) verilir.
+Kalite (ve geçiş döneminde fasoncu hesabı), tamamlanmış sevkiyatın çuvalları için kalite itirazı açar (`POST /api/v1/quality-claims`, `QUALITY_CLAIM_OPEN`). Pencere tamamlanmadan itibaren 3 iş günüdür (Europe/Istanbul); itirazda çuval anahtarları, açıklama ve en az bir `QUALITY_CLAIM` fotoğrafı zorunludur. Fotoğrafların bu sevkiyata ait olduğu evidence-service'e isteyenin token'ıyla sorulur. Her itiraz `QUALITY` türünde Kırmızı bir uyuşmazlık (`QUALITY_CLAIM` kuralı, son tarih 5 iş günü) açar; aynı çuvala ikinci itiraz açılamaz. Kalite (`DISCREPANCY_RESOLVE`) itiraz üzerinden numune (`SAMPLE`) ya da laboratuvar (`LAB`) kontrolü ister ve sonucu bir kez girer; lab sonucunda `LAB_RESULT` belgesi zorunludur. Karar mevcut uyuşmazlık akışıyla (`CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED`) verilir.
 
 | Kod | HTTP | Anlamı |
 |---|---|---|
-| `QUALITY_CLAIM_NOT_AVAILABLE` | 409 | Teslim karşılaştırması yok ya da eski kayıtta lokasyon/fasoncu bilgisi eksik |
+| `QUALITY_CLAIM_NOT_AVAILABLE` | 409 | Sevkiyat tamamlanmamış ya da eski kayıtta lokasyon/fasoncu bilgisi eksik |
 | `QUALITY_CLAIM_WINDOW_CLOSED` | 409 | 3 iş günlük süre doldu |
-| `QUALITY_CLAIM_BAG_NOT_DELIVERED` / `_BAG_ALREADY_CLAIMED` | 400 / 409 | Çuval teslimde okutulmamış / zaten itiraz edilmiş |
+| `QUALITY_CLAIM_BAG_NOT_DELIVERED` / `_BAG_ALREADY_CLAIMED` | 400 / 409 | Çuval sevkiyatta yok / zaten itiraz edilmiş |
 | `QUALITY_CLAIM_EVIDENCE_REQUIRED` / `_EVIDENCE_INVALID` | 400 | Fotoğraf yok / başka sevkiyata ait ya da türü yanlış |
 | `QUALITY_CLAIM_INSPECTION_RECORDED` | 409 | Kontrol sonucu zaten girilmiş |
 | `QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED` | 400 | Lab sonucunda belge yok |
@@ -202,43 +196,36 @@ DB_PASSWORD=... \
 
 ## reporting-service (dashboard ve raporlar)
 
-Okuma modeli servisidir: `shipment.events.v1` ve `discrepancy.events.v1` olaylarından `shipment_view`, `discrepancy_view` ve `pair_daily_stats` tablolarını besler; kayıt kaynağı değildir, silinip konuyu baştan okuyarak yeniden kurulabilir. Olay kimliği `processed_event`'e aynı transaction'da yazıldığı için tekrar gelen olay iki kez sayılmaz; sevkiyatı okuma modelinde olmayan olay hata verir ve ortak hata politikasıyla yeniden denenir. Sözleşme `services/reporting-service/src/main/resources/openapi/reporting-service-api.yaml`, gateway `/api/v1/reports/**` yolunu bu servise (`8087`) yönlendirir. Uçlar `REPORT_VIEW` izni ister (Admin, Kalite, Yönetici); şoför ve fasoncu rapor görmez, diğerleri yalnızca `site_ids` lokasyonlarını görür.
+Okuma modeli servisidir: `shipment.events.v1` ve `discrepancy.events.v1` olaylarından `shipment_view` ve `discrepancy_view` tablolarını besler; kayıt kaynağı değildir, silinip konuyu baştan okuyarak yeniden kurulabilir. Olay kimliği `processed_event`'e aynı transaction'da yazıldığı için tekrar gelen olay iki kez sayılmaz; sevkiyatı okuma modelinde olmayan olay hata verir ve ortak hata politikasıyla yeniden denenir. Sözleşme `services/reporting-service/src/main/resources/openapi/reporting-service-api.yaml`, gateway `/api/v1/reports/**` yolunu bu servise (`8087`) yönlendirir. Uçlar `REPORT_VIEW` izni ister (Admin, Kalite, Yönetici); fasoncu rapor görmez, diğerleri yalnızca `site_ids` lokasyonlarını görür.
 
 | Uç | İçerik |
 |---|---|
 | `GET /api/v1/reports/dashboard` | Sevkiyat durum dağılımı, karşılaştırılan kilo toplamları, Yeşil/Sarı/Kırmızı sayıları, açık ve süresi geçen uyuşmazlıklar, kilo farkı en büyük 5 sevkiyat |
-| `GET /api/v1/reports/drivers`, `/subcontractors` | Karşılaştırılan sevkiyat sayısı, uyuşmazlıklı sevkiyat oranı, ortalama mutlak kilo farkı (oran yüksek olan önce) |
-| `GET /api/v1/reports/pairs` | Şoför–fasoncu eşleşmesi bazında aynı göstergeler (`pair_daily_stats`, Europe/Istanbul günü) |
+| `GET /api/v1/reports/subcontractors` | Fasoncu bazında sevkiyat sayısı, uyuşmazlıklı sevkiyat oranı, ortalama mutlak kilo farkı |
+| `GET /api/v1/reports/shipments`, `/balance` | Sevkiyat dökümü ve fasoncu bazında gönderilen / yolda / tamamlanan kilo |
 
-`from`/`to` (tarih, iki uç dahil) verilmezse son 30 gün alınır; en çok 366 gün (`REPORT_PERIOD_INVALID`). `siteId` kapsamı daraltır, yetkisiz lokasyon 403 döner. Henüz kapsam dışı: parti bazlı kalite itirazı raporu (olaylarda parti bilgisi yok), eksik belge/galeri oranı (8.5), şoför/fasoncu adlarının tanım servislerinden çözülmesi (ekran şimdilik kimliğin ilk 8 karakterini gösterir). Çalıştırmak için `REPORTING_DB_APP_PASSWORD`, `REPORTING_DB_MIGRATOR_PASSWORD` ve gerekirse `KAFKA_BOOTSTRAP_SERVERS` verilir:
+`from`/`to` (tarih, iki uç dahil) verilmezse son 30 gün alınır; en çok 366 gün (`REPORT_PERIOD_INVALID`). `siteId` kapsamı daraltır, yetkisiz lokasyon 403 döner. Henüz kapsam dışı: parti bazlı kalite itirazı raporu (olaylarda parti bilgisi yok), eksik belge/galeri oranı (8.5), fire ve kumaş/iplik dönüşlü fasoncu bakiyesi (süreç analizi v2'de tanımlı). Çalıştırmak için `REPORTING_DB_APP_PASSWORD`, `REPORTING_DB_MIGRATOR_PASSWORD` ve gerekirse `KAFKA_BOOTSTRAP_SERVERS` verilir:
 
 ```bash
 DB_PASSWORD=... \
 ./mvnw -pl services/reporting-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-Panelde ana sayfa (`/panel`) dönem seçimli dashboard'u, `/panel/raporlar` şoför/fasoncu/eşleşme sekmelerini gösterir.
+Panelde ana sayfa (`/panel`) dönem seçimli dashboard'u, `/panel/raporlar` özet, fasoncu, sevkiyat dökümü ve fasoncu bakiye sekmelerini gösterir.
 
 ## evidence-service (fotoğraf ve belge yükleme)
 
 Dosya servisten geçmez; iki adımda doğrudan nesne deposuna (S3 uyumlu, yerelde MinIO) yüklenir. Uçlar `/api/v1/evidence/**` altındadır, sözleşme `services/evidence-service/src/main/resources/openapi/evidence-service-api.yaml`.
 
-1. `POST /api/v1/evidence/uploads` (`Idempotency-Key` zorunlu): sevkiyat, kanıt türü, dosya türü, boyut ve kaynak (kamera/galeri) bildirilir. Servis izni, 20 MB sınırını ve izinli türleri (`image/jpeg`, `image/png`, `image/heic`, `application/pdf`) denetler, sevkiyatı shipment-service'e isteyenin token'ıyla sorar (görünmeyen sevkiyat `404 SHIPMENT_NOT_FOUND`; tamamlanmış/iptal `409 SHIPMENT_LOCKED`; kalite itirazı fotoğrafı ve lab belgesi ise karşılaştırma bittikten sonra, sevkiyat tamamlanmış olsa da yüklenebilir) ve yaklaşık 10 dakika geçerli imzalı bir `PUT` adresi döner.
+1. `POST /api/v1/evidence/uploads` (`Idempotency-Key` zorunlu): sevkiyat, kanıt türü, dosya türü, boyut ve kaynak (kamera/galeri) bildirilir. Servis izni, 20 MB sınırını ve izinli türleri (`image/jpeg`, `image/png`, `image/heic`, `application/pdf`) denetler, sevkiyatı shipment-service'e isteyenin token'ıyla sorar (görünmeyen sevkiyat `404 SHIPMENT_NOT_FOUND`; tamamlanmış/iptal `409 SHIPMENT_LOCKED`; kalite itirazı fotoğrafı ve lab belgesi tamamlanmış sevkiyata da yüklenebilir) ve yaklaşık 10 dakika geçerli imzalı bir `PUT` adresi döner.
 2. İstemci dosyayı o adrese, cevaptaki başlıklarla aynen `PUT` eder.
 3. `POST /api/v1/evidence/uploads/{evidenceId}/confirm`: sunucu dosyayı depodan okuyup gerçek boyut, tür ve SHA-256'yı kendisi hesaplar (SEC-09); bildirilenle uyuşmazsa `422 UPLOAD_MISMATCH`, dosya henüz yoksa `409 UPLOAD_NOT_COMPLETED`. Onay tekrarlanabilir.
 
-Yükleme izni kanıt türünün aşamasına bağlıdır: sevk (`EVIDENCE_UPLOAD_DISPATCH`), şoför, teslim, şikâyet. Aynı dosya (aynı hash) başka sevkiyatta daha önce yüklenmişse kayıt yine alınır ama `evidence_duplicate` satırı ve `evidence-reuse-detected.v1` olayı yazılır. Kanıt kaydı ile `evidence-uploaded.v1` olayı (`evidence.events.v1`) aynı transaction'da yazılır.
+Yükleme izni kanıt türüne bağlıdır: sevk fotoğrafları ve kantar fişi (`EVIDENCE_UPLOAD_DISPATCH`), irsaliye (`WAYBILL`, `SHIPMENT_COMPLETE`), şikâyet ve lab belgesi (`EVIDENCE_UPLOAD_CLAIM`). Aynı dosya (aynı hash) başka sevkiyatta daha önce yüklenmişse kayıt yine alınır ama `evidence_duplicate` satırı ve `evidence-reuse-detected.v1` olayı yazılır. Kanıt kaydı ile `evidence-uploaded.v1` olayı (`evidence.events.v1`) aynı transaction'da yazılır.
 
-**Kantar fişi okuma.** `POST /api/v1/evidence/{evidenceId}/ticket-reading` çıkış (`DISPATCH_SCALE`) ya da teslim (`DELIVERY_SCALE`) fişinin fotoğrafını Claude ile okur ve sonucu çekim ekranına hemen döner: brüt ve dara güvenle okunamazsa `UNREADABLE` ve sorunlar (bulanık, parlama, kesik), istemci yeniden çekim ister. Okuma `ticket_reading` tablosuna ve `ticket-read.v1` olayıyla tek komutta yazılır; elle girilen tartımın yerine geçmez. Bayrak kapalıyken (`TICKET_READING_ENABLED=false`, varsayılan) uç `503 TICKET_READING_UNAVAILABLE` döner; açmak için `ANTHROPIC_API_KEY` verilir, model `TICKET_READING_MODEL` ile değişir.
+**Kantar fişi okuma.** `POST /api/v1/evidence/{evidenceId}/ticket-reading` çıkış kantar fişinin (`DISPATCH_SCALE`) fotoğrafını Claude ile okur ve sonucu çekim ekranına hemen döner: brüt ve dara güvenle okunamazsa `UNREADABLE` ve sorunlar (bulanık, parlama, kesik), istemci yeniden çekim ister. Okuma `ticket_reading` tablosuna ve `ticket-read.v1` olayıyla tek komutta yazılır; elle girilen tartımın yerine geçmez. Bayrak kapalıyken (`TICKET_READING_ENABLED=false`, varsayılan) uç `503 TICKET_READING_UNAVAILABLE` döner; açmak için `ANTHROPIC_API_KEY` verilir, model `TICKET_READING_MODEL` ile değişir.
 
-discrepancy-service okumayı saklar ve teslim karşılaştırmasında o ana kadar okunmuş fişleri kontrol eder; okunmamış ya da geç gelen fişin kontrolü atlanır, sevkiyat durmaz:
-
-| Kontrol | Neyi neyle | Tutmazsa |
-|---|---|---|
-| K1 / K2 | Depo / fasoncu girdiği brüt ve dara ↔ çıkış / teslim fişi (±1 kg) | `TICKET_DISPATCH_WEIGHT_MISMATCH` / `TICKET_DELIVERY_WEIGHT_MISMATCH`, belge; öncelik net farkın bandından |
-| K3 | Çıkış fişi neti ↔ teslim fişi neti | `TICKET_QUANTITY_TOLERANCE`, miktar; elle karşılaştırmayla aynı bant |
-| K4 | Fişteki plaka ↔ sevkiyatın plakası (boşluk, tire, harf büyüklüğü yok sayılır) | `TICKET_*_PLATE_MISMATCH`, belge, Sarı |
-| K5 | Fiş no + kantar adı ↔ başka sevkiyatların fişleri | `TICKET_*_REUSED`, belge, Kırmızı |
+Fiş okumasının elle girilen çıkış tartısıyla (±1 kg), plakayla ve başka sevkiyatların fişleriyle karşılaştırılması eskiden teslim karşılaştırmasına bağlıydı; yeni akışta kantar uyuşmazlığı kuralının parçası olarak yeniden kurulacaktır (süreç analizi v2).
 
 Yerelde MinIO `docker compose` ile açılır (`deploy/.env` içinde `EVIDENCE_STORAGE_ACCESS_KEY` ve `EVIDENCE_STORAGE_SECRET_KEY`; `evidence` kovası kendiliğinden oluşur). Servis aynı anahtarlarla, `EVIDENCE_DB_APP_PASSWORD` ve `EVIDENCE_DB_MIGRATOR_PASSWORD` ile çalıştırılır:
 
@@ -250,9 +237,9 @@ EVIDENCE_STORAGE_ACCESS_KEY=... EVIDENCE_STORAGE_SECRET_KEY=... \
 
 İmzalı adres, `EVIDENCE_STORAGE_ENDPOINT` adresiyle üretilir; telefon ya da tarayıcının eriştiği adres olmalıdır.
 
-`GET /api/v1/evidence/{evidenceId}` kanıt üst verisini (dosyayı değil), `GET /api/v1/evidence?shipmentId=` sevkiyatın kanıtlarını, `GET /api/v1/evidence/{evidenceId}/download-url` dosya için yaklaşık 5 dakika geçerli imzalı indirme adresini verir. Üçü de kör girişe uyar: depo teslim fotoğraflarını, fasoncu çıkış fotoğraflarını karşılaştırma bitene kadar (sevkiyat `IN_REVIEW` ya da `COMPLETED` olana kadar) görmez, şoför yalnızca plaka fotoğrafını görür; görünmeyen kanıt listede yer almaz ve tek tek istenirse `404 EVIDENCE_NOT_FOUND` döner. Mühür fotoğrafı hangi aşamada çekildiği kayıtlı olmadığı için çıkış tarafı sayılır.
+`GET /api/v1/evidence/{evidenceId}` kanıt üst verisini (dosyayı değil), `GET /api/v1/evidence?shipmentId=` sevkiyatın kanıtlarını, `GET /api/v1/evidence/{evidenceId}/download-url` dosya için yaklaşık 5 dakika geçerli imzalı indirme adresini verir. Üçü de sevkiyat kapsamına uyar: kullanıcı yalnızca görebildiği sevkiyatların kanıtlarını görür; görünmeyen kanıt listede yer almaz ve tek tek istenirse `404 EVIDENCE_NOT_FOUND` döner.
 
-shipment-service teslim girişinde `document.signedDocumentEvidenceId` verilirse kanıtı bu servisten doğrular: yoksa, başka sevkiyata aitse ya da türü `SIGNED_DELIVERY_DOC` değilse `422 DELIVERY_EVIDENCE_INVALID`, servise ulaşılamazsa `502 EVIDENCE_SERVICE_UNAVAILABLE` (adres: `yarnshipment.evidence-service.url`, varsayılan `http://localhost:8086`). Yalnız `EVIDENCE_INVALIDATE` yetkisi olan (admin) `POST /api/v1/evidence/{id}/invalidate` ile gerekçe vererek kanıtı geçersiz kılabilir: kayıt silinmez, `status=INVALIDATED` olur, `EvidenceInvalidated` olayı yayımlanır; geçersiz kanıt teslim girişinde kabul edilmez. Tekrar geçersiz kılma `409 EVIDENCE_ALREADY_INVALIDATED`, gerekçesiz istek `400 INVALIDATION_REASON_REQUIRED` döner.
+shipment-service sevkiyatı tamamlarken `waybillEvidenceId` kanıtını bu servisten doğrular: yoksa, başka sevkiyata aitse ya da türü `WAYBILL` değilse `422 WAYBILL_EVIDENCE_INVALID`, servise ulaşılamazsa `502 EVIDENCE_SERVICE_UNAVAILABLE` (adres: `yarnshipment.evidence-service.url`, varsayılan `http://localhost:8086`). Yalnız `EVIDENCE_INVALIDATE` yetkisi olan (admin) `POST /api/v1/evidence/{id}/invalidate` ile gerekçe vererek kanıtı geçersiz kılabilir: kayıt silinmez, `status=INVALIDATED` olur, `EvidenceInvalidated` olayı yayımlanır; geçersiz kanıt tamamlamada kabul edilmez. Tekrar geçersiz kılma `409 EVIDENCE_ALREADY_INVALIDATED`, gerekçesiz istek `400 INVALIDATION_REASON_REQUIRED` döner.
 
 ## common-web (ortak web altyapısı)
 

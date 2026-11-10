@@ -1,6 +1,6 @@
 import type {
   InternalShipmentView,
-  RecipeLine,
+  RecipeLineInput,
   Role,
   WeightCheckView,
   Weighing,
@@ -239,12 +239,15 @@ const dispatchWeighingHandler = http.post(
 );
 
 const MAX_FIRE_RATE = 0.2;
+const FIRE_RATE_PATTERN = /^0\.\d{1,4}$|^[01]$/;
 
-function readFireRate(value: unknown): number | undefined {
-  return typeof value === 'number' && value >= 0 && value <= MAX_FIRE_RATE ? value : undefined;
+function readFireRate(value: unknown): string | undefined {
+  return typeof value === 'string' && FIRE_RATE_PATTERN.test(value) && Number(value) <= MAX_FIRE_RATE
+    ? value
+    : undefined;
 }
 
-function readRecipeLine(item: unknown): RecipeLine | undefined {
+function readRecipeLine(item: unknown): RecipeLineInput | undefined {
   const line = typeof item === 'object' && item !== null ? (item as Record<string, unknown>) : {};
   const { yarnTypeId, yarnTypeText, lotId, netKg } = line;
   if (!isKg(netKg) || Number(netKg) <= 0) return undefined;
@@ -258,7 +261,7 @@ function readRecipeLine(item: unknown): RecipeLine | undefined {
 }
 
 /** En az bir satır; her satırda iplik cinsi (kimlik ya da metin) ve 0'dan büyük net kg. */
-function readRecipeLines(value: unknown): RecipeLine[] | undefined {
+function readRecipeLines(value: unknown): RecipeLineInput[] | undefined {
   if (!Array.isArray(value) || value.length === 0) return undefined;
   const lines = (value as unknown[]).map(readRecipeLine);
   return lines.every((line) => line !== undefined) ? lines : undefined;
@@ -289,8 +292,8 @@ const weightDecisionHandler = http.post(
   },
 );
 
-const fireRateHandler = http.get('/api/v1/settings/fire-rate', () =>
-  HttpResponse.json({ fireRate: 0.04 }),
+const fireRateHandler = http.get('/api/v1/settings/shipment', () =>
+  HttpResponse.json({ defaultFireRate: '0.0400', weightToleranceKg: '0.000' }),
 );
 
 /** Sevkiyat oluşturma: zorunlu alanlar eksikse 400, aksi halde 201 ve yeni numara. */

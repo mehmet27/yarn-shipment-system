@@ -1,4 +1,4 @@
-import type { WeightDecision } from '@iplik/api-client';
+import type { WeightDecisionKind } from '@iplik/api-client';
 import { decideWeightMismatch, SHIPMENTS_PATH } from '@iplik/api-client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 export function useWeightDecision(shipmentId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: { decision: WeightDecision; reason: string }) =>
+    mutationFn: (input: { decision: WeightDecisionKind; reason: string }) =>
       decideWeightMismatch(shipmentId, input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [SHIPMENTS_PATH] }),
   });

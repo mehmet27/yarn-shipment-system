@@ -27,7 +27,7 @@ describe('createDraft', () => {
       subcontractorId: 'sub-1',
       subcontractorTitle: 'Bursa Tekstil',
       lines: [{ netKg: '2036.000', yarnTypeText: '20 denye likra' }],
-      fireRate: 0.04,
+      fireRate: '0.0400',
     });
   });
 
@@ -77,8 +77,8 @@ describe('createDraft', () => {
   });
 
   it('fire oranı yüzdeden kesire çevrilir ve 0-20 dışı reddedilir', () => {
-    expect(toCreateRequest({ ...base, fireRatePct: '4,5' })?.fireRate).toBe(0.045);
-    expect(toCreateRequest(base, '3')?.fireRate).toBe(0.03);
+    expect(toCreateRequest({ ...base, fireRatePct: '4,5' })?.fireRate).toBe('0.0450');
+    expect(toCreateRequest(base, '3')?.fireRate).toBe('0.0300');
     expect(validateCreateFields({ ...base, fireRatePct: '21' }).fireRate).toBe('fireRateInvalid');
     expect(validateCreateFields({ ...base, fireRatePct: '4,123' }).fireRate).toBe(
       'fireRateInvalid',

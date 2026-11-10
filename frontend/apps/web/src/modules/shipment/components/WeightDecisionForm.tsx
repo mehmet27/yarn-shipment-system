@@ -1,11 +1,11 @@
-import type { WeightDecision } from '@iplik/api-client';
+import type { WeightDecisionKind } from '@iplik/api-client';
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Paper, SegmentedControl, Stack, Text, TextInput, Title } from '@iplik/ui';
 import { useState } from 'react';
 import { useWeightDecision } from '../hooks/useWeightDecision';
 
-const DECISIONS: readonly WeightDecision[] = ['CANCEL', 'ADD_REMOVE_BAGS', 'UPDATE_RECIPE'];
+const DECISIONS: readonly WeightDecisionKind[] = ['CANCEL', 'ADD_REMOVE_BAGS', 'UPDATE_RECIPE'];
 const MAX_REASON_LENGTH = 500;
 
 function errorKey(code: string): string {
@@ -15,7 +15,7 @@ function errorKey(code: string): string {
 /** Müdür ve yönetici: kantar uyuşmazlığında iptal, çuval ekle-çıkar ya da reçeteyi güncelle; gerekçe zorunlu. */
 export function WeightDecisionForm({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
-  const [decision, setDecision] = useState<WeightDecision>('ADD_REMOVE_BAGS');
+  const [decision, setDecision] = useState<WeightDecisionKind>('ADD_REMOVE_BAGS');
   const [reason, setReason] = useState('');
   const mutation = useWeightDecision(shipmentId);
   return (

@@ -32,7 +32,7 @@ export function isCompleted(shipment: ShipmentDetail): boolean {
 /** Reçete satırları ve fire oranı yalnızca iç ve depo görünümündedir; fasoncuya verilmez. */
 export function findRecipe(
   shipment: ShipmentDetail,
-): { lines: readonly RecipeLineView[]; fireRate: number | undefined } | undefined {
+): { lines: readonly RecipeLineView[]; fireRate: string | undefined } | undefined {
   const lines = 'lines' in shipment ? shipment.lines : undefined;
   if (lines === undefined) return undefined;
   return { lines, fireRate: 'fireRate' in shipment ? shipment.fireRate : undefined };

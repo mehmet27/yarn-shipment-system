@@ -45,16 +45,17 @@ export function formatPct(pct: string): string {
 const FIRE_RATE_INPUT = /^\d{1,3}([.,]\d{1,2})?$/;
 const FIRE_RATE_MAX_PCT = 20;
 const PCT_DIVISOR = 100;
+const FIRE_RATE_SCALE = 4;
 
-/** Yüzde girdisini ("4", "4,5") kesire çevirir (0,045); 0–20 dışı ya da 2 ondalıktan fazlası geçersizdir. */
-export function parseFireRatePct(input: string): number | undefined {
+/** Yüzde girdisini ("4", "4,5") API kesir dizesine çevirir ("0.0450"); 0–20 dışı ya da 2 ondalıktan fazlası geçersizdir. */
+export function parseFireRatePct(input: string): string | undefined {
   const trimmed = input.trim();
   if (!FIRE_RATE_INPUT.test(trimmed)) return undefined;
   const pct = new Big(trimmed.replace(',', '.'));
-  return pct.gt(FIRE_RATE_MAX_PCT) ? undefined : Number(pct.div(PCT_DIVISOR).toString());
+  return pct.gt(FIRE_RATE_MAX_PCT) ? undefined : pct.div(PCT_DIVISOR).toFixed(FIRE_RATE_SCALE);
 }
 
 /** Kesri yüzde girdisine çevirir (0.04 → "4"); alanda gösterilecek varsayılan için. */
-export function fireRateToPctInput(rate: number): string {
+export function fireRateToPctInput(rate: string): string {
   return new Big(rate).times(PCT_DIVISOR).round(2).toString().replace('.', ',');
 }

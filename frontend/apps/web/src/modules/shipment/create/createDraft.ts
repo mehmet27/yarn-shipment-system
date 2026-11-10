@@ -1,4 +1,4 @@
-import type { CreateShipmentRequest, RecipeLine } from '@iplik/api-client';
+import type { CreateShipmentRequest, RecipeLineInput } from '@iplik/api-client';
 import type { Kilogram } from '@iplik/units';
 import { parseFireRatePct, parseKg, sumKg } from '@iplik/units';
 import type { MasterOption } from '../hooks/useMasterOptions';
@@ -103,7 +103,7 @@ export function totalNetKg(lines: readonly RecipeLineDraft[]): string {
   return sumKg(lines.map((line) => parsePositiveKg(line.netKg) ?? ''));
 }
 
-function toRecipeLine(line: RecipeLineDraft): RecipeLine | undefined {
+function toRecipeLine(line: RecipeLineDraft): RecipeLineInput | undefined {
   const netKg = parsePositiveKg(line.netKg);
   const yarnTypeText = line.yarnText.trim();
   if (netKg === undefined) return undefined;
@@ -129,7 +129,7 @@ export function toCreateRequest(
     siteId: site.value,
     subcontractorId: subcontractor.value,
     subcontractorTitle: subcontractor.label,
-    lines: lines.filter((line): line is RecipeLine => line !== undefined),
+    lines: lines.filter((line): line is RecipeLineInput => line !== undefined),
     fireRate,
     ...(driver === undefined ? {} : { driverId: driver.value, driverName: driver.label }),
     ...(vehicle === undefined ? {} : { vehicleId: vehicle.value, plateNo: vehicle.label }),

@@ -40,10 +40,10 @@ describe('formatPct', () => {
 
 describe('fire oranı', () => {
   it('yüzdeyi kesire çevirir', () => {
-    expect(parseFireRatePct('4')).toBe(0.04);
-    expect(parseFireRatePct('4,25')).toBe(0.0425);
-    expect(parseFireRatePct('20')).toBe(0.2);
-    expect(parseFireRatePct('0')).toBe(0);
+    expect(parseFireRatePct('4')).toBe('0.0400');
+    expect(parseFireRatePct('4,25')).toBe('0.0425');
+    expect(parseFireRatePct('20')).toBe('0.2000');
+    expect(parseFireRatePct('0')).toBe('0.0000');
   });
 
   it.each(['', '20,01', '21', 'x', '1,234', '-1'])('"%s" geçersizdir', (input) => {
@@ -51,7 +51,7 @@ describe('fire oranı', () => {
   });
 
   it('kesri yüzde girdisine çevirir', () => {
-    expect(fireRateToPctInput(0.04)).toBe('4');
-    expect(fireRateToPctInput(0.0425)).toBe('4,25');
+    expect(fireRateToPctInput('0.0400')).toBe('4');
+    expect(fireRateToPctInput('0.0425')).toBe('4,25');
   });
 });

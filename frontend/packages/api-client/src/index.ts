@@ -74,7 +74,8 @@ export {
   assignShipmentBags,
   cancelShipment,
   decideWeightMismatch,
-  getFireRateSetting,
+  getShipmentSettings,
+  saveShipmentSettings,
   changeLoginAccountEnabled,
   changeLoginAccountRole,
   confirmPasswordReset,
@@ -86,11 +87,12 @@ export {
   startLoginAccountPasswordReset,
 } from './masterData';
 export type {
-  FireRateSettingView,
-  RecipeLine,
+  RecipeLineInput,
+  ShipmentSettingsRequest,
+  ShipmentSettingsView,
   RecipeLineView,
   WeightCheckView,
-  WeightDecision,
+  WeightDecisionKind,
   WeightDecisionRequest,
 } from './masterData';
 export type {

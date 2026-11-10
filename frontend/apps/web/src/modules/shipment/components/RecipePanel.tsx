@@ -1,18 +1,16 @@
 import type { RecipeLineView } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Stack, Table, Text } from '@iplik/ui';
-import { formatKgText, formatPct, sumKg } from '@iplik/units';
+import { fireRateToPctInput, formatKgText, formatPct, sumKg } from '@iplik/units';
 
 export type RecipePanelProps = {
   lines: readonly RecipeLineView[];
-  /** Kesir (0.04 = %4). */
-  fireRate: number | undefined;
+  /** Kesir dizesi ("0.0400" = %4). */
+  fireRate: string | undefined;
 };
 
-const PCT_FACTOR = 100;
-
 function yarnLabel(line: RecipeLineView): string {
-  return line.yarnTypeName ?? line.yarnTypeText ?? line.yarnTypeId ?? '—';
+  return line.yarnTypeText ?? line.yarnTypeId ?? '—';
 }
 
 /** Müdürün yazdığı reçete: satırlar, toplam net kg ve sevkiyatta saklanan fire oranı. */
@@ -35,7 +33,7 @@ export function RecipePanel({ lines, fireRate }: RecipePanelProps) {
             {lines.map((line, index) => (
               <Table.Tr key={`${yarnLabel(line)}-${String(index)}`}>
                 <Table.Td>{yarnLabel(line)}</Table.Td>
-                <Table.Td>{line.lotNo ?? line.lotId ?? '—'}</Table.Td>
+                <Table.Td>{line.lotId ?? '—'}</Table.Td>
                 <Table.Td ta="right">{formatKgText(line.netKg)}</Table.Td>
               </Table.Tr>
             ))}
@@ -48,7 +46,7 @@ export function RecipePanel({ lines, fireRate }: RecipePanelProps) {
       </Table.ScrollContainer>
       {fireRate !== undefined && (
         <Text fw={600}>
-          {t('shipment.file.recipe.fireRate', { rate: formatPct(String(fireRate * PCT_FACTOR)) })}
+          {t('shipment.file.recipe.fireRate', { rate: formatPct(fireRateToPctInput(fireRate).replace(',', '.')) })}
         </Text>
       )}
     </Stack>

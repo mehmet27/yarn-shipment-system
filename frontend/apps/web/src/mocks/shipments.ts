@@ -1,5 +1,4 @@
 import type { InternalShipmentView, ShipmentStatus, Weighing } from '@iplik/api-client';
-import { SHIPMENT_STATUSES } from '@iplik/api-client';
 import type { Kilogram } from '@iplik/units';
 import { calculateNetKg, isKilogram } from '@iplik/units';
 
@@ -7,7 +6,12 @@ const SHIPMENT_COUNT = 45;
 const SUBCONTRACTORS = ['Aydın Örme', 'Bursa Tekstil', 'Çorlu Boya'] as const;
 const DRIVERS = ['Şahin Şoför', 'Mert Kaya', 'Ali Demir'] as const;
 /** Döngüsel örnek durumlar; kantar uyuşmazlığı yalnız özel örnekte (MISMATCH_INDEX) vardır. */
-const CYCLE_STATUSES = SHIPMENT_STATUSES.filter((status) => status !== 'WEIGHT_MISMATCH');
+const CYCLE_STATUSES: readonly ShipmentStatus[] = [
+  'DRAFT',
+  'AWAITING_DELIVERY',
+  'COMPLETED',
+  'CANCELLED',
+];
 const DISPATCHED: ReadonlySet<ShipmentStatus> = new Set(['AWAITING_DELIVERY', 'COMPLETED']);
 export const MISMATCH_INDEX = SHIPMENT_COUNT - 1;
 
@@ -40,7 +44,7 @@ export function allowedActionsOf(status: ShipmentStatus): InternalShipmentView['
     case 'DRAFT':
       return ['ASSIGN_BAGS', 'RECORD_DISPATCH', 'CANCEL'];
     case 'WEIGHT_MISMATCH':
-      return ['CANCEL', 'DECIDE_WEIGHT_MISMATCH'];
+      return ['CANCEL', 'RESOLVE_WEIGHT_MISMATCH'];
     case 'AWAITING_DELIVERY':
       return ['COMPLETE', 'CANCEL'];
     case 'COMPLETED':
@@ -68,10 +72,10 @@ function createShipment(index: number): InternalShipmentView {
     plannedBagCount: 40,
     plannedNetKg: kg('1982.500'),
     lines: [
-      { yarnTypeId: 'prd-1', yarnTypeName: '36/1 Viskon', netKg: kg('1500.000') },
-      { yarnTypeText: '20 denye likra', netKg: kg('482.500') },
+      { lineNo: 1, yarnTypeId: 'prd-1', yarnTypeText: '36/1 Viskon', netKg: kg('1500.000') },
+      { lineNo: 2, yarnTypeText: '20 denye likra', netKg: kg('482.500') },
     ],
-    fireRate: 0.04,
+    fireRate: '0.0400',
     createdAt: new Date(Date.UTC(2026, 9, 20, 6) - index * 3_600_000).toISOString(),
     allowedActions: allowedActionsOf(status),
     ...(DISPATCHED.has(status) && status !== 'CANCELLED' ? { dispatchWeighing: dispatch } : {}),

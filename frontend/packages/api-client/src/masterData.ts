@@ -57,14 +57,16 @@ export type {
 export {
   cancelShipment,
   decideWeightMismatch,
-  getFireRateSetting,
+  getShipmentSettings,
+  saveShipmentSettings,
 } from './generated/shipmentService';
 export type {
-  FireRateSettingView,
-  RecipeLine,
+  RecipeLineInput,
   RecipeLineView,
+  ShipmentSettingsRequest,
+  ShipmentSettingsView,
   WeightCheckView,
-  WeightDecision,
+  WeightDecisionKind,
   WeightDecisionRequest,
 } from './generated/shipmentService';
 export { CorrectionTarget, listCorrections, recordCorrection } from './generated/shipmentService';

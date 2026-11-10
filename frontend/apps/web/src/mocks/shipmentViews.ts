@@ -58,7 +58,7 @@ export function toDetailView(shipment: InternalShipmentView, role: Role): Shipme
 /** ShipmentAction'daki izin eşlemesi (backend ShipmentAccessPolicy). */
 const ACTION_PERMISSION: Readonly<Record<ShipmentAction, Permission>> = {
   ASSIGN_BAGS: 'SHIPMENT_CREATE',
-  DECIDE_WEIGHT_MISMATCH: 'SHIPMENT_CANCEL',
+  RESOLVE_WEIGHT_MISMATCH: 'SHIPMENT_CANCEL',
   RECORD_DISPATCH: 'DISPATCH_RECORD',
   CANCEL: 'SHIPMENT_CANCEL',
   COMPLETE: 'SHIPMENT_COMPLETE',

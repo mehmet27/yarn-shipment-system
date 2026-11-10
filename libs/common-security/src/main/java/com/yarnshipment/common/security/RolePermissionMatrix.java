@@ -62,7 +62,6 @@ public final class RolePermissionMatrix {
                 Permission.MASTER_DATA_VIEW,
                 Permission.BAG_CREATE,
                 Permission.SHIPMENT_VIEW,
-                Permission.SHIPMENT_CREATE,
                 Permission.DISPATCH_RECORD,
                 Permission.DISPATCH_VIEW,
                 Permission.EVIDENCE_UPLOAD_DISPATCH,

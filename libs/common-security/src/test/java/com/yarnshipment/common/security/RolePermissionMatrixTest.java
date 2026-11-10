@@ -40,6 +40,8 @@ class RolePermissionMatrixTest {
         // when / then
         assertThat(rolesHaving(Permission.DISPATCH_RECORD)).containsExactly(Role.WAREHOUSE);
         assertThat(rolesHaving(Permission.SHIPMENT_COMPLETE)).containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER);
+        // A3: depo sevkiyat açamaz; yalnızca müdür ve admin açar.
+        assertThat(rolesHaving(Permission.SHIPMENT_CREATE)).containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER);
     }
 
     @Test

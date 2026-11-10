@@ -65,7 +65,7 @@ final class BalanceFireReader implements BalanceFirePort {
                 """ + FIRE_PERIOD_FILTER + ScopedSql.SITE_FILTER + " ORDER BY completed_at DESC, shipment_no";
         return ScopedSql.withPeriod(ScopedSql.bind(jdbc.sql(sql), scope), period)
                 .param("subcontractor", subcontractorId == null ? null : subcontractorId.toString())
-                .query(BalanceFireReader::fireFile)
+                .query((rs, row) -> fireFile(rs))
                 .list();
     }
 
@@ -89,7 +89,7 @@ final class BalanceFireReader implements BalanceFirePort {
         return timestamp == null ? null : timestamp.toInstant();
     }
 
-    private static FireFile fireFile(ResultSet rs, int rowNum) throws SQLException {
+    private static FireFile fireFile(ResultSet rs) throws SQLException {
         return new FireFile(
                 rs.getObject("shipment_id", UUID.class),
                 rs.getString("shipment_no"),

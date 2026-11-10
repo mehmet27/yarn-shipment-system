@@ -50,10 +50,30 @@ class FireFileTest {
     @DisplayName("Fasoncu toplamı oranı toplamlardan hesaplar")
     void shouldAggregate() {
         UUID sub = UUID.randomUUID();
-        FireFile a = new FireFile(UUID.randomUUID(), "A", sub, "K", new BigDecimal("1000"), BigDecimal.ZERO,
-                new BigDecimal("900"), new BigDecimal("0.04"), "TO_INVOICE", null, null);
-        FireFile b = new FireFile(UUID.randomUUID(), "B", sub, "K", new BigDecimal("1000"), BigDecimal.ZERO,
-                new BigDecimal("960"), new BigDecimal("0.04"), "CLOSED", null, null);
+        FireFile a = new FireFile(
+                UUID.randomUUID(),
+                "A",
+                sub,
+                "K",
+                new BigDecimal("1000"),
+                BigDecimal.ZERO,
+                new BigDecimal("900"),
+                new BigDecimal("0.04"),
+                "TO_INVOICE",
+                null,
+                null);
+        FireFile b = new FireFile(
+                UUID.randomUUID(),
+                "B",
+                sub,
+                "K",
+                new BigDecimal("1000"),
+                BigDecimal.ZERO,
+                new BigDecimal("960"),
+                new BigDecimal("0.04"),
+                "CLOSED",
+                null,
+                null);
 
         List<YarnVsFabricRow> rows = YarnVsFabricRow.aggregate(List.of(a, b));
 

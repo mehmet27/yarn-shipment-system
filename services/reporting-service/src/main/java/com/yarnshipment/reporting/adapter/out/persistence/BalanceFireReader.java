@@ -19,9 +19,8 @@ import org.springframework.stereotype.Component;
 final class BalanceFireReader implements BalanceFirePort {
 
     /** Lokasyonu olmayan hareketler (OPENING) kapsamdaki herkese görünür. */
-    private static final String MOVEMENT_SITE_FILTER =
-            " AND (site_id IS NULL OR ((:allSites OR site_id IN (:siteIds))"
-                    + " AND (CAST(:requestedSite AS uuid) IS NULL OR site_id = CAST(:requestedSite AS uuid))))";
+    private static final String MOVEMENT_SITE_FILTER = " AND (site_id IS NULL OR ((:allSites OR site_id IN (:siteIds))"
+            + " AND (CAST(:requestedSite AS uuid) IS NULL OR site_id = CAST(:requestedSite AS uuid))))";
 
     private static final String FIRE_PERIOD_FILTER = " AND completed_at >= :start AND completed_at < :end";
 
@@ -60,8 +59,7 @@ final class BalanceFireReader implements BalanceFirePort {
                 SELECT shipment_id, shipment_no, subcontractor_id, subcontractor_name, sent_kg, returned_yarn_kg,
                        fabric_kg, fire_rate, status, invoice_no, invoiced_at
                   FROM fire_file_view
-                 WHERE (CAST(:subcontractor AS uuid) IS NULL OR subcontractor_id = CAST(:subcontractor AS uuid))"""
-                + FIRE_PERIOD_FILTER + ScopedSql.SITE_FILTER + """
+                 WHERE (CAST(:subcontractor AS uuid) IS NULL OR subcontractor_id = CAST(:subcontractor AS uuid))""" + FIRE_PERIOD_FILTER + ScopedSql.SITE_FILTER + """
 
                  ORDER BY completed_at DESC, shipment_no""";
         return ScopedSql.withPeriod(ScopedSql.bind(jdbc.sql(sql), scope), period)

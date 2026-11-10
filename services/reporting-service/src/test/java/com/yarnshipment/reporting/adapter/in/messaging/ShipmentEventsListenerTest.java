@@ -18,8 +18,8 @@ import org.mockito.ArgumentCaptor;
 class ShipmentEventsListenerTest {
 
     private static final String PREFIX = "com.yarnshipment.shipment.";
-    private static final String IDS = "\"shipmentId\":\"" + EventRecords.SHIPMENT + "\",\"siteId\":\""
-            + EventRecords.SITE + "\",\"driverId\":\"" + EventRecords.DRIVER + "\"";
+    private static final String IDS =
+            "\"shipmentId\":\"" + EventRecords.SHIPMENT + "\",\"siteId\":\"" + EventRecords.SITE + "\"";
 
     private final ApplyReadModelChangeUseCase useCase = mock(ApplyReadModelChangeUseCase.class);
     private final ShipmentEventsListener listener = new ShipmentEventsListener(useCase);
@@ -37,33 +37,12 @@ class ShipmentEventsListenerTest {
     }
 
     @Test
-    @DisplayName("Varış, tamamlanma ve iptal olayları ilgili değişikliğe çevrilir")
+    @DisplayName("Tamamlanma ve iptal olayları ilgili değişikliğe çevrilir")
     void shouldMapStatusEvents() {
-        assertThat(apply(
-                        "shipment-arrived.v1",
-                        "{" + IDS + ",\"sealIntact\":true,\"arrivedAt\":\"" + EventRecords.AT + "\"}"))
-                .isInstanceOf(ReadModelChange.ShipmentArrived.class);
         assertThat(apply("shipment-completed.v1", "{" + IDS + ",\"completedAt\":\"" + EventRecords.AT + "\"}"))
                 .isInstanceOf(ReadModelChange.ShipmentCompleted.class);
         assertThat(apply("shipment-cancelled.v1", "{" + IDS + ",\"cancelledAt\":\"" + EventRecords.AT + "\"}"))
                 .isInstanceOf(ReadModelChange.ShipmentCancelled.class);
-    }
-
-    @Test
-    @DisplayName("Teslim girişi olayı çıkış ve teslim netini taşır; çıkış tartısı yoksa boş kalır")
-    void shouldMapDelivery() {
-        String weighing = "{\"grossKg\":2100.000,\"tareKg\":100.000,\"netKg\":2000.000,\"bagCount\":2}";
-        String seal = "{\"sealNo\":\"M-1\",\"condition\":null}";
-        String json = "{\"shipmentId\":\"" + EventRecords.SHIPMENT + "\",\"deliveryReceiptId\":\""
-                + java.util.UUID.randomUUID() + "\",\"submittedAt\":\"" + EventRecords.AT + "\",\"delivery\":"
-                + weighing + ",\"dispatch\":null,\"expectedUniqueKeys\":[],\"scannedUniqueKeys\":[],"
-                + "\"dispatchSeal\":" + seal + ",\"deliverySeal\":" + seal + "}";
-
-        ReadModelChange change = apply("delivery-received.v1", json);
-
-        ReadModelChange.DeliveryReceived delivery = (ReadModelChange.DeliveryReceived) change;
-        assertThat(delivery.dispatchNetKg()).isNull();
-        assertThat(delivery.deliveryNetKg()).isEqualByComparingTo("2000");
     }
 
     @Test

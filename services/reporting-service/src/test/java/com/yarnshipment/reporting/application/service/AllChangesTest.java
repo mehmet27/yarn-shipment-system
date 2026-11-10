@@ -7,9 +7,7 @@ import com.yarnshipment.reporting.application.port.in.ApplyReadModelChangeComman
 import com.yarnshipment.reporting.application.port.out.ProcessedEventPort;
 import com.yarnshipment.reporting.application.port.out.ReadModelPort;
 import com.yarnshipment.reporting.domain.model.ReadModelChange;
-import com.yarnshipment.reporting.domain.model.ShipmentParties;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
@@ -25,16 +23,11 @@ class AllChangesTest {
 
     private final ProcessedEventPort processed = (eventId, eventType) -> true;
     private final ReadModelPort readModel = mock(ReadModelPort.class, AllChangesTest::answer);
-    private final ApplyReadModelChangeService service =
-            new ApplyReadModelChangeService(processed, readModel, new ComparisonRecorder(readModel));
+    private final ApplyReadModelChangeService service = new ApplyReadModelChangeService(processed, readModel);
 
-    /** Boolean dönenler "sevkiyat var" der, taraf sorgusu dolu döner, geri kalan boş (void). */
+    /** Boolean dönenler "sevkiyat var" der, geri kalan boş (void). */
     private static @Nullable Object answer(InvocationOnMock invocation) {
-        Class<?> type = invocation.getMethod().getReturnType();
-        if (type == boolean.class) {
-            return true;
-        }
-        return type == Optional.class ? Optional.of(new ShipmentParties(SHIPMENT, SHIPMENT, SHIPMENT)) : null;
+        return invocation.getMethod().getReturnType() == boolean.class ? Boolean.TRUE : null;
     }
 
     static Stream<ReadModelChange> changes() {

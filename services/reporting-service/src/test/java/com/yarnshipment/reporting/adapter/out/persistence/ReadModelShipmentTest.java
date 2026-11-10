@@ -25,7 +25,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 class ReadModelShipmentTest {
 
     private static final UUID SITE = UUID.randomUUID();
-    private static final UUID DRIVER = UUID.randomUUID();
+    private static final BigDecimal DISPATCH_NET = new BigDecimal("500.000");
     private static final UUID SUBCONTRACTOR = UUID.randomUUID();
 
     @MockitoBean
@@ -43,25 +43,24 @@ class ReadModelShipmentTest {
     }
 
     @Test
-    @DisplayName("Sevkiyat yaşam döngüsü satırı günceller; oluşturma olayı tekrarında ilk kayıt kalır")
+    @DisplayName(
+            "Çıkış ve tamamlanma satırı günceller; tamamlanınca ulaşan kilo çıkış netidir; ilk oluşturma kaydı kalır")
     void shouldFollowShipmentLifecycle() {
         UUID id = UUID.randomUUID();
         readModel.insertShipment(ShipmentFixtures.created(id, "SHP-L", SITE, SUBCONTRACTOR));
         readModel.insertShipment(ShipmentFixtures.created(id, "SHP-X", SITE, SUBCONTRACTOR));
-        assertThat(readModel.saveDispatched(ShipmentFixtures.dispatched(id, DRIVER)))
-                .isTrue();
-        assertThat(readModel.saveDelivery(ComparisonFixtures.delivery(id))).isTrue();
-        assertThat(readModel.saveComparison(ComparisonFixtures.redComparison(id)))
+        assertThat(readModel.saveDispatched(ShipmentFixtures.dispatched(id, DISPATCH_NET)))
                 .isTrue();
 
         Map<String, @Nullable Object> row = shipment(id);
-        assertThat(row).containsEntry("shipment_no", "SHP-L").containsEntry("status", "IN_REVIEW");
-        assertThat(row).containsEntry("driver_id", DRIVER).containsEntry("had_discrepancy", true);
-        assertThat((BigDecimal) row.get("diff_kg")).isEqualByComparingTo("40.000");
-        assertThat(readModel.findParties(id)).hasValueSatisfying(parties -> {
-            assertThat(parties.driverId()).isEqualTo(DRIVER);
-            assertThat(parties.siteId()).isEqualTo(SITE);
-        });
+        assertThat(row).containsEntry("shipment_no", "SHP-L").containsEntry("status", "AWAITING_DELIVERY");
+        assertThat((BigDecimal) row.get("dispatch_net_kg")).isEqualByComparingTo(DISPATCH_NET);
+        assertThat(row.get("delivery_net_kg")).isNull();
+
+        assertThat(readModel.saveCompleted(ShipmentFixtures.completed(id))).isTrue();
+        row = shipment(id);
+        assertThat(row).containsEntry("status", "COMPLETED");
+        assertThat((BigDecimal) row.get("delivery_net_kg")).isEqualByComparingTo(DISPATCH_NET);
     }
 
     @Test
@@ -72,8 +71,8 @@ class ReadModelShipmentTest {
 
         assertThat(readModel.saveCompleted(ShipmentFixtures.completed(id))).isTrue();
         assertThat(readModel.saveCancelled(ShipmentFixtures.cancelled(id))).isFalse();
-        assertThat(readModel.saveArrived(ShipmentFixtures.arrived(id, DRIVER))).isTrue();
-        assertThat(readModel.saveDelivery(ComparisonFixtures.delivery(id))).isTrue();
+        assertThat(readModel.saveDispatched(ShipmentFixtures.dispatched(id, DISPATCH_NET)))
+                .isTrue();
 
         assertThat(shipment(id)).containsEntry("status", "COMPLETED");
     }
@@ -83,7 +82,6 @@ class ReadModelShipmentTest {
     void shouldReportMissingShipment() {
         assertThat(readModel.saveCancelled(ShipmentFixtures.cancelled(UUID.randomUUID())))
                 .isFalse();
-        assertThat(readModel.findParties(UUID.randomUUID())).isEmpty();
     }
 
     private Map<String, @Nullable Object> shipment(UUID id) {

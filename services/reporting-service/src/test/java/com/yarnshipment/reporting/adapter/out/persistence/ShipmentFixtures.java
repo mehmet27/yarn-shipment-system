@@ -1,6 +1,7 @@
 package com.yarnshipment.reporting.adapter.out.persistence;
 
 import com.yarnshipment.reporting.domain.model.ReadModelChange;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -15,12 +16,8 @@ final class ShipmentFixtures {
         return new ReadModelChange.ShipmentCreated(id, no, site, subcontractor, AT);
     }
 
-    static ReadModelChange.ShipmentDispatched dispatched(UUID id, UUID driver) {
-        return new ReadModelChange.ShipmentDispatched(id, driver, AT);
-    }
-
-    static ReadModelChange.ShipmentArrived arrived(UUID id, UUID driver) {
-        return new ReadModelChange.ShipmentArrived(id, driver);
+    static ReadModelChange.ShipmentDispatched dispatched(UUID id, BigDecimal netKg) {
+        return new ReadModelChange.ShipmentDispatched(id, netKg, AT);
     }
 
     static ReadModelChange.ShipmentCompleted completed(UUID id) {

@@ -6,8 +6,6 @@ import static org.mockito.Mockito.when;
 
 import com.yarnshipment.reporting.TestTokens;
 import com.yarnshipment.reporting.application.port.in.GetDashboardUseCase;
-import com.yarnshipment.reporting.application.port.in.ListDriverReportUseCase;
-import com.yarnshipment.reporting.application.port.in.ListPairReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListShipmentReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorBalanceUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorReportUseCase;
@@ -42,13 +40,7 @@ class ReportShipmentControllerTest {
     private GetDashboardUseCase getDashboard;
 
     @MockitoBean
-    private ListDriverReportUseCase listDrivers;
-
-    @MockitoBean
     private ListSubcontractorReportUseCase listSubcontractors;
-
-    @MockitoBean
-    private ListPairReportUseCase listPairs;
 
     @MockitoBean
     private ListShipmentReportUseCase listShipments;
@@ -73,7 +65,6 @@ class ReportShipmentControllerTest {
                         id,
                         "SHP-1",
                         UUID.randomUUID(),
-                        null,
                         "COMPLETED",
                         new ShipmentComparison(
                                 new BigDecimal("1000.000"),

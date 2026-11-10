@@ -27,7 +27,7 @@ final class ShipmentListReader {
 
     List<ShipmentRow> findShipments(ReportPeriod period, ReportScope scope, int limit) {
         String sql = """
-                SELECT shipment_id, shipment_no, subcontractor_id, driver_id, status, dispatch_net_kg,
+                SELECT shipment_id, shipment_no, subcontractor_id, status, dispatch_net_kg,
                        delivery_net_kg, diff_kg, diff_pct, band, had_discrepancy, created_at, completed_at
                   FROM shipment_view
                  WHERE true""" + ScopedSql.PERIOD_FILTER + ScopedSql.SITE_FILTER + """
@@ -51,7 +51,6 @@ final class ShipmentListReader {
                 rs.getObject("shipment_id", UUID.class),
                 rs.getString("shipment_no"),
                 rs.getObject("subcontractor_id", UUID.class),
-                rs.getObject("driver_id", UUID.class),
                 rs.getString("status"),
                 comparison,
                 rs.getBoolean("had_discrepancy"),

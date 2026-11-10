@@ -2,7 +2,6 @@ package com.yarnshipment.reporting.adapter.in.messaging;
 
 import com.yarnshipment.common.outbox.CloudEventHeaders;
 import com.yarnshipment.common.outbox.IncomingEvent;
-import com.yarnshipment.events.discrepancy.ComparisonCompleted;
 import com.yarnshipment.events.discrepancy.DiscrepancyEvents;
 import com.yarnshipment.events.discrepancy.DiscrepancyOpened;
 import com.yarnshipment.events.discrepancy.DiscrepancyResolved;
@@ -16,7 +15,7 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
-/** {@code discrepancy.events.v1} dinleyicisi; karşılaştırma sonucunu ve açık uyuşmazlıkları okuma modeline yansıtır. */
+/** {@code discrepancy.events.v1} dinleyicisi; açılan ve çözülen uyuşmazlıkları okuma modeline yansıtır. */
 @Component
 final class DiscrepancyEventsListener {
 
@@ -43,22 +42,10 @@ final class DiscrepancyEventsListener {
     /** Bu servisin kullanmadığı olay için {@code null}. */
     private static @Nullable ReadModelChange changeOf(IncomingEvent event) {
         return switch (event.type()) {
-            case ComparisonCompleted.TYPE -> compared(event);
             case DiscrepancyOpened.TYPE -> opened(event);
             case DiscrepancyResolved.TYPE -> resolved(event);
             default -> null;
         };
-    }
-
-    private static ReadModelChange compared(IncomingEvent event) {
-        ComparisonCompleted completed = EVENT_READER.readValue(event.data(), ComparisonCompleted.class);
-        return new ReadModelChange.ComparisonCompleted(
-                completed.shipmentId(),
-                completed.comparedAt(),
-                completed.quantityBand(),
-                completed.diffKg(),
-                completed.diffPct(),
-                completed.discrepancyCount());
     }
 
     private static ReadModelChange opened(IncomingEvent event) {

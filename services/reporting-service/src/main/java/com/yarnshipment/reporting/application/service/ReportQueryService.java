@@ -1,8 +1,6 @@
 package com.yarnshipment.reporting.application.service;
 
 import com.yarnshipment.reporting.application.port.in.GetDashboardUseCase;
-import com.yarnshipment.reporting.application.port.in.ListDriverReportUseCase;
-import com.yarnshipment.reporting.application.port.in.ListPairReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListShipmentReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorBalanceUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorReportUseCase;
@@ -11,7 +9,6 @@ import com.yarnshipment.reporting.application.port.out.ReportQueryPort;
 import com.yarnshipment.reporting.domain.model.BandCounts;
 import com.yarnshipment.reporting.domain.model.Dashboard;
 import com.yarnshipment.reporting.domain.model.OpenDiscrepancies;
-import com.yarnshipment.reporting.domain.model.PairStats;
 import com.yarnshipment.reporting.domain.model.PartyStats;
 import com.yarnshipment.reporting.domain.model.QuantitySummary;
 import com.yarnshipment.reporting.domain.model.ReportPeriod;
@@ -29,9 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ReportQueryService
         implements GetDashboardUseCase,
-                ListDriverReportUseCase,
                 ListSubcontractorReportUseCase,
-                ListPairReportUseCase,
                 ListShipmentReportUseCase,
                 ListSubcontractorBalanceUseCase {
 
@@ -59,28 +54,10 @@ public class ReportQueryService
 
     @Override
     @Transactional(readOnly = true)
-    public List<PartyStats> listDriverReport(ReportQuery query) {
-        ReportPeriod period = periodOf(query);
-        return access.scopeOf(query)
-                .map(scope -> queryPort.findDriverStats(period, scope))
-                .orElseGet(List::of);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<PartyStats> listSubcontractorReport(ReportQuery query) {
         ReportPeriod period = periodOf(query);
         return access.scopeOf(query)
                 .map(scope -> queryPort.findSubcontractorStats(period, scope))
-                .orElseGet(List::of);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PairStats> listPairReport(ReportQuery query) {
-        ReportPeriod period = periodOf(query);
-        return access.scopeOf(query)
-                .map(scope -> queryPort.findPairStats(period, scope))
                 .orElseGet(List::of);
     }
 

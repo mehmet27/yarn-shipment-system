@@ -50,12 +50,12 @@ class ReportQueryServiceTest {
     }
 
     @Test
-    @DisplayName("Fasoncu ve şoför rapor görmez, sorgu çalışmaz")
+    @DisplayName("Fasoncu rapor görmez, sorgu çalışmaz")
     void shouldReturnEmptyForExternalRoles() {
         Dashboard dashboard = service.getDashboard(query(TestTokens.actor(TestTokens.subcontractorToken())));
 
         assertThat(dashboard.shipments().total()).isZero();
-        assertThat(service.listDriverReport(query(TestTokens.actor(TestTokens.driverToken()))))
+        assertThat(service.listSubcontractorReport(query(TestTokens.actor(TestTokens.subcontractorToken()))))
                 .isEmpty();
         verifyNoInteractions(queryPort);
     }
@@ -65,21 +65,17 @@ class ReportQueryServiceTest {
     void shouldRejectForeignSite() {
         ReportQuery query = query(TestTokens.actor("manager"), UUID.randomUUID());
 
-        assertThatThrownBy(() -> service.listPairReport(query)).isInstanceOf(OutOfScopeAccessException.class);
+        assertThatThrownBy(() -> service.listSubcontractorReport(query)).isInstanceOf(OutOfScopeAccessException.class);
     }
 
     @Test
-    @DisplayName("Yönetici şoför, fasoncu ve eşleşme raporlarını kendi kapsamıyla alır")
+    @DisplayName("Yönetici fasoncu raporunu kendi kapsamıyla alır")
     void shouldListPartyReportsForManager() {
         ReportQuery query = query(TestTokens.actor("manager"));
 
-        service.listDriverReport(query);
         service.listSubcontractorReport(query);
-        service.listPairReport(query);
 
-        verify(queryPort).findDriverStats(any(), any());
         verify(queryPort).findSubcontractorStats(any(), any());
-        verify(queryPort).findPairStats(any(), any());
     }
 
     @Test
@@ -91,7 +87,7 @@ class ReportQueryServiceTest {
 
         verify(queryPort).findShipments(any(), any(), eq(ReportQueryService.SHIPMENT_REPORT_LIMIT));
         verify(queryPort).findSubcontractorBalances(any(), any());
-        assertThat(service.listShipmentReport(query(TestTokens.actor(TestTokens.driverToken()))))
+        assertThat(service.listShipmentReport(query(TestTokens.actor(TestTokens.subcontractorToken()))))
                 .isEmpty();
         assertThat(service.listSubcontractorBalance(query(TestTokens.actor(TestTokens.subcontractorToken()))))
                 .isEmpty();

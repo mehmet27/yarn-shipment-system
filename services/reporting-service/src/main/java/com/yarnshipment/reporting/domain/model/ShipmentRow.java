@@ -10,7 +10,6 @@ import org.jspecify.annotations.Nullable;
  * @param shipmentId sevkiyat
  * @param shipmentNo numara
  * @param subcontractorId fasoncu
- * @param driverId şoför; henüz atanmadıysa boş
  * @param status durum
  * @param comparison kilo ve karşılaştırma değerleri
  * @param hadDiscrepancy uyuşmazlık çıktı mı
@@ -21,7 +20,6 @@ public record ShipmentRow(
         UUID shipmentId,
         String shipmentNo,
         UUID subcontractorId,
-        @Nullable UUID driverId,
         String status,
         ShipmentComparison comparison,
         boolean hadDiscrepancy,

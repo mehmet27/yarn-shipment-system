@@ -29,11 +29,11 @@ class FireFileTest {
     @Test
     @DisplayName("Kırıkhan: gerçekleşen fire %4,03, beklenen 32670,720, eksik 10,720")
     void shouldMatchKirikhanAcceptance() {
-        FireFile f = file("34032.000", "0.000", "32660.000", "0.04");
+        FireFile kirikhan = file("34032.000", "0.000", "32660.000", "0.04");
 
-        assertThat(f.actualFireRate()).isEqualByComparingTo("0.0403");
-        assertThat(f.expectedFabricKg()).isEqualByComparingTo("32670.720");
-        assertThat(f.shortageKg()).isEqualByComparingTo("10.720");
+        assertThat(kirikhan.actualFireRate()).isEqualByComparingTo("0.0403");
+        assertThat(kirikhan.expectedFabricKg()).isEqualByComparingTo("32670.720");
+        assertThat(kirikhan.shortageKg()).isEqualByComparingTo("10.720");
     }
 
     @Test
@@ -50,7 +50,7 @@ class FireFileTest {
     @DisplayName("Fasoncu toplamı oranı toplamlardan hesaplar")
     void shouldAggregate() {
         UUID sub = UUID.randomUUID();
-        FireFile a = new FireFile(
+        FireFile aboveLimit = new FireFile(
                 UUID.randomUUID(),
                 "A",
                 sub,
@@ -62,7 +62,7 @@ class FireFileTest {
                 "TO_INVOICE",
                 null,
                 null);
-        FireFile b = new FireFile(
+        FireFile withinLimit = new FireFile(
                 UUID.randomUUID(),
                 "B",
                 sub,
@@ -75,7 +75,7 @@ class FireFileTest {
                 null,
                 null);
 
-        List<YarnVsFabricRow> rows = YarnVsFabricRow.aggregate(List.of(a, b));
+        List<YarnVsFabricRow> rows = YarnVsFabricRow.aggregate(List.of(aboveLimit, withinLimit));
 
         assertThat(rows).hasSize(1);
         assertThat(rows.get(0).actualFireRate()).isEqualByComparingTo("0.0700");

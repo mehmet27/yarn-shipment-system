@@ -530,7 +530,7 @@ components:
         yarnType: {type: string}
         subcontractorId: {type: string, format: uuid}
         subcontractorName: {type: string}
-        balanceKg: {type: string, description: Net kg, 3 ondalık, işaretli}
+        balanceKg: {type: string, description: "Net kg, 3 ondalık, işaretli"}
         inTransitKg: {type: string, description: Henüz teslim edilmemiş DISPATCH kilosu}
     FireRowView:
       type: object
@@ -543,9 +543,9 @@ components:
         sentKg: {type: string}
         returnedYarnKg: {type: string}
         fabricKg: {type: string}
-        fireRate: {type: string, description: Kesir, 4 ondalık}
+        fireRate: {type: string, description: "Kesir, 4 ondalık"}
         expectedFabricKg: {type: string}
-        actualFireRate: {type: string, description: Kesir, 4 ondalık}
+        actualFireRate: {type: string, description: "Kesir, 4 ondalık"}
         shortageKg: {type: string}
         status: {type: string, enum: [AWAITING_FABRIC, TO_INVOICE, CLOSED]}
         invoiceNo: {type: string, nullable: true}

@@ -124,16 +124,6 @@ export interface PartyStatsView {
   averageAbsoluteDiffKg: string;
 }
 
-export interface PairStatsView {
-  driverId: string;
-  subcontractorId: string;
-  shipmentCount: number;
-  discrepantShipmentCount: number;
-  discrepancyCount: number;
-  discrepancyRate: string;
-  averageAbsoluteDiffKg: string;
-}
-
 export type ShipmentRowViewBand = typeof ShipmentRowViewBand[keyof typeof ShipmentRowViewBand];
 
 
@@ -147,8 +137,6 @@ export interface ShipmentRowView {
   shipmentId: string;
   shipmentNo: string;
   subcontractorId: string;
-  /** Henüz atanmadıysa yoktur */
-  driverId?: string;
   status: string;
   dispatchNetKg?: string;
   deliveryNetKg?: string;
@@ -219,37 +207,7 @@ to?: ToParameter;
 siteId?: SiteIdParameter;
 };
 
-export type GetDriverReportParams = {
-/**
- * Dönem başı (dahil), Europe/Istanbul günü
- */
-from?: FromParameter;
-/**
- * Dönem sonu (dahil), Europe/Istanbul günü
- */
-to?: ToParameter;
-/**
- * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
- */
-siteId?: SiteIdParameter;
-};
-
 export type GetSubcontractorReportParams = {
-/**
- * Dönem başı (dahil), Europe/Istanbul günü
- */
-from?: FromParameter;
-/**
- * Dönem sonu (dahil), Europe/Istanbul günü
- */
-to?: ToParameter;
-/**
- * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
- */
-siteId?: SiteIdParameter;
-};
-
-export type GetPairReportParams = {
 /**
  * Dönem başı (dahil), Europe/Istanbul günü
  */
@@ -309,20 +267,6 @@ export const getDashboard = (
 
 /**
  * En yüksek uyuşmazlık oranı önce gelir.
- * @summary Şoför bazında sevkiyat sayısı, uyuşmazlık oranı ve ortalama kilo farkı
- */
-export const getDriverReport = (
-    params?: GetDriverReportParams,
- ) => {
-      return customInstance<PartyStatsView[]>(
-      {url: `/api/v1/reports/drivers`, method: 'GET',
-        params
-    },
-      );
-    }
-
-/**
- * En yüksek uyuşmazlık oranı önce gelir.
  * @summary Fasoncu bazında sevkiyat sayısı, uyuşmazlık oranı ve ortalama kilo farkı
  */
 export const getSubcontractorReport = (
@@ -330,20 +274,6 @@ export const getSubcontractorReport = (
  ) => {
       return customInstance<PartyStatsView[]>(
       {url: `/api/v1/reports/subcontractors`, method: 'GET',
-        params
-    },
-      );
-    }
-
-/**
- * Anlaşma riskini görmek içindir; en yüksek oran önce gelir.
- * @summary Şoför–fasoncu eşleşmesi bazında uyuşmazlık oranı
- */
-export const getPairReport = (
-    params?: GetPairReportParams,
- ) => {
-      return customInstance<PairStatsView[]>(
-      {url: `/api/v1/reports/pairs`, method: 'GET',
         params
     },
       );
@@ -383,8 +313,6 @@ type AwaitedInput<T> = PromiseLike<T> | T;
     type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 export type GetDashboardResult = NonNullable<Awaited<ReturnType<typeof getDashboard>>>
-export type GetDriverReportResult = NonNullable<Awaited<ReturnType<typeof getDriverReport>>>
 export type GetSubcontractorReportResult = NonNullable<Awaited<ReturnType<typeof getSubcontractorReport>>>
-export type GetPairReportResult = NonNullable<Awaited<ReturnType<typeof getPairReport>>>
 export type GetShipmentReportResult = NonNullable<Awaited<ReturnType<typeof getShipmentReport>>>
 export type GetSubcontractorBalanceReportResult = NonNullable<Awaited<ReturnType<typeof getSubcontractorBalanceReport>>>

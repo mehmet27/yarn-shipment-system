@@ -2,9 +2,9 @@ package com.yarnshipment.shipment.domain.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.yarnshipment.shipment.domain.arrival.ShipmentArrived;
 import com.yarnshipment.shipment.domain.cancellation.ShipmentCancelled;
-import com.yarnshipment.shipment.domain.check.ShipmentCompleted;
+import com.yarnshipment.shipment.domain.completion.ShipmentCompleted;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -26,11 +26,11 @@ class ShipmentLifecycleContractTest {
             .build();
 
     @Test
-    @DisplayName("Oluşturma, yola çıkış, varış, tamamlanma ve iptal olayları sözleşmeyle aynı tip ve alanları taşır")
+    @DisplayName("Oluşturma, çıkış, tamamlanma ve iptal olayları sözleşmeyle aynı tip ve alanları taşır")
     void shouldMatchEventContracts() {
         ShipmentCreated created = new ShipmentCreated(SHIPMENT, "SV-1", SITE, PARTY, AT);
-        ShipmentDispatched dispatched = new ShipmentDispatched(SHIPMENT, SITE, PARTY, BAGS, AT);
-        ShipmentArrived arrived = new ShipmentArrived(SHIPMENT, SITE, PARTY, true, AT);
+        ShipmentDispatched dispatched =
+                new ShipmentDispatched(SHIPMENT, SITE, PARTY, BAGS, new BigDecimal("1982.500"), AT);
         ShipmentCompleted completed = new ShipmentCompleted(SHIPMENT, SITE, AT);
         ShipmentCancelled cancelled = new ShipmentCancelled(SHIPMENT, SITE, AT);
 
@@ -38,9 +38,6 @@ class ShipmentLifecycleContractTest {
                 .isEqualTo(new com.yarnshipment.events.shipment.ShipmentCreated(SHIPMENT, "SV-1", SITE, PARTY, AT));
         assertThat(roundTrip(dispatched, com.yarnshipment.events.shipment.ShipmentDispatched.class)
                         .dispatchedAt())
-                .isEqualTo(AT);
-        assertThat(roundTrip(arrived, com.yarnshipment.events.shipment.ShipmentArrived.class)
-                        .arrivedAt())
                 .isEqualTo(AT);
         assertThat(roundTrip(completed, com.yarnshipment.events.shipment.ShipmentCompleted.class)
                         .completedAt())
@@ -50,7 +47,6 @@ class ShipmentLifecycleContractTest {
                 .isEqualTo(AT);
         assertThat(com.yarnshipment.events.shipment.ShipmentCreated.TYPE).isEqualTo(ShipmentCreated.TYPE);
         assertThat(com.yarnshipment.events.shipment.ShipmentDispatched.TYPE).isEqualTo(ShipmentDispatched.TYPE);
-        assertThat(com.yarnshipment.events.shipment.ShipmentArrived.TYPE).isEqualTo(ShipmentArrived.TYPE);
         assertThat(com.yarnshipment.events.shipment.ShipmentCompleted.TYPE).isEqualTo(ShipmentCompleted.TYPE);
         assertThat(com.yarnshipment.events.shipment.ShipmentCancelled.TYPE).isEqualTo(ShipmentCancelled.TYPE);
     }

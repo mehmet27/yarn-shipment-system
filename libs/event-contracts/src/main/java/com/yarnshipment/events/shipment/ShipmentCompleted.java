@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * SevkiyatTamamlandi: teslim kontrolü bitti. Kişisel veri taşımaz (EVT-08).
+ * SevkiyatTamamlandi: irsaliye müdüre ulaştı, sevkiyat tamamlandı. Kişisel veri taşımaz (EVT-08).
  *
  * @param shipmentId sevkiyat
  * @param siteId çıkış lokasyonu

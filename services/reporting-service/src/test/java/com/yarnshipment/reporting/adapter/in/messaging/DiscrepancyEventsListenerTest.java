@@ -25,21 +25,6 @@ class DiscrepancyEventsListenerTest {
     private final DiscrepancyEventsListener listener = new DiscrepancyEventsListener(useCase);
 
     @Test
-    @DisplayName("Karşılaştırma olayı bant, fark ve uyuşmazlık sayısını taşır")
-    void shouldMapComparison() {
-        String json = "{\"shipmentId\":\"" + EventRecords.SHIPMENT + "\",\"siteId\":\"" + EventRecords.SITE
-                + "\",\"comparedAt\":\"" + EventRecords.AT + "\",\"outcome\":\"DISCREPANCY\","
-                + "\"quantityBand\":\"RED\",\"diffKg\":40.000,\"diffPct\":4.00,\"discrepancyCount\":2,"
-                + "\"highestSeverity\":\"RED\"}";
-
-        var change = (ReadModelChange.ComparisonCompleted) apply("comparison-completed.v1", json);
-
-        assertThat(change.band()).isEqualTo("RED");
-        assertThat(change.diffKg()).isEqualByComparingTo("40");
-        assertThat(change.discrepancyCount()).isEqualTo(2);
-    }
-
-    @Test
     @DisplayName("Açılış olayı vade ve öncelik taşır, açılış zamanı olay zamanıdır")
     void shouldMapOpened() {
         String json = "{" + HEAD + ",\"type\":\"QUANTITY\",\"severity\":\"RED\",\"ruleCode\":\"QTY\","

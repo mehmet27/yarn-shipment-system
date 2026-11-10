@@ -21,10 +21,8 @@ public record TrackShipmentCommand(UUID shipmentId, Milestone milestone, Instant
 
     /** Zaman kuralını etkileyen adımlar. */
     public enum Milestone {
-        /** Şoför teslim aldı, sevkiyat yolda. */
+        /** Depo çıkış tartısını girdi, sevkiyat yolda. */
         DISPATCHED,
-        /** Şoför fasoncuya vardı. */
-        ARRIVED,
         /** Sevkiyat tamamlandı ya da iptal edildi. */
         CLOSED
     }

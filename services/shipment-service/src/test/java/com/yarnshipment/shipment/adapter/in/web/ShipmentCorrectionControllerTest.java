@@ -42,12 +42,12 @@ class ShipmentCorrectionControllerTest {
     private static final UUID KEY = UUID.fromString("0192f0a0-0000-7000-8000-0000000000dd");
     private static final String URI = "/api/v1/shipments/" + SHIPMENT + "/corrections";
     private static final String WEIGHING = """
-            {"target": "DELIVERY_WEIGHING", "grossKg": "1990.000", "tareKg": "18.000",
+            {"target": "DISPATCH_WEIGHING", "grossKg": "1990.000", "tareKg": "18.000",
              "reason": "Kantar fişindeki brüt yanlış girilmiş"}""";
     private static final ShipmentCorrection SAVED = new ShipmentCorrection(
             KEY,
             SHIPMENT,
-            CorrectionTarget.DELIVERY_WEIGHING,
+            CorrectionTarget.DISPATCH_WEIGHING,
             "gross=1995.250 tare=18.000 net=1977.250",
             "gross=1990.000 tare=18.000 net=1972.000",
             "Kantar fişindeki brüt yanlış girilmiş",
@@ -116,7 +116,7 @@ class ShipmentCorrectionControllerTest {
                 .when(recordCorrectionUseCase)
                 .recordCorrection(any());
         MvcTestResult unchanged = post(admin, WEIGHING);
-        doThrow(new CorrectionConflictException(SHIPMENT, CorrectionTarget.DELIVERY_WEIGHING))
+        doThrow(new CorrectionConflictException(SHIPMENT, CorrectionTarget.DISPATCH_WEIGHING))
                 .when(recordCorrectionUseCase)
                 .recordCorrection(any());
         MvcTestResult conflict = post(admin, WEIGHING);

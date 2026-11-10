@@ -46,24 +46,24 @@ class CancelShipmentServiceTest {
     }
 
     @Test
-    @DisplayName("Taslak ya da çıkış yapılmış sevkiyat iptal edilir ve çuvalları serbest bırakılır")
+    @DisplayName("Taslak ya da teslim bekleyen sevkiyat iptal edilir ve çuvalları serbest bırakılır")
     void shouldCancelAndReleaseBags() throws Exception {
-        queryPort.add(TestShipments.shipment(ShipmentStatus.LOADED));
+        queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
 
         service().cancelShipment(command("  Yanlış sevkiyat  "));
 
         assertThat(cancellations).singleElement().satisfies(cancellation -> {
             assertThat(cancellation.reason()).isEqualTo("Yanlış sevkiyat");
-            assertThat(cancellation.fromStatus()).isEqualTo(ShipmentStatus.LOADED);
+            assertThat(cancellation.fromStatus()).isEqualTo(ShipmentStatus.AWAITING_DELIVERY);
             assertThat(cancellation.cancelledAt()).isEqualTo(NOW);
         });
         assertThat(bags.released()).containsExactly(TestShipments.SHIPMENT_ID);
     }
 
     @Test
-    @DisplayName("Yola çıkmış sevkiyat iptal edilemez; çuval servisine gidilmez")
-    void shouldRejectShipmentAlreadyOnTheRoad() throws Exception {
-        queryPort.add(TestShipments.shipment(ShipmentStatus.IN_TRANSIT));
+    @DisplayName("Tamamlanmış sevkiyat iptal edilemez; çuval servisine gidilmez")
+    void shouldRejectCompletedShipment() throws Exception {
+        queryPort.add(TestShipments.shipment(ShipmentStatus.COMPLETED));
         CancelShipmentService service = service();
         CancelShipmentCommand command = command("Gerekçe");
 

@@ -48,7 +48,7 @@ final class ClaimAccess {
                         () -> new ClaimRejectedException(ClaimRejection.NOT_AVAILABLE, "shipmentId=" + shipmentId));
         scopeGuard.validateInScope(
                 actor,
-                new ScopedResource(RESOURCE_TYPE, shipmentId, target.siteId(), target.subcontractorId(), null),
+                new ScopedResource(RESOURCE_TYPE, shipmentId, target.siteId(), target.subcontractorId()),
                 action);
         return target;
     }

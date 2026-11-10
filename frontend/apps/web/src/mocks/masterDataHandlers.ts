@@ -134,7 +134,7 @@ function openLoginAccount(kind: MasterKind, ownerId: string, body: unknown) {
     email: textField(fields, 'email') ?? '',
     phone: textField(fields, 'phone') ?? '',
     fullName: owner?.label ?? username,
-    role: kind === 'driver' ? 'DRIVER' : 'SUBCONTRACTOR',
+    role: 'SUBCONTRACTOR',
   });
   return new HttpResponse(null, { status: 201 });
 }
@@ -181,6 +181,7 @@ function writeHandlers(kind: MasterKind, canManage: boolean) {
     }),
     http.post(`${path}/:id/login-account`, async ({ params, request }) => {
       if (!canManage) return denied();
+      if (kind !== 'subcontractor') return notFound();
       return openLoginAccount(kind, String(params.id), await request.json());
     }),
     ...(['deactivate', 'activate'] as const).map((action) =>

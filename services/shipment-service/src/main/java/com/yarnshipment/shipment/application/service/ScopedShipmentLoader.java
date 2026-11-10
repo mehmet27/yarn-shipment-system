@@ -28,8 +28,8 @@ public final class ScopedShipmentLoader {
     public Shipment load(Actor actor, UUID shipmentId, Permission permission) {
         Shipment shipment =
                 shipmentQueryPort.findShipment(shipmentId).orElseThrow(() -> new ShipmentNotFoundException(shipmentId));
-        ScopedResource resource = new ScopedResource(
-                RESOURCE_TYPE, shipment.id(), shipment.siteId(), shipment.subcontractorId(), shipment.driverId());
+        ScopedResource resource =
+                new ScopedResource(RESOURCE_TYPE, shipment.id(), shipment.siteId(), shipment.subcontractorId());
         scopeGuard.validateInScope(actor, resource, permission.name());
         return shipment;
     }

@@ -6,8 +6,6 @@ import static org.mockito.Mockito.when;
 
 import com.yarnshipment.reporting.TestTokens;
 import com.yarnshipment.reporting.application.port.in.GetDashboardUseCase;
-import com.yarnshipment.reporting.application.port.in.ListDriverReportUseCase;
-import com.yarnshipment.reporting.application.port.in.ListPairReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListShipmentReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorBalanceUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorReportUseCase;
@@ -37,13 +35,7 @@ class ReportControllerTest {
     private GetDashboardUseCase getDashboard;
 
     @MockitoBean
-    private ListDriverReportUseCase listDrivers;
-
-    @MockitoBean
     private ListSubcontractorReportUseCase listSubcontractors;
-
-    @MockitoBean
-    private ListPairReportUseCase listPairs;
 
     @MockitoBean
     private ListShipmentReportUseCase listShipments;
@@ -80,11 +72,11 @@ class ReportControllerTest {
     }
 
     @Test
-    @DisplayName("Şoför raporu oranı ve ortalamayı hesaplanmış döner")
-    void shouldReturnDriverReport() {
-        when(listDrivers.listDriverReport(any())).thenReturn(List.of(TestFigures.driver()));
+    @DisplayName("Fasoncu raporu oranı ve ortalamayı hesaplanmış döner")
+    void shouldReturnSubcontractorReport() {
+        when(listSubcontractors.listSubcontractorReport(any())).thenReturn(List.of(TestFigures.subcontractor()));
 
-        MvcTestResult result = get(BASE + "/drivers", manager());
+        MvcTestResult result = get(BASE + "/subcontractors", manager());
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$[0].discrepancyRate").isEqualTo("25.00");
@@ -114,20 +106,17 @@ class ReportControllerTest {
     }
 
     @Test
-    @DisplayName("Fasoncu ve eşleşme raporları satırları döner; vadesi geçenler dashboard'da listelenir")
-    void shouldReturnSubcontractorAndPairReports() {
-        when(listSubcontractors.listSubcontractorReport(any())).thenReturn(List.of(TestFigures.driver()));
-        when(listPairs.listPairReport(any())).thenReturn(List.of(TestFigures.pair()));
+    @DisplayName("Fasoncu raporu satırları döner; vadesi geçenler dashboard'da listelenir; şoför uçları yoktur")
+    void shouldReturnSubcontractorRowsAndOverdue() {
+        when(listSubcontractors.listSubcontractorReport(any())).thenReturn(List.of(TestFigures.subcontractor()));
         when(getDashboard.getDashboard(any())).thenReturn(TestDashboards.withOverdue());
 
         assertThat(get(BASE + "/subcontractors", manager()))
                 .bodyJson()
                 .extractingPath("$[0].shipmentCount")
-                .isEqualTo(TestFigures.DRIVER_SHIPMENTS);
-        assertThat(get(BASE + "/pairs", manager()))
-                .bodyJson()
-                .extractingPath("$[0].discrepancyCount")
-                .isEqualTo(1);
+                .isEqualTo(TestFigures.PARTY_SHIPMENTS);
+        assertThat(get(BASE + "/drivers", manager())).hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(get(BASE + "/pairs", manager())).hasStatus(HttpStatus.NOT_FOUND);
         assertThat(get(BASE + "/dashboard", manager()))
                 .bodyJson()
                 .extractingPath("$.overdueDiscrepancies[0].severity")

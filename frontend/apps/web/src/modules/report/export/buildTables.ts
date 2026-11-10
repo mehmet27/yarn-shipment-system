@@ -1,4 +1,4 @@
-import type { PairStatsView, PartyStatsView } from '@iplik/api-client';
+import type { PartyStatsView } from '@iplik/api-client';
 import { formatDateTime } from '@iplik/i18n';
 import { balanceTable, shipmentsTable } from './extraTables';
 import type { ReportBundle, ReportCell, ReportMeta, ReportTable } from './reportModel';
@@ -17,7 +17,7 @@ type Translate = (key: string) => string;
 type PartyTableSpec = {
   title: string;
   partyHeaders: string[];
-  rows: { parties: string[]; stats: PartyStatsView | PairStatsView }[];
+  rows: { parties: string[]; stats: PartyStatsView }[];
 };
 
 function partyTable({ title, partyHeaders, rows }: PartyTableSpec, t: Translate): ReportTable {
@@ -130,16 +130,8 @@ export function buildTables(
   translate: Translate,
 ): ReportTable[] {
   const t = translate;
-  const driverRows = filterRows(bundle.drivers, meta.onlyDiscrepant).map((stats) => ({
-    parties: [meta.nameOf(stats.id)],
-    stats,
-  }));
   const subcontractorRows = filterRows(bundle.subcontractors, meta.onlyDiscrepant).map((stats) => ({
     parties: [meta.nameOf(stats.id)],
-    stats,
-  }));
-  const pairRows = filterRows(bundle.pairs, meta.onlyDiscrepant).map((stats) => ({
-    parties: [meta.nameOf(stats.driverId), meta.nameOf(stats.subcontractorId)],
     stats,
   }));
   return [
@@ -148,25 +140,9 @@ export function buildTables(
     largestTable(bundle, t),
     partyTable(
       {
-        title: t('report.export.sheets.drivers'),
-        partyHeaders: [t('report.parties.driver')],
-        rows: driverRows,
-      },
-      t,
-    ),
-    partyTable(
-      {
         title: t('report.export.sheets.subcontractors'),
         partyHeaders: [t('report.parties.subcontractor')],
         rows: subcontractorRows,
-      },
-      t,
-    ),
-    partyTable(
-      {
-        title: t('report.export.sheets.pairs'),
-        partyHeaders: [t('report.parties.driver'), t('report.parties.subcontractor')],
-        rows: pairRows,
       },
       t,
     ),

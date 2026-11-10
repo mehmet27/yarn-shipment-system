@@ -3,7 +3,6 @@ package com.yarnshipment.reporting.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.reporting.adapter.out.persistence.SeedRows.Discrepancy;
-import com.yarnshipment.reporting.adapter.out.persistence.SeedRows.Pair;
 import com.yarnshipment.reporting.adapter.out.persistence.SeedRows.Shipment;
 import com.yarnshipment.reporting.application.port.out.ReportScope;
 import com.yarnshipment.reporting.domain.model.ReportPeriod;
@@ -38,10 +37,7 @@ class ReportQueryAdapterTest {
     private static final Instant NOW = Instant.parse("2026-11-03T12:00:00Z");
     private static final ReportPeriod PERIOD =
             new ReportPeriod(LocalDate.parse("2026-11-01"), LocalDate.parse("2026-11-03"));
-    private static final UUID DRIVER_A = UUID.randomUUID();
-    private static final UUID DRIVER_B = UUID.randomUUID();
     private static final int THREE = 3;
-    private static final int FOUR = 4;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -62,9 +58,9 @@ class ReportQueryAdapterTest {
     void shouldBuildDashboard() {
         UUID site = UUID.randomUUID();
         SeedRows seed = new SeedRows(jdbc);
-        seed.shipment(site, new Shipment("SHP-1", DRIVER_A, "COMPLETED", "GREEN", "0.000", false));
-        seed.shipment(site, new Shipment("SHP-2", DRIVER_A, "IN_REVIEW", "RED", "-40.000", true));
-        seed.shipment(site, new Shipment("SHP-3", DRIVER_B, "IN_TRANSIT", null, null, false));
+        seed.shipment(site, new Shipment("SHP-1", "COMPLETED", "GREEN", "0.000", false));
+        seed.shipment(site, new Shipment("SHP-2", "AWAITING_DELIVERY", "RED", "-40.000", true));
+        seed.shipment(site, new Shipment("SHP-3", "DRAFT", null, null, false));
         seed.oldShipment(site);
         seed.discrepancy(site, new Discrepancy("UY-1", "RED", "2026-11-02T00:00:00Z", false));
         seed.discrepancy(site, new Discrepancy("UY-2", "YELLOW", "2026-11-09T00:00:00Z", false));
@@ -73,8 +69,8 @@ class ReportQueryAdapterTest {
         var dashboard = reports.findDashboard(PERIOD, scope(site), NOW);
 
         assertThat(dashboard.shipments().total()).isEqualTo(THREE);
-        assertThat(dashboard.shipments().inProgress()).isEqualTo(1);
-        assertThat(dashboard.shipments().inReview()).isEqualTo(1);
+        assertThat(dashboard.shipments().inProgress()).isEqualTo(2);
+        assertThat(dashboard.shipments().inReview()).isZero();
         assertThat(dashboard.shipments().completed()).isEqualTo(1);
         assertThat(dashboard.quantity().comparedShipments()).isEqualTo(2);
         assertThat(dashboard.quantity().absoluteDiffKg()).isEqualByComparingTo("40.000");
@@ -87,22 +83,19 @@ class ReportQueryAdapterTest {
     }
 
     @Test
-    @DisplayName("Şoför raporu en yüksek uyuşmazlık oranını öne alır; fasoncu raporu aynı sevkiyatları toplar")
-    void shouldRankDriversByDiscrepancyRate() {
+    @DisplayName("Fasoncu raporu çıkışı yapılmış sevkiyatları uyuşmazlık oranıyla toplar")
+    void shouldSumSubcontractorStats() {
         UUID site = UUID.randomUUID();
         SeedRows seed = new SeedRows(jdbc);
-        seed.shipment(site, new Shipment("SHP-1", DRIVER_A, "COMPLETED", "GREEN", "0.000", false));
-        seed.shipment(site, new Shipment("SHP-2", DRIVER_A, "IN_REVIEW", "RED", "-40.000", true));
-        seed.shipment(site, new Shipment("SHP-3", DRIVER_B, "IN_REVIEW", "YELLOW", "10.000", true));
+        seed.shipment(site, new Shipment("SHP-1", "COMPLETED", "GREEN", "0.000", false));
+        seed.shipment(site, new Shipment("SHP-2", "AWAITING_DELIVERY", "RED", "-40.000", true));
+        seed.shipment(site, new Shipment("SHP-3", "AWAITING_DELIVERY", "YELLOW", "10.000", true));
 
-        var drivers = reports.findDriverStats(PERIOD, scope(site));
         var subcontractors = reports.findSubcontractorStats(PERIOD, scope(site));
 
-        assertThat(drivers).extracting(party -> party.id()).containsExactly(DRIVER_B, DRIVER_A);
-        assertThat(drivers.get(1).discrepancyRate()).isEqualByComparingTo("50.00");
-        assertThat(drivers.get(1).averageAbsoluteDiffKg()).isEqualByComparingTo("20.000");
         assertThat(subcontractors).hasSize(1);
         assertThat(subcontractors.get(0).shipmentCount()).isEqualTo(THREE);
+        assertThat(subcontractors.get(0).discrepantShipmentCount()).isEqualTo(2);
     }
 
     @Test
@@ -111,33 +104,16 @@ class ReportQueryAdapterTest {
         UUID site = UUID.randomUUID();
         UUID other = UUID.randomUUID();
         SeedRows seed = new SeedRows(jdbc);
-        seed.shipment(site, new Shipment("SHP-1", DRIVER_A, "COMPLETED", "GREEN", "0.000", false));
-        seed.shipment(other, new Shipment("SHP-2", DRIVER_A, "COMPLETED", "GREEN", "0.000", false));
+        seed.shipment(site, new Shipment("SHP-1", "COMPLETED", "GREEN", "0.000", false));
+        seed.shipment(other, new Shipment("SHP-2", "COMPLETED", "GREEN", "0.000", false));
 
-        assertThat(reports.findDriverStats(PERIOD, scope(site)).get(0).shipmentCount())
+        assertThat(reports.findSubcontractorStats(PERIOD, scope(site)).get(0).shipmentCount())
                 .isEqualTo(1);
-        assertThat(reports.findDriverStats(PERIOD, new ReportScope(Set.of(), false, null)))
+        assertThat(reports.findSubcontractorStats(PERIOD, new ReportScope(Set.of(), false, null)))
                 .isEmpty();
         ReportScope narrowed = new ReportScope(Set.of(site, other), false, other);
-        assertThat(reports.findDriverStats(PERIOD, narrowed).get(0).shipmentCount())
+        assertThat(reports.findSubcontractorStats(PERIOD, narrowed).get(0).shipmentCount())
                 .isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("Eşleşme raporu günlük sayaçları dönemde toplar")
-    void shouldSumPairStats() {
-        UUID site = UUID.randomUUID();
-        SeedRows seed = new SeedRows(jdbc);
-        seed.pair(site, DRIVER_A, new Pair("2026-11-02", 2, 1, 2, "30.000"));
-        seed.pair(site, DRIVER_A, new Pair("2026-11-03", 2, 0, 0, "10.000"));
-        seed.pair(site, DRIVER_A, new Pair("2026-10-01", 1, 1, 1, "5.000"));
-
-        var pairs = reports.findPairStats(PERIOD, scope(site));
-
-        assertThat(pairs).hasSize(1);
-        assertThat(pairs.get(0).shipmentCount()).isEqualTo(FOUR);
-        assertThat(pairs.get(0).discrepancyRate()).isEqualByComparingTo("25.00");
-        assertThat(pairs.get(0).averageAbsoluteDiffKg()).isEqualByComparingTo("10.000");
     }
 
     private static ReportScope scope(UUID site) {

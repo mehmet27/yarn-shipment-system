@@ -2,19 +2,16 @@ package com.yarnshipment.shipment.adapter.in.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
+import com.yarnshipment.shipment.application.port.in.CompleteShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.GetShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsUseCase;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
-import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptUseCase;
-import com.yarnshipment.shipment.application.port.in.driver.ConfirmPickupUseCase;
-import com.yarnshipment.shipment.domain.model.SealAlreadyUsedException;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,7 +34,7 @@ class DispatchWeighingControllerTest {
     private static final int BAG_COUNT = 40;
     private static final String KEY = "0192f0a0-0000-7000-8000-0000000000dd";
     private static final String VALID_BODY =
-            "{\"grossKg\": \"2000.500\", \"tareKg\": \"18.000\", \"bagCount\": 40, \"sealNo\": \"M-0001\"}";
+            "{\"grossKg\": \"2000.500\", \"tareKg\": \"18.000\", \"bagCount\": 40, \"scaleTicketNo\": \"KF-1\"}";
 
     private final MockMvcTester mvc;
 
@@ -48,13 +45,10 @@ class DispatchWeighingControllerTest {
     private GetShipmentUseCase getShipmentUseCase;
 
     @MockitoBean
-    private ConfirmPickupUseCase confirmPickupUseCase;
-
-    @MockitoBean
     private RecordDispatchUseCase recordDispatchUseCase;
 
     @MockitoBean
-    private SubmitDeliveryReceiptUseCase submitDeliveryReceiptUseCase;
+    private CompleteShipmentUseCase completeShipmentUseCase;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -83,7 +77,7 @@ class DispatchWeighingControllerTest {
         verify(recordDispatchUseCase)
                 .recordDispatch(argThat((RecordDispatchCommand command) ->
                         command.measurement().grossKg().compareTo(new BigDecimal("2000.500")) == 0
-                                && "M-0001".equals(command.measurement().sealNo())
+                                && "KF-1".equals(command.measurement().scaleTicketNo())
                                 && command.measurement().bagCount() == BAG_COUNT));
     }
 
@@ -97,17 +91,16 @@ class DispatchWeighingControllerTest {
     }
 
     @Test
-    @DisplayName("Sözleşmeye uymayan kilo veya eksik mühür 400 alır")
+    @DisplayName("Sözleşmeye uymayan kilo veya eksik çuval sayısı 400 alır")
     void shouldRejectInvalidBody() {
         MvcTestResult badWeight = post(
                 TestTokens.token("warehouse").build(),
-                "{\"grossKg\": \"2000\", \"tareKg\": \"18.000\", \"bagCount\": 40, \"sealNo\": \"M-1\"}");
-        MvcTestResult noSeal = post(
-                TestTokens.token("warehouse").build(),
-                "{\"grossKg\": \"2000.500\", \"tareKg\": \"18.000\", \"bagCount\": 40}");
+                "{\"grossKg\": \"2000\", \"tareKg\": \"18.000\", \"bagCount\": 40}");
+        MvcTestResult noBagCount =
+                post(TestTokens.token("warehouse").build(), "{\"grossKg\": \"2000.500\", \"tareKg\": \"18.000\"}");
 
         assertThat(badWeight).hasStatus(HttpStatus.BAD_REQUEST);
-        assertThat(noSeal).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(noBagCount).hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(recordDispatchUseCase);
     }
 
@@ -116,23 +109,10 @@ class DispatchWeighingControllerTest {
     void shouldMapInvalidDispatch() {
         MvcTestResult result = post(
                 TestTokens.token("warehouse").build(),
-                "{\"grossKg\": \"10.000\", \"tareKg\": \"18.000\", \"bagCount\": 40, \"sealNo\": \"M-1\"}");
+                "{\"grossKg\": \"10.000\", \"tareKg\": \"18.000\", \"bagCount\": 40}");
 
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("INVALID_DISPATCH");
         assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo("tareKg");
-    }
-
-    @Test
-    @DisplayName("Kullanılmış mühür 409 SEAL_ALREADY_USED döner")
-    void shouldMapSealAlreadyUsed() {
-        doThrow(new SealAlreadyUsedException("M-0001"))
-                .when(recordDispatchUseCase)
-                .recordDispatch(argThat(c -> true));
-
-        MvcTestResult result = post(TestTokens.token("warehouse").build(), VALID_BODY);
-
-        assertThat(result).hasStatus(HttpStatus.CONFLICT);
-        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("SEAL_ALREADY_USED");
     }
 }

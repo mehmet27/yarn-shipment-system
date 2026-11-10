@@ -1,7 +1,6 @@
 import { RequirePermission } from '@/modules/auth';
 import type { RouteObject } from 'react-router';
 import { CreateShipmentPage } from './pages/CreateShipmentPage';
-import { DeliveryReceiptPage } from './pages/DeliveryReceiptPage';
 import { DispatchWeighingPage } from './pages/DispatchWeighingPage';
 import { FieldShipmentListPage } from './pages/FieldShipmentListPage';
 import { FieldShipmentPage } from './pages/FieldShipmentPage';
@@ -34,5 +33,4 @@ export const shipmentPanelRoutes: RouteObject[] = [
 export const shipmentFieldRoutes: RouteObject[] = [
   { index: true, element: <FieldShipmentListPage /> },
   { path: 'sevkiyat/:shipmentId', element: <FieldShipmentPage /> },
-  { path: 'sevkiyat/:shipmentId/teslim', element: <DeliveryReceiptPage /> },
 ];

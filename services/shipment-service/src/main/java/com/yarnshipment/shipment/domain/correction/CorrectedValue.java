@@ -40,23 +40,4 @@ public sealed interface CorrectedValue {
                             grossKg.subtract(tareKg).toPlainString());
         }
     }
-
-    /** Mühür numarası, kırpılmış ve boş değil. */
-    record SealNo(String value) implements CorrectedValue {
-
-        public static final int MAX_LENGTH = 64;
-
-        public SealNo {
-            Objects.requireNonNull(value, "value");
-            value = value.strip();
-            if (value.isEmpty() || value.length() > MAX_LENGTH) {
-                throw new InvalidCorrectionException("sealNo");
-            }
-        }
-
-        @Override
-        public String text() {
-            return value;
-        }
-    }
 }

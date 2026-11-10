@@ -4,27 +4,20 @@ export type { CurrentUser, Permission, Role } from './me';
 export { classifyProblem, toProblem } from './problem';
 export type { FieldError, Problem, ProblemKind } from './problem';
 export {
-  confirmPickup,
-  declareArrival,
+  completeShipment,
   getShipment,
   listShipments,
   recordDispatchWeighing,
-  SEAL_CONDITIONS,
   SHIPMENT_STATUSES,
   SHIPMENTS_PATH,
-  submitDeliveryReceipt,
 } from './shipments';
 export type {
-  ArrivalDeclarationRequest,
-  DeliveryDocument,
-  DeliveryReceiptRequest,
+  CompleteShipmentRequest,
   DispatchWeighingRequest,
-  DriverShipmentView,
   InternalShipmentView,
   ListShipmentsParams,
   Page,
   PageInfo,
-  SealCondition,
   ShipmentAction,
   ShipmentDetail,
   ShipmentStatus,
@@ -44,7 +37,6 @@ export type { CreateShipmentRequest, CreateShipmentResponse } from './masterData
 export type { ListDriversParams } from './masterData';
 export { getShipmentBags, getShipmentHistory } from './masterData';
 export type {
-  DeliveryScanView,
   DispatchBagView,
   ShipmentBagsResponse,
   ShipmentHistoryResponse,
@@ -84,7 +76,6 @@ export {
   changeLoginAccountEnabled,
   changeLoginAccountRole,
   confirmPasswordReset,
-  createDriverLoginAccount,
   createStaffLoginAccount,
   createSubcontractorLoginAccount,
   listLoginAccounts,
@@ -226,8 +217,6 @@ export type { PackagingType, TareStandardListResponse } from './masterData';
 export type { TareStandardSaveRequest, TareStandardView } from './masterData';
 export {
   getDashboard,
-  getDriverReport,
-  getPairReport,
   getShipmentReport,
   getSubcontractorBalanceReport,
   getSubcontractorReport,
@@ -239,7 +228,6 @@ export type {
   LargestDifferenceView,
   OpenDiscrepanciesView,
   OverdueDiscrepancyView,
-  PairStatsView,
   PartyStatsView,
   ShipmentRowView,
   SubcontractorBalanceView,

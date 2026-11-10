@@ -19,14 +19,6 @@ final class LoginAccountTargetAdapter implements LoginAccountTargetPort {
     }
 
     @Override
-    public Optional<String> findActiveDriverName(UUID id) {
-        return jdbc.sql("SELECT full_name FROM md_driver WHERE id = :id AND active")
-                .param("id", id)
-                .query(String.class)
-                .optional();
-    }
-
-    @Override
     public Optional<String> findActiveSubcontractorTitle(UUID id) {
         return jdbc.sql("SELECT title FROM md_subcontractor WHERE id = :id AND active")
                 .param("id", id)

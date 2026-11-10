@@ -40,8 +40,7 @@ public class CreateShipmentService implements CreateShipmentUseCase {
                 RESOURCE_TYPE,
                 UUID.randomUUID(),
                 shipment.siteId(),
-                command.parties().subcontractorId(),
-                null);
+                command.parties().subcontractorId());
         scopeGuard.validateInScope(actor, target, Permission.SHIPMENT_CREATE.name());
         return creationPort.create(shipment, actor.userId());
     }

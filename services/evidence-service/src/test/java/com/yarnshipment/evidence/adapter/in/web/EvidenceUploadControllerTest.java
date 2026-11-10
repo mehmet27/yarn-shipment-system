@@ -85,7 +85,8 @@ class EvidenceUploadControllerTest {
     @Test
     @DisplayName("Yükleme izni olmayan roller 403, token'sız istek 401 alır; bilinmeyen tür 400 alır")
     void shouldCheckPermissionsAndBody() {
-        assertThat(post(REQUEST_URI, BODY, TestTokens.token("manager").build())).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(REQUEST_URI, BODY, TestTokens.token("offline_access").build()))
+                .hasStatus(HttpStatus.FORBIDDEN);
         assertThat(mvc.post().uri(REQUEST_URI).exchange()).hasStatus(HttpStatus.UNAUTHORIZED);
         assertThat(post(REQUEST_URI, BODY.replace("DISPATCH_SCALE", "SELFIE"), warehouse()))
                 .hasStatus(HttpStatus.BAD_REQUEST);

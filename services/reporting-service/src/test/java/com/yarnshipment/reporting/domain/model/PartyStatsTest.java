@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 class PartyStatsTest {
 
     private static final int THREE = 3;
-    private static final int FOUR = 4;
 
     @Test
     @DisplayName("Uyuşmazlık oranı sevkiyat bazında, iki ondalıkla yuvarlanır")
@@ -29,14 +28,5 @@ class PartyStatsTest {
 
         assertThat(stats.discrepancyRate()).isEqualByComparingTo("0");
         assertThat(stats.averageAbsoluteDiffKg()).isEqualByComparingTo("0");
-    }
-
-    @Test
-    @DisplayName("Eşleşme oranı ve ortalaması aynı kurallarla hesaplanır")
-    void shouldComputePairRate() {
-        PairStats pair = new PairStats(UUID.randomUUID(), UUID.randomUUID(), FOUR, 1, 2, new BigDecimal("10.000"));
-
-        assertThat(pair.discrepancyRate()).isEqualByComparingTo("25.00");
-        assertThat(pair.averageAbsoluteDiffKg()).isEqualByComparingTo("2.500");
     }
 }

@@ -10,16 +10,38 @@ test.describe('Sevkiyat dosyası', { tag: '@panel' }, () => {
     }
   });
 
-  // Mimari doküman zorunlu senaryosu: Yönetici rolünde hiç düzenleme butonu yoktur.
+  // Müdür tartı girmez; taslağı iptal edebilir (kantar uyuşmazlığında yeni sevkiyat açılır).
   test(
-    'yönetici (müdür) taslak sevkiyatta hiçbir işlem butonu görmez',
+    'müdür taslakta tartı girişi görmez, iptal düğmesini görür',
     { tag: '@smoke' },
     async ({ page, openAs }) => {
       await openAs('MANAGER', '/panel/sevkiyat/shp-0001');
       await expect(page.getByRole('heading', { name: 'SVK-2026-0001' })).toBeVisible();
       await expect(page.getByRole('link', { name: 'Çıkış tartısını gir' })).toHaveCount(0);
-      await expect(page.getByRole('button', { name: 'İptal et' })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'İptal et' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Fotoğraf çek' })).toHaveCount(0);
+    },
+  );
+
+  test(
+    'müdür irsaliyeyi yükleyip sevkiyatı tamamlar',
+    { tag: '@smoke' },
+    async ({ page, openAs }) => {
+      await openAs('MANAGER', '/panel/sevkiyat/shp-0002');
+      const confirm = page.getByRole('button', { name: 'Sevkiyatı tamamla' });
+      await expect(confirm).toBeDisabled();
+      await page
+        .getByTestId('upload-file-input')
+        .first()
+        .setInputFiles({
+          name: 'irsaliye.pdf',
+          mimeType: 'application/pdf',
+          buffer: Buffer.from('%PDF-1.4 irsaliye'),
+        });
+      await expect(page.getByText('İrsaliye yüklendi')).toBeVisible();
+      await page.getByLabel(/İrsaliye no/).fill('IRS-2026-77');
+      await confirm.click();
+      await expect(page.getByTestId('shipment-status')).toHaveText('Tamamlandı');
     },
   );
 
@@ -31,29 +53,21 @@ test.describe('Sevkiyat dosyası', { tag: '@panel' }, () => {
     await expect(page.getByText('İptal', { exact: true })).toBeVisible();
   });
 
-  // H-14: depo teslim tartısını göremez; değer yokmuş gibi "Kaydedilmedi" yazılmaz.
-  test('depo teslim sütununda yetki notu görür, Kaydedilmedi görmez', async ({ page, openAs }) => {
+  test('depo tamamlanan sevkiyatta çıkış tartısını ve irsaliye numarasını görür', async ({
+    page,
+    openAs,
+  }) => {
     await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0007');
     await expect(page.getByRole('cell', { name: '1.982,5 kg' })).toBeVisible();
-    await expect(page.getByText('Teslim tartısını görme yetkiniz yok.')).toBeVisible();
-    // Brüt, dara, net ve fark satırları.
-    await expect(page.getByRole('cell', { name: '—' })).toHaveCount(4);
-    await expect(page.getByText('Kaydedilmedi')).toHaveCount(0);
+    await expect(page.getByText('IRS-0007')).toBeVisible();
   });
 
-  test('kalite iki tarafı da görür, yetki notu çıkmaz', async ({ page, openAs }) => {
-    await openAs('QUALITY', '/panel/sevkiyat/shp-0007');
-    await expect(page.getByRole('cell', { name: '1.968 kg' })).toBeVisible();
-    await expect(page.getByText('Teslim tartısını görme yetkiniz yok.')).toHaveCount(0);
-  });
-
-  // H-24: Geçmiş'te UUID değil; sistem adımı "Sistem", oturumdaki kullanıcı kendi adıyla görünür.
+  // H-24: Geçmiş'te UUID değil; oturumdaki kullanıcı kendi adıyla görünür.
   test('geçmişte yapan kişi UUID yerine okunur adla görünür', async ({ page, openAs }) => {
     await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0007');
     await page.getByRole('tab', { name: 'Geçmiş' }).click();
     const history = page.getByRole('tabpanel', { name: 'Geçmiş' });
     await expect(history.getByText(/Deniz Depo/).first()).toBeVisible();
-    await expect(history.getByText(/Sistem/)).toHaveCount(1);
     await expect(history.getByText(/0{8}-|user-/)).toHaveCount(0);
   });
 });

@@ -26,8 +26,8 @@ describe('useUploadEvidence', () => {
   it('izni olmayan kanıt türünü backend reddeder', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     const { result } = renderHook(() => useUploadEvidence('shp-0001'), { wrapper });
-    const file = new File(['abc'], 'plaka.jpg', { type: 'image/jpeg' });
-    result.current.mutate({ file, evidenceType: 'VEHICLE_PLATE', source: 'CAMERA' });
+    const file = new File(['abc'], 'irsaliye.jpg', { type: 'image/jpeg' });
+    result.current.mutate({ file, evidenceType: 'WAYBILL', source: 'CAMERA' });
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
     });

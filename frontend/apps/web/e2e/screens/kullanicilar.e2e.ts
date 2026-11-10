@@ -7,8 +7,10 @@ test.describe('Kullanıcılar', { tag: '@panel' }, () => {
     async ({ page, openAs }) => {
       await openAs('ADMIN', '/panel/kullanicilar');
       const table = page.getByRole('table');
-      await expect(table.getByText('sofor', { exact: true })).toBeVisible();
-      await expect(table.getByRole('row', { name: /sofor/ })).toContainText('İlk giriş bekleniyor');
+      await expect(table.getByText('fasoncu', { exact: true })).toBeVisible();
+      await expect(table.getByRole('row', { name: /Aydın Örme/ })).toContainText(
+        'İlk giriş bekleniyor',
+      );
       await expect(table.getByRole('row', { name: /eski\.depo/ })).toContainText('Devre dışı');
 
       await page.getByRole('searchbox', { name: /Giriş adı, ad ya da e-posta/ }).fill('kalite');

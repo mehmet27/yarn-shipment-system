@@ -22,8 +22,8 @@ import org.springframework.security.oauth2.server.resource.InvalidBearerTokenExc
  * <ul>
  *   <li>Roller {@code roles} claim'inden okunur.
  *   <li>MFA zorunlu bir rol (varsayılan ADMIN, QUALITY) MFA'sız oturumda düşürülür.
- *   <li>Dış rol (DRIVER, SUBCONTRACTOR) fabrika içi rolle birleşmişse token reddedilir (görev ayrılığı, 401).
- *   <li>SUBCONTRACTOR için {@code subcontractor_id}, DRIVER için {@code driver_id} claim'i zorunludur.
+ *   <li>Dış rol (SUBCONTRACTOR) fabrika içi rolle birleşmişse token reddedilir (görev ayrılığı, 401).
+ *   <li>SUBCONTRACTOR için {@code subcontractor_id} claim'i zorunludur.
  * </ul>
  */
 public final class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthenticationToken> {
@@ -53,7 +53,6 @@ public final class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthen
         }
         validateSeparationOfDuties(roles);
         UUID subcontractorId = scopeClaim(jwt, roles, Role.SUBCONTRACTOR, TokenClaims.SUBCONTRACTOR_ID);
-        UUID driverId = scopeClaim(jwt, roles, Role.DRIVER, TokenClaims.DRIVER_ID);
         String username = jwt.getClaimAsString(TokenClaims.PREFERRED_USERNAME);
         return new Actor(
                 parseUuid(jwt.getSubject(), "sub"),
@@ -61,7 +60,6 @@ public final class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthen
                 roles,
                 RolePermissionMatrix.permissionsOf(roles),
                 subcontractorId,
-                driverId,
                 readSiteIds(jwt),
                 mfaVerified);
     }
@@ -88,9 +86,6 @@ public final class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthen
         boolean hasInternal = roles.stream().anyMatch(role -> !role.isExternal());
         if (hasExternal && hasInternal) {
             throw new InvalidBearerTokenException("External and internal roles cannot be combined");
-        }
-        if (roles.contains(Role.DRIVER) && roles.contains(Role.SUBCONTRACTOR)) {
-            throw new InvalidBearerTokenException("Driver and subcontractor roles cannot be combined");
         }
     }
 

@@ -54,7 +54,7 @@ class RemoveBagServiceTest {
     @Test
     @DisplayName("Çıkıştan sonra çuval çıkarılamaz ve çuval servisine gidilmez")
     void shouldRejectNonDraftShipment() throws Exception {
-        queryPort.add(TestShipments.shipment(ShipmentStatus.LOADED));
+        queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
         RemoveBagService service = service();
         RemoveBagCommand command = command();
 

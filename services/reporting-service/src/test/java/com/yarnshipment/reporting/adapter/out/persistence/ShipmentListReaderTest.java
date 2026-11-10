@@ -29,8 +29,6 @@ class ShipmentListReaderTest {
 
     private static final ReportPeriod PERIOD =
             new ReportPeriod(LocalDate.parse("2026-11-01"), LocalDate.parse("2026-11-03"));
-    private static final UUID DRIVER_A = UUID.randomUUID();
-    private static final UUID DRIVER_B = UUID.randomUUID();
     private static final int LIMIT = 10;
 
     @MockitoBean
@@ -53,10 +51,10 @@ class ShipmentListReaderTest {
         UUID site = UUID.randomUUID();
         UUID other = UUID.randomUUID();
         SeedRows seed = new SeedRows(jdbc);
-        seed.shipment(site, new Shipment("SHP-1", DRIVER_A, "COMPLETED", "GREEN", "0.000", false));
-        seed.shipment(site, new Shipment("SHP-2", DRIVER_B, "IN_REVIEW", "RED", "-40.000", true));
-        seed.shipment(site, new Shipment("SHP-3", DRIVER_B, "IN_TRANSIT", null, null, false));
-        seed.shipment(other, new Shipment("SHP-X", DRIVER_A, "COMPLETED", "GREEN", "0.000", false));
+        seed.shipment(site, new Shipment("SHP-1", "COMPLETED", "GREEN", "0.000", false));
+        seed.shipment(site, new Shipment("SHP-2", "AWAITING_DELIVERY", "RED", "-40.000", true));
+        seed.shipment(site, new Shipment("SHP-3", "DRAFT", null, null, false));
+        seed.shipment(other, new Shipment("SHP-X", "COMPLETED", "GREEN", "0.000", false));
         seed.oldShipment(site);
 
         var rows = reader.findShipments(PERIOD, scope(site), LIMIT);
@@ -80,7 +78,7 @@ class ShipmentListReaderTest {
         UUID subcontractor = UUID.randomUUID();
         SeedRows seed = new SeedRows(jdbc);
         seed.balanceShipment(site, new Balance(subcontractor, "COMPLETED", "1000.000", "990.000"));
-        seed.balanceShipment(site, new Balance(subcontractor, "IN_TRANSIT", "500.000", null));
+        seed.balanceShipment(site, new Balance(subcontractor, "AWAITING_DELIVERY", "500.000", null));
         seed.balanceShipment(site, new Balance(subcontractor, "CANCELLED", "300.000", null));
 
         var balances = reader.findSubcontractorBalances(PERIOD, scope(site));

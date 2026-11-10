@@ -2,7 +2,6 @@ package com.yarnshipment.reporting.adapter.in.web;
 
 import com.yarnshipment.reporting.domain.model.LargestDifference;
 import com.yarnshipment.reporting.domain.model.OverdueDiscrepancy;
-import com.yarnshipment.reporting.domain.model.PairStats;
 import com.yarnshipment.reporting.domain.model.PartyStats;
 import com.yarnshipment.reporting.domain.model.QuantitySummary;
 import java.math.BigDecimal;
@@ -12,7 +11,7 @@ import java.util.UUID;
 /** Rapor uçları testlerinin örnek ölçüleri. */
 final class TestFigures {
 
-    static final int DRIVER_SHIPMENTS = 4;
+    static final int PARTY_SHIPMENTS = 4;
 
     private TestFigures() {}
 
@@ -25,12 +24,8 @@ final class TestFigures {
                 UUID.randomUUID(), "SHP-7", new BigDecimal("40.000"), new BigDecimal("4.00"), "RED");
     }
 
-    static PartyStats driver() {
-        return new PartyStats(UUID.randomUUID(), DRIVER_SHIPMENTS, 1, new BigDecimal("10.000"));
-    }
-
-    static PairStats pair() {
-        return new PairStats(UUID.randomUUID(), UUID.randomUUID(), DRIVER_SHIPMENTS, 1, 1, new BigDecimal("10.000"));
+    static PartyStats subcontractor() {
+        return new PartyStats(UUID.randomUUID(), PARTY_SHIPMENTS, 1, new BigDecimal("10.000"));
     }
 
     static OverdueDiscrepancy overdue() {

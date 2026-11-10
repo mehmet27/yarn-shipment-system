@@ -44,31 +44,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-  /api/v1/reports/drivers:
-    get:
-      tags: [Reports]
-      operationId: getDriverReport
-      summary: Şoför bazında sevkiyat sayısı, uyuşmazlık oranı ve ortalama kilo farkı
-      description: En yüksek uyuşmazlık oranı önce gelir.
-      parameters:
-        - $ref: '#/components/parameters/From'
-        - $ref: '#/components/parameters/To'
-        - $ref: '#/components/parameters/SiteId'
-      responses:
-        '200':
-          description: Şoför satırları
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PartyStatsView'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
   /api/v1/reports/subcontractors:
     get:
       tags: [Reports]
@@ -88,31 +63,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PartyStatsView'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-  /api/v1/reports/pairs:
-    get:
-      tags: [Reports]
-      operationId: getPairReport
-      summary: Şoför–fasoncu eşleşmesi bazında uyuşmazlık oranı
-      description: Anlaşma riskini görmek içindir; en yüksek oran önce gelir.
-      parameters:
-        - $ref: '#/components/parameters/From'
-        - $ref: '#/components/parameters/To'
-        - $ref: '#/components/parameters/SiteId'
-      responses:
-        '200':
-          description: Eşleşme satırları
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PairStatsView'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -388,29 +338,6 @@ components:
           description: Uyuşmazlıklı sevkiyat yüzdesi
         averageAbsoluteDiffKg:
           type: string
-    PairStatsView:
-      type: object
-      required: [driverId, subcontractorId, shipmentCount, discrepantShipmentCount, discrepancyCount, discrepancyRate, averageAbsoluteDiffKg]
-      properties:
-        driverId:
-          type: string
-          format: uuid
-        subcontractorId:
-          type: string
-          format: uuid
-        shipmentCount:
-          type: integer
-          format: int32
-        discrepantShipmentCount:
-          type: integer
-          format: int32
-        discrepancyCount:
-          type: integer
-          format: int32
-        discrepancyRate:
-          type: string
-        averageAbsoluteDiffKg:
-          type: string
     ShipmentRowView:
       type: object
       required: [shipmentId, shipmentNo, subcontractorId, status, hadDiscrepancy, createdAt]
@@ -423,10 +350,6 @@ components:
         subcontractorId:
           type: string
           format: uuid
-        driverId:
-          type: string
-          format: uuid
-          description: Henüz atanmadıysa yoktur
         status:
           type: string
         dispatchNetKg:

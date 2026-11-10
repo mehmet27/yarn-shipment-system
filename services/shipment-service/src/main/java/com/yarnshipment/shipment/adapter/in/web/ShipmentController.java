@@ -2,21 +2,19 @@ package com.yarnshipment.shipment.adapter.in.web;
 
 import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.shipment.adapter.in.web.api.ShipmentsApi;
-import com.yarnshipment.shipment.adapter.in.web.api.model.DeliveryReceiptRequest;
+import com.yarnshipment.shipment.adapter.in.web.api.model.CompleteShipmentRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.DispatchWeighingRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentDetailResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentPageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentStatus;
+import com.yarnshipment.shipment.application.port.in.CompleteShipmentCommand;
+import com.yarnshipment.shipment.application.port.in.CompleteShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.GetShipmentQuery;
 import com.yarnshipment.shipment.application.port.in.GetShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsQuery;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsUseCase;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
-import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptCommand;
-import com.yarnshipment.shipment.application.port.in.SubmitDeliveryReceiptUseCase;
-import com.yarnshipment.shipment.application.port.in.driver.ConfirmPickupCommand;
-import com.yarnshipment.shipment.application.port.in.driver.ConfirmPickupUseCase;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -32,23 +30,20 @@ public class ShipmentController implements ShipmentsApi {
 
     private final ListShipmentsUseCase listShipmentsUseCase;
     private final GetShipmentUseCase getShipmentUseCase;
-    private final ConfirmPickupUseCase confirmPickupUseCase;
     private final RecordDispatchUseCase recordDispatchUseCase;
-    private final SubmitDeliveryReceiptUseCase submitDeliveryReceiptUseCase;
+    private final CompleteShipmentUseCase completeShipmentUseCase;
     private final CurrentActorProvider currentActorProvider;
 
     public ShipmentController(
             ListShipmentsUseCase listShipmentsUseCase,
             GetShipmentUseCase getShipmentUseCase,
-            ConfirmPickupUseCase confirmPickupUseCase,
             RecordDispatchUseCase recordDispatchUseCase,
-            SubmitDeliveryReceiptUseCase submitDeliveryReceiptUseCase,
+            CompleteShipmentUseCase completeShipmentUseCase,
             CurrentActorProvider currentActorProvider) {
         this.listShipmentsUseCase = listShipmentsUseCase;
         this.getShipmentUseCase = getShipmentUseCase;
-        this.confirmPickupUseCase = confirmPickupUseCase;
         this.recordDispatchUseCase = recordDispatchUseCase;
-        this.submitDeliveryReceiptUseCase = submitDeliveryReceiptUseCase;
+        this.completeShipmentUseCase = completeShipmentUseCase;
         this.currentActorProvider = currentActorProvider;
     }
 
@@ -81,22 +76,15 @@ public class ShipmentController implements ShipmentsApi {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('DRIVER_DECLARATION_RECORD')")
-    public ResponseEntity<Void> confirmPickup(UUID shipmentId, UUID idempotencyKey) {
-        confirmPickupUseCase.confirmPickup(
-                new ConfirmPickupCommand(currentActorProvider.getCurrentActor(), shipmentId, idempotencyKey));
-        return ResponseEntity.noContent().build();
-    }
-
-    @Override
-    @PreAuthorize("hasAuthority('DELIVERY_RECORD')")
-    public ResponseEntity<Void> submitDeliveryReceipt(
-            UUID shipmentId, UUID idempotencyKey, DeliveryReceiptRequest deliveryReceiptRequest) {
-        submitDeliveryReceiptUseCase.submitDeliveryReceipt(new SubmitDeliveryReceiptCommand(
+    @PreAuthorize("hasAuthority('SHIPMENT_COMPLETE')")
+    public ResponseEntity<Void> completeShipment(
+            UUID shipmentId, UUID idempotencyKey, CompleteShipmentRequest completeShipmentRequest) {
+        completeShipmentUseCase.completeShipment(new CompleteShipmentCommand(
                 currentActorProvider.getCurrentActor(),
                 shipmentId,
-                idempotencyKey,
-                DeliveryRequests.toMeasurement(deliveryReceiptRequest)));
+                completeShipmentRequest.getWaybillNo(),
+                completeShipmentRequest.getWaybillEvidenceId(),
+                idempotencyKey));
         return ResponseEntity.noContent().build();
     }
 

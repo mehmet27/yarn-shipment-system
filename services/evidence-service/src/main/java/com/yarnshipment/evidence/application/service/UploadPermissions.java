@@ -9,13 +9,13 @@ import com.yarnshipment.evidence.domain.model.UploadRules;
 import com.yarnshipment.evidence.domain.model.UploadStage;
 import java.util.Map;
 
-/** Kanıt türünün aşamasına göre gereken yükleme izni (yetkilendirme analizi, EVIDENCE_UPLOAD_*). */
+/** Kanıt türünün aşamasına göre gereken yükleme izni (yetkilendirme analizi, EVIDENCE_UPLOAD_*; irsaliye
+ * tamamlama iznine bağlıdır). */
 final class UploadPermissions {
 
     private static final Map<UploadStage, Permission> BY_STAGE = Map.of(
             UploadStage.DISPATCH, Permission.EVIDENCE_UPLOAD_DISPATCH,
-            UploadStage.DRIVER, Permission.EVIDENCE_UPLOAD_DRIVER,
-            UploadStage.DELIVERY, Permission.EVIDENCE_UPLOAD_DELIVERY,
+            UploadStage.COMPLETION, Permission.SHIPMENT_COMPLETE,
             UploadStage.CLAIM, Permission.EVIDENCE_UPLOAD_CLAIM);
 
     private UploadPermissions() {}

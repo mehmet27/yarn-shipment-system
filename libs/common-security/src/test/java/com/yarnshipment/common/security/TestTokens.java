@@ -12,7 +12,6 @@ public final class TestTokens {
     public static final UUID SITE_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     public static final UUID OTHER_SITE_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000002");
     public static final UUID SUBCONTRACTOR_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000003");
-    public static final UUID DRIVER_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000004");
 
     private static final Instant ISSUED_AT = Instant.parse("2026-10-21T08:00:00Z");
     private static final Duration LIFETIME = Duration.ofMinutes(5);
@@ -39,12 +38,6 @@ public final class TestTokens {
     public static Jwt subcontractor() {
         return withRoles("subcontractor")
                 .claim(TokenClaims.SUBCONTRACTOR_ID, SUBCONTRACTOR_ID.toString())
-                .build();
-    }
-
-    public static Jwt driver() {
-        return withRoles("driver")
-                .claim(TokenClaims.DRIVER_ID, DRIVER_ID.toString())
                 .build();
     }
 }

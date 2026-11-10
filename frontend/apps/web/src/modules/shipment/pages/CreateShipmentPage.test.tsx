@@ -41,7 +41,7 @@ describe('CreateShipmentPage', () => {
   });
 
   it('SHIPMENT_CREATE yetkisi olmayan rolde buton görünmez', async () => {
-    server.use(...createHandlers('MANAGER'));
+    server.use(...createHandlers('QUALITY'));
     renderApp('/panel/sevkiyat');
     await screen.findByText('SVK-2026-0001');
     expect(screen.queryByRole('link', { name: 'Yeni sevkiyat' })).not.toBeInTheDocument();

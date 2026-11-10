@@ -17,37 +17,35 @@ class ShipmentDispatchTest {
     private static final int BAGS = 40;
 
     private static DispatchMeasurement measurement() {
-        return new DispatchMeasurement(new BigDecimal("2000.500"), new BigDecimal("18.000"), BAGS, "KF-1", "M-0001");
+        return new DispatchMeasurement(new BigDecimal("2000.500"), new BigDecimal("18.000"), BAGS, "KF-1");
     }
 
     @Test
-    @DisplayName("Taslak sevkiyatta çıkış kaydı tartımı ve mührü taşır, durum LOADED olur")
+    @DisplayName("Taslak sevkiyatta çıkış kaydı tartımı taşır, durum AWAITING_DELIVERY olur")
     void shouldRecordDispatchForDraft() {
         DispatchRecording recording =
                 TestShipments.shipment(ShipmentStatus.DRAFT).recordDispatch(measurement(), NOW);
 
         assertThat(recording.fromStatus()).isEqualTo(ShipmentStatus.DRAFT);
-        assertThat(recording.toStatus()).isEqualTo(ShipmentStatus.LOADED);
+        assertThat(recording.toStatus()).isEqualTo(ShipmentStatus.AWAITING_DELIVERY);
         assertThat(recording.weighing().netKg()).isEqualByComparingTo("1982.500");
         assertThat(recording.weighing().bagCount()).isEqualTo(BAGS);
-        assertThat(recording.sealNo()).isEqualTo("M-0001");
         assertThat(recording.scaleTicketNo()).isEqualTo("KF-1");
         assertThat(recording.recordedAt()).isEqualTo(NOW);
     }
 
     @Test
-    @DisplayName("Yüklendi olayı çıkış kilosunu taşımaz")
-    void shouldNotExposeWeightInLoadedEvent() {
+    @DisplayName("Çıkış olayı fasoncuyu, çuval sayısını ve net kiloyu taşır")
+    void shouldPublishDispatchFigures() {
         DispatchRecording recording =
                 TestShipments.shipment(ShipmentStatus.DRAFT).recordDispatch(measurement(), NOW);
 
-        ShipmentLoaded event = ShipmentLoaded.of(recording);
+        ShipmentDispatched event = ShipmentDispatched.of(recording);
 
+        assertThat(event.subcontractorId()).isEqualTo(TestShipments.SUBCONTRACTOR_ID);
         assertThat(event.bagCount()).isEqualTo(BAGS);
-        assertThat(event.loadedAt()).isEqualTo(NOW);
-        assertThat(ShipmentLoaded.class.getRecordComponents())
-                .extracting("name")
-                .noneMatch(name -> name.toString().contains("Kg"));
+        assertThat(event.netKg()).isEqualByComparingTo("1982.500");
+        assertThat(event.dispatchedAt()).isEqualTo(NOW);
     }
 
     @ParameterizedTest
@@ -63,24 +61,20 @@ class ShipmentDispatchTest {
     @Test
     @DisplayName("Dara brütten büyükse veya negatifse girdi reddedilir")
     void shouldRejectInvalidTare() {
-        assertThatThrownBy(() -> new DispatchMeasurement(BigDecimal.ONE, BigDecimal.TEN, BAGS, null, "M-1"))
+        assertThatThrownBy(() -> new DispatchMeasurement(BigDecimal.ONE, BigDecimal.TEN, BAGS, null))
                 .isInstanceOfSatisfying(
                         InvalidDispatchException.class,
                         e -> assertThat(e.field()).isEqualTo("tareKg"));
-        assertThatThrownBy(() -> new DispatchMeasurement(BigDecimal.ONE, BigDecimal.valueOf(-1), BAGS, null, "M-1"))
+        assertThatThrownBy(() -> new DispatchMeasurement(BigDecimal.ONE, BigDecimal.valueOf(-1), BAGS, null))
                 .isInstanceOf(InvalidDispatchException.class);
     }
 
     @Test
-    @DisplayName("Çuval sayısı pozitif olmalı ve mühür numarası boş olmamalı")
-    void shouldRejectInvalidBagCountAndSeal() {
-        assertThatThrownBy(() -> new DispatchMeasurement(BigDecimal.TEN, BigDecimal.ONE, 0, null, "M-1"))
+    @DisplayName("Çuval sayısı pozitif olmalı")
+    void shouldRejectInvalidBagCount() {
+        assertThatThrownBy(() -> new DispatchMeasurement(BigDecimal.TEN, BigDecimal.ONE, 0, null))
                 .isInstanceOfSatisfying(
                         InvalidDispatchException.class,
                         e -> assertThat(e.field()).isEqualTo("bagCount"));
-        assertThatThrownBy(() -> new DispatchMeasurement(BigDecimal.TEN, BigDecimal.ONE, 1, null, " "))
-                .isInstanceOfSatisfying(
-                        InvalidDispatchException.class,
-                        e -> assertThat(e.field()).isEqualTo("sealNo"));
     }
 }

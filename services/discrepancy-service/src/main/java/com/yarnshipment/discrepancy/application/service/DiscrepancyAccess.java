@@ -32,7 +32,7 @@ final class DiscrepancyAccess {
         scopeGuard.validateInScope(
                 actor,
                 new ScopedResource(
-                        RESOURCE_TYPE, discrepancy.id(), discrepancy.siteId(), discrepancy.subcontractorId(), null),
+                        RESOURCE_TYPE, discrepancy.id(), discrepancy.siteId(), discrepancy.subcontractorId()),
                 action);
         return discrepancy;
     }

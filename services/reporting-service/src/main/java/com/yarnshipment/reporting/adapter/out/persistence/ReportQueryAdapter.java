@@ -3,7 +3,6 @@ package com.yarnshipment.reporting.adapter.out.persistence;
 import com.yarnshipment.reporting.application.port.out.ReportQueryPort;
 import com.yarnshipment.reporting.application.port.out.ReportScope;
 import com.yarnshipment.reporting.domain.model.Dashboard;
-import com.yarnshipment.reporting.domain.model.PairStats;
 import com.yarnshipment.reporting.domain.model.PartyStats;
 import com.yarnshipment.reporting.domain.model.ReportPeriod;
 import com.yarnshipment.reporting.domain.model.ShipmentRow;
@@ -45,18 +44,8 @@ final class ReportQueryAdapter implements ReportQueryPort {
     }
 
     @Override
-    public List<PartyStats> findDriverStats(ReportPeriod period, ReportScope scope) {
-        return partyReader.findDriverStats(period, scope);
-    }
-
-    @Override
     public List<PartyStats> findSubcontractorStats(ReportPeriod period, ReportScope scope) {
         return partyReader.findSubcontractorStats(period, scope);
-    }
-
-    @Override
-    public List<PairStats> findPairStats(ReportPeriod period, ReportScope scope) {
-        return partyReader.findPairStats(period, scope);
     }
 
     @Override

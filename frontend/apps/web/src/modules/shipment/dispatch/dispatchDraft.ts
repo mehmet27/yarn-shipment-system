@@ -9,20 +9,17 @@ export type DispatchDraft = {
   tareKg: string;
   bagCount: string;
   scaleTicketNo: string;
-  sealNo: string;
   ticket: TicketOutcome | undefined;
 };
 
 /** i18n anahtarı (`dispatch.errors.*`). */
-export type DispatchError =
-  'invalidKg' | 'tareExceedsGross' | 'invalidBagCount' | 'sealNoRequired' | 'ticketRequired';
+export type DispatchError = 'invalidKg' | 'tareExceedsGross' | 'invalidBagCount' | 'ticketRequired';
 
 export const EMPTY_DISPATCH_DRAFT: DispatchDraft = {
   grossKg: '',
   tareKg: '',
   bagCount: '',
   scaleTicketNo: '',
-  sealNo: '',
   ticket: undefined,
 };
 
@@ -46,7 +43,6 @@ export function validateDispatch(draft: DispatchDraft): DispatchError | undefine
   const weighing = parseDispatchWeighing(draft);
   if (typeof weighing === 'string') return weighing;
   if (parseBagCount(draft.bagCount) === undefined) return 'invalidBagCount';
-  if (draft.sealNo.trim() === '') return 'sealNoRequired';
   return draft.ticket === undefined ? 'ticketRequired' : undefined;
 }
 
@@ -55,15 +51,12 @@ export function toDispatchRequest(draft: DispatchDraft): DispatchWeighingRequest
   const weighing = parseDispatchWeighing(draft);
   const bagCount = parseBagCount(draft.bagCount);
   if (typeof weighing === 'string' || bagCount === undefined) return undefined;
-  const sealNo = draft.sealNo.trim();
   if (draft.ticket === undefined) return undefined;
   const scaleTicketNo = draft.scaleTicketNo.trim();
-  if (sealNo === '') return undefined;
   return {
     grossKg: weighing.grossKg,
     tareKg: weighing.tareKg,
     bagCount,
-    sealNo,
     ...(scaleTicketNo === '' ? {} : { scaleTicketNo }),
   };
 }

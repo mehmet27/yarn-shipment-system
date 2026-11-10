@@ -34,7 +34,7 @@ class ListMasterDataServiceTest {
     void shouldQuerySitesWithActorScope() throws Exception {
         // given
         Actor actor = TestTokens.actor("warehouse");
-        AccessScope scope = new AccessScope(Set.of(UUID.randomUUID()), null, null, false);
+        AccessScope scope = new AccessScope(Set.of(UUID.randomUUID()), null, false);
         MasterDataQuery query = new MasterDataQuery(null, 0, SIZE);
         MasterDataPage<Site> page = new MasterDataPage<>(List.of(), 0, SIZE, 0);
         when(scopeGuard.scopeOf(actor)).thenReturn(scope);

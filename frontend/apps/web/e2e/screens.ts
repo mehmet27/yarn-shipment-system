@@ -39,6 +39,12 @@ export const SCREENS: readonly Screen[] = [
     path: '/panel/sevkiyat/shp-0007',
     ready: 'SVK-2026-0007',
   },
+  {
+    name: 'Sevkiyat dosyası (müdür, tamamlama)',
+    role: 'MANAGER',
+    path: '/panel/sevkiyat/shp-0002',
+    ready: 'SVK-2026-0002',
+  },
   { name: 'Tanımlar', role: 'ADMIN', path: '/panel/tanimlar', ready: 'Tanımlar' },
   {
     name: 'Çuval ve etiket',
@@ -53,13 +59,6 @@ export const SCREENS: readonly Screen[] = [
     path: '/panel/uyusmazliklar/disc-0',
     ready: 'UY-2026-0001',
   },
-  { name: 'Saha listesi (şoför)', role: 'DRIVER', path: '/saha', ready: 'Bana atanan sevkiyatlar' },
-  {
-    name: 'Saha sevkiyatı (şoför)',
-    role: 'DRIVER',
-    path: '/saha/sevkiyat/shp-0010',
-    ready: 'SVK-2026-0010',
-  },
   {
     name: 'Saha listesi (fasoncu)',
     role: 'SUBCONTRACTOR',
@@ -69,14 +68,8 @@ export const SCREENS: readonly Screen[] = [
   {
     name: 'Saha sevkiyatı (fasoncu)',
     role: 'SUBCONTRACTOR',
-    path: '/saha/sevkiyat/shp-0004',
-    ready: 'SVK-2026-0004',
-  },
-  {
-    name: 'Teslim tutanağı',
-    role: 'SUBCONTRACTOR',
-    path: '/saha/sevkiyat/shp-0004/teslim',
-    ready: /Teslim tutanağı/,
+    path: '/saha/sevkiyat/shp-0010',
+    ready: 'SVK-2026-0010',
   },
   {
     name: 'Kullanıcılar',

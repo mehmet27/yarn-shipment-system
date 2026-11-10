@@ -18,18 +18,17 @@ const FIELDS = [
   { name: 'tareKg', inputMode: 'decimal' },
   { name: 'bagCount', inputMode: 'numeric' },
   { name: 'scaleTicketNo', inputMode: 'text' },
-  { name: 'sealNo', inputMode: 'text' },
 ] as const satisfies readonly { name: Exclude<keyof DispatchDraft, 'ticket'>; inputMode: string }[];
 
 function failureKey(error: unknown): string {
-  return toProblem(error).code === 'SEAL_ALREADY_USED'
-    ? 'dispatch.sealAlreadyUsed'
+  return toProblem(error).code === 'INVALID_SHIPMENT_STATUS'
+    ? 'dispatch.notDraft'
     : 'dispatch.submitFailed';
 }
 
 export type DispatchFormProps = { shipmentId: string; onSaved: () => void };
 
-/** Depo çıkış tartısı: kantar fişi ve mühür tek formda; net yalnızca brüt ve daradan hesaplanır. */
+/** Depo çıkış tartısı: kantar fişi tek formda; net yalnızca brüt ve daradan hesaplanır. */
 export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<DispatchDraft>(EMPTY_DISPATCH_DRAFT);

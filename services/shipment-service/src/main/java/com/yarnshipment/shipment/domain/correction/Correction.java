@@ -40,7 +40,7 @@ public record Correction(
     }
 
     /**
-     * İptal edilmemiş sevkiyatta girilmiş bir tartım ya da mühür düzeltilir; yeni değer eskisinden farklı olmalıdır.
+     * İptal edilmemiş sevkiyatta girilmiş çıkış tartımı düzeltilir; yeni değer eskisinden farklı olmalıdır.
      *
      * @param request istenen düzeltme
      * @param id düzeltme kaydının kimliği
@@ -53,9 +53,6 @@ public record Correction(
         }
         CorrectedValue current =
                 target.currentValue(shipment).orElseThrow(() -> new InvalidCorrectionException("target"));
-        if (request.value() instanceof CorrectedValue.Weight != target.isWeighing()) {
-            throw new InvalidCorrectionException(target.isWeighing() ? "grossKg" : "sealNo");
-        }
         if (request.value().equals(current)) {
             throw new InvalidCorrectionException("value");
         }

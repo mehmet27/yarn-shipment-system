@@ -125,9 +125,9 @@ class KeycloakStaffAccountAdapterTest {
     }
 
     @Test
-    @DisplayName("Şoför/fasoncu hesabının rolü değiştirilemez; kullanıcı yoksa LoginAccountNotFoundException")
+    @DisplayName("Fasoncu hesabının rolü değiştirilemez; kullanıcı yoksa LoginAccountNotFoundException")
     void shouldRefuseRoleChangeForBoundOrMissingAccounts() throws Exception {
-        userRoles = "[{\"id\":\"r-4\",\"name\":\"driver\"}]";
+        userRoles = "[{\"id\":\"r-4\",\"name\":\"subcontractor\"}]";
         KeycloakStaffAccountAdapter bound = adapter("secret");
         assertThatThrownBy(() -> bound.changeStaffRole(UUID.fromString(USER_ID), StaffRole.ADMIN))
                 .isInstanceOf(LoginAccountRoleLockedException.class);

@@ -21,10 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Depo çıkış tartımı ve mühür kaydı. Sevkiyat DRAFT'tan çıktıysa ve tartım zaten varsa ikinci istek yeni kayıt
- * üretmez, ilk sonuç (204) tekrar döner (API-04). Lokasyonun çuval standardı varsa tartıma kopyalanır; sapma uyarısı
- * kaydı engellemez. Tartılan çuval sayısı
- * sevkiyata atanmış çuval sayısına eşit olmalıdır.
+ * Depo çıkış tartımı; sevkiyat teslim bekliyor durumuna geçer. Sevkiyat DRAFT'tan çıktıysa ve tartım zaten varsa
+ * ikinci istek yeni kayıt üretmez, ilk sonuç (204) tekrar döner (API-04). Lokasyonun çuval standardı varsa tartıma
+ * kopyalanır; sapma uyarısı kaydı engellemez. Tartılan çuval sayısı sevkiyata atanmış çuval sayısına eşit olmalıdır.
  */
 @Service
 public class RecordDispatchService implements RecordDispatchUseCase {

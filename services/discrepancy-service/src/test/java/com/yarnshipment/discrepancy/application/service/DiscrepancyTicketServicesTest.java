@@ -16,7 +16,6 @@ import com.yarnshipment.discrepancy.TestTickets;
 import com.yarnshipment.discrepancy.TestTokens;
 import com.yarnshipment.discrepancy.application.port.in.GetDiscrepancyQuery;
 import com.yarnshipment.discrepancy.application.port.in.ticket.MarkTicketMisreadCommand;
-import com.yarnshipment.discrepancy.application.port.out.ComparisonPort;
 import com.yarnshipment.discrepancy.application.port.out.DiscrepancyQueryPort;
 import com.yarnshipment.discrepancy.application.port.out.TicketReviewPort;
 import com.yarnshipment.discrepancy.domain.ticket.EnteredNets;
@@ -46,11 +45,9 @@ class DiscrepancyTicketServicesTest {
     private static final BigDecimal DELIVERY_NET = BigDecimal.valueOf(1990);
 
     private final DiscrepancyQueryPort queries = mock(DiscrepancyQueryPort.class);
-    private final ComparisonPort comparisons = mock(ComparisonPort.class);
     private final TicketReviewPort reviewPort = mock(TicketReviewPort.class);
     private final ScopeGuard scopeGuard = new ScopeGuard(event -> {}, CLOCK);
-    private final GetDiscrepancyTicketsService get =
-            new GetDiscrepancyTicketsService(queries, comparisons, reviewPort, scopeGuard);
+    private final GetDiscrepancyTicketsService get = new GetDiscrepancyTicketsService(queries, reviewPort, scopeGuard);
     private final MarkTicketMisreadService mark = new MarkTicketMisreadService(queries, reviewPort, scopeGuard, CLOCK);
     private final TicketReading dispatch = TestTickets.reading(TicketSide.DISPATCH_SCALE, TestTickets.weights());
     private final TicketReading delivery = TestTickets.reading(TicketSide.DELIVERY_SCALE, null);
@@ -77,17 +74,6 @@ class DiscrepancyTicketServicesTest {
         assertThat(tickets).extracting(ReviewedTicket::reading).containsExactly(delivery, dispatch);
         assertThat(tickets).extracting(ReviewedTicket::enteredNetKg).containsExactly(DELIVERY_NET, DISPATCH_NET);
         assertThat(tickets).extracting(ReviewedTicket::misread).containsExactly(null, misread);
-    }
-
-    @Test
-    @DisplayName("Fasoncu fişleri teslim karşılaştırmasından önce göremez (kör giriş), sonra görür")
-    void shouldHideTicketsBeforeComparisonFromSubcontractor() {
-        Actor subcontractor = TestTokens.actor(TestTokens.subcontractorToken());
-        GetDiscrepancyQuery query = new GetDiscrepancyQuery(subcontractor, TestDiscrepancies.ID);
-        when(comparisons.hasComparison(TestDiscrepancies.SHIPMENT)).thenReturn(false, true);
-
-        assertThat(get.getTickets(query)).isEmpty();
-        assertThat(get.getTickets(query)).hasSize(2);
     }
 
     @Test

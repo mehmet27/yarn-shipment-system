@@ -1,4 +1,4 @@
-/** Teslim girişine eklenen kanıtın alan modeli. */
+/** Tamamlamada yüklenen irsaliye belgesinin alan modeli. */
 @NullMarked
 package com.yarnshipment.shipment.domain.evidence;
 

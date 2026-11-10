@@ -2,13 +2,8 @@ package com.yarnshipment.reporting.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.yarnshipment.reporting.application.port.out.ReadModelPort.PairComparison;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +22,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @Import(ReadModelAdapter.class)
 class ReadModelDiscrepancyTest {
 
-    private static final UUID DRIVER = UUID.randomUUID();
     private static final UUID SUBCONTRACTOR = UUID.randomUUID();
-    private static final int TWO = 2;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -46,24 +39,6 @@ class ReadModelDiscrepancyTest {
     }
 
     @Test
-    @DisplayName("Aynı gün aynı eşleşmenin karşılaştırmaları tek satırda toplanır")
-    void shouldAccumulatePairStats() {
-        UUID site = UUID.randomUUID();
-        LocalDate day = LocalDate.parse("2026-11-03");
-        readModel.addPairComparison(
-                new PairComparison(ShipmentFixtures.AT, day, site, DRIVER, SUBCONTRACTOR, 0, BigDecimal.ONE));
-        readModel.addPairComparison(new PairComparison(
-                ShipmentFixtures.AT, day, site, DRIVER, SUBCONTRACTOR, TWO, new BigDecimal("4.000")));
-
-        Map<String, @Nullable Object> row = jdbc.queryForMap("SELECT * FROM pair_daily_stats WHERE site_id = ?", site);
-        assertThat(row)
-                .containsEntry("shipment_count", TWO)
-                .containsEntry("discrepant_shipment_count", 1)
-                .containsEntry("discrepancy_count", TWO);
-        assertThat((BigDecimal) row.get("total_diff_kg")).isEqualByComparingTo("5.000");
-    }
-
-    @Test
     @DisplayName("Uyuşmazlık açılıp çözülünce sevkiyatın açık sayısı ve çözüm zamanı yazılır; tekrar açılış saymaz")
     void shouldTrackDiscrepancyLifecycle() {
         UUID site = UUID.randomUUID();
@@ -74,6 +49,9 @@ class ReadModelDiscrepancyTest {
         readModel.insertDiscrepancy(ComparisonFixtures.opened(discrepancy, shipment, site));
 
         assertThat(openCount(shipment)).isEqualTo(1);
+        assertThat(jdbc.queryForObject(
+                        "SELECT had_discrepancy FROM shipment_view WHERE shipment_id = ?", Boolean.class, shipment))
+                .isTrue();
         readModel.saveDiscrepancyResolved(ComparisonFixtures.resolved(discrepancy, shipment));
 
         assertThat(openCount(shipment)).isZero();

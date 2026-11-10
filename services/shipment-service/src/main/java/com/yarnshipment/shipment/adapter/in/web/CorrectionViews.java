@@ -15,13 +15,12 @@ final class CorrectionViews {
 
     private CorrectionViews() {}
 
-    /** Tartımda brüt ve dara, mühürde numara zorunludur; eksik alan {@code INVALID_CORRECTION} olur. */
+    /** Tartımda brüt ve dara zorunludur; eksik alan {@code INVALID_CORRECTION} olur. */
     static Correction.Request toRequest(RecordCorrectionRequest request) {
         var target = com.yarnshipment.shipment.domain.correction.CorrectionTarget.valueOf(
                 request.getTarget().getValue());
-        CorrectedValue value = target.isWeighing()
-                ? new CorrectedValue.Weight(kg(request.getGrossKg(), "grossKg"), kg(request.getTareKg(), "tareKg"))
-                : new CorrectedValue.SealNo(required(request.getSealNo(), "sealNo"));
+        CorrectedValue value =
+                new CorrectedValue.Weight(kg(request.getGrossKg(), "grossKg"), kg(request.getTareKg(), "tareKg"));
         return new Correction.Request(target, value, request.getReason());
     }
 

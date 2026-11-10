@@ -6,34 +6,23 @@ const WEIGHING = { 'Brüt (kg)': '2.000', 'Dara (kg)': '17,5', 'Çuval sayısı'
 
 test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
   test(
-    'depo tartı, mühür ve fişi kaydeder; sevkiyat Yüklendi olur',
+    'depo tartı ve fişi kaydeder; sevkiyat Fasoncuya yolda olur',
     { tag: '@smoke' },
     async ({ page, openAs }) => {
       await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001');
       await page.getByRole('link', { name: 'Çıkış tartısını gir' }).click();
-      await fillFields(page, { ...WEIGHING, 'Mühür numarası': 'M-NEW' });
+      await fillFields(page, WEIGHING);
       await expect(page.getByText('Net: 1.982,5 kg')).toBeVisible();
       await captureTicket(page);
       await expect(page.getByText('Fiş okundu')).toBeVisible();
       await page.getByRole('button', { name: 'Kaydet' }).click();
-      await expect(page.getByTestId('shipment-status')).toHaveText('Yüklendi');
+      await expect(page.getByTestId('shipment-status')).toHaveText('Fasoncuya yolda');
     },
   );
 
-  test('başka sevkiyatta kullanılmış mührü reddeder', async ({ page, openAs }) => {
-    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis');
-    await fillFields(page, { ...WEIGHING, 'Mühür numarası': 'M-0002' });
-    await captureTicket(page);
-    await expect(page.getByText('Fiş okundu')).toBeVisible();
-    await page.getByRole('button', { name: 'Kaydet' }).click();
-    await expect(
-      page.getByText('Bu mühür numarası başka bir sevkiyatta kullanılmış.'),
-    ).toBeVisible();
-  });
-
   test('fiş çekilmeden kaydetmez', async ({ page, openAs }) => {
     await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis');
-    await fillFields(page, { ...WEIGHING, 'Mühür numarası': 'M-NEW' });
+    await fillFields(page, WEIGHING);
     await page.getByRole('button', { name: 'Kaydet' }).click();
     await expect(
       page.getByText('Devam etmek için kantar fişinin fotoğrafı gerekli.'),

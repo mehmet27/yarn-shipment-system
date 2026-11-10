@@ -45,7 +45,7 @@ public class GetEvidenceService implements GetEvidenceUseCase {
             throw new EvidenceNotFoundException(query.evidenceId());
         }
         scopeGuard.validateInScope(actor, ShipmentScopes.of(actor, shipment.shipmentId(), shipment.siteId()), ACTION);
-        if (!EvidenceVisibility.mayView(actor, file.declared().type(), shipment.comparisonDone())) {
+        if (!EvidenceVisibility.mayView(actor)) {
             throw new EvidenceNotFoundException(query.evidenceId());
         }
         return file;

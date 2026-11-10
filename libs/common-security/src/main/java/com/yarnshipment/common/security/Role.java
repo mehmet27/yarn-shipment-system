@@ -4,16 +4,15 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Keycloak realm rolleri (ön analiz Bölüm 6.1, yetkilendirme analizi). Dış roller (şoför, fasoncu) fabrika içi
- * rollerle aynı hesapta birleştirilemez.
+ * Keycloak realm rolleri (ön analiz Bölüm 6.1, yetkilendirme analizi). Dış rol (fasoncu) fabrika içi rollerle
+ * aynı hesapta birleştirilemez.
  */
 public enum Role {
     ADMIN(Party.INTERNAL),
     WAREHOUSE(Party.INTERNAL),
-    DRIVER(Party.EXTERNAL),
     SUBCONTRACTOR(Party.EXTERNAL),
     QUALITY(Party.INTERNAL),
-    /** Salt okuma: dashboard ve raporlar. */
+    /** Müdür: sevkiyatı oluşturur, iptal eder ve irsaliye gelince tamamlar; raporları görür. */
     MANAGER(Party.INTERNAL),
     /** Yalnızca servis hesaplarının (client credentials) token'larında bulunur. */
     SYSTEM(Party.INTERNAL);

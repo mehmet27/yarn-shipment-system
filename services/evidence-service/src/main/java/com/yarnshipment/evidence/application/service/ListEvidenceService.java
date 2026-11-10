@@ -38,8 +38,7 @@ public class ListEvidenceService implements ListEvidenceUseCase {
         ShipmentSnapshot shipment = shipments.findAccessible(query.shipmentId());
         scopeGuard.validateInScope(actor, ShipmentScopes.of(actor, shipment.shipmentId(), shipment.siteId()), ACTION);
         return evidence.findByShipment(shipment.shipmentId()).stream()
-                .filter(file ->
-                        EvidenceVisibility.mayView(actor, file.declared().type(), shipment.comparisonDone()))
+                .filter(file -> EvidenceVisibility.mayView(actor))
                 .toList();
     }
 }

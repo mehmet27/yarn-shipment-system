@@ -100,7 +100,7 @@ class TicketUnverifiedAdapterTest {
                 id,
                 shipmentId,
                 TestTokens.SITE_ID,
-                TestUploads.declared(EvidenceType.DELIVERY_SCALE),
+                TestUploads.declared(EvidenceType.DISPATCH_SCALE),
                 UploadIntent.storageKeyOf(TestUploads.NOW, shipmentId, id),
                 USER,
                 TestUploads.NOW,

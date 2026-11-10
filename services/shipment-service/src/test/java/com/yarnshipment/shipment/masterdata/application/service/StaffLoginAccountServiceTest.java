@@ -32,11 +32,6 @@ class StaffLoginAccountServiceTest {
     private final Actor admin = TestTokens.actor("admin");
     private final LoginAccountTargetPort targets = new LoginAccountTargetPort() {
         @Override
-        public Optional<String> findActiveDriverName(UUID id) {
-            return Optional.empty();
-        }
-
-        @Override
         public Optional<String> findActiveSubcontractorTitle(UUID id) {
             return Optional.empty();
         }

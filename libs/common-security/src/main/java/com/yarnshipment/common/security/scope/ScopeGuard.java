@@ -9,9 +9,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Kapsam kontrolü (SEC-03): fasoncu yalnızca kendi {@code subcontractorId}'sine, şoför yalnızca kendisine atanmış
- * kayıtlara, iç kullanıcılar yalnızca yetkili oldukları lokasyonlara erişir. Kayıt yüklendikten sonra çağrılır;
- * kapsam dışı erişim 403 döner ve audit'e yazılır. Kör giriş ve duruma bağlı kurallar ilgili servistedir.
+ * Kapsam kontrolü (SEC-03): fasoncu yalnızca kendi {@code subcontractorId}'sine ait kayıtlara, iç kullanıcılar
+ * yalnızca yetkili oldukları lokasyonlara erişir. Kayıt yüklendikten sonra çağrılır; kapsam dışı erişim 403 döner ve
+ * audit'e yazılır. Duruma bağlı kurallar ilgili servistedir.
  */
 public final class ScopeGuard {
 
@@ -29,8 +29,7 @@ public final class ScopeGuard {
             return AccessScope.UNRESTRICTED;
         }
         UUID subcontractorId = actor.hasRole(Role.SUBCONTRACTOR) ? actor.subcontractorId() : null;
-        UUID driverId = actor.hasRole(Role.DRIVER) ? actor.driverId() : null;
-        return AccessScope.restrictedTo(actor.siteIds(), subcontractorId, driverId);
+        return AccessScope.restrictedTo(actor.siteIds(), subcontractorId);
     }
 
     public boolean isInScope(Actor actor, ScopedResource resource) {
@@ -58,13 +57,6 @@ public final class ScopeGuard {
 
     private static boolean isOwnerAllowed(AccessScope scope, ScopedResource resource) {
         UUID subcontractorId = scope.subcontractorId();
-        if (subcontractorId != null) {
-            return subcontractorId.equals(resource.subcontractorId());
-        }
-        UUID driverId = scope.driverId();
-        if (driverId != null) {
-            return driverId.equals(resource.driverId());
-        }
-        return true;
+        return subcontractorId == null || subcontractorId.equals(resource.subcontractorId());
     }
 }

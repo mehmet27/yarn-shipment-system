@@ -25,7 +25,6 @@ final class SeedRows {
      * Sevkiyat satırı.
      *
      * @param no sevkiyat numarası
-     * @param driver şoför
      * @param status durum
      * @param band karşılaştırma bandı; karşılaştırılmadıysa boş
      * @param diffKg işaretli kilo farkı; karşılaştırılmadıysa boş
@@ -33,7 +32,6 @@ final class SeedRows {
      */
     record Shipment(
             String no,
-            UUID driver,
             String status,
             @Nullable String band,
             @Nullable String diffKg,
@@ -49,28 +47,17 @@ final class SeedRows {
      */
     record Discrepancy(String no, String severity, String dueAt, boolean resolved) {}
 
-    /**
-     * Günlük eşleşme sayacı.
-     *
-     * @param day gün, ISO 8601
-     * @param shipments sevkiyat
-     * @param discrepant uyuşmazlıklı sevkiyat
-     * @param discrepancies uyuşmazlık
-     * @param diffKg mutlak fark toplamı
-     */
-    record Pair(String day, int shipments, int discrepant, int discrepancies, String diffKg) {}
-
     void shipment(UUID site, Shipment shipment) {
         jdbc.update(
                 """
-                INSERT INTO shipment_view (shipment_id, site_id, shipment_no, subcontractor_id, driver_id, status,
+                INSERT INTO shipment_view (shipment_id, site_id, shipment_no, subcontractor_id, status,
                                            band, diff_kg, had_discrepancy, dispatch_net_kg, delivery_net_kg,
-                                           created_at)
-                VALUES (gen_random_uuid(), ?, ?, ?, ?, ?, ?, ?::numeric, ?, 100, 100, '2026-11-02T09:00:00Z')""",
+                                           dispatched_at, created_at)
+                VALUES (gen_random_uuid(), ?, ?, ?, ?, ?, ?::numeric, ?, 100, 100, '2026-11-02T08:00:00Z',
+                        '2026-11-02T09:00:00Z')""",
                 site,
                 shipment.no(),
                 SUBCONTRACTOR,
-                shipment.driver(),
                 shipment.status(),
                 shipment.band(),
                 shipment.diffKg(),
@@ -108,21 +95,5 @@ final class SeedRows {
     void discrepancy(UUID site, Discrepancy discrepancy) {
         String sql = INSERT_DISCREPANCY;
         jdbc.update(sql, discrepancy.no(), site, discrepancy.severity(), discrepancy.dueAt(), discrepancy.resolved());
-    }
-
-    void pair(UUID site, UUID driver, Pair pair) {
-        jdbc.update(
-                """
-                INSERT INTO pair_daily_stats (day, site_id, driver_id, subcontractor_id, shipment_count,
-                                              discrepant_shipment_count, discrepancy_count, total_diff_kg, created_at)
-                VALUES (?::date, ?, ?, ?, ?, ?, ?, ?::numeric, '2026-11-03T00:00:00Z')""",
-                pair.day(),
-                site,
-                driver,
-                SUBCONTRACTOR,
-                pair.shipments(),
-                pair.discrepant(),
-                pair.discrepancies(),
-                pair.diffKg());
     }
 }

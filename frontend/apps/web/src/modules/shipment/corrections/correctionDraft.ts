@@ -12,35 +12,23 @@ export type CorrectionDraft = {
   target: CorrectionTarget | undefined;
   grossKg: string;
   tareKg: string;
-  sealNo: string;
   reason: string;
 };
 
 /** i18n anahtarı (`shipment.correction.errors.*`). */
 export type CorrectionError =
-  'targetRequired' | 'invalidKg' | 'tareExceedsGross' | 'sealNoRequired' | 'reasonRequired';
+  'targetRequired' | 'invalidKg' | 'tareExceedsGross' | 'reasonRequired';
 
 export const EMPTY_CORRECTION_DRAFT: CorrectionDraft = {
   target: undefined,
   grossKg: '',
   tareKg: '',
-  sealNo: '',
   reason: '',
 };
 
-/** Yalnızca sevkiyatta girilmiş kayıtlar düzeltilebilir. */
+/** Yalnızca sevkiyatta girilmiş kayıtlar düzeltilebilir; bugün tek hedef çıkış tartımıdır. */
 export function correctableTargets(shipment: InternalShipmentView): CorrectionTarget[] {
-  const targets: [CorrectionTarget, boolean][] = [
-    ['DISPATCH_WEIGHING', shipment.dispatchWeighing !== undefined],
-    ['DISPATCH_SEAL_NO', shipment.dispatchSealNo !== undefined],
-    ['DELIVERY_WEIGHING', shipment.deliveryWeighing !== undefined],
-    ['DELIVERY_SEAL_NO', shipment.deliverySealCondition !== undefined],
-  ];
-  return targets.filter(([, isRecorded]) => isRecorded).map(([target]) => target);
-}
-
-export function isWeighingTarget(target: CorrectionTarget | undefined): boolean {
-  return target === 'DISPATCH_WEIGHING' || target === 'DELIVERY_WEIGHING';
+  return shipment.dispatchWeighing === undefined ? [] : ['DISPATCH_WEIGHING'];
 }
 
 /** İlk hatayı ya da sözleşmedeki isteği döner. */
@@ -49,19 +37,14 @@ export function toCorrectionRequest(
 ): RecordCorrectionRequest | CorrectionError {
   if (draft.target === undefined) return 'targetRequired';
   const reason = draft.reason.trim();
-  if (isWeighingTarget(draft.target)) {
-    const grossKg = parseKg(draft.grossKg);
-    const tareKg = parseKg(draft.tareKg);
-    if (grossKg === undefined || tareKg === undefined) return 'invalidKg';
-    if (calculateNetKg(grossKg, tareKg) === undefined) return 'tareExceedsGross';
-    return reason === '' ? 'reasonRequired' : { target: draft.target, grossKg, tareKg, reason };
-  }
-  const sealNo = draft.sealNo.trim();
-  if (sealNo === '') return 'sealNoRequired';
-  return reason === '' ? 'reasonRequired' : { target: draft.target, sealNo, reason };
+  const grossKg = parseKg(draft.grossKg);
+  const tareKg = parseKg(draft.tareKg);
+  if (grossKg === undefined || tareKg === undefined) return 'invalidKg';
+  if (calculateNetKg(grossKg, tareKg) === undefined) return 'tareExceedsGross';
+  return reason === '' ? 'reasonRequired' : { target: draft.target, grossKg, tareKg, reason };
 }
 
-/** Tartım değeri backend'de "gross=… tare=… net=…" biçimindedir; mühür numarası olduğu gibi. */
+/** Tartım değeri backend'de "gross=… tare=… net=…" biçimindedir; başka biçim olduğu gibi yazılır. */
 const WEIGHING_PATTERN = /^gross=(\S+) tare=(\S+) net=(\S+)$/;
 
 export function formatCorrectionValue(

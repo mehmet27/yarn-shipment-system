@@ -2,7 +2,7 @@ package com.yarnshipment.shipment.adapter.in.web;
 
 import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.shipment.domain.evidence.EvidenceServiceUnavailableException;
-import com.yarnshipment.shipment.domain.evidence.InvalidDeliveryEvidenceException;
+import com.yarnshipment.shipment.domain.evidence.InvalidWaybillEvidenceException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -11,7 +11,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/** Teslim girişindeki imzalı irsaliye kanıtına ilişkin hataların ERR-07 cevabı. */
+/** Tamamlamadaki irsaliye belgesine ilişkin hataların ERR-07 cevabı. */
 /* Spring Boot'un genel ProblemDetail işleyicisinden önce çalışır; aksi halde cevap code alanı olmadan döner. */
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
@@ -23,9 +23,9 @@ public final class EvidenceExceptionHandler {
         this.problems = problems;
     }
 
-    @ExceptionHandler(InvalidDeliveryEvidenceException.class)
-    public ProblemDetail handleInvalidDeliveryEvidence(HttpServletRequest request) {
-        return problems.create(request, HttpStatus.UNPROCESSABLE_CONTENT, "DELIVERY_EVIDENCE_INVALID");
+    @ExceptionHandler(InvalidWaybillEvidenceException.class)
+    public ProblemDetail handleInvalidWaybillEvidence(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.UNPROCESSABLE_CONTENT, "WAYBILL_EVIDENCE_INVALID");
     }
 
     @ExceptionHandler(EvidenceServiceUnavailableException.class)

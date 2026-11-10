@@ -44,7 +44,7 @@ class SecuredTestController {
     @PreAuthorize("hasAuthority('SHIPMENT_VIEW')")
     public String getShipment(@PathVariable UUID subcontractorId) {
         ScopedResource shipment =
-                new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.SITE_ID, subcontractorId, null);
+                new ScopedResource("Shipment", UUID.randomUUID(), TestTokens.SITE_ID, subcontractorId);
         scopeGuard.validateInScope(currentActorProvider.getCurrentActor(), shipment, "SHIPMENT_VIEW");
         return shipment.reference();
     }

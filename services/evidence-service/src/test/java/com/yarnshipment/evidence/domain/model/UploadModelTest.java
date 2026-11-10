@@ -49,11 +49,9 @@ class UploadModelTest {
     }
 
     @Test
-    @DisplayName("Mühür hem sevk hem teslim aşamasında yüklenir; imzalı belge yalnızca teslimde")
+    @DisplayName("İrsaliye tamamlama aşamasında, çuval fotoğrafı çıkışta, lab belgesi itirazda yüklenir")
     void shouldMapTypesToStages() {
-        assertThat(EvidenceType.SEAL.stages()).containsExactly(UploadStage.DISPATCH, UploadStage.DELIVERY);
-        assertThat(EvidenceType.SIGNED_DELIVERY_DOC.stages()).containsExactly(UploadStage.DELIVERY);
-        assertThat(EvidenceType.VEHICLE_PLATE.stages()).containsExactly(UploadStage.DRIVER);
+        assertThat(EvidenceType.WAYBILL.stages()).containsExactly(UploadStage.COMPLETION);
         assertThat(EvidenceType.LAB_RESULT.stages()).containsExactly(UploadStage.CLAIM);
         assertThat(EvidenceType.BAG_LABEL.stages()).containsExactly(UploadStage.DISPATCH);
     }

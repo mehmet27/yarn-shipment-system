@@ -11,14 +11,12 @@ import org.jspecify.annotations.Nullable;
  * @param resourceId kaynağın kimliği
  * @param siteId kaydın lokasyonu (GEN-07)
  * @param subcontractorId kaydın ait olduğu fasoncu; yoksa {@code null}
- * @param driverId kayda atanmış şoför; yoksa {@code null}
  */
 public record ScopedResource(
         String resourceType,
         UUID resourceId,
         UUID siteId,
-        @Nullable UUID subcontractorId,
-        @Nullable UUID driverId) {
+        @Nullable UUID subcontractorId) {
 
     public ScopedResource {
         Objects.requireNonNull(resourceType, "resourceType");

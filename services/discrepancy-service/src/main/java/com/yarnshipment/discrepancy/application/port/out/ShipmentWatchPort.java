@@ -17,14 +17,12 @@ public interface ShipmentWatchPort {
 
     void recordDispatched(UUID shipmentId, Instant dispatchedAt);
 
-    void recordArrived(UUID shipmentId, Instant arrivedAt);
-
     /** Tamamlanan ya da iptal edilen sevkiyat. */
     void recordClosed(UUID shipmentId, Instant closedAt);
 
     Optional<WatchedShipment> findShipment(UUID shipmentId);
 
-    /** Verilen andan önce yola çıkmış, varmamış, kapanmamış ve henüz uyarılmamış sevkiyatlar; en eskisi önce. */
+    /** Verilen andan önce yola çıkmış, kapanmamış ve henüz uyarılmamış sevkiyatlar; en eskisi önce. */
     List<WatchedShipment> findInTransitSince(Instant dispatchedBefore, int limit);
 
     /** Yolda süre aşımı uyuşmazlığı açıldı; ikinci kez açılmaz. Başkası işaretlediyse {@code false}. */

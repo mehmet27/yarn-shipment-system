@@ -32,8 +32,7 @@ final class DashboardReader {
     ShipmentTotals findTotals(ReportPeriod period, ReportScope scope) {
         String sql = """
                 SELECT count(*) AS total,
-                       count(*) FILTER (WHERE status IN ('DRAFT', 'LOADED', 'IN_TRANSIT',
-                                                         'AWAITING_DELIVERY', 'CHECKING')) AS in_progress,
+                       count(*) FILTER (WHERE status IN ('DRAFT', 'AWAITING_DELIVERY')) AS in_progress,
                        count(*) FILTER (WHERE status = 'IN_REVIEW') AS in_review,
                        count(*) FILTER (WHERE status = 'COMPLETED') AS completed,
                        count(*) FILTER (WHERE status = 'CANCELLED') AS cancelled

@@ -71,7 +71,7 @@ class TicketReadingControllerTest {
         when(readTicket.readTicket(any()))
                 .thenReturn(reading(TicketScan.unreadableImage(ReadingProblem.UNSUPPORTED_FORMAT)));
 
-        MvcTestResult result = post(TestTokens.subcontractorToken());
+        MvcTestResult result = post(TestTokens.token("warehouse").build());
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.status").isEqualTo("UNREADABLE");
@@ -95,7 +95,7 @@ class TicketReadingControllerTest {
         assertThat(notSupported).bodyJson().extractingPath("$.code").isEqualTo("TICKET_READING_NOT_SUPPORTED");
 
         assertThat(post(TestTokens.token("manager").build())).hasStatus(HttpStatus.FORBIDDEN);
-        assertThat(post(TestTokens.driverToken())).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(TestTokens.subcontractorToken())).hasStatus(HttpStatus.FORBIDDEN);
     }
 
     private static TicketReading reading(TicketScan scan) {

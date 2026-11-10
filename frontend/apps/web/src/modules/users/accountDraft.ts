@@ -51,10 +51,10 @@ export function invalidFields(draft: AccountDraft): Set<AccountField> {
   return new Set(checks.filter(([, isInvalid]) => isInvalid).map(([field]) => field));
 }
 
-/** Hesabın hangi uca, hangi gövdeyle gideceği: fabrika içi roller tek uçtan, şoför/fasoncu kayıtlarından açılır. */
+/** Hesabın hangi uca, hangi gövdeyle gideceği: fabrika içi roller tek uçtan, fasoncu kayıtlarından açılır. */
 export type AccountSubmission =
   | { kind: 'staff'; request: StaffLoginAccountRequest }
-  | { kind: 'driver' | 'subcontractor'; recordId: string; request: LoginAccountRequest };
+  | { kind: 'subcontractor'; recordId: string; request: LoginAccountRequest };
 
 /** Doğrulanmış taslaktan istek; rol ya da kayıt seçilmemişse gönderilecek bir şey yoktur. */
 export function toSubmission(draft: AccountDraft): AccountSubmission | undefined {

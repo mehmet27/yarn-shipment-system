@@ -67,7 +67,7 @@ class AssignBagsServiceTest {
     @Test
     @DisplayName("Çıkıştan sonra çuval atanamaz ve çuval servisine hiç gidilmez")
     void shouldRejectNonDraftShipment() throws Exception {
-        queryPort.add(TestShipments.shipment(ShipmentStatus.LOADED));
+        queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
         AssignBagsService service = service();
         AssignBagsCommand command = command();
 

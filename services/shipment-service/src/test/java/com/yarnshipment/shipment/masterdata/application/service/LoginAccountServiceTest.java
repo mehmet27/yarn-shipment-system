@@ -28,7 +28,6 @@ class LoginAccountServiceTest {
 
     private static final int PAGE_SIZE = 20;
     private static final int ACCOUNT_COUNT = 3;
-    private static final UUID DRIVER = UUID.fromString("0192f0a0-0000-7000-8000-000000000004");
     private static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000003");
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     private static final UUID OTHER_SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000002");
@@ -39,11 +38,6 @@ class LoginAccountServiceTest {
     private final List<String> codesSent = new ArrayList<>();
     private final Actor admin = TestTokens.actor("admin");
     private final LoginAccountTargetPort targets = new LoginAccountTargetPort() {
-        @Override
-        public Optional<String> findActiveDriverName(UUID id) {
-            return DRIVER.equals(id) ? Optional.of("Ali Yılmaz") : Optional.empty();
-        }
-
         @Override
         public Optional<String> findActiveSubcontractorTitle(UUID id) {
             return SUBCONTRACTOR.equals(id) ? Optional.of("Örnek Tekstil") : Optional.empty();
@@ -73,31 +67,19 @@ class LoginAccountServiceTest {
             (userId, username, phone) -> codesSent.add(userId + ":" + username + ":" + phone.e164()));
 
     @Test
-    @DisplayName("Şoför hesabı şoför rolü ve kayıt kimliğiyle, şifresiz açılır; kod SMS'le gider")
-    void shouldOpenDriverAccount() {
-        service.createDriverLoginAccount(
-                admin, DRIVER, new LoginAccountRequest("ali.yilmaz", "0532 123 45 67", null, List.of(SITE)));
-
-        assertThat(opened).singleElement().satisfies(spec -> {
-            assertThat(spec.role()).isEqualTo(LoginRole.DRIVER);
-            assertThat(spec.ownerId()).isEqualTo(DRIVER);
-            assertThat(spec.displayName()).isEqualTo("Ali Yılmaz");
-            assertThat(spec.email()).isNull();
-            assertThat(spec.phone().e164()).isEqualTo("+905321234567");
-        });
-        assertThat(codesSent).containsExactly(NEW_USER + ":ali.yilmaz:+905321234567");
-    }
-
-    @Test
-    @DisplayName("Fasoncu hesabı fasoncu rolüyle istenir")
+    @DisplayName("Fasoncu hesabı fasoncu rolü ve kayıt kimliğiyle, şifresiz açılır; kod SMS'le gider")
     void shouldOpenSubcontractorAccount() {
         service.createSubcontractorLoginAccount(
-                admin, SUBCONTRACTOR, new LoginAccountRequest("ornek", "05321234567", "a@b.com", List.of(SITE)));
+                admin, SUBCONTRACTOR, new LoginAccountRequest("ornek", "0532 123 45 67", "a@b.com", List.of(SITE)));
 
         assertThat(opened).singleElement().satisfies(spec -> {
             assertThat(spec.role()).isEqualTo(LoginRole.SUBCONTRACTOR);
+            assertThat(spec.ownerId()).isEqualTo(SUBCONTRACTOR);
+            assertThat(spec.displayName()).isEqualTo("Örnek Tekstil");
             assertThat(spec.email()).isEqualTo("a@b.com");
+            assertThat(spec.phone().e164()).isEqualTo("+905321234567");
         });
+        assertThat(codesSent).containsExactly(NEW_USER + ":ornek:+905321234567");
     }
 
     @Test
@@ -106,8 +88,6 @@ class LoginAccountServiceTest {
         LoginAccountRequest request = new LoginAccountRequest("x.y.z", "05321234567", null, List.of(SITE));
         UUID unknown = UUID.randomUUID();
 
-        assertThatThrownBy(() -> service.createDriverLoginAccount(admin, unknown, request))
-                .isInstanceOf(MasterDataNotFoundException.class);
         assertThatThrownBy(() -> service.createSubcontractorLoginAccount(admin, unknown, request))
                 .isInstanceOf(MasterDataNotFoundException.class);
         assertThat(opened).isEmpty();
@@ -120,9 +100,9 @@ class LoginAccountServiceTest {
         LoginAccountRequest none = new LoginAccountRequest("x.y.z", "05321234567", null, List.of());
         LoginAccountRequest inactive = new LoginAccountRequest("x.y.z", "05321234567", null, List.of(SITE, OTHER_SITE));
 
-        assertThatThrownBy(() -> service.createDriverLoginAccount(admin, DRIVER, none))
+        assertThatThrownBy(() -> service.createSubcontractorLoginAccount(admin, SUBCONTRACTOR, none))
                 .isInstanceOf(InvalidMasterDataException.class);
-        assertThatThrownBy(() -> service.createDriverLoginAccount(admin, DRIVER, inactive))
+        assertThatThrownBy(() -> service.createSubcontractorLoginAccount(admin, SUBCONTRACTOR, inactive))
                 .isInstanceOf(InvalidMasterDataException.class);
         assertThat(opened).isEmpty();
     }
@@ -149,6 +129,7 @@ class LoginAccountServiceTest {
     }
 
     private static LoginAccountSummary summary(String username, String fullName, String email) {
-        return new LoginAccountSummary(username, username, fullName, email, null, List.of("DRIVER"), true, false, null);
+        return new LoginAccountSummary(
+                username, username, fullName, email, null, List.of("SUBCONTRACTOR"), true, false, null);
     }
 }

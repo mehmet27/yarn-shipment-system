@@ -7,19 +7,17 @@ import com.yarnshipment.shipment.domain.correction.CorrectedValue.Weight;
 import com.yarnshipment.shipment.domain.correction.Correction;
 import com.yarnshipment.shipment.domain.correction.CorrectionConflictException;
 import com.yarnshipment.shipment.domain.correction.CorrectionTarget;
-import com.yarnshipment.shipment.domain.model.SealAlreadyUsedException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /**
- * {@link CorrectionPort}'un JDBC uygulaması. Kilitli sevkiyatın tartım ve mühür satırlarına yalnızca
+ * {@link CorrectionPort}'un JDBC uygulaması. Kilitli sevkiyatın tartım satırlarına yalnızca
  * {@code app.correction_record_id} ayarlıyken yazılabilir (kilit tetikleyicisi); ayar transaction'a özeldir.
  */
 @Component
@@ -39,21 +37,12 @@ final class CorrectionAdapter implements CorrectionPort {
     private static final String SUPERSEDE_WEIGHING = """
             UPDATE weighing SET superseded_by = :newId, updated_at = :at, updated_by = :actor, version = version + 1
             WHERE id = :oldId""";
-    private static final String SUPERSEDE_SEAL = """
-            UPDATE seal SET superseded_by = :newId, updated_at = :at, updated_by = :actor, version = version + 1
-            WHERE id = :oldId""";
     private static final String INSERT_WEIGHING = """
             INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, scale_ticket_no, weighed_at,
                                   entered_by, created_at, created_by, expected_tare_kg, tare_tolerance_pct)
             SELECT :newId, shipment_id, side, :gross, :tare, bag_count, scale_ticket_no, weighed_at, entered_by, :at,
                    :actor, expected_tare_kg, tare_tolerance_pct
             FROM weighing WHERE id = :oldId""";
-    private static final String INSERT_SEAL = """
-            INSERT INTO seal (id, shipment_id, side, seal_no, seal_condition, recorded_by, recorded_at, created_at,
-                              created_by)
-            SELECT :newId, shipment_id, side, :sealNo, seal_condition, recorded_by, recorded_at, :at, :actor
-            FROM seal WHERE id = :oldId""";
-    private static final String SEAL_UNIQUE_NOW = "SET CONSTRAINTS seal_dispatch_no_uq IMMEDIATE";
 
     private final JdbcClient jdbc;
     private final ShipmentTransitionWriter transitions;
@@ -81,9 +70,8 @@ final class CorrectionAdapter implements CorrectionPort {
 
     @Override
     public void recordCorrection(Correction correction, UUID actorUserId) {
-        String table = correction.target().isWeighing() ? "weighing" : "seal";
         RowChange change = new RowChange(
-                lockCurrentRow(correction, table),
+                lockCurrentRow(correction),
                 transitions.nextId(),
                 actorUserId,
                 Timestamp.from(correction.correctedAt()));
@@ -91,8 +79,7 @@ final class CorrectionAdapter implements CorrectionPort {
         insertRecord(correction, change);
         jdbc.sql(SET_CORRECTION).param(correction.id().toString()).query().singleValue();
         insertNewRow(correction, change);
-        change.bind(jdbc.sql(correction.target().isWeighing() ? SUPERSEDE_WEIGHING : SUPERSEDE_SEAL))
-                .update();
+        change.bind(jdbc.sql(SUPERSEDE_WEIGHING)).update();
     }
 
     /** Onaylanmış kayıt: yalnızca Admin düzeltebildiği için isteyen ve onaylayan aynı kişidir. */
@@ -112,12 +99,11 @@ final class CorrectionAdapter implements CorrectionPort {
     }
 
     /** Geçerli satırı kilitler; değeri alan modelinin gördüğü eski değer değilse araya başka düzeltme girmiştir. */
-    private UUID lockCurrentRow(Correction correction, String table) {
-        String columns = correction.target().isWeighing() ? "gross_kg, tare_kg" : "seal_no";
-        CurrentRow row = jdbc.sql("SELECT id, " + columns + " FROM " + table
+    private UUID lockCurrentRow(Correction correction) {
+        CurrentRow row = jdbc.sql("SELECT id, gross_kg, tare_kg FROM weighing"
                         + " WHERE shipment_id = ? AND side = ? AND superseded_by IS NULL FOR UPDATE")
                 .params(correction.shipmentId(), correction.target().side())
-                .query((rs, n) -> new CurrentRow(rs.getObject("id", UUID.class), currentValue(rs, correction)))
+                .query((rs, n) -> new CurrentRow(rs.getObject("id", UUID.class), currentValue(rs)))
                 .optional()
                 .orElseThrow(() -> new CorrectionConflictException(correction.shipmentId(), correction.target()));
         if (!row.value().equals(correction.oldValue())) {
@@ -126,29 +112,17 @@ final class CorrectionAdapter implements CorrectionPort {
         return row.id();
     }
 
-    private static CorrectedValue currentValue(ResultSet rs, Correction correction) throws SQLException {
-        return correction.target().isWeighing()
-                ? new Weight(rs.getBigDecimal("gross_kg"), rs.getBigDecimal("tare_kg"))
-                : new CorrectedValue.SealNo(rs.getString("seal_no"));
+    private static CorrectedValue currentValue(ResultSet rs) throws SQLException {
+        return new Weight(rs.getBigDecimal("gross_kg"), rs.getBigDecimal("tare_kg"));
     }
 
     /** Yeni satır eskisinin kopyasıdır; yalnızca düzeltilen değer ve oluşturma bilgisi değişir. */
     private void insertNewRow(Correction correction, RowChange change) {
-        if (correction.newValue() instanceof Weight weight) {
-            change.bind(jdbc.sql(INSERT_WEIGHING))
-                    .param("gross", weight.grossKg())
-                    .param("tare", weight.tareKg())
-                    .update();
-            return;
-        }
-        jdbc.sql(SEAL_UNIQUE_NOW).update();
-        try {
-            change.bind(jdbc.sql(INSERT_SEAL))
-                    .param("sealNo", correction.newValue().text())
-                    .update();
-        } catch (DataIntegrityViolationException e) {
-            throw new SealAlreadyUsedException(correction.newValue().text());
-        }
+        Weight weight = (Weight) correction.newValue();
+        change.bind(jdbc.sql(INSERT_WEIGHING))
+                .param("gross", weight.grossKg())
+                .param("tare", weight.tareKg())
+                .update();
     }
 
     private static ShipmentCorrection map(ResultSet rs) throws SQLException {

@@ -26,7 +26,7 @@ final class ReportAccess {
     Optional<ReportScope> scopeOf(ReportQuery query) {
         Actor actor = query.actor();
         AccessScope scope = scopeGuard.scopeOf(actor);
-        boolean external = scope.subcontractorId() != null || scope.driverId() != null;
+        boolean external = scope.subcontractorId() != null;
         boolean noSites = !scope.allSites() && scope.siteIds().isEmpty();
         if (external || noSites) {
             return Optional.empty();

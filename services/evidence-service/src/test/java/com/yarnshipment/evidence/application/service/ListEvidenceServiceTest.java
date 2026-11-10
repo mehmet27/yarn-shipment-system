@@ -22,7 +22,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/** Kanıt listesi, kör giriş ve kapsam kurallarıyla. */
+/** Kanıt listesi ve kapsam kuralları. */
 class ListEvidenceServiceTest {
 
     private static final Clock CLOCK = Clock.fixed(TestUploads.NOW, ZoneOffset.UTC);
@@ -32,20 +32,17 @@ class ListEvidenceServiceTest {
     private final ScopeGuard scopeGuard = new ScopeGuard(event -> {}, CLOCK);
     private final ListEvidenceService list = new ListEvidenceService(store, shipments, scopeGuard);
     private final EvidenceFile dispatchScale = TestUploads.file(EvidenceType.DISPATCH_SCALE);
-    private final EvidenceFile signedDoc = TestUploads.file(EvidenceType.SIGNED_DELIVERY_DOC);
+    private final EvidenceFile waybill = TestUploads.file(EvidenceType.WAYBILL);
 
     @Test
-    @DisplayName("Fasoncu karşılaştırmadan önce çıkış kantarını listede görmez; sonra görür")
-    void shouldFilterByBlindEntry() {
-        when(store.findByShipment(TestUploads.SHIPMENT_ID)).thenReturn(List.of(dispatchScale, signedDoc));
-        var subcontractor = TestTokens.actor(TestTokens.subcontractorToken());
-        var query = new ListEvidenceQuery(subcontractor, TestUploads.SHIPMENT_ID);
+    @DisplayName("Kör giriş yoktur: depo çıkış kantarını ve irsaliyeyi birlikte görür")
+    void shouldListAllEvidence() {
+        when(store.findByShipment(TestUploads.SHIPMENT_ID)).thenReturn(List.of(dispatchScale, waybill));
+        var query = new ListEvidenceQuery(TestTokens.actor("warehouse"), TestUploads.SHIPMENT_ID);
 
         snapshot(TestTokens.SITE_ID, false);
-        assertThat(list.listEvidence(query)).containsExactly(signedDoc);
 
-        snapshot(TestTokens.SITE_ID, true);
-        assertThat(list.listEvidence(query)).containsExactly(dispatchScale, signedDoc);
+        assertThat(list.listEvidence(query)).containsExactly(dispatchScale, waybill);
     }
 
     @Test
@@ -57,8 +54,8 @@ class ListEvidenceServiceTest {
         assertThatThrownBy(() -> list.listEvidence(query)).isInstanceOf(OutOfScopeAccessException.class);
     }
 
-    private void snapshot(UUID siteId, boolean comparisonDone) {
+    private void snapshot(UUID siteId, boolean completed) {
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
-                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, siteId, false, comparisonDone));
+                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, siteId, false, completed));
     }
 }

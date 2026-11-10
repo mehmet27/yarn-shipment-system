@@ -2,23 +2,14 @@ import type { ShipmentDetail } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { PageHero, Paper, ProgressSteps, SimpleGrid, Stack, Text } from '@iplik/ui';
 import { FieldValueText } from './FieldValueText';
-import { toProgressDone } from './progressSteps';
-import { findBagCount, findSealNo } from './shipmentViews';
+import { PROGRESS_STATUSES, toProgressDone } from './progressSteps';
+import { findBagCount } from './shipmentViews';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
 import { useFieldText } from './useFieldText';
 
-const STEP_STATUSES = [
-  'DRAFT',
-  'LOADED',
-  'IN_TRANSIT',
-  'AWAITING_DELIVERY',
-  'CHECKING',
-  'COMPLETED',
-] as const;
-
 export type FieldShipmentSummaryProps = { shipment: ShipmentDetail };
 
-/** Saha detayının üstü: başlık, süreç adımları ve çuval/mühür bilgisi (kilo yok, Y1). */
+/** Saha detayının üstü: başlık, süreç adımları ve çıkışta tartılan çuval sayısı. */
 export function FieldShipmentSummary({ shipment }: FieldShipmentSummaryProps) {
   const { t } = useTranslation();
   const text = useFieldText();
@@ -33,7 +24,7 @@ export function FieldShipmentSummary({ shipment }: FieldShipmentSummaryProps) {
         <Paper withBorder p="md" radius="md">
           <ProgressSteps
             label={t('shipment.progress.steps')}
-            steps={STEP_STATUSES.map((status) => t(`shipment.progress.step.${status}`))}
+            steps={PROGRESS_STATUSES.map((status) => t(`shipment.progress.step.${status}`))}
             current={toProgressDone(shipment.status) - 1}
           />
         </Paper>
@@ -42,8 +33,6 @@ export function FieldShipmentSummary({ shipment }: FieldShipmentSummaryProps) {
         <SimpleGrid cols={2}>
           <Text c="dimmed">{t('field.bagCount')}</Text>
           <FieldValueText field={findBagCount(shipment)} text={text} />
-          <Text c="dimmed">{t('field.sealNo')}</Text>
-          <FieldValueText field={findSealNo(shipment)} text={text} />
         </SimpleGrid>
       </Paper>
     </Stack>

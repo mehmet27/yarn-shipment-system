@@ -1,7 +1,6 @@
 package com.yarnshipment.shipment.adapter.out.persistence;
 
 import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
-import com.yarnshipment.shipment.domain.model.DeliveryScan;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
 import com.yarnshipment.shipment.domain.model.ScanMethod;
 import com.yarnshipment.shipment.domain.packaging.PackageType;
@@ -21,14 +20,6 @@ final class ShipmentBagsAdapter implements ShipmentBagsPort {
             FROM shipment_bag
             WHERE shipment_id = ? AND removed_at IS NULL
             ORDER BY assigned_at, id""";
-    private static final String SELECT_DELIVERY_SCANS = """
-            SELECT s.scanned_key, s.matched, s.scan_method, s.scanned_at, b.package_type
-            FROM delivery_scan s
-            JOIN delivery_receipt r ON r.id = s.delivery_receipt_id
-            LEFT JOIN shipment_bag b
-                ON b.shipment_id = r.shipment_id AND b.unique_key = s.scanned_key AND b.removed_at IS NULL
-            WHERE r.shipment_id = ?
-            ORDER BY s.scanned_at, s.id""";
 
     private final JdbcClient jdbc;
 
@@ -44,14 +35,6 @@ final class ShipmentBagsAdapter implements ShipmentBagsPort {
                 .list();
     }
 
-    @Override
-    public List<DeliveryScan> findDeliveryScans(UUID shipmentId) {
-        return jdbc.sql(SELECT_DELIVERY_SCANS)
-                .param(shipmentId)
-                .query((rs, rowNumber) -> toDeliveryScan(rs))
-                .list();
-    }
-
     private static DispatchBag toDispatchBag(ResultSet rs) throws SQLException {
         return new DispatchBag(
                 rs.getObject("bag_id", UUID.class),
@@ -61,15 +44,5 @@ final class ShipmentBagsAdapter implements ShipmentBagsPort {
                 rs.getString("quality_grade_code"),
                 ScanMethod.valueOf(rs.getString("scan_method")),
                 rs.getTimestamp("assigned_at").toInstant());
-    }
-
-    private static DeliveryScan toDeliveryScan(ResultSet rs) throws SQLException {
-        String type = rs.getString("package_type");
-        return new DeliveryScan(
-                rs.getString("scanned_key"),
-                rs.getBoolean("matched"),
-                ScanMethod.valueOf(rs.getString("scan_method")),
-                rs.getTimestamp("scanned_at").toInstant(),
-                type == null ? null : PackageType.valueOf(type));
     }
 }

@@ -1,6 +1,5 @@
 import type {
   DashboardView,
-  PairStatsView,
   PartyStatsView,
   Permission,
   ShipmentRowView,
@@ -41,7 +40,7 @@ const MOCK_DASHBOARD: DashboardView = {
   ],
 };
 
-const MOCK_DRIVERS: PartyStatsView[] = [
+const MOCK_SUBCONTRACTORS: PartyStatsView[] = [
   {
     id: 'a1b2c3d4-0000-7000-8000-000000000001',
     shipmentCount: 4,
@@ -58,25 +57,12 @@ const MOCK_DRIVERS: PartyStatsView[] = [
   },
 ];
 
-const MOCK_PAIRS: PairStatsView[] = [
-  {
-    driverId: 'a1b2c3d4-0000-7000-8000-000000000001',
-    subcontractorId: 'f9e8d7c6-0000-7000-8000-000000000009',
-    shipmentCount: 4,
-    discrepantShipmentCount: 2,
-    discrepancyCount: 3,
-    discrepancyRate: '50.00',
-    averageAbsoluteDiffKg: '62.500',
-  },
-];
-
 const MOCK_SHIPMENTS: ShipmentRowView[] = [
   {
     shipmentId: 'shp-0007',
     shipmentNo: 'SV-2026-0007',
     subcontractorId: 'f9e8d7c6-0000-7000-8000-000000000009',
-    driverId: 'a1b2c3d4-0000-7000-8000-000000000001',
-    status: 'IN_REVIEW',
+    status: 'COMPLETED',
     dispatchNetKg: '5000.000',
     deliveryNetKg: '4820.000',
     diffKg: '180.000',
@@ -89,7 +75,7 @@ const MOCK_SHIPMENTS: ShipmentRowView[] = [
     shipmentId: 'shp-0008',
     shipmentNo: 'SV-2026-0008',
     subcontractorId: 'f9e8d7c6-0000-7000-8000-000000000009',
-    status: 'IN_TRANSIT',
+    status: 'AWAITING_DELIVERY',
     dispatchNetKg: '2000.000',
     hadDiscrepancy: false,
     createdAt: '2026-11-03T09:00:00Z',
@@ -119,13 +105,9 @@ export function createReportHandlers(permissions: readonly Permission[]) {
     http.get(`${REPORTS_PATH}/dashboard`, () =>
       canView ? HttpResponse.json(MOCK_DASHBOARD) : denied(),
     ),
-    http.get(`${REPORTS_PATH}/drivers`, () =>
-      canView ? HttpResponse.json(MOCK_DRIVERS) : denied(),
-    ),
     http.get(`${REPORTS_PATH}/subcontractors`, () =>
-      canView ? HttpResponse.json(MOCK_DRIVERS) : denied(),
+      canView ? HttpResponse.json(MOCK_SUBCONTRACTORS) : denied(),
     ),
-    http.get(`${REPORTS_PATH}/pairs`, () => (canView ? HttpResponse.json(MOCK_PAIRS) : denied())),
     http.get(`${REPORTS_PATH}/shipments`, () =>
       canView ? HttpResponse.json(MOCK_SHIPMENTS) : denied(),
     ),

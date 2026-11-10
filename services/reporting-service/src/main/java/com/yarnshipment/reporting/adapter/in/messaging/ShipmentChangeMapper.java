@@ -1,8 +1,6 @@
 package com.yarnshipment.reporting.adapter.in.messaging;
 
 import com.yarnshipment.common.outbox.IncomingEvent;
-import com.yarnshipment.events.shipment.DeliveryReceived;
-import com.yarnshipment.events.shipment.ShipmentArrived;
 import com.yarnshipment.events.shipment.ShipmentCancelled;
 import com.yarnshipment.events.shipment.ShipmentCompleted;
 import com.yarnshipment.events.shipment.ShipmentCreated;
@@ -27,13 +25,11 @@ final class ShipmentChangeMapper {
         return switch (event.type()) {
             case ShipmentCreated.TYPE -> created(event);
             case ShipmentDispatched.TYPE -> dispatched(event);
-            case ShipmentArrived.TYPE -> arrived(event);
             case ShipmentCompleted.TYPE -> completed(event);
             case ShipmentCancelled.TYPE ->
                 new ReadModelChange.ShipmentCancelled(EVENT_READER
                         .readValue(event.data(), ShipmentCancelled.class)
                         .shipmentId());
-            case DeliveryReceived.TYPE -> delivered(event);
             default -> null;
         };
     }
@@ -51,25 +47,11 @@ final class ShipmentChangeMapper {
     private static ReadModelChange dispatched(IncomingEvent event) {
         ShipmentDispatched dispatched = EVENT_READER.readValue(event.data(), ShipmentDispatched.class);
         return new ReadModelChange.ShipmentDispatched(
-                dispatched.shipmentId(), dispatched.driverId(), dispatched.dispatchedAt());
-    }
-
-    private static ReadModelChange arrived(IncomingEvent event) {
-        ShipmentArrived arrived = EVENT_READER.readValue(event.data(), ShipmentArrived.class);
-        return new ReadModelChange.ShipmentArrived(arrived.shipmentId(), arrived.driverId());
+                dispatched.shipmentId(), dispatched.netKg(), dispatched.dispatchedAt());
     }
 
     private static ReadModelChange completed(IncomingEvent event) {
         ShipmentCompleted completed = EVENT_READER.readValue(event.data(), ShipmentCompleted.class);
         return new ReadModelChange.ShipmentCompleted(completed.shipmentId(), completed.completedAt());
-    }
-
-    private static ReadModelChange delivered(IncomingEvent event) {
-        DeliveryReceived delivery = EVENT_READER.readValue(event.data(), DeliveryReceived.class);
-        DeliveryReceived.Weighing dispatch = delivery.dispatch();
-        return new ReadModelChange.DeliveryReceived(
-                delivery.shipmentId(),
-                dispatch == null ? null : dispatch.netKg(),
-                delivery.delivery().netKg());
     }
 }

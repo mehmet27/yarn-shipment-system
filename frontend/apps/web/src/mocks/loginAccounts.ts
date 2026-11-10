@@ -47,24 +47,14 @@ const SEED: readonly LoginAccountView[] = [
     createdAt: '2026-01-05T08:15:00Z',
   },
   {
-    id: 'kc-sofor',
-    username: 'sofor',
-    fullName: 'Şahin Şoför',
-    email: 'sofor@iplik.local',
-    roles: ['DRIVER'],
-    enabled: true,
-    phone: '***0005',
-    passwordChangeRequired: true,
-    createdAt: '2026-02-10T09:30:00Z',
-  },
-  {
     id: 'kc-fasoncu',
     username: 'fasoncu',
     fullName: 'Aydın Örme',
     email: 'fasoncu@aydinorme.local',
     roles: ['SUBCONTRACTOR'],
     enabled: true,
-    passwordChangeRequired: false,
+    phone: '***0005',
+    passwordChangeRequired: true,
     createdAt: '2026-02-10T09:45:00Z',
   },
   {
@@ -130,11 +120,11 @@ export function mockPasswordResetState(id: string): 'ok' | 'not-found' | 'no-pho
   return account.phone === undefined ? 'no-phone' : 'ok';
 }
 
-/** Rolü değiştirir; bulunamazsa `not-found`, şoför/fasoncu hesabıysa `locked` döner. */
+/** Rolü değiştirir; bulunamazsa `not-found`, fasoncu hesabıysa `locked` döner. */
 export function changeMockLoginAccountRole(id: string, role: Role): 'ok' | 'not-found' | 'locked' {
   const account = accounts.find((candidate) => candidate.id === id);
   if (account === undefined) return 'not-found';
-  if (account.roles.includes('DRIVER') || account.roles.includes('SUBCONTRACTOR')) return 'locked';
+  if (account.roles.includes('SUBCONTRACTOR')) return 'locked';
   accounts = accounts.map((candidate) =>
     candidate.id === id ? { ...candidate, roles: [role] } : candidate,
   );

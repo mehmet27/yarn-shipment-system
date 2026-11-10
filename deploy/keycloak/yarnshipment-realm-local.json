@@ -35,10 +35,6 @@
         "description": "Rol: warehouse"
       },
       {
-        "name": "driver",
-        "description": "Rol: driver"
-      },
-      {
         "name": "subcontractor",
         "description": "Rol: subcontractor"
       },
@@ -127,20 +123,6 @@
           }
         },
         {
-          "name": "driver_id",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usermodel-attribute-mapper",
-          "consentRequired": false,
-          "config": {
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "userinfo.token.claim": "true",
-            "user.attribute": "driver_id",
-            "claim.name": "driver_id",
-            "jsonType.label": "String"
-          }
-        },
-        {
           "name": "site_ids",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-attribute-mapper",
@@ -202,20 +184,6 @@
             "userinfo.token.claim": "true",
             "user.attribute": "subcontractor_id",
             "claim.name": "subcontractor_id",
-            "jsonType.label": "String"
-          }
-        },
-        {
-          "name": "driver_id",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usermodel-attribute-mapper",
-          "consentRequired": false,
-          "config": {
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "userinfo.token.claim": "true",
-            "user.attribute": "driver_id",
-            "claim.name": "driver_id",
             "jsonType.label": "String"
           }
         },
@@ -344,34 +312,6 @@
       },
       "realmRoles": [
         "manager"
-      ],
-      "credentials": [
-        {
-          "type": "password",
-          "value": "${KEYCLOAK_TEST_USER_PASSWORD}",
-          "temporary": false
-        }
-      ]
-    },
-    {
-      "id": "0192f0a0-0000-7000-8000-000000000105",
-      "username": "sofor",
-      "enabled": true,
-      "emailVerified": true,
-      "firstName": "Şener",
-      "lastName": "Şoför",
-      "email": "sofor@yarnshipment.local",
-      "attributes": {
-        "driver_id": [
-          "0192f0a0-0000-7000-8000-000000000004"
-        ],
-        "phone_number": ["+905550000005"],
-        "site_ids": [
-          "0192f0a0-0000-7000-8000-000000000001"
-        ]
-      },
-      "realmRoles": [
-        "driver"
       ],
       "credentials": [
         {

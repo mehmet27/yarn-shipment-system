@@ -13,7 +13,6 @@ const users = [
   { username: "depo", role: "warehouse" },
   { username: "kalite", role: "quality" },
   { username: "mudur", role: "manager" },
-  { username: "sofor", role: "driver", scopeClaim: "driver_id" },
   {
     username: "fasoncu",
     role: "subcontractor",

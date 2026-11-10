@@ -11,7 +11,6 @@ final class EventRecords {
 
     static final UUID SHIPMENT = UUID.fromString("0192f0a0-0000-7000-8000-0000000000a1");
     static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-0000000000a3");
-    static final UUID DRIVER = UUID.fromString("0192f0a0-0000-7000-8000-0000000000a2");
     static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-0000000000a4");
     static final String AT = "2026-11-03T08:00:00Z";
 

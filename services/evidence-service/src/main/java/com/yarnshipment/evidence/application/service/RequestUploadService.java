@@ -77,13 +77,12 @@ public class RequestUploadService implements RequestUploadUseCase {
     }
 
     /**
-     * Kalite itirazı teslim karşılaştırmasından sonra, sevkiyat tamamlanmış olsa bile 3 iş günü açılabilir; itiraz
-     * fotoğrafı ve lab belgesi bu yüzden kilide değil karşılaştırmaya bağlıdır. Diğer kanıtlar kilitli sevkiyata
-     * eklenemez.
+     * Kalite itirazı sevkiyat tamamlandıktan sonra açılır; itiraz fotoğrafı ve lab belgesi bu yüzden tamamlanmış
+     * sevkiyata eklenir. Diğer kanıtlar (irsaliye dahil) kilitli sevkiyata eklenemez.
      */
     private static boolean isClosedFor(EvidenceType type, ShipmentSnapshot shipment) {
         if (type.stages().contains(UploadStage.CLAIM)) {
-            return !shipment.comparisonDone();
+            return !shipment.completed();
         }
         return shipment.locked();
     }

@@ -1,10 +1,8 @@
 package com.yarnshipment.reporting.adapter.in.web;
 
-import com.yarnshipment.reporting.adapter.in.web.api.model.PairStatsView;
 import com.yarnshipment.reporting.adapter.in.web.api.model.PartyStatsView;
 import com.yarnshipment.reporting.adapter.in.web.api.model.ShipmentRowView;
 import com.yarnshipment.reporting.adapter.in.web.api.model.SubcontractorBalanceView;
-import com.yarnshipment.reporting.domain.model.PairStats;
 import com.yarnshipment.reporting.domain.model.PartyStats;
 import com.yarnshipment.reporting.domain.model.ShipmentRow;
 import com.yarnshipment.reporting.domain.model.SubcontractorBalance;
@@ -12,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import org.jspecify.annotations.Nullable;
 
-/** Şoför, fasoncu ve eşleşme göstergelerini sözleşme tiplerine çevirir. */
+/** Fasoncu göstergelerini, bakiyeyi ve sevkiyat satırlarını sözleşme tiplerine çevirir. */
 final class PartyViews {
 
     private PartyViews() {}
@@ -22,17 +20,6 @@ final class PartyViews {
                 stats.id(),
                 stats.shipmentCount(),
                 stats.discrepantShipmentCount(),
-                stats.discrepancyRate().toPlainString(),
-                stats.averageAbsoluteDiffKg().toPlainString());
-    }
-
-    static PairStatsView toView(PairStats stats) {
-        return new PairStatsView(
-                stats.driverId(),
-                stats.subcontractorId(),
-                stats.shipmentCount(),
-                stats.discrepantShipmentCount(),
-                stats.discrepancyCount(),
                 stats.discrepancyRate().toPlainString(),
                 stats.averageAbsoluteDiffKg().toPlainString());
     }
@@ -56,7 +43,6 @@ final class PartyViews {
                 row.hadDiscrepancy(),
                 row.createdAt().atOffset(ZoneOffset.UTC));
         var comparison = row.comparison();
-        view.setDriverId(row.driverId());
         view.setDispatchNetKg(plain(comparison.dispatchNetKg()));
         view.setDeliveryNetKg(plain(comparison.deliveryNetKg()));
         view.setDiffKg(plain(comparison.diffKg()));

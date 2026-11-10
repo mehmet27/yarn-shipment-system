@@ -17,9 +17,8 @@ final class ShipmentMapper {
                 ShipmentStatus.valueOf(entity.getStatus()),
                 entity.getParties().toDomain(),
                 new PlannedLoad(entity.getPlannedBagCount(), entity.getPlannedNetKg()),
-                sides.side(entity.getId(), ShipmentSides.DISPATCH),
-                sides.side(entity.getId(), ShipmentSides.DELIVERY),
-                entity.isRandomCheckSelected(),
+                sides.dispatchWeighing(entity.getId()),
+                entity.getWaybillNo(),
                 entity.getCreatedAt());
     }
 }

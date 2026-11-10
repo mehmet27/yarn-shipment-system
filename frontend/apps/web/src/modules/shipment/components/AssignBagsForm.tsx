@@ -2,7 +2,7 @@ import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Group, Stack, TextInput } from '@iplik/ui';
 import { useState } from 'react';
-import { addBagKey } from '../delivery/deliveryDraft';
+import { addBagKey } from './bagKeys';
 import { useAssignBags } from '../hooks/useAssignBags';
 import { assignErrorKey } from './assignErrors';
 import { PendingKeys } from './PendingKeys';

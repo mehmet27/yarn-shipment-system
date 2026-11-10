@@ -1,26 +1,17 @@
 import type { ShipmentDetail } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Group, Paper, ProgressSteps, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
-import { findDriverName, findSealNo } from './shipmentViews';
+import { findDriverName } from './shipmentViews';
 import { useFieldText } from './useFieldText';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
-import { toProgressDone } from './progressSteps';
+import { PROGRESS_STATUSES, toProgressDone } from './progressSteps';
 import { toStatusColor } from './statusColor';
-
-const STEP_STATUSES = [
-  'DRAFT',
-  'LOADED',
-  'IN_TRANSIT',
-  'AWAITING_DELIVERY',
-  'CHECKING',
-  'COMPLETED',
-] as const;
 
 export type ShipmentHeaderProps = {
   shipment: ShipmentDetail;
 };
 
-/** Bölüm 19: sevkiyat dosyasının üst kartı; fasoncu, şoför, araç ve durum. */
+/** Sevkiyat dosyasının üst kartı; fasoncu, şoför, araç, irsaliye ve durum. */
 export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
   const { t } = useTranslation();
   const text = useFieldText();
@@ -28,7 +19,10 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
     { labelKey: 'shipment.field.subcontractor', value: shipment.subcontractorTitle },
     { labelKey: 'shipment.field.driver', value: text(findDriverName(shipment)) },
     { labelKey: 'shipment.field.plate', value: shipment.plateNo ?? t('common.notRecorded') },
-    { labelKey: 'shipment.field.sealNo', value: text(findSealNo(shipment)) },
+    {
+      labelKey: 'shipment.field.waybillNo',
+      value: ('waybillNo' in shipment ? shipment.waybillNo : undefined) ?? t('common.notRecorded'),
+    },
   ];
   return (
     <Paper
@@ -46,7 +40,7 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
         {shipment.status === 'CANCELLED' ? null : (
           <ProgressSteps
             label={t('shipment.progress.steps')}
-            steps={STEP_STATUSES.map((status) => t(`shipment.progress.step.${status}`))}
+            steps={PROGRESS_STATUSES.map((status) => t(`shipment.progress.step.${status}`))}
             current={toProgressDone(shipment.status) - 1}
           />
         )}

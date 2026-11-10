@@ -10,8 +10,9 @@ info:
     - Kilo değerleri ondalık dize olarak taşınır, ör. `"1982.500"` (API-03).
     - Zamanlar ISO 8601 UTC (API-03).
     - Liste uçları sayfalıdır, `page` 0'dan başlar (API-06).
-    - Kör giriş (SEC-05): fasoncu ve şoför görünümlerinde karşı tarafın tartı alanları ve beklenen çuval
-      sayısı hiç yer almaz; depo görünümünde teslim alanları yer almaz. Görünüm `audience` alanıyla ayrılır.
+    - Akış (saha analizi, 10.11.2026): müdür sevkiyatı açar (DRAFT), depo çıkış tartımını girer
+      (AWAITING_DELIVERY), irsaliye müdüre ulaşınca müdür sevkiyatı tamamlar (COMPLETED). Görünüm `audience`
+      alanıyla ayrılır; fasoncu görünümünde beklenen yük yer almaz.
     - Butonlar yalnızca `allowedActions` listesine göre gösterilir (FE-SEC-03).
 servers:
   - url: /
@@ -22,7 +23,6 @@ tags:
   - name: ShipmentBags
   - name: ShipmentCancellation
   - name: ShipmentCorrection
-  - name: ShipmentArrival
   - name: MasterData
   - name: SubcontractorManagement
   - name: DriverManagement
@@ -90,8 +90,8 @@ paths:
       tags: [Shipments]
       operationId: listShipments
       summary: Kapsamdaki sevkiyatlar, en yeni önce
-      description: Fasoncu yalnızca kendi, şoför yalnızca kendisine atanmış, iç kullanıcılar yalnızca yetkili
-        oldukları lokasyonlardaki sevkiyatları görür. Filtre sorguya eklenir (SEC-03).
+      description: Fasoncu yalnızca kendi, iç kullanıcılar yalnızca yetkili oldukları lokasyonlardaki
+        sevkiyatları görür. Filtre sorguya eklenir (SEC-03).
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
@@ -143,129 +143,14 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /api/v1/shipments/{shipmentId}/pickup-confirmation:
-    post:
-      tags: [Shipments]
-      operationId: confirmPickup
-      summary: Şoför yükü teslim aldığını beyan eder (LOADED → IN_TRANSIT)
-      description: |
-        Gövde yoktur; şoför çıkışta kaydedilen çuval sayısını ve mühür numarasını onaylar. Yalnızca sevkiyata
-        atanmış şoför çağırabilir (`allowedActions` içinde `CONFIRM_PICKUP`). Aynı sevkiyat için tekrar gönderilen
-        istek (zayıf bağlantıda yeniden deneme) yeni kayıt oluşturmaz ve yine 204 döner.
-      parameters:
-        - name: shipmentId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - $ref: '#/components/parameters/IdempotencyKey'
-      responses:
-        '204':
-          description: Beyan kaydedildi, sevkiyat yolda
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-  /api/v1/shipments/{shipmentId}/arrival-declaration:
-    post:
-      tags: [ShipmentArrival]
-      operationId: declareArrival
-      summary: Şoför fasoncuya vardığını beyan eder (IN_TRANSIT → AWAITING_DELIVERY)
-      description: |
-        Şoför varış zamanını (sunucu saati) ve mührün sağlam olup olmadığını bildirir. Yalnızca sevkiyata atanmış
-        şoför çağırabilir (`allowedActions` içinde `DECLARE_ARRIVAL`). Mühür hasarlı beyanı sevkiyatı durdurmaz;
-        karşılaştırma discrepancy-service'tedir. Aynı sevkiyat için tekrar gönderilen istek (zayıf bağlantıda
-        yeniden deneme) yeni kayıt oluşturmaz ve yine 204 döner.
-      parameters:
-        - name: shipmentId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - $ref: '#/components/parameters/IdempotencyKey'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ArrivalDeclarationRequest'
-      responses:
-        '204':
-          description: Beyan kaydedildi, sevkiyat teslim bekliyor
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-  /api/v1/shipments/{shipmentId}/delivery-receipt:
-    post:
-      tags: [Shipments]
-      operationId: submitDeliveryReceipt
-      summary: Fasoncu kör teslim girişini gönderir (AWAITING_DELIVERY → CHECKING)
-      description: |
-        Fasoncu çıkış tartısını, beklenen yükü ve çıkış mühür numarasını görmeden kendi ölçümünü girer (SEC-05).
-        Gönderilen tutanak kilitlenir, değişiklik yalnızca düzeltme talebiyle yapılır. Okutulan anahtar listede
-        yoksa da saklanır; eşleşme karşılaştırması discrepancy-service'tedir. Aynı sevkiyat için tekrar gönderilen
-        istek yeni kayıt oluşturmaz ve yine 204 döner. `signedDocumentEvidenceId` verilirse evidence-service'te bu
-        sevkiyata ait, türü `SIGNED_DELIVERY_DOC` olan bir kanıt olmalıdır; aksi halde 422
-        `DELIVERY_EVIDENCE_INVALID` döner.
-      parameters:
-        - name: shipmentId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - $ref: '#/components/parameters/IdempotencyKey'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeliveryReceiptRequest'
-      responses:
-        '204':
-          description: Tutanak kaydedildi, sevkiyat kontrolde
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '422':
-          description: İmzalı irsaliye kanıtı bulunamadı, başka sevkiyata ait ya da türü yanlış (DELIVERY_EVIDENCE_INVALID)
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-        '502':
-          $ref: '#/components/responses/BadGateway'
   /api/v1/shipments/{shipmentId}/dispatch-weighing:
     post:
       tags: [Shipments]
       operationId: recordDispatchWeighing
-      summary: Depo çıkış tartımını ve mührü kaydeder (DRAFT → LOADED)
+      summary: Depo çıkış tartımını kaydeder (DRAFT → AWAITING_DELIVERY)
       description: |
-        Depo çalışanı kantar fişindeki brüt, dara ve çuval sayısını ile araca vurulan mühür numarasını girer.
-        Net kilo brüt ile daradan hesaplanır. Mühür numarası tek kullanımlıktır: başka bir sevkiyatın çıkışında
-        kullanılmışsa 409 döner. Kayıtla birlikte sevkiyat yüklendi sayılır. Aynı sevkiyat için tekrar gönderilen
+        Depo çalışanı kantar fişindeki brüt, dara ve çuval sayısını girer. Net kilo brüt ile daradan hesaplanır.
+        Kayıtla birlikte sevkiyat çıkış yapmış ve teslim bekliyor sayılır. Aynı sevkiyat için tekrar gönderilen
         istek yeni kayıt oluşturmaz ve yine 204 döner.
       parameters:
         - name: shipmentId
@@ -283,7 +168,7 @@ paths:
               $ref: '#/components/schemas/DispatchWeighingRequest'
       responses:
         '204':
-          description: Tartım ve mühür kaydedildi, sevkiyat yüklendi
+          description: Tartım kaydedildi, sevkiyat teslim bekliyor
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -294,6 +179,51 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+  /api/v1/shipments/{shipmentId}/completion:
+    post:
+      tags: [Shipments]
+      operationId: completeShipment
+      summary: İrsaliye müdüre ulaştı, sevkiyatı tamamlar (AWAITING_DELIVERY → COMPLETED)
+      description: |
+        Müdür irsaliye belgesini önce evidence-service'e WAYBILL türüyle yükler, sonra irsaliye numarası ve belgenin
+        kimliğiyle bu ucu çağırır; sevkiyat tamamlanır ve kilitlenir. Belge yoksa, başka sevkiyata aitse ya da irsaliye
+        değilse 422 WAYBILL_EVIDENCE_INVALID döner. Aynı irsaliye numarasıyla tekrar gönderilen istek yeni kayıt
+        oluşturmaz ve yine 204 döner.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteShipmentRequest'
+      responses:
+        '204':
+          description: Sevkiyat tamamlandı
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          description: İrsaliye belgesi geçersiz (WAYBILL_EVIDENCE_INVALID)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   # Ana veri okuma uçları. Ayrı master-data servisi gelene kadar shipment-service içinde, kendi paketinde ve etiketiyle
   # durur; taşınırken yol ve sözleşme değişmez. İzin: MASTER_DATA_VIEW.
   /api/v1/master-data/subcontractors:
@@ -549,46 +479,6 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /api/v1/master-data/drivers/{driverId}/login-account:
-    post:
-      tags: [DriverManagement]
-      operationId: createDriverLoginAccount
-      summary: Şoför için giriş hesabı açar
-      description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Keycloak'ta kullanıcıyı şifresiz; rol, telefon ve kimlik/lokasyon
-        öznitelikleriyle açar. Şifre üretilmez ve hiçbir yanıtta yer almaz: kişiye SMS ile bir kod gider, kişi giriş
-        sayfasındaki "Şifremi unuttum" ile kodu girip kendi şifresini belirler. SMS gidemezse 502 `SMS_UNAVAILABLE`
-        (hesap açık kalır; yönetici sıfırlamayı yeniden başlatır). Kayıt etkin olmalı, `siteIds` etkin lokasyonlardan oluşmalıdır (`INVALID_MASTER_DATA`). Kayıt için
-        hesap zaten varsa ya da giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak'a ulaşılamazsa ya da
-        yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
-      parameters:
-        - name: driverId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginAccountRequest'
-      responses:
-        '201':
-          description: Hesap açıldı, şifre belirleme kodu SMS'le gönderildi
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '502':
-          $ref: '#/components/responses/BadGateway'
   /api/v1/master-data/subcontractors/{subcontractorId}/login-account:
     post:
       tags: [SubcontractorManagement]
@@ -732,7 +622,7 @@ paths:
       description: |
         Yalnızca yönetici (USER_MANAGE). Kullanıcının fabrika içi rolünü (depo, kalite, müdür, yönetici) yenisiyle
         değiştirir ve açık oturumlarını kapatır; kişi yeni rolle yeniden giriş yapar. Kişi kendi rolünü değiştiremez
-        (400 `INVALID_MASTER_DATA`, `userId`). Şoför ve fasoncu hesapları kayda bağlı olduğundan değiştirilemez
+        (400 `INVALID_MASTER_DATA`, `userId`). Fasoncu hesapları kayda bağlı olduğundan değiştirilemez
         (409 `LOGIN_ACCOUNT_ROLE_LOCKED`). Kullanıcı yoksa 404 `LOGIN_ACCOUNT_NOT_FOUND`.
       parameters:
         - name: userId
@@ -1733,13 +1623,13 @@ paths:
     post:
       tags: [ShipmentCancellation]
       operationId: cancelShipment
-      summary: Yola çıkmamış sevkiyatı iptal eder
+      summary: Tamamlanmamış sevkiyatı iptal eder
       description: |
-        Yalnızca yönetici (SHIPMENT_CANCEL). Taslak (DRAFT) ya da çıkış tartımı yapılmış (LOADED) sevkiyat iptal
-        edilir; gerekçe zorunludur. Sevkiyata atanmış çuvallar bag-service'te serbest bırakılır ve yeniden
+        Müdür ya da yönetici (SHIPMENT_CANCEL). Taslak (DRAFT) ya da teslim bekleyen (AWAITING_DELIVERY) sevkiyat
+        iptal edilir, ör. kantar farkı nedeniyle durdurulan sevkiyat; gerekçe zorunludur. Sevkiyata atanmış çuvallar bag-service'te serbest bırakılır ve yeniden
         kullanılabilir olur. Çuval servisi yanıt vermezse iptal de yapılmaz (`BAG_SERVICE_UNAVAILABLE`) ve istek
-        güvenle tekrarlanır. Zaten iptal edilmiş sevkiyata gelen istek başarılı döner. Yola çıkmış sevkiyat
-        iptal edilemez (`INVALID_SHIPMENT_STATUS`).
+        güvenle tekrarlanır. Zaten iptal edilmiş sevkiyata gelen istek başarılı döner. Tamamlanmış sevkiyat iptal
+        edilemez (`INVALID_SHIPMENT_STATUS`).
       parameters:
         - name: shipmentId
           in: path
@@ -1773,13 +1663,13 @@ paths:
     post:
       tags: [ShipmentCorrection]
       operationId: recordCorrection
-      summary: Tartım ya da mühür numarasını gerekçeyle düzeltir
+      summary: Çıkış tartımını gerekçeyle düzeltir
       description: |
         Yalnızca Admin (CORRECTION_CREATE). Tamamlanıp kilitlenmiş sevkiyatta da çalışır (rapor 7.8). Kayıt
         güncellenmez: yeni satır eklenir, eski değer hem eski satırda hem düzeltme kaydında saklanır. Tartım
         düzeltmesinde brüt ve dara birlikte gönderilir; çuval sayısı ve tartım zamanı aynen kalır. Düzeltilecek kayıt
-        yoksa, yeni değer eskisiyle aynıysa ya da gerekçe boşsa `INVALID_CORRECTION`; mühür numarası başka sevkiyatta
-        kullanılmışsa `SEAL_ALREADY_USED`; kayıt bu arada başka düzeltmeyle değiştiyse `CORRECTION_CONFLICT`. Aynı
+        yoksa, yeni değer eskisiyle aynıysa ya da gerekçe boşsa `INVALID_CORRECTION`; kayıt bu arada başka
+        düzeltmeyle değiştiyse `CORRECTION_CONFLICT`. Aynı
         `Idempotency-Key` ile tekrar gelen istek düzeltmeyi yeniden uygulamaz, ilk kaydı döner.
       parameters:
         - name: shipmentId
@@ -1886,9 +1776,7 @@ paths:
       operationId: getShipmentBags
       summary: Sevkiyatın çuvalları, isteyenin görünümüyle
       description: |
-        Kör giriş (SEC-05): çıkışta atanan çuval listesi (`dispatchBags`) fasoncu ve şoför görünümünde,
-        teslimde okutulanlar (`deliveryScans`) depo ve şoför görünümünde hiç yer almaz. Teslim okutmaları teslim
-        kaydı gönderildikten sonra oluşur; önce boştur. Listeler sayfalanmaz: bir sevkiyatın çuval sayısıyla sınırlıdır.
+        Çıkışta atanan çuvallar. Liste sayfalanmaz: bir sevkiyatın çuval sayısıyla sınırlıdır.
       parameters:
         - name: shipmentId
           in: path
@@ -2071,7 +1959,7 @@ components:
       example: '1982.500'
     Role:
       type: string
-      enum: [ADMIN, WAREHOUSE, DRIVER, SUBCONTRACTOR, QUALITY, MANAGER]
+      enum: [ADMIN, WAREHOUSE, SUBCONTRACTOR, QUALITY, MANAGER]
     Permission:
       type: string
       enum:
@@ -2084,15 +1972,10 @@ components:
         - SHIPMENT_VIEW
         - SHIPMENT_CREATE
         - SHIPMENT_CANCEL
+        - SHIPMENT_COMPLETE
         - DISPATCH_RECORD
         - DISPATCH_VIEW
-        - DRIVER_DECLARATION_RECORD
-        - DRIVER_DECLARATION_VIEW
-        - DELIVERY_RECORD
-        - DELIVERY_VIEW
         - EVIDENCE_UPLOAD_DISPATCH
-        - EVIDENCE_UPLOAD_DRIVER
-        - EVIDENCE_UPLOAD_DELIVERY
         - EVIDENCE_UPLOAD_CLAIM
         - EVIDENCE_VIEW
         - EVIDENCE_INVALIDATE
@@ -2128,15 +2011,11 @@ components:
           description: Yalnızca fasoncu kullanıcılarında
           type: string
           format: uuid
-        driverId:
-          description: Yalnızca şoför kullanıcılarında
-          type: string
-          format: uuid
         mfaVerified:
           type: boolean
     ShipmentStatus:
       type: string
-      enum: [DRAFT, LOADED, IN_TRANSIT, AWAITING_DELIVERY, CHECKING, IN_REVIEW, COMPLETED, CANCELLED]
+      enum: [DRAFT, AWAITING_DELIVERY, COMPLETED, CANCELLED]
     ShipmentAction:
       description: Kullanıcının bu sevkiyatta şu an yapabileceği işlem; buton yalnızca listede varsa gösterilir.
       type: string
@@ -2144,9 +2023,7 @@ components:
         - ASSIGN_BAGS
         - RECORD_DISPATCH
         - CANCEL
-        - CONFIRM_PICKUP
-        - DECLARE_ARRIVAL
-        - RECORD_DELIVERY
+        - COMPLETE
         - OPEN_QUALITY_CLAIM
         - CREATE_CORRECTION
     PageMetadata:
@@ -2176,7 +2053,7 @@ components:
         page:
           $ref: '#/components/schemas/PageMetadata'
     ShipmentSummaryView:
-      description: Liste satırı. Kör girişe tabi alan taşımaz, bu yüzden tüm rollerde aynıdır.
+      description: Liste satırı; tüm rollerde aynıdır.
       type: object
       required: [shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle, createdAt, allowedActions]
       properties:
@@ -2210,7 +2087,7 @@ components:
     Audience:
       description: Görünüm türü; hangi alanların bulunacağını belirler.
       type: string
-      enum: [INTERNAL, WAREHOUSE, SUBCONTRACTOR, DRIVER]
+      enum: [INTERNAL, WAREHOUSE, SUBCONTRACTOR]
     WeighingView:
       type: object
       required: [grossKg, tareKg, netKg, bagCount, weighedAt]
@@ -2236,59 +2113,17 @@ components:
         tareAlert:
           type: boolean
           description: Dara, kayıt anındaki standarttan izin verilenden fazla saptı. Standart tanımsızsa false ve sapma alanları yok
-    SealCondition:
-      type: string
-      enum: [INTACT, DAMAGED, MISSING]
     ScanMethod:
       description: Çuval anahtarının nasıl girildiği
       type: string
       enum: [SCAN, LIST, MANUAL]
-    ArrivalDeclarationRequest:
-      type: object
-      required: [sealIntact]
-      properties:
-        sealIntact:
-          type: boolean
-          description: Varışta mühür sağlam mı; hasarlı ya da yoksa false
-    DeliveryReceiptRequest:
-      type: object
-      required: [grossKg, tareKg, bagCount, sealCondition, bagUniqueKeys]
-      properties:
-        grossKg:
-          $ref: '#/components/schemas/Kg'
-        tareKg:
-          $ref: '#/components/schemas/Kg'
-        bagCount:
-          description: Tartılan çuval sayısı
-          type: integer
-          format: int32
-          minimum: 1
-        sealCondition:
-          $ref: '#/components/schemas/SealCondition'
-        sealNo:
-          description: Mühür üzerindeki numara; mühür yoksa (MISSING) boş bırakılır
-          type: string
-          minLength: 1
-          maxLength: 64
-        bagUniqueKeys:
-          description: Okutulan çuval anahtarları; tekrar edenler bir kez sayılır
-          type: array
-          maxItems: 2000
-          items:
-            type: string
-            minLength: 1
-            maxLength: 64
-        scanMethod:
-          $ref: '#/components/schemas/ScanMethod'
-        document:
-          $ref: '#/components/schemas/DeliveryDocument'
     CorrectionTarget:
       description: |
-        Düzeltilen kayıt: çıkış ya da teslim tartımı (brüt ve dara), çıkış ya da teslim mühür numarası
+        Düzeltilen kayıt: çıkış tartımı (brüt ve dara)
       type: string
-      enum: [DISPATCH_WEIGHING, DELIVERY_WEIGHING, DISPATCH_SEAL_NO, DELIVERY_SEAL_NO]
+      enum: [DISPATCH_WEIGHING]
     RecordCorrectionRequest:
-      description: Tartım düzeltmesinde grossKg ve tareKg, mühür düzeltmesinde sealNo zorunludur.
+      description: Brüt ve dara tartım düzeltmesinde zorunludur; eksikse 400 INVALID_CORRECTION döner.
       type: object
       required: [target, reason]
       properties:
@@ -2298,17 +2133,13 @@ components:
           $ref: '#/components/schemas/Kg'
         tareKg:
           $ref: '#/components/schemas/Kg'
-        sealNo:
-          type: string
-          minLength: 1
-          maxLength: 64
         reason:
           type: string
           minLength: 1
           maxLength: 500
     CorrectionView:
       description: |
-        Bir düzeltme. Tartımda değerler `gross=… tare=… net=…` biçimindedir (kilo, üç ondalık), mühürde numaradır.
+        Bir düzeltme. Değerler `gross=… tare=… net=…` biçimindedir (kilo, üç ondalık).
       type: object
       required: [id, target, reason, status, requestedBy, createdAt]
       properties:
@@ -2343,6 +2174,19 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CorrectionView'
+    CompleteShipmentRequest:
+      type: object
+      required: [waybillNo, waybillEvidenceId]
+      properties:
+        waybillNo:
+          description: Müdüre ulaşan irsaliyenin numarası
+          type: string
+          minLength: 1
+          maxLength: 64
+        waybillEvidenceId:
+          description: evidence-service'e WAYBILL türüyle yüklenen irsaliye belgesinin kimliği
+          type: string
+          format: uuid
     CancelShipmentRequest:
       type: object
       required: [reason]
@@ -3004,20 +2848,15 @@ components:
           type: string
     ShipmentBagsResponse:
       type: object
-      required: [audience]
+      required: [audience, dispatchBags]
       properties:
         audience:
           $ref: '#/components/schemas/Audience'
         dispatchBags:
-          description: Çıkışta atanan çuvallar; yalnızca INTERNAL ve WAREHOUSE görünümünde
+          description: Çıkışta atanan çuvallar
           type: array
           items:
             $ref: '#/components/schemas/DispatchBagView'
-        deliveryScans:
-          description: Teslimde okutulan anahtarlar; yalnızca INTERNAL ve SUBCONTRACTOR görünümünde
-          type: array
-          items:
-            $ref: '#/components/schemas/DeliveryScanView'
     DispatchBagView:
       type: object
       required: [bagId, uniqueKey, packageType, lotNo, qualityGradeCode, scanMethod, assignedAt]
@@ -3038,26 +2877,9 @@ components:
         assignedAt:
           type: string
           format: date-time
-    DeliveryScanView:
-      type: object
-      required: [scannedKey, scanMethod, scannedAt]
-      properties:
-        scannedKey:
-          type: string
-        matched:
-          description: Anahtar çıkış listesinde var mıydı; yalnızca INTERNAL görünümünde dolu olur
-          type: boolean
-        # Eşleşen çıkış çuvalının ambalaj türü; yalnızca INTERNAL görünümünde ve eşleşmede dolu olur
-        packageType:
-          $ref: '#/components/schemas/PackagingType'
-        scanMethod:
-          $ref: '#/components/schemas/ScanMethod'
-        scannedAt:
-          type: string
-          format: date-time
     DispatchWeighingRequest:
       type: object
-      required: [grossKg, tareKg, bagCount, sealNo]
+      required: [grossKg, tareKg, bagCount]
       properties:
         grossKg:
           $ref: '#/components/schemas/Kg'
@@ -3073,50 +2895,23 @@ components:
           type: string
           minLength: 1
           maxLength: 64
-        sealNo:
-          description: Araca vurulan mühür numarası
-          type: string
-          minLength: 1
-          maxLength: 64
-    DeliveryDocument:
-      description: İrsaliye üzerindeki değerler (fasoncunun okuduğu haliyle)
-      type: object
-      properties:
-        shipmentNo:
-          type: string
-          maxLength: 64
-        date:
-          type: string
-          format: date
-        netKg:
-          $ref: '#/components/schemas/Kg'
-        bagCount:
-          type: integer
-          format: int32
-          minimum: 0
-        signedDocumentEvidenceId:
-          description: evidence-service'e yüklenmiş imzalı irsaliye fotoğrafı
-          type: string
-          format: uuid
     ShipmentDetailResponse:
-      description: İsteyenin rolüne göre dört görünümden biri (API-09, SEC-05).
+      description: İsteyenin rolüne göre üç görünümden biri (API-09).
       oneOf:
         - $ref: '#/components/schemas/InternalShipmentView'
         - $ref: '#/components/schemas/WarehouseShipmentView'
         - $ref: '#/components/schemas/SubcontractorShipmentView'
-        - $ref: '#/components/schemas/DriverShipmentView'
       discriminator:
         propertyName: audience
         mapping:
           INTERNAL: '#/components/schemas/InternalShipmentView'
           WAREHOUSE: '#/components/schemas/WarehouseShipmentView'
           SUBCONTRACTOR: '#/components/schemas/SubcontractorShipmentView'
-          DRIVER: '#/components/schemas/DriverShipmentView'
     InternalShipmentView:
-      description: Admin, kalite ve yönetici. Her iki tarafın verisini içerir.
+      description: Admin, kalite ve müdür.
       type: object
-      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle,
-                 randomCheckSelected, createdAt, allowedActions]
+      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle, createdAt,
+                 allowedActions]
       properties:
         audience:
           $ref: '#/components/schemas/Audience'
@@ -3146,17 +2941,9 @@ components:
           $ref: '#/components/schemas/Kg'
         dispatchWeighing:
           $ref: '#/components/schemas/WeighingView'
-        dispatchSealNo:
+        waybillNo:
+          description: Tamamlanırken girilen irsaliye numarası
           type: string
-        deliveryWeighing:
-          $ref: '#/components/schemas/WeighingView'
-        deliverySealCondition:
-          $ref: '#/components/schemas/SealCondition'
-        randomCheckSelected:
-          type: boolean
-        lockedAt:
-          type: string
-          format: date-time
         createdAt:
           type: string
           format: date-time
@@ -3165,10 +2952,10 @@ components:
           items:
             $ref: '#/components/schemas/ShipmentAction'
     WarehouseShipmentView:
-      description: Depo. Teslim tarafının alanlarını hiç içermez (kör giriş).
+      description: Depo.
       type: object
-      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle,
-                 randomCheckSelected, createdAt, allowedActions]
+      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle, createdAt,
+                 allowedActions]
       properties:
         audience:
           $ref: '#/components/schemas/Audience'
@@ -3198,10 +2985,9 @@ components:
           $ref: '#/components/schemas/Kg'
         dispatchWeighing:
           $ref: '#/components/schemas/WeighingView'
-        dispatchSealNo:
+        waybillNo:
+          description: Tamamlanırken girilen irsaliye numarası
           type: string
-        randomCheckSelected:
-          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -3210,8 +2996,7 @@ components:
           items:
             $ref: '#/components/schemas/ShipmentAction'
     SubcontractorShipmentView:
-      description: Fasoncu. Çıkış tartısı, beklenen çuval sayısı ve rastgele kontrol seçimi alanlarını hiç içermez
-        (SEC-05, SEC-08). Karşılaştırma sonucu discrepancy-service'ten okunur.
+      description: Fasoncu. Beklenen yükü içermez.
       type: object
       required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorTitle, createdAt, allowedActions]
       properties:
@@ -3233,43 +3018,8 @@ components:
           type: string
         plateNo:
           type: string
-        deliveryWeighing:
+        dispatchWeighing:
           $ref: '#/components/schemas/WeighingView'
-        deliverySealCondition:
-          $ref: '#/components/schemas/SealCondition'
-        createdAt:
-          type: string
-          format: date-time
-        allowedActions:
-          type: array
-          items:
-            $ref: '#/components/schemas/ShipmentAction'
-    DriverShipmentView:
-      description: Şoför. Kilo alanı içermez; yalnızca çıkıştaki çuval sayısı ve mühür numarası (karar Y1, SEC-05).
-      type: object
-      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorTitle, createdAt, allowedActions]
-      properties:
-        audience:
-          $ref: '#/components/schemas/Audience'
-        shipmentId:
-          type: string
-          format: uuid
-        shipmentNo:
-          type: string
-        siteId:
-          type: string
-          format: uuid
-        status:
-          $ref: '#/components/schemas/ShipmentStatus'
-        subcontractorTitle:
-          type: string
-        plateNo:
-          type: string
-        dispatchBagCount:
-          type: integer
-          format: int32
-        dispatchSealNo:
-          type: string
         createdAt:
           type: string
           format: date-time

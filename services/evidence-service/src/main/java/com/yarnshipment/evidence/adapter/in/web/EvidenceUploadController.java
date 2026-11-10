@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class EvidenceUploadController implements EvidenceUploadsApi {
 
-    private static final String ANY_UPLOAD = "hasAnyAuthority('EVIDENCE_UPLOAD_DISPATCH', 'EVIDENCE_UPLOAD_DRIVER',"
-            + " 'EVIDENCE_UPLOAD_DELIVERY', 'EVIDENCE_UPLOAD_CLAIM')";
+    private static final String ANY_UPLOAD =
+            "hasAnyAuthority('EVIDENCE_UPLOAD_DISPATCH', 'SHIPMENT_COMPLETE', 'EVIDENCE_UPLOAD_CLAIM')";
 
     private final RequestUploadUseCase requestUpload;
     private final ConfirmUploadUseCase confirmUpload;

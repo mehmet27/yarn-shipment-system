@@ -11,24 +11,19 @@ class ShipmentStatusTest {
 
     @ParameterizedTest
     @CsvSource({
-        "DRAFT, LOADED",
+        "DRAFT, AWAITING_DELIVERY",
         "DRAFT, CANCELLED",
-        "LOADED, IN_TRANSIT",
-        "LOADED, CANCELLED",
-        "IN_TRANSIT, AWAITING_DELIVERY",
-        "AWAITING_DELIVERY, CHECKING",
-        "CHECKING, COMPLETED",
-        "CHECKING, IN_REVIEW",
-        "IN_REVIEW, COMPLETED"
+        "AWAITING_DELIVERY, COMPLETED",
+        "AWAITING_DELIVERY, CANCELLED"
     })
-    @DisplayName("Rapor 7.2'deki geçişlere izin verilir")
+    @DisplayName("Saha analizindeki geçişlere izin verilir")
     void shouldAllowDocumentedTransitions(ShipmentStatus from, ShipmentStatus to) {
         // when / then
         assertThat(from.canTransitionTo(to)).isTrue();
     }
 
     @ParameterizedTest
-    @CsvSource({"IN_TRANSIT, CANCELLED", "AWAITING_DELIVERY, IN_TRANSIT", "DRAFT, COMPLETED", "IN_REVIEW, CHECKING"})
+    @CsvSource({"DRAFT, COMPLETED", "AWAITING_DELIVERY, DRAFT", "COMPLETED, CANCELLED", "CANCELLED, DRAFT"})
     @DisplayName("Tanımsız geçiş reddedilir")
     void shouldRejectUndocumentedTransitions(ShipmentStatus from, ShipmentStatus to) {
         // when / then

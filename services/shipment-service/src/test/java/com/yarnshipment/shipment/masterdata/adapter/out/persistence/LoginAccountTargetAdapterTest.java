@@ -27,7 +27,6 @@ class LoginAccountTargetAdapterTest {
     private static final PostgresTestDatabase DATABASE = PostgresTestDatabase.startIsolated();
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     private static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000003");
-    private static final UUID DRIVER = UUID.fromString("0192f0a0-0000-7000-8000-000000000004");
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -45,15 +44,14 @@ class LoginAccountTargetAdapterTest {
     }
 
     @Test
-    @DisplayName("Etkin şoför ve fasoncu bulunur; pasife alınan ya da olmayan kayıt bulunmaz")
+    @DisplayName("Etkin fasoncu bulunur; pasife alınan ya da olmayan kayıt bulunmaz")
     void shouldFindOnlyActiveRecords() {
-        assertThat(adapter.findActiveDriverName(DRIVER)).isPresent();
         assertThat(adapter.findActiveSubcontractorTitle(SUBCONTRACTOR)).isPresent();
-        assertThat(adapter.findActiveDriverName(UUID.randomUUID())).isEmpty();
+        assertThat(adapter.findActiveSubcontractorTitle(UUID.randomUUID())).isEmpty();
 
-        jdbc.update("UPDATE md_driver SET active = false WHERE id = ?", DRIVER);
+        jdbc.update("UPDATE md_subcontractor SET active = false WHERE id = ?", SUBCONTRACTOR);
 
-        assertThat(adapter.findActiveDriverName(DRIVER)).isEmpty();
+        assertThat(adapter.findActiveSubcontractorTitle(SUBCONTRACTOR)).isEmpty();
     }
 
     @Test

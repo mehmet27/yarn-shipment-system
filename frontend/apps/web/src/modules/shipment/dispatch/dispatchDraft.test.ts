@@ -7,7 +7,6 @@ const VALID: DispatchDraft = {
   tareKg: '17,5',
   bagCount: '40',
   scaleTicketNo: ' KF-1 ',
-  sealNo: ' M-77 ',
   ticket: { kind: 'READ' },
 };
 
@@ -21,7 +20,6 @@ describe('dispatchDraft', () => {
       grossKg: '2000.000',
       tareKg: '17.500',
       bagCount: 40,
-      sealNo: 'M-77',
       scaleTicketNo: 'KF-1',
     });
   });
@@ -34,8 +32,7 @@ describe('dispatchDraft', () => {
     expect(validateDispatch(EMPTY_DISPATCH_DRAFT)).toBe('invalidKg');
     expect(validateDispatch({ ...VALID, tareKg: '3.000' })).toBe('tareExceedsGross');
     expect(validateDispatch({ ...VALID, bagCount: '0' })).toBe('invalidBagCount');
-    expect(validateDispatch({ ...VALID, sealNo: ' ' })).toBe('sealNoRequired');
     expect(validateDispatch(VALID)).toBeUndefined();
-    expect(toDispatchRequest({ ...VALID, sealNo: '' })).toBeUndefined();
+    expect(toDispatchRequest({ ...VALID, ticket: undefined })).toBeUndefined();
   });
 });

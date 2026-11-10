@@ -2,11 +2,11 @@ package com.yarnshipment.events;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.yarnshipment.events.shipment.ShipmentArrived;
 import com.yarnshipment.events.shipment.ShipmentCancelled;
 import com.yarnshipment.events.shipment.ShipmentCompleted;
 import com.yarnshipment.events.shipment.ShipmentCreated;
 import com.yarnshipment.events.shipment.ShipmentDispatched;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -28,8 +28,7 @@ class ShipmentEventsTest {
     void shouldRoundTripShipmentLifecycle() {
         List<Object> events = List.of(
                 new ShipmentCreated(SHIPMENT, "SV-1", SITE, PARTY, AT),
-                new ShipmentDispatched(SHIPMENT, SITE, PARTY, BAGS, AT),
-                new ShipmentArrived(SHIPMENT, SITE, PARTY, true, AT),
+                new ShipmentDispatched(SHIPMENT, SITE, PARTY, BAGS, new BigDecimal("1260.500"), AT),
                 new ShipmentCompleted(SHIPMENT, SITE, AT),
                 new ShipmentCancelled(SHIPMENT, SITE, AT));
 

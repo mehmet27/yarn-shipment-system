@@ -5,11 +5,10 @@ import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.domain.bag.BagReservationException;
 import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
 import com.yarnshipment.shipment.domain.cancellation.InvalidCancellationException;
-import com.yarnshipment.shipment.domain.model.InvalidDeliveryException;
+import com.yarnshipment.shipment.domain.completion.InvalidCompletionException;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidNewShipmentException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
-import com.yarnshipment.shipment.domain.model.SealAlreadyUsedException;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicatePlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicateSubcontractorException;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
@@ -61,9 +60,9 @@ public final class ShipmentExceptionHandler {
         return problem;
     }
 
-    @ExceptionHandler(InvalidDeliveryException.class)
-    public ProblemDetail handleInvalidDelivery(InvalidDeliveryException exception, HttpServletRequest request) {
-        ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_DELIVERY");
+    @ExceptionHandler(InvalidCompletionException.class)
+    public ProblemDetail handleInvalidCompletion(InvalidCompletionException exception, HttpServletRequest request) {
+        ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_COMPLETION");
         problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
         return problem;
     }
@@ -80,11 +79,6 @@ public final class ShipmentExceptionHandler {
         ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_SHIPMENT");
         problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
         return problem;
-    }
-
-    @ExceptionHandler(SealAlreadyUsedException.class)
-    public ProblemDetail handleSealAlreadyUsed(HttpServletRequest request) {
-        return problem(request, HttpStatus.CONFLICT, "SEAL_ALREADY_USED");
     }
 
     @ExceptionHandler(BagReservationException.class)

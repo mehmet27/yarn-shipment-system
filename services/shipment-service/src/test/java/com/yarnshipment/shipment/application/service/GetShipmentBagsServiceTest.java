@@ -28,47 +28,26 @@ class GetShipmentBagsServiceTest {
             bagsPort);
 
     private ShipmentBags bagsFor(Actor actor) {
-        queryPort.add(TestShipments.shipment(ShipmentStatus.CHECKING));
+        queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
         return service.getBags(new GetShipmentBagsQuery(actor, TestShipments.SHIPMENT_ID));
     }
 
     @Test
-    @DisplayName("Depo yalnızca çıkış çuvallarını alır; teslim okutmaları hiç okunmaz")
-    void shouldGiveWarehouseOnlyDispatchBags() {
+    @DisplayName("Depo çıkış çuvallarını kendi görünümüyle alır")
+    void shouldGiveWarehouseDispatchBags() {
         ShipmentBags bags = bagsFor(TestTokens.actor("warehouse"));
 
         assertThat(bags.audience()).isEqualTo(ShipmentAudience.WAREHOUSE);
         assertThat(bags.dispatchBags()).hasSize(1);
-        assertThat(bags.deliveryScans()).isNull();
         assertThat(bagsPort.reads()).containsExactly("dispatch");
     }
 
     @Test
-    @DisplayName("Fasoncu yalnızca teslim okutmalarını alır; çıkış çuvalları hiç okunmaz")
-    void shouldGiveSubcontractorOnlyDeliveryScans() {
-        ShipmentBags bags = bagsFor(TestTokens.CONVERTER.toActor(TestTokens.subcontractorToken()));
-
-        assertThat(bags.dispatchBags()).isNull();
-        assertThat(bags.deliveryScans()).hasSize(1);
-        assertThat(bagsPort.reads()).containsExactly("delivery");
-    }
-
-    @Test
-    @DisplayName("Şoför hiçbir liste almaz ve hiçbir liste okunmaz")
-    void shouldGiveDriverNothing() {
-        ShipmentBags bags = bagsFor(TestTokens.CONVERTER.toActor(TestTokens.driverToken()));
-
-        assertThat(bags.dispatchBags()).isNull();
-        assertThat(bags.deliveryScans()).isNull();
-        assertThat(bagsPort.reads()).isEmpty();
-    }
-
-    @Test
-    @DisplayName("İç görünüm iki listeyi de alır")
-    void shouldGiveInternalBothLists() {
+    @DisplayName("İç görünüm çıkış çuvallarını alır")
+    void shouldGiveInternalDispatchBags() {
         ShipmentBags bags = bagsFor(TestTokens.actor("manager"));
 
+        assertThat(bags.audience()).isEqualTo(ShipmentAudience.INTERNAL);
         assertThat(bags.dispatchBags()).hasSize(1);
-        assertThat(bags.deliveryScans()).hasSize(1);
     }
 }

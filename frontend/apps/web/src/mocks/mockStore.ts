@@ -11,7 +11,7 @@ import { resetMockLoginAccounts } from './loginAccounts';
 import { resetMockLots } from './lots';
 import { resetMasterData } from './masterData';
 import { resetTareStandards } from './tareStandards';
-import { MOCK_SHIPMENTS } from './shipments';
+import { allowedActionsOf, MOCK_SHIPMENTS } from './shipments';
 
 /** Sahte API'nin değişebilir durumu; testler arasında resetMockStore ile sıfırlanır. */
 let shipments: InternalShipmentView[] = [...MOCK_SHIPMENTS];
@@ -30,36 +30,41 @@ export function updateMockShipmentStatus(shipmentId: string, status: ShipmentSta
   );
 }
 
-/** Çıkış tartısı: DRAFT → LOADED; tartı ve mühür sevkiyata yazılır. */
-export function recordMockDispatch(
-  shipmentId: string,
-  dispatchWeighing: Weighing,
-  dispatchSealNo: string,
-): void {
+/** Çıkış tartısı: DRAFT → AWAITING_DELIVERY; tartı sevkiyata yazılır. */
+export function recordMockDispatch(shipmentId: string, dispatchWeighing: Weighing): void {
   shipments = shipments.map((shipment) =>
     shipment.shipmentId === shipmentId
-      ? { ...shipment, status: 'LOADED', allowedActions: [], dispatchWeighing, dispatchSealNo }
+      ? {
+          ...shipment,
+          status: 'AWAITING_DELIVERY',
+          allowedActions: allowedActionsOf('AWAITING_DELIVERY'),
+          dispatchWeighing,
+        }
       : shipment,
   );
 }
 
-/** Admin düzeltmesi: tartım ya da mühür yeni değeriyle değişir (eskisi düzeltme kaydında kalır). */
-export function patchMockShipment(
-  shipmentId: string,
-  patch: Pick<
-    Partial<InternalShipmentView>,
-    'dispatchWeighing' | 'deliveryWeighing' | 'dispatchSealNo'
-  >,
-): void {
+/** İrsaliyeyle tamamlama: AWAITING_DELIVERY → COMPLETED; irsaliye numarası sevkiyata yazılır. */
+export function completeMockShipment(shipmentId: string, waybillNo: string): void {
   shipments = shipments.map((shipment) =>
-    shipment.shipmentId === shipmentId ? { ...shipment, ...patch } : shipment,
+    shipment.shipmentId === shipmentId
+      ? {
+          ...shipment,
+          status: 'COMPLETED',
+          allowedActions: allowedActionsOf('COMPLETED'),
+          waybillNo,
+        }
+      : shipment,
   );
 }
 
-/** Mühür numarası tek kullanımlıktır (başka sevkiyatın çıkışında kullanılmış olamaz). */
-export function isMockSealUsed(sealNo: string, exceptShipmentId: string): boolean {
-  return shipments.some(
-    (shipment) => shipment.dispatchSealNo === sealNo && shipment.shipmentId !== exceptShipmentId,
+/** Admin düzeltmesi: çıkış tartısı yeni değeriyle değişir (eskisi düzeltme kaydında kalır). */
+export function patchMockShipment(
+  shipmentId: string,
+  patch: Pick<Partial<InternalShipmentView>, 'dispatchWeighing'>,
+): void {
+  shipments = shipments.map((shipment) =>
+    shipment.shipmentId === shipmentId ? { ...shipment, ...patch } : shipment,
   );
 }
 
@@ -68,7 +73,6 @@ export function addMockShipment(request: CreateShipmentRequest): InternalShipmen
   const no = String(shipments.length + 1).padStart(4, '0');
   const created: InternalShipmentView = {
     audience: 'INTERNAL',
-    randomCheckSelected: false,
     shipmentId: `shp-${no}`,
     shipmentNo: `SVK-2026-${no}`,
     siteId: request.siteId,

@@ -1,6 +1,5 @@
 import type {
   DashboardView,
-  PairStatsView,
   PartyStatsView,
   ShipmentRowView,
   SubcontractorBalanceView,
@@ -26,9 +25,7 @@ export type ReportBundle = {
   from: string;
   to: string;
   dashboard: DashboardView;
-  drivers: PartyStatsView[];
   subcontractors: PartyStatsView[];
-  pairs: PairStatsView[];
   shipments: ShipmentRowView[];
   balances: SubcontractorBalanceView[];
 };
@@ -39,7 +36,7 @@ export type ReportMeta = {
   generatedAt: Date;
   generatedBy: string;
   onlyDiscrepant: boolean;
-  /** Şoför/fasoncu kimliğini ada çevirir; bilinmiyorsa kısaltma döner */
+  /** Fasoncu kimliğini ada çevirir; bilinmiyorsa kısaltma döner */
   nameOf: (id: string) => string;
 };
 

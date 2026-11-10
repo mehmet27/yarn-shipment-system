@@ -19,13 +19,10 @@ public class ApplyReadModelChangeService implements ApplyReadModelChangeUseCase 
 
     private final ProcessedEventPort processedEvents;
     private final ReadModelPort readModel;
-    private final ComparisonRecorder comparisons;
 
-    ApplyReadModelChangeService(
-            ProcessedEventPort processedEvents, ReadModelPort readModel, ComparisonRecorder comparisons) {
+    ApplyReadModelChangeService(ProcessedEventPort processedEvents, ReadModelPort readModel) {
         this.processedEvents = processedEvents;
         this.readModel = readModel;
-        this.comparisons = comparisons;
     }
 
     @Override
@@ -38,15 +35,10 @@ public class ApplyReadModelChangeService implements ApplyReadModelChangeUseCase 
             case ReadModelChange.ShipmentCreated created -> readModel.insertShipment(created);
             case ReadModelChange.ShipmentDispatched dispatched ->
                 require(dispatched.shipmentId(), readModel.saveDispatched(dispatched));
-            case ReadModelChange.ShipmentArrived arrived ->
-                require(arrived.shipmentId(), readModel.saveArrived(arrived));
             case ReadModelChange.ShipmentCompleted completed ->
                 require(completed.shipmentId(), readModel.saveCompleted(completed));
             case ReadModelChange.ShipmentCancelled cancelled ->
                 require(cancelled.shipmentId(), readModel.saveCancelled(cancelled));
-            case ReadModelChange.DeliveryReceived delivery ->
-                require(delivery.shipmentId(), readModel.saveDelivery(delivery));
-            case ReadModelChange.ComparisonCompleted comparison -> comparisons.record(comparison);
             case ReadModelChange.DiscrepancyOpened opened -> readModel.insertDiscrepancy(opened);
             case ReadModelChange.DiscrepancyResolved resolved -> readModel.saveDiscrepancyResolved(resolved);
         }

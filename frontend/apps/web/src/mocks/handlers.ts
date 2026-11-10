@@ -6,8 +6,8 @@ import { http, HttpResponse } from 'msw';
 import {
   assignMockBagKeys,
   addMockShipment,
+  completeMockShipment,
   findMockShipment,
-  isMockSealUsed,
   listMockShipments,
   recordMockDispatch,
   updateMockShipmentStatus,
@@ -32,7 +32,7 @@ const DEFAULT_PAGE_SIZE = 20;
 const problem = (status: number, code: string, title: string) =>
   HttpResponse.json({ status, code, title }, { status });
 
-type DispatchBody = { grossKg: Kilogram; tareKg: Kilogram; bagCount: number; sealNo: string };
+type DispatchBody = { grossKg: Kilogram; tareKg: Kilogram; bagCount: number };
 
 /** İstek gövdesini sözleşmeye göre daraltır; sahte API gerçek backend gibi 400 döner. */
 const isKg = (value: unknown): value is Kilogram => typeof value === 'string' && isKilogram(value);
@@ -42,11 +42,9 @@ const isNonEmpty = (value: unknown): value is string => typeof value === 'string
 
 function readDispatchBody(json: unknown): DispatchBody | undefined {
   if (typeof json !== 'object' || json === null) return undefined;
-  const { grossKg, tareKg, bagCount, sealNo } = json as Record<string, unknown>;
+  const { grossKg, tareKg, bagCount } = json as Record<string, unknown>;
   if (!isKg(grossKg) || !isKg(tareKg)) return undefined;
-  return isPositiveInt(bagCount) && isNonEmpty(sealNo)
-    ? { grossKg, tareKg, bagCount, sealNo }
-    : undefined;
+  return isPositiveInt(bagCount) ? { grossKg, tareKg, bagCount } : undefined;
 }
 
 function toMockWeighing({ grossKg, tareKg, bagCount }: DispatchBody): Weighing {
@@ -159,63 +157,38 @@ function createTabHandlers(role: Role) {
   ];
 }
 
-/** İptal: yalnızca DRAFT/LOADED; yola çıkmışsa 409. */
+/** İptal: DRAFT ya da AWAITING_DELIVERY; tamamlanmış ya da iptal edilmişse 409. */
 const cancelShipmentHandler = http.post(`${SHIPMENTS_PATH}/:shipmentId/cancel`, ({ params }) => {
   const shipment = findMockShipment(params.shipmentId);
   if (shipment === undefined) return notFound();
-  if (shipment.status !== 'DRAFT' && shipment.status !== 'LOADED') {
+  if (shipment.status !== 'DRAFT' && shipment.status !== 'AWAITING_DELIVERY') {
     return HttpResponse.json({ code: 'INVALID_SHIPMENT_STATUS' }, { status: 409 });
   }
   updateMockShipmentStatus(shipment.shipmentId, 'CANCELLED');
   return new HttpResponse(null, { status: 204 });
 });
 
-/** Geçici uç: şoförün "yükü teslim aldım" beyanı; LOADED → IN_TRANSIT. */
-const confirmPickupHandler = http.post(
-  `${SHIPMENTS_PATH}/:shipmentId/pickup-confirmation`,
-  ({ params }) => {
+/** İrsaliyeyle tamamlama: AWAITING_DELIVERY → COMPLETED; numara ya da kanıt eksikse 400. */
+const completeShipmentHandler = http.post(
+  `${SHIPMENTS_PATH}/:shipmentId/completion`,
+  async ({ params, request }) => {
     const shipment = findMockShipment(params.shipmentId);
     if (shipment === undefined) return notFound();
-    updateMockShipmentStatus(shipment.shipmentId, 'IN_TRANSIT');
-    return new HttpResponse(null, { status: 204 });
-  },
-);
-
-/** Şoförün varış beyanı; IN_TRANSIT → AWAITING_DELIVERY, aksi halde 409 INVALID_SHIPMENT_STATUS. */
-const declareArrivalHandler = http.post(
-  `${SHIPMENTS_PATH}/:shipmentId/arrival-declaration`,
-  ({ params }) => {
-    const shipment = findMockShipment(params.shipmentId);
-    if (shipment === undefined) return notFound();
-    if (shipment.status !== 'IN_TRANSIT') {
-      return HttpResponse.json(
-        { status: 409, code: 'INVALID_SHIPMENT_STATUS', title: 'Geçersiz durum' },
-        { status: 409 },
-      );
+    const json: unknown = await request.json();
+    const { waybillNo, waybillEvidenceId } =
+      typeof json === 'object' && json !== null ? (json as Record<string, unknown>) : {};
+    if (!isNonEmpty(waybillNo) || !isNonEmpty(waybillEvidenceId)) {
+      return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
     }
-    updateMockShipmentStatus(shipment.shipmentId, 'AWAITING_DELIVERY');
-    return new HttpResponse(null, { status: 204 });
-  },
-);
-
-/** Kör teslim tutanağı; AWAITING_DELIVERY → CHECKING, aksi halde 409 INVALID_SHIPMENT_STATUS. */
-const deliveryReceiptHandler = http.post(
-  `${SHIPMENTS_PATH}/:shipmentId/delivery-receipt`,
-  ({ params }) => {
-    const shipment = findMockShipment(params.shipmentId);
-    if (shipment === undefined) return notFound();
     if (shipment.status !== 'AWAITING_DELIVERY') {
-      return HttpResponse.json(
-        { status: 409, code: 'INVALID_SHIPMENT_STATUS', title: 'Geçersiz durum' },
-        { status: 409 },
-      );
+      return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
     }
-    updateMockShipmentStatus(shipment.shipmentId, 'CHECKING');
+    completeMockShipment(shipment.shipmentId, waybillNo.trim());
     return new HttpResponse(null, { status: 204 });
   },
 );
 
-/** Depo çıkış tartısı: DRAFT → LOADED; mühür başka sevkiyatta kullanılmışsa 409 SEAL_ALREADY_USED. */
+/** Depo çıkış tartısı: DRAFT → AWAITING_DELIVERY. */
 const dispatchWeighingHandler = http.post(
   `${SHIPMENTS_PATH}/:shipmentId/dispatch-weighing`,
   async ({ params, request }) => {
@@ -226,10 +199,7 @@ const dispatchWeighingHandler = http.post(
     if (shipment.status !== 'DRAFT') {
       return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
     }
-    if (isMockSealUsed(body.sealNo, shipment.shipmentId)) {
-      return problem(409, 'SEAL_ALREADY_USED', 'Mühür kullanılmış');
-    }
-    recordMockDispatch(shipment.shipmentId, toMockWeighing(body), body.sealNo);
+    recordMockDispatch(shipment.shipmentId, toMockWeighing(body));
     return new HttpResponse(null, { status: 204 });
   },
 );
@@ -286,10 +256,8 @@ export function createHandlers(role: Role) {
     createMeHandler(role),
     createListShipmentsHandler(role),
     createGetShipmentHandler(role),
-    confirmPickupHandler,
-    declareArrivalHandler,
     cancelShipmentHandler,
-    deliveryReceiptHandler,
+    completeShipmentHandler,
     dispatchWeighingHandler,
     ...createTabHandlers(role),
     createShipmentHandler,

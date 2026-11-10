@@ -2,7 +2,6 @@ import type { ChangeLoginAccountRoleRequest } from '@iplik/api-client';
 import {
   changeLoginAccountEnabled,
   changeLoginAccountRole,
-  createDriverLoginAccount,
   createStaffLoginAccount,
   createSubcontractorLoginAccount,
   startLoginAccountPasswordReset,
@@ -15,8 +14,6 @@ function open(submission: AccountSubmission): Promise<void> {
   switch (submission.kind) {
     case 'staff':
       return createStaffLoginAccount(submission.request);
-    case 'driver':
-      return createDriverLoginAccount(submission.recordId, submission.request);
     case 'subcontractor':
       return createSubcontractorLoginAccount(submission.recordId, submission.request);
   }

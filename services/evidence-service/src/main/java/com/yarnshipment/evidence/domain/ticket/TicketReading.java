@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @param evidenceId okunan kanıt
  * @param shipmentId sevkiyat
- * @param evidenceType {@code DISPATCH_SCALE} veya {@code DELIVERY_SCALE}
+ * @param evidenceType {@code DISPATCH_SCALE}
  * @param status sonuç
  * @param weights güvenle okunmuş brüt ve dara; okunamadıysa null
  * @param fields kilo dışındaki alanlar
@@ -45,8 +45,7 @@ public record TicketReading(
     /** Fiş tarihinin yükleme zamanından en fazla sapması. */
     static final Duration DATE_TOLERANCE = Duration.ofDays(2);
 
-    private static final Set<EvidenceType> SCALE_TICKETS =
-            Set.of(EvidenceType.DISPATCH_SCALE, EvidenceType.DELIVERY_SCALE);
+    private static final Set<EvidenceType> SCALE_TICKETS = Set.of(EvidenceType.DISPATCH_SCALE);
 
     public TicketReading {
         Objects.requireNonNull(evidenceId, "evidenceId");

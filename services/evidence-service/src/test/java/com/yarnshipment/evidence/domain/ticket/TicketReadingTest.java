@@ -123,21 +123,15 @@ class TicketReadingTest {
     }
 
     @Test
-    @DisplayName("Yalnızca kantar fişleri okunur; teslim fişi de okunabilir")
+    @DisplayName("Yalnızca çıkış kantar fişi okunur")
     void shouldReadOnlyScaleTickets() {
-        EvidenceFile seal = TestTickets.file(USER, EvidenceType.SEAL);
+        EvidenceFile seal = TestTickets.file(USER, EvidenceType.BAG_LABEL);
 
         assertThatThrownBy(() ->
                         TicketReading.evaluate(seal, TestTickets.clearScan(), TestTickets.VERSION, TestUploads.NOW))
                 .isInstanceOf(TicketReadingNotSupportedException.class);
-        assertThat(TicketReading.isReadable(EvidenceType.DELIVERY_SCALE)).isTrue();
-        assertThat(TicketReading.evaluate(
-                                TestTickets.file(USER, EvidenceType.DELIVERY_SCALE),
-                                TestTickets.clearScan(),
-                                TestTickets.VERSION,
-                                TestUploads.NOW)
-                        .evidenceType())
-                .isEqualTo(EvidenceType.DELIVERY_SCALE);
+        assertThat(TicketReading.isReadable(EvidenceType.DISPATCH_SCALE)).isTrue();
+        assertThat(TicketReading.isReadable(EvidenceType.WAYBILL)).isFalse();
     }
 
     @Test

@@ -59,15 +59,15 @@ class TicketUnverifiedControllerTest {
                 .thenReturn(new TicketUnverified(
                         TestUploads.EVIDENCE_ID,
                         UUID.randomUUID(),
-                        EvidenceType.DELIVERY_SCALE,
+                        EvidenceType.DISPATCH_SCALE,
                         UnverifiedReason.TICKET_DAMAGED,
                         TestUploads.NOW));
 
-        MvcTestResult result = post(TestTokens.subcontractorToken(), BODY);
+        MvcTestResult result = post(TestTokens.token("warehouse").build(), BODY);
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.reason").isEqualTo("TICKET_DAMAGED");
-        assertThat(result).bodyJson().extractingPath("$.evidenceType").isEqualTo("DELIVERY_SCALE");
+        assertThat(result).bodyJson().extractingPath("$.evidenceType").isEqualTo("DISPATCH_SCALE");
         ArgumentCaptor<DeclareTicketUnverifiedCommand> command =
                 ArgumentCaptor.forClass(DeclareTicketUnverifiedCommand.class);
         verify(declareUnverified).declareUnverified(command.capture());

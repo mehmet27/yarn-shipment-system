@@ -1,10 +1,9 @@
 import type { DispatchBagView, ShipmentBagsResponse } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Button, Group, Paper, Stack, Text, Title } from '@iplik/ui';
-import { DeliveryScanRow } from './DeliveryScanRow';
 import { TypeSummary } from './TypeSummary';
 
-/** Backend'in verdiği listeler çizilir; hangisinin geleceğine rol değil yanıt karar verir. */
+/** Sevkiyata atanmış çuvallar: tür özeti ve satır başına çuval. */
 export function BagSections({
   bags,
   onRemove,
@@ -13,47 +12,34 @@ export function BagSections({
   onRemove?: ((uniqueKey: string) => void) | undefined;
 }) {
   const { t } = useTranslation();
-  const { dispatchBags, deliveryScans } = bags;
+  const { dispatchBags } = bags;
   return (
-    <Stack>
-      {dispatchBags !== undefined && (
-        <Stack gap="xs">
-          <Title order={5}>{t('shipment.bags.dispatch', { count: dispatchBags.length })}</Title>
-          <TypeSummary types={dispatchBags.map((bag) => bag.packageType)} />
-          {dispatchBags.map((bag) => (
-            <Paper key={bag.bagId} withBorder p="sm">
-              <Group justify="space-between" wrap="nowrap">
-                <div>
-                  <Text fw={600}>{bag.uniqueKey}</Text>
-                  <Text size="sm" c="dimmed">
-                    {bagDetail(t, bag)}
-                  </Text>
-                </div>
-                {onRemove !== undefined && (
-                  <Button
-                    color="red"
-                    variant="subtle"
-                    onClick={() => {
-                      onRemove(bag.uniqueKey);
-                    }}
-                  >
-                    {t('shipment.bags.removeFromShipment')}
-                  </Button>
-                )}
-              </Group>
-            </Paper>
-          ))}
-        </Stack>
-      )}
-      {deliveryScans !== undefined && (
-        <Stack gap="xs">
-          <Title order={5}>{t('shipment.bags.delivery', { count: deliveryScans.length })}</Title>
-          <TypeSummary types={deliveryScans.flatMap((scan) => scan.packageType ?? [])} />
-          {deliveryScans.map((scan) => (
-            <DeliveryScanRow key={`${scan.scannedKey}-${scan.scannedAt}`} scan={scan} />
-          ))}
-        </Stack>
-      )}
+    <Stack gap="xs">
+      <Title order={5}>{t('shipment.bags.dispatch', { count: dispatchBags.length })}</Title>
+      <TypeSummary types={dispatchBags.map((bag) => bag.packageType)} />
+      {dispatchBags.map((bag) => (
+        <Paper key={bag.bagId} withBorder p="sm">
+          <Group justify="space-between" wrap="nowrap">
+            <div>
+              <Text fw={600}>{bag.uniqueKey}</Text>
+              <Text size="sm" c="dimmed">
+                {bagDetail(t, bag)}
+              </Text>
+            </div>
+            {onRemove !== undefined && (
+              <Button
+                color="red"
+                variant="subtle"
+                onClick={() => {
+                  onRemove(bag.uniqueKey);
+                }}
+              >
+                {t('shipment.bags.removeFromShipment')}
+              </Button>
+            )}
+          </Group>
+        </Paper>
+      ))}
     </Stack>
   );
 }

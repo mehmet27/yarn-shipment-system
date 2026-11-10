@@ -19,7 +19,7 @@ pnpm test:e2e:rapor    # son koşunun HTML raporu (hata ekran görüntüleriyle)
 Ek seçenekler `--` olmadan komutun sonuna yazılır:
 
 ```bash
-pnpm test:e2e --grep "Teslim tutanağı"   # adında bu geçen testler
+pnpm test:e2e --grep "Çıkış tartısı"   # adında bu geçen testler
 pnpm test:e2e --project telefon-360      # tek genişlik
 pnpm test:e2e --headed --workers 1       # tarayıcıyı görerek
 pnpm test:e2e --trace on                 # adım adım iz kaydı (rapordan açılır)
@@ -31,7 +31,7 @@ pnpm test:e2e --trace on                 # adım adım iz kaydı (rapordan açı
   derlenir); geliştirme sunucusundaki yüzlerce modül isteği yoktur. Sahte API yalnızca bu kipte ve
   geliştirme sunucusunda açılır; üretim derlemesi (`mode=production`) etkilenmez.
 - Sahte API'nin verisi tarayıcıdadır ve her sayfa açılışında baştan kurulur. Tohum veri
-  `src/mocks` içindeki sabit kayıtlardır (ör. `shp-0001` taslak, `shp-0004` teslim bekliyor), testler
+  `src/mocks` içindeki sabit kayıtlardır (ör. `shp-0001` taslak, `shp-0002` fasoncuya yolda, `shp-0007` tamamlandı), testler
   veriyi arayüzden hazırlamaz ve birbirini beklemeden paralel koşar.
 - Rol girişi gerekmez: `openAs('WAREHOUSE', '/panel/sevkiyat')` sayfayı o rolle açar.
 - Ekran denetimleri üç genişlikte, akışlar kendi cihazında koşar.

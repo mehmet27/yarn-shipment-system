@@ -13,7 +13,6 @@ public final class TestTokens {
 
     public static final UUID SITE_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     public static final UUID SUBCONTRACTOR_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000003");
-    public static final UUID DRIVER_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000004");
     public static final KeycloakJwtConverter CONVERTER =
             new KeycloakJwtConverter(new SecurityProperties(Set.of(), Set.of("otp"), Set.of("2"), List.of()));
 
@@ -34,10 +33,6 @@ public final class TestTokens {
         return token("subcontractor")
                 .claim("subcontractor_id", SUBCONTRACTOR_ID.toString())
                 .build();
-    }
-
-    public static Jwt driverToken() {
-        return token("driver").claim("driver_id", DRIVER_ID.toString()).build();
     }
 
     public static Actor actor(Jwt jwt) {

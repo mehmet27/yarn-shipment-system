@@ -5,3 +5,4 @@ export { ListPagination } from './components/ListPagination';
 export { formatKgText, formatPercentText, formatSignedKg } from './settlement/format';
 export { useMasterOptions } from './hooks/useMasterOptions';
 export { useFireRateDefault } from './hooks/useFireRateDefault';
+export { PendingWeightDecisions } from './components/PendingWeightDecisions';

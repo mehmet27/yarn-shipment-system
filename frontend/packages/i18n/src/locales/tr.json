@@ -225,6 +225,10 @@
         "INVALID_SHIPMENT_STATUS": "Sevkiyat artık kantar uyuşmazlığında değil.",
         "unknown": "Karar kaydedilemedi. Lütfen tekrar deneyin."
       }
+    },
+    "pendingDecisions": {
+      "title": "Kantar uyuşmazlığı: {{count}} sevkiyat kararınızı bekliyor",
+      "hint": "Sevkiyat dosyasını açıp iptal, çuval ekle/çıkar ya da reçeteyi güncelle kararını verin."
     }
   },
   "dispatch": {

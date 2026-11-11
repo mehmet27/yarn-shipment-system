@@ -63,7 +63,7 @@ public record BalanceMovement(
                 "DISPATCH:" + context.shipmentId() + ":" + line.lineNo());
     }
 
-    /** Bakiyeden düşen hareket (kumaş girişi, dönen iplik, fasoncudan gelen iplik); kilo pozitif verilir. */
+    /** Bakiyeden düşen hareket (kumaş girişi, dönen iplik, fasoncudan gelen ya da aktarılan iplik); kilo pozitif verilir. */
     public static BalanceMovement consumption(Consumption consumption) {
         return new BalanceMovement(
                 UUID.randomUUID(),
@@ -88,7 +88,7 @@ public record BalanceMovement(
     /**
      * Bakiyeden düşen hareketin girdisi.
      *
-     * @param kind FABRIC_RECEIPT, YARN_RETURN veya YARN_FROM_SUBCONTRACTOR
+     * @param kind FABRIC_RECEIPT, YARN_RETURN, YARN_FROM_SUBCONTRACTOR veya TRANSFER_OUT
      * @param netKg düşülecek kilo, pozitif
      */
     public record Consumption(

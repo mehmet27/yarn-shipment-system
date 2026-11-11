@@ -91,7 +91,8 @@
       "plannedNetKg": "Planlanan net",
       "createdAt": "Oluşturma",
       "status": "Durum",
-      "waybillNo": "İrsaliye no"
+      "waybillNo": "İrsaliye no",
+      "source": "Gönderen"
     },
     "cancel": {
       "open": "İptal et",
@@ -250,7 +251,7 @@
     "open": "Yeni sevkiyat",
     "title": "Yeni sevkiyat",
     "selectPlaceholder": "Seçin",
-    "hint": "Lokasyon, fasoncu, reçete ve fire oranını girin; şoför ve araç sonradan da atanabilir.",
+    "hint": "Fasoncu, reçete ve fire oranını girin; şoför ve araç sonradan da atanabilir. İplik başka bir fasoncudan gidiyorsa gönderen fasoncuyu da seçin.",
     "subcontractor": "Fasoncu",
     "driver": "Şoför (isteğe bağlı)",
     "vehicle": "Araç (isteğe bağlı)",
@@ -264,7 +265,8 @@
       "lineYarnRequired": "Her satırda iplik cinsi seçin ya da yazın.",
       "lineKgInvalid": "Net kg 0'dan büyük olmalı (ör. 1.982,5).",
       "fireRateInvalid": "Fire oranı 0 ile 20 arasında, en çok 2 ondalıklı olmalı.",
-      "linePriceInvalid": "Fiyat en çok 4 ondalıklı, negatif olmayan bir sayı olmalı."
+      "linePriceInvalid": "Fiyat en çok 4 ondalıklı, negatif olmayan bir sayı olmalı.",
+      "sourceSameAsReceiver": "Gönderen ve alıcı fasoncu aynı olamaz."
     },
     "recipe": {
       "title": "Reçete satırları",
@@ -289,7 +291,8 @@
       "total": "Toplam net: {{total}}"
     },
     "fireRate": "Fire oranı (%)",
-    "fireRateHint": "0 ile 20 arasında, en çok 2 ondalık."
+    "fireRateHint": "0 ile 20 arasında, en çok 2 ondalık.",
+    "sourceSubcontractor": "Gönderen (isteğe bağlı, boşsa merkezden)"
   },
   "masterData": {
     "title": "Tanımlar",

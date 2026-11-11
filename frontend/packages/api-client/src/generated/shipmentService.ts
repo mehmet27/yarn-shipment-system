@@ -134,6 +134,8 @@ export interface ShipmentSummaryView {
   status: ShipmentStatus;
   subcontractorId: string;
   subcontractorTitle: string;
+  /** Gönderen fasoncu; boşsa iplik merkezden çıkar */
+  sourceSubcontractorTitle?: string;
   driverName?: string;
   plateNo?: string;
   createdAt: string;
@@ -328,6 +330,13 @@ export interface CreateShipmentRequest {
      * @maxLength 200
      */
   subcontractorTitle: string;
+  /** İplik merkezden değil başka bir fasoncudan gidiyorsa gönderen fasoncu; sourceSubcontractorTitle ile birlikte verilir */
+  sourceSubcontractorId?: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  sourceSubcontractorTitle?: string;
   driverId?: string;
   /**
      * @minLength 1
@@ -895,6 +904,8 @@ export interface InternalShipmentView {
   status: ShipmentStatus;
   subcontractorId: string;
   subcontractorTitle: string;
+  /** Gönderen fasoncu; boşsa iplik merkezden çıkar */
+  sourceSubcontractorTitle?: string;
   driverName?: string;
   plateNo?: string;
   plannedBagCount?: number;
@@ -927,6 +938,8 @@ export interface WarehouseShipmentView {
   status: ShipmentStatus;
   subcontractorId: string;
   subcontractorTitle: string;
+  /** Gönderen fasoncu; boşsa iplik merkezden çıkar */
+  sourceSubcontractorTitle?: string;
   driverName?: string;
   plateNo?: string;
   plannedBagCount?: number;

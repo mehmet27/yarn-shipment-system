@@ -24,7 +24,9 @@ final class ShipmentCreations {
                 request.getSubcontractorTitle(),
                 request.getDriverId(),
                 request.getDriverName(),
-                request.getPlateNo());
+                request.getPlateNo(),
+                request.getSourceSubcontractorId(),
+                request.getSourceSubcontractorTitle());
         List<RecipeLine> lines = new ArrayList<>();
         for (RecipeLineInput input : request.getLines()) {
             lines.add(new RecipeLine(

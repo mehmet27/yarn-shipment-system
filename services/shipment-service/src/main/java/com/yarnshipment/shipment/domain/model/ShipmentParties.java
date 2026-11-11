@@ -12,17 +12,37 @@ import org.jspecify.annotations.Nullable;
  * @param driverId atanmış şoför
  * @param driverName şoför adı
  * @param plateNo araç plakası
+ * @param sourceSubcontractorId iplik başka bir fasoncudan gidiyorsa gönderen fasoncu; boşsa merkezden
+ * @param sourceSubcontractorTitle gönderen fasoncu unvanı
  */
 public record ShipmentParties(
         UUID subcontractorId,
         String subcontractorTitle,
         @Nullable UUID driverId,
         @Nullable String driverName,
-        @Nullable String plateNo) {
+        @Nullable String plateNo,
+        @Nullable UUID sourceSubcontractorId,
+        @Nullable String sourceSubcontractorTitle) {
 
     public ShipmentParties {
         Objects.requireNonNull(subcontractorId, "subcontractorId");
         Objects.requireNonNull(subcontractorTitle, "subcontractorTitle");
+        if ((sourceSubcontractorId == null) != (sourceSubcontractorTitle == null)) {
+            throw new InvalidNewShipmentException("sourceSubcontractorId", "source id and title come together");
+        }
+        if (subcontractorId.equals(sourceSubcontractorId)) {
+            throw new InvalidNewShipmentException("sourceSubcontractorId", "source and destination must differ");
+        }
+    }
+
+    /** Merkezden çıkan sevkiyat: gönderen fasoncu yok. */
+    public ShipmentParties(
+            UUID subcontractorId,
+            String subcontractorTitle,
+            @Nullable UUID driverId,
+            @Nullable String driverName,
+            @Nullable String plateNo) {
+        this(subcontractorId, subcontractorTitle, driverId, driverName, plateNo, null, null);
     }
 
     /** SEC-13: şoför adı kişisel veridir. */

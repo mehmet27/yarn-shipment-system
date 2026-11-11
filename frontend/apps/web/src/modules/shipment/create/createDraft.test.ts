@@ -30,6 +30,18 @@ describe('createDraft', () => {
     });
   });
 
+  it('gönderen fasoncu seçilmişse kimlik ve unvanı istekte gider; alıcıyla aynı olamaz', () => {
+    const source = { value: 'sub-2', label: 'Aydın Örme' };
+    expect(toCreateRequest({ ...base, sourceSubcontractor: source }, SITE)).toMatchObject({
+      sourceSubcontractorId: 'sub-2',
+      sourceSubcontractorTitle: 'Aydın Örme',
+    });
+    expect(toCreateRequest(base, SITE)).not.toHaveProperty('sourceSubcontractorId');
+    expect(validateCreate({ ...base, sourceSubcontractor: subcontractor })).toBe(
+      'sourceSameAsReceiver',
+    );
+  });
+
   it('şoför ve araç seçilmişse kimlik ve adı birlikte gider', () => {
     const draft = {
       ...base,

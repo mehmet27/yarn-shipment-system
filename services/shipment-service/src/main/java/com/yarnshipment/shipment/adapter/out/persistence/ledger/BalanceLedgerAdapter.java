@@ -6,6 +6,7 @@ import com.yarnshipment.shipment.application.port.in.balance.MovementPage;
 import com.yarnshipment.shipment.application.port.out.ledger.BalanceQueryPort;
 import com.yarnshipment.shipment.application.port.out.ledger.DispatchLedgerPort;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement;
+import com.yarnshipment.shipment.domain.balance.BalanceMovement.Consumption;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement.DispatchContext;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement.DispatchLine;
 import com.yarnshipment.shipment.domain.balance.Kilograms;
@@ -60,6 +61,9 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
     private static final String WEIGHED_NET = """
             SELECT coalesce(sum(net_kg), 0) FROM weighing
             WHERE shipment_id = ? AND side = 'DISPATCH' AND superseded_by IS NULL""";
+    private static final String SOURCE_SUBCONTRACTOR = """
+            SELECT source_subcontractor_id FROM shipment
+            WHERE id = :shipmentId AND source_subcontractor_id IS NOT NULL""";
     private static final String LINE_COLUMNS = """
             SELECT column_name FROM information_schema.columns
             WHERE table_schema = current_schema() AND table_name = 'shipment_line'""";
@@ -134,10 +138,33 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
             return Kilograms.ZERO;
         }
         DispatchContext context = new DispatchContext(subcontractorId, shipmentId, at, createdBy);
+        @Nullable
+        UUID source = jdbc.sql(SOURCE_SUBCONTRACTOR)
+                .param("shipmentId", shipmentId)
+                .query(UUID.class)
+                .optional()
+                .orElse(null);
         for (DispatchLine line : dispatchLines(shipmentId, weighed)) {
             writer.append(BalanceMovement.dispatch(line, context));
+            if (source != null) {
+                writer.append(transferOut(source, line, context));
+            }
         }
         return weighed;
+    }
+
+    /** Fasoncudan fasoncuya sevkiyatta gönderen fasoncunun bakiyesinden aynı kilo düşer. */
+    private static BalanceMovement transferOut(UUID source, DispatchLine line, DispatchContext context) {
+        return BalanceMovement.consumption(new Consumption(
+                MovementKind.TRANSFER_OUT,
+                source,
+                context.shipmentId(),
+                line.yarnType(),
+                line.lotId(),
+                line.netKg(),
+                context.at(),
+                context.createdBy(),
+                "TRANSFER:" + context.shipmentId() + ":" + line.lineNo()));
     }
 
     /** Reçete satırları tartı netine eşitse satırlar, değilse tek "(reçetesiz)" satır. */

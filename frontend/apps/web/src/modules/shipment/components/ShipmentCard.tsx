@@ -36,6 +36,11 @@ export function ShipmentCard({ shipment, to }: ShipmentCardProps) {
           <ShipmentStatusBadge status={shipment.status} />
         </Group>
         <Text fw={500}>{shipment.subcontractorTitle}</Text>
+        {shipment.sourceSubcontractorTitle !== undefined && (
+          <Text size="sm" c="dimmed">
+            {t('shipment.field.source')}: {shipment.sourceSubcontractorTitle}
+          </Text>
+        )}
         <Text size="sm" c="dimmed">
           {shipment.plateNo} · {formatDateTime(shipment.createdAt)}
         </Text>

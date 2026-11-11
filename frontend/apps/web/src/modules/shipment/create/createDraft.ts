@@ -24,6 +24,8 @@ export type RecipeLineDraft = {
 /** Seçilen kayıtlar kimlik ve görünen ad birlikte tutulur; istek ikisini de ister. */
 export type CreateDraft = {
   subcontractor: MasterOption | undefined;
+  /** İplik başka bir fasoncudan gidiyorsa gönderen fasoncu; boşsa merkezden. */
+  sourceSubcontractor: MasterOption | undefined;
   driver: MasterOption | undefined;
   vehicle: MasterOption | undefined;
   lines: readonly RecipeLineDraft[];
@@ -52,6 +54,7 @@ export function newLine(): RecipeLineDraft {
 
 export const EMPTY_CREATE_DRAFT: CreateDraft = {
   subcontractor: undefined,
+  sourceSubcontractor: undefined,
   driver: undefined,
   vehicle: undefined,
   lines: [newLine()],
@@ -61,6 +64,7 @@ export const EMPTY_CREATE_DRAFT: CreateDraft = {
 /** i18n anahtarı (`create.errors.*`). */
 export type CreateError =
   | 'subcontractorRequired'
+  | 'sourceSameAsReceiver'
   | 'linesRequired'
   | 'lineYarnRequired'
   | 'lineKgInvalid'
@@ -68,7 +72,7 @@ export type CreateError =
   | 'fireRateInvalid';
 
 export type CreateFieldErrors = Partial<
-  Record<'subcontractor' | 'lines' | 'fireRate', CreateError>
+  Record<'subcontractor' | 'sourceSubcontractor' | 'lines' | 'fireRate', CreateError>
 >;
 
 const POSITIVE_KG = /[1-9]/;
@@ -100,6 +104,10 @@ export function validateCreateFields(draft: CreateDraft, defaultFirePct = '4'): 
     ...(draft.subcontractor === undefined
       ? { subcontractor: 'subcontractorRequired' as const }
       : {}),
+    ...(draft.sourceSubcontractor !== undefined &&
+    draft.sourceSubcontractor.value === draft.subcontractor?.value
+      ? { sourceSubcontractor: 'sourceSameAsReceiver' as const }
+      : {}),
     ...(draft.lines.length === 0 ? { lines: 'linesRequired' as const } : {}),
     ...(firstLineError === undefined ? {} : { lines: firstLineError }),
     ...(parseFireRatePct(draft.fireRatePct ?? defaultFirePct) === undefined
@@ -111,7 +119,7 @@ export function validateCreateFields(draft: CreateDraft, defaultFirePct = '4'): 
 /** İlk hatayı döner; hata yoksa undefined. */
 export function validateCreate(draft: CreateDraft, defaultFirePct = '4'): CreateError | undefined {
   const errors = validateCreateFields(draft, defaultFirePct);
-  return errors.subcontractor ?? errors.lines ?? errors.fireRate;
+  return errors.subcontractor ?? errors.sourceSubcontractor ?? errors.lines ?? errors.fireRate;
 }
 
 /** Fasoncu değişince önceki fasoncunun şoförü seçili kalmaz. */
@@ -166,7 +174,7 @@ export function toCreateRequest(
   siteId: string,
   defaultFirePct = '4',
 ): CreateShipmentRequest | undefined {
-  const { subcontractor, driver, vehicle } = draft;
+  const { subcontractor, sourceSubcontractor, driver, vehicle } = draft;
   const lines = draft.lines.map(toRecipeLine);
   const fireRate = parseFireRatePct(draft.fireRatePct ?? defaultFirePct);
   if (subcontractor === undefined || fireRate === undefined) return undefined;
@@ -175,6 +183,12 @@ export function toCreateRequest(
     siteId,
     subcontractorId: subcontractor.value,
     subcontractorTitle: subcontractor.label,
+    ...(sourceSubcontractor === undefined
+      ? {}
+      : {
+          sourceSubcontractorId: sourceSubcontractor.value,
+          sourceSubcontractorTitle: sourceSubcontractor.label,
+        }),
     lines: lines.filter((line): line is RecipeLineInput => line !== undefined),
     fireRate,
     ...(driver === undefined ? {} : { driverId: driver.value, driverName: driver.label }),

@@ -29,8 +29,6 @@ final class CentralStockAdapter implements CentralStockPort {
     private static final String STOCK = """
             SELECT yarn_type, sum(net_kg) AS stock_kg FROM central_stock_movement
             GROUP BY yarn_type ORDER BY yarn_type""";
-    private static final String STOCK_OF =
-            "SELECT coalesce(sum(net_kg), 0) FROM central_stock_movement" + " WHERE yarn_type = ?";
     private static final String RECENT = """
             SELECT id, yarn_type, kind, net_kg, production_id, fabric_kg, note, occurred_at, created_by
             FROM central_stock_movement ORDER BY occurred_at DESC, id DESC LIMIT ?""";

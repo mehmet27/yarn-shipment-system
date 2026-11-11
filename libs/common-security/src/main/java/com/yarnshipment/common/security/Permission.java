@@ -47,7 +47,13 @@ public enum Permission implements GrantedAuthority {
     INVOICE_MARK(AccessType.WRITE),
     BALANCE_VIEW(AccessType.READ),
     /** Kantar uyuşmazlığıyla durmuş sevkiyatı yeniden tartıya açar. */
-    WEIGHT_MISMATCH_RESOLVE(AccessType.WRITE);
+    WEIGHT_MISMATCH_RESOLVE(AccessType.WRITE),
+    /** Merkez iplik stokunu ve hareketlerini görür. */
+    CENTRAL_STOCK_VIEW(AccessType.READ),
+    /** Merkeze gelen ipliği stoğa yazar. */
+    CENTRAL_STOCK_RECORD(AccessType.WRITE),
+    /** Merkez fabrikada üretilen kumaşı girer; iplik merkez stoktan düşer. */
+    CENTRAL_PRODUCTION_RECORD(AccessType.WRITE);
 
     private final AccessType accessType;
 

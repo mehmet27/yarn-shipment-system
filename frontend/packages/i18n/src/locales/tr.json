@@ -27,7 +27,8 @@
     "audit": "Denetim kaydı",
     "branding": "Görünüm",
     "balances": "Fasoncu bakiyesi",
-    "toInvoice": "Faturalanacaklar"
+    "toInvoice": "Faturalanacaklar",
+    "centralStock": "Merkez iplik stoku"
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}",
@@ -1205,5 +1206,57 @@
       "status": "Durum",
       "open": "Dosyayı aç"
     }
+  },
+  "stock": {
+    "title": "Merkez iplik stoku",
+    "subtitle": "Merkez depodaki iplik: gelen iplik eklenir, fasoncuya giden ve merkez fabrikada kumaşa dönüşen iplik düşer.",
+    "yarnType": "İplik cinsi",
+    "stockKg": "Eldeki kg",
+    "total": "Toplam",
+    "empty": "Henüz iplik girişi yok.",
+    "movements": "Son hareketler",
+    "movementsEmpty": "Hareket yok.",
+    "date": "Tarih",
+    "kind": "Tür",
+    "kg": "Kg",
+    "note": "Not",
+    "kinds": {
+      "YARN_RECEIPT": "İplik girişi",
+      "TO_SUBCONTRACTOR": "Fasoncuya sevk",
+      "PRODUCTION": "Merkez kumaş üretimi"
+    },
+    "receipt": {
+      "title": "Merkeze iplik girişi",
+      "yarnType": "İplik cinsi",
+      "netKg": "Gelen net kg",
+      "note": "Not (irsaliye vb.)",
+      "submit": "İplik girişini kaydet"
+    },
+    "production": {
+      "title": "Merkez kumaş girişi",
+      "hint": "Kumaşın hangi iplikten yapıldığını ve kaç kg kumaş çıktığını girin; iplik, fire eklenerek merkez stoktan düşer.",
+      "fabricType": "Kumaş cinsi",
+      "yarns": "Kullanılan iplikler",
+      "yarnType": "İplik cinsi",
+      "yarnKg": "Kumaş kg",
+      "addYarn": "İplik ekle",
+      "removeYarn": "Sil",
+      "total": "Toplam kumaş: {{kg}} kg",
+      "firePct": "Fire (%)",
+      "rollCount": "Top sayısı",
+      "waybillNo": "Üretim / irsaliye no",
+      "submit": "Kumaşı kaydet"
+    },
+    "draftErrors": {
+      "required": "Zorunlu alanları doldurun.",
+      "invalidKg": "Kilo sıfırdan büyük, en çok 3 ondalıklı olmalı.",
+      "invalidRate": "Fire yüzdesi 0 ile 20 arasında olmalı.",
+      "invalidRollCount": "Top sayısı pozitif tam sayı olmalı."
+    },
+    "errors": {
+      "invalid": "Girilen değerler geçersiz.",
+      "unknown": "Kayıt yapılamadı, tekrar deneyin."
+    },
+    "negativeWarning": "Bazı iplik cinslerinde stok eksiye düştü; doğrudan fasoncuya giden ipliğin girişi eksik olabilir."
   }
 }

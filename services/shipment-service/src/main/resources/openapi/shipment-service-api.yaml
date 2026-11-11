@@ -2127,6 +2127,9 @@ components:
         - INVOICE_MARK
         - BALANCE_VIEW
         - WEIGHT_MISMATCH_RESOLVE
+        - CENTRAL_STOCK_VIEW
+        - CENTRAL_STOCK_RECORD
+        - CENTRAL_PRODUCTION_RECORD
     CurrentUserResponse:
       type: object
       required: [userId, fullName, roles, permissions, siteIds, mfaVerified]

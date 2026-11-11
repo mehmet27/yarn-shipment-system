@@ -1,6 +1,7 @@
 import { RequireAuth, RequirePermission } from '@/modules/auth';
 import { auditPanelRoutes } from '@/modules/audit';
 import { balancePanelRoutes } from '@/modules/balance';
+import { stockPanelRoutes } from '@/modules/stock';
 import { bagPanelRoutes } from '@/modules/bag';
 import { brandingPanelRoutes } from '@/modules/branding';
 import { discrepancyPanelRoutes } from '@/modules/discrepancy';
@@ -46,6 +47,7 @@ const routes: RouteObject[] = [
       ...reportPanelRoutes,
       ...auditPanelRoutes,
       ...balancePanelRoutes,
+      ...stockPanelRoutes,
     ],
   },
   { path: '/403', element: <ErrorPage reason="forbidden" /> },

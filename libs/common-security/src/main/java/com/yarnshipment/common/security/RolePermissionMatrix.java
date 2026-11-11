@@ -56,7 +56,10 @@ public final class RolePermissionMatrix {
                 Permission.DISCREPANCY_RESOLVE,
                 Permission.AUDIT_VIEW,
                 Permission.REPORT_VIEW,
-                Permission.BALANCE_VIEW);
+                Permission.BALANCE_VIEW,
+                Permission.CENTRAL_STOCK_VIEW,
+                Permission.CENTRAL_STOCK_RECORD,
+                Permission.CENTRAL_PRODUCTION_RECORD);
     }
 
     private static Set<Permission> permissionsForWarehouse() {
@@ -68,7 +71,9 @@ public final class RolePermissionMatrix {
                 Permission.DISPATCH_VIEW,
                 Permission.EVIDENCE_UPLOAD_DISPATCH,
                 Permission.EVIDENCE_VIEW,
-                Permission.YARN_RETURN_RECORD);
+                Permission.YARN_RETURN_RECORD,
+                Permission.CENTRAL_STOCK_VIEW,
+                Permission.CENTRAL_STOCK_RECORD);
     }
 
     private static Set<Permission> permissionsForQuality() {
@@ -85,7 +90,9 @@ public final class RolePermissionMatrix {
                 Permission.AUDIT_VIEW,
                 Permission.REPORT_VIEW,
                 Permission.FABRIC_RECEIPT_RECORD,
-                Permission.BALANCE_VIEW);
+                Permission.BALANCE_VIEW,
+                Permission.CENTRAL_STOCK_VIEW,
+                Permission.CENTRAL_PRODUCTION_RECORD);
     }
 
     /** Müdür sevkiyatı açar, iptal eder ve irsaliye gelince tamamlar (saha analizi, 10.11.2026). */
@@ -108,7 +115,8 @@ public final class RolePermissionMatrix {
                 Permission.FIRE_RATE_EDIT,
                 Permission.INVOICE_MARK,
                 Permission.BALANCE_VIEW,
-                Permission.WEIGHT_MISMATCH_RESOLVE);
+                Permission.WEIGHT_MISMATCH_RESOLVE,
+                Permission.CENTRAL_STOCK_VIEW);
     }
 
     private static Set<Permission> permissionsForSystem() {

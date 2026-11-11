@@ -47,6 +47,12 @@ const ITEMS: readonly PanelNavItem[] = [
     permission: 'BALANCE_VIEW',
   },
   {
+    to: '/panel/merkez-stok',
+    labelKey: 'nav.centralStock',
+    icon: 'balances',
+    permission: 'CENTRAL_STOCK_VIEW',
+  },
+  {
     to: '/panel/faturalanacaklar',
     labelKey: 'nav.toInvoice',
     icon: 'invoices',

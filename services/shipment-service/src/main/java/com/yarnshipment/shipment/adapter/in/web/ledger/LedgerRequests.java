@@ -35,6 +35,20 @@ final class LedgerRequests {
             @Nullable String netKg,
             @Nullable String waybillNo) {}
 
+    /** Merkeze iplik girişi gövdesi. */
+    record YarnReceiptRequest(
+            @Nullable String yarnType,
+            @Nullable String netKg,
+            @Nullable String note) {}
+
+    /** Merkez fabrika kumaş girişi gövdesi. */
+    record CentralProductionRequest(
+            @Nullable String fabricType,
+            @Nullable String fireRate,
+            @Nullable Integer rollCount,
+            @Nullable String waybillNo,
+            @Nullable List<YarnShareRequest> yarns) {}
+
     /** Fire oranı değişikliği gövdesi. */
     record FireRateRequest(
             @Nullable String fireRate, @Nullable String reason) {}

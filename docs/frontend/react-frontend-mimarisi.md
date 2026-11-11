@@ -114,7 +114,7 @@ Girişten sonra kullanıcı rolüne göre kendi kabuğuna yönlendirilir: `/pane
 | Rol | Kabuk | Ana ekranlar |
 | --- | --- | --- |
 | Admin | Panel | Tanımlar, kullanıcı/rol, sistem ayarları (tolerans bantları, zorunlu kanıtlar), gerekçeli düzeltme, iptal, audit log, tüm raporlar |
-| Depo Personeli | Panel + Saha | Sevkiyat oluşturma, şoför/araç atama, çuval okutma veya toplu liste, çıkış tartımı (brüt/dara/net), mühür no, çıkış fotoğrafları, etiket basımı |
+| Depo Personeli | Panel + Saha | Çıkış tartısı için sevkiyatı görüntüleme (sevkiyatı müdür açar), şoför/araç atama, çuval okutma veya toplu liste, çıkış tartımı (brüt/dara/net), mühür no, çıkış fotoğrafları, etiket basımı |
 | Şoför | Saha | "Bana atanan sevkiyatlar" listesi, yükü teslim aldım (çuval sayısı + mühür teyidi), vardım / teslim ettim, mühür sağlam mı |
 | Fasoncu | Saha (masaüstünde de açılır) | Gelen sevkiyatlar, kör teslim girişi sihirbazı, teslim fotoğrafları, imzalı belge, kalite itirazı, kendi uyuşmazlık sonuçları |
 | Kalite / Yetkili | Panel | Uyuşmazlık kutusu (Sarı/Kırmızı, süresi geçen), sevkiyat dosyası, numune/lab talebi, karar formu, audit log |

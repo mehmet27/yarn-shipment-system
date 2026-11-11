@@ -11,6 +11,7 @@ import com.yarnshipment.shipment.application.port.in.CompleteShipmentCommand;
 import com.yarnshipment.shipment.domain.completion.Completion;
 import com.yarnshipment.shipment.domain.evidence.EvidenceReference;
 import com.yarnshipment.shipment.domain.evidence.InvalidWaybillEvidenceException;
+import com.yarnshipment.shipment.domain.fire.FireSettlementStatus;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.time.Clock;
 import java.time.Instant;
@@ -24,6 +25,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("checkstyle:ClassDataAbstractionCoupling")
 class CompleteShipmentServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-11-10T09:00:00Z");
@@ -34,10 +36,14 @@ class CompleteShipmentServiceTest {
     private final Map<UUID, EvidenceReference> evidence = new HashMap<>();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final Actor manager = TestTokens.actor("manager");
+    private final RecordingLedgerPorts ledger = new RecordingLedgerPorts();
+    private final InMemoryFireSettlementPort fireSettlements = new InMemoryFireSettlementPort();
     private final CompleteShipmentService service = new CompleteShipmentService(
             new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
             (completion, actorUserId) -> completions.add(completion),
             id -> Optional.ofNullable(evidence.get(id)),
+            ledger,
+            fireSettlements,
             clock);
 
     private static CompleteShipmentCommand command(Actor actor, String waybillNo) {
@@ -67,6 +73,41 @@ class CompleteShipmentServiceTest {
     }
 
     @Test
+    @DisplayName(
+            "Tamamlama aynı akışta DISPATCH hareketini yazar ve varsayılan oranla AWAITING_FABRIC fire dosyasını açar")
+    void shouldWriteDispatchAndOpenFireSettlement() {
+        // given
+        queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
+        givenEvidence(TestShipments.SHIPMENT_ID, EvidenceReference.WAYBILL);
+        ledger.givenSentKg("1982.500");
+
+        // when
+        service.completeShipment(command(manager, "IRS-1"));
+
+        // then
+        assertThat(ledger.dispatchedShipments()).containsExactly(TestShipments.SHIPMENT_ID);
+        assertThat(fireSettlements.find(TestShipments.SHIPMENT_ID)).get().satisfies(settlement -> {
+            assertThat(settlement.status()).isEqualTo(FireSettlementStatus.AWAITING_FABRIC);
+            assertThat(settlement.fireRate()).isEqualByComparingTo("0.0400");
+            assertThat(settlement.sentKg()).isEqualByComparingTo("1982.500");
+            assertThat(settlement.subcontractorId()).isEqualTo(TestShipments.SUBCONTRACTOR_ID);
+        });
+    }
+
+    @Test
+    @DisplayName("Geçersiz belgeyle tamamlama bakiye hareketi ve fire dosyası bırakmaz")
+    void shouldNotWriteLedgerWhenEvidenceInvalid() {
+        // given
+        queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
+        CompleteShipmentCommand command = command(manager, "IRS-1");
+
+        // when / then
+        assertThatThrownBy(() -> service.completeShipment(command)).isInstanceOf(InvalidWaybillEvidenceException.class);
+        assertThat(ledger.dispatchedShipments()).isEmpty();
+        assertThat(fireSettlements.find(TestShipments.SHIPMENT_ID)).isEmpty();
+    }
+
+    @Test
     @DisplayName("Belge yoksa, başka sevkiyata aitse ya da irsaliye değilse tamamlanmaz")
     void shouldRejectInvalidEvidence() {
         // given
@@ -93,5 +134,7 @@ class CompleteShipmentServiceTest {
 
         // then
         assertThat(completions).isEmpty();
+        assertThat(ledger.dispatchedShipments()).isEmpty();
+        assertThat(fireSettlements.find(TestShipments.SHIPMENT_ID)).isEmpty();
     }
 }

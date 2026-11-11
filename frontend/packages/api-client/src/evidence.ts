@@ -3,7 +3,6 @@ import axios from 'axios';
 export {
   confirmEvidenceUpload,
   declareTicketUnverified,
-  EvidenceSource,
   EvidenceType,
   getEvidenceDownloadUrl,
   ReadingProblem,

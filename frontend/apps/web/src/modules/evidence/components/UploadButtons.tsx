@@ -1,4 +1,3 @@
-import type { EvidenceSource } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Button, FileButton, Group } from '@iplik/ui';
 import type { InputHTMLAttributes } from 'react';
@@ -14,7 +13,7 @@ export function UploadButtons({
   onPick,
 }: {
   isLoading: boolean;
-  onPick: (file: File | null, source: EvidenceSource) => void;
+  onPick: (file: File | null) => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -24,7 +23,7 @@ export function UploadButtons({
         capture="environment"
         inputProps={CAMERA_INPUT}
         onChange={(file) => {
-          onPick(file, 'CAMERA');
+          onPick(file);
         }}
       >
         {(props) => (
@@ -37,7 +36,7 @@ export function UploadButtons({
         accept={ACCEPT}
         inputProps={FILE_INPUT}
         onChange={(file) => {
-          onPick(file, 'GALLERY');
+          onPick(file);
         }}
       >
         {(props) => (

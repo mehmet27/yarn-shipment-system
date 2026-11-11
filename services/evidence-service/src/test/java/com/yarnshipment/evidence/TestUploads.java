@@ -1,7 +1,6 @@
 package com.yarnshipment.evidence;
 
 import com.yarnshipment.evidence.domain.model.EvidenceFile;
-import com.yarnshipment.evidence.domain.model.EvidenceSource;
 import com.yarnshipment.evidence.domain.model.EvidenceType;
 import com.yarnshipment.evidence.domain.model.StoredObject;
 import com.yarnshipment.evidence.domain.model.UploadIntent;
@@ -24,8 +23,7 @@ public final class TestUploads {
     private TestUploads() {}
 
     public static UploadIntent.DeclaredFile declared(EvidenceType type) {
-        return new UploadIntent.DeclaredFile(
-                type, JPEG, SIZE, EvidenceSource.CAMERA, NOW.minusSeconds(CAPTURED_SECONDS_AGO));
+        return new UploadIntent.DeclaredFile(type, JPEG, SIZE, NOW.minusSeconds(CAPTURED_SECONDS_AGO));
     }
 
     public static UploadIntent intent(UUID requestedBy) {
@@ -51,7 +49,7 @@ public final class TestUploads {
                 UUID.randomUUID(),
                 base.shipmentId(),
                 base.siteId(),
-                new UploadIntent.DeclaredFile(type, JPEG, SIZE, EvidenceSource.CAMERA, null),
+                new UploadIntent.DeclaredFile(type, JPEG, SIZE, null),
                 base.storageKey(),
                 base.requestedBy(),
                 base.requestedAt(),

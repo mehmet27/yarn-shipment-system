@@ -16,7 +16,7 @@ describe('useUploadEvidence', () => {
     server.use(...createHandlers('WAREHOUSE'));
     const { result } = renderHook(() => useUploadEvidence('shp-0001'), { wrapper });
     const file = new File(['abc'], 'tarti.jpg', { type: 'image/jpeg' });
-    result.current.mutate({ file, evidenceType: 'DISPATCH_SCALE', source: 'GALLERY' });
+    result.current.mutate({ file, evidenceType: 'DISPATCH_SCALE' });
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
@@ -27,7 +27,7 @@ describe('useUploadEvidence', () => {
     server.use(...createHandlers('WAREHOUSE'));
     const { result } = renderHook(() => useUploadEvidence('shp-0001'), { wrapper });
     const file = new File(['abc'], 'irsaliye.jpg', { type: 'image/jpeg' });
-    result.current.mutate({ file, evidenceType: 'WAYBILL', source: 'CAMERA' });
+    result.current.mutate({ file, evidenceType: 'WAYBILL' });
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
     });

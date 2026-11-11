@@ -77,7 +77,6 @@ class RequestUploadServiceTest {
                 EvidenceType.DISPATCH_SCALE,
                 "application/zip",
                 TestUploads.SIZE,
-                com.yarnshipment.evidence.domain.model.EvidenceSource.GALLERY,
                 null);
         assertThatThrownBy(
                         () -> request.requestUpload(new RequestUploadCommand(warehouse, TestUploads.SHIPMENT_ID, zip)))

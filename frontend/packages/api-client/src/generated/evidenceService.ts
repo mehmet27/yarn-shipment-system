@@ -53,21 +53,12 @@ export const EvidenceType = {
   LAB_RESULT: 'LAB_RESULT',
 } as const;
 
-export type EvidenceSource = typeof EvidenceSource[keyof typeof EvidenceSource];
-
-
-export const EvidenceSource = {
-  CAMERA: 'CAMERA',
-  GALLERY: 'GALLERY',
-} as const;
-
 export interface RequestUploadRequest {
   shipmentId: string;
   evidenceType: EvidenceType;
   mimeType: string;
   /** @minimum 1 */
   sizeBytes: number;
-  source: EvidenceSource;
   /** Cihazın bildirdiği çekim zamanı; yalnızca bilgi amaçlıdır. */
   capturedAt?: string;
 }
@@ -110,7 +101,6 @@ export interface EvidenceView {
   mimeType: string;
   sizeBytes: number;
   sha256: string;
-  source: EvidenceSource;
   capturedAt?: string;
   uploadedAt: string;
 }

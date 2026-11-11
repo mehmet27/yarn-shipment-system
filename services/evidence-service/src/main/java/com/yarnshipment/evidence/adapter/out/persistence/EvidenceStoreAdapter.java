@@ -4,7 +4,6 @@ import com.yarnshipment.events.evidence.EvidenceReuseDetected;
 import com.yarnshipment.events.evidence.EvidenceUploaded;
 import com.yarnshipment.evidence.application.port.out.EvidenceStorePort;
 import com.yarnshipment.evidence.domain.model.EvidenceFile;
-import com.yarnshipment.evidence.domain.model.EvidenceSource;
 import com.yarnshipment.evidence.domain.model.EvidenceStatus;
 import com.yarnshipment.evidence.domain.model.EvidenceType;
 import com.yarnshipment.evidence.domain.model.StoredObject;
@@ -30,16 +29,16 @@ final class EvidenceStoreAdapter implements EvidenceStorePort {
 
     private static final String SET_ACTOR = "SELECT set_config('app.actor_id', :actor, true)";
     private static final String SELECT = """
-            SELECT id, shipment_id, evidence_type, storage_key, mime_type, size_bytes, sha256, source, captured_at,
+            SELECT id, shipment_id, evidence_type, storage_key, mime_type, size_bytes, sha256, captured_at,
                    uploaded_at, uploaded_by, status, invalidated_reason
               FROM evidence_file WHERE id = :id""";
     private static final String INSERT = """
             INSERT INTO evidence_file (id, created_at, shipment_id, evidence_type, storage_key, mime_type, size_bytes,
-                                       sha256, source, captured_at, uploaded_at, uploaded_by, status, created_by)
-            VALUES (:id, :at, :shipmentId, :type, :storageKey, :mimeType, :sizeBytes, :sha256, :source, :capturedAt,
+                                       sha256, captured_at, uploaded_at, uploaded_by, status, created_by)
+            VALUES (:id, :at, :shipmentId, :type, :storageKey, :mimeType, :sizeBytes, :sha256, :capturedAt,
                     :at, :actor, 'VALID', :actor)""";
     private static final String SELECT_BY_SHIPMENT = """
-            SELECT id, shipment_id, evidence_type, storage_key, mime_type, size_bytes, sha256, source, captured_at,
+            SELECT id, shipment_id, evidence_type, storage_key, mime_type, size_bytes, sha256, captured_at,
                    uploaded_at, uploaded_by, status, invalidated_reason
               FROM evidence_file WHERE shipment_id = :shipmentId ORDER BY uploaded_at, id""";
     private static final String FIND_REUSE = """
@@ -130,7 +129,6 @@ final class EvidenceStoreAdapter implements EvidenceStorePort {
                 .param("mimeType", evidence.stored().mimeType())
                 .param("sizeBytes", evidence.stored().sizeBytes())
                 .param("sha256", evidence.stored().sha256())
-                .param("source", declared.source().name())
                 .param("capturedAt", declared.capturedAt() == null ? null : Timestamp.from(declared.capturedAt()))
                 .param("actor", evidence.uploadedBy())
                 .update();
@@ -160,7 +158,6 @@ final class EvidenceStoreAdapter implements EvidenceStorePort {
                 EvidenceType.valueOf(rs.getString("evidence_type")),
                 rs.getString("mime_type"),
                 rs.getLong("size_bytes"),
-                EvidenceSource.valueOf(rs.getString("source")),
                 capturedAt == null ? null : capturedAt.toInstant());
         StoredObject stored =
                 new StoredObject(rs.getLong("size_bytes"), rs.getString("sha256"), rs.getString("mime_type"));

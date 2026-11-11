@@ -36,8 +36,7 @@ class EvidenceUploadErrorsTest {
     private static final String REQUEST_URI = "/api/v1/evidence/uploads";
     private static final String CONFIRM_URI = REQUEST_URI + "/" + TestUploads.EVIDENCE_ID + "/confirm";
     private static final String BODY = "{\"shipmentId\":\"" + TestUploads.SHIPMENT_ID + "\","
-            + "\"evidenceType\":\"DISPATCH_SCALE\",\"mimeType\":\"image/jpeg\",\"sizeBytes\":2048,"
-            + "\"source\":\"CAMERA\"}";
+            + "\"evidenceType\":\"DISPATCH_SCALE\",\"mimeType\":\"image/jpeg\",\"sizeBytes\":2048}";
 
     private final MockMvcTester mvc;
 

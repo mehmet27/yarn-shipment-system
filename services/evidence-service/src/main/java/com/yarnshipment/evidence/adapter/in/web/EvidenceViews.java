@@ -2,7 +2,6 @@ package com.yarnshipment.evidence.adapter.in.web;
 
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceDownloadView;
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceListView;
-import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceSource;
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceStatus;
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceType;
 import com.yarnshipment.evidence.adapter.in.web.api.model.EvidenceView;
@@ -28,8 +27,6 @@ final class EvidenceViews {
                         request.getEvidenceType().getValue()),
                 request.getMimeType(),
                 request.getSizeBytes(),
-                com.yarnshipment.evidence.domain.model.EvidenceSource.valueOf(
-                        request.getSource().getValue()),
                 capturedAt == null ? null : capturedAt.toInstant());
     }
 
@@ -58,7 +55,6 @@ final class EvidenceViews {
                 file.stored().mimeType(),
                 file.stored().sizeBytes(),
                 file.stored().sha256(),
-                EvidenceSource.fromValue(file.declared().source().name()),
                 file.uploadedAt().atOffset(ZoneOffset.UTC));
         view.setInvalidatedReason(file.invalidatedReason());
         if (file.declared().capturedAt() != null) {

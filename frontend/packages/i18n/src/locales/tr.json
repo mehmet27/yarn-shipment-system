@@ -14,6 +14,13 @@
     "crashed": "Sayfa yüklenemedi. Bağlantınızı kontrol edip yeniden deneyin.",
     "retry": "Yeniden dene"
   },
+  "notifications": {
+    "label": "Bildirimler",
+    "title": "Karar bekleyen uyuşmazlıklar",
+    "empty": "Bekleyen uyuşmazlık yok",
+    "more": "{{count}} uyuşmazlık daha var",
+    "all": "Tüm uyuşmazlıkları gör"
+  },
   "nav": {
     "panel": "Yönetim Paneli",
     "toggle": "Yan menü",

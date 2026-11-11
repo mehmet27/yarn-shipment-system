@@ -1,5 +1,6 @@
 // F-05: uygulama kodu Mantine'i yalnızca bu paket üzerinden kullanır.
 export {
+  ActionIcon,
   Alert,
   Anchor,
   AppShell,
@@ -14,6 +15,7 @@ export {
   Container,
   FileButton,
   Group,
+  Indicator,
   List,
   Loader,
   Menu,

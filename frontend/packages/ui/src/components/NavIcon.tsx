@@ -11,6 +11,7 @@ export type NavIconName =
   | 'users'
   | 'balances'
   | 'invoices'
+  | 'bell'
   | 'password'
   | 'logout';
 
@@ -31,6 +32,7 @@ const PATHS: Record<NavIconName, string> = {
     'M9 11a4 4 0 100-8 4 4 0 000 8zM2 21c0-4 3-6 7-6s7 2 7 6M17 3.5a4 4 0 010 7M22 21c0-3-1.5-5-4-5.7',
   balances: 'M12 3v18M5 7h14M5 7l-3 7a3 3 0 006 0zM19 7l-3 7a3 3 0 006 0z',
   invoices: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6',
+  bell: 'M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 004 0',
   password: 'M3 11h18v10H3zM7 11V7a5 5 0 0110 0v4M12 15v2',
   logout: 'M9 21H4V3h5M16 17l5-5-5-5M21 12H9',
 };

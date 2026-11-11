@@ -62,6 +62,19 @@ class FireCalculationTest {
     }
 
     @Test
+    @DisplayName("Kırıkhan Excel: 35.016,48 kg gidip 984,40 kg iade, 32.660,30 kg kumaş gelince fire yüzde 4,03 çıkar")
+    void shouldReproduceKirikhanSheetWithReturns() {
+        // when
+        FireCalculation result = calculate("35016.48", "984.40", "0", "32660.30", "0.04");
+
+        // then
+        assertThat(result.baseKg().toPlainString()).isEqualTo("34032.080");
+        assertThat(result.actualFirePercent()).isEqualByComparingTo("4.03");
+        assertThat(result.expectedFabricKg().toPlainString()).isEqualTo("32670.797");
+        assertThat(result.faultyKg().toPlainString()).isEqualTo("10.497");
+    }
+
+    @Test
     @DisplayName("Haklı itiraz kilosu hem tabandan hem gelen kumaştan düşer")
     void shouldSubtractClaimFromBaseAndFabric() {
         // when

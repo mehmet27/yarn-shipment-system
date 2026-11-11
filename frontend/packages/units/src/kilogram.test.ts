@@ -3,6 +3,7 @@ import type { Kilogram } from './kilogram';
 import {
   calculateNetKg,
   formatKg,
+  isZeroKg,
   formatKgText,
   formatSignedKg,
   isKilogram,
@@ -66,5 +67,15 @@ describe('sumKg ve formatSignedKg', () => {
     expect(formatSignedKg('-12.500')).toBe('-12,5 kg');
     expect(formatSignedKg('7.000')).toBe('+7 kg');
     expect(formatSignedKg('x')).toBe('x');
+  });
+});
+
+describe('isZeroKg', () => {
+  it('sıfırı tanır, sıfır olmayanı ve sayı olmayanı tanımaz', () => {
+    expect(isZeroKg('0.000')).toBe(true);
+    expect(isZeroKg('0')).toBe(true);
+    expect(isZeroKg('12.500')).toBe(false);
+    expect(isZeroKg('-3.000')).toBe(false);
+    expect(isZeroKg('abc')).toBe(false);
   });
 });

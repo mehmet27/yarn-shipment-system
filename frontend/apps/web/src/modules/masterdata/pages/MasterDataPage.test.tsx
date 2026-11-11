@@ -1,5 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
@@ -25,6 +26,9 @@ describe('MasterDataPage', () => {
 
   it('pasife alınan kayıt listeden düşer, pasifleri göster ile geri açılır', async () => {
     server.use(...createHandlers('ADMIN'));
+    server.use(
+      http.get('/api/v1/balances', () => HttpResponse.json({ items: [], totalKg: '0.000' })),
+    );
     renderApp('/panel/tanimlar');
     const card = await screen.findByRole('group', { name: 'Çorlu Boya' });
     await userEvent.click(within(card).getByRole('button', { name: 'Pasife al' }));
@@ -32,6 +36,59 @@ describe('MasterDataPage', () => {
     expect(await screen.findByText('Eski Dokuma')).toBeInTheDocument();
     expect(screen.getByText('Çorlu Boya')).toBeInTheDocument();
     expect((await screen.findAllByText('Pasif')).length).toBeGreaterThan(1);
+  });
+
+  it('bakiyesi olan fasoncu pasife alınırken uyarır, onaylanırsa pasife alır', async () => {
+    server.use(...createHandlers('ADMIN'));
+    server.use(
+      http.get('/api/v1/balances', () =>
+        HttpResponse.json({
+          items: [
+            {
+              subcontractorId: 'sub-2',
+              subcontractorTitle: 'Çorlu Boya',
+              yarnType: 'Polyester 30/1',
+              balanceKg: '1200.500',
+              inTransitKg: '0.000',
+            },
+          ],
+          totalKg: '1200.500',
+        }),
+      ),
+    );
+    renderApp('/panel/tanimlar');
+    const card = await screen.findByRole('group', { name: 'Çorlu Boya' });
+    await userEvent.click(within(card).getByRole('button', { name: 'Pasife al' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('açık bakiyesi var');
+    expect(screen.getByText(/1\.200,5 kg/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Yine de pasife al' }));
+    await userEvent.click(await screen.findByRole('switch', { name: 'Pasifleri göster' }));
+    expect((await screen.findAllByText('Pasif')).length).toBeGreaterThan(1);
+  });
+
+  it('bakiyesi olan fasoncuda vazgeçilirse pasife alınmaz', async () => {
+    server.use(...createHandlers('ADMIN'));
+    server.use(
+      http.get('/api/v1/balances', () =>
+        HttpResponse.json({
+          items: [
+            {
+              subcontractorId: 'sub-2',
+              subcontractorTitle: 'Çorlu Boya',
+              yarnType: 'Polyester 30/1',
+              balanceKg: '10.000',
+              inTransitKg: '0.000',
+            },
+          ],
+          totalKg: '10.000',
+        }),
+      ),
+    );
+    renderApp('/panel/tanimlar');
+    const card = await screen.findByRole('group', { name: 'Çorlu Boya' });
+    await userEvent.click(within(card).getByRole('button', { name: 'Pasife al' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Vazgeç' }));
+    expect(within(card).getByRole('button', { name: 'Pasife al' })).toBeInTheDocument();
   });
 
   it('aynı plaka 409 ile reddedilir', async () => {

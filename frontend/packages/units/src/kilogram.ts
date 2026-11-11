@@ -66,3 +66,8 @@ const SIGNED_KG_FORMAT = new Intl.NumberFormat('tr-TR', {
 export function formatSignedKg(value: string): string {
   return /^-?\d+(\.\d+)?$/.test(value) ? `${SIGNED_KG_FORMAT.format(Number(value))} kg` : value;
 }
+
+/** Kilo dizesi sıfır mı? Sayı olmayan değer sıfır sayılmaz (uyarı tarafında kalmak için). */
+export function isZeroKg(value: string): boolean {
+  return /^-?\d+(\.\d+)?$/.test(value) && new Big(value).eq(0);
+}

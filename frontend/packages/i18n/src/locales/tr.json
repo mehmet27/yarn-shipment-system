@@ -312,6 +312,15 @@
     "save": "Kaydet",
     "search": "Ara",
     "deactivate": "Pasife al",
+    "balanceWarning": {
+      "title": "Bakiyesi olan fasoncu",
+      "message": "{{title}} adlı fasoncunun açık bakiyesi var. Pasife alırsanız yeni sevkiyatta seçilemez; bakiyesi ve geçmişi silinmez.",
+      "unknown": "{{title}} adlı fasoncunun bakiyesi kontrol edilemedi. Yine de pasife almak istiyor musunuz?",
+      "balance": "Bakiye: {{kg}}",
+      "inTransit": "Yolda: {{kg}}",
+      "cancel": "Vazgeç",
+      "confirm": "Yine de pasife al"
+    },
     "activate": "Aktifleştir",
     "inactive": "Pasif",
     "showInactive": "Pasifleri göster",

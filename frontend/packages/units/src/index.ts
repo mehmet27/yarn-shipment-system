@@ -5,6 +5,7 @@ export {
   formatKgText,
   formatSignedKg,
   isKilogram,
+  isZeroKg,
   parseKg,
   subtractKg,
   sumKg,

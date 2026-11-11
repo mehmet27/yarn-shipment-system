@@ -1,7 +1,8 @@
 import { useTranslation } from '@iplik/i18n';
 import { Badge, Button, Group, Paper, Stack, Text } from '@iplik/ui';
-import { useSetActive } from '../hooks/useSetActive';
+import { useDeactivateGuard } from '../hooks/useDeactivateGuard';
 import type { ManagedKind, RecordRow } from '../kinds';
+import { BalanceWarningModal } from './BalanceWarningModal';
 import { RecordCodeLine } from './RecordCodeLine';
 
 export type RecordCardProps = {
@@ -13,7 +14,7 @@ export type RecordCardProps = {
 /** Mobilde tablo yerine kart: ad, durum rozeti ve iki büyük eylem düğmesi. */
 export function RecordCard({ kind, record, onEdit }: RecordCardProps) {
   const { t } = useTranslation();
-  const mutation = useSetActive(kind);
+  const guard = useDeactivateGuard(kind);
   return (
     <Paper withBorder p="md" role="group" aria-label={record.label}>
       <Stack gap="sm">
@@ -43,15 +44,20 @@ export function RecordCard({ kind, record, onEdit }: RecordCardProps) {
           <Button
             variant="light"
             color={record.isActive ? 'red' : 'green'}
-            loading={mutation.isPending}
+            loading={guard.isBusy}
             onClick={() => {
-              mutation.mutate({ id: record.id, isActive: !record.isActive });
+              void guard.request(record);
             }}
           >
             {t(record.isActive ? 'masterData.deactivate' : 'masterData.activate')}
           </Button>
         </Group>
       </Stack>
+      <BalanceWarningModal
+        warning={guard.warning}
+        onConfirm={guard.confirm}
+        onClose={guard.dismiss}
+      />
     </Paper>
   );
 }

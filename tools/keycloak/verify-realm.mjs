@@ -13,11 +13,6 @@ const users = [
   { username: "depo", role: "warehouse" },
   { username: "kalite", role: "quality" },
   { username: "mudur", role: "manager" },
-  {
-    username: "fasoncu",
-    role: "subcontractor",
-    scopeClaim: "subcontractor_id",
-  },
 ];
 
 async function tokenFor(username) {

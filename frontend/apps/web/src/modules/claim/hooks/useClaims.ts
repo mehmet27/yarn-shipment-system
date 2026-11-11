@@ -9,7 +9,7 @@ import {
 } from '@iplik/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-export type OpenClaimInput = { description: string; bagKeys: string[]; evidenceIds: string[] };
+export type OpenClaimInput = { description: string; claimedKg: string; evidenceIds: string[] };
 
 export function useShipmentClaims(shipmentId: string) {
   return useQuery({

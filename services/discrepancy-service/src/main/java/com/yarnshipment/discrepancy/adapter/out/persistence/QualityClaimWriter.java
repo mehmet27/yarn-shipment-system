@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Kalite itirazını yazar: Kırmızı {@code QUALITY} uyuşmazlığı, itiraz ve çuvalları, açılış ve fotoğraf geçmişi ve
+ * Kalite itirazını yazar: Kırmızı {@code QUALITY} uyuşmazlığı, itiraz, açılış ve fotoğraf geçmişi ve
  * {@code DiscrepancyOpened} olayı aynı transaction'da (EVT-03, PERS-20). Uyuşmazlık numarası sevkiyatın sıradaki
  * numarasıdır; aynı sevkiyata eşzamanlı iki itiraz aynı numarayı almasın diye sevkiyat bazında kilit alınır.
  */
@@ -36,12 +36,9 @@ final class QualityClaimWriter {
                     :dueAt, :at, :actor)""";
     private static final String INSERT_CLAIM = """
             INSERT INTO quality_claim (id, discrepancy_id, shipment_id, subcontractor_id, opened_by, opened_at,
-                                       deadline_at, description, created_at, created_by)
-            VALUES (:id, :discrepancyId, :shipmentId, :subcontractorId, :actor, :at, :deadlineAt, :description, :at,
-                    :actor)""";
-    private static final String INSERT_BAG = """
-            INSERT INTO quality_claim_bag (claim_id, unique_key, created_at, created_by)
-            VALUES (:claimId, :uniqueKey, :at, :actor)""";
+                                       deadline_at, description, claimed_kg, fabric_receipt_id, created_at, created_by)
+            VALUES (:id, :discrepancyId, :shipmentId, :subcontractorId, :actor, :at, :deadlineAt, :description,
+                    :claimedKg, :fabricReceiptId, :at, :actor)""";
     private static final String INSERT_ACTIVITY = """
             INSERT INTO discrepancy_activity (id, created_at, discrepancy_id, action_type, note, evidence_id, actor_id,
                                               occurred_at)
@@ -75,7 +72,8 @@ final class QualityClaimWriter {
                 target.subcontractorId(),
                 new QualityClaim.Opening(claim.openedBy(), claim.openedAt(), target.deadline()),
                 claim.request().description().strip(),
-                claim.request().bagKeys(),
+                claim.request().claimedKg(),
+                claim.request().fabricReceiptId(),
                 claim.request().evidenceIds());
         String discrepancyNo = nextDiscrepancyNo(target);
         insertDiscrepancy(claim, written, discrepancyNo);
@@ -104,7 +102,7 @@ final class QualityClaimWriter {
                 .param("type", DiscrepancyType.QUALITY.name())
                 .param("severity", Severity.RED.name())
                 .param("ruleCode", RULE_CODE)
-                .param("actual", String.join(", ", written.bagKeys()))
+                .param("actual", written.claimedKg().toPlainString() + " kg")
                 .param("dueAt", Timestamp.from(claim.dueAt()))
                 .param("at", Timestamp.from(written.opening().openedAt()))
                 .param("actor", written.opening().openedBy())
@@ -122,15 +120,9 @@ final class QualityClaimWriter {
                 .param("at", at)
                 .param("deadlineAt", Timestamp.from(written.opening().deadlineAt()))
                 .param("description", written.description())
+                .param("claimedKg", written.claimedKg())
+                .param("fabricReceiptId", written.fabricReceiptId())
                 .update();
-        for (String key : written.bagKeys()) {
-            jdbc.sql(INSERT_BAG)
-                    .param("claimId", written.id())
-                    .param("uniqueKey", key)
-                    .param("at", at)
-                    .param("actor", written.opening().openedBy())
-                    .update();
-        }
     }
 
     private void insertActivities(QualityClaim written) {

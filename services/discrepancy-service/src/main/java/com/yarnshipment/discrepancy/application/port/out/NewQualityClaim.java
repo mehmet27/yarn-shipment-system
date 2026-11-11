@@ -10,7 +10,7 @@ import java.util.UUID;
  * Yazılacak kalite itirazı; kimlikleri ve uyuşmazlık numarasını adapter verir.
  *
  * @param target itiraz edilen teslim
- * @param request açıklama, çuvallar ve fotoğraflar
+ * @param request açıklama, kilo ve fotoğraflar
  * @param openedBy açan kullanıcı
  * @param openedAt açılış zamanı
  * @param dueAt uyuşmazlığın hedef kapanış zamanı

@@ -113,7 +113,7 @@ class DriverManagementControllerTest {
     @Test
     @DisplayName("Şoför rolü 403 alır; pasife alma ve etkinleştirme 204 döner")
     void shouldForbidDriverRoleAndToggleStatus() throws Exception {
-        MvcTestResult forbidden = post(TestTokens.subcontractorToken(), DRIVERS, "{\"fullName\": \"X\"}");
+        MvcTestResult forbidden = post(TestTokens.token("offline_access").build(), DRIVERS, "{\"fullName\": \"X\"}");
         MvcTestResult off = send(mvc.post().uri(DRIVERS + "/" + ID + "/deactivate"), admin(), null);
         MvcTestResult on = send(mvc.post().uri(DRIVERS + "/" + ID + "/activate"), admin(), null);
 

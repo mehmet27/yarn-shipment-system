@@ -45,13 +45,11 @@ function dispatchBags(shipment: InternalShipmentView): DispatchBagView[] {
   }));
 }
 
-/** Çıkış çuvalları her iç rolün ve fasoncunun görünümündedir. */
+/** Çıkış çuvalları her iç rolün görünümündedir. */
 export function toBagsView(shipment: InternalShipmentView, role: Role): ShipmentBagsResponse {
   switch (role) {
     case 'WAREHOUSE':
       return { audience: 'WAREHOUSE', dispatchBags: dispatchBags(shipment) };
-    case 'SUBCONTRACTOR':
-      return { audience: 'SUBCONTRACTOR', dispatchBags: dispatchBags(shipment) };
     case 'ADMIN':
     case 'MANAGER':
     case 'QUALITY':

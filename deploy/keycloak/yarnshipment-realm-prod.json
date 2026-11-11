@@ -40,10 +40,6 @@
         "description": "Rol: warehouse"
       },
       {
-        "name": "subcontractor",
-        "description": "Rol: subcontractor"
-      },
-      {
         "name": "quality",
         "description": "Rol: quality"
       },
@@ -117,20 +113,6 @@
           }
         },
         {
-          "name": "subcontractor_id",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usermodel-attribute-mapper",
-          "consentRequired": false,
-          "config": {
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "userinfo.token.claim": "true",
-            "user.attribute": "subcontractor_id",
-            "claim.name": "subcontractor_id",
-            "jsonType.label": "String"
-          }
-        },
-        {
           "name": "site_ids",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-attribute-mapper",
@@ -150,7 +132,7 @@
     {
       "clientId": "yarnshipment-admin",
       "name": "Hesap yönetimi (servis hesabı)",
-      "description": "shipment-service'in şoför/fasoncu giriş hesabı açması için; yalnızca kullanıcı yönetimi yetkisi vardır.",
+      "description": "shipment-service'in şoför giriş hesabı açması için; yalnızca kullanıcı yönetimi yetkisi vardır.",
       "enabled": true,
       "publicClient": false,
       "secret": "${KEYCLOAK_ADMIN_CLIENT_SECRET}",

@@ -1,23 +1,23 @@
 import { RequireAuth, RequirePermission } from '@/modules/auth';
 import { auditPanelRoutes } from '@/modules/audit';
+import { balancePanelRoutes } from '@/modules/balance';
 import { bagPanelRoutes } from '@/modules/bag';
 import { brandingPanelRoutes } from '@/modules/branding';
 import { discrepancyPanelRoutes } from '@/modules/discrepancy';
 import { ForgotPasswordPage } from '@/modules/passwordreset';
 import { masterDataPanelRoutes } from '@/modules/masterdata';
 import { reportPanelRoutes } from '@/modules/report';
-import { shipmentFieldRoutes, shipmentPanelRoutes } from '@/modules/shipment';
+import { shipmentPanelRoutes } from '@/modules/shipment';
 import { usersPanelRoutes } from '@/modules/users';
 import { createBrowserRouter } from 'react-router';
 import type { RouteObject } from 'react-router';
-import { FieldLayout } from './layouts/FieldLayout';
 import { PanelLayout } from './layouts/PanelLayout';
 import { RouteErrorPage } from './pages/RouteErrorPage';
 import { ErrorPage } from './pages/ErrorPage';
 import { HomeRedirectPage } from './pages/HomeRedirectPage';
 import { PanelHomePage } from './pages/PanelHomePage';
 
-/** Mimari doküman "Routing": /panel masaüstü, /saha mobil kabuk; her route bir izin taşır. */
+/** Mimari doküman "Routing": /panel masaüstü kabuğu; her route bir izin taşır. */
 const routes: RouteObject[] = [
   {
     path: '/',
@@ -46,16 +46,8 @@ const routes: RouteObject[] = [
       ...usersPanelRoutes,
       ...reportPanelRoutes,
       ...auditPanelRoutes,
+      ...balancePanelRoutes,
     ],
-  },
-  {
-    path: '/saha',
-    element: (
-      <RequireAuth errorFallback={<ErrorPage reason="unexpected" />}>
-        <FieldLayout />
-      </RequireAuth>
-    ),
-    children: shipmentFieldRoutes,
   },
   { path: '/sifremi-unuttum', element: <ForgotPasswordPage /> },
   { path: '/403', element: <ErrorPage reason="forbidden" /> },

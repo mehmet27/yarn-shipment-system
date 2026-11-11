@@ -65,9 +65,12 @@ public final class DiscrepancyExceptionHandler {
     @ExceptionHandler(ClaimRejectedException.class)
     public ProblemDetail handleClaimRejected(ClaimRejectedException exception, HttpServletRequest request) {
         HttpStatus status = switch (exception.rejection()) {
-            case BAG_NOT_DELIVERED, EVIDENCE_REQUIRED, EVIDENCE_INVALID, RESULT_EVIDENCE_REQUIRED ->
-                HttpStatus.BAD_REQUEST;
-            case NOT_AVAILABLE, WINDOW_CLOSED, BAG_ALREADY_CLAIMED, INSPECTION_RECORDED -> HttpStatus.CONFLICT;
+            case CLAIM_EXCEEDS_SHIPMENT_WEIGHT,
+                    CLAIMED_KG_INVALID,
+                    EVIDENCE_REQUIRED,
+                    EVIDENCE_INVALID,
+                    RESULT_EVIDENCE_REQUIRED -> HttpStatus.BAD_REQUEST;
+            case NOT_AVAILABLE, WINDOW_CLOSED, INSPECTION_RECORDED -> HttpStatus.CONFLICT;
         };
         return problems.create(
                 request, status, "QUALITY_CLAIM_" + exception.rejection().name());

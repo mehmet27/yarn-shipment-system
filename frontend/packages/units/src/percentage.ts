@@ -59,3 +59,19 @@ export function parseFireRatePct(input: string): string | undefined {
 export function fireRateToPctInput(rate: string): string {
   return new Big(rate).times(PCT_DIVISOR).round(2).toString().replace('.', ',');
 }
+
+const RATE_PATTERN = /^\d+(\.\d+)?$/;
+const RATE_SCALE = 4;
+
+/** Oran dizesi ("0.0400") yüzde metnine ("4"); fire oranı gösterimi için. Geçersizse undefined. */
+export function rateToPct(rate: string): string | undefined {
+  return RATE_PATTERN.test(rate) ? new Big(rate).times(100).toString() : undefined;
+}
+
+/** Türkçe yüzde girdisi ("4,5") API oranına ("0.0450"); geçersiz ya da `maxPct` üstüyse undefined. */
+export function pctInputToRate(input: string, maxPct: number): string | undefined {
+  const text = input.trim().replace(',', '.');
+  if (!RATE_PATTERN.test(text)) return undefined;
+  const pct = new Big(text);
+  return pct.gt(maxPct) ? undefined : pct.div(100).toFixed(RATE_SCALE);
+}

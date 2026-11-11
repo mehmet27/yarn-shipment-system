@@ -27,15 +27,6 @@ describe('ShipmentFilePage', () => {
 });
 
 describe('sahte API görünüm kuralı', () => {
-  it('fasoncuya çıkış tartısını verir, beklenen yükü ve irsaliyeyi vermez', async () => {
-    server.use(...createHandlers('SUBCONTRACTOR'));
-    const shipment = await getShipment('shp-0007');
-    expect(shipment.audience).toBe('SUBCONTRACTOR');
-    expect(shipment).toHaveProperty('dispatchWeighing');
-    expect(shipment).not.toHaveProperty('waybillNo');
-    expect(shipment).not.toHaveProperty('plannedNetKg');
-  });
-
   it('depoya depo görünümünü çıkış tartısıyla verir', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     const shipment = await getShipment('shp-0007');

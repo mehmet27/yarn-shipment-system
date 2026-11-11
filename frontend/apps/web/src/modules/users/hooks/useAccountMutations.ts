@@ -3,7 +3,6 @@ import {
   changeLoginAccountEnabled,
   changeLoginAccountRole,
   createStaffLoginAccount,
-  createSubcontractorLoginAccount,
   startLoginAccountPasswordReset,
 } from '@iplik/api-client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -11,12 +10,7 @@ import type { AccountSubmission } from '../accountDraft';
 import { LOGIN_ACCOUNTS_KEY } from './useLoginAccounts';
 
 function open(submission: AccountSubmission): Promise<void> {
-  switch (submission.kind) {
-    case 'staff':
-      return createStaffLoginAccount(submission.request);
-    case 'subcontractor':
-      return createSubcontractorLoginAccount(submission.recordId, submission.request);
-  }
+  return createStaffLoginAccount(submission.request);
 }
 
 /** Hesap açar; şifre üretilmez, kişiye SMS kodu gider. Liste yenilenir. */

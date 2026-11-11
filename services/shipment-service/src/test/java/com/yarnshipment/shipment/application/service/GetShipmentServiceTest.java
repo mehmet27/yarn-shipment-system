@@ -32,27 +32,26 @@ class GetShipmentServiceTest {
     private final GetShipmentService getService = new GetShipmentService(port, scopeGuard, policy);
 
     @Test
-    @DisplayName("Fasoncu kendi sevkiyatını kendi görünümüyle ve işlemsiz alır")
-    void shouldReturnOwnShipmentWithSubcontractorAudience() {
+    @DisplayName("Depo kendi lokasyonundaki sevkiyatı depo görünümüyle alır")
+    void shouldReturnOwnSiteShipmentWithWarehouseAudience() {
         // given
         port.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
-        Actor actor = TestTokens.CONVERTER.toActor(TestTokens.subcontractorToken());
+        Actor actor = TestTokens.CONVERTER.toActor(TestTokens.token("warehouse").build());
 
         // when
         ShipmentDetails details = getService.getShipment(new GetShipmentQuery(actor, TestShipments.SHIPMENT_ID));
 
         // then
-        assertThat(details.audience()).isEqualTo(ShipmentAudience.SUBCONTRACTOR);
-        assertThat(details.allowedActions()).isEmpty();
+        assertThat(details.audience()).isEqualTo(ShipmentAudience.WAREHOUSE);
     }
 
     @Test
-    @DisplayName("Başka fasoncunun sevkiyatı 403 ile reddedilir ve audit'e yazılır")
-    void shouldRejectOtherSubcontractorsShipment() {
+    @DisplayName("Başka lokasyonun sevkiyatı 403 ile reddedilir ve audit'e yazılır")
+    void shouldRejectOtherSiteShipment() {
         // given
         port.add(TestShipments.shipment(ShipmentStatus.DRAFT));
-        Actor other = TestTokens.CONVERTER.toActor(TestTokens.token("subcontractor")
-                .claim("subcontractor_id", UUID.randomUUID().toString())
+        Actor other = TestTokens.CONVERTER.toActor(TestTokens.token("warehouse")
+                .claim("site_ids", java.util.List.of(UUID.randomUUID().toString()))
                 .build());
 
         // when / then

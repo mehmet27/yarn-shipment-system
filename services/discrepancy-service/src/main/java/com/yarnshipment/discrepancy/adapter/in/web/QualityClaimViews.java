@@ -13,15 +13,17 @@ import com.yarnshipment.discrepancy.application.port.in.claim.ShipmentClaims;
 import com.yarnshipment.discrepancy.domain.claim.Inspection;
 import com.yarnshipment.discrepancy.domain.claim.QualityClaim;
 import com.yarnshipment.discrepancy.domain.model.Discrepancy;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /** İtiraz dosyasını web modeline çevirir; eylem listeleri kullanıcıya göre hesaplanır (FE-SEC-03). */
 final class QualityClaimViews {
+
+    private static final int KG_SCALE = 3;
 
     private QualityClaimViews() {}
 
@@ -30,7 +32,7 @@ final class QualityClaimViews {
                 .shipmentId(claims.target().shipmentId())
                 .deadlineAt(utc(claims.deadline()))
                 .windowOpen(claims.windowOpen())
-                .deliveredKeys(claims.target().deliveredKeys())
+                .shipmentNetKg(kg(claims.target().netKg()))
                 .claims(claims.claims().stream()
                         .map(file -> toView(file, actor))
                         .toList())
@@ -48,7 +50,8 @@ final class QualityClaimViews {
                 .shipmentId(claim.shipmentId())
                 .status(DiscrepancyStatus.fromValue(discrepancy.status().name()))
                 .description(claim.description())
-                .bagKeys(claim.bagKeys())
+                .claimedKg(kg(claim.claimedKg()))
+                .fabricReceiptId(claim.fabricReceiptId())
                 .evidenceIds(claim.evidenceIds())
                 .openedBy(claim.opening().openedBy())
                 .openedAt(utc(claim.opening().openedAt()))
@@ -91,16 +94,16 @@ final class QualityClaimViews {
         return view;
     }
 
-    /** Teslimdeki çuvalların hepsi itiraz edildiyse yeni itiraz açılamaz. */
+    /** Süre sürüyorsa ve kullanıcının izni varsa yeni itiraz açılabilir; kilo sınırı açılışta denetlenir. */
     private static List<ShipmentClaimsView.AllowedActionsEnum> shipmentActions(ShipmentClaims claims, Actor actor) {
-        Set<String> claimed = claims.claims().stream()
-                .flatMap(file -> file.claim().bagKeys().stream())
-                .collect(Collectors.toSet());
-        boolean hasUnclaimed = claims.target().deliveredKeys().stream().anyMatch(key -> !claimed.contains(key));
-        if (!claims.windowOpen() || !hasUnclaimed || !actor.hasPermission(Permission.QUALITY_CLAIM_OPEN)) {
+        if (!claims.windowOpen() || !actor.hasPermission(Permission.QUALITY_CLAIM_OPEN)) {
             return List.of();
         }
         return List.of(ShipmentClaimsView.AllowedActionsEnum.OPEN_CLAIM);
+    }
+
+    private static String kg(BigDecimal value) {
+        return value.setScale(KG_SCALE, RoundingMode.HALF_UP).toPlainString();
     }
 
     private static OffsetDateTime utc(Instant instant) {

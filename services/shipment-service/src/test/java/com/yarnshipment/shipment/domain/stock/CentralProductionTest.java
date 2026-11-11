@@ -52,16 +52,19 @@ class CentralProductionTest {
     @Test
     @DisplayName("Giriş artı, çıkış eksi işaretli olmalıdır")
     void shouldRejectWrongSign() {
-        assertThatThrownBy(() -> new CentralStockMovement(
-                        UUID.randomUUID(),
-                        "A",
-                        CentralStockKind.YARN_RECEIPT,
-                        new BigDecimal("-1"),
-                        null,
-                        null,
-                        null,
-                        AT,
-                        USER))
-                .isInstanceOf(InvalidLedgerInputException.class);
+        assertThatThrownBy(CentralProductionTest::wrongSignMovement).isInstanceOf(InvalidLedgerInputException.class);
+    }
+
+    private static CentralStockMovement wrongSignMovement() {
+        return new CentralStockMovement(
+                UUID.randomUUID(),
+                "A",
+                CentralStockKind.YARN_RECEIPT,
+                new BigDecimal("-1"),
+                null,
+                null,
+                null,
+                AT,
+                USER);
     }
 }

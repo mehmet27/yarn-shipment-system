@@ -37,6 +37,7 @@ class CentralStockAdapterTest {
     private static final UUID SOURCE_SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000804");
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-00000000d001");
     private static final Instant AT = Instant.parse("2026-11-13T09:00:00Z");
+    private static final int RECENT_LIMIT = 10;
     private static final String YARN = "Ne 30/1 Penye";
     private static final String INSERT_SHIPMENT = """
             INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status,
@@ -122,6 +123,6 @@ class CentralStockAdapterTest {
 
         // then
         assertThat(stockOf(YARN)).isEqualByComparingTo("18958.333");
-        assertThat(stock.findRecent(10)).hasSize(2);
+        assertThat(stock.findRecent(RECENT_LIMIT)).hasSize(2);
     }
 }

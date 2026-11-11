@@ -56,13 +56,7 @@ export type DiscrepancyType = typeof DiscrepancyType[keyof typeof DiscrepancyTyp
 
 
 export const DiscrepancyType = {
-  QUANTITY: 'QUANTITY',
-  BAG: 'BAG',
-  SEAL: 'SEAL',
   QUALITY: 'QUALITY',
-  DOCUMENT: 'DOCUMENT',
-  PHOTO: 'PHOTO',
-  TIME: 'TIME',
 } as const;
 
 export type Severity = typeof Severity[keyof typeof Severity];

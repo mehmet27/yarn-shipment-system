@@ -19,7 +19,7 @@ final class AllChanges {
                 new ReadModelChange.ShipmentDispatched(shipmentId, BigDecimal.TEN, at),
                 new ReadModelChange.ShipmentCompleted(shipmentId, at),
                 new ReadModelChange.ShipmentCancelled(shipmentId),
-                new ReadModelChange.DiscrepancyOpened(id, "UY-1", shipmentId, id, "QUANTITY", "RED", at, at),
+                new ReadModelChange.DiscrepancyOpened(id, "UY-1", shipmentId, id, "QUALITY", "RED", at, at),
                 new ReadModelChange.DiscrepancyResolved(id, shipmentId, at, 0));
     }
 }

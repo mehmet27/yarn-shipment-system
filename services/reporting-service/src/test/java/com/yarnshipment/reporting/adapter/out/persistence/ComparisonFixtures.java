@@ -16,7 +16,7 @@ final class ComparisonFixtures {
                 "UY-1",
                 shipmentId,
                 site,
-                "QUANTITY",
+                "QUALITY",
                 "RED",
                 ShipmentFixtures.AT.plusSeconds(DUE_SECONDS),
                 ShipmentFixtures.AT);

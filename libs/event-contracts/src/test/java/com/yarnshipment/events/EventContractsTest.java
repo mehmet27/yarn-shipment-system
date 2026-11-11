@@ -22,7 +22,7 @@ class EventContractsTest {
     @DisplayName("Açılış olayı JSON'a yazılıp aynen okunur")
     void shouldRoundTripDiscrepancyOpened() {
         DiscrepancyOpened event = new DiscrepancyOpened(
-                UUID.randomUUID(), "UY-1-1", SHIPMENT, SITE, "QUANTITY", "RED", "QUANTITY_RED", AT);
+                UUID.randomUUID(), "UY-1-1", SHIPMENT, SITE, "QUALITY", "RED", "QUALITY_CLAIM", AT);
 
         DiscrepancyOpened read = JSON.readValue(JSON.writeValueAsString(event), DiscrepancyOpened.class);
 

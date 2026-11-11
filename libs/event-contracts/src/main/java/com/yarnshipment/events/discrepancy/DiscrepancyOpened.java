@@ -10,7 +10,7 @@ import java.util.UUID;
  * @param discrepancyNo okunabilir numara
  * @param shipmentId sevkiyat
  * @param siteId çıkış lokasyonu
- * @param type uyuşmazlık türü, ör. {@code QUANTITY}
+ * @param type uyuşmazlık türü, ör. {@code QUALITY}
  * @param severity {@code YELLOW} ya da {@code RED}
  * @param ruleCode ihlal edilen kural
  * @param dueAt çözüm vadesi

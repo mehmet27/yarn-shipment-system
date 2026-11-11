@@ -116,7 +116,7 @@ class DiscrepancyControllerTest {
     void shouldListActivity() {
         when(listActivity.listActivity(any()))
                 .thenReturn(List.of(new DiscrepancyActivity(
-                        UUID.randomUUID(), "OPENED", "QUANTITY_RED", null, UUID.randomUUID(), Instant.now())));
+                        UUID.randomUUID(), "OPENED", "QUALITY_CLAIM", null, UUID.randomUUID(), Instant.now())));
 
         MvcTestResult result = get(ONE + "/activity", quality());
 

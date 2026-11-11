@@ -34,38 +34,7 @@ public final class TestDiscrepancies {
                 siteId,
                 subcontractorId,
                 status,
-                new Discrepancy.Basis(DiscrepancyType.QUANTITY, Severity.RED, "QUANTITY_RED"));
-    }
-
-    /** {@link TestTokens#SITE_ID} lokasyonunda, verilen kurala göre açılmış uyuşmazlık. */
-    public static Discrepancy withRule(UUID id, DiscrepancyType type, String ruleCode, DiscrepancyStatus status) {
-        Discrepancy discrepancy = withBasis(
-                TestTokens.SITE_ID, SUBCONTRACTOR, status, new Discrepancy.Basis(type, Severity.YELLOW, ruleCode));
-        return new Discrepancy(
-                id,
-                discrepancy.discrepancyNo(),
-                discrepancy.origin(),
-                discrepancy.basis(),
-                discrepancy.measure(),
-                status,
-                discrepancy.handling(),
-                null,
-                CREATED_AT);
-    }
-
-    /** Açık uyuşmazlık; beklenen değeri verilen (ör. eksik fotoğrafın türü). */
-    public static Discrepancy withMeasure(UUID id, DiscrepancyType type, String ruleCode, String expected) {
-        Discrepancy discrepancy = withRule(id, type, ruleCode, DiscrepancyStatus.OPEN);
-        return new Discrepancy(
-                id,
-                discrepancy.discrepancyNo(),
-                discrepancy.origin(),
-                discrepancy.basis(),
-                new Discrepancy.Measure(expected, null, null, null),
-                DiscrepancyStatus.OPEN,
-                discrepancy.handling(),
-                null,
-                CREATED_AT);
+                new Discrepancy.Basis(DiscrepancyType.QUALITY, Severity.RED, "QUALITY_CLAIM"));
     }
 
     private static Discrepancy withBasis(

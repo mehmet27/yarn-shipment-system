@@ -13,14 +13,8 @@ export function DiscrepancyFacts({ discrepancy: d }: { discrepancy: DiscrepancyV
       <Stack gap="sm">
         <Fact label={t('discrepancy.facts.type')} value={t(`discrepancy.type.${d.type}`)} />
         <Fact label={t('discrepancy.facts.rule')} value={ruleLabel(t, d.ruleCode)} />
-        <Fact
-          label={t('discrepancy.facts.expected')}
-          value={formatFactValue(t, d.type, d.expectedValue)}
-        />
-        <Fact
-          label={t('discrepancy.facts.actual')}
-          value={formatFactValue(t, d.type, d.actualValue)}
-        />
+        <Fact label={t('discrepancy.facts.expected')} value={formatFactValue(t, d.expectedValue)} />
+        <Fact label={t('discrepancy.facts.actual')} value={formatFactValue(t, d.actualValue)} />
         <Fact
           label={t('discrepancy.facts.difference')}
           value={formatDifference(d.diffKg, d.diffPct)}

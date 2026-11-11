@@ -2463,6 +2463,30 @@ components:
           format: uuid
         netKg:
           $ref: '#/components/schemas/Kg'
+        fabricType:
+          type: string
+          maxLength: 200
+          description: Sipariş formu, kumaş cinsi
+        lycra:
+          type: string
+          maxLength: 200
+          description: Sipariş formu, LYC (ör. 30 denye)
+        widthType:
+          type: string
+          pattern: '^(TUBE|MAY|OPEN_WIDTH)$'
+          description: Sipariş formu, tüp / may / açık en
+        yarnLength:
+          type: string
+          maxLength: 200
+          description: Sipariş formu, iplik uzunluğu / lycra
+        pussFine:
+          type: string
+          maxLength: 200
+          description: Sipariş formu, puss-fine
+        unitPrice:
+          type: string
+          pattern: '^\d{1,8}(\.\d{1,4})?$'
+          description: Sipariş formu, birim fiyat (TL/kg)
     RecipeLineView:
       type: object
       required: [lineNo, netKg]
@@ -2480,6 +2504,30 @@ components:
           format: uuid
         netKg:
           $ref: '#/components/schemas/Kg'
+        fabricType:
+          type: string
+          maxLength: 200
+          description: Sipariş formu, kumaş cinsi
+        lycra:
+          type: string
+          maxLength: 200
+          description: Sipariş formu, LYC (ör. 30 denye)
+        widthType:
+          type: string
+          pattern: '^(TUBE|MAY|OPEN_WIDTH)$'
+          description: Sipariş formu, tüp / may / açık en
+        yarnLength:
+          type: string
+          maxLength: 200
+          description: Sipariş formu, iplik uzunluğu / lycra
+        pussFine:
+          type: string
+          maxLength: 200
+          description: Sipariş formu, puss-fine
+        unitPrice:
+          type: string
+          pattern: '^\d{1,8}(\.\d{1,4})?$'
+          description: Sipariş formu, birim fiyat (TL/kg)
     WeightCheckView:
       type: object
       required: [expectedKg, measuredKg, diffKg]

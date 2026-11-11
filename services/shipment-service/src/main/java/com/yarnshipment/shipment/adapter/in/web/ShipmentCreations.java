@@ -4,8 +4,10 @@ import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.adapter.in.web.api.model.CreateShipmentRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.RecipeLineInput;
 import com.yarnshipment.shipment.application.port.in.CreateShipmentCommand;
+import com.yarnshipment.shipment.domain.model.OrderSpec;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.ShipmentParties;
+import com.yarnshipment.shipment.domain.model.WidthType;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +32,21 @@ final class ShipmentCreations {
                     input.getYarnTypeId(),
                     input.getYarnTypeText(),
                     input.getLotId(),
-                    new BigDecimal(input.getNetKg())));
+                    new BigDecimal(input.getNetKg()),
+                    orderSpec(input)));
         }
         BigDecimal fireRate = request.getFireRate() == null ? null : new BigDecimal(request.getFireRate());
         return new CreateShipmentCommand(
                 actor, idempotencyKey, request.getSiteId(), parties, request.getVehicleId(), lines, fireRate);
+    }
+
+    private static OrderSpec orderSpec(RecipeLineInput input) {
+        return new OrderSpec(
+                input.getFabricType(),
+                input.getLycra(),
+                input.getWidthType() == null ? null : WidthType.valueOf(input.getWidthType()),
+                input.getYarnLength(),
+                input.getPussFine(),
+                input.getUnitPrice() == null ? null : new BigDecimal(input.getUnitPrice()));
     }
 }

@@ -1,7 +1,9 @@
 package com.yarnshipment.shipment.adapter.out.persistence;
 
+import com.yarnshipment.shipment.domain.model.OrderSpec;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.WeightCheck;
+import com.yarnshipment.shipment.domain.model.WidthType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,7 +19,8 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 final class ShipmentRecipes {
 
     private static final String LINES = """
-            SELECT shipment_id, line_no, yarn_type_id, yarn_type_text, lot_id, net_kg
+            SELECT shipment_id, line_no, yarn_type_id, yarn_type_text, lot_id, net_kg,
+                   fabric_type, lycra, width_type, yarn_length, puss_fine, unit_price
             FROM shipment_line WHERE shipment_id IN (:ids) ORDER BY shipment_id, line_no""";
     private static final String LATEST_CHECKS = """
             SELECT DISTINCT ON (shipment_id) shipment_id, empty_kg, loaded_kg, expected_kg, tolerance_kg,
@@ -52,10 +55,22 @@ final class ShipmentRecipes {
                 rs.getObject("yarn_type_id", UUID.class),
                 rs.getString("yarn_type_text"),
                 rs.getObject("lot_id", UUID.class),
-                rs.getBigDecimal("net_kg"));
+                rs.getBigDecimal("net_kg"),
+                orderSpec(rs));
         lines.computeIfAbsent(rs.getObject("shipment_id", UUID.class), id -> new ArrayList<>())
                 .add(line);
         return line;
+    }
+
+    private static OrderSpec orderSpec(ResultSet rs) throws SQLException {
+        String width = rs.getString("width_type");
+        return new OrderSpec(
+                rs.getString("fabric_type"),
+                rs.getString("lycra"),
+                width == null ? null : WidthType.valueOf(width),
+                rs.getString("yarn_length"),
+                rs.getString("puss_fine"),
+                rs.getBigDecimal("unit_price"));
     }
 
     private static WeightCheck collectCheck(Map<UUID, WeightCheck> checks, ResultSet rs) throws SQLException {

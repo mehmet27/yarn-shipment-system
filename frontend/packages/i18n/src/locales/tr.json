@@ -132,6 +132,8 @@
         "title": "Reçete",
         "yarnType": "İplik cinsi",
         "lot": "Lot",
+        "fabricType": "Kumaş cinsi",
+        "spec": "Sipariş ayrıntıları",
         "netKg": "Net kg",
         "total": "Toplam",
         "fireRate": "Fire oranı: {{rate}}",
@@ -272,7 +274,8 @@
       "linesRequired": "En az bir reçete satırı girin.",
       "lineYarnRequired": "Her satırda iplik cinsi seçin ya da yazın.",
       "lineKgInvalid": "Net kg 0'dan büyük olmalı (ör. 1.982,5).",
-      "fireRateInvalid": "Fire oranı 0 ile 20 arasında, en çok 2 ondalıklı olmalı."
+      "fireRateInvalid": "Fire oranı 0 ile 20 arasında, en çok 2 ondalıklı olmalı.",
+      "linePriceInvalid": "Fiyat en çok 4 ondalıklı, negatif olmayan bir sayı olmalı."
     },
     "recipe": {
       "title": "Reçete satırları",
@@ -281,6 +284,13 @@
       "yarnTypeText": "ya da serbest metin",
       "lot": "Lot (isteğe bağlı)",
       "netKg": "Net kg",
+      "fabricType": "Kumaş cinsi",
+      "lycra": "LYC (ör. 30 denye)",
+      "widthType": "Tüp / May / Açık en",
+      "widthTypes": { "TUBE": "Tüp", "MAY": "May", "OPEN_WIDTH": "Açık en" },
+      "yarnLength": "İplik uzunluğu / LYC",
+      "pussFine": "Puss-Fine",
+      "unitPrice": "Birim fiyat (TL/kg)",
       "add": "Satır ekle",
       "remove": "{{index}}. satırı sil",
       "total": "Toplam net: {{total}}"

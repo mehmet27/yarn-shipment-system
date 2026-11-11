@@ -3,6 +3,7 @@ import { Button, Paper, Stack, TextInput } from '@iplik/ui';
 import type { RecipeLineDraft } from './createDraft';
 import { lineError } from './createDraft';
 import { MasterSelect } from './MasterSelect';
+import { OrderFormFields } from './OrderFormFields';
 
 type RecipeLineRowProps = {
   line: RecipeLineDraft;
@@ -44,6 +45,7 @@ export function RecipeLineRow({
             onPatch({ yarnText: event.currentTarget.value });
           }}
         />
+        <OrderFormFields line={line} showErrors={showErrors} onPatch={onPatch} />
         <MasterSelect
           kind="lot"
           label={t('create.recipe.lot')}

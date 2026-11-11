@@ -13,6 +13,18 @@ function yarnLabel(line: RecipeLineView): string {
   return line.yarnTypeText ?? line.yarnTypeId ?? '—';
 }
 
+/** Sipariş formu ayrıntıları: LYC, en türü, iplik uzunluğu, puss-fine ve fiyat; girilmeyenler atlanır. */
+function specText(line: RecipeLineView, t: (key: string) => string): string {
+  const parts = [
+    line.lycra,
+    line.widthType === undefined ? undefined : t(`create.recipe.widthTypes.${line.widthType}`),
+    line.yarnLength,
+    line.pussFine,
+    line.unitPrice === undefined ? undefined : `${line.unitPrice} TL/kg`,
+  ].filter((part): part is string => part !== undefined && part !== '');
+  return parts.length === 0 ? '—' : parts.join(' · ');
+}
+
 /** Müdürün yazdığı reçete: satırlar, toplam net kg ve sevkiyatta saklanan fire oranı. */
 export function RecipePanel({ lines, fireRate }: RecipePanelProps) {
   const { t } = useTranslation();
@@ -25,6 +37,8 @@ export function RecipePanel({ lines, fireRate }: RecipePanelProps) {
           <Table.Thead>
             <Table.Tr>
               <Table.Th>{t('shipment.file.recipe.yarnType')}</Table.Th>
+              <Table.Th>{t('shipment.file.recipe.fabricType')}</Table.Th>
+              <Table.Th>{t('shipment.file.recipe.spec')}</Table.Th>
               <Table.Th>{t('shipment.file.recipe.lot')}</Table.Th>
               <Table.Th ta="right">{t('shipment.file.recipe.netKg')}</Table.Th>
             </Table.Tr>
@@ -33,12 +47,14 @@ export function RecipePanel({ lines, fireRate }: RecipePanelProps) {
             {lines.map((line, index) => (
               <Table.Tr key={`${yarnLabel(line)}-${String(index)}`}>
                 <Table.Td>{yarnLabel(line)}</Table.Td>
+                <Table.Td>{line.fabricType ?? '—'}</Table.Td>
+                <Table.Td>{specText(line, t)}</Table.Td>
                 <Table.Td>{line.lotId ?? '—'}</Table.Td>
                 <Table.Td ta="right">{formatKgText(line.netKg)}</Table.Td>
               </Table.Tr>
             ))}
             <Table.Tr>
-              <Table.Th colSpan={2}>{t('shipment.file.recipe.total')}</Table.Th>
+              <Table.Th colSpan={4}>{t('shipment.file.recipe.total')}</Table.Th>
               <Table.Th ta="right">{formatKgText(total)}</Table.Th>
             </Table.Tr>
           </Table.Tbody>

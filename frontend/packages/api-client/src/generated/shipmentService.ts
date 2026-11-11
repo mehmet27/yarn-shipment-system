@@ -289,6 +289,36 @@ export interface RecipeLineInput {
   yarnTypeText?: string;
   lotId?: string;
   netKg: Kg;
+  /**
+     * Sipariş formu, kumaş cinsi
+     * @maxLength 200
+     */
+  fabricType?: string;
+  /**
+     * Sipariş formu, LYC (ör. 30 denye)
+     * @maxLength 200
+     */
+  lycra?: string;
+  /**
+     * Sipariş formu, tüp / may / açık en
+     * @pattern ^(TUBE|MAY|OPEN_WIDTH)$
+     */
+  widthType?: string;
+  /**
+     * Sipariş formu, iplik uzunluğu / lycra
+     * @maxLength 200
+     */
+  yarnLength?: string;
+  /**
+     * Sipariş formu, puss-fine
+     * @maxLength 200
+     */
+  pussFine?: string;
+  /**
+     * Sipariş formu, birim fiyat (TL/kg)
+     * @pattern ^\d{1,8}(\.\d{1,4})?$
+     */
+  unitPrice?: string;
 }
 
 /**
@@ -332,6 +362,36 @@ export interface RecipeLineView {
   yarnTypeText?: string;
   lotId?: string;
   netKg: Kg;
+  /**
+     * Sipariş formu, kumaş cinsi
+     * @maxLength 200
+     */
+  fabricType?: string;
+  /**
+     * Sipariş formu, LYC (ör. 30 denye)
+     * @maxLength 200
+     */
+  lycra?: string;
+  /**
+     * Sipariş formu, tüp / may / açık en
+     * @pattern ^(TUBE|MAY|OPEN_WIDTH)$
+     */
+  widthType?: string;
+  /**
+     * Sipariş formu, iplik uzunluğu / lycra
+     * @maxLength 200
+     */
+  yarnLength?: string;
+  /**
+     * Sipariş formu, puss-fine
+     * @maxLength 200
+     */
+  pussFine?: string;
+  /**
+     * Sipariş formu, birim fiyat (TL/kg)
+     * @pattern ^\d{1,8}(\.\d{1,4})?$
+     */
+  unitPrice?: string;
 }
 
 export interface WeightCheckView {

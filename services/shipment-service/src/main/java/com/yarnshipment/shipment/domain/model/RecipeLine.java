@@ -14,16 +14,28 @@ import org.jspecify.annotations.Nullable;
  * @param yarnTypeText serbest metinle yazılan iplik cinsi
  * @param lotId isteğe bağlı lot
  * @param netKg net kilo, sıfırdan büyük, en çok 3 ondalık
+ * @param spec sipariş formu ayrıntıları; girilmediyse boş
  */
 public record RecipeLine(
         int lineNo,
         @Nullable UUID yarnTypeId,
         @Nullable String yarnTypeText,
         @Nullable UUID lotId,
-        BigDecimal netKg) {
+        BigDecimal netKg,
+        @Nullable OrderSpec spec) {
 
     public static final int MAX_TEXT_LENGTH = 200;
     private static final int KG_SCALE = 3;
+
+    /** Sipariş formu alanları olmayan satır. */
+    public RecipeLine(
+            int lineNo,
+            @Nullable UUID yarnTypeId,
+            @Nullable String yarnTypeText,
+            @Nullable UUID lotId,
+            BigDecimal netKg) {
+        this(lineNo, yarnTypeId, yarnTypeText, lotId, netKg, null);
+    }
 
     public RecipeLine {
         Objects.requireNonNull(netKg, "netKg");
@@ -44,7 +56,12 @@ public record RecipeLine(
         netKg = netKg.setScale(KG_SCALE);
     }
 
+    /** Sipariş formu ayrıntıları; girilmediyse alanları boş olan {@link OrderSpec#EMPTY}. */
+    public OrderSpec orderSpec() {
+        return spec == null ? OrderSpec.EMPTY : spec;
+    }
+
     public RecipeLine withNetKg(BigDecimal newNetKg) {
-        return new RecipeLine(lineNo, yarnTypeId, yarnTypeText, lotId, newNetKg);
+        return new RecipeLine(lineNo, yarnTypeId, yarnTypeText, lotId, newNetKg, spec);
     }
 }

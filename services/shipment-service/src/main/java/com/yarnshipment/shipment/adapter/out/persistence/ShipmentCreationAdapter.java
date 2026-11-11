@@ -4,6 +4,7 @@ import com.yarnshipment.shipment.adapter.out.persistence.ShipmentTransitionWrite
 import com.yarnshipment.shipment.application.port.in.CreatedShipment;
 import com.yarnshipment.shipment.application.port.out.ShipmentCreationPort;
 import com.yarnshipment.shipment.domain.model.NewShipment;
+import com.yarnshipment.shipment.domain.model.OrderSpec;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.ShipmentCreated;
 import com.yarnshipment.shipment.domain.model.ShipmentParties;
@@ -13,6 +14,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
@@ -34,8 +36,10 @@ final class ShipmentCreationAdapter implements ShipmentCreationPort {
                     'DRAFT', :plannedNetKg, :fireRate, :at, :actor)""";
     private static final String INSERT_LINE = """
             INSERT INTO shipment_line (id, shipment_id, line_no, yarn_type_id, yarn_type_text, lot_id, net_kg,
+                                       fabric_type, lycra, width_type, yarn_length, puss_fine, unit_price,
                                        created_at, created_by)
-            VALUES (:id, :shipmentId, :lineNo, :yarnTypeId, :yarnTypeText, :lotId, :netKg, :at, :actor)""";
+            VALUES (:id, :shipmentId, :lineNo, :yarnTypeId, :yarnTypeText, :lotId, :netKg,
+                    :fabricType, :lycra, :widthType, :yarnLength, :pussFine, :unitPrice, :at, :actor)""";
 
     private final JdbcClient jdbc;
     private final ShipmentTransitionWriter transitions;
@@ -95,10 +99,20 @@ final class ShipmentCreationAdapter implements ShipmentCreationPort {
                     .param("yarnTypeText", line.yarnTypeText())
                     .param("lotId", line.lotId())
                     .param("netKg", line.netKg())
+                    .param("fabricType", line.orderSpec().fabricType())
+                    .param("lycra", line.orderSpec().lycra())
+                    .param("widthType", widthTypeName(line.orderSpec()))
+                    .param("yarnLength", line.orderSpec().yarnLength())
+                    .param("pussFine", line.orderSpec().pussFine())
+                    .param("unitPrice", line.orderSpec().unitPrice())
                     .param("at", at)
                     .param("actor", actorUserId)
                     .update();
         }
+    }
+
+    private static @Nullable String widthTypeName(OrderSpec spec) {
+        return spec.widthType() == null ? null : spec.widthType().name();
     }
 
     private static String shipmentNo(NewShipment shipment, UUID id) {

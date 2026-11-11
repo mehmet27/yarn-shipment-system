@@ -27,8 +27,8 @@ public record ClaimTarget(
         BigDecimal netKg) {
 
     /**
-     * Sonuçlandırma hedef süresi: itiraz açıldıktan sonra değil, tamamlanmadan itibaren 3 iş günü. İtiraz açmak için süre
-     * sınırı yoktur (iş birimi kararı, akış dokümanı S18); bu tarih yalnızca bilgi/hedef olarak gösterilir.
+     * Hedef süre: tamamlanmadan itibaren 3 iş günü. İtiraz açmak için süre sınırı yoktur (iş birimi kararı, akış
+     * dokümanı S18); bu tarih yalnızca bilgi olarak gösterilir.
      */
     public static final int CLAIM_BUSINESS_DAYS = 3;
 

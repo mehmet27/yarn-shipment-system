@@ -50,6 +50,7 @@ class EventContractsTest {
         assertThat(JSON.readValue(JSON.writeValueAsString(event), DiscrepancyResolved.class))
                 .isEqualTo(event);
         String legacy = JSON.writeValueAsString(event).replaceAll(",\"claimedKg\":[^,}]+", "");
-        assertThat(JSON.readValue(legacy, DiscrepancyResolved.class).claimedKg()).isNull();
+        assertThat(JSON.readValue(legacy, DiscrepancyResolved.class).claimedKg())
+                .isNull();
     }
 }

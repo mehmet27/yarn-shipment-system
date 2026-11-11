@@ -8,7 +8,7 @@ test.describe('Çuval atama', { tag: '@panel' }, () => {
 
   // H-17: aynı anahtar büyük/küçük harf farkıyla iki kez listeye girmez.
   test('anahtarı büyük harfe çevirir, tekrarını eklemez', async ({ page, openAs }) => {
-    await openAs('MANAGER', '/panel/sevkiyat/shp-0001');
+    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001');
     await openBags(page);
     const key = page.getByLabel('Çuval anahtarı');
     for (const value of ['bag-0002', 'BAG-0002 ']) {
@@ -24,7 +24,7 @@ test.describe('Çuval atama', { tag: '@panel' }, () => {
     page,
     openAs,
   }) => {
-    await openAs('MANAGER', '/panel/sevkiyat/shp-0001');
+    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001');
     await openBags(page);
     const key = page.getByLabel('Çuval anahtarı');
     for (let round = 0; round < 2; round++) {
@@ -40,7 +40,7 @@ test.describe('Çuval atama', { tag: '@panel' }, () => {
 
   // H-03: başka lokasyonun çuvalı servis hatası gibi değil, kapsam mesajıyla reddedilir.
   test('başka lokasyonun çuvalını kapsam mesajıyla reddeder', async ({ page, openAs }) => {
-    await openAs('MANAGER', '/panel/sevkiyat/shp-0001');
+    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001');
     await openBags(page);
     const key = page.getByLabel('Çuval anahtarı');
     await key.fill('BAG-0005');
@@ -52,7 +52,7 @@ test.describe('Çuval atama', { tag: '@panel' }, () => {
   });
 
   test('olmayan çuvalı bulunamadı mesajıyla reddeder', async ({ page, openAs }) => {
-    await openAs('MANAGER', '/panel/sevkiyat/shp-0001');
+    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001');
     await openBags(page);
     const key = page.getByLabel('Çuval anahtarı');
     await key.fill('BAG-9999');

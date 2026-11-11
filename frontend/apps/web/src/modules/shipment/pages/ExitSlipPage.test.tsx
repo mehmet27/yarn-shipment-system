@@ -9,7 +9,7 @@ describe('ExitSlipPage', () => {
     expect(screen.getByText(/SVK-2026-0007/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Yazdır' })).toBeInTheDocument();
     const table = await screen.findByTestId('exit-slip-bags');
-    expect(within(table).getByText(/Toplam \(\d+ çuval\)/)).toBeInTheDocument();
+    expect(within(table).getByText(/Toplam \(\d+ çuval\):/)).toBeInTheDocument();
   });
 
   it('sevkiyat dosyasından fişe bağlantı verir', async () => {

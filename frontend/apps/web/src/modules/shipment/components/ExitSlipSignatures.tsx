@@ -1,13 +1,13 @@
 import { useTranslation } from '@iplik/i18n';
 import { Box, SimpleGrid, Stack, Text } from '@iplik/ui';
 
-const SIGNATURES = ['deliveredBy', 'driver', 'receivedBy'] as const;
+const SIGNATURES = ['deliveredBy', 'receivedBy'] as const;
 
 /** Teslim eden, şoför ve teslim alan imza alanları. */
 export function ExitSlipSignatures() {
   const { t } = useTranslation();
   return (
-    <SimpleGrid cols={3} pt="xl" mt="xl">
+    <SimpleGrid cols={2} pt="xl" mt="xl">
       {SIGNATURES.map((key) => (
         <Stack key={key} gap="xl" align="center">
           <Text fw={600}>{t(`shipment.exitSlip.${key}`)}</Text>

@@ -140,3 +140,7 @@ ek olarak mudurun olusturacagı sipariş formu C:\Users\CELEK\Desktop\iplik sevk
 | 9 | Gözlem sorunları | — | Raporlar özetindeki eski kutular, çuval atama sonrası liste güncellenmemesi, kumaş girişinde yanlış iplik cinsi | Sırada |
 
 Zaten uyumlu olanlar: S1, S2, S4, S5, S6, S7, S8, S9, S13, S15, S16, S19, S21.
+
+## Sipariş formu – ek cevap 1 (düzeltildi)
+Sipariş formu reçetenin YERİNE geçer. Reçete satırları Excel'deki başlıklarla girilir: kumaş cinsi, lycra, tüp/may/açık en, iplik uzunluğu/lycra, puss-fine, sipariş kg, fiyat. Üst bilgi: firma (fasoncu), yetkili kişi, sipariş no, tarih. Müdür elle doldurur; depo bu forma göre iplik sevkiyatını yapar, çuvalları yükler.
+Açık: fire sınırı varsayılanı (%5 mi %4 mü) ve fiyatın tutulup tutulmayacağı.

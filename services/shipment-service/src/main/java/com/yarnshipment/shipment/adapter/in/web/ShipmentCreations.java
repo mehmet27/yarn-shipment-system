@@ -5,6 +5,7 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.CreateShipmentRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.RecipeLineInput;
 import com.yarnshipment.shipment.application.port.in.CreateShipmentCommand;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
+import com.yarnshipment.shipment.domain.model.WidthType;
 import com.yarnshipment.shipment.domain.model.ShipmentParties;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -30,7 +31,13 @@ final class ShipmentCreations {
                     input.getYarnTypeId(),
                     input.getYarnTypeText(),
                     input.getLotId(),
-                    new BigDecimal(input.getNetKg())));
+                    new BigDecimal(input.getNetKg()),
+                    input.getFabricType(),
+                    input.getLycra(),
+                    input.getWidthType() == null ? null : WidthType.valueOf(input.getWidthType()),
+                    input.getYarnLength(),
+                    input.getPussFine(),
+                    input.getUnitPrice() == null ? null : new BigDecimal(input.getUnitPrice())));
         }
         BigDecimal fireRate = request.getFireRate() == null ? null : new BigDecimal(request.getFireRate());
         return new CreateShipmentCommand(

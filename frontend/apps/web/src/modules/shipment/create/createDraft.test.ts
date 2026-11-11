@@ -95,4 +95,32 @@ describe('createDraft', () => {
       ]),
     ).toBe('32980.000');
   });
+
+  it('sipariş formu alanları doluysa satırla gider, boşsa hiç yer almaz', () => {
+    const full = {
+      ...line,
+      fabricType: '30/150 Penye Siyah',
+      lycra: '30 denye',
+      widthType: 'OPEN_WIDTH',
+      yarnLength: '100/31-11-11',
+      pussFine: '32/28',
+      unitPrice: '21,5',
+    };
+    expect(toCreateRequest({ ...base, lines: [full] })?.lines[0]).toEqual({
+      netKg: '2036.000',
+      yarnTypeText: '20 denye likra',
+      fabricType: '30/150 Penye Siyah',
+      lycra: '30 denye',
+      widthType: 'OPEN_WIDTH',
+      yarnLength: '100/31-11-11',
+      pussFine: '32/28',
+      unitPrice: '21.5',
+    });
+  });
+
+  it('geçersiz fiyat satırı hatalı yapar', () => {
+    expect(validateCreate({ ...base, lines: [{ ...line, unitPrice: '-3' }] })).toBe(
+      'linePriceInvalid',
+    );
+  });
 });

@@ -42,7 +42,16 @@ final class WebMappings {
                         .yarnTypeId(line.yarnTypeId())
                         .yarnTypeText(line.yarnTypeText())
                         .lotId(line.lotId())
-                        .netKg(kg(line.netKg())))
+                        .netKg(kg(line.netKg()))
+                        .fabricType(line.fabricType())
+                        .lycra(line.lycra())
+                        .widthType(line.widthType() == null ? null : line.widthType().name())
+                        .yarnLength(line.yarnLength())
+                        .pussFine(line.pussFine())
+                        .unitPrice(
+                                line.unitPrice() == null
+                                        ? null
+                                        : line.unitPrice().toPlainString()))
                 .toList();
     }
 

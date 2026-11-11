@@ -10,6 +10,15 @@ export type RecipeLineDraft = {
   yarnText: string;
   lot: MasterOption | undefined;
   netKg: string;
+  /** Sipariş formu alanları; boş metin "girilmedi" demektir. */
+  fabricType: string;
+  lycra: string;
+  /** `''`, `TUBE`, `MAY` ya da `OPEN_WIDTH`. */
+  widthType: string;
+  yarnLength: string;
+  pussFine: string;
+  /** TL/kg, Türkçe ondalık virgülü kabul edilir. */
+  unitPrice: string;
 };
 
 /** Seçilen kayıtlar kimlik ve görünen ad birlikte tutulur; istek ikisini de ister. */
@@ -33,6 +42,12 @@ export function newLine(): RecipeLineDraft {
     yarnText: '',
     lot: undefined,
     netKg: '',
+    fabricType: '',
+    lycra: '',
+    widthType: '',
+    yarnLength: '',
+    pussFine: '',
+    unitPrice: '',
   };
 }
 
@@ -52,6 +67,7 @@ export type CreateError =
   | 'linesRequired'
   | 'lineYarnRequired'
   | 'lineKgInvalid'
+  | 'linePriceInvalid'
   | 'fireRateInvalid';
 
 export type CreateFieldErrors = Partial<
@@ -66,9 +82,18 @@ export function parsePositiveKg(input: string): Kilogram | undefined {
   return kg !== undefined && POSITIVE_KG.test(kg) ? kg : undefined;
 }
 
+const PRICE = /^\d{1,8}([.,]\d{1,4})?$/;
+
+/** Boş fiyat geçerlidir (isteğe bağlı); doluysa en çok 4 ondalıklı, negatif olmayan sayı olmalı. */
+export function priceValid(input: string): boolean {
+  const text = input.trim();
+  return text === '' || PRICE.test(text);
+}
+
 export function lineError(line: RecipeLineDraft): CreateError | undefined {
   if (line.yarn === undefined && line.yarnText.trim() === '') return 'lineYarnRequired';
-  return parsePositiveKg(line.netKg) === undefined ? 'lineKgInvalid' : undefined;
+  if (parsePositiveKg(line.netKg) === undefined) return 'lineKgInvalid';
+  return priceValid(line.unitPrice) ? undefined : 'linePriceInvalid';
 }
 
 /** Tüm eksik zorunlu alanlar birden döner; hata mesajı ilgili alanın altında gösterilir. */
@@ -103,6 +128,29 @@ export function totalNetKg(lines: readonly RecipeLineDraft[]): string {
   return sumKg(lines.map((line) => parsePositiveKg(line.netKg) ?? ''));
 }
 
+/** Boş metin istekte hiç yer almaz. */
+function filled(value: string): string | undefined {
+  const text = value.trim();
+  return text === '' ? undefined : text;
+}
+
+function orderFormFields(line: RecipeLineDraft): Partial<RecipeLineInput> {
+  const fabricType = filled(line.fabricType);
+  const lycra = filled(line.lycra);
+  const widthType = filled(line.widthType);
+  const yarnLength = filled(line.yarnLength);
+  const pussFine = filled(line.pussFine);
+  const unitPrice = filled(line.unitPrice.replace(',', '.'));
+  return {
+    ...(fabricType === undefined ? {} : { fabricType }),
+    ...(lycra === undefined ? {} : { lycra }),
+    ...(widthType === undefined ? {} : { widthType }),
+    ...(yarnLength === undefined ? {} : { yarnLength }),
+    ...(pussFine === undefined ? {} : { pussFine }),
+    ...(unitPrice === undefined ? {} : { unitPrice }),
+  };
+}
+
 function toRecipeLine(line: RecipeLineDraft): RecipeLineInput | undefined {
   const netKg = parsePositiveKg(line.netKg);
   const yarnTypeText = line.yarnText.trim();
@@ -112,6 +160,7 @@ function toRecipeLine(line: RecipeLineDraft): RecipeLineInput | undefined {
     netKg,
     ...(line.yarn === undefined ? { yarnTypeText } : { yarnTypeId: line.yarn.value }),
     ...(line.lot === undefined ? {} : { lotId: line.lot.value }),
+    ...orderFormFields(line),
   };
 }
 

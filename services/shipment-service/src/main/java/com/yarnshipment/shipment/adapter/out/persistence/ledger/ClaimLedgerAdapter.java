@@ -23,7 +23,10 @@ final class ClaimLedgerAdapter implements ClaimLedgerPort {
 
     @Override
     public Optional<UUID> findSubcontractor(UUID shipmentId) {
-        return jdbc.sql(SUBCONTRACTOR).param("shipmentId", shipmentId).query(UUID.class).optional();
+        return jdbc.sql(SUBCONTRACTOR)
+                .param("shipmentId", shipmentId)
+                .query(UUID.class)
+                .optional();
     }
 
     @Override

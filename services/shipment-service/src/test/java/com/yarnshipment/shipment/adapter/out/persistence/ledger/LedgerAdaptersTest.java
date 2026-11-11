@@ -297,8 +297,8 @@ class LedgerAdaptersTest {
         ledger.recordDispatch(SHIPMENT, SUBCONTRACTOR, AT, USER);
         fireSettlements.open(FireSettlement.open(SHIPMENT, SUBCONTRACTOR, new BigDecimal("34032")), AT);
         ClaimAdjustmentService service = new ClaimAdjustmentService(claims, ledger);
-        RecordClaimAdjustmentCommand command = new RecordClaimAdjustmentCommand(
-                UUID.randomUUID(), SHIPMENT, new BigDecimal("100.000"), AT, USER);
+        RecordClaimAdjustmentCommand command =
+                new RecordClaimAdjustmentCommand(UUID.randomUUID(), SHIPMENT, new BigDecimal("100.000"), AT, USER);
 
         // when
         service.recordClaimAdjustment(command);

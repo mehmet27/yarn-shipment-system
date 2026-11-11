@@ -54,7 +54,8 @@ public final class RolePermissionMatrix {
                 Permission.DISCREPANCY_VIEW,
                 Permission.DISCREPANCY_RESOLVE,
                 Permission.AUDIT_VIEW,
-                Permission.REPORT_VIEW);
+                Permission.REPORT_VIEW,
+                Permission.BALANCE_VIEW);
     }
 
     private static Set<Permission> permissionsForWarehouse() {
@@ -90,7 +91,8 @@ public final class RolePermissionMatrix {
                 Permission.DISCREPANCY_VIEW,
                 Permission.DISCREPANCY_RESOLVE,
                 Permission.AUDIT_VIEW,
-                Permission.REPORT_VIEW);
+                Permission.REPORT_VIEW,
+                Permission.BALANCE_VIEW);
     }
 
     /** Müdür sevkiyatı açar, iptal eder ve irsaliye gelince tamamlar (saha analizi, 10.11.2026). */
@@ -105,7 +107,8 @@ public final class RolePermissionMatrix {
                 Permission.EVIDENCE_VIEW,
                 Permission.DISCREPANCY_VIEW,
                 Permission.AUDIT_VIEW,
-                Permission.REPORT_VIEW);
+                Permission.REPORT_VIEW,
+                Permission.BALANCE_VIEW);
     }
 
     private static Set<Permission> permissionsForSystem() {

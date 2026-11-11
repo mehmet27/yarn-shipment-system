@@ -41,19 +41,11 @@ export interface ShipmentTotalsView {
 }
 
 /**
- * Yalnızca karşılaştırması tamamlanan sevkiyatlar
+ * Yalnızca irsaliyeyle tamamlanan sevkiyatlar
  */
 export interface QuantityView {
   dispatchNetKg: string;
   deliveryNetKg: string;
-  absoluteDiffKg: string;
-  comparedShipments: number;
-}
-
-export interface BandCountsView {
-  green: number;
-  yellow: number;
-  red: number;
 }
 
 /**
@@ -82,35 +74,14 @@ export interface OverdueDiscrepancyView {
   dueAt: string;
 }
 
-export type LargestDifferenceViewBand = typeof LargestDifferenceViewBand[keyof typeof LargestDifferenceViewBand];
-
-
-export const LargestDifferenceViewBand = {
-  GREEN: 'GREEN',
-  YELLOW: 'YELLOW',
-  RED: 'RED',
-} as const;
-
-export interface LargestDifferenceView {
-  shipmentId: string;
-  shipmentNo: string;
-  /** Çıkış net − teslim net */
-  diffKg: string;
-  diffPct?: string;
-  band: LargestDifferenceViewBand;
-}
-
 export interface DashboardView {
   from: string;
   to: string;
   shipments: ShipmentTotalsView;
   quantity: QuantityView;
-  bands: BandCountsView;
   discrepancies: OpenDiscrepanciesView;
   /** Süresi en çok geçen önce gelir; en çok 10 kayıt */
   overdueDiscrepancies: OverdueDiscrepancyView[];
-  /** Mutlak kilo farkı en büyük 5 sevkiyat */
-  largestDifferences: LargestDifferenceView[];
 }
 
 export interface PartyStatsView {
@@ -121,17 +92,7 @@ export interface PartyStatsView {
   discrepantShipmentCount: number;
   /** Uyuşmazlıklı sevkiyat yüzdesi */
   discrepancyRate: string;
-  averageAbsoluteDiffKg: string;
 }
-
-export type ShipmentRowViewBand = typeof ShipmentRowViewBand[keyof typeof ShipmentRowViewBand];
-
-
-export const ShipmentRowViewBand = {
-  GREEN: 'GREEN',
-  YELLOW: 'YELLOW',
-  RED: 'RED',
-} as const;
 
 export interface ShipmentRowView {
   shipmentId: string;
@@ -140,10 +101,6 @@ export interface ShipmentRowView {
   status: string;
   dispatchNetKg?: string;
   deliveryNetKg?: string;
-  /** Çıkış net − teslim net; karşılaştırılmadıysa yoktur */
-  diffKg?: string;
-  diffPct?: string;
-  band?: ShipmentRowViewBand;
   hadDiscrepancy: boolean;
   createdAt: string;
   completedAt?: string;
@@ -158,8 +115,6 @@ export interface SubcontractorBalanceView {
   deliveredKg: string;
   /** Henüz teslim kaydı olmayan sevkiyatların çıkış net toplamı */
   inTransitKg: string;
-  /** Teslim edilmiş sevkiyatlarda çıkış − teslim (fire) */
-  differenceKg: string;
 }
 
 export interface BalanceMatrixRowView {

@@ -19,7 +19,7 @@ export function ShipmentsPanel({ params, isEnabled, isOnlyDiscrepant = false }: 
             <Text size="sm" c="dimmed">
               {t('report.shipments.limitNote')}
             </Text>
-            <Table.ScrollContainer minWidth={900}>
+            <Table.ScrollContainer minWidth={720}>
               <Table striped>
                 <Table.Thead>
                   <Table.Tr>
@@ -28,9 +28,6 @@ export function ShipmentsPanel({ params, isEnabled, isOnlyDiscrepant = false }: 
                     <Table.Th>{t('report.export.status')}</Table.Th>
                     <Table.Th>{t('report.dashboard.dispatchNet')}</Table.Th>
                     <Table.Th>{t('report.dashboard.deliveryNet')}</Table.Th>
-                    <Table.Th>{t('report.export.diffKg')}</Table.Th>
-                    <Table.Th>{t('report.export.diffPct')}</Table.Th>
-                    <Table.Th>{t('report.export.band')}</Table.Th>
                     <Table.Th>{t('report.export.createdAt')}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>

@@ -26,16 +26,9 @@ final class SeedRows {
      *
      * @param no sevkiyat numarası
      * @param status durum
-     * @param band karşılaştırma bandı; karşılaştırılmadıysa boş
-     * @param diffKg işaretli kilo farkı; karşılaştırılmadıysa boş
      * @param discrepant uyuşmazlık çıktı mı
      */
-    record Shipment(
-            String no,
-            String status,
-            @Nullable String band,
-            @Nullable String diffKg,
-            boolean discrepant) {}
+    record Shipment(String no, String status, boolean discrepant) {}
 
     /**
      * Uyuşmazlık satırı.
@@ -51,16 +44,14 @@ final class SeedRows {
         jdbc.update(
                 """
                 INSERT INTO shipment_view (shipment_id, site_id, shipment_no, subcontractor_id, status,
-                                           band, diff_kg, had_discrepancy, dispatch_net_kg, delivery_net_kg,
+                                           had_discrepancy, dispatch_net_kg, delivery_net_kg,
                                            dispatched_at, created_at)
-                VALUES (gen_random_uuid(), ?, ?, ?, ?, ?, ?::numeric, ?, 100, 100, '2026-11-02T08:00:00Z',
+                VALUES (gen_random_uuid(), ?, ?, ?, ?, ?, 100, 100, '2026-11-02T08:00:00Z',
                         '2026-11-02T09:00:00Z')""",
                 site,
                 shipment.no(),
                 SUBCONTRACTOR,
                 shipment.status(),
-                shipment.band(),
-                shipment.diffKg(),
                 shipment.discrepant());
     }
 

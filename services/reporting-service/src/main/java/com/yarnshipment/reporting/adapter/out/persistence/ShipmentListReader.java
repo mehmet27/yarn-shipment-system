@@ -2,7 +2,6 @@ package com.yarnshipment.reporting.adapter.out.persistence;
 
 import com.yarnshipment.reporting.application.port.out.ReportScope;
 import com.yarnshipment.reporting.domain.model.ReportPeriod;
-import com.yarnshipment.reporting.domain.model.ShipmentComparison;
 import com.yarnshipment.reporting.domain.model.ShipmentRow;
 import com.yarnshipment.reporting.domain.model.SubcontractorBalance;
 import java.sql.ResultSet;
@@ -28,7 +27,7 @@ final class ShipmentListReader {
     List<ShipmentRow> findShipments(ReportPeriod period, ReportScope scope, int limit) {
         String sql = """
                 SELECT shipment_id, shipment_no, subcontractor_id, status, dispatch_net_kg,
-                       delivery_net_kg, diff_kg, diff_pct, band, had_discrepancy, created_at, completed_at
+                       delivery_net_kg, had_discrepancy, created_at, completed_at
                   FROM shipment_view
                  WHERE true""" + ScopedSql.PERIOD_FILTER + ScopedSql.SITE_FILTER + """
 
@@ -41,18 +40,13 @@ final class ShipmentListReader {
     }
 
     private static ShipmentRow mapShipment(ResultSet rs) throws SQLException {
-        var comparison = new ShipmentComparison(
-                rs.getBigDecimal("dispatch_net_kg"),
-                rs.getBigDecimal("delivery_net_kg"),
-                rs.getBigDecimal("diff_kg"),
-                rs.getBigDecimal("diff_pct"),
-                rs.getString("band"));
         return new ShipmentRow(
                 rs.getObject("shipment_id", UUID.class),
                 rs.getString("shipment_no"),
                 rs.getObject("subcontractor_id", UUID.class),
                 rs.getString("status"),
-                comparison,
+                rs.getBigDecimal("dispatch_net_kg"),
+                rs.getBigDecimal("delivery_net_kg"),
                 rs.getBoolean("had_discrepancy"),
                 rs.getTimestamp("created_at").toInstant(),
                 instantOrNull(rs.getTimestamp("completed_at")));

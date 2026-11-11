@@ -26,8 +26,7 @@ final class PartyReader {
     private List<PartyStats> findPartyStats(String partyColumn, ReportPeriod period, ReportScope scope) {
         String sql = """
                 SELECT %1$s AS party_id, count(*) AS shipments,
-                       count(*) FILTER (WHERE had_discrepancy) AS discrepant,
-                       coalesce(sum(abs(diff_kg)), 0) AS total_diff
+                       count(*) FILTER (WHERE had_discrepancy) AS discrepant
                   FROM shipment_view
                  WHERE dispatched_at IS NOT NULL AND status <> 'CANCELLED' AND %1$s IS NOT NULL%2$s
                  GROUP BY %1$s
@@ -37,8 +36,7 @@ final class PartyReader {
                 .query((rs, row) -> new PartyStats(
                         rs.getObject("party_id", UUID.class),
                         rs.getInt("shipments"),
-                        rs.getInt("discrepant"),
-                        rs.getBigDecimal("total_diff")))
+                        rs.getInt("discrepant")))
                 .list();
     }
 }

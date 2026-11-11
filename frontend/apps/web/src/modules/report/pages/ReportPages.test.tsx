@@ -7,7 +7,7 @@ import { server } from '@/mocks/server';
 import { renderApp } from '@/test/renderApp';
 
 describe('Panel ana sayfası ve raporlar', () => {
-  it('yönetici ana sayfada dashboard kartlarını, süresi geçen uyuşmazlığı ve en büyük farkı görür', async () => {
+  it('yönetici ana sayfada dashboard kartlarını, ve süresi geçen uyuşmazlığı görür', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel');
     expect(await screen.findByTestId('stat-total')).toHaveTextContent('12');
@@ -17,7 +17,6 @@ describe('Panel ana sayfası ve raporlar', () => {
       'href',
       '/panel/uyusmazliklar/disc-0',
     );
-    expect(screen.getByRole('link', { name: 'SV-2026-0007' })).toBeInTheDocument();
   });
 
   it('rapor yetkisi olmayan kullanıcıya dashboard göstermez ve çağırmaz', async () => {

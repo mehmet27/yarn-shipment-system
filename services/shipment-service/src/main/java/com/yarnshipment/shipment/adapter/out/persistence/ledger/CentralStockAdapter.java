@@ -2,17 +2,11 @@ package com.yarnshipment.shipment.adapter.out.persistence.ledger;
 
 import com.yarnshipment.shipment.application.port.in.stock.CentralStockRow;
 import com.yarnshipment.shipment.application.port.out.ledger.CentralStockPort;
-import com.yarnshipment.shipment.domain.balance.Kilograms;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockKind;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
@@ -63,24 +57,6 @@ final class CentralStockAdapter implements CentralStockPort {
                 .param("createdBy", production.createdBy())
                 .update();
         consumptions.forEach(movement -> insert(movement, "PRODUCTION:" + movement.id()));
-    }
-
-    @Override
-    public Map<String, BigDecimal> lockStock(Collection<String> yarnTypes) {
-        Map<String, BigDecimal> stock = new LinkedHashMap<>();
-        for (String yarn : new TreeSet<>(yarnTypes)) {
-            jdbc.sql("SELECT pg_advisory_xact_lock(hashtext(?))")
-                    .param("central-stock:" + yarn)
-                    .query((rs, i) -> 1)
-                    .single();
-            stock.put(
-                    yarn,
-                    Kilograms.round(jdbc.sql(STOCK_OF)
-                            .param(yarn)
-                            .query(BigDecimal.class)
-                            .single()));
-        }
-        return stock;
     }
 
     @Override

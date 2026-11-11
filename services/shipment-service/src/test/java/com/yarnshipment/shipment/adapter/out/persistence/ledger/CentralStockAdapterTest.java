@@ -11,7 +11,6 @@ import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -102,7 +101,7 @@ class CentralStockAdapterTest {
     }
 
     @Test
-    @DisplayName("İplik girişi stoğu artırır; üretim iplikleri fire ile düşer ve iplik başına stok kilitlenip okunur")
+    @DisplayName("İplik girişi stoğu artırır; üretim iplikleri fire ile düşer ve stok eksiye düşebilir")
     void shouldAddReceiptAndDeductProductionWithFire() {
         // given
         stock.saveReceipt(
@@ -123,9 +122,6 @@ class CentralStockAdapterTest {
 
         // then
         assertThat(stockOf(YARN)).isEqualByComparingTo("18958.333");
-        Map<String, BigDecimal> locked = stock.lockStock(List.of(YARN, "Yok"));
-        assertThat(locked.get(YARN)).isEqualByComparingTo("18958.333");
-        assertThat(locked.get("Yok")).isEqualByComparingTo("0");
         assertThat(stock.findRecent(10)).hasSize(2);
     }
 }

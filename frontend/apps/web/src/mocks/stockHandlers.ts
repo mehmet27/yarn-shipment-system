@@ -35,14 +35,12 @@ export function createStockHandlers(user: CurrentUser) {
       yarnType,
       stockKg: sumKg(movements.filter((m) => m.yarnType === yarnType).map((m) => m.netKg)),
     }));
-  /** Her iplik payını kumaş / (1 - fire) kadar düşer; stok yetmezse ya da satır geçersizse undefined. */
+  /** Her iplik payını kumaş / (1 - fire) kadar düşer; satır geçersizse undefined. */
   const consume = (yarns: unknown[], fire: number) => {
     const consumed: CentralStockMovement[] = [];
     for (const share of yarns) {
       if (!isRecord(share) || !text(share.yarnType) || !positiveKg(share.netKg)) return undefined;
       const kg = (Number(share.netKg) / (1 - fire)).toFixed(3);
-      const available = rows().find((r) => r.yarnType === share.yarnType)?.stockKg ?? '0.000';
-      if (Number(kg) > Number(available)) return undefined;
       consumed.push(add(share.yarnType, 'PRODUCTION', `-${kg}`));
     }
     return consumed;

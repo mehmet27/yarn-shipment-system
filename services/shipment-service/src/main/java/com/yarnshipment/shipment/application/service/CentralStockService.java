@@ -7,7 +7,6 @@ import com.yarnshipment.shipment.application.port.in.stock.GetCentralStockUseCas
 import com.yarnshipment.shipment.application.port.in.stock.RecordCentralProductionUseCase;
 import com.yarnshipment.shipment.application.port.in.stock.RecordYarnReceiptUseCase;
 import com.yarnshipment.shipment.application.port.out.ledger.CentralStockPort;
-import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
 import com.yarnshipment.shipment.domain.balance.Kilograms;
 import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
@@ -15,16 +14,15 @@ import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Merkez iplik stoku: giriş eklenir, fasoncuya sevkiyat tamamlanınca düşer (defter kancası) ve merkez fabrikada
- * üretilen kumaş tükettiği ipliği fire ile düşer. Üretim stoğu aşacaksa reddedilir.
+ * üretilen kumaş tükettiği ipliği fire ile düşer. Stok eksiye düşse de kayıt yapılır (doğrudan fasoncuya giden
+ * ipliğin girişi henüz yapılmamış olabilir); ekran eksi stoğu uyarır.
  */
 @Service
 public class CentralStockService
@@ -69,7 +67,6 @@ public class CentralStockService
                 command.yarns(),
                 command.actor().userId());
         List<CentralStockMovement> consumptions = production.consumptions();
-        requireEnoughStock(consumptions);
         stock.saveProduction(production, consumptions);
         return production;
     }
@@ -80,20 +77,5 @@ public class CentralStockService
         List<CentralStockRow> rows = stock.findStock();
         BigDecimal total = rows.stream().map(CentralStockRow::stockKg).reduce(Kilograms.ZERO, BigDecimal::add);
         return new CentralStockOverview(rows, total, stock.findRecent(RECENT_LIMIT));
-    }
-
-    /** Aynı iplik birden çok satırda geçse bile toplam tüketim eldeki stoğu aşamaz. */
-    private void requireEnoughStock(List<CentralStockMovement> consumptions) {
-        Map<String, BigDecimal> available = stock.lockStock(consumptions.stream()
-                .map(CentralStockMovement::yarnType)
-                .distinct()
-                .toList());
-        Map<String, BigDecimal> needed = new HashMap<>();
-        consumptions.forEach(c -> needed.merge(c.yarnType(), c.netKg().negate(), BigDecimal::add));
-        needed.forEach((yarn, kg) -> {
-            if (kg.compareTo(available.getOrDefault(yarn, Kilograms.ZERO)) > 0) {
-                throw new InvalidLedgerInputException("yarns");
-            }
-        });
     }
 }

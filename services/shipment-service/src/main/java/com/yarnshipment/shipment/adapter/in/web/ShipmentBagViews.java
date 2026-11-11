@@ -18,6 +18,6 @@ final class ShipmentBagViews {
     }
 
     private static DispatchBagView toView(DispatchBag bag) {
-        return new DispatchBagView(bag.seqNo(), bag.weightKg(), WebMappings.utc(bag.assignedAt()));
+        return new DispatchBagView(bag.seqNo(), WebMappings.kg(bag.weightKg()), WebMappings.utc(bag.assignedAt()));
     }
 }

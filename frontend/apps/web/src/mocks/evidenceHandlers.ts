@@ -133,7 +133,6 @@ export function createEvidenceHandlers(permissions: readonly Permission[]) {
         id,
         ...ticket,
         sha256: 'mock-sha256',
-        source: 'GALLERY',
         uploadedAt: new Date().toISOString(),
       });
     }),

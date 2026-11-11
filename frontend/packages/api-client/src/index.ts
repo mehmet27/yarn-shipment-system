@@ -175,7 +175,6 @@ export type {
 export {
   confirmEvidenceUpload,
   declareTicketUnverified,
-  EvidenceSource,
   EvidenceType,
   getEvidenceDownloadUrl,
   ReadingProblem,

@@ -29,13 +29,13 @@ export function TypedEvidenceUpload({
   const { t } = useTranslation();
   const mutation = useUploadEvidence(shipmentId);
   const [problem, setProblem] = useState<FileProblem>();
-  const pick = (file: File | null, source: 'CAMERA' | 'GALLERY') => {
+  const pick = (file: File | null) => {
     if (file === null) return;
     const found = fileProblem(file, ACCEPTED_MIME_TYPES);
     setProblem(found);
     if (found !== undefined) return;
     mutation.mutate(
-      { file, evidenceType, source },
+      { file, evidenceType },
       {
         onSuccess: (evidence) => {
           onUploaded(evidence.id);

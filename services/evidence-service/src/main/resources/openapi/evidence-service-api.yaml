@@ -398,12 +398,9 @@ components:
         - WAYBILL
         - QUALITY_CLAIM
         - LAB_RESULT
-    EvidenceSource:
-      type: string
-      enum: [CAMERA, GALLERY]
     RequestUploadRequest:
       type: object
-      required: [shipmentId, evidenceType, mimeType, sizeBytes, source]
+      required: [shipmentId, evidenceType, mimeType, sizeBytes]
       properties:
         shipmentId:
           type: string
@@ -417,8 +414,6 @@ components:
           type: integer
           format: int64
           minimum: 1
-        source:
-          $ref: '#/components/schemas/EvidenceSource'
         capturedAt:
           type: string
           format: date-time
@@ -453,7 +448,7 @@ components:
           maxLength: 500
     EvidenceView:
       type: object
-      required: [id, shipmentId, evidenceType, mimeType, sizeBytes, sha256, source, uploadedAt, status]
+      required: [id, shipmentId, evidenceType, mimeType, sizeBytes, sha256, uploadedAt, status]
       properties:
         status:
           $ref: '#/components/schemas/EvidenceStatus'
@@ -474,8 +469,6 @@ components:
           format: int64
         sha256:
           type: string
-        source:
-          $ref: '#/components/schemas/EvidenceSource'
         capturedAt:
           type: string
           format: date-time

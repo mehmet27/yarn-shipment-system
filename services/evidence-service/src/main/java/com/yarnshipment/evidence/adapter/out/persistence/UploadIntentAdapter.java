@@ -1,7 +1,6 @@
 package com.yarnshipment.evidence.adapter.out.persistence;
 
 import com.yarnshipment.evidence.application.port.out.UploadIntentPort;
-import com.yarnshipment.evidence.domain.model.EvidenceSource;
 import com.yarnshipment.evidence.domain.model.EvidenceType;
 import com.yarnshipment.evidence.domain.model.UploadIntent;
 import java.sql.ResultSet;
@@ -19,13 +18,13 @@ import org.springframework.stereotype.Component;
 final class UploadIntentAdapter implements UploadIntentPort {
 
     private static final String INSERT = """
-            INSERT INTO upload_intent (id, shipment_id, site_id, evidence_type, mime_type, size_bytes, source,
+            INSERT INTO upload_intent (id, shipment_id, site_id, evidence_type, mime_type, size_bytes,
                                        captured_at, storage_key, requested_by, requested_at, expires_at, created_at,
                                        created_by)
-            VALUES (:id, :shipmentId, :siteId, :type, :mimeType, :sizeBytes, :source, :capturedAt, :storageKey,
+            VALUES (:id, :shipmentId, :siteId, :type, :mimeType, :sizeBytes, :capturedAt, :storageKey,
                     :actor, :at, :expiresAt, :at, :actor)""";
     private static final String SELECT = """
-            SELECT id, shipment_id, site_id, evidence_type, mime_type, size_bytes, source, captured_at, storage_key,
+            SELECT id, shipment_id, site_id, evidence_type, mime_type, size_bytes, captured_at, storage_key,
                    requested_by, requested_at, expires_at
               FROM upload_intent WHERE id = :id""";
 
@@ -45,7 +44,6 @@ final class UploadIntentAdapter implements UploadIntentPort {
                 .param("type", file.type().name())
                 .param("mimeType", file.mimeType())
                 .param("sizeBytes", file.sizeBytes())
-                .param("source", file.source().name())
                 .param("capturedAt", file.capturedAt() == null ? null : Timestamp.from(file.capturedAt()))
                 .param("storageKey", intent.storageKey())
                 .param("actor", intent.requestedBy())
@@ -68,7 +66,6 @@ final class UploadIntentAdapter implements UploadIntentPort {
                 EvidenceType.valueOf(rs.getString("evidence_type")),
                 rs.getString("mime_type"),
                 rs.getLong("size_bytes"),
-                EvidenceSource.valueOf(rs.getString("source")),
                 capturedAt == null ? null : capturedAt.toInstant());
         return new UploadIntent(
                 required(rs, "id"),

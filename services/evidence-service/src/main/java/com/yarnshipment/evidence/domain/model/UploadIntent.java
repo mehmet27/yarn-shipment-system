@@ -50,20 +50,17 @@ public record UploadIntent(
      * @param type kanıt türü
      * @param mimeType dosya türü
      * @param sizeBytes bayt cinsinden boyut
-     * @param source kamera ya da galeri
      * @param capturedAt cihazın bildirdiği çekim zamanı; karar kurallarında kullanılmaz (DOM-11)
      */
     public record DeclaredFile(
             EvidenceType type,
             String mimeType,
             long sizeBytes,
-            EvidenceSource source,
             @Nullable Instant capturedAt) {
 
         public DeclaredFile {
             Objects.requireNonNull(type, "type");
             Objects.requireNonNull(mimeType, "mimeType");
-            Objects.requireNonNull(source, "source");
         }
     }
 }

@@ -1,4 +1,4 @@
-import type { EvidenceSource, EvidenceType } from '@iplik/api-client';
+import type { EvidenceType } from '@iplik/api-client';
 import { EvidenceType as EVIDENCE_TYPES } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Paper, Select, Stack, Title } from '@iplik/ui';
@@ -26,11 +26,11 @@ export function EvidenceUpload({ shipmentId }: { shipmentId: string }) {
   const mutation = useUploadEvidence(shipmentId);
   const evidenceType = selected ?? allowed[0];
   if (evidenceType === undefined) return null;
-  const upload = (file: File | null, source: EvidenceSource) => {
+  const upload = (file: File | null) => {
     if (file === null) return;
     const found = fileProblem(file, ACCEPTED_MIME_TYPES);
     setProblem(found);
-    if (found === undefined) mutation.mutate({ file, evidenceType, source });
+    if (found === undefined) mutation.mutate({ file, evidenceType });
   };
   return (
     <Paper withBorder p="md">

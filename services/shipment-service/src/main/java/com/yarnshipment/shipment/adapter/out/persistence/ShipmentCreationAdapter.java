@@ -99,7 +99,9 @@ final class ShipmentCreationAdapter implements ShipmentCreationPort {
                     .param("netKg", line.netKg())
                     .param("fabricType", line.fabricType())
                     .param("lycra", line.lycra())
-                    .param("widthType", line.widthType() == null ? null : line.widthType().name())
+                    .param(
+                            "widthType",
+                            line.widthType() == null ? null : line.widthType().name())
                     .param("yarnLength", line.yarnLength())
                     .param("pussFine", line.pussFine())
                     .param("unitPrice", line.unitPrice())

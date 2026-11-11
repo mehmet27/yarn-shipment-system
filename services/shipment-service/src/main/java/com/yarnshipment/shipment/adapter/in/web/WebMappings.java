@@ -45,7 +45,10 @@ final class WebMappings {
                         .netKg(kg(line.netKg()))
                         .fabricType(line.fabricType())
                         .lycra(line.lycra())
-                        .widthType(line.widthType() == null ? null : line.widthType().name())
+                        .widthType(
+                                line.widthType() == null
+                                        ? null
+                                        : line.widthType().name())
                         .yarnLength(line.yarnLength())
                         .pussFine(line.pussFine())
                         .unitPrice(

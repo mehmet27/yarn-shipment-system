@@ -47,11 +47,12 @@ final class ShipmentEventsListener {
             case ShipmentCreated.TYPE -> onCreated(event);
             case ShipmentDispatched.TYPE -> {
                 ShipmentDispatched dispatched = EVENT_READER.readValue(event.data(), ShipmentDispatched.class);
-                track(dispatched.shipmentId(), Milestone.DISPATCHED, dispatched.dispatchedAt());
+                trackShipmentUseCase.trackShipment(new TrackShipmentCommand(
+                        dispatched.shipmentId(), Milestone.DISPATCHED, dispatched.dispatchedAt(), dispatched.netKg()));
             }
             case ShipmentCompleted.TYPE -> {
                 ShipmentCompleted completed = EVENT_READER.readValue(event.data(), ShipmentCompleted.class);
-                track(completed.shipmentId(), Milestone.CLOSED, completed.completedAt());
+                track(completed.shipmentId(), Milestone.COMPLETED, completed.completedAt());
             }
             case ShipmentCancelled.TYPE -> {
                 ShipmentCancelled cancelled = EVENT_READER.readValue(event.data(), ShipmentCancelled.class);

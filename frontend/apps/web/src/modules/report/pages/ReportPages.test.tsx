@@ -47,7 +47,7 @@ describe('Panel ana sayfası ve raporlar', () => {
   });
 
   it('rapor yetkisi olmayan kullanıcı raporlar adresinde engellenir', async () => {
-    server.use(...createHandlers('SUBCONTRACTOR'));
+    server.use(...createHandlers('WAREHOUSE'));
     const { router } = renderApp('/panel/raporlar');
     await waitFor(() => {
       expect(router.state.location.pathname).not.toBe('/panel/raporlar');

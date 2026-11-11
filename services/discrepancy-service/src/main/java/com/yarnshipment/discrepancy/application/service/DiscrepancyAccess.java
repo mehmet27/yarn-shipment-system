@@ -30,10 +30,7 @@ final class DiscrepancyAccess {
                 .findDiscrepancy(discrepancyId)
                 .orElseThrow(() -> new DiscrepancyNotFoundException(discrepancyId));
         scopeGuard.validateInScope(
-                actor,
-                new ScopedResource(
-                        RESOURCE_TYPE, discrepancy.id(), discrepancy.siteId(), discrepancy.subcontractorId()),
-                action);
+                actor, new ScopedResource(RESOURCE_TYPE, discrepancy.id(), discrepancy.siteId()), action);
         return discrepancy;
     }
 }

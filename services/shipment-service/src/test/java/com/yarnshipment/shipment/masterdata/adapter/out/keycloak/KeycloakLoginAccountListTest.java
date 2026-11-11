@@ -55,7 +55,7 @@ class KeycloakLoginAccountListTest {
     void shouldMergeRoleMembersIntoAccounts() throws Exception {
         members.put("admin", "[" + ADMIN_USER + "]");
         members.put("quality", "[" + ADMIN_USER + "]");
-        members.put("subcontractor", "[" + DRIVER_USER + "]");
+        members.put("warehouse", "[" + DRIVER_USER + "]");
 
         List<LoginAccountSummary> accounts = adapter("secret").findAll();
 
@@ -70,12 +70,12 @@ class KeycloakLoginAccountListTest {
         LoginAccountSummary driver = accounts.get(1);
         assertThat(driver.fullName()).isEqualTo("Ali");
         assertThat(driver.email()).isNull();
-        assertThat(driver.roles()).containsExactly("SUBCONTRACTOR");
+        assertThat(driver.roles()).containsExactly("WAREHOUSE");
         assertThat(driver.enabled()).isFalse();
         assertThat(driver.passwordChangeRequired()).isTrue();
         assertThat(calls).first().isEqualTo("POST /realms/yarnshipment/protocol/openid-connect/token");
         assertThat(calls)
-                .contains("GET " + ROLES + "subcontractor/users?first=0&max=100&briefRepresentation=false")
+                .contains("GET " + ROLES + "warehouse/users?first=0&max=100&briefRepresentation=false")
                 .noneMatch(call -> call.contains("/roles/system/"));
     }
 

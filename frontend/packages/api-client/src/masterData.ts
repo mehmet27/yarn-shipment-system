@@ -65,8 +65,6 @@ export type { CancelShipmentRequest } from './generated/shipmentService';
 
 export { removeShipmentBag } from './generated/shipmentService';
 
-export { createSubcontractorLoginAccount } from './generated/shipmentService';
-export type { LoginAccountRequest } from './generated/shipmentService';
 export {
   changeLoginAccountEnabled,
   confirmPasswordReset,

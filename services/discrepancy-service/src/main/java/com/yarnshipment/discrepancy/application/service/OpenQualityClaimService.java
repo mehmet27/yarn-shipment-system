@@ -16,11 +16,10 @@ import com.yarnshipment.discrepancy.domain.model.BusinessDays;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Kalite itirazını açar: süre, çuval ve fotoğraf kuralları domain'de, kanıtın sevkiyata aitliği burada denetlenir. */
+/** Kalite itirazını açar: süre, kilo ve fotoğraf kuralları domain'de, kanıtın sevkiyata aitliği burada denetlenir. */
 @Service
 public class OpenQualityClaimService implements OpenQualityClaimUseCase {
 
@@ -51,7 +50,7 @@ public class OpenQualityClaimService implements OpenQualityClaimUseCase {
         ClaimTarget target = access.loadTarget(command.actor(), command.shipmentId(), ACTION);
         ClaimRequest request = command.request();
         Instant now = clock.instant();
-        target.requireClaimable(request, claimedKeys(target), now);
+        target.requireClaimable(request, now);
         evidence.requireAll(target.shipmentId(), request.evidenceIds(), ClaimEvidence.QUALITY_CLAIM);
         QualityClaim claim = claims.saveClaim(new NewQualityClaim(
                 target,
@@ -60,11 +59,5 @@ public class OpenQualityClaimService implements OpenQualityClaimUseCase {
                 now,
                 BusinessDays.plus(now, BusinessDays.DISCREPANCY_DUE_DAYS, FACTORY_ZONE)));
         return access.fileOf(claim);
-    }
-
-    private List<String> claimedKeys(ClaimTarget target) {
-        return claims.findClaims(target.shipmentId()).stream()
-                .flatMap(claim -> claim.bagKeys().stream())
-                .toList();
     }
 }

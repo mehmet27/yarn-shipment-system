@@ -77,13 +77,12 @@ class BagVoidControllerTest {
     }
 
     @Test
-    @DisplayName("Kalite, yönetici, şoför ve fasoncu çuval iptal edemez")
+    @DisplayName("Kalite, yönetici, ve şoför çuval iptal edemez")
     void shouldForbidRolesWithoutBagCreate() {
         for (Jwt jwt : List.of(
                 TestTokens.token("quality").claim("amr", List.of("otp")).build(),
                 TestTokens.token("manager").build(),
-                TestTokens.driverToken(),
-                TestTokens.subcontractorToken())) {
+                TestTokens.driverToken())) {
             assertThat(post("/api/v1/bags/void", VOID_BODY, jwt)).hasStatus(HttpStatus.FORBIDDEN);
         }
     }

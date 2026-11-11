@@ -29,10 +29,9 @@ public final class TestTokens {
                 .claim("site_ids", List.of(SITE_ID.toString()));
     }
 
-    public static Jwt subcontractorToken() {
-        return token("subcontractor")
-                .claim("subcontractor_id", SUBCONTRACTOR_ID.toString())
-                .build();
+    /** Lokasyonu olmayan kullanıcı: rapor görmez. */
+    public static Jwt noSiteToken() {
+        return token("manager").claim("site_ids", List.of()).build();
     }
 
     public static Actor actor(Jwt jwt) {

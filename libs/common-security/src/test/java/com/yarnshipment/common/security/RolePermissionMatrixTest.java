@@ -24,6 +24,8 @@ class RolePermissionMatrixTest {
                         Permission.SHIPMENT_CREATE,
                         Permission.SHIPMENT_CANCEL,
                         Permission.SHIPMENT_COMPLETE,
+                        Permission.EVIDENCE_UPLOAD_CLAIM,
+                        Permission.QUALITY_CLAIM_OPEN,
                         Permission.FABRIC_RECEIPT_RECORD,
                         Permission.YARN_RETURN_RECORD,
                         Permission.FIRE_RATE_EDIT,

@@ -50,8 +50,8 @@ class GetShipmentHistoryServiceTest {
     @Test
     @DisplayName("Olmayan sevkiyatın geçmişi 404, kapsam dışı sevkiyatın geçmişi 403 verir")
     void shouldRejectMissingAndOutOfScopeHistory() {
-        Actor stranger = TestTokens.CONVERTER.toActor(TestTokens.token("subcontractor")
-                .claim("subcontractor_id", UUID.randomUUID().toString())
+        Actor stranger = TestTokens.CONVERTER.toActor(TestTokens.token("warehouse")
+                .claim("site_ids", java.util.List.of(UUID.randomUUID().toString()))
                 .build());
         GetShipmentHistoryQuery missing =
                 new GetShipmentHistoryQuery(TestTokens.actor("warehouse"), TestShipments.SHIPMENT_ID);

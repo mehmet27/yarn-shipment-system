@@ -13,9 +13,7 @@ export function saveTareStandard(
 ): TareStandardView {
   const { packagingType, standardTareKg, maxDeviationPct } = values;
   const { id: siteId, label: siteName } = site;
-  const existing = standards.find(
-    (row) => row.siteId === siteId && row.packagingType === packagingType,
-  );
+  const existing = standards.find((row) => row.siteId === siteId);
   const saved: TareStandardView = {
     id: existing?.id ?? `tare-${String(standards.length + 1)}`,
     siteId,

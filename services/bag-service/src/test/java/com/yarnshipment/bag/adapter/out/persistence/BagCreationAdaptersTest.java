@@ -86,10 +86,10 @@ class BagCreationAdaptersTest {
     void shouldCreateBagsWithGeneratedKeys() {
         LockedLot lot = lots.findLocked(LOT_A).orElseThrow();
 
-        List<Bag> created = creations.create(new BagCreationPort.NewBags(lot, PackageType.BOX, NEW_BAGS), ACTOR, NOW);
+        List<Bag> created = creations.create(new BagCreationPort.NewBags(lot, PackageType.BAG, NEW_BAGS), ACTOR, NOW);
 
         assertThat(created).hasSize(NEW_BAGS).allSatisfy(bag -> {
-            assertThat(bag.uniqueKey()).matches("BOX-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}");
+            assertThat(bag.uniqueKey()).matches("BAG-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}");
             assertThat(bag.status()).isEqualTo(BagStatus.CREATED);
             assertThat(bag.qualityGradeCode()).isEqualTo("A");
             assertThat(bag.lotNo()).isEqualTo("P-2026-0001");
@@ -97,7 +97,7 @@ class BagCreationAdaptersTest {
         assertThat(created).extracting(Bag::uniqueKey).doesNotHaveDuplicates();
         assertThat(bags.findByUniqueKeys(created.stream().map(Bag::uniqueKey).toList()))
                 .extracting(Bag::packageType)
-                .containsOnly(PackageType.BOX);
+                .containsOnly(PackageType.BAG);
         assertThat(lots.findLocked(LOT_A).orElseThrow().bagCount()).isEqualTo(SEEDED_BAGS_OF_LOT + NEW_BAGS);
     }
 

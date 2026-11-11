@@ -162,11 +162,10 @@ class RecordDispatchServiceTest {
     void shouldAskTareBasisPerPackageType() {
         queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
         int total = TestDispatches.measurement().bagCount();
-        bagsPort.boxes = 1;
 
         service.recordDispatch(command(warehouse));
 
-        assertThat(lastCounts).containsEntry(PackageType.BOX, 1).containsEntry(PackageType.BAG, total - 1);
+        assertThat(lastCounts).containsOnlyKeys(PackageType.BAG).containsEntry(PackageType.BAG, total);
     }
 
     private static int total(Map<PackageType, Integer> counts) {
@@ -203,7 +202,6 @@ class RecordDispatchServiceTest {
 
     private static final class FixedBagCountPort implements ShipmentBagsPort {
         private int assigned;
-        private int boxes;
 
         FixedBagCountPort(int assigned) {
             this.assigned = assigned;
@@ -213,8 +211,7 @@ class RecordDispatchServiceTest {
         public List<DispatchBag> findDispatchBags(UUID shipmentId) {
             List<DispatchBag> bags = new ArrayList<>();
             for (int index = 0; index < assigned; index++) {
-                PackageType type = index < boxes ? PackageType.BOX : PackageType.BAG;
-                bags.add(new DispatchBag(UUID.randomUUID(), "K", type, "L", "A", ScanMethod.SCAN, NOW));
+                bags.add(new DispatchBag(UUID.randomUUID(), "K", PackageType.BAG, "L", "A", ScanMethod.SCAN, NOW));
             }
             return bags;
         }

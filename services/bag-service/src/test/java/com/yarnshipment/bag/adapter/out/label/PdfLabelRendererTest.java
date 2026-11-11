@@ -30,7 +30,7 @@ class PdfLabelRendererTest {
     void shouldRenderOnePagePerLabel() throws IOException {
         byte[] pdf = renderer.render(List.of(
                 new BagLabel(bag("BAG-7K3M-Q9XD", "A", PackageType.BAG), 1),
-                new BagLabel(bag("BAG-2P4R-HJ8W", "B", PackageType.PALLET), 1)));
+                new BagLabel(bag("BAG-2P4R-HJ8W", "B", PackageType.BAG), 1)));
 
         assertThat(new String(pdf, 0, HEADER_LENGTH, StandardCharsets.US_ASCII)).isEqualTo("%PDF-");
         PdfReader reader = new PdfReader(pdf);
@@ -38,17 +38,17 @@ class PdfLabelRendererTest {
         assertThat(reader.getPageSize(1).getWidth()).isCloseTo(LABEL_WIDTH_POINTS, Offset.offset(TOLERANCE));
         PdfTextExtractor text = new PdfTextExtractor(reader);
         assertThat(text.getTextFromPage(1)).contains("KALİTE A · ÇUVAL", "BAG-7K3M-Q9XD", "P-2026-0001", "Çuval");
-        assertThat(text.getTextFromPage(2)).contains("KALİTE B · PALET", "BAG-2P4R-HJ8W", "Palet");
+        assertThat(text.getTextFromPage(2)).contains("KALİTE B · ÇUVAL", "BAG-2P4R-HJ8W", "Çuval");
         assertThat(text.getTextFromPage(1)).doesNotContain("YENİDEN BASKI");
     }
 
     @Test
     @DisplayName("Yeniden baskı etikette baskı numarasıyla yazar")
     void shouldMarkReprint() throws IOException {
-        byte[] pdf = renderer.render(List.of(new BagLabel(bag("BAG-7K3M-Q9XD", "C", PackageType.BOBBIN), THIRD_PRINT)));
+        byte[] pdf = renderer.render(List.of(new BagLabel(bag("BAG-7K3M-Q9XD", "C", PackageType.BAG), THIRD_PRINT)));
 
         String page = new PdfTextExtractor(new PdfReader(pdf)).getTextFromPage(1);
-        assertThat(page).contains("YENİDEN BASKI", "3. baskı", "KALİTE C · BOBİN", "Bobin");
+        assertThat(page).contains("YENİDEN BASKI", "3. baskı", "KALİTE C · ÇUVAL", "Çuval");
     }
 
     private static Bag bag(String key, String grade, PackageType packageType) {

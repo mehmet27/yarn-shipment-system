@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -43,18 +42,8 @@ final class ShipmentWatchAdapter implements ShipmentWatchPort {
             UPDATE shipment_watch
                SET closed_at = :at, updated_at = :at, updated_by = :actor, version = version + 1
              WHERE shipment_id = :shipmentId AND closed_at IS NULL""";
-    private static final String SET_TRANSIT_ALERTED = """
-            UPDATE shipment_watch
-               SET transit_alerted_at = :at, updated_at = :at, updated_by = :actor, version = version + 1
-             WHERE shipment_id = :shipmentId AND transit_alerted_at IS NULL""";
     private static final String COLUMNS = "shipment_id, shipment_no, site_id, subcontractor_id, dispatched_at";
     private static final String FIND = "SELECT " + COLUMNS + " FROM shipment_watch WHERE shipment_id = :shipmentId";
-    private static final String FIND_IN_TRANSIT = "SELECT " + COLUMNS + """
-             FROM shipment_watch
-            WHERE dispatched_at < :before AND closed_at IS NULL
-              AND transit_alerted_at IS NULL
-            ORDER BY dispatched_at
-            LIMIT :limit""";
 
     private final JdbcClient jdbc;
 
@@ -100,20 +89,6 @@ final class ShipmentWatchAdapter implements ShipmentWatchPort {
                 .param("shipmentId", shipmentId)
                 .query((rs, rowNum) -> shipment(rs))
                 .optional();
-    }
-
-    @Override
-    public List<WatchedShipment> findInTransitSince(Instant dispatchedBefore, int limit) {
-        return jdbc.sql(FIND_IN_TRANSIT)
-                .param("before", Timestamp.from(dispatchedBefore))
-                .param("limit", limit)
-                .query((rs, rowNum) -> shipment(rs))
-                .list();
-    }
-
-    @Override
-    public boolean markTransitAlerted(UUID shipmentId, Instant at) {
-        return mark(SET_TRANSIT_ALERTED, shipmentId, at) > 0;
     }
 
     private int mark(String sql, UUID shipmentId, Instant at) {

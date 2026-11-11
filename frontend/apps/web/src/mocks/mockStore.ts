@@ -7,7 +7,6 @@ import type {
 } from '@iplik/api-client';
 import { isKilogram, sumKg } from '@iplik/units';
 import { resetMockCorrections } from './corrections';
-import { resetDiscrepancySettings } from './discrepancySettings';
 import { resetMockClaims } from './claims';
 import { resetMockLoginAccounts } from './loginAccounts';
 import { resetMockLots } from './lots';
@@ -139,7 +138,6 @@ export function assignMockBagKeys(shipmentId: string, keys: readonly string[]): 
 export function resetMockStore(): void {
   resetMasterData();
   resetTareStandards();
-  resetDiscrepancySettings();
   resetMockCorrections();
   resetMockClaims();
   resetMockLots();

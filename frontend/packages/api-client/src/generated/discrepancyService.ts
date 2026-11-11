@@ -146,62 +146,6 @@ export interface DiscrepancyActivityView {
   occurredAt: string;
 }
 
-export interface TicketMisreadView {
-  markedBy: string;
-  markedAt: string;
-  note?: string;
-}
-
-export type DiscrepancyTicketViewSide = typeof DiscrepancyTicketViewSide[keyof typeof DiscrepancyTicketViewSide];
-
-
-export const DiscrepancyTicketViewSide = {
-  DISPATCH_SCALE: 'DISPATCH_SCALE',
-  DELIVERY_SCALE: 'DELIVERY_SCALE',
-} as const;
-
-export type DiscrepancyTicketViewStatus = typeof DiscrepancyTicketViewStatus[keyof typeof DiscrepancyTicketViewStatus];
-
-
-export const DiscrepancyTicketViewStatus = {
-  READ: 'READ',
-  UNREADABLE: 'UNREADABLE',
-} as const;
-
-export type DiscrepancyTicketViewAllowedActionsItem = typeof DiscrepancyTicketViewAllowedActionsItem[keyof typeof DiscrepancyTicketViewAllowedActionsItem];
-
-
-export const DiscrepancyTicketViewAllowedActionsItem = {
-  MARK_MISREAD: 'MARK_MISREAD',
-} as const;
-
-export interface DiscrepancyTicketView {
-  /** Fotoğraf; evidence-service indirme adresiyle gösterilir */
-  evidenceId: string;
-  side: DiscrepancyTicketViewSide;
-  status: DiscrepancyTicketViewStatus;
-  /** Okunan brüt; yalnızca READ iken dolu */
-  grossKg?: string;
-  tareKg?: string;
-  netKg?: string;
-  /** Aynı taraf için elle girilen net; teslim karşılaştırması yapılmadıysa boş */
-  enteredNetKg?: string;
-  plate?: string;
-  ticketNo?: string;
-  scaleName?: string;
-  weighedAt?: string;
-  problems: string[];
-  readAt: string;
-  misread?: TicketMisreadView;
-  /** Bu kullanıcının bu okumada yapabileceği eylemler (FE-SEC-03) */
-  allowedActions: DiscrepancyTicketViewAllowedActionsItem[];
-}
-
-export interface MarkTicketMisreadRequest {
-  /** @maxLength 500 */
-  note?: string;
-}
-
 export interface AssignDiscrepancyRequest {
   assigneeId: string;
 }
@@ -343,50 +287,8 @@ export interface ShipmentClaimsView {
  */
 export type Pct = string;
 
-export interface ToleranceView {
-  greenMaxPct: Pct;
-  yellowMaxPct: Pct;
-}
-
-export interface ToleranceVersionView {
-  greenMaxPct: Pct;
-  yellowMaxPct: Pct;
-  validFrom: string;
-  /** Güncel sürümde yok */
-  validTo?: string;
-  /** Değeri giren kullanıcı; ilk kuralda sistem hesabı (sıfır UUID) */
-  setBy: string;
-}
-
-export interface TimeLimitVersionView {
-  inTransitMaxHours: number;
-  validFrom: string;
-  /** Güncel sürümde yok */
-  validTo?: string;
-  /** Değeri giren kullanıcı; ilk kuralda sistem hesabı (sıfır UUID) */
-  setBy: string;
-}
-
-export interface DiscrepancySettingsView {
-  tolerance: ToleranceView;
-  /** Sevkiyat bundan uzun süre yolda kalırsa zaman uyuşmazlığı açılır */
-  inTransitMaxHours: number;
-  toleranceHistory: ToleranceVersionView[];
-  timeLimitHistory: TimeLimitVersionView[];
-}
-
-export interface UpdateDiscrepancySettingsRequest {
-  greenMaxPct: Pct;
-  yellowMaxPct: Pct;
-  /**
-     * @minimum 1
-     * @maximum 720
-     */
-  inTransitMaxHours: number;
-}
-
 /**
- * İstek biçimi hatalı ya da ayar kural sınırları dışında (TOLERANCE_BANDS_INVALID, TIME_LIMIT_INVALID)
+ * İstek biçimi hatalı
  */
 export type BadRequestResponse = Problem;
 
@@ -484,35 +386,6 @@ export const listDiscrepancyActivity = (
  ) => {
       return customInstance<DiscrepancyActivityView[]>(
       {url: `/api/v1/discrepancies/${discrepancyId}/activity`, method: 'GET'
-    },
-      );
-    }
-
-/**
- * @summary Uyuşmazlığın sevkiyatındaki kantar fişleri (en yeniden eskiye)
- */
-export const listDiscrepancyTickets = (
-    discrepancyId: string,
- ) => {
-      return customInstance<DiscrepancyTicketView[]>(
-      {url: `/api/v1/discrepancies/${discrepancyId}/tickets`, method: 'GET'
-    },
-      );
-    }
-
-/**
- * Okuma bu uyuşmazlığın sevkiyatına ait olmalıdır; zaten işaretliyse değişmez.
- * @summary Fiş okumasını "AI yanıldı" olarak işaretler
- */
-export const markTicketMisread = (
-    discrepancyId: string,
-    evidenceId: string,
-    markTicketMisreadRequest?: MarkTicketMisreadRequest,
- ) => {
-      return customInstance<DiscrepancyTicketView[]>(
-      {url: `/api/v1/discrepancies/${discrepancyId}/tickets/${evidenceId}/misread`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: markTicketMisreadRequest
     },
       );
     }
@@ -616,36 +489,6 @@ export const recordInspectionResult = (
       );
     }
 
-/**
- * Güncel tolerans bantları, yolda kalma süresi sınırı ve son değişiklikler (en yenisi önce).
- * @summary Uyuşmazlık kurallarının ayarları (yalnızca Admin)
- */
-export const getDiscrepancySettings = (
-
- ) => {
-      return customInstance<DiscrepancySettingsView>(
-      {url: `/api/v1/discrepancy-settings`, method: 'GET'
-    },
-      );
-    }
-
-/**
- * Yeni değer kaydedildiği andan sonraki karşılaştırmalara ve kontrollere uygulanır; açılmış uyuşmazlıklar
- * değişmez. Eski değer silinmez, geçerliliği kapatılır ve geçmişte görünür. Değişmeyen kural yeniden yazılmaz.
- * Bantlar `0 ≤ greenMaxPct < yellowMaxPct ≤ 100` olmalıdır (aksi halde TOLERANCE_BANDS_INVALID).
- * @summary Tolerans bantlarını ve yolda kalma sınırını değiştirir (yalnızca Admin)
- */
-export const updateDiscrepancySettings = (
-    updateDiscrepancySettingsRequest: UpdateDiscrepancySettingsRequest,
- ) => {
-      return customInstance<DiscrepancySettingsView>(
-      {url: `/api/v1/discrepancy-settings`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateDiscrepancySettingsRequest
-    },
-      );
-    }
-
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -654,13 +497,9 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 export type ListDiscrepanciesResult = NonNullable<Awaited<ReturnType<typeof listDiscrepancies>>>
 export type GetDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof getDiscrepancy>>>
 export type ListDiscrepancyActivityResult = NonNullable<Awaited<ReturnType<typeof listDiscrepancyActivity>>>
-export type ListDiscrepancyTicketsResult = NonNullable<Awaited<ReturnType<typeof listDiscrepancyTickets>>>
-export type MarkTicketMisreadResult = NonNullable<Awaited<ReturnType<typeof markTicketMisread>>>
 export type AssignDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof assignDiscrepancy>>>
 export type ResolveDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof resolveDiscrepancy>>>
 export type OpenQualityClaimResult = NonNullable<Awaited<ReturnType<typeof openQualityClaim>>>
 export type GetShipmentClaimsResult = NonNullable<Awaited<ReturnType<typeof getShipmentClaims>>>
 export type RequestInspectionResult = NonNullable<Awaited<ReturnType<typeof requestInspection>>>
 export type RecordInspectionResultResult = NonNullable<Awaited<ReturnType<typeof recordInspectionResult>>>
-export type GetDiscrepancySettingsResult = NonNullable<Awaited<ReturnType<typeof getDiscrepancySettings>>>
-export type UpdateDiscrepancySettingsResult = NonNullable<Awaited<ReturnType<typeof updateDiscrepancySettings>>>

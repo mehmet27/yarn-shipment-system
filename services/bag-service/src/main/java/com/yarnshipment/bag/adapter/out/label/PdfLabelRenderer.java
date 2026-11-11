@@ -111,22 +111,16 @@ final class PdfLabelRenderer implements LabelRenderer {
         return valueBaseline - LINE_SPACING;
     }
 
-    /** Bantta büyük harfle yazılır; koli, palet ve bobin çuvalla karışmasın diye tür her etikette bantta görünür. */
+    /** Bantta büyük harfle yazılır; tür her etikette bantta görünür. */
     private static String bandName(PackageType packageType) {
         return switch (packageType) {
             case BAG -> "ÇUVAL";
-            case BOX -> "KOLİ";
-            case PALLET -> "PALET";
-            case BOBBIN -> "BOBİN";
         };
     }
 
     private static String packageName(PackageType packageType) {
         return switch (packageType) {
             case BAG -> "Çuval";
-            case BOX -> "Koli";
-            case PALLET -> "Palet";
-            case BOBBIN -> "Bobin";
         };
     }
 

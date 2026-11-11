@@ -688,9 +688,6 @@ export type PackagingType = typeof PackagingType[keyof typeof PackagingType];
 
 export const PackagingType = {
   BAG: 'BAG',
-  BOX: 'BOX',
-  PALLET: 'PALLET',
-  BOBBIN: 'BOBBIN',
 } as const;
 
 export interface TareStandardSaveRequest {

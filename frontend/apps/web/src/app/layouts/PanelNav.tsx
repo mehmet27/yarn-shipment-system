@@ -35,12 +35,6 @@ const ITEMS: readonly PanelNavItem[] = [
   },
   { to: '/panel/partiler', labelKey: 'nav.lots', icon: 'lots', permission: 'LOT_QUALITY_LOCK' },
   {
-    to: '/panel/kural-ayarlari',
-    labelKey: 'nav.discrepancySettings',
-    icon: 'settings',
-    permission: 'SETTINGS_MANAGE',
-  },
-  {
     to: '/panel/gorunum',
     labelKey: 'nav.branding',
     icon: 'branding',

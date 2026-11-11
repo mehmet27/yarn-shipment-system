@@ -9,7 +9,6 @@ import { DiscrepancyBadges } from '../components/DiscrepancyBadges';
 import { DiscrepancyFacts } from '../components/DiscrepancyFacts';
 import { ResolveForm } from '../components/ResolveForm';
 import { useDiscrepancy } from '../hooks/useDiscrepancy';
-import { TicketPanel } from '../tickets/TicketPanel';
 
 /** Kararlar `allowedActions`'a göre görünür (FE-SEC-03); rol adına bakılmaz. */
 export function DiscrepancyDetailPage() {
@@ -31,7 +30,6 @@ export function DiscrepancyDetailPage() {
             {t('discrepancy.openShipment')}
           </Anchor>
           <DiscrepancyFacts discrepancy={discrepancy} />
-          <TicketPanel discrepancyId={discrepancy.id} />
           {discrepancy.ruleCode === 'QUALITY_CLAIM' && (
             <ClaimOfDiscrepancy
               shipmentId={discrepancy.shipmentId}

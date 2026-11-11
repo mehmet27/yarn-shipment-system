@@ -3,7 +3,6 @@ package com.yarnshipment.discrepancy.application.port.out;
 import com.yarnshipment.discrepancy.domain.rule.WatchedShipment;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -27,10 +26,4 @@ public interface ShipmentWatchPort {
     void recordClosed(UUID shipmentId, Instant closedAt);
 
     Optional<WatchedShipment> findShipment(UUID shipmentId);
-
-    /** Verilen andan önce yola çıkmış, kapanmamış ve henüz uyarılmamış sevkiyatlar; en eskisi önce. */
-    List<WatchedShipment> findInTransitSince(Instant dispatchedBefore, int limit);
-
-    /** Yolda süre aşımı uyuşmazlığı açıldı; ikinci kez açılmaz. Başkası işaretlediyse {@code false}. */
-    boolean markTransitAlerted(UUID shipmentId, Instant at);
 }

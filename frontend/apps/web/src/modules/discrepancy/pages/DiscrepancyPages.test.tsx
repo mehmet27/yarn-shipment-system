@@ -43,28 +43,4 @@ describe('Uyuşmazlık ekranları', () => {
     expect(await screen.findAllByText('Tolerans içinde kabul')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: 'Karara bağla' })).not.toBeInTheDocument();
   });
-
-  it('fiş panelinde okunan ve girilen neti gösterir, okumayı "AI yanıldı" diye işaretler', async () => {
-    server.use(...createHandlers('ADMIN'));
-    renderApp('/panel/uyusmazliklar/disc-0');
-    const dispatch = await screen.findByTestId('ticket-disc-0-dispatch-ticket');
-    expect(within(dispatch).getByText('Çıkış kantarı')).toBeInTheDocument();
-    expect(within(dispatch).getByText(/^Brüt 4\.500/)).toBeInTheDocument();
-    expect(within(dispatch).getByText('+10 kg')).toBeInTheDocument();
-    expect(
-      await within(dispatch).findByRole('img', { name: 'Kantar fişi fotoğrafı' }),
-    ).toBeInTheDocument();
-    const delivery = screen.getByTestId('ticket-disc-0-delivery-ticket');
-    expect(within(delivery).getByText('Kilolar okunamadı.')).toBeInTheDocument();
-    await userEvent.click(within(dispatch).getByRole('button', { name: 'AI yanıldı' }));
-    expect(await within(dispatch).findByText(/olarak işaretlendi/)).toBeInTheDocument();
-    expect(within(dispatch).queryByRole('button', { name: 'AI yanıldı' })).not.toBeInTheDocument();
-  });
-
-  it('karar yetkisi olmayan kullanıcıya "AI yanıldı" düğmesini göstermez', async () => {
-    server.use(...createHandlers('MANAGER'));
-    renderApp('/panel/uyusmazliklar/disc-0');
-    const dispatch = await screen.findByTestId('ticket-disc-0-dispatch-ticket');
-    expect(within(dispatch).queryByRole('button', { name: 'AI yanıldı' })).not.toBeInTheDocument();
-  });
 });

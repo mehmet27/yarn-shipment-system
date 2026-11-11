@@ -7,6 +7,7 @@ import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.model.StatusChange;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,8 @@ class ShipmentFileAdaptersTest {
         assertThat(assigned)
                 .hasSize(BAGS_PER_SHIPMENT)
                 .extracting(DispatchBag::seqNo)
-                .containsExactly(1, 2, 3, 4, 5);
+                .containsExactlyElementsOf(
+                        IntStream.rangeClosed(1, BAGS_PER_SHIPMENT).boxed().toList());
         assertThat(bags.findDispatchBags(DRAFT)).isEmpty();
     }
 }

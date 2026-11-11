@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ class BagAssignmentAdapterTest {
     private static final PostgresTestDatabase DATABASE = PostgresTestDatabase.startIsolated();
     private static final UUID DRAFT = UUID.fromString("0192f0a0-0000-7000-8000-0000000a0001");
     private static final UUID ACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
+    private static final int TOTAL_BAGS = 3;
     private static final Instant NOW = Instant.parse("2026-10-22T10:00:00Z");
 
     @MockitoBean
@@ -57,7 +59,10 @@ class BagAssignmentAdapterTest {
         assertThat(assignments.assign(first, ACTOR, NOW)).isEqualTo(2);
         assertThat(assignments.assign(second, ACTOR, NOW)).isEqualTo(1);
 
-        assertThat(bags.findDispatchBags(DRAFT)).extracting(DispatchBag::seqNo).containsExactly(1, 2, 3);
+        assertThat(bags.findDispatchBags(DRAFT))
+                .extracting(DispatchBag::seqNo)
+                .containsExactlyElementsOf(
+                        IntStream.rangeClosed(1, TOTAL_BAGS).boxed().toList());
         assertThat(bags.findDispatchBags(DRAFT))
                 .extracting(DispatchBag::weightKg)
                 .containsExactly(new BigDecimal("25.000"), new BigDecimal("24.500"), new BigDecimal("26.250"));

@@ -85,4 +85,5 @@ class ShipmentWatchAdaptersTest {
                         java.math.BigDecimal.class,
                         SHIPMENT.shipmentId()))
                 .isEqualByComparingTo(TestComparisons.DISPATCH_KG);
-    }}
+    }
+}

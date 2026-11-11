@@ -87,6 +87,23 @@ class LotServicesTest {
     }
 
     @Test
+    @DisplayName("Pasif ya da bilinmeyen iplik tedarikçisi reddedilir")
+    void shouldRejectInactiveYarnSupplier() {
+        // given
+        Actor admin = TestTokens.actor("admin");
+        UUID supplier = UUID.randomUUID();
+        givenValidReferences();
+        when(lots.activeSiteExists(TestTokens.SITE_ID)).thenReturn(true);
+        when(lots.activeYarnSupplierExists(supplier)).thenReturn(false);
+        LotDetails withSupplier = new LotDetails("P-3", PRODUCT, GRADE, LocalDate.parse("2026-10-29"), supplier);
+
+        // when / then
+        assertThatThrownBy(() -> management.createLot(admin, TestTokens.SITE_ID, withSupplier))
+                .isInstanceOf(InvalidMasterDataException.class);
+        verify(lots, never()).insertLot(any(), any(), any());
+    }
+
+    @Test
     @DisplayName("Pasif iplik, pasif kalite ya da ileri tarihli üretim reddedilir")
     void shouldRejectInvalidReferences() {
         // given
@@ -180,7 +197,7 @@ class LotServicesTest {
     void shouldListLotsWithScope() {
         // given
         Actor quality = TestTokens.actor("quality");
-        AccessScope scope = AccessScope.restrictedTo(Set.of(TestTokens.SITE_ID), null);
+        AccessScope scope = AccessScope.restrictedTo(Set.of(TestTokens.SITE_ID));
         MasterDataQuery query = new MasterDataQuery(null, 0, PAGE_SIZE);
         when(scopeGuard.scopeOf(quality)).thenReturn(scope);
 

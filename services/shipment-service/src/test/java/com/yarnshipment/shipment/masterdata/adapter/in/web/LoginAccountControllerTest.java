@@ -41,7 +41,7 @@ class LoginAccountControllerTest {
             "Ali Yılmaz",
             "ali@ornek.com",
             "***4567",
-            List.of("SUBCONTRACTOR"),
+            List.of("WAREHOUSE"),
             true,
             true,
             Instant.parse("2026-01-01T00:00:00Z"));
@@ -76,7 +76,7 @@ class LoginAccountControllerTest {
         assertThat(result).hasStatus(HttpStatus.OK);
         assertThat(result).bodyJson().extractingPath("$.items[0].username").isEqualTo("ali.yilmaz");
         assertThat(result).bodyJson().extractingPath("$.items[0].fullName").isEqualTo("Ali Yılmaz");
-        assertThat(result).bodyJson().extractingPath("$.items[0].roles[0]").isEqualTo("SUBCONTRACTOR");
+        assertThat(result).bodyJson().extractingPath("$.items[0].roles[0]").isEqualTo("WAREHOUSE");
         assertThat(result).bodyJson().extractingPath("$.items[0].enabled").isEqualTo(true);
         assertThat(result)
                 .bodyJson()
@@ -96,7 +96,7 @@ class LoginAccountControllerTest {
     void shouldForbidNonAdmins() {
         MvcTestResult warehouse = get(URI, TestTokens.token("warehouse").build());
         MvcTestResult manager = get(URI, TestTokens.token("manager").build());
-        MvcTestResult driver = get(URI, TestTokens.subcontractorToken());
+        MvcTestResult driver = get(URI, TestTokens.token("offline_access").build());
 
         assertThat(warehouse).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(manager).hasStatus(HttpStatus.FORBIDDEN);

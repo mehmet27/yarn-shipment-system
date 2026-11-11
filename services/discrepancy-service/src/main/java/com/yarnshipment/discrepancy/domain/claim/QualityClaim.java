@@ -1,41 +1,45 @@
 package com.yarnshipment.discrepancy.domain.claim;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /**
- * Fasoncunun (ya da kalite/admin'in fasoncu adına) açtığı kalite itirazı. Her itiraz bir {@code QUALITY}
- * uyuşmazlığıdır; inceleme ve karar o uyuşmazlık üzerinden yürür. İtiraz açıldıktan sonra değişmez.
+ * Fabrika personelinin (kalite, müdür, admin) tamamlanmış sevkiyat için kilogram bazlı açtığı kalite itirazı.
+ * Her itiraz bir {@code QUALITY} uyuşmazlığıdır; inceleme ve karar o uyuşmazlık üzerinden yürür. İtiraz açıldıktan
+ * sonra değişmez.
  *
  * @param id kimlik
  * @param discrepancyId itirazın uyuşmazlığı
  * @param shipmentId sevkiyat
- * @param subcontractorId sevkiyatın fasoncusu
+ * @param subcontractorId sevkiyatın fasoncusu (ana veri); bilinmiyorsa boş
  * @param opening kim, ne zaman ve hangi süre içinde açtı
  * @param description açıklama
- * @param bagKeys itiraz edilen çuvallar
+ * @param claimedKg itiraz edilen kilo; çuval bazlı eski itirazlarda sıfır
+ * @param fabricReceiptId isteğe bağlı kumaş girişi kimliği
  * @param evidenceIds itiraz fotoğrafları
  */
 public record QualityClaim(
         UUID id,
         UUID discrepancyId,
         UUID shipmentId,
-        UUID subcontractorId,
+        @Nullable UUID subcontractorId,
         Opening opening,
         String description,
-        List<String> bagKeys,
+        BigDecimal claimedKg,
+        @Nullable UUID fabricReceiptId,
         List<UUID> evidenceIds) {
 
     public QualityClaim {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(discrepancyId, "discrepancyId");
         Objects.requireNonNull(shipmentId, "shipmentId");
-        Objects.requireNonNull(subcontractorId, "subcontractorId");
         Objects.requireNonNull(opening, "opening");
         Objects.requireNonNull(description, "description");
-        bagKeys = List.copyOf(bagKeys);
+        Objects.requireNonNull(claimedKg, "claimedKg");
         evidenceIds = List.copyOf(evidenceIds);
     }
 

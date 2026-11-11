@@ -29,12 +29,6 @@ public final class TestTokens {
                 .claim("site_ids", List.of(SITE_ID.toString()));
     }
 
-    public static Jwt subcontractorToken() {
-        return token("subcontractor")
-                .claim("subcontractor_id", SUBCONTRACTOR_ID.toString())
-                .build();
-    }
-
     public static Actor actor(Jwt jwt) {
         return CONVERTER.toActor(jwt);
     }

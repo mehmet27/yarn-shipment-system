@@ -118,6 +118,15 @@ describe('MasterDataPage', () => {
     ).toBeInTheDocument();
   });
 
+  it('iplik tedarikçileri sekmesinde tedarikçi listelenir ve pasife alınabilir', async () => {
+    server.use(...createHandlers('ADMIN'));
+    renderApp('/panel/tanimlar');
+    await userEvent.click(await screen.findByRole('tab', { name: 'İplik tedarikçileri' }));
+    const card = await screen.findByRole('group', { name: 'Şireci' });
+    await userEvent.click(within(card).getByRole('button', { name: 'Pasife al' }));
+    expect(screen.queryByRole('group', { name: 'Şireci' })).not.toBeInTheDocument();
+  });
+
   it('MASTER_DATA_MANAGE yetkisi olmayan rol bu sayfaya giremez', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/tanimlar');

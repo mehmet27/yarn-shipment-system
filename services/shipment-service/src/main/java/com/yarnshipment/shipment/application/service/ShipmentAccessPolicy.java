@@ -18,12 +18,8 @@ import org.springframework.stereotype.Component;
 @Component
 public final class ShipmentAccessPolicy {
 
-    /** Dış rol önce: dış rol iç rolle aynı token'da bulunamaz (common-security). */
     public ShipmentAudience audienceOf(Actor actor) {
-        if (actor.hasRole(Role.SUBCONTRACTOR)) {
-            return ShipmentAudience.SUBCONTRACTOR;
-        }
-        boolean internal = actor.hasAnyRole(Role.ADMIN, Role.QUALITY, Role.MANAGER, Role.SYSTEM);
+        boolean internal = actor.hasAnyRole(Role.ADMIN, Role.QUALITY, Role.MANAGER, Role.GENERAL_MANAGER, Role.SYSTEM);
         return internal ? ShipmentAudience.INTERNAL : ShipmentAudience.WAREHOUSE;
     }
 

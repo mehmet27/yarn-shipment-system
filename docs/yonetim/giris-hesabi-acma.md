@@ -1,20 +1,21 @@
-# Şoför ve fasoncuya giriş hesabı açma
+# Şoföre giriş hesabı açma
 
-Şoför ve fasoncu kaydı uygulamada (`POST /api/v1/master-data/drivers` ve `/subcontractors`) açılır; **giriş hesabı**
+> Fasoncu sisteme giriş yapmaz (KR-17): `subcontractor` rolü ve fasoncu giriş hesabı kaldırıldı; fasoncu yalnızca
+> ana veridir (`/subcontractors`) ve verisini fabrika personeli girer.
+
+Şoför kaydı uygulamada (`POST /api/v1/master-data/drivers`) açılır; **giriş hesabı**
 Keycloak'ta tutulur. Hesabı yönetici uygulamadan açar, Keycloak adımlarını sistem yapar:
 
 | Kayıt | Uç |
 |---|---|
 | Şoför | `POST /api/v1/master-data/drivers/{driverId}/login-account` |
-| Fasoncu | `POST /api/v1/master-data/subcontractors/{subcontractorId}/login-account` |
 
 İstek gövdesi: `username` (3-64 karakter; küçük harf, rakam, `.`, `_`, `-`), `phone` (cep telefonu), isteğe bağlı
 `email` ve `siteIds` (kişinin sevkiyatlarını göreceği etkin lokasyonlar, en az bir tane). Yalnızca
 `MASTER_DATA_MANAGE` yetkisi olan yönetici çağırabilir. Yanıt (201) gövdesizdir: **şifre üretilmez ve hiçbir yerde
 gösterilmez.** Kişinin telefonuna şifre belirleme kodu SMS'le gider (aşağıda "Şifre belirleme ve sıfırlama").
 
-Sistem Keycloak'ta şunları yapar: kullanıcıyı şifresiz açar (`UPDATE_PASSWORD` bekler), şoför için `driver`, fasoncu için
-`subcontractor` rolünü verir, kayıt kimliğini (`driver_id` / `subcontractor_id`) ve `site_ids` özniteliklerini yazar.
+Sistem Keycloak'ta şunları yapar: kullanıcıyı şifresiz açar (`UPDATE_PASSWORD` bekler), şoför için `driver` rolünü verir, kayıt kimliğini (`driver_id`) ve `site_ids` özniteliklerini yazar.
 Rol verilemezse açılan kullanıcı silinir; yarım hesap kalmaz.
 
 | Durum | Yanıt |
@@ -47,13 +48,12 @@ shipment-service Keycloak'a `yarnshipment-admin` servis hesabıyla bağlanır (y
 
 - Kaydı uygulamada pasife almak giriş hesabını **kapatmaz**; hesabı Kullanıcılar ekranından "Pasife al" ile kapatın.
 - Lokasyon değiştirme Keycloak konsolundan yapılır.
-- Doğrulama: kullanıcıyla `http://localhost:5173` adresinden giriş yapın; kendi sevkiyatlarını görmeli, başkalarınınkini
-  görmemelidir. Token'daki claim'leri `tools/keycloak/verify-realm.mjs` ile görebilirsiniz.
+- Doğrulama: kullanıcıyla `http://localhost:5173` adresinden giriş yapın; yalnızca yetkili olduğu lokasyonların sevkiyatlarını görmelidir. Token'daki claim'leri `tools/keycloak/verify-realm.mjs` ile görebilirsiniz.
 
 ## Kullanıcılar ekranı: tüm roller
 
 Tüm giriş hesapları **Kullanıcılar** ekranından (`/panel/kullanicilar`, yalnızca `USER_MANAGE`) yönetilir: depo, kalite,
-müdür, yönetici, şoför ve fasoncu hesabı açılır; şoför ve fasoncu hesabı ilgili kayda bağlanarak açılır. Şifre hiçbir
+müdür ve yönetici hesabı açılır. Şifre hiçbir
 yerde üretilmez, sorulmaz ya da gösterilir.
 
 | İşlem | Uç |
@@ -63,9 +63,9 @@ yerde üretilmez, sorulmaz ya da gösterilir.
 | Pasife al / yeniden aç | `PUT /api/v1/master-data/login-accounts/{userId}/enabled` (`enabled`) → 204 |
 | Şifre sıfırlamayı başlat | `POST /api/v1/master-data/login-accounts/{userId}/password-reset` → 204 |
 
-`role` yalnızca `ADMIN`, `WAREHOUSE`, `QUALITY`, `MANAGER` olabilir. Rol değişince eski fabrika içi rol kaldırılır ve
+`role` yalnızca `ADMIN`, `WAREHOUSE`, `QUALITY`, `MANAGER`, `GENERAL_MANAGER` olabilir. Rol değişince eski fabrika içi rol kaldırılır ve
 kişinin açık oturumları kapatılır. Kişi kendi rolünü değiştiremez ve kendi hesabını kapatamaz (400
-`INVALID_MASTER_DATA`); şoför/fasoncu hesabının rolü değişmez (409 `LOGIN_ACCOUNT_ROLE_LOCKED`); kullanıcı yoksa 404
+`INVALID_MASTER_DATA`); kullanıcı yoksa 404
 `LOGIN_ACCOUNT_NOT_FOUND`. Giriş adı ya da e-posta alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`. Rol verilemezse açılan
 kullanıcı silinir; yarım hesap kalmaz. Telefon listede yalnızca son dört haneyle (`***4567`) görünür.
 

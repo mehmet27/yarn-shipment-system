@@ -21,7 +21,7 @@ pnpm install
 pnpm dev            # http://localhost:5173, sahte API (MSW) açık
 ```
 
-Sahte API'de rol, sayfa ilk açılırken adres çubuğundan seçilir: `/?mockRole=SUBCONTRACTOR` (`ADMIN`, `WAREHOUSE`, `DRIVER`, `SUBCONTRACTOR`, `QUALITY`, `MANAGER`). Gerçek gateway ile çalışmak için `VITE_USE_MOCK_API=false pnpm dev`; istekler `localhost:8080`'e yönlenir. Önce kökteki README'deki yerel ortamı (Postgres, Keycloak, gateway) başlatın; `deploy/.env` dosyanız eskiyse `deploy/.env.example` içindeki yeni değişkenleri (`KEYCLOAK_TEST_USER_PASSWORD`, `GATEWAY_CLIENT_SECRET`) ekleyin, yoksa compose başlamaz. Oturum yoksa uygulama `/oauth2/authorization/keycloak` adresine gider (gateway girişi yönetir); oturum sonradan düşerse ilk 401'de kullanıcı sorgusu yenilenir ve yine girişe yönlenir. Tarayıcıda token tutulmaz.
+Sahte API'de rol, sayfa ilk açılırken adres çubuğundan seçilir: `/?mockRole=QUALITY` (`ADMIN`, `WAREHOUSE`, `QUALITY`, `MANAGER`, `GENERAL_MANAGER`). Gerçek gateway ile çalışmak için `VITE_USE_MOCK_API=false pnpm dev`; istekler `localhost:8080`'e yönlenir. Önce kökteki README'deki yerel ortamı (Postgres, Keycloak, gateway) başlatın; `deploy/.env` dosyanız eskiyse `deploy/.env.example` içindeki yeni değişkenleri (`KEYCLOAK_TEST_USER_PASSWORD`, `GATEWAY_CLIENT_SECRET`) ekleyin, yoksa compose başlamaz. Oturum yoksa uygulama `/oauth2/authorization/keycloak` adresine gider (gateway girişi yönetir); oturum sonradan düşerse ilk 401'de kullanıcı sorgusu yenilenir ve yine girişe yönlenir. Tarayıcıda token tutulmaz.
 
 ## Duyarlılık denetimi (FE-UI-07)
 

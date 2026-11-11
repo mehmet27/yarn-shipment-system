@@ -63,8 +63,8 @@ class ShipmentWatchAdaptersTest {
     void shouldTrackShipmentInTransit() {
         watch.recordCreated(SHIPMENT, NOW.minus(Duration.ofDays(2)));
         watch.recordCreated(new WatchedShipment(SHIPMENT.shipmentId(), "SV-X", SHIPMENT.siteId(), null, null), NOW);
-        watch.recordDispatched(SHIPMENT.shipmentId(), DISPATCHED);
-        watch.recordDispatched(SHIPMENT.shipmentId(), NOW);
+        watch.recordDispatched(SHIPMENT.shipmentId(), DISPATCHED, TestComparisons.DISPATCH_KG);
+        watch.recordDispatched(SHIPMENT.shipmentId(), NOW, null);
 
         List<WatchedShipment> overdue = watch.findInTransitSince(NOW.minus(LIMIT), PAGE);
 
@@ -82,12 +82,33 @@ class ShipmentWatchAdaptersTest {
     @DisplayName("Varan ya da kapanan sevkiyat yolda sayılmaz; izlenmeyen sevkiyatın adımı yok sayılır")
     void shouldExcludeArrivedAndClosed() {
         watch.recordCreated(SHIPMENT, NOW.minus(Duration.ofDays(2)));
-        watch.recordDispatched(SHIPMENT.shipmentId(), DISPATCHED);
+        watch.recordDispatched(SHIPMENT.shipmentId(), DISPATCHED, TestComparisons.DISPATCH_KG);
         watch.recordClosed(SHIPMENT.shipmentId(), NOW);
-        watch.recordDispatched(UUID.randomUUID(), DISPATCHED);
+        watch.recordDispatched(UUID.randomUUID(), DISPATCHED, null);
 
         assertThat(watch.findInTransitSince(NOW, PAGE)).isEmpty();
         assertThat(watch.findShipment(UUID.randomUUID())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Tamamlanma ve çıkış kilosu yazılır; ilk değer kalır, tamamlanan sevkiyat kapanır")
+    void shouldRecordCompletionAndNetKg() {
+        watch.recordCreated(SHIPMENT, NOW.minus(Duration.ofDays(2)));
+        watch.recordDispatched(SHIPMENT.shipmentId(), DISPATCHED, TestComparisons.DISPATCH_KG);
+        watch.recordCompleted(SHIPMENT.shipmentId(), NOW);
+        watch.recordCompleted(SHIPMENT.shipmentId(), NOW.plusSeconds(1));
+
+        assertThat(jdbc.queryForObject(
+                        "SELECT completed_at FROM shipment_watch WHERE shipment_id = ?",
+                        java.sql.Timestamp.class,
+                        SHIPMENT.shipmentId()))
+                .isEqualTo(java.sql.Timestamp.from(NOW));
+        assertThat(jdbc.queryForObject(
+                        "SELECT dispatch_net_kg FROM shipment_watch WHERE shipment_id = ?",
+                        java.math.BigDecimal.class,
+                        SHIPMENT.shipmentId()))
+                .isEqualByComparingTo(TestComparisons.DISPATCH_KG);
+        assertThat(watch.findInTransitSince(NOW, PAGE)).isEmpty();
     }
 
     @Test

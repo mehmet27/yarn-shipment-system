@@ -18,6 +18,7 @@ import com.yarnshipment.discrepancy.application.port.out.EvidenceLookupPort.Evid
 import com.yarnshipment.discrepancy.application.port.out.NewQualityClaim;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRejection;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRequest;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,59 +35,58 @@ class OpenQualityClaimServiceTest {
             ports.claims, ports.discrepancies, ports.inspections, ports.evidence, ports.scopeGuard, ClaimPorts.CLOCK);
 
     @Test
-    @DisplayName("Fasoncu kendi teslimine fotoğraflı itiraz açar; uyuşmazlık vadesi açılıştan sonradır")
+    @DisplayName("Kalite tamamlanmış sevkiyata fotoğraflı itiraz açar; uyuşmazlık vadesi açılıştan sonradır")
     void shouldOpenClaim() {
-        Actor subcontractor = subcontractor();
-        when(ports.claims.saveClaim(any())).thenReturn(TestClaims.claim(List.of("UK-0002")));
+        Actor quality = quality();
+        when(ports.claims.saveClaim(any())).thenReturn(TestClaims.claim());
 
-        ClaimFile file = open.openQualityClaim(command(subcontractor, "UK-0002", TestClaims.PHOTO));
+        ClaimFile file = open.openQualityClaim(command(quality, "120.5", TestClaims.PHOTO));
 
         ArgumentCaptor<NewQualityClaim> saved = ArgumentCaptor.forClass(NewQualityClaim.class);
         verify(ports.claims).saveClaim(saved.capture());
-        assertThat(saved.getValue().openedBy()).isEqualTo(subcontractor.userId());
+        assertThat(saved.getValue().openedBy()).isEqualTo(quality.userId());
         assertThat(saved.getValue().dueAt()).isAfter(TestClaims.WITHIN_WINDOW);
-        assertThat(file.claim().bagKeys()).containsExactly("UK-0002");
+        assertThat(saved.getValue().request().claimedKg()).isEqualByComparingTo("120.5");
+        assertThat(file.claim().claimedKg()).isEqualByComparingTo("120.5");
     }
 
     @Test
-    @DisplayName("Başka fasoncunun teslimine itiraz açılamaz")
-    void shouldRejectOtherSubcontractor() {
-        Actor other = TestTokens.actor(TestTokens.token("subcontractor")
-                .claim("subcontractor_id", UUID.randomUUID().toString())
+    @DisplayName("Başka lokasyonun sevkiyatına itiraz açılamaz")
+    void shouldRejectOtherSite() {
+        Actor other = TestTokens.actor(TestTokens.token("quality")
+                .claim("site_ids", List.of(UUID.randomUUID().toString()))
                 .build());
 
-        assertThatThrownBy(() -> open.openQualityClaim(command(other, "UK-0002", TestClaims.PHOTO)))
+        assertThatThrownBy(() -> open.openQualityClaim(command(other, "120.5", TestClaims.PHOTO)))
                 .isInstanceOf(OutOfScopeAccessException.class);
         verify(ports.claims, never()).saveClaim(any());
     }
 
     @Test
-    @DisplayName(
-            "İtiraz edilmiş çuval, başka sevkiyatın ya da başka türde kanıt ve karşılaştırılmamış sevkiyat reddedilir")
+    @DisplayName("Kilosu aşan, başka sevkiyatın ya da başka türde kanıt ve tamamlanmamış sevkiyat reddedilir")
     void shouldRejectInvalidClaims() {
-        when(ports.claims.findClaims(SHIPMENT)).thenReturn(List.of(TestClaims.claim(List.of("UK-0001"))));
         UUID foreign = UUID.randomUUID();
         when(ports.evidence.findEvidence(foreign))
                 .thenReturn(Optional.of(new EvidenceRef(foreign, UUID.randomUUID(), ClaimEvidence.QUALITY_CLAIM)));
 
-        assertThat(rejectionOf("UK-0001", TestClaims.PHOTO)).isEqualTo(ClaimRejection.BAG_ALREADY_CLAIMED);
-        assertThat(rejectionOf("UK-0002", foreign)).isEqualTo(ClaimRejection.EVIDENCE_INVALID);
-        assertThat(rejectionOf("UK-0002", TestClaims.LAB_DOCUMENT)).isEqualTo(ClaimRejection.EVIDENCE_INVALID);
+        assertThat(rejectionOf("2000.001", TestClaims.PHOTO)).isEqualTo(ClaimRejection.CLAIM_EXCEEDS_SHIPMENT_WEIGHT);
+        assertThat(rejectionOf("10", foreign)).isEqualTo(ClaimRejection.EVIDENCE_INVALID);
+        assertThat(rejectionOf("10", TestClaims.LAB_DOCUMENT)).isEqualTo(ClaimRejection.EVIDENCE_INVALID);
         when(ports.claims.findTarget(SHIPMENT)).thenReturn(Optional.empty());
-        assertThat(rejectionOf("UK-0002", TestClaims.PHOTO)).isEqualTo(ClaimRejection.NOT_AVAILABLE);
+        assertThat(rejectionOf("10", TestClaims.PHOTO)).isEqualTo(ClaimRejection.NOT_AVAILABLE);
         verify(ports.claims, never()).saveClaim(any());
     }
 
-    private ClaimRejection rejectionOf(String key, UUID photo) {
-        return TestClaims.rejectionOf(() -> open.openQualityClaim(command(subcontractor(), key, photo)));
+    private ClaimRejection rejectionOf(String kg, UUID photo) {
+        return TestClaims.rejectionOf(() -> open.openQualityClaim(command(quality(), kg, photo)));
     }
 
-    private static OpenQualityClaimCommand command(Actor actor, String key, UUID photo) {
+    private static OpenQualityClaimCommand command(Actor actor, String kg, UUID photo) {
         return new OpenQualityClaimCommand(
-                actor, SHIPMENT, new ClaimRequest("B kalite çıktı", List.of(key), List.of(photo)));
+                actor, SHIPMENT, new ClaimRequest("B kalite çıktı", new BigDecimal(kg), null, List.of(photo)));
     }
 
-    private static Actor subcontractor() {
-        return TestTokens.actor(TestTokens.subcontractorToken());
+    private static Actor quality() {
+        return TestTokens.actor("quality");
     }
 }

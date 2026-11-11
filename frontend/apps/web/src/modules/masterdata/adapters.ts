@@ -21,7 +21,7 @@ import {
   updateVehicle,
 } from '@iplik/api-client';
 import type { ManagedKind } from './kinds';
-import { discard, product, qualityGrade, toQuery } from './catalogAdapters';
+import { discard, product, qualityGrade, toQuery, yarnSupplier } from './catalogAdapters';
 import type { Adapter } from './catalogAdapters';
 
 const subcontractor: Adapter = {
@@ -110,4 +110,5 @@ export const ADAPTERS: Readonly<Record<ManagedKind, Adapter>> = {
   site,
   product,
   qualityGrade,
+  yarnSupplier,
 };

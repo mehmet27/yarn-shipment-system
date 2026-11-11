@@ -10,7 +10,8 @@ public enum StaffRole {
     ADMIN,
     WAREHOUSE,
     QUALITY,
-    MANAGER;
+    MANAGER,
+    GENERAL_MANAGER;
 
     /** Keycloak realm rol adı, ör. {@code warehouse}. */
     public String realmRole() {

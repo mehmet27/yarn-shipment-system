@@ -35,9 +35,9 @@ class BalanceFireServiceTest {
             new BalanceFireService(port, new ReportAccess(new ScopeGuard(mock(AuditPublisher.class), CLOCK)), CLOCK);
 
     @Test
-    @DisplayName("Fasoncu rapor görmez, sorgu çalışmaz")
+    @DisplayName("Lokasyon kapsamı olmayan kullanıcı rapor görmez, sorgu çalışmaz")
     void shouldReturnEmptyForExternalRoles() {
-        ReportQuery query = query(TestTokens.actor(TestTokens.subcontractorToken()));
+        ReportQuery query = query(TestTokens.actor(TestTokens.noSiteToken()));
 
         assertThat(service.listBalanceMatrix(query)).isEmpty();
         assertThat(service.listFire(query, null)).isEmpty();

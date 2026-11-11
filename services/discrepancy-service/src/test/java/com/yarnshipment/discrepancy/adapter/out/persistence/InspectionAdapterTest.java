@@ -26,7 +26,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-    ComparisonSeeder.class,
+    ShipmentWatchAdapter.class,
     DiscrepancyWriter.class,
     QualityClaimAdapter.class,
     QualityClaimWriter.class,
@@ -43,7 +43,7 @@ class InspectionAdapterTest {
     private JwtDecoder jwtDecoder;
 
     @Autowired
-    private ComparisonSeeder comparisons;
+    private ShipmentWatchAdapter watch;
 
     @Autowired
     private QualityClaimAdapter claims;
@@ -59,7 +59,7 @@ class InspectionAdapterTest {
     @Test
     @DisplayName("Kontrol istenir ve sonucu bir kez girilir; ikinci sonuç reddedilir")
     void shouldRequestAndRecordInspection() {
-        SeededClaims.deliver(comparisons);
+        SeededClaims.complete(watch);
         QualityClaim claim = SeededClaims.open(claims);
         Inspection requested = inspections.saveRequest(new NewInspection(
                 claim.shipmentId(),

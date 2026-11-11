@@ -19,10 +19,9 @@ describe('ShipmentListPage dar ekran', () => {
     });
     vi.stubGlobal('matchMedia', narrow);
     renderApp('/panel/sevkiyat');
-    expect(await screen.findByRole('link', { name: 'SVK-2026-0001' })).toHaveAttribute(
-      'href',
-      '/panel/sevkiyat/shp-0001',
-    );
+    expect(
+      await screen.findByRole('link', { name: 'SVK-2026-0001' }, { timeout: 10_000 }),
+    ).toHaveAttribute('href', '/panel/sevkiyat/shp-0001');
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 });

@@ -29,7 +29,7 @@ describe('Denetim kaydı ekranı', () => {
   });
 
   it('izni olmayan rol sayfayı göremez', async () => {
-    server.use(...createHandlers('SUBCONTRACTOR'));
+    server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/denetim');
     expect(await screen.findByText('Bu sayfayı görme yetkiniz yok.')).toBeInTheDocument();
   });

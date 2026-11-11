@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 
 /**
  * İsteği yapan kullanıcının token'dan çözülmüş hali (D-4). İşlemi yapan kişi her zaman buradan alınır, istek
@@ -15,7 +14,6 @@ import org.jspecify.annotations.Nullable;
  * @param username {@code preferred_username}; kişisel veridir, loglanmaz
  * @param roles MFA kuralı uygulandıktan sonra geçerli roller
  * @param permissions rollerin {@link RolePermissionMatrix} ile açılmış izinleri
- * @param subcontractorId yalnızca fasoncu kullanıcılarında dolu ({@code subcontractor_id} claim)
  * @param siteIds kullanıcının yetkili olduğu lokasyonlar ({@code site_ids} claim, GEN-07)
  * @param mfaVerified oturum iki adımlı doğrulamayla açıldı mı
  */
@@ -24,7 +22,6 @@ public record Actor(
         String username,
         Set<Role> roles,
         Set<Permission> permissions,
-        @Nullable UUID subcontractorId,
         Set<UUID> siteIds,
         boolean mfaVerified)
         implements Serializable {
@@ -35,7 +32,6 @@ public record Actor(
         roles = Set.copyOf(roles);
         permissions = Set.copyOf(permissions);
         siteIds = Set.copyOf(siteIds);
-        requireScopeId(roles, Role.SUBCONTRACTOR, subcontractorId);
     }
 
     public boolean hasRole(Role role) {
@@ -50,17 +46,10 @@ public record Actor(
         return permissions.contains(permission);
     }
 
-    /** Dış rolün kapsam kimliği olmadan aktör oluşmaz; aksi halde kapsam yalnızca lokasyona düşerdi. */
-    private static void requireScopeId(Set<Role> roles, Role role, @Nullable UUID scopeId) {
-        if (roles.contains(role) && scopeId == null) {
-            throw new IllegalArgumentException("Scope id is required for role=" + role);
-        }
-    }
-
     /** SEC-13: kullanıcı adı kişisel veridir. */
     @Override
     public String toString() {
-        return "Actor[userId=" + userId + ", username=***, roles=" + roles + ", subcontractorId=" + subcontractorId
-                + ", siteIds=" + siteIds + ", mfaVerified=" + mfaVerified + "]";
+        return "Actor[userId=" + userId + ", username=***, roles=" + roles + ", siteIds=" + siteIds + ", mfaVerified="
+                + mfaVerified + "]";
     }
 }

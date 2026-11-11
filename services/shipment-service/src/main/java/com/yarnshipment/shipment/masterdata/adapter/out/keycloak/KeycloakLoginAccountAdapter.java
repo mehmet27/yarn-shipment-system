@@ -2,49 +2,30 @@ package com.yarnshipment.shipment.masterdata.adapter.out.keycloak;
 
 import com.yarnshipment.common.security.Role;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
-import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
-import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
-import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
 
 /**
- * {@link LoginAccountPort}'un Keycloak Yönetim API'si uygulaması (şoför/fasoncu hesabı açma ve liste). Kullanıcı
- * şifresiz açılır; şifreyi kişi SMS koduyla kendisi belirler. Kullanıcı açıldıktan sonra rol atanamazsa kullanıcı
- * silinir, yarım hesap kalmaz. Liste, uygulama rollerinin üyeleri birleştirilerek çıkarılır; böylece rolsüz servis
- * hesapları listeye girmez ve kullanıcı başına ek çağrı gerekmez.
+ * {@link LoginAccountPort}'un Keycloak Yönetim API'si uygulaması (giriş hesabı listesi). Liste, uygulama
+ * rollerinin üyeleri birleştirilerek çıkarılır; böylece rolsüz servis hesapları listeye girmez ve kullanıcı başına
+ * ek çağrı gerekmez.
  */
 @Component
 final class KeycloakLoginAccountAdapter implements LoginAccountPort {
 
     private static final int PAGE_SIZE = 100;
-    private static final String SITE_IDS = "site_ids";
 
     private final KeycloakAdminClient admin;
 
     KeycloakLoginAccountAdapter(KeycloakAdminClient admin) {
         this.admin = admin;
-    }
-
-    @Override
-    public UUID create(LoginAccountSpec spec) {
-        return admin.guarded(() -> {
-            String token = admin.accessToken();
-            requireNoAccountFor(token, spec);
-            Map<String, Object> role = admin.realmRole(token, spec.role().realmRole());
-            String userId = admin.createUser(token, userRepresentation(spec));
-            admin.rollbackOnFailure(token, userId, () -> admin.assignRole(token, userId, role));
-            return UUID.fromString(userId);
-        });
     }
 
     @Override
@@ -90,43 +71,5 @@ final class KeycloakLoginAccountAdapter implements LoginAccountPort {
             }
             throw exception;
         }
-    }
-
-    private void requireNoAccountFor(String token, LoginAccountSpec spec) {
-        List<Map<String, Object>> existing = admin.http()
-                .get()
-                .uri(uri -> uri.path("/admin/realms/{realm}/users")
-                        .queryParam("q", spec.role().ownerAttribute() + ":" + spec.ownerId())
-                        .build(admin.realm()))
-                .headers(headers -> headers.setBearerAuth(token))
-                .retrieve()
-                .body(KeycloakAdminClient.OBJECTS);
-        if (existing != null && !existing.isEmpty()) {
-            throw new LoginAccountExistsException("record");
-        }
-    }
-
-    private static Map<String, Object> userRepresentation(LoginAccountSpec spec) {
-        String[] names = KeycloakAdminClient.splitName(spec.displayName());
-        LoginRole role = spec.role();
-        Map<String, Object> user = new LinkedHashMap<>();
-        user.put("username", spec.username());
-        user.put("enabled", true);
-        user.put("firstName", names[0]);
-        user.put("lastName", names[1]);
-        if (spec.email() != null) {
-            user.put("email", spec.email());
-        }
-        user.put(
-                "attributes",
-                Map.of(
-                        role.ownerAttribute(),
-                        List.of(spec.ownerId().toString()),
-                        KeycloakAdminClient.PHONE_ATTRIBUTE,
-                        List.of(spec.phone().e164()),
-                        SITE_IDS,
-                        spec.siteIds().stream().map(Object::toString).toList()));
-        user.put("requiredActions", List.of("UPDATE_PASSWORD"));
-        return user;
     }
 }

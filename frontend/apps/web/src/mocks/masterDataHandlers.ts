@@ -2,7 +2,6 @@ import type { Permission } from '@iplik/api-client';
 import { http, HttpResponse } from 'msw';
 import type { MasterKind, MockRecord, MockValues } from './masterData';
 import { listTareStandards, saveTareStandard } from './tareStandards';
-import { addMockLoginAccount, isMockUsernameTaken } from './loginAccounts';
 import {
   createMasterRecord,
   isDuplicateCode,
@@ -25,6 +24,7 @@ const PATHS: Readonly<Record<MasterKind, string>> = {
   site: 'sites',
   product: 'products',
   qualityGrade: 'quality-grades',
+  yarnSupplier: 'yarn-suppliers',
 };
 
 const problem = (status: number, code: string, title: string) =>
@@ -49,6 +49,8 @@ function toView(kind: MasterKind, record: MockRecord) {
       return { id, name: label, active: isActive };
     case 'product':
       return { id, code: record.code, name: label, active: isActive, yarnCount: record.extra };
+    case 'yarnSupplier':
+      return { id, name: label, active: isActive };
     case 'qualityGrade':
       return { id, code: record.code, name: label, active: isActive, labelColor: record.extra };
   }
@@ -61,6 +63,7 @@ const LABEL_FIELD: Readonly<Record<MasterKind, string>> = {
   site: 'name',
   product: 'name',
   qualityGrade: 'name',
+  yarnSupplier: 'name',
 };
 
 /** İplik numarası ya da etiket rengi alanının sözleşmedeki adı. */
@@ -116,29 +119,6 @@ function listHandler(kind: MasterKind, canManage: boolean) {
   });
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-/** Hesap açar; Kullanıcılar ekranındaki giriş adları (ör. `admin`) alınmış sayılır, 409 yolu böyle denenir. */
-function openLoginAccount(kind: MasterKind, ownerId: string, body: unknown) {
-  const fields = isRecord(body) ? body : {};
-  const username = textField(fields, 'username') ?? '';
-  if (username === '') return problem(400, 'INVALID_MASTER_DATA', 'Geçersiz kayıt');
-  if (isMockUsernameTaken(username)) {
-    return problem(409, 'LOGIN_ACCOUNT_EXISTS', 'Giriş adı alınmış');
-  }
-  const owner = listMasterRecords(kind).find((record) => record.id === ownerId);
-  addMockLoginAccount({
-    username,
-    email: textField(fields, 'email') ?? '',
-    phone: textField(fields, 'phone') ?? '',
-    fullName: owner?.label ?? username,
-    role: 'SUBCONTRACTOR',
-  });
-  return new HttpResponse(null, { status: 201 });
-}
-
 /** Backend'deki doğrulamalar: TR plaka deseni, tekil plaka ve tekil fasoncu ünvanı. */
 function conflictOf(kind: MasterKind, label: string, exceptId?: string) {
   if (kind === 'vehicle' && !isValidPlate(label)) {
@@ -179,11 +159,6 @@ function writeHandlers(kind: MasterKind, canManage: boolean) {
       const updated = updateMasterRecord(kind, id, values);
       return updated === undefined ? notFound() : HttpResponse.json(toView(kind, updated));
     }),
-    http.post(`${path}/:id/login-account`, async ({ params, request }) => {
-      if (!canManage) return denied();
-      if (kind !== 'subcontractor') return notFound();
-      return openLoginAccount(kind, String(params.id), await request.json());
-    }),
     ...(['deactivate', 'activate'] as const).map((action) =>
       http.post(`${path}/:id/${action}`, ({ params }) => {
         if (!canManage) return denied();
@@ -202,6 +177,7 @@ const KINDS: readonly MasterKind[] = [
   'site',
   'product',
   'qualityGrade',
+  'yarnSupplier',
 ];
 
 /** Ana veri liste ve yönetim uçları; yönetim yalnızca MASTER_DATA_MANAGE izniyle (403 aksi halde). */

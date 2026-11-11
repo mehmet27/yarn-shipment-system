@@ -11,7 +11,6 @@ import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.ChangeSubcontractorStatusUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.UpdateSubcontractorUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateSubcontractorLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicateSubcontractorException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
@@ -48,9 +47,6 @@ class SubcontractorManagementControllerTest {
 
     @MockitoBean
     private ChangeSubcontractorStatusUseCase subcontractorStatus;
-
-    @MockitoBean
-    private CreateSubcontractorLoginAccountUseCase subcontractorLoginAccount;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

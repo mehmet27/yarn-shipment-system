@@ -11,7 +11,6 @@ public final class TestTokens {
 
     public static final UUID SITE_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     public static final UUID OTHER_SITE_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000002");
-    public static final UUID SUBCONTRACTOR_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000003");
 
     private static final Instant ISSUED_AT = Instant.parse("2026-10-21T08:00:00Z");
     private static final Duration LIFETIME = Duration.ofMinutes(5);
@@ -33,11 +32,5 @@ public final class TestTokens {
     /** MFA ile açılmış oturumun token'ı. */
     public static Jwt.Builder withMfa(String... roles) {
         return withRoles(roles).claim(TokenClaims.AMR, List.of("pwd", "otp"));
-    }
-
-    public static Jwt subcontractor() {
-        return withRoles("subcontractor")
-                .claim(TokenClaims.SUBCONTRACTOR_ID, SUBCONTRACTOR_ID.toString())
-                .build();
     }
 }

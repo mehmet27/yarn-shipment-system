@@ -22,13 +22,15 @@ final class LotRows {
                         rs.getString("lot_no"),
                         rs.getObject("product_id", UUID.class),
                         rs.getObject("quality_grade_id", UUID.class),
-                        rs.getObject("production_date", LocalDate.class)),
+                        rs.getObject("production_date", LocalDate.class),
+                        rs.getObject("yarn_supplier_id", UUID.class)),
                 new ProductionLot.Labels(
                         rs.getString("site_name"),
                         rs.getString("product_code"),
                         rs.getString("product_name"),
                         rs.getString("quality_grade_code"),
-                        rs.getString("quality_grade_name")),
+                        rs.getString("quality_grade_name"),
+                        rs.getString("yarn_supplier_name")),
                 lockedAt == null ? null : lockedAt.toInstant(),
                 rs.getBoolean("active"));
     }

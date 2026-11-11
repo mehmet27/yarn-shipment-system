@@ -20,6 +20,6 @@ final class LotScopes {
     }
 
     static void validateInScope(ScopeGuard scopeGuard, Actor actor, LockedLot lot, String action) {
-        scopeGuard.validateInScope(actor, new ScopedResource(RESOURCE_TYPE, lot.lotId(), lot.siteId(), null), action);
+        scopeGuard.validateInScope(actor, new ScopedResource(RESOURCE_TYPE, lot.lotId(), lot.siteId()), action);
     }
 }

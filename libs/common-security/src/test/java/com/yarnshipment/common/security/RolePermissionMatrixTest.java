@@ -13,15 +13,39 @@ import org.junit.jupiter.params.provider.EnumSource;
 class RolePermissionMatrixTest {
 
     @Test
-    @DisplayName("Müdürün yazma izni yalnızca sevkiyat açma, iptal ve tamamlamadır")
-    void shouldLimitManagerWritesToShipmentLifecycle() {
+    @DisplayName("Müdürün yazma izinleri sevkiyat yaşam döngüsü, kumaş/iplik girişi, fire, fatura ve tartı kararıdır")
+    void shouldLimitManagerWrites() {
         // when
         Set<Permission> permissions = RolePermissionMatrix.permissionsOf(List.of(Role.MANAGER));
 
         // then
         assertThat(permissions.stream().filter(Permission::isWrite))
                 .containsExactlyInAnyOrder(
-                        Permission.SHIPMENT_CREATE, Permission.SHIPMENT_CANCEL, Permission.SHIPMENT_COMPLETE);
+                        Permission.SHIPMENT_CREATE,
+                        Permission.SHIPMENT_CANCEL,
+                        Permission.SHIPMENT_COMPLETE,
+                        Permission.EVIDENCE_UPLOAD_CLAIM,
+                        Permission.QUALITY_CLAIM_OPEN,
+                        Permission.FABRIC_RECEIPT_RECORD,
+                        Permission.YARN_RETURN_RECORD,
+                        Permission.FIRE_RATE_EDIT,
+                        Permission.INVOICE_MARK,
+                        Permission.WEIGHT_MISMATCH_RESOLVE);
+    }
+
+    @Test
+    @DisplayName("Genel müdür yalnızca rapor ve bakiye görür")
+    void shouldLimitGeneralManagerToReadOnly() {
+        assertThat(RolePermissionMatrix.permissionsOf(List.of(Role.GENERAL_MANAGER)))
+                .containsExactlyInAnyOrder(Permission.REPORT_VIEW, Permission.BALANCE_VIEW);
+    }
+
+    @Test
+    @DisplayName("Sevkiyatı yalnızca müdür ve admin açar; depo açamaz")
+    void shouldNotAllowWarehouseToCreateShipments() {
+        assertThat(rolesHaving(Permission.SHIPMENT_CREATE)).containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER);
+        assertThat(rolesHaving(Permission.BALANCE_VIEW))
+                .containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER, Role.QUALITY, Role.GENERAL_MANAGER);
     }
 
     @Test

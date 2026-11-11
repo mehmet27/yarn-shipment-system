@@ -9,6 +9,6 @@ import java.util.UUID;
  *
  * @param actor itirazı açan
  * @param shipmentId itiraz edilen sevkiyat
- * @param request açıklama, çuvallar ve fotoğraflar
+ * @param request açıklama, kilo ve fotoğraflar
  */
 public record OpenQualityClaimCommand(Actor actor, UUID shipmentId, ClaimRequest request) {}

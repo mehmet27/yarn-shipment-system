@@ -68,6 +68,8 @@ final class CatalogPages {
                         item.labels().qualityGradeName(),
                         item.details().productionDate(),
                         item.active())
+                .yarnSupplierId(item.details().yarnSupplierId())
+                .yarnSupplierName(item.labels().yarnSupplierName())
                 .qualityLockedAt(lockedAt == null ? null : lockedAt.atOffset(ZoneOffset.UTC));
     }
 

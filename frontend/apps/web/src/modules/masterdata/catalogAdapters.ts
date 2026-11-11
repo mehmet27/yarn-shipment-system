@@ -1,14 +1,19 @@
 import {
   activateProduct,
   activateQualityGrade,
+  activateYarnSupplier,
   createProduct,
   createQualityGrade,
+  createYarnSupplier,
   deactivateProduct,
   deactivateQualityGrade,
+  deactivateYarnSupplier,
   listProducts,
   listQualityGrades,
+  listYarnSuppliers,
   updateProduct,
   updateQualityGrade,
+  updateYarnSupplier,
 } from '@iplik/api-client';
 import type { ListParams, RecordPage, RecordValues } from './kinds';
 
@@ -79,4 +84,26 @@ export const qualityGrade: Adapter = {
   },
   setActive: (id, isActive) =>
     discard(isActive ? activateQualityGrade(id) : deactivateQualityGrade(id)),
+};
+
+export const yarnSupplier: Adapter = {
+  async list(params) {
+    const page = await listYarnSuppliers(toQuery(params));
+    return {
+      rows: page.items.map((row) => ({
+        id: row.id,
+        label: row.name,
+        isActive: row.active ?? true,
+      })),
+      totalPages: page.page.totalPages,
+    };
+  },
+  save: (id, { label }) =>
+    discard(
+      id === undefined
+        ? createYarnSupplier({ name: label })
+        : updateYarnSupplier(id, { name: label }),
+    ),
+  setActive: (id, isActive) =>
+    discard(isActive ? activateYarnSupplier(id) : deactivateYarnSupplier(id)),
 };

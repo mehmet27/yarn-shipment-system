@@ -18,11 +18,11 @@ describe('Kullanıcılar ekranı', () => {
     const table = await screen.findByRole('table');
     const rows = within(table).getAllByRole('row');
     expect(rows).toHaveLength(7);
-    const partner = rows.find((row) => within(row).queryByText('fasoncu') !== null);
+    const partner = rows.find((row) => within(row).queryByText('kalite') !== null);
     expect(partner).toBeDefined();
     if (partner === undefined) return;
-    expect(within(partner).getByText('Aydın Örme')).toBeInTheDocument();
-    expect(within(partner).getByText('Fasoncu')).toBeInTheDocument();
+    expect(within(partner).getByText('Kalite Uzmanı')).toBeInTheDocument();
+    expect(within(partner).getByText('Kalite')).toBeInTheDocument();
     expect(within(partner).getByText('Etkin')).toBeInTheDocument();
     expect(within(partner).getByText('İlk giriş bekleniyor')).toBeInTheDocument();
     expect(within(table).getByText('Devre dışı')).toBeInTheDocument();
@@ -41,9 +41,9 @@ describe('Kullanıcılar ekranı', () => {
   it('arama kullanıcı adı, ad ve e-postada yapılır; sonuç yoksa bilgi verir', async () => {
     renderApp('/panel/kullanicilar');
     const search = await screen.findByRole('searchbox', { name: /Giriş adı, ad ya da e-posta/ });
-    await userEvent.type(search, 'aydinorme');
+    await userEvent.type(search, 'kalite@iplik');
     expect(await screen.findByText('1 kullanıcı')).toBeInTheDocument();
-    expect(screen.getByText('fasoncu')).toBeInTheDocument();
+    expect(screen.getByText('kalite')).toBeInTheDocument();
 
     await userEvent.clear(search);
     await userEvent.type(search, 'bulunmayan');

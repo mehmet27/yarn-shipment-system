@@ -35,16 +35,16 @@
         "description": "Rol: warehouse"
       },
       {
-        "name": "subcontractor",
-        "description": "Rol: subcontractor"
-      },
-      {
         "name": "quality",
         "description": "Rol: quality"
       },
       {
         "name": "manager",
         "description": "Rol: manager"
+      },
+      {
+        "name": "general_manager",
+        "description": "Rol: general_manager"
       },
       {
         "name": "system",
@@ -109,20 +109,6 @@
           }
         },
         {
-          "name": "subcontractor_id",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usermodel-attribute-mapper",
-          "consentRequired": false,
-          "config": {
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "userinfo.token.claim": "true",
-            "user.attribute": "subcontractor_id",
-            "claim.name": "subcontractor_id",
-            "jsonType.label": "String"
-          }
-        },
-        {
           "name": "site_ids",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-attribute-mapper",
@@ -174,20 +160,6 @@
           }
         },
         {
-          "name": "subcontractor_id",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usermodel-attribute-mapper",
-          "consentRequired": false,
-          "config": {
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "userinfo.token.claim": "true",
-            "user.attribute": "subcontractor_id",
-            "claim.name": "subcontractor_id",
-            "jsonType.label": "String"
-          }
-        },
-        {
           "name": "site_ids",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-attribute-mapper",
@@ -207,7 +179,7 @@
     {
       "clientId": "yarnshipment-admin",
       "name": "Hesap yönetimi (servis hesabı)",
-      "description": "shipment-service'in şoför/fasoncu giriş hesabı açması için; yalnızca kullanıcı yönetimi yetkisi vardır.",
+      "description": "shipment-service'in şoför giriş hesabı açması için; yalnızca kullanıcı yönetimi yetkisi vardır.",
       "enabled": true,
       "publicClient": false,
       "secret": "${KEYCLOAK_ADMIN_CLIENT_SECRET}",
@@ -312,34 +284,6 @@
       },
       "realmRoles": [
         "manager"
-      ],
-      "credentials": [
-        {
-          "type": "password",
-          "value": "${KEYCLOAK_TEST_USER_PASSWORD}",
-          "temporary": false
-        }
-      ]
-    },
-    {
-      "id": "0192f0a0-0000-7000-8000-000000000106",
-      "username": "fasoncu",
-      "enabled": true,
-      "emailVerified": true,
-      "firstName": "Fatma",
-      "lastName": "Fasoncu",
-      "email": "fasoncu@yarnshipment.local",
-      "attributes": {
-        "subcontractor_id": [
-          "0192f0a0-0000-7000-8000-000000000003"
-        ],
-        "phone_number": ["+905550000006"],
-        "site_ids": [
-          "0192f0a0-0000-7000-8000-000000000001"
-        ]
-      },
-      "realmRoles": [
-        "subcontractor"
       ],
       "credentials": [
         {

@@ -87,7 +87,7 @@ export interface DashboardView {
 export interface PartyStatsView {
   /** Şoför ya da fasoncu kimliği */
   id: string;
-  /** Karşılaştırması tamamlanan sevkiyat sayısı */
+  /** Çıkış tartısı yapılmış sevkiyat sayısı */
   shipmentCount: number;
   discrepantShipmentCount: number;
   /** Uyuşmazlıklı sevkiyat yüzdesi */

@@ -22,8 +22,8 @@ public final class PostgresTestDatabase {
     }
 
     /**
-     * Yalnızca çağıran testin kullandığı, commit edilen verinin başka testleri etkilemediği yeni konteyner. Önbellekteki
-     * her Spring bağlamı kendi havuzunu açtığından bağlantı sınırı yükseltilir ("too many clients" kararsızlığı).
+     * Yalnızca çağıran testin kullandığı, commit edilen verinin başka testleri etkilemediği yeni konteyner.
+     * Önbellekteki her Spring bağlamı kendi havuzunu açtığından bağlantı sınırı yükseltilir.
      */
     public static PostgresTestDatabase startIsolated() {
         PostgreSQLContainer container = new PostgreSQLContainer(

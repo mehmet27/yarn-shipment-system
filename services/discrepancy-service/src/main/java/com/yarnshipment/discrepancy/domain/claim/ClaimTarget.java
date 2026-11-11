@@ -26,7 +26,10 @@ public record ClaimTarget(
         Instant completedAt,
         BigDecimal netKg) {
 
-    /** İtiraz süresi: tamamlanmadan itibaren 3 iş günü (analiz v2.0, 5.12). */
+    /**
+     * Hedef süre: tamamlanmadan itibaren 3 iş günü. İtiraz açmak için süre sınırı yoktur (iş birimi kararı, akış
+     * dokümanı S18); bu tarih yalnızca bilgi olarak gösterilir.
+     */
     public static final int CLAIM_BUSINESS_DAYS = 3;
 
     /** İş günü hesabı fabrikanın saat dilimiyle yapılır. */
@@ -39,16 +42,17 @@ public record ClaimTarget(
         Objects.requireNonNull(netKg, "netKg");
     }
 
-    /** İtirazın açılabileceği son an. */
+    /** Hedef tarih; itirazın açılmasını sınırlamaz. */
     public Instant deadline() {
         return BusinessDays.plus(completedAt, CLAIM_BUSINESS_DAYS, FACTORY_ZONE);
     }
 
+    /** İtiraz süresi sınırsızdır; tamamlanmış sevkiyata her zaman itiraz açılabilir. */
     public boolean isOpenAt(Instant now) {
-        return !now.isAfter(deadline());
+        return true;
     }
 
-    /** Süre, kilo ve kanıt kurallarını denetler; tutmayan ilk kural için {@link ClaimRejectedException} fırlatır. */
+    /** Kilo ve kanıt kurallarını denetler; tutmayan ilk kural için {@link ClaimRejectedException} fırlatır. */
     public void requireClaimable(ClaimRequest request, Instant now) {
         if (!isOpenAt(now)) {
             throw new ClaimRejectedException(ClaimRejection.WINDOW_CLOSED, "shipmentId=" + shipmentId);

@@ -29,11 +29,11 @@ class ClaimTargetTest {
             NET_KG);
 
     @Test
-    @DisplayName("İtiraz süresi tamamlanmadan itibaren 3 iş günüdür; hafta sonu sayılmaz")
-    void shouldCountThreeBusinessDays() {
+    @DisplayName("Hedef tarih 3 iş günüdür (hafta sonu sayılmaz) ama itiraz süresi sınırsızdır")
+    void shouldNotLimitClaimWindow() {
         assertThat(target.deadline()).isEqualTo(WEDNESDAY_NOON);
         assertThat(target.isOpenAt(WEDNESDAY_NOON)).isTrue();
-        assertThat(target.isOpenAt(WEDNESDAY_NOON.plusSeconds(1))).isFalse();
+        assertThat(target.isOpenAt(WEDNESDAY_NOON.plusSeconds(1))).isTrue();
     }
 
     @Test
@@ -47,10 +47,9 @@ class ClaimTargetTest {
     }
 
     @Test
-    @DisplayName("Süresi dolan, sevkiyat kilosunu aşan ya da fotoğrafsız itiraz reddedilir")
+    @DisplayName("Sevkiyat kilosunu aşan ya da fotoğrafsız itiraz reddedilir; geç kalmak red nedeni değildir")
     void shouldRejectInvalidClaims() {
-        assertThat(rejectionOf(request("10", PHOTO), WEDNESDAY_NOON.plusSeconds(1)))
-                .isEqualTo(ClaimRejection.WINDOW_CLOSED);
+        target.requireClaimable(request("10", PHOTO), WEDNESDAY_NOON.plusSeconds(1));
         assertThat(rejectionOf(request("2000.001", PHOTO), FRIDAY))
                 .isEqualTo(ClaimRejection.CLAIM_EXCEEDS_SHIPMENT_WEIGHT);
         assertThat(rejectionOf(request("10", List.of()), FRIDAY)).isEqualTo(ClaimRejection.EVIDENCE_REQUIRED);

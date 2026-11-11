@@ -663,8 +663,8 @@
     "notAvailable": "Kalite itirazı yalnızca tamamlanmış sevkiyatta açılır.",
     "ofDiscrepancy": "İtiraz dosyası",
     "window": {
-      "open": "İtiraz süresi {{deadline}} tarihinde biter.",
-      "closed": "İtiraz süresi {{deadline}} tarihinde doldu."
+      "open": "İtiraz için süre sınırı yoktur. Sonuçlandırma hedefi: {{deadline}}.",
+      "closed": "İtiraz için süre sınırı yoktur."
     },
     "open": {
       "start": "Kalite itirazı aç",

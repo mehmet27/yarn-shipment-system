@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Kilogram } from './kilogram';
-import { calculateDifferencePct, formatPct, pctInputToRate, rateToPct } from './percentage';
+import {
+  calculateDifferencePct,
+  fireRateToPctInput,
+  formatPct,
+  parseFireRatePct,
+} from './percentage';
 
 const kg = (value: string) => value as Kilogram;
 
@@ -33,19 +38,20 @@ describe('formatPct', () => {
   });
 });
 
-describe('fire oranı dönüşümü', () => {
-  it('oranı yüzde metnine çevirir', () => {
-    expect(rateToPct('0.0400')).toBe('4');
-    expect(rateToPct('0.0425')).toBe('4.25');
-    expect(rateToPct('x')).toBeUndefined();
+describe('fire oranı', () => {
+  it('yüzdeyi kesire çevirir', () => {
+    expect(parseFireRatePct('4')).toBe('0.0400');
+    expect(parseFireRatePct('4,25')).toBe('0.0425');
+    expect(parseFireRatePct('20')).toBe('0.2000');
+    expect(parseFireRatePct('0')).toBe('0.0000');
   });
 
-  it('yüzde girdisini orana çevirir ve sınırı denetler', () => {
-    expect(pctInputToRate('4', 20)).toBe('0.0400');
-    expect(pctInputToRate('4,5', 20)).toBe('0.0450');
-    expect(pctInputToRate('20', 20)).toBe('0.2000');
-    expect(pctInputToRate('20,1', 20)).toBeUndefined();
-    expect(pctInputToRate('abc', 20)).toBeUndefined();
-    expect(pctInputToRate('', 20)).toBeUndefined();
+  it.each(['', '20,01', '21', 'x', '1,234', '-1'])('"%s" geçersizdir', (input) => {
+    expect(parseFireRatePct(input)).toBeUndefined();
+  });
+
+  it('kesri yüzde girdisine çevirir', () => {
+    expect(fireRateToPctInput('0.0400')).toBe('4');
+    expect(fireRateToPctInput('0.0425')).toBe('4,25');
   });
 });

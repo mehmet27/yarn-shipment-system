@@ -52,6 +52,9 @@ export function createLoginAccountHandlers(permissions: readonly Permission[]) {
       if (result === 'not-found') {
         return problem(404, 'LOGIN_ACCOUNT_NOT_FOUND', 'Kullanıcı yok');
       }
+      if (result === 'locked') {
+        return problem(409, 'LOGIN_ACCOUNT_ROLE_LOCKED', 'Rol değiştirilemez');
+      }
       return new HttpResponse(null, { status: 204 });
     }),
     http.put(`${PATH}/:id/enabled`, async ({ params, request }) => {

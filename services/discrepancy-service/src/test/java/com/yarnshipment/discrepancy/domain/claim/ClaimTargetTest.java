@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.discrepancy.TestClaims;
 import com.yarnshipment.discrepancy.TestComparisons;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +17,6 @@ class ClaimTargetTest {
 
     private static final Instant WEDNESDAY_NOON = Instant.parse("2026-10-28T09:00:00Z");
     private static final List<UUID> PHOTO = List.of(UUID.fromString("0192f0a0-0000-7000-8000-00000000e001"));
-    private static final BigDecimal NET_KG = new BigDecimal("2000.000");
 
     private final ClaimTarget target = new ClaimTarget(
             TestComparisons.SHIPMENT,
@@ -26,10 +24,10 @@ class ClaimTargetTest {
             TestComparisons.SUBCONTRACTOR,
             TestComparisons.SHIPMENT_NO,
             FRIDAY,
-            NET_KG);
+            TestComparisons.KEYS);
 
     @Test
-    @DisplayName("İtiraz süresi tamamlanmadan itibaren 3 iş günüdür; hafta sonu sayılmaz")
+    @DisplayName("İtiraz süresi teslimden itibaren 3 iş günüdür; hafta sonu sayılmaz")
     void shouldCountThreeBusinessDays() {
         assertThat(target.deadline()).isEqualTo(WEDNESDAY_NOON);
         assertThat(target.isOpenAt(WEDNESDAY_NOON)).isTrue();
@@ -37,38 +35,32 @@ class ClaimTargetTest {
     }
 
     @Test
-    @DisplayName("Süre içinde, kilosu aşmayan ve fotoğraflı itiraz kabul edilir; kilo üç ondalığa tamamlanır")
+    @DisplayName("Süre içinde, teslim edilmiş ve itiraz edilmemiş çuval için fotoğraflı itiraz kabul edilir")
     void shouldAcceptValidClaim() {
-        ClaimRequest request = new ClaimRequest("B kalite çıktı", new BigDecimal("2000"), null, PHOTO);
+        ClaimRequest request = new ClaimRequest("B kalite çıktı", List.of(" UK-0001 ", "UK-0001"), PHOTO);
 
-        target.requireClaimable(request, FRIDAY);
+        target.requireClaimable(request, List.of("UK-0002"), FRIDAY);
 
-        assertThat(request.claimedKg()).isEqualTo(new BigDecimal("2000.000"));
+        assertThat(request.bagKeys()).containsExactly("UK-0001");
     }
 
     @Test
-    @DisplayName("Süresi dolan, sevkiyat kilosunu aşan ya da fotoğrafsız itiraz reddedilir")
+    @DisplayName("Süresi dolan, teslimde olmayan, daha önce itiraz edilen ya da fotoğrafsız itiraz reddedilir")
     void shouldRejectInvalidClaims() {
-        assertThat(rejectionOf(request("10", PHOTO), WEDNESDAY_NOON.plusSeconds(1)))
+        assertThat(rejectionOf(
+                        new ClaimRequest("x", List.of("UK-0001"), PHOTO), List.of(), WEDNESDAY_NOON.plusSeconds(1)))
                 .isEqualTo(ClaimRejection.WINDOW_CLOSED);
-        assertThat(rejectionOf(request("2000.001", PHOTO), FRIDAY))
-                .isEqualTo(ClaimRejection.CLAIM_EXCEEDS_SHIPMENT_WEIGHT);
-        assertThat(rejectionOf(request("10", List.of()), FRIDAY)).isEqualTo(ClaimRejection.EVIDENCE_REQUIRED);
+        assertThat(rejectionOf(new ClaimRequest("x", List.of("UK-9999"), PHOTO), List.of(), FRIDAY))
+                .isEqualTo(ClaimRejection.BAG_NOT_DELIVERED);
+        assertThat(rejectionOf(new ClaimRequest("x", List.of(), PHOTO), List.of(), FRIDAY))
+                .isEqualTo(ClaimRejection.BAG_NOT_DELIVERED);
+        assertThat(rejectionOf(new ClaimRequest("x", List.of("UK-0001"), PHOTO), List.of("UK-0001"), FRIDAY))
+                .isEqualTo(ClaimRejection.BAG_ALREADY_CLAIMED);
+        assertThat(rejectionOf(new ClaimRequest("x", List.of("UK-0001"), List.of()), List.of(), FRIDAY))
+                .isEqualTo(ClaimRejection.EVIDENCE_REQUIRED);
     }
 
-    @Test
-    @DisplayName("Sıfır, negatif ya da üçten fazla ondalıklı kilo geçersizdir")
-    void shouldRejectInvalidKg() {
-        for (String kg : List.of("0", "-5", "10.0001")) {
-            assertThat(TestClaims.rejectionOf(() -> request(kg, PHOTO))).isEqualTo(ClaimRejection.CLAIMED_KG_INVALID);
-        }
-    }
-
-    private static ClaimRequest request(String kg, List<UUID> evidence) {
-        return new ClaimRequest("x", new BigDecimal(kg), null, evidence);
-    }
-
-    private ClaimRejection rejectionOf(ClaimRequest request, Instant at) {
-        return TestClaims.rejectionOf(() -> target.requireClaimable(request, at));
+    private ClaimRejection rejectionOf(ClaimRequest request, List<String> claimed, Instant at) {
+        return TestClaims.rejectionOf(() -> target.requireClaimable(request, claimed, at));
     }
 }

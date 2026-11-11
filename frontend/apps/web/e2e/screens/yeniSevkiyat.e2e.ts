@@ -1,5 +1,11 @@
+import type { Page } from '@playwright/test';
 import { pick } from '../support/form';
 import { expect, test } from '../support/test';
+
+async function fillRecipe(page: Page) {
+  await page.getByLabel(/ya da serbest metin/).fill('20 denye likra');
+  await page.getByLabel(/Net kg 1/).fill('2.036');
+}
 
 test.describe('Yeni sevkiyat', { tag: '@panel' }, () => {
   test(
@@ -11,6 +17,7 @@ test.describe('Yeni sevkiyat', { tag: '@panel' }, () => {
       await pick(page, /Lokasyon/, 'Merkez Depo');
       await pick(page, /Fasoncu/, 'Bursa Tekstil');
       await pick(page, /Şoför/, 'Mert Kaya');
+      await fillRecipe(page);
       await page.getByRole('button', { name: 'Taslak oluştur' }).click();
       await expect(page.getByRole('heading', { name: 'SVK-2026-0046' })).toBeVisible();
       await expect(page.getByTestId('shipment-status')).toHaveText('Taslak');

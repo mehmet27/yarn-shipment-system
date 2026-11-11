@@ -18,6 +18,11 @@ const SCREENS = [
   ['WAREHOUSE', '/panel/sevkiyat/shp-0001'],
   ['WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis'],
   ['QUALITY', '/panel/sevkiyat/shp-0007'],
+  ['DRIVER', '/saha'],
+  ['DRIVER', '/saha/sevkiyat/shp-0010'],
+  ['SUBCONTRACTOR', '/saha'],
+  ['SUBCONTRACTOR', '/saha/sevkiyat/shp-0004'],
+  ['SUBCONTRACTOR', '/saha/sevkiyat/shp-0004/teslim'],
 ];
 const shotsDir = process.argv.includes('--shots')
   ? process.argv[process.argv.indexOf('--shots') + 1]

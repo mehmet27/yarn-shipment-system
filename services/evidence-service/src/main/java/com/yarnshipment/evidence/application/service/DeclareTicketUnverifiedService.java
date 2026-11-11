@@ -50,7 +50,8 @@ public class DeclareTicketUnverifiedService implements DeclareTicketUnverifiedUs
         UploadIntent intent = intents.findIntent(command.evidenceId())
                 .filter(found -> found.requestedBy().equals(command.actor().userId()))
                 .orElseThrow(() -> new UploadIntentNotFoundException(command.evidenceId()));
-        scopeGuard.validateInScope(command.actor(), ShipmentScopes.of(intent.shipmentId(), intent.siteId()), ACTION);
+        scopeGuard.validateInScope(
+                command.actor(), ShipmentScopes.of(command.actor(), intent.shipmentId(), intent.siteId()), ACTION);
         Optional<TicketUnverified> existing = unverifiedPort.findUnverified(intent.id());
         if (existing.isPresent()) {
             return existing.get();

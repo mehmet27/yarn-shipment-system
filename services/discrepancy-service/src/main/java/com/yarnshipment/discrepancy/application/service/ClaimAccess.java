@@ -18,8 +18,8 @@ import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
 import java.util.UUID;
 
 /**
- * İtirazları yükler ve kapsam kontrolünden geçirir. Kapsam sevkiyat üzerindendir: fabrika personeli yalnızca
- * yetkili olduğu lokasyonların sevkiyatına itiraz açar ve itirazlarını görür.
+ * İtirazları yükler ve kapsam kontrolünden geçirir. Kapsam sevkiyat üzerindendir: fasoncu yalnızca kendi
+ * sevkiyatına itiraz açar ve onun itirazlarını görür, iç kullanıcılar yetkili oldukları lokasyonları görür.
  */
 final class ClaimAccess {
 
@@ -41,12 +41,15 @@ final class ClaimAccess {
         this.scopeGuard = scopeGuard;
     }
 
-    /** Tamamlanmamış ya da çıkış kilosu bilinmeyen sevkiyata itiraz açılamaz. */
+    /** Karşılaştırılmamış ya da lokasyonu bilinmeyen teslime itiraz açılamaz. */
     ClaimTarget loadTarget(Actor actor, UUID shipmentId, String action) {
         ClaimTarget target = claims.findTarget(shipmentId)
                 .orElseThrow(
                         () -> new ClaimRejectedException(ClaimRejection.NOT_AVAILABLE, "shipmentId=" + shipmentId));
-        scopeGuard.validateInScope(actor, new ScopedResource(RESOURCE_TYPE, shipmentId, target.siteId()), action);
+        scopeGuard.validateInScope(
+                actor,
+                new ScopedResource(RESOURCE_TYPE, shipmentId, target.siteId(), target.subcontractorId()),
+                action);
         return target;
     }
 

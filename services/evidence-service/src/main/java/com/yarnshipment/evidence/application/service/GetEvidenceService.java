@@ -44,7 +44,7 @@ public class GetEvidenceService implements GetEvidenceUseCase {
         } catch (ShipmentNotAccessibleException exception) {
             throw new EvidenceNotFoundException(query.evidenceId());
         }
-        scopeGuard.validateInScope(actor, ShipmentScopes.of(shipment.shipmentId(), shipment.siteId()), ACTION);
+        scopeGuard.validateInScope(actor, ShipmentScopes.of(actor, shipment.shipmentId(), shipment.siteId()), ACTION);
         if (!EvidenceVisibility.mayView(actor)) {
             throw new EvidenceNotFoundException(query.evidenceId());
         }

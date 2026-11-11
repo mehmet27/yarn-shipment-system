@@ -17,6 +17,7 @@
   "nav": {
     "panel": "Yönetim Paneli",
     "toggle": "Yan menü",
+    "field": "Saha",
     "shipments": "Sevkiyatlar",
     "masterData": "Tanımlar",
     "discrepancies": "Uyuşmazlıklar",
@@ -26,9 +27,7 @@
     "users": "Kullanıcılar",
     "reports": "Raporlar",
     "audit": "Denetim kaydı",
-    "branding": "Görünüm",
-    "balances": "Fasoncu bakiyesi",
-    "toInvoice": "Faturalanacaklar"
+    "branding": "Görünüm"
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}",
@@ -55,7 +54,8 @@
       "DRAFT": "Taslak",
       "AWAITING_DELIVERY": "Fasoncuya yolda",
       "COMPLETED": "Tamamlandı",
-      "CANCELLED": "İptal"
+      "CANCELLED": "İptal",
+      "WEIGHT_MISMATCH": "Kantar uyuşmazlığı"
     },
     "list": {
       "title": "Sevkiyatlar",
@@ -68,7 +68,8 @@
       "DRAFT": "Çuvallar ve çıkış tartısı bekleniyor",
       "AWAITING_DELIVERY": "Fasoncuya ulaşınca irsaliye yüklenip tamamlanacak",
       "COMPLETED": "Süreç tamamlandı",
-      "CANCELLED": "İptal edildi"
+      "CANCELLED": "İptal edildi",
+      "WEIGHT_MISMATCH": "Müdür kararı bekleniyor"
     },
     "progress": {
       "label": "{{done}} / {{total}} adım",
@@ -110,10 +111,7 @@
         "evidence": "Kanıtlar",
         "history": "Geçmiş",
         "corrections": "Düzeltmeler",
-        "claims": "Kalite itirazı",
-        "fabric": "Kumaş girişi",
-        "yarn": "İplik dönüşü",
-        "fire": "Fire dosyası"
+        "claims": "Kalite itirazı"
       },
       "comingSoon": "Bu sekme sonraki adımda eklenecek.",
       "dispatch": "Çıkış",
@@ -125,7 +123,24 @@
       "tareAlert": "Standart dışı",
       "recordDispatch": "Çıkış tartısını gir",
       "dispatchNotRecorded": "Çıkış tartısı henüz girilmedi",
-      "bagCount": "Çuval"
+      "bagCount": "Çuval",
+      "recipe": {
+        "title": "Reçete",
+        "yarnType": "İplik cinsi",
+        "lot": "Lot",
+        "netKg": "Net kg",
+        "total": "Toplam",
+        "fireRate": "Fire oranı: {{rate}}",
+        "empty": "Reçete satırı yok."
+      },
+      "weightCheck": {
+        "title": "Kantar uyuşmazlığı",
+        "expected": "Beklenen",
+        "measured": "Tartılan",
+        "diff": "Fark",
+        "shortfallReason": "Eksik gönderim nedeni",
+        "blocked": "Sevkiyat kantar uyuşmazlığı nedeniyle yola çıkamaz; müdür kararı bekleniyor."
+      }
     },
     "history": {
       "label": "Durum geçmişi",
@@ -191,11 +206,38 @@
         "EVIDENCE_SERVICE_UNAVAILABLE": "Fotoğraf servisi yanıt vermiyor; tamamlama yapılmadı. Lütfen tekrar deneyin.",
         "unknown": "Sevkiyat tamamlanamadı. Lütfen tekrar deneyin."
       }
+    },
+    "weightDecision": {
+      "title": "Müdür kararı",
+      "decision": "Karar",
+      "reason": "Gerekçe",
+      "submit": "Kararı kaydet",
+      "options": {
+        "CANCEL": "İptal et",
+        "ADD_REMOVE_BAGS": "Çuval ekle-çıkar",
+        "UPDATE_RECIPE": "Reçeteyi güncelle"
+      },
+      "hints": {
+        "CANCEL": "Sevkiyat iptal olur, çuvallar serbest kalır.",
+        "ADD_REMOVE_BAGS": "Sevkiyat taslağa döner; depo çuvalları düzeltip yeniden tartar.",
+        "UPDATE_RECIPE": "Reçete kilosu tartıya eşitlenir ve sevkiyat yola çıkar."
+      },
+      "errors": {
+        "INVALID_SHIPMENT_STATUS": "Sevkiyat artık kantar uyuşmazlığında değil.",
+        "unknown": "Karar kaydedilemedi. Lütfen tekrar deneyin."
+      }
     }
+  },
+  "field": {
+    "myShipments": "Bana atanan sevkiyatlar",
+    "empty": "Size atanmış sevkiyat yok.",
+    "bagCount": "Çuval sayısı",
+    "actionFailed": "İşlem kaydedilemedi. Lütfen tekrar deneyin.",
+    "back": "Listeye dön"
   },
   "dispatch": {
     "title": "Çıkış tartısı",
-    "hint": "Kantar fişindeki brüt, dara ve çuval sayısını girin. Kayıtla sevkiyat fasoncuya yola çıkmış sayılır.",
+    "hint": "Önce boş araç (dara), yükleme sonrası dolu araç (brüt) tartısını girin. Net, beklenen yükle tutarsa sevkiyat fasoncuya yola çıkmış sayılır.",
     "bagCount": "Çuval sayısı",
     "scaleTicketNo": "Kantar fişi no (isteğe bağlı)",
     "net": "Net: {{net}}",
@@ -209,14 +251,16 @@
       "invalidBagCount": "Çuval sayısı 1 veya daha büyük bir tam sayı olmalı.",
       "ticketRequired": "Devam etmek için kantar fişinin fotoğrafı gerekli."
     },
-    "grossKg": "Brüt (kg)",
-    "tareKg": "Dara (kg)"
+    "grossKg": "Dolu araç tartısı (brüt)",
+    "tareKg": "Boş araç tartısı (dara)",
+    "shortfallReason": "Eksik gönderim nedeni (isteğe bağlı)",
+    "mismatchNotice": "Net kilo beklenenle tutmazsa sevkiyat kantar uyuşmazlığına düşer ve müdür karar verir."
   },
   "create": {
     "open": "Yeni sevkiyat",
     "title": "Yeni sevkiyat",
     "selectPlaceholder": "Seçin",
-    "hint": "Lokasyon ve fasoncuyu seçin; şoför ve araç sonradan da atanabilir.",
+    "hint": "Lokasyon, fasoncu, reçete ve fire oranını girin; şoför ve araç sonradan da atanabilir.",
     "site": "Lokasyon",
     "subcontractor": "Fasoncu",
     "driver": "Şoför (isteğe bağlı)",
@@ -227,8 +271,25 @@
     "invalid": "Seçimler geçersiz. Lütfen kontrol edin.",
     "errors": {
       "siteRequired": "Lokasyon seçin.",
-      "subcontractorRequired": "Fasoncu seçin."
-    }
+      "subcontractorRequired": "Fasoncu seçin.",
+      "linesRequired": "En az bir reçete satırı girin.",
+      "lineYarnRequired": "Her satırda iplik cinsi seçin ya da yazın.",
+      "lineKgInvalid": "Net kg 0'dan büyük olmalı (ör. 1.982,5).",
+      "fireRateInvalid": "Fire oranı 0 ile 20 arasında, en çok 2 ondalıklı olmalı."
+    },
+    "recipe": {
+      "title": "Reçete satırları",
+      "yarnType": "İplik cinsi",
+      "yarnTypePlaceholder": "Listeden seçin",
+      "yarnTypeText": "ya da serbest metin",
+      "lot": "Lot (isteğe bağlı)",
+      "netKg": "Net kg",
+      "add": "Satır ekle",
+      "remove": "{{index}}. satırı sil",
+      "total": "Toplam net: {{total}}"
+    },
+    "fireRate": "Fire oranı (%)",
+    "fireRateHint": "0 ile 20 arasında, en çok 2 ondalık."
   },
   "masterData": {
     "title": "Tanımlar",
@@ -602,7 +663,7 @@
   "claim": {
     "title": "Kalite itirazı",
     "empty": "Bu sevkiyatta kalite itirazı yok.",
-    "notAvailable": "Kalite itirazı yalnızca tamamlanmış sevkiyatta açılır.",
+    "notAvailable": "Sevkiyat irsaliyeyle tamamlanmadan kalite itirazı açılamaz.",
     "ofDiscrepancy": "İtiraz dosyası",
     "window": {
       "open": "İtiraz süresi {{deadline}} tarihinde biter.",
@@ -611,9 +672,7 @@
     "open": {
       "start": "Kalite itirazı aç",
       "title": "Yeni kalite itirazı",
-      "claimedKg": "İtiraz edilen kilo (kg)",
-      "claimedKgHint": "Sevkiyatın net ağırlığını aşamaz; en çok 3 ondalık.",
-      "claimedKgInvalid": "0'dan büyük, en çok 3 ondalıklı bir kilo girin.",
+      "bags": "İtiraz edilen çuvallar",
       "description": "Sorunu anlatın",
       "photos": "Fotoğraflar",
       "photosDone": "{{count}} fotoğraf eklendi.",
@@ -621,8 +680,7 @@
       "submit": "İtirazı gönder"
     },
     "card": {
-      "claimedKg": "İtiraz edilen kilo",
-      "adjustedKg": "Düzeltilen kilo",
+      "bags": "Çuvallar",
       "photos": "{{count}} fotoğraf",
       "openedAt": "Açıldı"
     },
@@ -645,9 +703,9 @@
     },
     "errors": {
       "QUALITY_CLAIM_NOT_AVAILABLE": "Bu sevkiyata henüz itiraz açılamaz.",
-      "QUALITY_CLAIM_WINDOW_CLOSED": "İtiraz süresi doldu; sevkiyatın tamamlanmasından sonra 3 iş günü içinde açılabilir.",
-      "CLAIM_EXCEEDS_SHIPMENT_WEIGHT": "İtiraz edilen kilo sevkiyatın net ağırlığını aşıyor.",
-      "QUALITY_CLAIM_EXCEEDS_SHIPMENT_WEIGHT": "İtiraz edilen kilo sevkiyatın net ağırlığını aşıyor.",
+      "QUALITY_CLAIM_WINDOW_CLOSED": "İtiraz süresi doldu; teslimden sonra 3 iş günü içinde açılabilir.",
+      "QUALITY_CLAIM_BAG_NOT_DELIVERED": "Seçilen çuval bu sevkiyatta teslim edilmemiş.",
+      "QUALITY_CLAIM_BAG_ALREADY_CLAIMED": "Seçilen çuvallardan birine zaten itiraz açılmış.",
       "QUALITY_CLAIM_EVIDENCE_REQUIRED": "En az bir fotoğraf ekleyin.",
       "QUALITY_CLAIM_EVIDENCE_INVALID": "Eklenen dosya bu sevkiyata ait değil ya da türü uygun değil.",
       "QUALITY_CLAIM_INSPECTION_RECORDED": "Bu kontrolün sonucu zaten girilmiş.",
@@ -840,6 +898,7 @@
       "ADMIN": "Yönetici",
       "WAREHOUSE": "Depo",
       "DRIVER": "Şoför",
+      "SUBCONTRACTOR": "Fasoncu",
       "QUALITY": "Kalite",
       "MANAGER": "Müdür",
       "GENERAL_MANAGER": "Genel müdür"
@@ -891,7 +950,50 @@
       "summary": "Özet",
       "subcontractors": "Fasoncular",
       "shipments": "Sevkiyat dökümü",
-      "balance": "Fasoncu bakiye"
+      "balance": "Fasoncu bakiye",
+      "balanceMatrix": "Bakiye matrisi",
+      "fire": "Fire raporu",
+      "yarnVsFabric": "Giden iplik ↔ gelen kumaş",
+      "toInvoice": "Faturalanacaklar"
+    },
+    "matrix": {
+      "yarnType": "İplik cinsi",
+      "inTransit": "Yolda",
+      "empty": "Bakiye kaydı yok."
+    },
+    "fire": {
+      "allSubcontractors": "Tüm fasoncular",
+      "empty": "Bu dönemde kayıt yok.",
+      "sent": "Gönderilen (G)",
+      "returnedYarn": "Dönen iplik (D)",
+      "fabric": "Gelen kumaş (K)",
+      "fireRate": "Fire oranı",
+      "expectedFabric": "Beklenen kumaş",
+      "actualFireRate": "Gerçekleşen fire",
+      "shortage": "Hatalı kg",
+      "invoiceNo": "Fatura no",
+      "invoicedAt": "Fatura tarihi",
+      "status": {
+        "AWAITING_FABRIC": "Kumaş bekleniyor",
+        "TO_INVOICE": "Faturalanacak",
+        "CLOSED": "Kapandı"
+      }
+    },
+    "opening": {
+      "title": "Açılış bakiyesi yükle",
+      "hint": "Her satır: fasoncu;iplik;kg (noktalı virgül ya da sekmeyle). Fasoncu adı tanımlarla aynı olmalıdır.",
+      "asOf": "Bakiye tarihi",
+      "data": "Satırlar",
+      "netKg": "Net kg",
+      "submit": "{{count}} satırı yükle",
+      "lineError": "Satır {{line}}: {{reason}}",
+      "error": {
+        "format": "fasoncu;iplik;kg biçiminde olmalı",
+        "unknown": "fasoncu bulunamadı",
+        "kg": "kilo geçersiz"
+      },
+      "failed": "Açılış bakiyesi yüklenemedi.",
+      "result": "{{imported}} satır yüklendi, {{skipped}} satır atlandı."
     },
     "parties": {
       "subcontractor": "Fasoncu",
@@ -963,7 +1065,11 @@
         "largest": "En büyük farklar",
         "subcontractors": "Fasoncular",
         "shipments": "Sevkiyat dökümü",
-        "balance": "Fasoncu bakiye"
+        "balance": "Fasoncu bakiye",
+        "balanceMatrix": "Bakiye matrisi",
+        "fire": "Fire raporu",
+        "yarnVsFabric": "İplik-kumaş",
+        "toInvoice": "Faturalanacaklar"
       },
       "signature": {
         "prepared": "Hazırlayan",
@@ -1057,135 +1163,6 @@
       "color": "Rengi #rrggbb biçiminde girin.",
       "name": "Firma adı en çok 80 karakter olabilir.",
       "invalid": "Girilen değerler geçersiz; renk ve logoyu kontrol edin."
-    }
-  },
-  "settlement": {
-    "errors": {
-      "VALIDATION_FAILED": "Girilen bilgiler geçersiz; alanları kontrol edin.",
-      "SHIPMENT_NOT_COMPLETED": "Yalnızca tamamlanmış sevkiyat için işlem yapılabilir.",
-      "FIRE_FILE_CLOSED": "Fire dosyası kapandı; artık değiştirilemez.",
-      "YARN_DISTRIBUTION_MISMATCH": "İplik dağılımının toplamı kumaş kilosuna eşit olmalı.",
-      "FIRE_INVOICE_NOT_APPLICABLE": "Bu dosyada faturalanacak hatalı kilo yok ya da dosya kapandı.",
-      "FIRE_CLOSE_NOT_APPLICABLE": "Hatalı kilo olan dosya kapatılamaz; fatura bilgisi girin.",
-      "ACCESS_DENIED": "Bu işlem için yetkiniz yok.",
-      "unknown": "İşlem tamamlanamadı. Lütfen tekrar deneyin."
-    },
-    "draftErrors": {
-      "invalidKg": "Kiloyu geçerli bir sayı olarak girin (ör. 1.250,5).",
-      "required": "Zorunlu alanları doldurun.",
-      "distributionMismatch": "İplik dağılımının toplamı kumaş kilosuna eşit olmalı.",
-      "invalidRate": "Fire oranı %0 ile %20 arasında olmalı.",
-      "invalidRollCount": "Top sayısı pozitif tam sayı olmalı."
-    },
-    "fabric": {
-      "title": "Kumaş girişi",
-      "empty": "Henüz kumaş girişi yok.",
-      "fabricType": "Kumaş cinsi",
-      "netKg": "Kumaş net kilosu",
-      "rollCount": "Top sayısı",
-      "waybillNo": "İrsaliye no",
-      "distribution": "İplik dağılımı",
-      "distributionHint": "Boş bırakırsanız kilo reçete oranına göre dağıtılır.",
-      "addYarn": "İplik satırı ekle",
-      "removeYarn": "Satırı sil",
-      "yarnType": "İplik cinsi",
-      "yarnKg": "Kilo",
-      "submit": "Kumaş girişini kaydet",
-      "receivedAt": "Teslim",
-      "rolls": "{{count}} top"
-    },
-    "yarn": {
-      "title": "İplik dönüşü / gelen iplik",
-      "empty": "Henüz iplik hareketi yok.",
-      "direction": "Yön",
-      "directions": {
-        "RETURN": "İplik dönüşü (fasoncudan depoya)",
-        "FROM_SUBCONTRACTOR": "Gelen iplik (fasoncudan)"
-      },
-      "directionShort": {
-        "RETURN": "Dönüş",
-        "FROM_SUBCONTRACTOR": "Gelen iplik"
-      },
-      "yarnType": "İplik cinsi",
-      "lotId": "Parti no (isteğe bağlı)",
-      "netKg": "Net kilo",
-      "waybillNo": "İrsaliye no (isteğe bağlı)",
-      "submit": "Hareketi kaydet",
-      "returnNote": "İplik dönüşü fire tabanından düşer."
-    },
-    "fire": {
-      "title": "Fire dosyası",
-      "statuses": {
-        "AWAITING_FABRIC": "Kumaş bekleniyor",
-        "TO_INVOICE": "Faturalanacak",
-        "INVOICED": "Faturalandı",
-        "CLOSED": "Kapandı"
-      },
-      "sent": "Gönderilen iplik (G)",
-      "returned": "Dönen iplik (D)",
-      "claim": "İtiraz edilen (I)",
-      "fabric": "Gelen kumaş (K)",
-      "base": "Fire tabanı (T)",
-      "expected": "Beklenen kumaş (B)",
-      "faulty": "Hatalı kilo",
-      "shortage": "Eksik kilo",
-      "actual": "Gerçekleşen fire",
-      "rate": "Fire oranı",
-      "rateEdit": "Fire oranını değiştir",
-      "ratePct": "Fire oranı (%)",
-      "rateReason": "Değişiklik gerekçesi",
-      "rateSubmit": "Oranı kaydet",
-      "invoiceTitle": "Fatura bilgisi",
-      "invoiceNo": "Fatura no",
-      "invoicedOn": "Fatura tarihi",
-      "invoiceNote": "Not (isteğe bağlı)",
-      "invoiceSubmit": "Fatura edildi",
-      "invoiceWarning": "Fatura kaydı geri alınamaz.",
-      "invoiceInfo": "Fatura {{no}} · {{date}}",
-      "close": "Kapat",
-      "closeHint": "Hatalı kilo yok; dosya kapatılabilir.",
-      "closedNote": "Dosya kapandı."
-    },
-    "balances": {
-      "title": "Fasoncu bakiyesi",
-      "subtitle": "İplik cinsine göre fasonculardaki iplik bakiyesi.",
-      "subcontractor": "Fasoncu",
-      "allSubcontractors": "Tüm fasoncular",
-      "yarnType": "İplik cinsi",
-      "allYarns": "Tüm iplik cinsleri",
-      "total": "Toplam",
-      "inTransit": "Yolda",
-      "empty": "Bakiye kaydı yok.",
-      "movements": "Hareketler",
-      "movementsEmpty": "Hareket yok.",
-      "date": "Tarih",
-      "kind": "Tür",
-      "kg": "Kilo",
-      "reason": "Gerekçe",
-      "kinds": {
-        "DISPATCH": "Çıkış",
-        "FABRIC_RECEIPT": "Kumaş girişi",
-        "YARN_RETURN": "İplik dönüşü",
-        "YARN_FROM_SUBCONTRACTOR": "Gelen iplik",
-        "CLAIM_ADJUSTMENT": "İtiraz düzeltmesi",
-        "OPENING": "Açılış",
-        "CORRECTION": "Düzeltme"
-      },
-      "openShipment": "Sevkiyat"
-    },
-    "toInvoice": {
-      "title": "Faturalanacaklar",
-      "subtitle": "Hatalı kilosu olan, faturası bekleyen fire dosyaları.",
-      "empty": "Faturalanacak dosya yok.",
-      "shipment": "Sevkiyat",
-      "subcontractor": "Fasoncu",
-      "sent": "Gönderilen",
-      "fabric": "Gelen kumaş",
-      "expected": "Beklenen",
-      "faulty": "Hatalı kilo",
-      "fire": "Fire",
-      "status": "Durum",
-      "open": "Dosyayı aç"
     }
   }
 }

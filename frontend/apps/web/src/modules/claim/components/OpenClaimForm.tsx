@@ -1,41 +1,45 @@
 import { useTranslation } from '@iplik/i18n';
-import { parseKg } from '@iplik/units';
-import { Alert, Button, Paper, Stack, Text, Textarea, Title } from '@iplik/ui';
+import { Alert, Button, Checkbox, Group, Paper, Stack, Text, Textarea, Title } from '@iplik/ui';
 import { TypedEvidenceUpload } from '@/modules/evidence';
 import { useState } from 'react';
-import { ClaimedKgField } from './ClaimedKgField';
 import { claimErrorKey } from '../claimErrors';
 import { useOpenClaim } from '../hooks/useClaims';
 
 const MAX_DESCRIPTION_LENGTH = 2000;
-const isZero = (kg: string) => Number(kg) === 0;
 
 export type OpenClaimFormProps = {
   shipmentId: string;
+  /** Teslimde okutulmuş ve henüz itiraz edilmemiş çuval anahtarları. */
+  bagKeys: readonly string[];
   onDone: () => void;
 };
 
-/** Kalite itirazı (kg ile): itiraz edilen kilo, açıklama ve en az bir fotoğraf zorunlu (analiz Bölüm 10). */
-export function OpenClaimForm({ shipmentId, onDone }: OpenClaimFormProps) {
+/** Kalite itirazı: çuval seçimi, açıklama ve en az bir fotoğraf zorunlu (analiz Bölüm 10). */
+export function OpenClaimForm({ shipmentId, bagKeys, onDone }: OpenClaimFormProps) {
   const { t } = useTranslation();
-  const [kgText, setKgText] = useState('');
+  const [selected, setSelected] = useState<string[]>([]);
   const [description, setDescription] = useState('');
   const [evidenceIds, setEvidenceIds] = useState<string[]>([]);
   const mutation = useOpenClaim(shipmentId);
-  const claimedKg = parseKg(kgText);
-  const isKgInvalid = kgText.trim() !== '' && (claimedKg === undefined || isZero(claimedKg));
-  const canSubmit =
-    claimedKg !== undefined &&
-    !isZero(claimedKg) &&
-    description.trim() !== '' &&
-    evidenceIds.length > 0;
+  const canSubmit = selected.length > 0 && description.trim() !== '' && evidenceIds.length > 0;
   return (
     <Paper withBorder p="md" component="section" aria-label={t('claim.open.title')}>
       <Stack>
         <Title order={3} size="h4">
           {t('claim.open.title')}
         </Title>
-        <ClaimedKgField value={kgText} onChange={setKgText} isInvalid={isKgInvalid} />
+        <Checkbox.Group
+          label={t('claim.open.bags')}
+          value={selected}
+          onChange={setSelected}
+          withAsterisk
+        >
+          <Group mt="xs">
+            {bagKeys.map((key) => (
+              <Checkbox key={key} value={key} label={key} />
+            ))}
+          </Group>
+        </Checkbox.Group>
         <Textarea
           label={t('claim.open.description')}
           maxLength={MAX_DESCRIPTION_LENGTH}
@@ -61,8 +65,7 @@ export function OpenClaimForm({ shipmentId, onDone }: OpenClaimFormProps) {
           disabled={!canSubmit}
           loading={mutation.isPending}
           onClick={() => {
-            if (claimedKg === undefined) return;
-            const input = { description: description.trim(), claimedKg, evidenceIds };
+            const input = { description: description.trim(), bagKeys: selected, evidenceIds };
             mutation.mutate(input, { onSuccess: onDone });
           }}
         >

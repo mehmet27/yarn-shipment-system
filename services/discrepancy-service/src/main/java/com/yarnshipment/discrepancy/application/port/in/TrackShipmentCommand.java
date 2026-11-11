@@ -1,10 +1,8 @@
 package com.yarnshipment.discrepancy.application.port.in;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 
 /**
  * İzlenen sevkiyatın bir adımı.
@@ -12,18 +10,8 @@ import org.jspecify.annotations.Nullable;
  * @param shipmentId sevkiyat
  * @param milestone adım
  * @param at adımın zamanı
- * @param netKg çıkış net kilosu; yalnızca {@link Milestone#DISPATCHED} için dolu olabilir
  */
-public record TrackShipmentCommand(
-        UUID shipmentId,
-        Milestone milestone,
-        Instant at,
-        @Nullable BigDecimal netKg) {
-
-    /** Kilosuz adım. */
-    public TrackShipmentCommand(UUID shipmentId, Milestone milestone, Instant at) {
-        this(shipmentId, milestone, at, null);
-    }
+public record TrackShipmentCommand(UUID shipmentId, Milestone milestone, Instant at) {
 
     public TrackShipmentCommand {
         Objects.requireNonNull(shipmentId, "shipmentId");
@@ -35,9 +23,7 @@ public record TrackShipmentCommand(
     public enum Milestone {
         /** Depo çıkış tartısını girdi, sevkiyat yolda. */
         DISPATCHED,
-        /** Sevkiyat tamamlandı; kalite itiraz süresi buradan sayılır. */
-        COMPLETED,
-        /** Sevkiyat iptal edildi. */
+        /** Sevkiyat tamamlandı ya da iptal edildi. */
         CLOSED
     }
 }

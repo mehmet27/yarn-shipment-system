@@ -84,7 +84,7 @@ class DispatchWeighingControllerTest {
     @Test
     @DisplayName("Depo olmayan kullanıcı çıkış kaydı yapamaz (403)")
     void shouldRejectDispatchFromSubcontractor() {
-        MvcTestResult result = post(TestTokens.token("offline_access").build(), VALID_BODY);
+        MvcTestResult result = post(TestTokens.subcontractorToken(), VALID_BODY);
 
         assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
         verifyNoInteractions(recordDispatchUseCase);

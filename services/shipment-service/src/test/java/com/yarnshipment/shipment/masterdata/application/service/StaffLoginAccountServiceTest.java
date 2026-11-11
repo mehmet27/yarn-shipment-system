@@ -14,6 +14,7 @@ import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -30,6 +31,11 @@ class StaffLoginAccountServiceTest {
     private final List<String> roleChanges = new ArrayList<>();
     private final Actor admin = TestTokens.actor("admin");
     private final LoginAccountTargetPort targets = new LoginAccountTargetPort() {
+        @Override
+        public Optional<String> findActiveSubcontractorTitle(UUID id) {
+            return Optional.empty();
+        }
+
         @Override
         public Set<UUID> findActiveSiteIds(Collection<UUID> ids) {
             return ids.contains(SITE) ? Set.of(SITE) : Set.of();

@@ -22,6 +22,8 @@ import org.springframework.security.oauth2.server.resource.InvalidBearerTokenExc
  * <ul>
  *   <li>Roller {@code roles} claim'inden okunur.
  *   <li>MFA zorunlu bir rol (varsayılan ADMIN, QUALITY) MFA'sız oturumda düşürülür.
+ *   <li>Dış rol (SUBCONTRACTOR) fabrika içi rolle birleşmişse token reddedilir (görev ayrılığı, 401).
+ *   <li>SUBCONTRACTOR için {@code subcontractor_id} claim'i zorunludur.
  * </ul>
  */
 public final class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthenticationToken> {
@@ -49,12 +51,15 @@ public final class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthen
         if (!mfaVerified) {
             dropMfaRequiredRoles(jwt, roles);
         }
+        validateSeparationOfDuties(roles);
+        UUID subcontractorId = scopeClaim(jwt, roles, Role.SUBCONTRACTOR, TokenClaims.SUBCONTRACTOR_ID);
         String username = jwt.getClaimAsString(TokenClaims.PREFERRED_USERNAME);
         return new Actor(
                 parseUuid(jwt.getSubject(), "sub"),
                 username == null ? jwt.getSubject() : username,
                 roles,
                 RolePermissionMatrix.permissionsOf(roles),
+                subcontractorId,
                 readSiteIds(jwt),
                 mfaVerified);
     }
@@ -74,6 +79,25 @@ public final class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthen
                 log.warn("Role ignored without MFA userId={} role={}", jwt.getSubject(), role);
             }
         }
+    }
+
+    private static void validateSeparationOfDuties(Set<Role> roles) {
+        boolean hasExternal = roles.stream().anyMatch(Role::isExternal);
+        boolean hasInternal = roles.stream().anyMatch(role -> !role.isExternal());
+        if (hasExternal && hasInternal) {
+            throw new InvalidBearerTokenException("External and internal roles cannot be combined");
+        }
+    }
+
+    private static @Nullable UUID scopeClaim(Jwt jwt, Set<Role> roles, Role role, String claim) {
+        if (!roles.contains(role)) {
+            return null;
+        }
+        String value = jwt.getClaimAsString(claim);
+        if (value == null || value.isBlank()) {
+            throw new InvalidBearerTokenException("Scope claim is required claim=" + claim);
+        }
+        return parseUuid(value, claim);
     }
 
     private static Set<UUID> readSiteIds(Jwt jwt) {

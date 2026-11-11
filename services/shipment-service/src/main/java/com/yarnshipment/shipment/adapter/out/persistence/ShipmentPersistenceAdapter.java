@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /** {@link ShipmentQueryPort}'un JPA uygulaması. Çıkış tartımları sayfa başına tek sorguyla toplu okunur. */
@@ -20,10 +21,12 @@ final class ShipmentPersistenceAdapter implements ShipmentQueryPort {
 
     private final ShipmentJpaRepository shipments;
     private final WeighingJpaRepository weighings;
+    private final JdbcClient jdbc;
 
-    ShipmentPersistenceAdapter(ShipmentJpaRepository shipments, WeighingJpaRepository weighings) {
+    ShipmentPersistenceAdapter(ShipmentJpaRepository shipments, WeighingJpaRepository weighings, JdbcClient jdbc) {
         this.shipments = shipments;
         this.weighings = weighings;
+        this.jdbc = jdbc;
     }
 
     @Override
@@ -47,8 +50,9 @@ final class ShipmentPersistenceAdapter implements ShipmentQueryPort {
         }
         List<UUID> ids = entities.stream().map(ShipmentJpaEntity::getId).toList();
         ShipmentSides sides = new ShipmentSides(weighings.findByShipmentIdInAndSupersededByIsNull(ids));
+        ShipmentRecipes recipes = ShipmentRecipes.load(jdbc, ids);
         return entities.stream()
-                .map(entity -> ShipmentMapper.toDomain(entity, sides))
+                .map(entity -> ShipmentMapper.toDomain(entity, sides, recipes))
                 .toList();
     }
 }

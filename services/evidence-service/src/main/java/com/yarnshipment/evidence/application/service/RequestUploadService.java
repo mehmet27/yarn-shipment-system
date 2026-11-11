@@ -56,7 +56,7 @@ public class RequestUploadService implements RequestUploadUseCase {
         UploadIntent.DeclaredFile file = command.file();
         UploadPermissions.requireAllowed(actor, file);
         ShipmentSnapshot shipment = shipments.findAccessible(command.shipmentId());
-        scopeGuard.validateInScope(actor, ShipmentScopes.of(shipment.shipmentId(), shipment.siteId()), ACTION);
+        scopeGuard.validateInScope(actor, ShipmentScopes.of(actor, shipment.shipmentId(), shipment.siteId()), ACTION);
         if (isClosedFor(file.type(), shipment)) {
             throw new ShipmentLockedException(shipment.shipmentId());
         }

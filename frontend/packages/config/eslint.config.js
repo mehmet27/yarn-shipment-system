@@ -136,7 +136,7 @@ const restrictedImports = {
     { selector: 'ExportAllDeclaration', message: 'FE-MOD-08: export * yasak.' },
     {
       selector:
-        'BinaryExpression[operator=/^[!=]==$/] > Literal[value=/^(ADMIN|WAREHOUSE|DRIVER|QUALITY|MANAGER|GENERAL_MANAGER)$/]',
+        'BinaryExpression[operator=/^[!=]==$/] > Literal[value=/^(ADMIN|WAREHOUSE|DRIVER|SUBCONTRACTOR|QUALITY|MANAGER|GENERAL_MANAGER)$/]',
       message: 'FE-SEC-02: rol yerine izin anahtarı (usePermission / <Can>).',
     },
     {

@@ -197,7 +197,7 @@ class LotServicesTest {
     void shouldListLotsWithScope() {
         // given
         Actor quality = TestTokens.actor("quality");
-        AccessScope scope = AccessScope.restrictedTo(Set.of(TestTokens.SITE_ID));
+        AccessScope scope = AccessScope.restrictedTo(Set.of(TestTokens.SITE_ID), null);
         MasterDataQuery query = new MasterDataQuery(null, 0, PAGE_SIZE);
         when(scopeGuard.scopeOf(quality)).thenReturn(scope);
 

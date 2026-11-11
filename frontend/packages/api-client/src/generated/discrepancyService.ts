@@ -236,15 +236,12 @@ export interface OpenQualityClaimRequest {
      */
   description: string;
   /**
-     * İtiraz edilen kilo; sıfırdan büyük, en çok üç ondalıklı, sevkiyatın net kilosunu aşamaz
-     * @pattern ^\d{1,11}(\.\d{1,3})?$
+     * @minItems 1
+     * @maxItems 500
+     * @items.minLength 1
+     * @items.maxLength 64
      */
-  claimedKg: string;
-  /**
-     * İsteğe bağlı kumaş girişi kimliği (kumaş girişi henüz yok)
-     * @nullable
-     */
-  fabricReceiptId?: string | null;
+  bagKeys: string[];
   /**
      * @minItems 1
      * @maxItems 20
@@ -305,10 +302,7 @@ export interface QualityClaimView {
   resolution?: Resolution;
   resolutionNote?: string;
   description: string;
-  /** İtiraz edilen kilo (üç ondalık); çuval bazlı eski itirazlarda 0.000 */
-  claimedKg: string;
-  /** @nullable */
-  fabricReceiptId?: string | null;
+  bagKeys: string[];
   evidenceIds: string[];
   openedBy: string;
   openedAt: string;
@@ -327,11 +321,11 @@ export const ShipmentClaimsViewAllowedActionsItem = {
 
 export interface ShipmentClaimsView {
   shipmentId: string;
-  /** İtirazın açılabileceği son an (tamamlanma + 3 iş günü) */
+  /** İtirazın açılabileceği son an (teslim + 3 iş günü) */
   deadlineAt: string;
   windowOpen: boolean;
-  /** Sevkiyatın çıkış net kilosu (üç ondalık); itiraz edilen kilo bunu aşamaz */
-  shipmentNetKg: string;
+  /** Teslimde okutulan çuval anahtarları */
+  deliveredKeys: string[];
   claims: QualityClaimView[];
   /** Bu kullanıcının bu sevkiyatta yapabileceği eylemler (FE-SEC-03) */
   allowedActions?: ShipmentClaimsViewAllowedActionsItem[];
@@ -411,12 +405,12 @@ export type NotFoundResponse = Problem;
 export type ConflictResponse = Problem;
 
 /**
- * İstek biçimi hatalı ya da itiraz kuralı tutmadı (QUALITY_CLAIM_CLAIM_EXCEEDS_SHIPMENT_WEIGHT, QUALITY_CLAIM_CLAIMED_KG_INVALID, QUALITY_CLAIM_EVIDENCE_REQUIRED, QUALITY_CLAIM_EVIDENCE_INVALID, QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED)
+ * İstek biçimi hatalı ya da itiraz kuralı tutmadı (QUALITY_CLAIM_BAG_NOT_DELIVERED, QUALITY_CLAIM_EVIDENCE_REQUIRED, QUALITY_CLAIM_EVIDENCE_INVALID, QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED)
  */
 export type ClaimBadRequestResponse = Problem;
 
 /**
- * İtiraz şu an yapılamıyor (QUALITY_CLAIM_NOT_AVAILABLE, QUALITY_CLAIM_WINDOW_CLOSED, QUALITY_CLAIM_INSPECTION_RECORDED, DISCREPANCY_NOT_OPEN)
+ * İtiraz şu an yapılamıyor (QUALITY_CLAIM_NOT_AVAILABLE, QUALITY_CLAIM_WINDOW_CLOSED, QUALITY_CLAIM_BAG_ALREADY_CLAIMED, QUALITY_CLAIM_INSPECTION_RECORDED, DISCREPANCY_NOT_OPEN)
  */
 export type ClaimConflictResponse = Problem;
 
@@ -551,10 +545,9 @@ export const resolveDiscrepancy = (
     }
 
 /**
- * Fabrika personeli (kalite, müdür, admin) tamamlanmış sevkiyat için, tamamlanmadan itibaren 3 iş günü içinde
- * kilogram bazlı açar. `claimedKg` sıfırdan büyük, en çok üç ondalıklı olmalı ve sevkiyatın çıkış net kilosunu
- * aşamaz (`QUALITY_CLAIM_CLAIM_EXCEEDS_SHIPMENT_WEIGHT`). En az bir `QUALITY_CLAIM` fotoğrafı gerekir;
- * fotoğraf aynı sevkiyata yüklenmiş olmalıdır. `fabricReceiptId` isteğe bağlıdır (kumaş girişi henüz yok).
+ * Teslimden itibaren 3 iş günü içinde, teslimde okutulmuş çuvallar için açılır. En az bir `QUALITY_CLAIM`
+ * fotoğrafı gerekir; fotoğraf aynı sevkiyata yüklenmiş olmalıdır. Bir çuval aynı sevkiyatta bir kez itiraz
+ * edilir. Fasoncu yalnızca kendi sevkiyatına itiraz açar.
  * @summary Kalite itirazı açar
  */
 export const openQualityClaim = (
@@ -569,8 +562,8 @@ export const openQualityClaim = (
     }
 
 /**
- * İtiraz süresi, sevkiyatın net kilosu ve açılmış itirazlar (kontrolleriyle). Sevkiyat henüz tamamlanmadıysa
- * `409 QUALITY_CLAIM_NOT_AVAILABLE`.
+ * İtiraz süresi, teslimde okutulan çuvallar ve açılmış itirazlar (kontrolleriyle). Sevkiyat henüz
+ * karşılaştırılmadıysa `409 QUALITY_CLAIM_NOT_AVAILABLE`.
  * @summary Sevkiyatın itiraz dosyası
  */
 export const getShipmentClaims = (

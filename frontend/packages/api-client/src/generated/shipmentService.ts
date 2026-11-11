@@ -42,6 +42,7 @@ export type Role = typeof Role[keyof typeof Role];
 export const Role = {
   ADMIN: 'ADMIN',
   WAREHOUSE: 'WAREHOUSE',
+  SUBCONTRACTOR: 'SUBCONTRACTOR',
   QUALITY: 'QUALITY',
   MANAGER: 'MANAGER',
   GENERAL_MANAGER: 'GENERAL_MANAGER',
@@ -87,6 +88,8 @@ export interface CurrentUserResponse {
   roles: Role[];
   permissions: Permission[];
   siteIds: string[];
+  /** Yalnızca fasoncu kullanıcılarında */
+  subcontractorId?: string;
   mfaVerified: boolean;
 }
 
@@ -95,6 +98,7 @@ export type ShipmentStatus = typeof ShipmentStatus[keyof typeof ShipmentStatus];
 
 export const ShipmentStatus = {
   DRAFT: 'DRAFT',
+  WEIGHT_MISMATCH: 'WEIGHT_MISMATCH',
   AWAITING_DELIVERY: 'AWAITING_DELIVERY',
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED',
@@ -110,6 +114,7 @@ export const ShipmentAction = {
   ASSIGN_BAGS: 'ASSIGN_BAGS',
   RECORD_DISPATCH: 'RECORD_DISPATCH',
   CANCEL: 'CANCEL',
+  RESOLVE_WEIGHT_MISMATCH: 'RESOLVE_WEIGHT_MISMATCH',
   COMPLETE: 'COMPLETE',
   OPEN_QUALITY_CLAIM: 'OPEN_QUALITY_CLAIM',
   CREATE_CORRECTION: 'CREATE_CORRECTION',
@@ -152,6 +157,7 @@ export type Audience = typeof Audience[keyof typeof Audience];
 export const Audience = {
   INTERNAL: 'INTERNAL',
   WAREHOUSE: 'WAREHOUSE',
+  SUBCONTRACTOR: 'SUBCONTRACTOR',
 } as const;
 
 /**
@@ -275,7 +281,34 @@ export interface AssignShipmentBagsResponse {
   assignedCount: number;
 }
 
+/**
+ * En az biri verilir, yarnTypeId ya da yarnTypeText
+ */
+export interface RecipeLineInput {
+  yarnTypeId?: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  yarnTypeText?: string;
+  lotId?: string;
+  netKg: Kg;
+}
+
+/**
+ * Fire oranı, ondalık dize, 0–0.20 (ör. "0.0400" = %4). Oluşturmada verilmezse ayardaki varsayılan kullanılır
+ * @pattern ^0\.\d{1,4}$|^[01]$
+ */
+export type FireRate = string;
+
 export interface CreateShipmentRequest {
+  /**
+     * Reçete satırları (en az bir); beklenen net kilo satırların toplamıdır
+     * @minItems 1
+     * @maxItems 50
+     */
+  lines: RecipeLineInput[];
+  fireRate?: FireRate;
   siteId: string;
   subcontractorId: string;
   /**
@@ -295,6 +328,53 @@ export interface CreateShipmentRequest {
      * @maxLength 20
      */
   plateNo?: string;
+}
+
+export interface RecipeLineView {
+  lineNo: number;
+  yarnTypeId?: string;
+  yarnTypeText?: string;
+  lotId?: string;
+  netKg: Kg;
+}
+
+export interface WeightCheckView {
+  expectedKg: Kg;
+  measuredKg: Kg;
+  /**
+     * Tartılan - beklenen; eksik yükte negatif
+     * @pattern ^-?\d{1,9}\.\d{3}$
+     */
+  diffKg: string;
+  shortfallReason?: string;
+}
+
+export type WeightDecisionKind = typeof WeightDecisionKind[keyof typeof WeightDecisionKind];
+
+
+export const WeightDecisionKind = {
+  CANCEL: 'CANCEL',
+  ADD_REMOVE_BAGS: 'ADD_REMOVE_BAGS',
+  UPDATE_RECIPE: 'UPDATE_RECIPE',
+} as const;
+
+export interface WeightDecisionRequest {
+  decision: WeightDecisionKind;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  reason: string;
+}
+
+export interface ShipmentSettingsView {
+  defaultFireRate: FireRate;
+  weightToleranceKg: Kg;
+}
+
+export interface ShipmentSettingsRequest {
+  defaultFireRate: FireRate;
+  weightToleranceKg: Kg;
 }
 
 export interface CreateShipmentResponse {
@@ -353,6 +433,31 @@ export interface DriverView {
 export interface DriverPageResponse {
   items: DriverView[];
   page: PageMetadata;
+}
+
+export interface LoginAccountRequest {
+  /**
+     * Giriş adı; küçük harf, rakam, nokta, alt çizgi ve tire
+     * @pattern ^[a-z0-9][a-z0-9._-]{2,63}$
+     */
+  username: string;
+  /**
+     * Cep telefonu (ör. 0532 123 45 67 ya da +905321234567); şifre kodu bu numaraya SMS'le gider
+     * @minLength 7
+     * @maxLength 20
+     */
+  phone: string;
+  /**
+     * İsteğe bağlı; şoför ve fasoncunun e-postası olmayabilir
+     * @maxLength 255
+     */
+  email?: string;
+  /**
+     * Kişinin sevkiyatlarını göreceği etkin lokasyonlar
+     * @minItems 1
+     * @maxItems 100
+     */
+  siteIds: string[];
 }
 
 /**
@@ -755,9 +860,22 @@ export interface ShipmentBagsResponse {
   dispatchBags: DispatchBagView[];
 }
 
+/**
+ * Dolu araç tartısı `loadedVehicleKg` (= `grossKg`) ve boş araç tartısı `emptyVehicleKg` (= `tareKg`) eş anlamlıdır;
+ * her çiftten biri zorunludur (ikisi de verilirse eşit olmalı). Net beklenen net'ten kantar toleransından fazla
+ * saparsa sevkiyat `WEIGHT_MISMATCH` olur (yine 204 döner).
+ */
 export interface DispatchWeighingRequest {
-  grossKg: Kg;
-  tareKg: Kg;
+  grossKg?: Kg;
+  tareKg?: Kg;
+  loadedVehicleKg?: Kg;
+  emptyVehicleKg?: Kg;
+  /**
+     * Depo eksik yüklüyorsa nedeni (stok yetmedi gibi); müdürün kararına girdi olur
+     * @minLength 1
+     * @maxLength 500
+     */
+  shortfallReason?: string;
   /**
      * Tartılan çuval sayısı
      * @minimum 1
@@ -797,6 +915,9 @@ export interface InternalShipmentView {
   /** Tamamlanırken girilen irsaliye numarası */
   waybillNo?: string;
   createdAt: string;
+  fireRate?: FireRate;
+  lines?: RecipeLineView[];
+  weightCheck?: WeightCheckView;
   allowedActions: ShipmentAction[];
 }
 
@@ -826,19 +947,24 @@ export interface WarehouseShipmentView {
   /** Tamamlanırken girilen irsaliye numarası */
   waybillNo?: string;
   createdAt: string;
+  fireRate?: FireRate;
+  lines?: RecipeLineView[];
+  weightCheck?: WeightCheckView;
   allowedActions: ShipmentAction[];
 }
 
-/**
- * İsteyenin rolüne göre iki görünümden biri (API-09).
- */
-export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView;
+export type SubcontractorShipmentViewAudience = typeof SubcontractorShipmentViewAudience[keyof typeof SubcontractorShipmentViewAudience];
+
+
+export const SubcontractorShipmentViewAudience = {
+  SUBCONTRACTOR: 'SUBCONTRACTOR',
+} as const;
 
 /**
  * Fasoncu. Beklenen yükü içermez.
  */
 export interface SubcontractorShipmentView {
-  audience: Audience;
+  audience: SubcontractorShipmentViewAudience;
   shipmentId: string;
   shipmentNo: string;
   siteId: string;
@@ -850,6 +976,11 @@ export interface SubcontractorShipmentView {
   createdAt: string;
   allowedActions: ShipmentAction[];
 }
+
+/**
+ * İsteyenin rolüne göre üç görünümden biri (API-09).
+ */
+export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView;
 
 /**
  * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE) ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da düzeltilecek kayıt bu arada değişti (CORRECTION_CONFLICT)
@@ -1339,6 +1470,27 @@ export const deactivateDriver = (
  ) => {
       return customInstance<void>(
       {url: `/api/v1/master-data/drivers/${driverId}/deactivate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Keycloak'ta kullanıcıyı şifresiz; rol, telefon ve kimlik/lokasyon
+ * öznitelikleriyle açar. Şifre üretilmez ve hiçbir yanıtta yer almaz: kişiye SMS ile bir kod gider, kişi giriş
+ * sayfasındaki "Şifremi unuttum" ile kodu girip kendi şifresini belirler. SMS gidemezse 502 `SMS_UNAVAILABLE`
+ * (hesap açık kalır; yönetici sıfırlamayı yeniden başlatır). Kayıt etkin olmalı, `siteIds` etkin lokasyonlardan oluşmalıdır (`INVALID_MASTER_DATA`). Kayıt için
+ * hesap zaten varsa ya da giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak'a ulaşılamazsa ya da
+ * yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
+ * @summary Fasoncu için giriş hesabı açar
+ */
+export const createSubcontractorLoginAccount = (
+    subcontractorId: string,
+    loginAccountRequest: LoginAccountRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/subcontractors/${subcontractorId}/login-account`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: loginAccountRequest
     },
       );
     }
@@ -2003,7 +2155,7 @@ export const getShipmentHistory = (
     }
 
 /**
- * Müdür ya da yönetici (SHIPMENT_CANCEL). Taslak (DRAFT) ya da teslim bekleyen (AWAITING_DELIVERY) sevkiyat
+ * Müdür ya da yönetici (SHIPMENT_CANCEL). Taslak (DRAFT), kantar uyuşmazlığındaki (WEIGHT_MISMATCH) ya da teslim bekleyen (AWAITING_DELIVERY) sevkiyat
  * iptal edilir, ör. kantar farkı nedeniyle durdurulan sevkiyat; gerekçe zorunludur. Sevkiyata atanmış çuvallar bag-service'te serbest bırakılır ve yeniden
  * kullanılabilir olur. Çuval servisi yanıt vermezse iptal de yapılmaz (`BAG_SERVICE_UNAVAILABLE`) ve istek
  * güvenle tekrarlanır. Zaten iptal edilmiş sevkiyata gelen istek başarılı döner. Tamamlanmış sevkiyat iptal
@@ -2018,6 +2170,54 @@ export const cancelShipment = (
       {url: `/api/v1/shipments/${shipmentId}/cancel`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: cancelShipmentRequest
+    },
+      );
+    }
+
+/**
+ * Müdür ya da yönetici (SHIPMENT_CANCEL). `CANCEL`: sevkiyat iptal olur, çuvallar serbest kalır. `ADD_REMOVE_BAGS`:
+ * sevkiyat DRAFT'a döner, depo çuvalı düzeltip yeniden tartar (önceki tartım silinmez). `UPDATE_RECIPE`: reçete
+ * satırları tartılan net'e orantılı ölçeklenir (yuvarlama farkı son satırda) ve sevkiyat `AWAITING_DELIVERY` olur.
+ * Gerekçe zorunludur. Sevkiyat `WEIGHT_MISMATCH` değilse `INVALID_SHIPMENT_STATUS`.
+ * @summary Kantar uyuşmazlığına karar verir (WEIGHT_MISMATCH)
+ */
+export const decideWeightMismatch = (
+    shipmentId: string,
+    weightDecisionRequest: WeightDecisionRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/weight-decision`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: weightDecisionRequest
+    },
+      );
+    }
+
+/**
+ * Sevkiyat görüntüleme izni olan herkes okur; müdür yeni sevkiyat formunu bununla doldurur.
+ * @summary Varsayılan fire oranı ve kantar toleransı
+ */
+export const getShipmentSettings = (
+
+ ) => {
+      return customInstance<ShipmentSettingsView>(
+      {url: `/api/v1/settings/shipment`, method: 'GET'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (SETTINGS_MANAGE). Fire oranı 0–0.20, tolerans kg ≥ 0. Değişiklik denetim kaydına düşer.
+ * Geçersiz değer `INVALID_SHIPMENT`.
+ * @summary Varsayılan fire oranını ve kantar toleransını kaydeder
+ */
+export const saveShipmentSettings = (
+    shipmentSettingsRequest: ShipmentSettingsRequest,
+ ) => {
+      return customInstance<ShipmentSettingsView>(
+      {url: `/api/v1/settings/shipment`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: shipmentSettingsRequest
     },
       );
     }
@@ -2126,6 +2326,7 @@ export type ListDriversResult = NonNullable<Awaited<ReturnType<typeof listDriver
 export type CreateDriverResult = NonNullable<Awaited<ReturnType<typeof createDriver>>>
 export type UpdateDriverResult = NonNullable<Awaited<ReturnType<typeof updateDriver>>>
 export type DeactivateDriverResult = NonNullable<Awaited<ReturnType<typeof deactivateDriver>>>
+export type CreateSubcontractorLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createSubcontractorLoginAccount>>>
 export type ListLoginAccountsResult = NonNullable<Awaited<ReturnType<typeof listLoginAccounts>>>
 export type CreateStaffLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createStaffLoginAccount>>>
 export type ListUserNamesResult = NonNullable<Awaited<ReturnType<typeof listUserNames>>>
@@ -2172,6 +2373,9 @@ export type ActivateLotResult = NonNullable<Awaited<ReturnType<typeof activateLo
 export type LockLotQualityResult = NonNullable<Awaited<ReturnType<typeof lockLotQuality>>>
 export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof getShipmentHistory>>>
 export type CancelShipmentResult = NonNullable<Awaited<ReturnType<typeof cancelShipment>>>
+export type DecideWeightMismatchResult = NonNullable<Awaited<ReturnType<typeof decideWeightMismatch>>>
+export type GetShipmentSettingsResult = NonNullable<Awaited<ReturnType<typeof getShipmentSettings>>>
+export type SaveShipmentSettingsResult = NonNullable<Awaited<ReturnType<typeof saveShipmentSettings>>>
 export type RecordCorrectionResult = NonNullable<Awaited<ReturnType<typeof recordCorrection>>>
 export type ListCorrectionsResult = NonNullable<Awaited<ReturnType<typeof listCorrections>>>
 export type AssignShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof assignShipmentBags>>>

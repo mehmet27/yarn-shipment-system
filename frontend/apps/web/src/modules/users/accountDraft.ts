@@ -1,5 +1,6 @@
-import type { StaffLoginAccountRequest } from '@iplik/api-client';
-import type { StaffRole } from '@iplik/api-client';
+import type { LoginAccountRequest, StaffLoginAccountRequest } from '@iplik/api-client';
+import type { AccountKind } from './staffRoles';
+import { isStaffKind, recordSlugOf } from './staffRoles';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9._-]{2,63}$/;
@@ -13,11 +14,13 @@ export type AccountDraft = {
   fullName: string;
   phone: string;
   email: string;
-  kind: StaffRole | undefined;
+  kind: AccountKind | undefined;
+  recordId: string | undefined;
   siteIds: readonly string[];
 };
 
-export type AccountField = 'username' | 'fullName' | 'phone' | 'email' | 'role' | 'sites';
+export type AccountField =
+  'username' | 'fullName' | 'phone' | 'email' | 'role' | 'record' | 'sites';
 
 export const EMPTY_DRAFT: AccountDraft = {
   username: '',
@@ -25,6 +28,7 @@ export const EMPTY_DRAFT: AccountDraft = {
   phone: '',
   email: '',
   kind: undefined,
+  recordId: undefined,
   siteIds: [],
 };
 
@@ -34,10 +38,12 @@ export function isValidPhone(phone: string): boolean {
 
 /** Kurala uymayan alanlar; boşsa form gönderilebilir. E-posta isteğe bağlıdır ama yazılmışsa geçerli olmalıdır. */
 export function invalidFields(draft: AccountDraft): Set<AccountField> {
+  const slug = recordSlugOf(draft.kind);
   const checks: readonly (readonly [AccountField, boolean])[] = [
     ['username', !USERNAME_PATTERN.test(draft.username)],
     ['role', draft.kind === undefined],
-    ['fullName', draft.fullName.trim().length < MIN_NAME_LENGTH],
+    ['record', slug !== undefined && draft.recordId === undefined],
+    ['fullName', slug === undefined && draft.fullName.trim().length < MIN_NAME_LENGTH],
     ['phone', !isValidPhone(draft.phone)],
     ['email', draft.email !== '' && !EMAIL_PATTERN.test(draft.email)],
     ['sites', draft.siteIds.length === 0],
@@ -45,21 +51,29 @@ export function invalidFields(draft: AccountDraft): Set<AccountField> {
   return new Set(checks.filter(([, isInvalid]) => isInvalid).map(([field]) => field));
 }
 
-/** Hesap yalnızca fabrika personeli içindir (KR-17); gövde tek uca gider. */
-export type AccountSubmission = { kind: 'staff'; request: StaffLoginAccountRequest };
+/** Hesabın hangi uca, hangi gövdeyle gideceği: fabrika içi roller tek uçtan, fasoncu kayıtlarından açılır. */
+export type AccountSubmission =
+  | { kind: 'staff'; request: StaffLoginAccountRequest }
+  | { kind: 'subcontractor'; recordId: string; request: LoginAccountRequest };
 
-/** Doğrulanmış taslaktan istek; rol seçilmemişse gönderilecek bir şey yoktur. */
+/** Doğrulanmış taslaktan istek; rol ya da kayıt seçilmemişse gönderilecek bir şey yoktur. */
 export function toSubmission(draft: AccountDraft): AccountSubmission | undefined {
   if (draft.kind === undefined) return undefined;
+  const common = {
+    username: draft.username,
+    phone: draft.phone.trim(),
+    siteIds: [...draft.siteIds],
+    ...(draft.email === '' ? {} : { email: draft.email }),
+  };
+  const slug = recordSlugOf(draft.kind);
+  if (slug !== undefined) {
+    return draft.recordId === undefined
+      ? undefined
+      : { kind: slug, recordId: draft.recordId, request: common };
+  }
+  if (!isStaffKind(draft.kind)) return undefined;
   return {
     kind: 'staff',
-    request: {
-      username: draft.username,
-      phone: draft.phone.trim(),
-      siteIds: [...draft.siteIds],
-      ...(draft.email === '' ? {} : { email: draft.email }),
-      fullName: draft.fullName.trim(),
-      role: draft.kind,
-    },
+    request: { ...common, fullName: draft.fullName.trim(), role: draft.kind },
   };
 }

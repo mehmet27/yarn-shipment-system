@@ -11,7 +11,7 @@
  * - Zamanlar ISO 8601 UTC, dönem tarihleri Europe/Istanbul takvim günüdür (API-03).
  * - Dönem verilmezse son 30 gün alınır. Sevkiyat ölçütleri sevkiyatın oluşturulma gününe, eşleşme raporu
  *   karşılaştırma gününe göre sayılır.
- * - Kullanıcı yalnızca yetkili olduğu lokasyonların verisini görür (SEC-03). Şoför rapor görmez.
+ * - Kullanıcı yalnızca yetkili olduğu lokasyonların verisini görür (SEC-03). Şoför ve fasoncu rapor görmez.
  * - Raporlar kişileri etiketlemez; olgusal göstergelerdir. Şoför, fasoncu ve parti kimlikleri döner, adlar tanım
  *   servislerinden çözülür.
  *
@@ -162,6 +162,77 @@ export interface SubcontractorBalanceView {
   differenceKg: string;
 }
 
+export interface BalanceMatrixRowView {
+  yarnType: string;
+  subcontractorId: string;
+  subcontractorName: string;
+  /** Net kg, 3 ondalık, işaretli */
+  balanceKg: string;
+  /** Henüz teslim edilmemiş DISPATCH kilosu */
+  inTransitKg: string;
+}
+
+export type FireRowViewStatus = typeof FireRowViewStatus[keyof typeof FireRowViewStatus];
+
+
+export const FireRowViewStatus = {
+  AWAITING_FABRIC: 'AWAITING_FABRIC',
+  TO_INVOICE: 'TO_INVOICE',
+  CLOSED: 'CLOSED',
+} as const;
+
+export interface FireRowView {
+  shipmentId: string;
+  shipmentNo: string;
+  subcontractorId: string;
+  subcontractorName: string;
+  sentKg: string;
+  returnedYarnKg: string;
+  fabricKg: string;
+  /** Kesir, 4 ondalık */
+  fireRate: string;
+  expectedFabricKg: string;
+  /** Kesir, 4 ondalık */
+  actualFireRate: string;
+  shortageKg: string;
+  status: FireRowViewStatus;
+  /** @nullable */
+  invoiceNo?: string | null;
+  /** @nullable */
+  invoicedAt?: string | null;
+}
+
+export interface YarnVsFabricRowView {
+  subcontractorId: string;
+  subcontractorName: string;
+  sentKg: string;
+  returnedYarnKg: string;
+  fabricKg: string;
+  actualFireRate: string;
+  shortageKg: string;
+}
+
+export interface OpeningRowRequest {
+  subcontractorId: string;
+  /** @minLength 1 */
+  subcontractorName: string;
+  /** @minLength 1 */
+  yarnType: string;
+  /** @pattern ^-?\d{1,11}(\.\d{1,3})?$ */
+  netKg: string;
+}
+
+export interface OpeningImportRequest {
+  asOf: string;
+  /** @maxItems 5000 */
+  rows: OpeningRowRequest[];
+}
+
+export interface OpeningImportResult {
+  imported: number;
+  skipped: number;
+}
+
 /**
  * Dönem geçersiz (REPORT_PERIOD_INVALID)
  */
@@ -252,6 +323,59 @@ to?: ToParameter;
 siteId?: SiteIdParameter;
 };
 
+export type GetBalanceMatrixParams = {
+/**
+ * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+ */
+siteId?: SiteIdParameter;
+};
+
+export type GetFireReportParams = {
+/**
+ * Dönem başı (dahil), Europe/Istanbul günü
+ */
+from?: FromParameter;
+/**
+ * Dönem sonu (dahil), Europe/Istanbul günü
+ */
+to?: ToParameter;
+/**
+ * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+ */
+siteId?: SiteIdParameter;
+subcontractorId?: string;
+};
+
+export type GetYarnVsFabricReportParams = {
+/**
+ * Dönem başı (dahil), Europe/Istanbul günü
+ */
+from?: FromParameter;
+/**
+ * Dönem sonu (dahil), Europe/Istanbul günü
+ */
+to?: ToParameter;
+/**
+ * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+ */
+siteId?: SiteIdParameter;
+};
+
+export type GetToInvoiceReportParams = {
+/**
+ * Dönem başı (dahil), Europe/Istanbul günü
+ */
+from?: FromParameter;
+/**
+ * Dönem sonu (dahil), Europe/Istanbul günü
+ */
+to?: ToParameter;
+/**
+ * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+ */
+siteId?: SiteIdParameter;
+};
+
 /**
  * @summary Panel ana sayfa özeti
  */
@@ -307,6 +431,77 @@ export const getSubcontractorBalanceReport = (
       );
     }
 
+/**
+ * BALANCE_VIEW gerekir. balanceKg hareketlerin işaretli toplamıdır.
+ * @summary İplik cinsi x fasoncu bakiye matrisi
+ */
+export const getBalanceMatrix = (
+    params?: GetBalanceMatrixParams,
+ ) => {
+      return customInstance<BalanceMatrixRowView[]>(
+      {url: `/api/v1/reports/balance-matrix`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * REPORT_VIEW gerekir. Dönem tamamlanma tarihine göredir. Oranlar kesirdir (0.0400 = %4).
+ * @summary Sevkiyat bazında fire dosyaları
+ */
+export const getFireReport = (
+    params?: GetFireReportParams,
+ ) => {
+      return customInstance<FireRowView[]>(
+      {url: `/api/v1/reports/fire`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * REPORT_VIEW gerekir.
+ * @summary Fasoncu bazında giden iplik ve gelen kumaş
+ */
+export const getYarnVsFabricReport = (
+    params?: GetYarnVsFabricReportParams,
+ ) => {
+      return customInstance<YarnVsFabricRowView[]>(
+      {url: `/api/v1/reports/yarn-vs-fabric`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * REPORT_VIEW gerekir. Eksik kilo sıfırdan büyük ve durum TO_INVOICE olanlar.
+ * @summary Faturalanacak fire dosyaları
+ */
+export const getToInvoiceReport = (
+    params?: GetToInvoiceReportParams,
+ ) => {
+      return customInstance<FireRowView[]>(
+      {url: `/api/v1/reports/to-invoice`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * BALANCE_VIEW gerekir. (fasoncu, iplik cinsi) için OPENING varsa satır atlanır.
+ * @summary Açılış bakiyesini OPENING hareketi olarak içe aktarır
+ */
+export const importOpeningBalance = (
+    openingImportRequest: OpeningImportRequest,
+ ) => {
+      return customInstance<OpeningImportResult>(
+      {url: `/api/v1/reports/balance/opening-import`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: openingImportRequest
+    },
+      );
+    }
+
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -316,3 +511,8 @@ export type GetDashboardResult = NonNullable<Awaited<ReturnType<typeof getDashbo
 export type GetSubcontractorReportResult = NonNullable<Awaited<ReturnType<typeof getSubcontractorReport>>>
 export type GetShipmentReportResult = NonNullable<Awaited<ReturnType<typeof getShipmentReport>>>
 export type GetSubcontractorBalanceReportResult = NonNullable<Awaited<ReturnType<typeof getSubcontractorBalanceReport>>>
+export type GetBalanceMatrixResult = NonNullable<Awaited<ReturnType<typeof getBalanceMatrix>>>
+export type GetFireReportResult = NonNullable<Awaited<ReturnType<typeof getFireReport>>>
+export type GetYarnVsFabricReportResult = NonNullable<Awaited<ReturnType<typeof getYarnVsFabricReport>>>
+export type GetToInvoiceReportResult = NonNullable<Awaited<ReturnType<typeof getToInvoiceReport>>>
+export type ImportOpeningBalanceResult = NonNullable<Awaited<ReturnType<typeof importOpeningBalance>>>

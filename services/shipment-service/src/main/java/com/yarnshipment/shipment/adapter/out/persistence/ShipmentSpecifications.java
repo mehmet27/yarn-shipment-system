@@ -8,6 +8,7 @@ import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.data.jpa.domain.Specification;
 
 /** Kapsam ve durum filtresini WHERE koşuluna çevirir; kurallar {@code ScopeGuard.isInScope} ile aynıdır. */
@@ -38,5 +39,9 @@ final class ShipmentSpecifications {
                 scope.siteIds().isEmpty()
                         ? builder.disjunction()
                         : root.get("siteId").in(scope.siteIds()));
+        UUID subcontractorId = scope.subcontractorId();
+        if (subcontractorId != null) {
+            predicates.add(builder.equal(root.get("parties").get("subcontractorId"), subcontractorId));
+        }
     }
 }

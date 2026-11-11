@@ -6,6 +6,7 @@ import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -36,12 +37,17 @@ final class InMemoryShipmentQueryPort implements ShipmentQueryPort {
         lastScope = scope;
         List<Shipment> matching = shipments.stream()
                 .filter(shipment -> statuses.isEmpty() || statuses.contains(shipment.status()))
-                .filter(shipment -> scope.isUnrestricted() || scope.siteIds().contains(shipment.siteId()))
+                .filter(shipment -> isOwnedWithin(scope, shipment))
                 .toList();
         List<Shipment> pageContent = matching.stream()
                 .skip((long) page.number() * page.size())
                 .limit(page.size())
                 .toList();
         return new ShipmentSlice(pageContent, matching.size());
+    }
+
+    private static boolean isOwnedWithin(AccessScope scope, Shipment shipment) {
+        UUID subcontractorId = scope.subcontractorId();
+        return subcontractorId == null || Objects.equals(subcontractorId, shipment.subcontractorId());
     }
 }

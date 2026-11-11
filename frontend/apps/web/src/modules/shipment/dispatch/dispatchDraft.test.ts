@@ -7,6 +7,7 @@ const VALID: DispatchDraft = {
   tareKg: '17,5',
   bagCount: '40',
   scaleTicketNo: ' KF-1 ',
+  shortfallReason: '',
   ticket: { kind: 'READ' },
 };
 
@@ -22,6 +23,13 @@ describe('dispatchDraft', () => {
       bagCount: 40,
       scaleTicketNo: 'KF-1',
     });
+  });
+
+  it('eksik gönderim nedeni doluysa isteğe girer, boşsa girmez', () => {
+    expect(toDispatchRequest({ ...VALID, shortfallReason: ' Stok yetmedi ' })).toMatchObject({
+      shortfallReason: 'Stok yetmedi',
+    });
+    expect(toDispatchRequest(VALID)).not.toHaveProperty('shortfallReason');
   });
 
   it('boş kantar fişini isteğe koymaz', () => {

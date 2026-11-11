@@ -12,7 +12,11 @@ import java.util.Set;
 public enum ShipmentAction {
     ASSIGN_BAGS(Permission.DISPATCH_RECORD, EnumSet.of(ShipmentStatus.DRAFT)),
     RECORD_DISPATCH(Permission.DISPATCH_RECORD, EnumSet.of(ShipmentStatus.DRAFT)),
-    CANCEL(Permission.SHIPMENT_CANCEL, EnumSet.of(ShipmentStatus.DRAFT, ShipmentStatus.AWAITING_DELIVERY)),
+    CANCEL(
+            Permission.SHIPMENT_CANCEL,
+            EnumSet.of(ShipmentStatus.DRAFT, ShipmentStatus.WEIGHT_MISMATCH, ShipmentStatus.AWAITING_DELIVERY)),
+    /** Müdür kantar uyuşmazlığına karar verir (iptal, çuval ekle/çıkar, reçeteyi güncelle). */
+    RESOLVE_WEIGHT_MISMATCH(Permission.SHIPMENT_CANCEL, EnumSet.of(ShipmentStatus.WEIGHT_MISMATCH)),
     /** İrsaliye müdüre ulaştı. */
     COMPLETE(Permission.SHIPMENT_COMPLETE, EnumSet.of(ShipmentStatus.AWAITING_DELIVERY)),
     OPEN_QUALITY_CLAIM(Permission.QUALITY_CLAIM_OPEN, EnumSet.of(ShipmentStatus.COMPLETED)),

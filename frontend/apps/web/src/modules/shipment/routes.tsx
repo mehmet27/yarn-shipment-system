@@ -2,6 +2,8 @@ import { RequirePermission } from '@/modules/auth';
 import type { RouteObject } from 'react-router';
 import { CreateShipmentPage } from './pages/CreateShipmentPage';
 import { DispatchWeighingPage } from './pages/DispatchWeighingPage';
+import { FieldShipmentListPage } from './pages/FieldShipmentListPage';
+import { FieldShipmentPage } from './pages/FieldShipmentPage';
 import { ShipmentFilePage } from './pages/ShipmentFilePage';
 import { ShipmentListPage } from './pages/ShipmentListPage';
 
@@ -25,4 +27,10 @@ export const shipmentPanelRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
+];
+
+/** /saha altındaki sevkiyat route'ları (mobil). */
+export const shipmentFieldRoutes: RouteObject[] = [
+  { index: true, element: <FieldShipmentListPage /> },
+  { path: 'sevkiyat/:shipmentId', element: <FieldShipmentPage /> },
 ];

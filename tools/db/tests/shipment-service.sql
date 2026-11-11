@@ -87,6 +87,94 @@ SELECT pg_temp.expect_error($$INSERT INTO outbox_event (id, created_at, aggregat
 ROLLBACK;
 
 
+-- Kantar uyuşmazlığı (süreç analizi 6.2): WEIGHT_MISMATCH geçişleri, reçete satırları, fire oranı ve weight_check.
+BEGIN;
+-- Beklenen hata kodu üretmeyen ifade testi düşürür.
+CREATE FUNCTION pg_temp.expect_error(statement text, expected_state text) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+    actual_state text;
+BEGIN
+    BEGIN
+        EXECUTE statement;
+    EXCEPTION WHEN OTHERS THEN
+        actual_state := SQLSTATE;
+    END;
+    IF actual_state IS DISTINCT FROM expected_state THEN
+        RAISE EXCEPTION 'Expected SQLSTATE % but got %: %', expected_state, coalesce(actual_state, 'success'), statement;
+    END IF;
+END;
+$$;
+GRANT EXECUTE ON FUNCTION pg_temp.expect_error(text, text) TO PUBLIC;
+SET CONSTRAINTS ALL IMMEDIATE;
+
+INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status, planned_net_kg,
+                      created_at, created_by)
+VALUES ('00000000-0000-7000-8000-000000000111', gen_random_uuid(), 'S-W1', gen_random_uuid(), 'Fasoncu W', 'DRAFT',
+        1982.500, now(), gen_random_uuid());
+DO $$ BEGIN
+    IF (SELECT fire_rate FROM shipment WHERE id = '00000000-0000-7000-8000-000000000111') <> 0.04 THEN
+        RAISE EXCEPTION 'default fire_rate must be 0.04';
+    END IF;
+END $$;
+-- Fire oranı 0..0.20 arasında olmalı.
+SELECT pg_temp.expect_error($$UPDATE shipment SET fire_rate = 0.21
+    WHERE id = '00000000-0000-7000-8000-000000000111'$$, '23514');
+SELECT pg_temp.expect_error($$UPDATE shipment SET fire_rate = -0.01
+    WHERE id = '00000000-0000-7000-8000-000000000111'$$, '23514');
+
+-- Reçete satırı: net kg pozitif, cins zorunlu, satır no tekil.
+INSERT INTO shipment_line (id, shipment_id, line_no, yarn_type_text, net_kg, created_at, created_by)
+VALUES (gen_random_uuid(), '00000000-0000-7000-8000-000000000111', 1, '36/1 VİSKON', 1982.500, now(),
+        gen_random_uuid());
+SELECT pg_temp.expect_error($$INSERT INTO shipment_line (id, shipment_id, line_no, yarn_type_text, net_kg,
+    created_at, created_by) VALUES (gen_random_uuid(), '00000000-0000-7000-8000-000000000111', 2, 'x', 0, now(),
+    gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO shipment_line (id, shipment_id, line_no, net_kg, created_at, created_by)
+    VALUES (gen_random_uuid(), '00000000-0000-7000-8000-000000000111', 2, 10, now(), gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO shipment_line (id, shipment_id, line_no, yarn_type_text, net_kg,
+    created_at, created_by) VALUES (gen_random_uuid(), '00000000-0000-7000-8000-000000000111', 1, 'y', 10, now(),
+    gen_random_uuid())$$, '23505');
+-- Satır silinemez.
+SELECT pg_temp.expect_error($$DELETE FROM shipment_line
+    WHERE shipment_id = '00000000-0000-7000-8000-000000000111'$$, 'YS001');
+
+-- DRAFT -> WEIGHT_MISMATCH -> DRAFT -> WEIGHT_MISMATCH -> AWAITING_DELIVERY; uyuşmazlıktan COMPLETED olmaz.
+UPDATE shipment SET status = 'WEIGHT_MISMATCH' WHERE id = '00000000-0000-7000-8000-000000000111';
+SELECT pg_temp.expect_error($$UPDATE shipment SET status = 'COMPLETED'
+    WHERE id = '00000000-0000-7000-8000-000000000111'$$, 'YS003');
+UPDATE shipment SET status = 'DRAFT' WHERE id = '00000000-0000-7000-8000-000000000111';
+UPDATE shipment SET status = 'WEIGHT_MISMATCH' WHERE id = '00000000-0000-7000-8000-000000000111';
+
+-- weight_check: fark ve karar tutarlılığı.
+INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, weighed_at, entered_by, created_at,
+                      created_by)
+VALUES ('00000000-0000-7000-8000-000000000211', '00000000-0000-7000-8000-000000000111', 'DISPATCH', 2000, 10, 40,
+        now(), gen_random_uuid(), now(), gen_random_uuid());
+INSERT INTO weight_check (id, shipment_id, weighing_id, empty_kg, loaded_kg, expected_kg, diff_kg, tolerance_kg,
+                          created_at, created_by)
+VALUES ('00000000-0000-7000-8000-000000000311', '00000000-0000-7000-8000-000000000111',
+        '00000000-0000-7000-8000-000000000211', 10, 2000, 1982.500, 7.500, 0, now(), gen_random_uuid());
+-- Karar eksik alanla yazılamaz; geçersiz karar reddedilir.
+SELECT pg_temp.expect_error($$UPDATE weight_check SET decision = 'UPDATE_RECIPE'
+    WHERE id = '00000000-0000-7000-8000-000000000311'$$, '23514');
+SELECT pg_temp.expect_error($$UPDATE weight_check SET decision = 'IGNORE', decided_by = gen_random_uuid(),
+    decided_at = now(), reason = 'x' WHERE id = '00000000-0000-7000-8000-000000000311'$$, '23514');
+UPDATE weight_check SET decision = 'UPDATE_RECIPE', decided_by = gen_random_uuid(), decided_at = now(),
+                        reason = 'Fark kabul edildi'
+WHERE id = '00000000-0000-7000-8000-000000000311';
+SELECT pg_temp.expect_error($$DELETE FROM weight_check
+    WHERE id = '00000000-0000-7000-8000-000000000311'$$, 'YS001');
+UPDATE shipment SET status = 'AWAITING_DELIVERY' WHERE id = '00000000-0000-7000-8000-000000000111';
+
+-- Uyuşmazlıktaki sevkiyat iptal edilebilir.
+INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status, created_at, created_by)
+VALUES ('00000000-0000-7000-8000-000000000112', gen_random_uuid(), 'S-W2', gen_random_uuid(), 'Fasoncu W2',
+        'WEIGHT_MISMATCH', now(), gen_random_uuid());
+UPDATE shipment SET status = 'CANCELLED', cancelled_reason = 'Yanlış yükleme'
+WHERE id = '00000000-0000-7000-8000-000000000112';
+ROLLBACK;
+
+
 -- Admin onaylı düzeltme (DOM-16): yeni tartım eklenir, eskisi aynı transaction'da superseded_by ile işaretlenir.
 BEGIN;
 -- Beklenen hata kodu üretmeyen ifade testi düşürür.

@@ -5,5 +5,7 @@ public enum ShipmentAudience {
     /** Admin, kalite, müdür, sistem. */
     INTERNAL,
     /** Depo. */
-    WAREHOUSE
+    WAREHOUSE,
+    /** Fasoncu: yalnızca kendi sevkiyatları; beklenen yük yok. */
+    SUBCONTRACTOR
 }

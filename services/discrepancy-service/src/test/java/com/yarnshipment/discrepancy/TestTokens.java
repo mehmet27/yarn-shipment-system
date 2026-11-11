@@ -29,6 +29,12 @@ public final class TestTokens {
                 .claim("site_ids", List.of(SITE_ID.toString()));
     }
 
+    public static Jwt subcontractorToken() {
+        return token("subcontractor")
+                .claim("subcontractor_id", SUBCONTRACTOR_ID.toString())
+                .build();
+    }
+
     /** Tanınmayan rolün token'ı; hiçbir izin vermez. */
     public static Jwt unknownRoleToken() {
         return token("offline_access").build();

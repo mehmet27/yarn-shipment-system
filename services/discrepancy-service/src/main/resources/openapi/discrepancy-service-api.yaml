@@ -271,10 +271,9 @@ paths:
       operationId: openQualityClaim
       summary: Kalite itirazı açar
       description: |
-        Fabrika personeli (kalite, müdür, admin) tamamlanmış sevkiyat için, tamamlanmadan itibaren 3 iş günü içinde
-        kilogram bazlı açar. `claimedKg` sıfırdan büyük, en çok üç ondalıklı olmalı ve sevkiyatın çıkış net kilosunu
-        aşamaz (`QUALITY_CLAIM_CLAIM_EXCEEDS_SHIPMENT_WEIGHT`). En az bir `QUALITY_CLAIM` fotoğrafı gerekir;
-        fotoğraf aynı sevkiyata yüklenmiş olmalıdır. `fabricReceiptId` isteğe bağlıdır (kumaş girişi henüz yok).
+        Teslimden itibaren 3 iş günü içinde, teslimde okutulmuş çuvallar için açılır. En az bir `QUALITY_CLAIM`
+        fotoğrafı gerekir; fotoğraf aynı sevkiyata yüklenmiş olmalıdır. Bir çuval aynı sevkiyatta bir kez itiraz
+        edilir. Fasoncu yalnızca kendi sevkiyatına itiraz açar.
       requestBody:
         required: true
         content:
@@ -304,8 +303,8 @@ paths:
       operationId: getShipmentClaims
       summary: Sevkiyatın itiraz dosyası
       description: |
-        İtiraz süresi, sevkiyatın net kilosu ve açılmış itirazlar (kontrolleriyle). Sevkiyat henüz tamamlanmadıysa
-        `409 QUALITY_CLAIM_NOT_AVAILABLE`.
+        İtiraz süresi, teslimde okutulan çuvallar ve açılmış itirazlar (kontrolleriyle). Sevkiyat henüz
+        karşılaştırılmadıysa `409 QUALITY_CLAIM_NOT_AVAILABLE`.
       parameters:
         - name: shipmentId
           in: path
@@ -496,8 +495,8 @@ components:
             $ref: '#/components/schemas/Problem'
     ClaimBadRequest:
       description: >-
-        İstek biçimi hatalı ya da itiraz kuralı tutmadı (QUALITY_CLAIM_CLAIM_EXCEEDS_SHIPMENT_WEIGHT,
-        QUALITY_CLAIM_CLAIMED_KG_INVALID, QUALITY_CLAIM_EVIDENCE_REQUIRED, QUALITY_CLAIM_EVIDENCE_INVALID, QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED)
+        İstek biçimi hatalı ya da itiraz kuralı tutmadı (QUALITY_CLAIM_BAG_NOT_DELIVERED,
+        QUALITY_CLAIM_EVIDENCE_REQUIRED, QUALITY_CLAIM_EVIDENCE_INVALID, QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED)
       content:
         application/problem+json:
           schema:
@@ -505,7 +504,7 @@ components:
     ClaimConflict:
       description: >-
         İtiraz şu an yapılamıyor (QUALITY_CLAIM_NOT_AVAILABLE, QUALITY_CLAIM_WINDOW_CLOSED,
-        QUALITY_CLAIM_INSPECTION_RECORDED, DISCREPANCY_NOT_OPEN)
+        QUALITY_CLAIM_BAG_ALREADY_CLAIMED, QUALITY_CLAIM_INSPECTION_RECORDED, DISCREPANCY_NOT_OPEN)
       content:
         application/problem+json:
           schema:
@@ -757,7 +756,7 @@ components:
       enum: [SAMPLE, LAB]
     OpenQualityClaimRequest:
       type: object
-      required: [shipmentId, description, claimedKg, evidenceIds]
+      required: [shipmentId, description, bagKeys, evidenceIds]
       properties:
         shipmentId:
           type: string
@@ -766,16 +765,14 @@ components:
           type: string
           minLength: 1
           maxLength: 2000
-        claimedKg:
-          type: string
-          description: İtiraz edilen kilo; sıfırdan büyük, en çok üç ondalıklı, sevkiyatın net kilosunu aşamaz
-          pattern: '^\d{1,11}(\.\d{1,3})?$'
-          example: '120.500'
-        fabricReceiptId:
-          type: string
-          format: uuid
-          nullable: true
-          description: İsteğe bağlı kumaş girişi kimliği (kumaş girişi henüz yok)
+        bagKeys:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items:
+            type: string
+            minLength: 1
+            maxLength: 64
         evidenceIds:
           type: array
           minItems: 1
@@ -847,7 +844,7 @@ components:
         - shipmentId
         - status
         - description
-        - claimedKg
+        - bagKeys
         - evidenceIds
         - openedBy
         - openedAt
@@ -873,14 +870,10 @@ components:
           type: string
         description:
           type: string
-        claimedKg:
-          type: string
-          description: İtiraz edilen kilo (üç ondalık); çuval bazlı eski itirazlarda 0.000
-          example: '120.500'
-        fabricReceiptId:
-          type: string
-          format: uuid
-          nullable: true
+        bagKeys:
+          type: array
+          items:
+            type: string
         evidenceIds:
           type: array
           items:
@@ -907,7 +900,7 @@ components:
             enum: [REQUEST_INSPECTION]
     ShipmentClaimsView:
       type: object
-      required: [shipmentId, deadlineAt, windowOpen, shipmentNetKg, claims]
+      required: [shipmentId, deadlineAt, windowOpen, deliveredKeys, claims]
       properties:
         shipmentId:
           type: string
@@ -915,13 +908,14 @@ components:
         deadlineAt:
           type: string
           format: date-time
-          description: İtirazın açılabileceği son an (tamamlanma + 3 iş günü)
+          description: İtirazın açılabileceği son an (teslim + 3 iş günü)
         windowOpen:
           type: boolean
-        shipmentNetKg:
-          type: string
-          description: Sevkiyatın çıkış net kilosu (üç ondalık); itiraz edilen kilo bunu aşamaz
-          example: '1982.500'
+        deliveredKeys:
+          type: array
+          description: Teslimde okutulan çuval anahtarları
+          items:
+            type: string
         claims:
           type: array
           items:

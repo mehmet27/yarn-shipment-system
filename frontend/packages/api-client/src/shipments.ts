@@ -10,6 +10,7 @@ import type {
   ShipmentPageResponse,
   ShipmentStatus,
   ShipmentSummaryView,
+  SubcontractorShipmentView as GeneratedSubcontractorView,
   WarehouseShipmentView as GeneratedWarehouseView,
   WeighingView,
 } from './generated/shipmentService';
@@ -41,7 +42,12 @@ export type WarehouseShipmentView = Omit<
   WithWeighings<GeneratedWarehouseView, 'dispatchWeighing'>,
   'plannedNetKg'
 > & { plannedNetKg?: Kilogram };
-export type ShipmentDetail = InternalShipmentView | WarehouseShipmentView;
+export type SubcontractorShipmentView = WithWeighings<
+  GeneratedSubcontractorView,
+  'dispatchWeighing'
+>;
+export type ShipmentDetail =
+  InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView;
 
 export type ShipmentSummary = ShipmentSummaryView;
 export type Page<T> = { items: readonly T[]; page: ShipmentPageResponse['page'] };
@@ -75,6 +81,8 @@ function hasValidKilograms(shipment: ShipmentDetailResponse): shipment is Shipme
         isValidOptionalKg(shipment.plannedNetKg) &&
         isValidOptionalWeighing(shipment.dispatchWeighing)
       );
+    case 'SUBCONTRACTOR':
+      return isValidOptionalWeighing(shipment.dispatchWeighing);
   }
 }
 

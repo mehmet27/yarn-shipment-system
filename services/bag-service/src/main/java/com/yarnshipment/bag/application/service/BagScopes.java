@@ -15,7 +15,7 @@ final class BagScopes {
 
     static void validateAll(ScopeGuard scopeGuard, Actor actor, Collection<Bag> bags, String action) {
         for (Bag bag : bags) {
-            scopeGuard.validateInScope(actor, new ScopedResource(RESOURCE_TYPE, bag.id(), bag.siteId()), action);
+            scopeGuard.validateInScope(actor, new ScopedResource(RESOURCE_TYPE, bag.id(), bag.siteId(), null), action);
         }
     }
 }

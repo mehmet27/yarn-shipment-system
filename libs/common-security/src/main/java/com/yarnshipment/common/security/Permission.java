@@ -45,6 +45,7 @@ public enum Permission implements GrantedAuthority {
     FIRE_RATE_EDIT(AccessType.WRITE),
     /** "Fatura edildi" işareti. */
     INVOICE_MARK(AccessType.WRITE),
+    /** Fasoncu bakiye ekranı ve raporu; açılış bakiyesi içe aktarma (analiz 3.3). */
     BALANCE_VIEW(AccessType.READ),
     /** Kantar uyuşmazlığıyla durmuş sevkiyatı yeniden tartıya açar. */
     WEIGHT_MISMATCH_RESOLVE(AccessType.WRITE);

@@ -1,10 +1,13 @@
 package com.yarnshipment.evidence.application.service;
 
+import com.yarnshipment.common.security.Actor;
+import com.yarnshipment.common.security.Role;
 import com.yarnshipment.common.security.scope.ScopedResource;
 import java.util.UUID;
 
 /**
- * Sevkiyatın kapsam kaynağı. Burada yalnızca lokasyon kapsamı denetlenir.
+ * Sevkiyatın kapsam kaynağı. Fasoncunun sahiplik denetimini shipment-service zaten yapmıştır (görünmeyen
+ * sevkiyat 403/404 döner); burada yalnızca lokasyon kapsamı denetlenir, sahiplik aktörün kendi kimliğiyle doldurulur.
  */
 final class ShipmentScopes {
 
@@ -12,7 +15,8 @@ final class ShipmentScopes {
 
     private ShipmentScopes() {}
 
-    static ScopedResource of(UUID shipmentId, UUID siteId) {
-        return new ScopedResource(SHIPMENT, shipmentId, siteId);
+    static ScopedResource of(Actor actor, UUID shipmentId, UUID siteId) {
+        UUID subcontractorId = actor.hasRole(Role.SUBCONTRACTOR) ? actor.subcontractorId() : null;
+        return new ScopedResource(SHIPMENT, shipmentId, siteId, subcontractorId);
     }
 }

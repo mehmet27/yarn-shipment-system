@@ -2,6 +2,8 @@ package com.yarnshipment.shipment.masterdata.adapter.out.keycloak;
 
 import com.yarnshipment.shipment.masterdata.application.port.out.StaffAccountPort;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountRoleLockedException;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginRole;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import java.util.HashSet;
@@ -56,6 +58,9 @@ final class KeycloakStaffAccountAdapter implements StaffAccountPort {
         List<Map<String, Object>> current = currentRealmRoles(token, userId);
         Set<String> names = new HashSet<>();
         current.forEach(mapping -> names.add(String.valueOf(mapping.get("name"))));
+        if (names.contains(LoginRole.SUBCONTRACTOR.realmRole())) {
+            throw new LoginAccountRoleLockedException();
+        }
         if (!names.contains(role.realmRole())) {
             admin.assignRole(token, userId, admin.realmRole(token, role.realmRole()));
         }

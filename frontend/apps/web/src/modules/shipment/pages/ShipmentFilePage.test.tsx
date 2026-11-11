@@ -9,7 +9,7 @@ describe('ShipmentFilePage', () => {
   it('tamamlanan sevkiyatta çıkış tartısını ve irsaliye numarasını gösterir', async () => {
     renderApp('/panel/sevkiyat/shp-0007');
     expect(await screen.findByRole('heading', { name: 'SVK-2026-0007' })).toBeInTheDocument();
-    const netRow = screen.getByRole('row', { name: /Net/ });
+    const netRow = screen.getByRole('row', { name: /^Net/ });
     expect(within(netRow).getByText('1.982,5 kg')).toBeInTheDocument();
     expect(screen.getByText('IRS-0007')).toBeInTheDocument();
   });
@@ -27,6 +27,15 @@ describe('ShipmentFilePage', () => {
 });
 
 describe('sahte API görünüm kuralı', () => {
+  it('fasoncuya çıkış tartısını verir, beklenen yükü ve irsaliyeyi vermez', async () => {
+    server.use(...createHandlers('SUBCONTRACTOR'));
+    const shipment = await getShipment('shp-0007');
+    expect(shipment.audience).toBe('SUBCONTRACTOR');
+    expect(shipment).toHaveProperty('dispatchWeighing');
+    expect(shipment).not.toHaveProperty('waybillNo');
+    expect(shipment).not.toHaveProperty('plannedNetKg');
+  });
+
   it('depoya depo görünümünü çıkış tartısıyla verir', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     const shipment = await getShipment('shp-0007');

@@ -98,25 +98,28 @@ class ShipmentPersistenceAdapterTest {
     @Test
     @DisplayName("Liste lokasyon kapsamına göre süzülür, en yeni önce gelir")
     void shouldFilterBySitesNewestFirst() {
-        ShipmentSlice slice = adapter.findShipments(AccessScope.restrictedTo(Set.of(SITE_A)), Set.of(), FIRST_PAGE);
+        ShipmentSlice slice =
+                adapter.findShipments(AccessScope.restrictedTo(Set.of(SITE_A), null), Set.of(), FIRST_PAGE);
 
         assertThat(slice.shipments()).extracting(Shipment::id).containsExactly(SECOND, FIRST);
         assertThat(slice.totalElements()).isEqualTo(2);
     }
 
     @Test
-    @DisplayName("İstenen durumdaki sevkiyatlar lokasyon kapsamında gelir")
-    void shouldFilterByStatusWithinSites() {
+    @DisplayName("Fasoncu yalnızca kendi sevkiyatlarını, istenen durumda görür")
+    void shouldFilterBySubcontractorAndStatus() {
         ShipmentSlice slice = adapter.findShipments(
-                AccessScope.restrictedTo(Set.of(SITE_A, SITE_B)), Set.of(ShipmentStatus.DRAFT), FIRST_PAGE);
+                AccessScope.restrictedTo(Set.of(SITE_A, SITE_B), SUBCONTRACTOR),
+                Set.of(ShipmentStatus.DRAFT),
+                FIRST_PAGE);
 
-        assertThat(slice.shipments()).extracting(Shipment::id).containsExactly(THIRD, SECOND);
+        assertThat(slice.shipments()).extracting(Shipment::id).containsExactly(THIRD);
     }
 
     @Test
     @DisplayName("Lokasyonu olmayan kapsam hiçbir kayıt görmez")
     void shouldReturnNothingForScopeWithoutSites() {
-        ShipmentSlice slice = adapter.findShipments(AccessScope.restrictedTo(Set.of()), Set.of(), FIRST_PAGE);
+        ShipmentSlice slice = adapter.findShipments(AccessScope.restrictedTo(Set.of(), null), Set.of(), FIRST_PAGE);
 
         assertThat(slice.shipments()).isEmpty();
         assertThat(slice.totalElements()).isZero();

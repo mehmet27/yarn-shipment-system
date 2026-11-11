@@ -14,6 +14,7 @@ import com.yarnshipment.discrepancy.application.port.out.InspectionPort;
 import com.yarnshipment.discrepancy.application.port.out.QualityClaimPort;
 import java.time.Clock;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,7 +33,7 @@ final class ClaimPorts {
 
     ClaimPorts() {
         when(claims.findTarget(TestDiscrepancies.SHIPMENT)).thenReturn(Optional.of(TestClaims.target()));
-        when(claims.findClaim(TestClaims.CLAIM_ID)).thenReturn(Optional.of(TestClaims.claim()));
+        when(claims.findClaim(TestClaims.CLAIM_ID)).thenReturn(Optional.of(TestClaims.claim(List.of("UK-0001"))));
         when(discrepancies.findDiscrepancy(TestDiscrepancies.ID))
                 .thenReturn(Optional.of(TestDiscrepancies.open(TestTokens.SITE_ID)));
         when(evidence.findEvidence(TestClaims.PHOTO))

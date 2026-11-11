@@ -43,6 +43,6 @@ public class GetShipmentService implements GetShipmentUseCase {
     }
 
     private static ScopedResource scopedResource(Shipment shipment) {
-        return new ScopedResource(RESOURCE_TYPE, shipment.id(), shipment.siteId());
+        return new ScopedResource(RESOURCE_TYPE, shipment.id(), shipment.siteId(), shipment.subcontractorId());
     }
 }

@@ -56,11 +56,11 @@ class LotListAdapterTest {
         MasterDataQuery query = new MasterDataQuery("scope", 0, PAGE_SIZE);
 
         // when / then
-        assertThat(lots.findLots(AccessScope.restrictedTo(Set.of(LotFixtures.SITE)), query)
+        assertThat(lots.findLots(AccessScope.restrictedTo(Set.of(LotFixtures.SITE), null), query)
                         .items())
                 .extracting(lot -> lot.details().lotNo())
                 .containsExactly("SCOPE-1");
-        assertThat(lots.findLots(AccessScope.restrictedTo(Set.of(UUID.randomUUID())), query)
+        assertThat(lots.findLots(AccessScope.restrictedTo(Set.of(UUID.randomUUID()), null), query)
                         .items())
                 .isEmpty();
         assertThat(lots.findLots(AccessScope.UNRESTRICTED, query).totalElements())

@@ -46,8 +46,20 @@ describe('Panel ana sayfası ve raporlar', () => {
     expect((await screen.findAllByText('f9e8d7c6')).length).toBeGreaterThan(0);
   });
 
+  it('bakiye matrisi pivotlanır; fire raporu ve açılış yükleme (yönetici) görünür', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/raporlar');
+    await userEvent.click(await screen.findByRole('tab', { name: 'Bakiye matrisi' }));
+    expect(await screen.findByText('30/1 Penye')).toBeInTheDocument();
+    expect(screen.getAllByText('2.982,500 kg').length).toBeGreaterThan(0);
+    expect(screen.getByText('Açılış bakiyesi yükle')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('tab', { name: 'Fire raporu' }));
+    expect(await screen.findByText('SV-2026-0007')).toBeInTheDocument();
+    expect(screen.getByText('%10,00')).toBeInTheDocument();
+  });
+
   it('rapor yetkisi olmayan kullanıcı raporlar adresinde engellenir', async () => {
-    server.use(...createHandlers('WAREHOUSE'));
+    server.use(...createHandlers('SUBCONTRACTOR'));
     const { router } = renderApp('/panel/raporlar');
     await waitFor(() => {
       expect(router.state.location.pathname).not.toBe('/panel/raporlar');

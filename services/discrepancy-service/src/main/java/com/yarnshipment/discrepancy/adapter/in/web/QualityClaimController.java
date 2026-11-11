@@ -19,7 +19,6 @@ import com.yarnshipment.discrepancy.application.port.in.claim.RequestInspectionC
 import com.yarnshipment.discrepancy.application.port.in.claim.RequestInspectionUseCase;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRequest;
 import com.yarnshipment.discrepancy.domain.claim.InspectionKind;
-import java.math.BigDecimal;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,11 +63,7 @@ public class QualityClaimController implements QualityClaimsApi {
         OpenQualityClaimCommand command = new OpenQualityClaimCommand(
                 actor,
                 request.getShipmentId(),
-                new ClaimRequest(
-                        request.getDescription(),
-                        new BigDecimal(request.getClaimedKg()),
-                        request.getFabricReceiptId(),
-                        request.getEvidenceIds()));
+                new ClaimRequest(request.getDescription(), request.getBagKeys(), request.getEvidenceIds()));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(QualityClaimViews.toView(openQualityClaim.openQualityClaim(command), actor));
     }

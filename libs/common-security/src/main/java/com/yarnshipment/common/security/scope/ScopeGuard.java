@@ -6,9 +6,10 @@ import com.yarnshipment.common.security.audit.AuditPublisher;
 import com.yarnshipment.common.security.audit.SecurityAuditEvent;
 import java.time.Clock;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
- * Kapsam kontrolü (SEC-03): kullanıcılar
+ * Kapsam kontrolü (SEC-03): fasoncu yalnızca kendi {@code subcontractorId}'sine ait kayıtlara, iç kullanıcılar
  * yalnızca yetkili oldukları lokasyonlara erişir. Kayıt yüklendikten sonra çağrılır; kapsam dışı erişim 403 döner ve
  * audit'e yazılır. Duruma bağlı kurallar ilgili servistedir.
  */
@@ -27,7 +28,8 @@ public final class ScopeGuard {
         if (actor.hasRole(Role.SYSTEM)) {
             return AccessScope.UNRESTRICTED;
         }
-        return AccessScope.restrictedTo(actor.siteIds());
+        UUID subcontractorId = actor.hasRole(Role.SUBCONTRACTOR) ? actor.subcontractorId() : null;
+        return AccessScope.restrictedTo(actor.siteIds(), subcontractorId);
     }
 
     public boolean isInScope(Actor actor, ScopedResource resource) {
@@ -35,7 +37,7 @@ public final class ScopeGuard {
         if (scope.isUnrestricted()) {
             return true;
         }
-        return isSiteAllowed(scope, resource);
+        return isSiteAllowed(scope, resource) && isOwnerAllowed(scope, resource);
     }
 
     /** Kapsam dışındaysa reddi audit'e yazar ve {@link OutOfScopeAccessException} fırlatır. */
@@ -51,5 +53,10 @@ public final class ScopeGuard {
     /** Lokasyon kapsamı: yalnızca SYSTEM lokasyondan bağımsızdır; site_ids claim'i boş kullanıcı hiçbir şey görmez. */
     private static boolean isSiteAllowed(AccessScope scope, ScopedResource resource) {
         return scope.siteIds().contains(resource.siteId());
+    }
+
+    private static boolean isOwnerAllowed(AccessScope scope, ScopedResource resource) {
+        UUID subcontractorId = scope.subcontractorId();
+        return subcontractorId == null || subcontractorId.equals(resource.subcontractorId());
     }
 }

@@ -95,6 +95,7 @@ class TicketReadingControllerTest {
         assertThat(notSupported).bodyJson().extractingPath("$.code").isEqualTo("TICKET_READING_NOT_SUPPORTED");
 
         assertThat(post(TestTokens.token("manager").build())).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(TestTokens.subcontractorToken())).hasStatus(HttpStatus.FORBIDDEN);
     }
 
     private static TicketReading reading(TicketScan scan) {

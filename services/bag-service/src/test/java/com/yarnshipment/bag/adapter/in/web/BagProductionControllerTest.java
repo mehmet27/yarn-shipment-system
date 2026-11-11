@@ -158,12 +158,13 @@ class BagProductionControllerTest {
     }
 
     @Test
-    @DisplayName("Kalite, yönetici, ve şoför çuval üretemez ve etiket basamaz")
+    @DisplayName("Kalite, yönetici, şoför ve fasoncu çuval üretemez ve etiket basamaz")
     void shouldForbidRolesWithoutBagCreate() {
         for (Jwt jwt : List.of(
                 TestTokens.token("quality").claim("amr", List.of("otp")).build(),
                 TestTokens.token("manager").build(),
-                TestTokens.driverToken())) {
+                TestTokens.driverToken(),
+                TestTokens.subcontractorToken())) {
             assertThat(post("/api/v1/bags", CREATE_BODY, jwt)).hasStatus(HttpStatus.FORBIDDEN);
             assertThat(post("/api/v1/bags/labels", PRINT_BODY, jwt)).hasStatus(HttpStatus.FORBIDDEN);
             assertThat(get("/api/v1/bags/lots", jwt)).hasStatus(HttpStatus.FORBIDDEN);

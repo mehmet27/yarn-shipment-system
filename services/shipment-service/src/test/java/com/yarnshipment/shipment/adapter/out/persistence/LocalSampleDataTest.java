@@ -31,6 +31,7 @@ class LocalSampleDataTest {
     private static final PostgresTestDatabase DATABASE = PostgresTestDatabase.startIsolated();
     private static final UUID SITE_A = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     private static final UUID SITE_B = UUID.fromString("0192f0a0-0000-7000-8000-000000000002");
+    private static final UUID DEMO_SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000003");
     private static final PageRequest ALL = new PageRequest(0, 50);
     private static final int SAMPLE_COUNT = 7;
 
@@ -60,6 +61,17 @@ class LocalSampleDataTest {
                         ShipmentStatus.DRAFT, ShipmentStatus.AWAITING_DELIVERY, ShipmentStatus.COMPLETED);
         assertThat(all.shipments().stream().map(Shipment::siteId).collect(Collectors.toSet()))
                 .containsExactlyInAnyOrder(SITE_A, SITE_B);
+    }
+
+    @Test
+    @DisplayName("Fasoncu kullanıcısı yalnızca kendi örnek sevkiyatlarını görür")
+    void shouldScopeSampleShipmentsToSubcontractor() {
+        ShipmentSlice own =
+                adapter.findShipments(AccessScope.restrictedTo(Set.of(SITE_A), DEMO_SUBCONTRACTOR), Set.of(), ALL);
+
+        assertThat(own.shipments())
+                .isNotEmpty()
+                .allSatisfy(shipment -> assertThat(shipment.subcontractorId()).isEqualTo(DEMO_SUBCONTRACTOR));
     }
 
     @Test

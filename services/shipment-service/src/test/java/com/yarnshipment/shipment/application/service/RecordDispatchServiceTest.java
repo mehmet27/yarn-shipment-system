@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.common.security.scope.OutOfScopeAccessException;
-import com.yarnshipment.common.security.scope.ScopeGuard;
 import com.yarnshipment.shipment.TestDispatches;
 import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
@@ -24,6 +23,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,21 +38,23 @@ class RecordDispatchServiceTest {
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final FixedBagCountPort bagsPort =
             new FixedBagCountPort(TestDispatches.measurement().bagCount());
+    private final StubSettingsPort settings = new StubSettingsPort();
     private boolean hasTareStandard;
     private Map<PackageType, Integer> lastCounts = Map.of();
     private final RecordDispatchService service = new RecordDispatchService(
-            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
+            ServiceTestSupport.loader(queryPort, clock),
             commandPort,
             bagsPort,
             (siteId, counts) -> {
                 lastCounts = counts;
                 return hasTareStandard ? TestDispatches.tareBasis(total(counts)) : null;
             },
+            settings,
             clock);
     private final Actor warehouse = TestTokens.actor("warehouse");
 
     private RecordDispatchCommand command(Actor actor) {
-        return new RecordDispatchCommand(actor, TestShipments.SHIPMENT_ID, KEY, TestDispatches.measurement());
+        return ServiceTestSupport.dispatchCommand(actor, KEY, TestDispatches.measurement());
     }
 
     @Test
@@ -65,6 +67,38 @@ class RecordDispatchServiceTest {
         assertThat(commandPort.recordings()).singleElement().satisfies(recording -> {
             assertThat(recording.recordedAt()).isEqualTo(NOW);
             assertThat(recording.scaleTicketNo()).isEqualTo("KF-1");
+        });
+    }
+
+    @Test
+    @DisplayName("Tartılan net beklenenden toleransın ötesinde saparsa kayıt uyuşmazlık olarak işaretlenir")
+    void shouldFlagMismatchOutsideTolerance() {
+        queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
+        ServiceTestSupport.saveTolerance(settings, "0.400");
+
+        service.recordDispatch(ServiceTestSupport.dispatchCommand(
+                warehouse, KEY, ServiceTestSupport.measurement("2001.000", "Stok yetmedi")));
+
+        assertThat(commandPort.recordings()).singleElement().satisfies(recording -> {
+            assertThat(recording.toStatus()).isEqualTo(ShipmentStatus.WEIGHT_MISMATCH);
+            assertThat(Objects.requireNonNull(recording.mismatch()).diffKg()).isEqualByComparingTo("0.500");
+            assertThat(Objects.requireNonNull(recording.mismatch()).shortfallReason())
+                    .isEqualTo("Stok yetmedi");
+        });
+    }
+
+    @Test
+    @DisplayName("Fark toleransın içindeyse sevkiyat normal şekilde yola çıkar")
+    void shouldAcceptDifferenceWithinTolerance() {
+        queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
+        ServiceTestSupport.saveTolerance(settings, "0.500");
+
+        service.recordDispatch(
+                ServiceTestSupport.dispatchCommand(warehouse, KEY, ServiceTestSupport.measurement("2001.000", null)));
+
+        assertThat(commandPort.recordings()).singleElement().satisfies(recording -> {
+            assertThat(recording.toStatus()).isEqualTo(ShipmentStatus.AWAITING_DELIVERY);
+            assertThat(recording.mismatch()).isNull();
         });
     }
 

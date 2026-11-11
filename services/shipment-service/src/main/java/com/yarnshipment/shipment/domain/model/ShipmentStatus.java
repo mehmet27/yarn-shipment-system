@@ -9,6 +9,8 @@ import java.util.Set;
  */
 public enum ShipmentStatus {
     DRAFT,
+    /** Kantar uyuşmazlığı: tartı beklenen yükü tutmadı, müdür kararı bekleniyor. */
+    WEIGHT_MISMATCH,
     AWAITING_DELIVERY,
     COMPLETED,
     CANCELLED;
@@ -16,7 +18,8 @@ public enum ShipmentStatus {
     /** İzin verilen sonraki durumlar. */
     public Set<ShipmentStatus> nextStatuses() {
         return switch (this) {
-            case DRAFT -> EnumSet.of(AWAITING_DELIVERY, CANCELLED);
+            case DRAFT -> EnumSet.of(AWAITING_DELIVERY, WEIGHT_MISMATCH, CANCELLED);
+            case WEIGHT_MISMATCH -> EnumSet.of(DRAFT, AWAITING_DELIVERY, CANCELLED);
             case AWAITING_DELIVERY -> EnumSet.of(COMPLETED, CANCELLED);
             case COMPLETED, CANCELLED -> EnumSet.noneOf(ShipmentStatus.class);
         };

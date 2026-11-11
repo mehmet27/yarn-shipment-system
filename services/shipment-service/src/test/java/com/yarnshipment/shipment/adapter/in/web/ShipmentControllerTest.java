@@ -37,6 +37,9 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 class ShipmentControllerTest {
 
     private static final String DETAIL_URI = "/api/v1/shipments/" + TestShipments.SHIPMENT_ID;
+    private static final List<String> DISPATCH_FIELDS =
+            List.of("plannedNetKg", "plannedBagCount", "subcontractorId", "waybillNo");
+
     private static final int PAGE_SIZE = 20;
 
     private final MockMvcTester mvc;
@@ -59,6 +62,22 @@ class ShipmentControllerTest {
     @Autowired
     ShipmentControllerTest(MockMvcTester mvc) {
         this.mvc = mvc;
+    }
+
+    @Test
+    @DisplayName("Fasoncu görünümünde çıkış tartısı vardır; beklenen yük ve irsaliye alanları hiç yoktur")
+    void shouldHidePlannedFieldsFromSubcontractor() {
+        // given
+        givenDetails(ShipmentAudience.SUBCONTRACTOR);
+
+        // when
+        MvcTestResult result = get(DETAIL_URI, TestTokens.subcontractorToken());
+
+        // then
+        assertThat(result).hasStatusOk();
+        assertThat(result).bodyJson().extractingPath("$.audience").isEqualTo("SUBCONTRACTOR");
+        assertThat(result).bodyJson().extractingPath("$.dispatchWeighing.netKg").isEqualTo("1982.500");
+        DISPATCH_FIELDS.forEach(field -> assertThat(result).bodyJson().doesNotHavePath("$." + field));
     }
 
     @Test
@@ -162,12 +181,16 @@ class ShipmentControllerTest {
     @DisplayName("Oturumdaki kullanıcı rol, izin ve kapsamıyla döner")
     void shouldReturnCurrentUser() {
         // when
-        MvcTestResult result = get("/api/v1/me", TestTokens.token("quality").build());
+        MvcTestResult result = get("/api/v1/me", TestTokens.subcontractorToken());
 
         // then
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.fullName").isEqualTo("Test Kullanıcı");
-        assertThat(result).bodyJson().extractingPath("$.roles[0]").isEqualTo("QUALITY");
+        assertThat(result).bodyJson().extractingPath("$.roles[0]").isEqualTo("SUBCONTRACTOR");
+        assertThat(result)
+                .bodyJson()
+                .extractingPath("$.subcontractorId")
+                .isEqualTo(TestShipments.SUBCONTRACTOR_ID.toString());
         assertThat(result).bodyJson().extractingPath("$.permissions").asArray().contains("QUALITY_CLAIM_OPEN");
     }
 

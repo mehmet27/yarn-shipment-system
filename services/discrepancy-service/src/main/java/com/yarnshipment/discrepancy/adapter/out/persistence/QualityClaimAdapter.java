@@ -4,7 +4,6 @@ import com.yarnshipment.discrepancy.application.port.out.NewQualityClaim;
 import com.yarnshipment.discrepancy.application.port.out.QualityClaimPort;
 import com.yarnshipment.discrepancy.domain.claim.ClaimTarget;
 import com.yarnshipment.discrepancy.domain.claim.QualityClaim;
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -16,7 +15,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /**
- * {@link QualityClaimPort}'un JDBC uygulaması. Hedef sevkiyat izleme kaydından (shipment_watch), itiraz fotoğrafları
+ * {@link QualityClaimPort}'un JDBC uygulaması. Teslim bilgisi karşılaştırma girdisinden, itiraz fotoğrafları
  * uyuşmazlık geçmişindeki {@code CLAIM_EVIDENCE} kayıtlarından okunur.
  */
 @Component
@@ -25,19 +24,23 @@ final class QualityClaimAdapter implements QualityClaimPort {
     static final String CLAIM_EVIDENCE = "CLAIM_EVIDENCE";
 
     private static final String TARGET = """
-            SELECT shipment_id, site_id, subcontractor_id, shipment_no, completed_at, dispatch_net_kg
-              FROM shipment_watch
-             WHERE shipment_id = :shipmentId AND completed_at IS NOT NULL AND dispatch_net_kg IS NOT NULL""";
+            SELECT shipment_id, site_id, subcontractor_id, shipment_no, received_at
+              FROM comparison_input
+             WHERE shipment_id = :shipmentId AND site_id IS NOT NULL AND subcontractor_id IS NOT NULL""";
+    private static final String DELIVERED_KEYS = """
+            SELECT key.value
+              FROM comparison_input, jsonb_array_elements_text(delivery_bag_keys) WITH ORDINALITY AS key(value, n)
+             WHERE shipment_id = :shipmentId
+             ORDER BY key.n""";
     private static final String CLAIM = """
-            SELECT id, discrepancy_id, shipment_id, subcontractor_id, opened_by, opened_at, deadline_at, description,
-                   claimed_kg, fabric_receipt_id
+            SELECT id, discrepancy_id, shipment_id, subcontractor_id, opened_by, opened_at, deadline_at, description
               FROM quality_claim""";
+    private static final String BAG_KEYS =
+            "SELECT unique_key FROM quality_claim_bag WHERE claim_id = :claimId ORDER BY unique_key";
     private static final String EVIDENCE_IDS = """
             SELECT evidence_id FROM discrepancy_activity
              WHERE discrepancy_id = :discrepancyId AND action_type = :action AND evidence_id IS NOT NULL
              ORDER BY occurred_at, id""";
-
-    private static final int KG_SCALE = 3;
 
     private final JdbcClient jdbc;
     private final QualityClaimWriter writer;
@@ -49,15 +52,19 @@ final class QualityClaimAdapter implements QualityClaimPort {
 
     @Override
     public Optional<ClaimTarget> findTarget(UUID shipmentId) {
+        List<String> keys = nonNull(jdbc.sql(DELIVERED_KEYS)
+                .param("shipmentId", shipmentId)
+                .query(String.class)
+                .list());
         return jdbc.sql(TARGET)
                 .param("shipmentId", shipmentId)
                 .query((rs, row) -> new ClaimTarget(
                         ClaimRows.requiredUuid(rs, "shipment_id"),
                         ClaimRows.requiredUuid(rs, "site_id"),
-                        ClaimRows.optionalUuid(rs, "subcontractor_id"),
+                        ClaimRows.requiredUuid(rs, "subcontractor_id"),
                         rs.getString("shipment_no"),
-                        ClaimRows.requiredInstant(rs, "completed_at"),
-                        Objects.requireNonNull(rs.getBigDecimal("dispatch_net_kg"), "dispatch_net_kg")))
+                        ClaimRows.requiredInstant(rs, "received_at"),
+                        keys))
                 .optional();
     }
 
@@ -69,7 +76,7 @@ final class QualityClaimAdapter implements QualityClaimPort {
                 .query(QualityClaimAdapter::mapHeader)
                 .list()
                 .stream()
-                .map(this::withEvidence)
+                .map(this::withBagsAndEvidence)
                 .toList();
     }
 
@@ -79,7 +86,7 @@ final class QualityClaimAdapter implements QualityClaimPort {
                 .param("id", claimId)
                 .query(QualityClaimAdapter::mapHeader)
                 .optional()
-                .map(this::withEvidence);
+                .map(this::withBagsAndEvidence);
     }
 
     @Override
@@ -87,8 +94,8 @@ final class QualityClaimAdapter implements QualityClaimPort {
         return writer.write(claim);
     }
 
-    /** Fotoğraflar ayrı sorguyla, ana sonuç kümesi kapandıktan sonra okunur. */
-    private QualityClaim withEvidence(QualityClaim header) {
+    /** Çuvallar ve fotoğraflar ayrı sorgularla, ana sonuç kümesi kapandıktan sonra okunur. */
+    private QualityClaim withBagsAndEvidence(QualityClaim header) {
         return new QualityClaim(
                 header.id(),
                 header.discrepancyId(),
@@ -96,8 +103,10 @@ final class QualityClaimAdapter implements QualityClaimPort {
                 header.subcontractorId(),
                 header.opening(),
                 header.description(),
-                header.claimedKg(),
-                header.fabricReceiptId(),
+                nonNull(jdbc.sql(BAG_KEYS)
+                        .param("claimId", header.id())
+                        .query(String.class)
+                        .list()),
                 nonNullIds(jdbc.sql(EVIDENCE_IDS)
                         .param("discrepancyId", header.discrepancyId())
                         .param("action", CLAIM_EVIDENCE)
@@ -110,23 +119,24 @@ final class QualityClaimAdapter implements QualityClaimPort {
                 ClaimRows.requiredUuid(rs, "id"),
                 ClaimRows.requiredUuid(rs, "discrepancy_id"),
                 ClaimRows.requiredUuid(rs, "shipment_id"),
-                ClaimRows.optionalUuid(rs, "subcontractor_id"),
+                ClaimRows.requiredUuid(rs, "subcontractor_id"),
                 new QualityClaim.Opening(
                         ClaimRows.requiredUuid(rs, "opened_by"),
                         ClaimRows.requiredInstant(rs, "opened_at"),
                         ClaimRows.requiredInstant(rs, "deadline_at")),
                 rs.getString("description"),
-                legacyZero(rs.getBigDecimal("claimed_kg")),
-                ClaimRows.optionalUuid(rs, "fabric_receipt_id"),
+                List.of(),
                 List.of());
     }
 
-    /** Çuval bazlı eski itirazlarda kilo yoktur; sıfır gösterilir. */
-    private static BigDecimal legacyZero(@Nullable BigDecimal claimedKg) {
-        return claimedKg == null ? BigDecimal.ZERO.setScale(KG_SCALE) : claimedKg;
+    /** Sorgulanan kolonlar NOT NULL ya da {@code IS NOT NULL} ile süzülü olduğu için boş değer gelmez. */
+    private static List<String> nonNull(List<@Nullable String> values) {
+        return values.stream()
+                .filter(Objects::nonNull)
+                .map(Objects::requireNonNull)
+                .toList();
     }
 
-    /** Sorgulanan kolonlar {@code IS NOT NULL} ile süzülü olduğu için boş değer gelmez. */
     private static List<UUID> nonNullIds(List<@Nullable UUID> values) {
         return values.stream()
                 .filter(Objects::nonNull)

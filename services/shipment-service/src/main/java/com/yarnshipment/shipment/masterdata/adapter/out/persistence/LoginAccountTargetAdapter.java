@@ -2,6 +2,7 @@ package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -15,6 +16,14 @@ final class LoginAccountTargetAdapter implements LoginAccountTargetPort {
 
     LoginAccountTargetAdapter(JdbcClient jdbc) {
         this.jdbc = jdbc;
+    }
+
+    @Override
+    public Optional<String> findActiveSubcontractorTitle(UUID id) {
+        return jdbc.sql("SELECT title FROM md_subcontractor WHERE id = :id AND active")
+                .param("id", id)
+                .query(String.class)
+                .optional();
     }
 
     @Override

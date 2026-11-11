@@ -118,12 +118,12 @@ class RequestUploadServiceTest {
     @Test
     @DisplayName("İtiraz fotoğrafı tamamlanmış sevkiyata eklenir; irsaliye ve iptal sevkiyata itiraz eklenmez")
     void shouldAllowClaimEvidenceAfterCompletion() {
-        Actor claimant = TestTokens.actor("quality");
+        Actor subcontractor = TestTokens.actor(TestTokens.subcontractorToken());
         when(storage.presignUpload(any())).thenReturn(new PresignedUpload("u", Map.of(), TestUploads.expiry()));
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
                 .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, true, true));
 
-        assertThat(request.requestUpload(command(claimant, EvidenceType.QUALITY_CLAIM))
+        assertThat(request.requestUpload(command(subcontractor, EvidenceType.QUALITY_CLAIM))
                         .evidenceId())
                 .isNotNull();
         assertThatThrownBy(() -> request.requestUpload(command(TestTokens.actor("manager"), EvidenceType.WAYBILL)))
@@ -131,7 +131,7 @@ class RequestUploadServiceTest {
 
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
                 .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, true, false));
-        assertThatThrownBy(() -> request.requestUpload(command(claimant, EvidenceType.QUALITY_CLAIM)))
+        assertThatThrownBy(() -> request.requestUpload(command(subcontractor, EvidenceType.QUALITY_CLAIM)))
                 .isInstanceOf(ShipmentLockedException.class);
     }
 

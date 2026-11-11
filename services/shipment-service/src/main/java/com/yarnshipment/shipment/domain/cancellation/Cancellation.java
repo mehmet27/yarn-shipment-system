@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Sevkiyatın iptali (DRAFT ya da AWAITING_DELIVERY → CANCELLED).
+ * Sevkiyatın iptali (DRAFT, WEIGHT_MISMATCH ya da AWAITING_DELIVERY → CANCELLED).
  *
  * @param shipmentId sevkiyat
  * @param siteId çıkış lokasyonu
@@ -35,7 +35,9 @@ public record Cancellation(
      */
     public static Cancellation of(Shipment shipment, String reason, Instant cancelledAt) {
         ShipmentStatus status = shipment.status();
-        if (status != ShipmentStatus.DRAFT && status != ShipmentStatus.AWAITING_DELIVERY) {
+        if (status != ShipmentStatus.DRAFT
+                && status != ShipmentStatus.WEIGHT_MISMATCH
+                && status != ShipmentStatus.AWAITING_DELIVERY) {
             throw new InvalidShipmentStatusException(shipment.id(), status, ShipmentStatus.CANCELLED);
         }
         String text = reason.strip();

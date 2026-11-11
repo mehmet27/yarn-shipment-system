@@ -2,7 +2,6 @@ package com.yarnshipment.discrepancy.adapter.out.persistence;
 
 import com.yarnshipment.discrepancy.application.port.out.ShipmentWatchPort;
 import com.yarnshipment.discrepancy.domain.rule.WatchedShipment;
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -10,7 +9,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
@@ -31,14 +29,8 @@ final class ShipmentWatchAdapter implements ShipmentWatchPort {
             ON CONFLICT (shipment_id) DO NOTHING""";
     private static final String SET_DISPATCHED = """
             UPDATE shipment_watch
-               SET dispatched_at = :at, dispatch_net_kg = :netKg, updated_at = :at, updated_by = :actor,
-                   version = version + 1
+               SET dispatched_at = :at, updated_at = :at, updated_by = :actor, version = version + 1
              WHERE shipment_id = :shipmentId AND dispatched_at IS NULL""";
-    private static final String SET_COMPLETED = """
-            UPDATE shipment_watch
-               SET completed_at = :at, closed_at = COALESCE(closed_at, :at), updated_at = :at, updated_by = :actor,
-                   version = version + 1
-             WHERE shipment_id = :shipmentId AND completed_at IS NULL""";
     private static final String SET_CLOSED = """
             UPDATE shipment_watch
                SET closed_at = :at, updated_at = :at, updated_by = :actor, version = version + 1
@@ -75,18 +67,8 @@ final class ShipmentWatchAdapter implements ShipmentWatchPort {
     }
 
     @Override
-    public void recordDispatched(UUID shipmentId, Instant dispatchedAt, @Nullable BigDecimal netKg) {
-        jdbc.sql(SET_DISPATCHED)
-                .param("shipmentId", shipmentId)
-                .param("at", Timestamp.from(dispatchedAt))
-                .param("netKg", netKg)
-                .param("actor", SYSTEM_ACTOR)
-                .update();
-    }
-
-    @Override
-    public void recordCompleted(UUID shipmentId, Instant completedAt) {
-        mark(SET_COMPLETED, shipmentId, completedAt);
+    public void recordDispatched(UUID shipmentId, Instant dispatchedAt) {
+        mark(SET_DISPATCHED, shipmentId, dispatchedAt);
     }
 
     @Override

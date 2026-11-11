@@ -16,9 +16,11 @@ class ShipmentAccessPolicyTest {
     private final ShipmentAccessPolicy policy = new ShipmentAccessPolicy();
 
     @Test
-    @DisplayName("Görünüm role göre seçilir: depo depo görünümünü alır")
+    @DisplayName("Görünüm role göre seçilir: fasoncu kendi görünümünü, depo depo görünümünü alır")
     void shouldChooseAudienceByRole() {
         // when / then
+        assertThat(policy.audienceOf(TestTokens.actor(TestTokens.subcontractorToken())))
+                .isEqualTo(ShipmentAudience.SUBCONTRACTOR);
         assertThat(policy.audienceOf(TestTokens.actor("warehouse"))).isEqualTo(ShipmentAudience.WAREHOUSE);
         assertThat(policy.audienceOf(TestTokens.actor("manager"))).isEqualTo(ShipmentAudience.INTERNAL);
         assertThat(policy.audienceOf(TestTokens.actor("warehouse", "quality"))).isEqualTo(ShipmentAudience.INTERNAL);
@@ -33,7 +35,17 @@ class ShipmentAccessPolicyTest {
     }
 
     @Test
-    @DisplayName("Müdür taslağı iptal eder; teslim bekleyeni tamamlar ya da iptal eder")
+    @DisplayName("Teslim bekleyen sevkiyatta fasoncu hiçbir işlem yapamaz")
+    void shouldAllowSubcontractorNothingWhenAwaiting() {
+        // when / then
+        assertThat(policy.allowedActions(
+                        TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY),
+                        TestTokens.actor(TestTokens.subcontractorToken())))
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Müdür taslağı iptal eder, uyuşmazlığa karar verir; teslim bekleyeni tamamlar ya da iptal eder")
     void shouldAllowManagerLifecycleActions() {
         // given
         Actor manager = TestTokens.actor("manager");
@@ -41,6 +53,8 @@ class ShipmentAccessPolicyTest {
         // when / then
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.DRAFT), manager))
                 .containsExactlyInAnyOrder(ShipmentAction.CANCEL);
+        assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.WEIGHT_MISMATCH), manager))
+                .containsExactlyInAnyOrder(ShipmentAction.CANCEL, ShipmentAction.RESOLVE_WEIGHT_MISMATCH);
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY), manager))
                 .containsExactlyInAnyOrder(ShipmentAction.COMPLETE, ShipmentAction.CANCEL);
     }

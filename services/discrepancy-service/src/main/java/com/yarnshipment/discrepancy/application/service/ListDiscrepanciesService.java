@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Kullanıcının lokasyon kapsamındaki uyuşmazlıkları listeler; lokasyonu olmayan kullanıcı hiçbir şey görmez.
+ * Kullanıcının lokasyon kapsamındaki uyuşmazlıkları listeler. Fasoncu yalnızca kendi sevkiyatlarınınkini görür
+ * (sorgu {@code subcontractor_id} ile süzülür); şoför hiçbir şey görmez.
  */
 @Service
 public class ListDiscrepanciesService implements ListDiscrepanciesUseCase {

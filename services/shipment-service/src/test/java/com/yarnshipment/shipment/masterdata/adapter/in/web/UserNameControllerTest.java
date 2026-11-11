@@ -56,7 +56,7 @@ class UserNameControllerTest {
     @Test
     @DisplayName("Denetim izni olmayan roller 403 alır")
     void shouldForbidOthers() {
-        assertThat(get(TestTokens.token("offline_access").build())).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(get(TestTokens.subcontractorToken())).hasStatus(HttpStatus.FORBIDDEN);
     }
 
     private MvcTestResult get(Jwt jwt) {

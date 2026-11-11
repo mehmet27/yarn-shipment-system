@@ -5,37 +5,27 @@ import com.yarnshipment.discrepancy.application.port.out.NewQualityClaim;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRequest;
 import com.yarnshipment.discrepancy.domain.claim.ClaimTarget;
 import com.yarnshipment.discrepancy.domain.claim.QualityClaim;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/** Gerçek şemaya tamamlanmış bir sevkiyat izi ve 120,5 kg için fotoğraflı bir kalite itirazı yazar. */
+/** Gerçek şemaya temiz bir teslim ve üzerinde UK-0001 için fotoğraflı bir kalite itirazı yazar. */
 final class SeededClaims {
 
     static final UUID ACTOR = SeededDiscrepancies.ACTOR;
     static final UUID PHOTO = UUID.fromString("0192f0a0-0000-7000-8000-0000000c0003");
     static final Instant OPENED_AT = Instant.parse("2026-10-26T09:00:00Z");
-    private static final long DAY = 86_400L;
-    private static final long HALF_DAY = 43_200L;
     private static final Instant DUE = Instant.parse("2026-11-02T09:00:00Z");
 
     private SeededClaims() {}
 
-    static void complete(ShipmentWatchAdapter watch) {
-        watch.recordCreated(TestComparisons.watched(), TestComparisons.RECEIVED_AT.minusSeconds(DAY));
-        Instant dispatched = TestComparisons.RECEIVED_AT.minusSeconds(HALF_DAY);
-        watch.recordDispatched(TestComparisons.SHIPMENT, dispatched, TestComparisons.DISPATCH_KG);
-        watch.recordCompleted(TestComparisons.SHIPMENT, TestComparisons.RECEIVED_AT);
+    static void deliver(ComparisonSeeder comparisons) {
+        comparisons.seed(TestComparisons.DISPATCH_KG, List.of(), TestComparisons.RECEIVED_AT, DUE);
     }
 
     static QualityClaim open(QualityClaimAdapter claims) {
         ClaimTarget target = claims.findTarget(TestComparisons.SHIPMENT).orElseThrow();
         return claims.saveClaim(new NewQualityClaim(
-                target,
-                new ClaimRequest("B kalite çıktı", new BigDecimal("120.5"), null, List.of(PHOTO)),
-                ACTOR,
-                OPENED_AT,
-                DUE));
+                target, new ClaimRequest("B kalite çıktı", List.of("UK-0001"), List.of(PHOTO)), ACTOR, OPENED_AT, DUE));
     }
 }

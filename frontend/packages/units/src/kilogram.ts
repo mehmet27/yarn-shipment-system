@@ -42,3 +42,27 @@ export function subtractKg(minuend: Kilogram, subtrahend: Kilogram): Big {
 export function calculateNetKg(grossKg: Kilogram, tareKg: Kilogram): Kilogram | undefined {
   return toKilogram(subtractKg(grossKg, tareKg));
 }
+
+/** Reçete satırlarının toplamı ("35016.000"); geçersiz dizeler sayılmaz, satır yoksa 0. */
+export function sumKg(values: readonly string[]): string {
+  const total = values
+    .filter((value) => isKilogram(value))
+    .reduce((sum, value) => sum.plus(value), new Big(0));
+  return total.toFixed(KG_SCALE);
+}
+
+/** API'den gelen kilo dizesini biçimler; sözleşme dışı bir değer olduğu gibi gösterilir. */
+export function formatKgText(value: string): string {
+  return isKilogram(value) ? formatKg(value) : value;
+}
+
+const SIGNED_KG_FORMAT = new Intl.NumberFormat('tr-TR', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: KG_SCALE,
+  signDisplay: 'exceptZero',
+});
+
+/** İşaretli fark ("-12.500" → "-12,5 kg"); sunucudan gelen dize sayı değilse olduğu gibi döner. */
+export function formatSignedKg(value: string): string {
+  return /^-?\d+(\.\d+)?$/.test(value) ? `${SIGNED_KG_FORMAT.format(Number(value))} kg` : value;
+}

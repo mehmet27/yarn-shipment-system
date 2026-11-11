@@ -60,7 +60,7 @@ public class InvalidateEvidenceService implements InvalidateEvidenceUseCase {
         } catch (ShipmentNotAccessibleException exception) {
             throw new EvidenceNotFoundException(command.evidenceId());
         }
-        scopeGuard.validateInScope(actor, ShipmentScopes.of(shipment.shipmentId(), shipment.siteId()), ACTION);
+        scopeGuard.validateInScope(actor, ShipmentScopes.of(actor, shipment.shipmentId(), shipment.siteId()), ACTION);
         EvidenceFile invalidated = file.invalidate(command.reason());
         Instant now = clock.instant();
         invalidations.saveInvalidation(invalidated, actor.userId(), now);

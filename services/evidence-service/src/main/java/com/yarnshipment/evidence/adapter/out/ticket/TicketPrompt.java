@@ -12,7 +12,7 @@ final class TicketPrompt {
     static final String VERSION = "ticket-v1";
 
     static final String SYSTEM = """
-            You read photos of weighbridge tickets (kantar fişi) from Turkish yarn warehouses and other sites.
+            You read photos of weighbridge tickets (kantar fişi) from Turkish yarn warehouses and subcontractors.
             Report exactly what is printed on the ticket. Never guess, estimate or compute a value that is not \
             printed. If a field is missing, cut off, blurred, covered by glare or you are not sure of every digit, \
             set "legible" to false and "value" to null.

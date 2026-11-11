@@ -21,7 +21,8 @@ export function DispatchWeighingPage() {
         {(shipment) => (
           <Stack>
             <PageHero title={t('dispatch.title')} subtitle={shipment.shipmentNo} />
-            {shipment.allowedActions.includes('RECORD_DISPATCH') ? (
+            {shipment.allowedActions.includes('RECORD_DISPATCH') &&
+            shipment.status !== 'WEIGHT_MISMATCH' ? (
               <Paper withBorder p="lg" radius="md" maw={560}>
                 <DispatchForm
                   shipmentId={shipment.shipmentId}

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -25,6 +26,7 @@ class LoginAccountTargetAdapterTest {
 
     private static final PostgresTestDatabase DATABASE = PostgresTestDatabase.startIsolated();
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
+    private static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000003");
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -32,10 +34,24 @@ class LoginAccountTargetAdapterTest {
     @Autowired
     private LoginAccountTargetAdapter adapter;
 
+    @Autowired
+    private JdbcTemplate jdbc;
+
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
         DATABASE.registerIn(registry);
         registry.add("spring.flyway.locations", () -> "classpath:db/migration,classpath:db/seed-local");
+    }
+
+    @Test
+    @DisplayName("Etkin fasoncu bulunur; pasife alınan ya da olmayan kayıt bulunmaz")
+    void shouldFindOnlyActiveRecords() {
+        assertThat(adapter.findActiveSubcontractorTitle(SUBCONTRACTOR)).isPresent();
+        assertThat(adapter.findActiveSubcontractorTitle(UUID.randomUUID())).isEmpty();
+
+        jdbc.update("UPDATE md_subcontractor SET active = false WHERE id = ?", SUBCONTRACTOR);
+
+        assertThat(adapter.findActiveSubcontractorTitle(SUBCONTRACTOR)).isEmpty();
     }
 
     @Test

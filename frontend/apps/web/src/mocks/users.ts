@@ -14,7 +14,6 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'SHIPMENT_CANCEL',
     'SHIPMENT_COMPLETE',
     'DISPATCH_VIEW',
-    'EVIDENCE_UPLOAD_CLAIM',
     'EVIDENCE_VIEW',
     'EVIDENCE_INVALIDATE',
     'CORRECTION_CREATE',
@@ -34,6 +33,14 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'EVIDENCE_UPLOAD_DISPATCH',
     'EVIDENCE_VIEW',
     'YARN_RETURN_RECORD',
+  ],
+  SUBCONTRACTOR: [
+    'SHIPMENT_VIEW',
+    'DISPATCH_VIEW',
+    'EVIDENCE_UPLOAD_CLAIM',
+    'EVIDENCE_VIEW',
+    'QUALITY_CLAIM_OPEN',
+    'DISCREPANCY_VIEW',
   ],
   QUALITY: [
     'MASTER_DATA_VIEW',
@@ -57,9 +64,7 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'SHIPMENT_CANCEL',
     'SHIPMENT_COMPLETE',
     'DISPATCH_VIEW',
-    'EVIDENCE_UPLOAD_CLAIM',
     'EVIDENCE_VIEW',
-    'QUALITY_CLAIM_OPEN',
     'DISCREPANCY_VIEW',
     'AUDIT_VIEW',
     'REPORT_VIEW',
@@ -76,9 +81,14 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
 const FULL_NAMES: Readonly<Record<Role, string>> = {
   ADMIN: 'Ayşe Yönetici',
   WAREHOUSE: 'Deniz Depo',
+  SUBCONTRACTOR: 'Fatma Fasoncu',
   QUALITY: 'Kemal Kalite',
   MANAGER: 'Yusuf Müdür',
   GENERAL_MANAGER: 'Gül Genel Müdür',
+};
+
+const SCOPE_BY_ROLE: Readonly<Partial<Record<Role, Pick<CurrentUser, 'subcontractorId'>>>> = {
+  SUBCONTRACTOR: { subcontractorId: 'sub-0' },
 };
 
 export const MOCK_ROLES = Object.keys(PERMISSIONS_BY_ROLE).filter(
@@ -93,5 +103,6 @@ export function createMockUser(role: Role): CurrentUser {
     permissions: [...PERMISSIONS_BY_ROLE[role]],
     siteIds: ['site-merkez'],
     mfaVerified: true,
+    ...SCOPE_BY_ROLE[role],
   };
 }

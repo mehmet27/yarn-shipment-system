@@ -1,4 +1,3 @@
-import type { Kilogram } from '@iplik/units';
 import type {
   InspectionKind,
   InspectionView,
@@ -8,20 +7,20 @@ import type {
 
 const DAY_MS = 86_400_000;
 const CLAIM_WINDOW_DAYS = 3;
-/** Sahte veride sevkiyatın net ağırlığı (kg); itiraz bunu aşamaz. */
-export const MOCK_SHIPMENT_NET_KG = '1982.500' as Kilogram;
+/** Teslimde okutulan anahtarlar; sahte veride her teslim edilmiş sevkiyat için aynıdır. */
+const DELIVERED_KEYS = ['BAG-0001', 'BAG-0002', 'BAG-0003'] as const;
 
-type Seed = { shipmentId: string; discrepancyId: string; claimedKg: string };
+type Seed = { shipmentId: string; discrepancyId: string; bagKey: string };
 
-/** shp-0019 açık itirazlı (kalite), shipment-3 kapanmış kalite uyuşmazlığı disc-3'ün itirazı. */
+/** shp-0019 açık itirazlı (fasoncu sub-0), shipment-3 kapanmış kalite uyuşmazlığı disc-3'ün itirazı. */
 const SEEDS: readonly Seed[] = [
-  { shipmentId: 'shp-0019', discrepancyId: 'disc-claim-0019', claimedKg: '120.000' },
-  { shipmentId: 'shipment-3', discrepancyId: 'disc-3', claimedKg: '45.500' },
+  { shipmentId: 'shp-0019', discrepancyId: 'disc-claim-0019', bagKey: 'BAG-0003' },
+  { shipmentId: 'shipment-3', discrepancyId: 'disc-3', bagKey: 'BAG-0001' },
 ];
 
 let claims: QualityClaimView[] = [];
 
-function seed({ shipmentId, discrepancyId, claimedKg }: Seed, index: number): QualityClaimView {
+function seed({ shipmentId, discrepancyId, bagKey }: Seed, index: number): QualityClaimView {
   const openedAt = new Date(Date.parse('2026-10-26T09:00:00Z') + index * DAY_MS).toISOString();
   return {
     id: `claim-${String(index)}`,
@@ -29,10 +28,10 @@ function seed({ shipmentId, discrepancyId, claimedKg }: Seed, index: number): Qu
     discrepancyNo: `UY-${shipmentId}-1`,
     shipmentId,
     status: discrepancyId === 'disc-3' ? 'RESOLVED' : 'OPEN',
-    description: 'Kumaşta leke ve nem var.',
-    claimedKg,
+    description: 'Çuvalda leke ve nem var.',
+    bagKeys: [bagKey],
     evidenceIds: ['photo-seed'],
-    openedBy: 'user-quality',
+    openedBy: 'user-subcontractor',
     openedAt,
     deadlineAt: new Date(Date.parse(openedAt) + 5 * DAY_MS).toISOString(),
     inspections: [],
@@ -43,6 +42,10 @@ export function resetMockClaims(): void {
   claims = SEEDS.map(seed);
 }
 resetMockClaims();
+
+export function mockDeliveredKeys(): string[] {
+  return [...DELIVERED_KEYS];
+}
 
 export function mockDeadline(): string {
   return new Date(Date.now() + CLAIM_WINDOW_DAYS * DAY_MS).toISOString();

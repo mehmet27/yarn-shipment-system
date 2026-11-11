@@ -13,6 +13,10 @@ class ShipmentStatusTest {
     @CsvSource({
         "DRAFT, AWAITING_DELIVERY",
         "DRAFT, CANCELLED",
+        "DRAFT, WEIGHT_MISMATCH",
+        "WEIGHT_MISMATCH, DRAFT",
+        "WEIGHT_MISMATCH, AWAITING_DELIVERY",
+        "WEIGHT_MISMATCH, CANCELLED",
         "AWAITING_DELIVERY, COMPLETED",
         "AWAITING_DELIVERY, CANCELLED"
     })
@@ -23,7 +27,14 @@ class ShipmentStatusTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"DRAFT, COMPLETED", "AWAITING_DELIVERY, DRAFT", "COMPLETED, CANCELLED", "CANCELLED, DRAFT"})
+    @CsvSource({
+        "DRAFT, COMPLETED",
+        "WEIGHT_MISMATCH, COMPLETED",
+        "AWAITING_DELIVERY, WEIGHT_MISMATCH",
+        "AWAITING_DELIVERY, DRAFT",
+        "COMPLETED, CANCELLED",
+        "CANCELLED, DRAFT"
+    })
     @DisplayName("Tanımsız geçiş reddedilir")
     void shouldRejectUndocumentedTransitions(ShipmentStatus from, ShipmentStatus to) {
         // when / then

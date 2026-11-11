@@ -36,7 +36,7 @@ public class ListEvidenceService implements ListEvidenceUseCase {
     public List<EvidenceFile> listEvidence(ListEvidenceQuery query) {
         Actor actor = query.actor();
         ShipmentSnapshot shipment = shipments.findAccessible(query.shipmentId());
-        scopeGuard.validateInScope(actor, ShipmentScopes.of(shipment.shipmentId(), shipment.siteId()), ACTION);
+        scopeGuard.validateInScope(actor, ShipmentScopes.of(actor, shipment.shipmentId(), shipment.siteId()), ACTION);
         return evidence.findByShipment(shipment.shipmentId()).stream()
                 .filter(file -> EvidenceVisibility.mayView(actor))
                 .toList();

@@ -1,1 +1,0 @@
-export { balancePanelRoutes } from './routes';

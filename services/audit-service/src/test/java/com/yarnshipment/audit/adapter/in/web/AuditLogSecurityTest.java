@@ -38,9 +38,14 @@ class AuditLogSecurityTest {
     }
 
     @Test
-    @DisplayName("Şoför denetim kayıtlarını göremez")
+    @DisplayName("Şoför ve fasoncu denetim kayıtlarını göremez")
     void shouldRequireAuditViewPermission() {
         assertThat(mvc.get().uri(AUDIT_LOG).with(TestTokens.auth("driver")).exchange())
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.get()
+                        .uri(AUDIT_LOG)
+                        .with(TestTokens.auth("subcontractor"))
+                        .exchange())
                 .hasStatus(HttpStatus.FORBIDDEN);
         assertThat(mvc.get()
                         .uri(AUDIT_LOG + "/chain-checks")

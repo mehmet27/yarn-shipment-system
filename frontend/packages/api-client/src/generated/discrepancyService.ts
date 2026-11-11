@@ -7,11 +7,6 @@
  * bu API onları incelemeye alır ve çözer. Bir sevkiyatın tüm uyuşmazlıkları çözülünce sevkiyat tamamlanır (olayla,
  * shipment-service tarafında). Admin tolerans bantlarını ve süre sınırını ayar uçlarından değiştirir.
  *
- * Kantar fişi paneli (tasarım PR 4): uyuşmazlığın sevkiyatındaki fiş okumaları, aynı taraf için elle girilen netle
- * yan yana döner. İnceleyen kişi okumanın yanlış olduğunu "AI yanıldı" olarak işaretleyebilir; işaret isabet
- * ölçümüne girer ve uyuşmazlık geçmişine `TICKET_MISREAD` olarak yazılır. Kör giriş gereği karar yetkisi olmayan
- * kullanıcı (fasoncu) fişleri teslim karşılaştırmasından önce göremez.
- *
  * Kurallar:
  * - Kilo ve yüzde değerleri ondalık dize olarak taşınır, ör. `"40.000"` (API-03).
  * - Zamanlar ISO 8601 UTC (API-03).
@@ -302,7 +297,7 @@ export type UnauthorizedResponse = Problem;
 export type ForbiddenResponse = Problem;
 
 /**
- * Uyuşmazlık ya da sevkiyatında bu fiş okuması yok (DISCREPANCY_NOT_FOUND, TICKET_READING_NOT_FOUND)
+ * Uyuşmazlık bulunamadı (DISCREPANCY_NOT_FOUND)
  */
 export type NotFoundResponse = Problem;
 

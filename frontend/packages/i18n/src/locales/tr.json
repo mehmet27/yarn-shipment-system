@@ -505,7 +505,7 @@
       "ASSIGNED": "Atandı",
       "RESOLVED": "Çözüldü",
       "CLAIM_EVIDENCE": "İtiraz fotoğrafı eklendi",
-      "INSPECTION_REQUESTED": "Numune / lab kontrolü istendi",
+      "INSPECTION_REQUESTED": "Lab kontrolü istendi",
       "INSPECTION_RESULT": "Kontrol sonucu girildi",
       "TICKET_MISREAD": "Fiş okuması \"AI yanıldı\" olarak işaretlendi"
     },
@@ -637,9 +637,7 @@
       "openedAt": "Açıldı"
     },
     "inspection": {
-      "kindLabel": "Kontrol türü",
       "kind": {
-        "SAMPLE": "Numune kontrolü",
         "LAB": "Laboratuvar analizi"
       },
       "note": "Talep notu",

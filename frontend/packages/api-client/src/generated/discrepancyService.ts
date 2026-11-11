@@ -162,13 +162,12 @@ export interface ResolveDiscrepancyRequest {
 }
 
 /**
- * SAMPLE fasoncudaki numuneyi şahit numuneyle karşılaştırır; LAB laboratuvar testidir.
+ * LAB laboratuvar testidir.
  */
 export type InspectionKind = typeof InspectionKind[keyof typeof InspectionKind];
 
 
 export const InspectionKind = {
-  SAMPLE: 'SAMPLE',
   LAB: 'LAB',
 } as const;
 

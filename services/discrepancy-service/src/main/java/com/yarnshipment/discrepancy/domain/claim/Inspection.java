@@ -35,7 +35,7 @@ public record Inspection(
         return result == null;
     }
 
-    /** Sonucu girer. Lab sonucu belgesiz olamaz; numune karşılaştırmasında belge isteğe bağlıdır. */
+    /** Sonucu girer. Lab sonucu belgesiz olamaz. */
     public Inspection recordResult(Result recorded) {
         if (!isPending()) {
             throw new ClaimRejectedException(ClaimRejection.INSPECTION_RECORDED, "inspectionId=" + id);

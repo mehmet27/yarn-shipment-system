@@ -63,6 +63,18 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
     private static final String SOURCE_SUBCONTRACTOR = """
             SELECT source_subcontractor_id FROM shipment
             WHERE id = :shipmentId AND source_subcontractor_id IS NOT NULL""";
+    /** Merkezden çıkan sevkiyatın iplikleri merkez stoktan düşer; gönderen fasoncu varsa merkez stoğa dokunulmaz. */
+    private static final String CENTRAL_STOCK_OUT = """
+            INSERT INTO central_stock_movement (id, yarn_type, kind, net_kg, shipment_id, occurred_at, created_by,
+                                                source_ref)
+            SELECT gen_random_uuid(), coalesce(p.name, bm.yarn_type), 'TO_SUBCONTRACTOR', -bm.net_kg, bm.shipment_id,
+                   bm.occurred_at, bm.created_by, 'CENTRAL_OUT:' || bm.source_ref
+            FROM balance_movement bm
+            JOIN shipment s ON s.id = bm.shipment_id AND s.source_subcontractor_id IS NULL
+            LEFT JOIN md_product p ON p.id::text = bm.yarn_type
+            WHERE bm.shipment_id = :shipmentId AND bm.kind = 'DISPATCH'
+            ON CONFLICT (source_ref) DO NOTHING""";
+
     private static final String LINE_COLUMNS = """
             SELECT column_name FROM information_schema.columns
             WHERE table_schema = current_schema() AND table_name = 'shipment_line'""";
@@ -149,6 +161,7 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
                 writer.append(BalanceMovement.transferOut(source, line, context));
             }
         }
+        jdbc.sql(CENTRAL_STOCK_OUT).param("shipmentId", shipmentId).update();
         return weighed;
     }
 

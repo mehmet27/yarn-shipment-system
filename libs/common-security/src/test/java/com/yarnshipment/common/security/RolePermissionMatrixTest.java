@@ -49,6 +49,16 @@ class RolePermissionMatrixTest {
     }
 
     @Test
+    @DisplayName("Merkez stoğa iplik girişini depo, kumaş girişini kalite yapar; müdür yalnız stoğu görür")
+    void shouldSplitCentralStockPermissions() {
+        assertThat(rolesHaving(Permission.CENTRAL_STOCK_RECORD)).containsExactlyInAnyOrder(Role.ADMIN, Role.WAREHOUSE);
+        assertThat(rolesHaving(Permission.CENTRAL_PRODUCTION_RECORD))
+                .containsExactlyInAnyOrder(Role.ADMIN, Role.QUALITY);
+        assertThat(rolesHaving(Permission.CENTRAL_STOCK_VIEW))
+                .containsExactlyInAnyOrder(Role.ADMIN, Role.WAREHOUSE, Role.QUALITY, Role.MANAGER);
+    }
+
+    @Test
     @DisplayName("Uyuşmazlığı yalnızca admin ve kalite kapatır")
     void shouldAllowOnlyAdminAndQualityToResolveDiscrepancy() {
         // when

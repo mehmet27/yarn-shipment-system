@@ -24,6 +24,9 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'AUDIT_VIEW',
     'REPORT_VIEW',
     'BALANCE_VIEW',
+    'CENTRAL_STOCK_VIEW',
+    'CENTRAL_STOCK_RECORD',
+    'CENTRAL_PRODUCTION_RECORD',
   ],
   WAREHOUSE: [
     'MASTER_DATA_VIEW',
@@ -34,6 +37,8 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'EVIDENCE_UPLOAD_DISPATCH',
     'EVIDENCE_VIEW',
     'YARN_RETURN_RECORD',
+    'CENTRAL_STOCK_VIEW',
+    'CENTRAL_STOCK_RECORD',
   ],
   QUALITY: [
     'MASTER_DATA_VIEW',
@@ -49,6 +54,8 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'REPORT_VIEW',
     'FABRIC_RECEIPT_RECORD',
     'BALANCE_VIEW',
+    'CENTRAL_STOCK_VIEW',
+    'CENTRAL_PRODUCTION_RECORD',
   ],
   MANAGER: [
     'MASTER_DATA_VIEW',
@@ -69,6 +76,7 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'INVOICE_MARK',
     'BALANCE_VIEW',
     'WEIGHT_MISMATCH_RESOLVE',
+    'CENTRAL_STOCK_VIEW',
   ],
   GENERAL_MANAGER: ['REPORT_VIEW', 'BALANCE_VIEW'],
 };

@@ -64,49 +64,40 @@ class BalanceMatrixAcceptanceTest {
     private static final int GRAND_TOTAL = 262_153;
 
     /** Satır adı (iplik cinsi), 15 sütunluk kilolar (0 = boş hücre) ve tablodaki satır toplamı. */
-    private record Row(String yarnType, int[] kg, int total) {}
+    private record Row(String yarnType, List<Integer> kg, int total) {}
 
     private static final List<Row> TABLE = List.of(
             new Row(
                     "30/1 PENYE (MELİKE)",
-                    new int[] {10000, 0, 1770, 1750, 890, 0, 1300, 1600, 1500, 200, 0, 1300, 3300, 1400, 5000},
+                    List.of(10000, 0, 1770, 1750, 890, 0, 1300, 1600, 1500, 200, 0, 1300, 3300, 1400, 5000),
                     30010),
-            new Row("30/1 PENYE (ŞİRECİ)", new int[] {9300, 0, 1300, 3750, 0, 0, 0, 440, 0, 0, 0, 0, 0, 300, 0}, 15090),
-            new Row("30/1 KARDE", new int[] {420, 0, 0, 0, 0, 0, 1800, 0, 0, 0, 0, 0, 0, 0, 0}, 2220),
-            new Row(
-                    "10/1 OE P.P (İLSAN)",
-                    new int[] {470, 0, 1050, 0, 0, 665, 0, 0, 450, 0, 0, 0, 2000, 3410, 0},
-                    8045),
-            new Row(
-                    "10/1 OE P.P (ŞİRECİ)",
-                    new int[] {16500, 0, 4500, 0, 0, 0, 0, 4950, 5184, 0, 0, 0, 0, 0, 0},
-                    31134),
-            new Row("10/1 OE P.P (ŞİRECİ) ORJ", new int[] {1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 1000),
-            new Row("10/1 OE P.P (ÖZ PANCAR)", new int[] {905, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 905),
-            new Row("12/1 OE P.P (İLSAN)", new int[] {350, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 350),
-            new Row("12/1 OE P.P (ŞİRECİ)", new int[] {3700, 0, 860, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 4560),
-            new Row("20 DENYE", new int[] {950, 430, 0, 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0}, 1405),
-            new Row("30 DENYE", new int[] {2100, 0, 260, 0, 0, 0, 0, 0, 200, 170, 0, 0, 0, 0, 0}, 2730),
-            new Row("40 DENYE", new int[] {1600, 0, 330, 215, 645, 85, 300, 300, 520, 80, 0, 260, 500, 200, 85}, 5120),
-            new Row("70 DENYE", new int[] {570, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 570),
-            new Row("28/1 VİSKON", new int[] {2400, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 2400),
-            new Row("28/1 PENYE", new int[] {4590, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 4590),
-            new Row("36/1 VİSKON", new int[] {12200, 2500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 14700),
-            new Row("36/1 PENYE", new int[] {19850, 0, 1900, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0}, 21850),
-            new Row("24/1 PENYE", new int[] {14200, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 14200),
-            new Row("20/1 OE", new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000}, 3000),
-            new Row("20/1 PENYE", new int[] {17800, 0, 2600, 0, 0, 0, 0, 0, 0, 200, 0, 0, 840, 0, 0}, 21440),
+            new Row("30/1 PENYE (ŞİRECİ)", List.of(9300, 0, 1300, 3750, 0, 0, 0, 440, 0, 0, 0, 0, 0, 300, 0), 15090),
+            new Row("30/1 KARDE", List.of(420, 0, 0, 0, 0, 0, 1800, 0, 0, 0, 0, 0, 0, 0, 0), 2220),
+            new Row("10/1 OE P.P (İLSAN)", List.of(470, 0, 1050, 0, 0, 665, 0, 0, 450, 0, 0, 0, 2000, 3410, 0), 8045),
+            new Row("10/1 OE P.P (ŞİRECİ)", List.of(16500, 0, 4500, 0, 0, 0, 0, 4950, 5184, 0, 0, 0, 0, 0, 0), 31134),
+            new Row("10/1 OE P.P (ŞİRECİ) ORJ", List.of(1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 1000),
+            new Row("10/1 OE P.P (ÖZ PANCAR)", List.of(905, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 905),
+            new Row("12/1 OE P.P (İLSAN)", List.of(350, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 350),
+            new Row("12/1 OE P.P (ŞİRECİ)", List.of(3700, 0, 860, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 4560),
+            new Row("20 DENYE", List.of(950, 430, 0, 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0), 1405),
+            new Row("30 DENYE", List.of(2100, 0, 260, 0, 0, 0, 0, 0, 200, 170, 0, 0, 0, 0, 0), 2730),
+            new Row("40 DENYE", List.of(1600, 0, 330, 215, 645, 85, 300, 300, 520, 80, 0, 260, 500, 200, 85), 5120),
+            new Row("70 DENYE", List.of(570, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 570),
+            new Row("28/1 VİSKON", List.of(2400, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 2400),
+            new Row("28/1 PENYE", List.of(4590, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 4590),
+            new Row("36/1 VİSKON", List.of(12200, 2500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 14700),
+            new Row("36/1 PENYE", List.of(19850, 0, 1900, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0), 21850),
+            new Row("24/1 PENYE", List.of(14200, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 14200),
+            new Row("20/1 OE", List.of(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000), 3000),
+            new Row("20/1 PENYE", List.of(17800, 0, 2600, 0, 0, 0, 0, 0, 0, 200, 0, 0, 840, 0, 0), 21440),
             new Row(
                     "150 DENYE BEYAZ",
-                    new int[] {29000, 0, 1060, 960, 960, 750, 1000, 1240, 264, 0, 0, 450, 960, 960, 0},
+                    List.of(29000, 0, 1060, 960, 960, 750, 1000, 1240, 264, 0, 0, 450, 960, 960, 0),
                     37604),
-            new Row(
-                    "150 DENYE SİYAH",
-                    new int[] {16000, 0, 790, 2100, 720, 0, 800, 480, 1050, 0, 0, 240, 0, 0, 0},
-                    22180),
+            new Row("150 DENYE SİYAH", List.of(16000, 0, 790, 2100, 720, 0, 800, 480, 1050, 0, 0, 240, 0, 0, 0), 22180),
             new Row(
                     "75 DENYE BEYAZ",
-                    new int[] {9600, 1700, 1140, 0, 0, 600, 660, 0, 300, 0, 780, 0, 810, 960, 500},
+                    List.of(9600, 1700, 1140, 0, 0, 600, 660, 0, 300, 0, 780, 0, 810, 960, 500),
                     17050));
 
     @MockitoBean
@@ -125,11 +116,12 @@ class BalanceMatrixAcceptanceTest {
     void shouldHaveConsistentSourceTable() {
         assertThat(TABLE).allSatisfy(row -> {
             assertThat(row.kg()).hasSize(HOLDERS.length);
-            assertThat(Arrays.stream(row.kg()).sum()).isEqualTo(row.total());
+            assertThat(row.kg().stream().mapToInt(Integer::intValue).sum()).isEqualTo(row.total());
         });
         for (int col = 0; col < HOLDERS.length; col++) {
             int index = col;
-            assertThat(TABLE.stream().mapToInt(row -> row.kg()[index]).sum()).isEqualTo(COLUMN_TOTALS[col]);
+            assertThat(TABLE.stream().mapToInt(row -> row.kg().get(index)).sum())
+                    .isEqualTo(COLUMN_TOTALS[col]);
         }
         assertThat(Arrays.stream(COLUMN_TOTALS).sum()).isEqualTo(GRAND_TOTAL);
     }
@@ -143,9 +135,12 @@ class BalanceMatrixAcceptanceTest {
         }
         for (Row row : TABLE) {
             for (int col = 0; col < HOLDERS.length; col++) {
-                if (row.kg()[col] > 0) {
+                if (row.kg().get(col) > 0) {
                     OpeningBalanceRow opening = new OpeningBalanceRow(
-                            holderIds[col], HOLDERS[col], row.yarnType(), BigDecimal.valueOf(row.kg()[col]));
+                            holderIds[col],
+                            HOLDERS[col],
+                            row.yarnType(),
+                            BigDecimal.valueOf(row.kg().get(col)));
                     assertThat(reader.insertOpeningIfAbsent(opening, OPENED_AT)).isTrue();
                 }
             }
@@ -161,11 +156,11 @@ class BalanceMatrixAcceptanceTest {
         int nonEmptyCells = 0;
         for (Row row : TABLE) {
             for (int col = 0; col < HOLDERS.length; col++) {
-                if (row.kg()[col] > 0) {
+                if (row.kg().get(col) > 0) {
                     nonEmptyCells++;
                     assertThat(cells.get(row.yarnType() + "|" + HOLDERS[col]))
                             .as("%s / %s", row.yarnType(), HOLDERS[col])
-                            .isEqualByComparingTo(BigDecimal.valueOf(row.kg()[col]));
+                            .isEqualByComparingTo(BigDecimal.valueOf(row.kg().get(col)));
                 }
             }
         }

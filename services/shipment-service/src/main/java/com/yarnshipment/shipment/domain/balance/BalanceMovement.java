@@ -78,7 +78,7 @@ public record BalanceMovement(
                 consumption.sourceRef());
     }
 
-    /** Haklı kalite itirazının iplik cinsine düşen kilosu fasoncunun bakiyesinden düşer (KR-15); kilo pozitif verilir. */
+    /** Haklı kalite itirazının iplik cinsine düşen kilosu fasoncunun bakiyesinden düşer (KR-15); kilo pozitif. */
     public static BalanceMovement claimAdjustment(ClaimShare share, ClaimContext context) {
         return new BalanceMovement(
                 UUID.randomUUID(),

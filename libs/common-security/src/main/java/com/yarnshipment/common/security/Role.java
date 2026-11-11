@@ -13,6 +13,8 @@ public enum Role {
     QUALITY,
     /** Müdür: sevkiyatı oluşturur, iptal eder ve irsaliye gelince tamamlar; raporları görür. */
     MANAGER,
+    /** Genel müdür: yalnızca rapor ve bakiye görür; işlem yapmaz. */
+    GENERAL_MANAGER,
     /** Yalnızca servis hesaplarının (client credentials) token'larında bulunur. */
     SYSTEM;
 

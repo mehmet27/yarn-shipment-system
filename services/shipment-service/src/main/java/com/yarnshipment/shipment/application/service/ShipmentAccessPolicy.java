@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 public final class ShipmentAccessPolicy {
 
     public ShipmentAudience audienceOf(Actor actor) {
-        boolean internal = actor.hasAnyRole(Role.ADMIN, Role.QUALITY, Role.MANAGER, Role.SYSTEM);
+        boolean internal = actor.hasAnyRole(Role.ADMIN, Role.QUALITY, Role.MANAGER, Role.GENERAL_MANAGER, Role.SYSTEM);
         return internal ? ShipmentAudience.INTERNAL : ShipmentAudience.WAREHOUSE;
     }
 

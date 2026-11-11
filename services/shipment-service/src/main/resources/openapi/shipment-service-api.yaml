@@ -31,6 +31,7 @@ tags:
   - name: CatalogLists
   - name: ProductManagement
   - name: QualityGradeManagement
+  - name: YarnSupplierManagement
   - name: TareStandardManagement
   - name: LotManagement
   - name: LoginAccounts
@@ -1386,6 +1387,143 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/yarn-suppliers:
+    get:
+      tags: [CatalogLists]
+      operationId: listYarnSuppliers
+      summary: İplik tedarikçisi listesi
+      description: |
+        İplik tedarikçisi (Şireci, Karesi ...) seçimi için; ada göre sıralı. Arama `q` ile adda yapılır. Pasifleri yalnızca yönetici `status=ALL` ile görür.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/SearchText'
+        - $ref: '#/components/parameters/StatusFilter'
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YarnSupplierPageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [YarnSupplierManagement]
+      operationId: createYarnSupplier
+      summary: İplik tedarikçisi ekler
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Ad büyük/küçük harf duyarsız tekildir (`DUPLICATE_CODE`, alan `name`). Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YarnSupplierCreateRequest'
+      responses:
+        '201':
+          description: Eklendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YarnSupplierView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/master-data/yarn-suppliers/{yarnSupplierId}:
+    put:
+      tags: [YarnSupplierManagement]
+      operationId: updateYarnSupplier
+      summary: İplik tedarikçisi günceller
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Adı değiştirir; yeni ad da tekil olmalıdır.
+      parameters:
+        - name: yarnSupplierId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YarnSupplierUpdateRequest'
+      responses:
+        '200':
+          description: Güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YarnSupplierView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/master-data/yarn-suppliers/{yarnSupplierId}/deactivate:
+    post:
+      tags: [YarnSupplierManagement]
+      operationId: deactivateYarnSupplier
+      summary: İplik tedarikçisi pasife alır
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez; pasif tedarikçi yeni partiye verilemez. Tekrarı zararsızdır.
+      parameters:
+        - name: yarnSupplierId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/master-data/yarn-suppliers/{yarnSupplierId}/activate:
+    post:
+      tags: [YarnSupplierManagement]
+      operationId: activateYarnSupplier
+      summary: İplik tedarikçisi yeniden etkinleştirir
+      description: |
+        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı geri getirir. Tekrarı zararsızdır.
+      parameters:
+        - name: yarnSupplierId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Yapıldı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /api/v1/master-data/lots:
     get:
       tags: [CatalogLists]
@@ -1920,7 +2058,7 @@ components:
       example: '1982.500'
     Role:
       type: string
-      enum: [ADMIN, WAREHOUSE, QUALITY, MANAGER]
+      enum: [ADMIN, WAREHOUSE, QUALITY, MANAGER, GENERAL_MANAGER]
     Permission:
       type: string
       enum:
@@ -1946,6 +2084,12 @@ components:
         - DISCREPANCY_RESOLVE
         - AUDIT_VIEW
         - REPORT_VIEW
+        - FABRIC_RECEIPT_RECORD
+        - YARN_RETURN_RECORD
+        - FIRE_RATE_EDIT
+        - INVOICE_MARK
+        - BALANCE_VIEW
+        - WEIGHT_MISMATCH_RESOLVE
     CurrentUserResponse:
       type: object
       required: [userId, fullName, roles, permissions, siteIds, mfaVerified]
@@ -2323,7 +2467,7 @@ components:
     StaffRole:
       type: string
       description: Şifre davetiyle açılabilen fabrika içi roller; şoför ve fasoncu kayıtlarından açılır
-      enum: [ADMIN, WAREHOUSE, QUALITY, MANAGER]
+      enum: [ADMIN, WAREHOUSE, QUALITY, MANAGER, GENERAL_MANAGER]
     StaffLoginAccountRequest:
       type: object
       required: [username, phone, fullName, role, siteIds]
@@ -2660,6 +2804,45 @@ components:
             $ref: '#/components/schemas/QualityGradeView'
         page:
           $ref: '#/components/schemas/PageMetadata'
+    YarnSupplierCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Tedarikçi adı; büyük/küçük harf duyarsız tekildir
+    YarnSupplierUpdateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+    YarnSupplierView:
+      type: object
+      required: [id, name]
+      properties:
+        active:
+          type: boolean
+          description: Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    YarnSupplierPageResponse:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/YarnSupplierView'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
     LotCreateRequest:
       type: object
       required: [siteId, lotNo, productId, qualityGradeId, productionDate]
@@ -2681,6 +2864,10 @@ components:
         productionDate:
           type: string
           format: date
+        yarnSupplierId:
+          type: string
+          format: uuid
+          description: İsteğe bağlı iplik tedarikçisi; etkin olmalıdır. Kalite kilitlenmeden önce verilebilir
     LotUpdateRequest:
       type: object
       required: [lotNo, productId, qualityGradeId, productionDate]
@@ -2699,6 +2886,10 @@ components:
         productionDate:
           type: string
           format: date
+        yarnSupplierId:
+          type: string
+          format: uuid
+          description: İsteğe bağlı iplik tedarikçisi; etkin olmalıdır. Kalite kilitlenmeden önce verilebilir
     LotView:
       type: object
       required: [id, siteId, siteName, lotNo, productId, productCode, productName, qualityGradeId, qualityGradeCode,
@@ -2731,6 +2922,12 @@ components:
         productionDate:
           type: string
           format: date
+        yarnSupplierId:
+          type: string
+          format: uuid
+          description: İplik tedarikçisi; atanmamışsa boş
+        yarnSupplierName:
+          type: string
         qualityLockedAt:
           type: string
           format: date-time

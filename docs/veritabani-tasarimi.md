@@ -63,7 +63,7 @@ Her tabloda ayrıca `id uuid PK`, `created_at`, `created_by`, `updated_at`, `upd
 
 | Tablo | Önemli kolonlar | Kısıt / not |
 | --- | --- | --- |
-| Keycloak (kendi şeması) | kullanıcı, şifre, roller (ADMIN, WAREHOUSE, DRIVER, SUBCONTRACTOR, QUALITY, MANAGER), iki adımlı doğrulama | Elle tablo yazılmaz; Keycloak yönetir |
+| Keycloak (kendi şeması) | kullanıcı, şifre, roller (ADMIN, WAREHOUSE, DRIVER, SUBCONTRACTOR, QUALITY, MANAGER, GENERAL_MANAGER), iki adımlı doğrulama | Elle tablo yazılmaz; Keycloak yönetir |
 | `user_profile` (masterdata\_db) | keycloak\_user\_id, full\_name, user\_type (INTERNAL, DRIVER, SUBCONTRACTOR), subcontractor\_id, driver\_id, status | keycloak\_user\_id unique; DRIVER ise driver\_id, SUBCONTRACTOR ise subcontractor\_id zorunlu (CHECK) |
 
 Tüm servislerdeki `created_by`, `assignee_id` gibi kullanıcı alanları Keycloak kullanıcı kimliğini (`uuid`) tutar. Yetkilendirme çalışması ayrı bir user-service önerirse `user_profile` oraya taşınır; yapısı değişmez.
@@ -78,7 +78,8 @@ Tüm servislerdeki `created_by`, `assignee_id` gibi kullanıcı alanları Keyclo
 | `vehicle` (araç) | plate\_no, vehicle\_type, status | plate\_no unique |
 | `product` (iplik) | code, name, yarn\_count, composition, packaging\_type | code unique |
 | `quality_grade` (kalite) | code (A, B, …), name, label\_color | code unique |
-| `production_lot` (parti) | site\_id, lot\_no, product\_id, quality\_grade\_id, production\_date, quality\_locked\_at, quality\_locked\_by, status | (site\_id, lot\_no) unique; kilitlendikten sonra quality\_grade\_id değişemez (trigger) |
+| `yarn_supplier` (`md_yarn_supplier`, iplik tedarikçisi) | name, active, created\_at, created\_by | lower(name) unique; silinmez, pasife alınır; guard + audit trigger (V202611102210) |
+| `production_lot` (parti) | site\_id, lot\_no, product\_id, quality\_grade\_id, production\_date, quality\_locked\_at, quality\_locked\_by, status | (site\_id, lot\_no) unique; kilitlendikten sonra quality\_grade\_id ve yarn\_supplier\_id değişemez (trigger) |
 | `witness_sample` (şahit numune) | lot\_id, sample\_code, storage\_location, taken\_at, disposed\_at | sample\_code unique |
 | `tare_standard` (standart dara) | site\_id, packaging\_type, standard\_tare\_kg, max\_deviation\_pct | (site\_id, packaging\_type) unique |
 | `user_profile` | yukarıdaki Kimlik tablosu | — |

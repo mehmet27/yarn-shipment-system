@@ -17,7 +17,7 @@ describe('Kullanıcılar ekranı', () => {
     renderApp('/panel/kullanicilar');
     const table = await screen.findByRole('table');
     const rows = within(table).getAllByRole('row');
-    expect(rows).toHaveLength(6);
+    expect(rows).toHaveLength(7);
     const partner = rows.find((row) => within(row).queryByText('kalite') !== null);
     expect(partner).toBeDefined();
     if (partner === undefined) return;
@@ -26,7 +26,7 @@ describe('Kullanıcılar ekranı', () => {
     expect(within(partner).getByText('Etkin')).toBeInTheDocument();
     expect(within(partner).getByText('İlk giriş bekleniyor')).toBeInTheDocument();
     expect(within(table).getByText('Devre dışı')).toBeInTheDocument();
-    expect(screen.getByText('5 kullanıcı')).toBeInTheDocument();
+    expect(screen.getByText('6 kullanıcı')).toBeInTheDocument();
     expect(screen.queryByText(/şifre:/i)).not.toBeInTheDocument();
   });
 

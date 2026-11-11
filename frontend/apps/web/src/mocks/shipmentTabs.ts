@@ -42,6 +42,7 @@ export function toBagsView(shipment: InternalShipmentView, role: Role): Shipment
     case 'ADMIN':
     case 'MANAGER':
     case 'QUALITY':
+    case 'GENERAL_MANAGER':
       return { audience: 'INTERNAL', dispatchBags: dispatchBags(shipment) };
   }
 }

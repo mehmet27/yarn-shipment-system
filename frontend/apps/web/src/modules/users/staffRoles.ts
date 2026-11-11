@@ -1,7 +1,13 @@
 import type { LoginAccountView, StaffRole } from '@iplik/api-client';
 
 /** Sonradan rolü değiştirilebilen fabrika içi roller (sunucudaki StaffRole). */
-export const STAFF_ROLES: readonly StaffRole[] = ['ADMIN', 'WAREHOUSE', 'QUALITY', 'MANAGER'];
+export const STAFF_ROLES: readonly StaffRole[] = [
+  'ADMIN',
+  'WAREHOUSE',
+  'QUALITY',
+  'MANAGER',
+  'GENERAL_MANAGER',
+];
 
 export function asStaffRole(role: string | null): StaffRole | undefined {
   return STAFF_ROLES.find((candidate) => candidate === role);

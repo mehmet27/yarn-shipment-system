@@ -41,6 +41,11 @@ export function LotCard({ lot, onEdit }: LotCardProps) {
             date: formatDay(lot.productionDate),
           })}
         </Text>
+        <Text size="sm" c="dimmed">
+          {lot.yarnSupplierName === undefined
+            ? t('lots.noSupplier')
+            : t('lots.supplier', { name: lot.yarnSupplierName })}
+        </Text>
         {!isLocked && lot.active && <LockLotButton lot={lot} />}
         <Group grow>
           {!isLocked && (

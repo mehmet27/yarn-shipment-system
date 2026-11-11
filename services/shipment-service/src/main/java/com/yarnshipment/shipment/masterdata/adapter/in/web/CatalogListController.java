@@ -6,9 +6,11 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.LotPageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.MasterDataStatusFilter;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ProductPageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.QualityGradePageResponse;
+import com.yarnshipment.shipment.adapter.in.web.api.model.YarnSupplierPageResponse;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.application.port.in.catalog.ListProductsUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.catalog.ListQualityGradesUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.catalog.ListYarnSuppliersUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.lot.ListLotsUseCase;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
@@ -29,16 +31,19 @@ public class CatalogListController implements CatalogListsApi {
 
     private final ListProductsUseCase products;
     private final ListQualityGradesUseCase qualityGrades;
+    private final ListYarnSuppliersUseCase yarnSuppliers;
     private final ListLotsUseCase lots;
     private final CurrentActorProvider currentActorProvider;
 
     public CatalogListController(
             ListProductsUseCase products,
             ListQualityGradesUseCase qualityGrades,
+            ListYarnSuppliersUseCase yarnSuppliers,
             ListLotsUseCase lots,
             CurrentActorProvider currentActorProvider) {
         this.products = products;
         this.qualityGrades = qualityGrades;
+        this.yarnSuppliers = yarnSuppliers;
         this.lots = lots;
         this.currentActorProvider = currentActorProvider;
     }
@@ -56,6 +61,14 @@ public class CatalogListController implements CatalogListsApi {
             Integer page, Integer size, @Nullable String search, MasterDataStatusFilter status) {
         return ResponseEntity.ok(
                 CatalogPages.qualityGrades(qualityGrades.listQualityGrades(query(page, size, search, status))));
+    }
+
+    @Override
+    @PreAuthorize(LIST_ACCESS)
+    public ResponseEntity<YarnSupplierPageResponse> listYarnSuppliers(
+            Integer page, Integer size, @Nullable String search, MasterDataStatusFilter status) {
+        return ResponseEntity.ok(
+                YarnSupplierPages.yarnSuppliers(yarnSuppliers.listYarnSuppliers(query(page, size, search, status))));
     }
 
     @Override

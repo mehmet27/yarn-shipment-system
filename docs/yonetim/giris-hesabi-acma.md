@@ -63,7 +63,7 @@ yerde üretilmez, sorulmaz ya da gösterilir.
 | Pasife al / yeniden aç | `PUT /api/v1/master-data/login-accounts/{userId}/enabled` (`enabled`) → 204 |
 | Şifre sıfırlamayı başlat | `POST /api/v1/master-data/login-accounts/{userId}/password-reset` → 204 |
 
-`role` yalnızca `ADMIN`, `WAREHOUSE`, `QUALITY`, `MANAGER` olabilir. Rol değişince eski fabrika içi rol kaldırılır ve
+`role` yalnızca `ADMIN`, `WAREHOUSE`, `QUALITY`, `MANAGER`, `GENERAL_MANAGER` olabilir. Rol değişince eski fabrika içi rol kaldırılır ve
 kişinin açık oturumları kapatılır. Kişi kendi rolünü değiştiremez ve kendi hesabını kapatamaz (400
 `INVALID_MASTER_DATA`); kullanıcı yoksa 404
 `LOGIN_ACCOUNT_NOT_FOUND`. Giriş adı ya da e-posta alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`. Rol verilemezse açılan

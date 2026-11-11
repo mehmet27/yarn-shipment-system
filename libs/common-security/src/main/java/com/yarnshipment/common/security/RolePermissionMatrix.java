@@ -29,6 +29,7 @@ public final class RolePermissionMatrix {
         matrix.put(Role.WAREHOUSE, permissionsForWarehouse());
         matrix.put(Role.QUALITY, permissionsForQuality());
         matrix.put(Role.MANAGER, permissionsForManager());
+        matrix.put(Role.GENERAL_MANAGER, EnumSet.of(Permission.REPORT_VIEW, Permission.BALANCE_VIEW));
         matrix.put(Role.SYSTEM, permissionsForSystem());
         return Map.copyOf(matrix);
     }
@@ -54,7 +55,8 @@ public final class RolePermissionMatrix {
                 Permission.DISCREPANCY_VIEW,
                 Permission.DISCREPANCY_RESOLVE,
                 Permission.AUDIT_VIEW,
-                Permission.REPORT_VIEW);
+                Permission.REPORT_VIEW,
+                Permission.BALANCE_VIEW);
     }
 
     private static Set<Permission> permissionsForWarehouse() {
@@ -62,11 +64,11 @@ public final class RolePermissionMatrix {
                 Permission.MASTER_DATA_VIEW,
                 Permission.BAG_CREATE,
                 Permission.SHIPMENT_VIEW,
-                Permission.SHIPMENT_CREATE,
                 Permission.DISPATCH_RECORD,
                 Permission.DISPATCH_VIEW,
                 Permission.EVIDENCE_UPLOAD_DISPATCH,
-                Permission.EVIDENCE_VIEW);
+                Permission.EVIDENCE_VIEW,
+                Permission.YARN_RETURN_RECORD);
     }
 
     private static Set<Permission> permissionsForQuality() {
@@ -81,7 +83,9 @@ public final class RolePermissionMatrix {
                 Permission.DISCREPANCY_VIEW,
                 Permission.DISCREPANCY_RESOLVE,
                 Permission.AUDIT_VIEW,
-                Permission.REPORT_VIEW);
+                Permission.REPORT_VIEW,
+                Permission.FABRIC_RECEIPT_RECORD,
+                Permission.BALANCE_VIEW);
     }
 
     /** Müdür sevkiyatı açar, iptal eder ve irsaliye gelince tamamlar (saha analizi, 10.11.2026). */
@@ -98,7 +102,13 @@ public final class RolePermissionMatrix {
                 Permission.QUALITY_CLAIM_OPEN,
                 Permission.DISCREPANCY_VIEW,
                 Permission.AUDIT_VIEW,
-                Permission.REPORT_VIEW);
+                Permission.REPORT_VIEW,
+                Permission.FABRIC_RECEIPT_RECORD,
+                Permission.YARN_RETURN_RECORD,
+                Permission.FIRE_RATE_EDIT,
+                Permission.INVOICE_MARK,
+                Permission.BALANCE_VIEW,
+                Permission.WEIGHT_MISMATCH_RESOLVE);
     }
 
     private static Set<Permission> permissionsForSystem() {

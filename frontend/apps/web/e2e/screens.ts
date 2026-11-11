@@ -17,7 +17,7 @@ export const SCREENS: readonly Screen[] = [
   { name: 'Sevkiyat listesi', role: 'WAREHOUSE', path: '/panel/sevkiyat', ready: 'Sevkiyatlar' },
   {
     name: 'Yeni sevkiyat',
-    role: 'WAREHOUSE',
+    role: 'MANAGER',
     path: '/panel/sevkiyat/yeni',
     ready: 'Yeni sevkiyat',
   },

@@ -24,6 +24,7 @@ const PATHS: Readonly<Record<MasterKind, string>> = {
   site: 'sites',
   product: 'products',
   qualityGrade: 'quality-grades',
+  yarnSupplier: 'yarn-suppliers',
 };
 
 const problem = (status: number, code: string, title: string) =>
@@ -48,6 +49,8 @@ function toView(kind: MasterKind, record: MockRecord) {
       return { id, name: label, active: isActive };
     case 'product':
       return { id, code: record.code, name: label, active: isActive, yarnCount: record.extra };
+    case 'yarnSupplier':
+      return { id, name: label, active: isActive };
     case 'qualityGrade':
       return { id, code: record.code, name: label, active: isActive, labelColor: record.extra };
   }
@@ -60,6 +63,7 @@ const LABEL_FIELD: Readonly<Record<MasterKind, string>> = {
   site: 'name',
   product: 'name',
   qualityGrade: 'name',
+  yarnSupplier: 'name',
 };
 
 /** İplik numarası ya da etiket rengi alanının sözleşmedeki adı. */
@@ -173,6 +177,7 @@ const KINDS: readonly MasterKind[] = [
   'site',
   'product',
   'qualityGrade',
+  'yarnSupplier',
 ];
 
 /** Ana veri liste ve yönetim uçları; yönetim yalnızca MASTER_DATA_MANAGE izniyle (403 aksi halde). */

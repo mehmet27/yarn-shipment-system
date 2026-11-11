@@ -25,11 +25,11 @@ class ShipmentAccessPolicyTest {
     }
 
     @Test
-    @DisplayName("Taslak sevkiyatta depo çuval atar ve çıkış tartısı girer, iptal edemez")
+    @DisplayName("Taslak sevkiyatta depo yalnızca çıkış tartısı girer; çuval atayamaz, iptal edemez")
     void shouldAllowWarehouseActionsOnDraft() {
         // when / then
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.DRAFT), TestTokens.actor("warehouse")))
-                .containsExactlyInAnyOrder(ShipmentAction.ASSIGN_BAGS, ShipmentAction.RECORD_DISPATCH);
+                .containsExactlyInAnyOrder(ShipmentAction.RECORD_DISPATCH);
     }
 
     @Test

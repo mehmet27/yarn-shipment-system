@@ -59,12 +59,12 @@ class CreateShipmentControllerTest {
     }
 
     @Test
-    @DisplayName("Depo çalışanı taslak oluşturur: 201 döner ve numara gövdede gelir")
+    @DisplayName("Müdür taslak oluşturur: 201 döner ve numara gövdede gelir")
     void shouldCreateShipment() {
         when(createShipmentUseCase.createShipment(any()))
                 .thenReturn(new CreatedShipment(TestShipments.SHIPMENT_ID, "SV-20261021-ABCD1234"));
 
-        MvcTestResult result = post(TestTokens.token("warehouse").build(), VALID_BODY);
+        MvcTestResult result = post(TestTokens.token("manager").build(), VALID_BODY);
 
         assertThat(result).hasStatus(HttpStatus.CREATED);
         assertThat(result).bodyJson().extractingPath("$.shipmentNo").isEqualTo("SV-20261021-ABCD1234");
@@ -84,10 +84,19 @@ class CreateShipmentControllerTest {
     }
 
     @Test
+    @DisplayName("Depo çalışanı sevkiyat oluşturamaz: 403 (A3)")
+    void shouldRejectWarehouse() {
+        MvcTestResult result = post(TestTokens.token("warehouse").build(), VALID_BODY);
+
+        assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
+        verifyNoInteractions(createShipmentUseCase);
+    }
+
+    @Test
     @DisplayName("Eksik zorunlu alan 400 alır")
     void shouldRejectMissingField() {
         MvcTestResult result =
-                post(TestTokens.token("warehouse").build(), "{\"siteId\": \"" + TestTokens.SITE_ID + "\"}");
+                post(TestTokens.token("manager").build(), "{\"siteId\": \"" + TestTokens.SITE_ID + "\"}");
 
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(createShipmentUseCase);
@@ -99,7 +108,7 @@ class CreateShipmentControllerTest {
         when(createShipmentUseCase.createShipment(any()))
                 .thenThrow(new InvalidNewShipmentException("driverId", "unpaired"));
 
-        MvcTestResult result = post(TestTokens.token("warehouse").build(), VALID_BODY);
+        MvcTestResult result = post(TestTokens.token("manager").build(), VALID_BODY);
 
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("INVALID_SHIPMENT");

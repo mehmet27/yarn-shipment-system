@@ -23,16 +23,17 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'DISCREPANCY_RESOLVE',
     'AUDIT_VIEW',
     'REPORT_VIEW',
+    'BALANCE_VIEW',
   ],
   WAREHOUSE: [
     'MASTER_DATA_VIEW',
     'BAG_CREATE',
     'SHIPMENT_VIEW',
-    'SHIPMENT_CREATE',
     'DISPATCH_RECORD',
     'DISPATCH_VIEW',
     'EVIDENCE_UPLOAD_DISPATCH',
     'EVIDENCE_VIEW',
+    'YARN_RETURN_RECORD',
   ],
   QUALITY: [
     'MASTER_DATA_VIEW',
@@ -46,6 +47,8 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'DISCREPANCY_RESOLVE',
     'AUDIT_VIEW',
     'REPORT_VIEW',
+    'FABRIC_RECEIPT_RECORD',
+    'BALANCE_VIEW',
   ],
   MANAGER: [
     'MASTER_DATA_VIEW',
@@ -60,7 +63,14 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'DISCREPANCY_VIEW',
     'AUDIT_VIEW',
     'REPORT_VIEW',
+    'FABRIC_RECEIPT_RECORD',
+    'YARN_RETURN_RECORD',
+    'FIRE_RATE_EDIT',
+    'INVOICE_MARK',
+    'BALANCE_VIEW',
+    'WEIGHT_MISMATCH_RESOLVE',
   ],
+  GENERAL_MANAGER: ['REPORT_VIEW', 'BALANCE_VIEW'],
 };
 
 const FULL_NAMES: Readonly<Record<Role, string>> = {
@@ -68,6 +78,7 @@ const FULL_NAMES: Readonly<Record<Role, string>> = {
   WAREHOUSE: 'Deniz Depo',
   QUALITY: 'Kemal Kalite',
   MANAGER: 'Yusuf Müdür',
+  GENERAL_MANAGER: 'Gül Genel Müdür',
 };
 
 export const MOCK_ROLES = Object.keys(PERMISSIONS_BY_ROLE).filter(

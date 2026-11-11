@@ -4,7 +4,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const ROLES = ['ADMIN', 'WAREHOUSE', 'QUALITY', 'MANAGER'];
+const ROLES = ['ADMIN', 'WAREHOUSE', 'QUALITY', 'MANAGER', 'GENERAL_MANAGER'];
 const [fileName, role, path, title, ready = title] = process.argv.slice(2);
 
 function fail(message) {

@@ -1,6 +1,15 @@
+import { useCurrentUser } from '@/modules/auth';
 import { Navigate } from 'react-router';
 
-/** Tüm kullanıcılar fabrika personelidir (KR-17); ana sayfa panele yönlenir. */
+/**
+ * Tüm kullanıcılar fabrika personelidir (KR-17). Sevkiyat izni olmayan salt okuma kullanıcısı (genel müdür)
+ * doğrudan raporlara, diğerleri panele gider (FE-SEC-02).
+ */
 export function HomeRedirectPage() {
-  return <Navigate to="/panel" replace />;
+  const { data: user } = useCurrentUser();
+  const isReportOnly =
+    user !== undefined &&
+    !user.permissions.includes('SHIPMENT_VIEW') &&
+    user.permissions.includes('REPORT_VIEW');
+  return <Navigate to={isReportOnly ? '/panel/raporlar' : '/panel'} replace />;
 }

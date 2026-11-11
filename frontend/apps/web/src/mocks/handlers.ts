@@ -23,6 +23,7 @@ import { createLoginAccountHandlers } from './loginAccountHandlers';
 import { createLotHandlers } from './lotHandlers';
 import { createMasterDataHandlers } from './masterDataHandlers';
 import { createReportHandlers } from './reportHandlers';
+import { createSettlementHandlers } from './settlementHandlers';
 import { toBagsView, toHistory } from './shipmentTabs';
 import { isInScope, toDetailView, toPermittedView, toSummary } from './shipmentViews';
 import { createMockUser } from './users';
@@ -272,6 +273,7 @@ export function createHandlers(role: Role) {
     ...createClaimHandlers(role),
     ...createAuditHandlers(createMockUser(role).permissions),
     ...createReportHandlers(createMockUser(role).permissions),
+    ...createSettlementHandlers(createMockUser(role)),
     ...passwordResetHandlers,
     logoutHandler,
   ];

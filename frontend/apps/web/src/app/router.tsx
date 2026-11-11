@@ -1,5 +1,6 @@
 import { RequireAuth, RequirePermission } from '@/modules/auth';
 import { auditPanelRoutes } from '@/modules/audit';
+import { balancePanelRoutes } from '@/modules/balance';
 import { bagPanelRoutes } from '@/modules/bag';
 import { brandingPanelRoutes } from '@/modules/branding';
 import { discrepancyPanelRoutes } from '@/modules/discrepancy';
@@ -30,7 +31,7 @@ const routes: RouteObject[] = [
     path: '/panel',
     element: (
       <RequireAuth errorFallback={<ErrorPage reason="unexpected" />}>
-        <RequirePermission permission="SHIPMENT_VIEW">
+        <RequirePermission permission={['SHIPMENT_VIEW', 'REPORT_VIEW']}>
           <PanelLayout />
         </RequirePermission>
       </RequireAuth>
@@ -45,6 +46,7 @@ const routes: RouteObject[] = [
       ...usersPanelRoutes,
       ...reportPanelRoutes,
       ...auditPanelRoutes,
+      ...balancePanelRoutes,
     ],
   },
   { path: '/sifremi-unuttum', element: <ForgotPasswordPage /> },

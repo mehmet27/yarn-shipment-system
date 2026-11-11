@@ -291,7 +291,7 @@ class LedgerAdaptersTest {
     }
 
     @Test
-    @DisplayName("Haklı itiraz kilosu iplik bakiyesinden düşer ve fire dosyasında itiraz kilosu olur; tekrar etkisizdir")
+    @DisplayName("Haklı itiraz kilosu iplik bakiyesinden düşer, fire dosyasında itiraz kilosu olur; tekrar etkisizdir")
     void shouldDeductJustifiedClaimFromBalanceOnce() {
         // given
         ledger.recordDispatch(SHIPMENT, SUBCONTRACTOR, AT, USER);

@@ -835,7 +835,6 @@
     "role": {
       "ADMIN": "Yönetici",
       "WAREHOUSE": "Depo",
-      "DRIVER": "Şoför",
       "QUALITY": "Kalite",
       "MANAGER": "Müdür",
       "GENERAL_MANAGER": "Genel müdür"

@@ -974,7 +974,7 @@
     },
     "export": {
       "excel": "Excel indir (.xlsx)",
-      "pdf": "PDF / Yazdır",
+      "pdf": "PDF indir",
       "failed": "Rapor hazırlanamadı. Lütfen tekrar deneyin.",
       "onlyDiscrepant": "Yalnızca uyuşmazlıklılar",
       "allRows": "Tüm satırlar",

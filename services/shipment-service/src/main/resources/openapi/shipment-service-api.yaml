@@ -2903,7 +2903,7 @@ components:
           $ref: '#/components/schemas/PageMetadata'
     PackagingType:
       type: string
-      enum: [BAG, BOX, PALLET, BOBBIN]
+      enum: [BAG]
     Pct:
       description: İki ondalıklı yüzde, dize olarak (API-03); sapmada işaretli olabilir
       type: string

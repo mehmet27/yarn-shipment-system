@@ -69,10 +69,10 @@ class CreateBagsServiceTest {
         LockedLot lot = ProductionFixtures.lot(TestTokens.SITE_ID);
         List<Bag> created = List.of(ProductionFixtures.bag("BAG-AAAA-0001", BagStatus.CREATED));
         when(lots.findLocked(LOT_ID)).thenReturn(Optional.of(lot));
-        when(creations.create(new BagCreationPort.NewBags(lot, PackageType.BOX, 1), actor.userId(), CLOCK.instant()))
+        when(creations.create(new BagCreationPort.NewBags(lot, PackageType.BAG, 1), actor.userId(), CLOCK.instant()))
                 .thenReturn(created);
 
-        assertThat(create.createBags(new CreateBagsCommand(actor, LOT_ID, PackageType.BOX, 1)))
+        assertThat(create.createBags(new CreateBagsCommand(actor, LOT_ID, PackageType.BAG, 1)))
                 .isEqualTo(created);
     }
 }

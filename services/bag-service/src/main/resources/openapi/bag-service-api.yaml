@@ -325,7 +325,7 @@ components:
           type: string
     PackageType:
       type: string
-      enum: [BAG, BOX, PALLET, BOBBIN]
+      enum: [BAG]
     BagStatus:
       type: string
       enum: [CREATED, RESERVED, SHIPPED, DELIVERED, VOID]

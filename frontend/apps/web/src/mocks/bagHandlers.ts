@@ -55,9 +55,6 @@ function seedBags(): Map<string, LabeledBagView[]> {
 
 const KEY_PREFIX: Record<PackageType, string> = {
   BAG: 'BAG',
-  BOX: 'BOX',
-  PALLET: 'PAL',
-  BOBBIN: 'BOB',
 };
 
 type CreateBody = { lotId: string; packageType: PackageType; count: number };

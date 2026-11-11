@@ -189,7 +189,7 @@ export function createMasterDataHandlers(permissions: readonly Permission[]) {
   ];
 }
 
-const PACKAGING_TYPES = ['BAG', 'BOX', 'PALLET', 'BOBBIN'] as const;
+const PACKAGING_TYPES = ['BAG'] as const;
 
 /** Standart dara: liste herkese açık, tanımlama (PUT) yalnızca yönetici. */
 function tareStandardHandlers(canManage: boolean) {

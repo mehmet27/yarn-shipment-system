@@ -376,10 +376,7 @@
       "invalidSite": "Lokasyon seçin.",
       "failed": "Standart kaydedilemedi. Bilgileri kontrol edip tekrar deneyin.",
       "types": {
-        "BAG": "Çuval",
-        "BOX": "Koli",
-        "PALLET": "Palet",
-        "BOBBIN": "Bobin"
+        "BAG": "Çuval"
       }
     },
     "created": "Kayıt eklendi.",
@@ -727,7 +724,7 @@
   },
   "bag": {
     "title": "Çuval ve etiket",
-    "intro": "Kalitesi kilitlenmiş partiye çuval, koli, palet ya da bobin oluşturun, etiketlerini basın. Ambalajın partisi ve kalitesi partiden gelir. Etiketin üstünde ve anahtarın başında ambalaj türü yazar.",
+    "intro": "Kalitesi kilitlenmiş partiye çuval oluşturun, etiketlerini basın. Ambalajın partisi ve kalitesi partiden gelir. Etiketin üstünde ve anahtarın başında ambalaj türü (çuval) yazar.",
     "lot": "Parti",
     "lotOption": "{{lotNo}} · Kalite {{grade}} · {{count}} ambalaj",
     "noLots": "Ambalaj oluşturulabilecek parti yok. Önce partinin kalitesi kilitlenmeli.",
@@ -773,16 +770,10 @@
     "noEmbed": "Bu cihaz etiketleri sayfa içinde gösteremiyor. PDF'i yeni sekmede açın ya da indirip yazdırın.",
     "close": "Kapat",
     "packageTypesLower": {
-      "BAG": "çuval",
-      "BOX": "koli",
-      "PALLET": "palet",
-      "BOBBIN": "bobin"
+      "BAG": "çuval"
     },
     "packageTypes": {
-      "BAG": "Çuval",
-      "BOX": "Koli",
-      "PALLET": "Palet",
-      "BOBBIN": "Bobin"
+      "BAG": "Çuval"
     },
     "statuses": {
       "CREATED": "Depoda",

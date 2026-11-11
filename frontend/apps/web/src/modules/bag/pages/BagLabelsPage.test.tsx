@@ -46,17 +46,6 @@ describe('Çuval ve etiket ekranı', () => {
     });
   });
 
-  it('koli seçilince düğme, mesaj ve anahtar öneki koli olur', async () => {
-    server.use(...createHandlers('WAREHOUSE'));
-    renderApp('/panel/cuvallar');
-    await userEvent.click(await screen.findByRole('combobox', { name: 'Ambalaj' }));
-    await userEvent.click(await screen.findByRole('option', { name: 'Koli' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Koli oluştur' }));
-
-    expect(await screen.findByRole('status')).toHaveTextContent(/^10 koli oluşturuldu/);
-    expect(await screen.findAllByText(/^BOX-/)).toHaveLength(10);
-  });
-
   it('kalitesi kilitlenmemiş parti için anlaşılır uyarı gösterir, çuval eklemez', async () => {
     server.use(
       http.post(BAGS_PATH, () =>

@@ -57,7 +57,7 @@ class BagAssignmentAdapterTest {
                 DRAFT,
                 List.of(
                         new ReservedBag(UUID.randomUUID(), "BAG-0001", PackageType.BAG, "P-2026-0001", "A"),
-                        new ReservedBag(UUID.randomUUID(), "BAG-0002", PackageType.BOX, "P-2026-0001", "A")),
+                        new ReservedBag(UUID.randomUUID(), "BAG-0002", PackageType.BAG, "P-2026-0001", "A")),
                 ScanMethod.LIST);
 
         int first = assignments.assign(assignment, ACTOR, NOW);

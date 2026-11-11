@@ -1,6 +1,6 @@
 import type { PackagingType, TareStandardSaveRequest } from '@iplik/api-client';
 
-export const PACKAGING_TYPES: readonly PackagingType[] = ['BAG', 'BOX', 'PALLET', 'BOBBIN'];
+export const PACKAGING_TYPES: readonly PackagingType[] = ['BAG'];
 
 export type TareStandardDraft = {
   siteId: string;

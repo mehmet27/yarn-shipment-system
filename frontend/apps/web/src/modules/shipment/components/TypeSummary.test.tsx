@@ -13,9 +13,9 @@ function renderWith(types: string[]) {
 
 describe('TypeSummary', () => {
   it('ambalajları türe göre sayar', () => {
-    renderWith(['BAG', 'BOX', 'BAG']);
+    renderWith(['BAG', 'BAG', 'BAG']);
 
-    expect(screen.getByText('Türe göre: 2 Çuval, 1 Koli')).toBeInTheDocument();
+    expect(screen.getByText('Türe göre: 3 Çuval')).toBeInTheDocument();
   });
 
   it('tür bilgisi yoksa hiçbir şey çizmez', () => {

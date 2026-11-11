@@ -18,7 +18,7 @@ final class UniqueKeyGenerator {
 
     private final SecureRandom random = new SecureRandom();
 
-    /** Anahtarın öneki ambalaj türünü söyler (BAG-, BOX-, PAL-, BOB-); etiket okunmadan da tür ayırt edilir. */
+    /** Anahtarın öneki ambalaj türünü söyler (BAG-); etiket okunmadan da tür ayırt edilir. */
     String next(PackageType packageType) {
         StringBuilder key = new StringBuilder(prefix(packageType));
         for (int group = 0; group < GROUP_COUNT; group++) {
@@ -35,9 +35,6 @@ final class UniqueKeyGenerator {
     static String prefix(PackageType packageType) {
         return switch (packageType) {
             case BAG -> "BAG-";
-            case BOX -> "BOX-";
-            case PALLET -> "PAL-";
-            case BOBBIN -> "BOB-";
         };
     }
 }

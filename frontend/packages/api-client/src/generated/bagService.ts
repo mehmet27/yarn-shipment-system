@@ -27,9 +27,6 @@ export type PackageType = typeof PackageType[keyof typeof PackageType];
 
 export const PackageType = {
   BAG: 'BAG',
-  BOX: 'BOX',
-  PALLET: 'PALLET',
-  BOBBIN: 'BOBBIN',
 } as const;
 
 export type BagStatus = typeof BagStatus[keyof typeof BagStatus];

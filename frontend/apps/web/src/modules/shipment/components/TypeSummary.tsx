@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Text } from '@iplik/ui';
 
-/** Ambalaj türüne göre adetler: "2 Çuval, 1 Koli". Tür bilgisi yoksa hiçbir şey çizilmez. */
+/** Ambalaj türüne göre adetler: "3 Çuval". Tür bilgisi yoksa hiçbir şey çizilmez. */
 export function TypeSummary({ types }: { types: readonly string[] }) {
   const { t } = useTranslation();
   const counts = new Map<string, number>();

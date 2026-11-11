@@ -16,8 +16,11 @@ import com.yarnshipment.shipment.application.port.in.ShipmentDetails;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.in.ShipmentPage;
 import com.yarnshipment.shipment.application.port.in.ShipmentPage.ShipmentListItem;
+import com.yarnshipment.shipment.application.port.in.stock.GetWorkAreaUseCase;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
+import com.yarnshipment.shipment.domain.stock.WorkArea;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +43,9 @@ class ShipmentControllerTest {
     private static final int PAGE_SIZE = 20;
 
     private final MockMvcTester mvc;
+
+    @MockitoBean
+    private GetWorkAreaUseCase workAreaUseCase;
 
     @MockitoBean
     private ListShipmentsUseCase listShipmentsUseCase;
@@ -169,6 +175,26 @@ class ShipmentControllerTest {
         assertThat(result).bodyJson().extractingPath("$.fullName").isEqualTo("Test Kullanıcı");
         assertThat(result).bodyJson().extractingPath("$.roles[0]").isEqualTo("QUALITY");
         assertThat(result).bodyJson().extractingPath("$.permissions").asArray().contains("QUALITY_CLAIM_OPEN");
+    }
+
+    @Test
+    @DisplayName("Fasoncu kalitesine merkez stok izinleri gösterilmez, çalışma alanı döner")
+    void shouldHideOtherAreaPermissions() {
+        // given
+        when(workAreaUseCase.restrictedTo(any())).thenReturn(Optional.of(WorkArea.SUBCONTRACTOR));
+
+        // when
+        MvcTestResult result = get("/api/v1/me", TestTokens.token("quality").build());
+
+        // then
+        assertThat(result).hasStatusOk();
+        assertThat(result).bodyJson().extractingPath("$.workArea").isEqualTo("SUBCONTRACTOR");
+        assertThat(result)
+                .bodyJson()
+                .extractingPath("$.permissions")
+                .asArray()
+                .doesNotContain("CENTRAL_STOCK_VIEW", "CENTRAL_PRODUCTION_RECORD")
+                .contains("FABRIC_RECEIPT_RECORD");
     }
 
     @Test

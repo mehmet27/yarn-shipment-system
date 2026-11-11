@@ -9,7 +9,9 @@ import com.yarnshipment.shipment.adapter.in.web.ledger.LedgerRequests.YarnReceip
 import com.yarnshipment.shipment.application.port.in.stock.GetCentralStockUseCase;
 import com.yarnshipment.shipment.application.port.in.stock.RecordCentralProductionUseCase;
 import com.yarnshipment.shipment.application.port.in.stock.RecordYarnReceiptUseCase;
+import com.yarnshipment.shipment.application.port.in.stock.RequireWorkAreaUseCase;
 import com.yarnshipment.shipment.domain.fabric.YarnShare;
+import com.yarnshipment.shipment.domain.stock.WorkArea;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,21 +31,25 @@ public class CentralStockController {
     private final RecordYarnReceiptUseCase recordReceipt;
     private final RecordCentralProductionUseCase recordProduction;
     private final CurrentActorProvider currentActorProvider;
+    private final RequireWorkAreaUseCase workAreas;
 
     public CentralStockController(
             GetCentralStockUseCase getStock,
             RecordYarnReceiptUseCase recordReceipt,
             RecordCentralProductionUseCase recordProduction,
-            CurrentActorProvider currentActorProvider) {
+            CurrentActorProvider currentActorProvider,
+            RequireWorkAreaUseCase workAreas) {
         this.stockUseCase = getStock;
         this.recordReceipt = recordReceipt;
         this.recordProduction = recordProduction;
         this.currentActorProvider = currentActorProvider;
+        this.workAreas = workAreas;
     }
 
     @GetMapping
     @PreAuthorize("hasAuthority('CENTRAL_STOCK_VIEW')")
     public ResponseEntity<CentralStockView> getStock() {
+        workAreas.requireAccess(currentActorProvider.getCurrentActor(), WorkArea.CENTRAL);
         return ResponseEntity.ok(
                 CentralStockViews.stock(stockUseCase.getCentralStock(currentActorProvider.getCurrentActor())));
     }
@@ -63,6 +69,7 @@ public class CentralStockController {
     @PostMapping("/productions")
     @PreAuthorize("hasAuthority('CENTRAL_PRODUCTION_RECORD')")
     public ResponseEntity<CentralProductionView> recordProduction(@RequestBody CentralProductionRequest request) {
+        workAreas.requireAccess(currentActorProvider.getCurrentActor(), WorkArea.CENTRAL);
         List<YarnShare> yarns = request.yarns() == null
                 ? List.of()
                 : request.yarns().stream()

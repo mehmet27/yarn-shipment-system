@@ -17,3 +17,9 @@ export function asStaffRole(role: string | null): StaffRole | undefined {
 export function hasChangeableRole(account: LoginAccountView): boolean {
   return account.roles.length > 0 && account.roles.every((role) => asStaffRole(role) !== undefined);
 }
+
+/** Çalışma alanı (merkez / fasoncu) yalnız kalite rolünde sorulur. */
+const WORK_AREA_ROLES: readonly StaffRole[] = ['QUALITY'];
+export function needsWorkArea(role: StaffRole | undefined): boolean {
+  return role !== undefined && WORK_AREA_ROLES.includes(role);
+}

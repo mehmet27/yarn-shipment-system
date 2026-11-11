@@ -13,6 +13,7 @@ import com.yarnshipment.shipment.application.port.in.fabric.RecordFabricReceiptU
 import com.yarnshipment.shipment.application.port.in.fire.FireSettlementDetails;
 import com.yarnshipment.shipment.application.port.in.fire.GetFireSettlementUseCase;
 import com.yarnshipment.shipment.application.port.in.fire.ListFireSettlementsUseCase;
+import com.yarnshipment.shipment.application.port.in.stock.RequireWorkAreaUseCase;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
 import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.fire.FireCalculation;
@@ -60,6 +61,9 @@ class LedgerControllersTest {
 
     @MockitoBean
     private ListFireSettlementsUseCase listFireSettlementsUseCase;
+
+    @MockitoBean
+    private RequireWorkAreaUseCase workAreaUseCase;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

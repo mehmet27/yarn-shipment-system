@@ -8,7 +8,9 @@ import com.yarnshipment.shipment.application.port.in.fabric.ListFabricReceiptsUs
 import com.yarnshipment.shipment.application.port.in.fabric.RecordFabricReceiptCommand;
 import com.yarnshipment.shipment.application.port.in.fabric.RecordFabricReceiptUseCase;
 import com.yarnshipment.shipment.application.port.in.fabric.ShipmentRecordsQuery;
+import com.yarnshipment.shipment.application.port.in.stock.RequireWorkAreaUseCase;
 import com.yarnshipment.shipment.domain.fabric.YarnShare;
+import com.yarnshipment.shipment.domain.stock.WorkArea;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -29,19 +31,23 @@ public class FabricReceiptController {
     private final ListFabricReceiptsUseCase listFabricReceiptsUseCase;
     private final RecordFabricReceiptUseCase recordFabricReceiptUseCase;
     private final CurrentActorProvider currentActorProvider;
+    private final RequireWorkAreaUseCase workAreas;
 
     public FabricReceiptController(
             ListFabricReceiptsUseCase listFabricReceiptsUseCase,
             RecordFabricReceiptUseCase recordFabricReceiptUseCase,
-            CurrentActorProvider currentActorProvider) {
+            CurrentActorProvider currentActorProvider,
+            RequireWorkAreaUseCase workAreas) {
         this.listFabricReceiptsUseCase = listFabricReceiptsUseCase;
         this.recordFabricReceiptUseCase = recordFabricReceiptUseCase;
         this.currentActorProvider = currentActorProvider;
+        this.workAreas = workAreas;
     }
 
     @GetMapping
     @PreAuthorize("hasAuthority('SHIPMENT_VIEW')")
     public ResponseEntity<List<FabricReceiptView>> listFabricReceipts(@PathVariable UUID shipmentId) {
+        workAreas.requireAccess(currentActorProvider.getCurrentActor(), WorkArea.SUBCONTRACTOR);
         ShipmentRecordsQuery query = new ShipmentRecordsQuery(currentActorProvider.getCurrentActor(), shipmentId);
         return ResponseEntity.ok(listFabricReceiptsUseCase.listFabricReceipts(query).stream()
                 .map(FabricViews::fabricReceipt)
@@ -52,6 +58,7 @@ public class FabricReceiptController {
     @PreAuthorize("hasAuthority('FABRIC_RECEIPT_RECORD')")
     public ResponseEntity<FabricReceiptView> recordFabricReceipt(
             @PathVariable UUID shipmentId, @RequestBody FabricReceiptRequest request) {
+        workAreas.requireAccess(currentActorProvider.getCurrentActor(), WorkArea.SUBCONTRACTOR);
         List<YarnShare> yarns = request.yarns() == null
                 ? null
                 : request.yarns().stream().map(FabricReceiptController::toShare).toList();

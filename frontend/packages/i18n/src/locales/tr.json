@@ -785,7 +785,8 @@
         "fullName": "Ad ve soyadı girin.",
         "role": "Bir rol seçin.",
         "record": "Bağlanacak kaydı seçin.",
-        "password": "Şifre en az 8 karakter olmalı."
+        "password": "Şifre en az 8 karakter olmalı.",
+        "workArea": "Çalışma alanını seçin."
       },
       "errors": {
         "LOGIN_ACCOUNT_EXISTS": "Bu giriş adı başka bir hesapta kullanılıyor.",
@@ -826,7 +827,8 @@
         "subcontractor": "Fasoncu kaydı"
       },
       "recordHint": "Hesap bu kaydın sevkiyatlarını görür.",
-      "password": "İlk şifre"
+      "password": "İlk şifre",
+      "workArea": "Çalışma alanı"
     },
     "status": {
       "enabled": "Etkin",
@@ -873,6 +875,11 @@
         "LOGIN_ACCOUNT_UNAVAILABLE": "Giriş sistemine ulaşılamadı; şifre değişmedi. Lütfen tekrar deneyin.",
         "unknown": "Şifre verilemedi. Lütfen tekrar deneyin."
       }
+    },
+    "workAreaHint": "Merkez kalite yalnız merkez fabrikanın kumaşını, fasoncu kalite yalnız fasoncuların kumaşını görür.",
+    "workArea": {
+      "CENTRAL": "Merkez fabrika",
+      "SUBCONTRACTOR": "Fasoncular"
     }
   },
   "report": {

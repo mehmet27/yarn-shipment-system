@@ -101,6 +101,7 @@ export type {
   SetLoginAccountPasswordRequest,
   StaffLoginAccountRequest,
   StaffRole,
+  WorkArea,
 } from './masterData';
 export { CorrectionTarget, listCorrections, recordCorrection } from './masterData';
 export type { CorrectionListResponse, CorrectionView, RecordCorrectionRequest } from './masterData';

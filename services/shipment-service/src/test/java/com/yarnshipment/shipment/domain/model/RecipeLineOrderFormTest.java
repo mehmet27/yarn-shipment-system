@@ -28,8 +28,8 @@ class RecipeLineOrderFormTest {
         RecipeLine line = orderLine("21");
 
         assertThat(line.orderSpec().fabricType()).isEqualTo("30/150 Penye Beyaz");
-        assertThat(line.orderSpec().unitPrice()).isEqualByComparingTo("21.0000");
-        assertThat(line.orderSpec().unitPrice().scale()).isEqualTo(PRICE_SCALE);
+        assertThat(line.orderSpec().unitPrice()).isNotNull().isEqualByComparingTo("21.0000");
+        assertThat(line.orderSpec().unitPrice()).hasScaleOf(PRICE_SCALE);
     }
 
     @Test

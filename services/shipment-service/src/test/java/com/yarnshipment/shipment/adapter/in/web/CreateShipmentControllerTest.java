@@ -77,7 +77,7 @@ class CreateShipmentControllerTest {
     @Test
     @DisplayName("Oluşturma izni olmayan kullanıcı 403 alır")
     void shouldRejectUserWithoutCreatePermission() {
-        MvcTestResult result = post(TestTokens.subcontractorToken(), VALID_BODY);
+        MvcTestResult result = post(TestTokens.token("offline_access").build(), VALID_BODY);
 
         assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
         verifyNoInteractions(createShipmentUseCase);

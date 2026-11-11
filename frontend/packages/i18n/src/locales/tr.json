@@ -17,7 +17,6 @@
   "nav": {
     "panel": "Yönetim Paneli",
     "toggle": "Yan menü",
-    "field": "Saha",
     "shipments": "Sevkiyatlar",
     "masterData": "Tanımlar",
     "discrepancies": "Uyuşmazlıklar",
@@ -193,13 +192,6 @@
         "unknown": "Sevkiyat tamamlanamadı. Lütfen tekrar deneyin."
       }
     }
-  },
-  "field": {
-    "myShipments": "Bana atanan sevkiyatlar",
-    "empty": "Size atanmış sevkiyat yok.",
-    "bagCount": "Çuval sayısı",
-    "actionFailed": "İşlem kaydedilemedi. Lütfen tekrar deneyin.",
-    "back": "Listeye dön"
   },
   "dispatch": {
     "title": "Çıkış tartısı",
@@ -610,7 +602,7 @@
   "claim": {
     "title": "Kalite itirazı",
     "empty": "Bu sevkiyatta kalite itirazı yok.",
-    "notAvailable": "Sevkiyat irsaliyeyle tamamlanmadan kalite itirazı açılamaz.",
+    "notAvailable": "Kalite itirazı yalnızca tamamlanmış sevkiyatta açılır.",
     "ofDiscrepancy": "İtiraz dosyası",
     "window": {
       "open": "İtiraz süresi {{deadline}} tarihinde biter.",
@@ -619,7 +611,9 @@
     "open": {
       "start": "Kalite itirazı aç",
       "title": "Yeni kalite itirazı",
-      "bags": "İtiraz edilen çuvallar",
+      "claimedKg": "İtiraz edilen kilo (kg)",
+      "claimedKgHint": "Sevkiyatın net ağırlığını aşamaz; en çok 3 ondalık.",
+      "claimedKgInvalid": "0'dan büyük, en çok 3 ondalıklı bir kilo girin.",
       "description": "Sorunu anlatın",
       "photos": "Fotoğraflar",
       "photosDone": "{{count}} fotoğraf eklendi.",
@@ -627,7 +621,8 @@
       "submit": "İtirazı gönder"
     },
     "card": {
-      "bags": "Çuvallar",
+      "claimedKg": "İtiraz edilen kilo",
+      "adjustedKg": "Düzeltilen kilo",
       "photos": "{{count}} fotoğraf",
       "openedAt": "Açıldı"
     },
@@ -650,9 +645,9 @@
     },
     "errors": {
       "QUALITY_CLAIM_NOT_AVAILABLE": "Bu sevkiyata henüz itiraz açılamaz.",
-      "QUALITY_CLAIM_WINDOW_CLOSED": "İtiraz süresi doldu; teslimden sonra 3 iş günü içinde açılabilir.",
-      "QUALITY_CLAIM_BAG_NOT_DELIVERED": "Seçilen çuval bu sevkiyatta teslim edilmemiş.",
-      "QUALITY_CLAIM_BAG_ALREADY_CLAIMED": "Seçilen çuvallardan birine zaten itiraz açılmış.",
+      "QUALITY_CLAIM_WINDOW_CLOSED": "İtiraz süresi doldu; sevkiyatın tamamlanmasından sonra 3 iş günü içinde açılabilir.",
+      "CLAIM_EXCEEDS_SHIPMENT_WEIGHT": "İtiraz edilen kilo sevkiyatın net ağırlığını aşıyor.",
+      "QUALITY_CLAIM_EXCEEDS_SHIPMENT_WEIGHT": "İtiraz edilen kilo sevkiyatın net ağırlığını aşıyor.",
       "QUALITY_CLAIM_EVIDENCE_REQUIRED": "En az bir fotoğraf ekleyin.",
       "QUALITY_CLAIM_EVIDENCE_INVALID": "Eklenen dosya bu sevkiyata ait değil ya da türü uygun değil.",
       "QUALITY_CLAIM_INSPECTION_RECORDED": "Bu kontrolün sonucu zaten girilmiş.",
@@ -845,7 +840,6 @@
       "ADMIN": "Yönetici",
       "WAREHOUSE": "Depo",
       "DRIVER": "Şoför",
-      "SUBCONTRACTOR": "Fasoncu",
       "QUALITY": "Kalite",
       "MANAGER": "Müdür",
       "GENERAL_MANAGER": "Genel müdür"

@@ -6,6 +6,7 @@ import com.yarnshipment.discrepancy.domain.claim.ClaimTarget;
 import com.yarnshipment.discrepancy.domain.claim.Inspection;
 import com.yarnshipment.discrepancy.domain.claim.InspectionKind;
 import com.yarnshipment.discrepancy.domain.claim.QualityClaim;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +19,7 @@ public final class TestClaims {
     public static final UUID PHOTO = UUID.fromString("0192f0a0-0000-7000-8000-0000000c0003");
     public static final UUID LAB_DOCUMENT = UUID.fromString("0192f0a0-0000-7000-8000-0000000c0004");
     public static final UUID ACTOR = UUID.fromString("0192f0a0-0000-7000-8000-0000000c0005");
-    /** Teslim cuma; itiraz süresi çarşamba 12:00'ye (İstanbul) kadar. */
+    /** Tamamlanma cuma; itiraz süresi çarşamba 12:00'ye (İstanbul) kadar. */
     public static final Instant RECEIVED_AT = TestComparisons.RECEIVED_AT;
 
     public static final Instant WITHIN_WINDOW = Instant.parse("2026-10-26T09:00:00Z");
@@ -32,10 +33,10 @@ public final class TestClaims {
                 TestTokens.SUBCONTRACTOR_ID,
                 TestComparisons.SHIPMENT_NO,
                 RECEIVED_AT,
-                TestComparisons.KEYS);
+                TestComparisons.DISPATCH_KG);
     }
 
-    public static QualityClaim claim(List<String> bagKeys) {
+    public static QualityClaim claim() {
         return new QualityClaim(
                 CLAIM_ID,
                 TestDiscrepancies.ID,
@@ -43,7 +44,8 @@ public final class TestClaims {
                 TestTokens.SUBCONTRACTOR_ID,
                 new QualityClaim.Opening(ACTOR, WITHIN_WINDOW, target().deadline()),
                 "B kalite çıktı",
-                bagKeys,
+                new BigDecimal("120.500"),
+                null,
                 List.of(PHOTO));
     }
 

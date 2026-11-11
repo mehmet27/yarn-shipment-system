@@ -4,16 +4,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const ROLES = [
-  'ADMIN',
-  'WAREHOUSE',
-  'DRIVER',
-  'SUBCONTRACTOR',
-  'QUALITY',
-  'MANAGER',
-  'GENERAL_MANAGER',
-];
-const FIELD_ROLES = ['DRIVER', 'SUBCONTRACTOR'];
+const ROLES = ['ADMIN', 'WAREHOUSE', 'QUALITY', 'MANAGER', 'GENERAL_MANAGER'];
 const [fileName, role, path, title, ready = title] = process.argv.slice(2);
 
 function fail(message) {
@@ -31,7 +22,7 @@ if (!path.startsWith('/')) fail(`Yol / ile başlamalı: ${path}`);
 const specUrl = new URL(`../apps/web/e2e/screens/${fileName}.e2e.ts`, import.meta.url);
 if (existsSync(specUrl)) fail(`Zaten var: apps/web/e2e/screens/${fileName}.e2e.ts`);
 
-const tag = FIELD_ROLES.includes(role) ? '@saha' : '@panel';
+const tag = '@panel';
 const quote = (text) => `'${text.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
 
 writeFileSync(

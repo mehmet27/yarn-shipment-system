@@ -27,7 +27,6 @@ public final class RolePermissionMatrix {
         Map<Role, Set<Permission>> matrix = new EnumMap<>(Role.class);
         matrix.put(Role.ADMIN, permissionsForAdmin());
         matrix.put(Role.WAREHOUSE, permissionsForWarehouse());
-        matrix.put(Role.SUBCONTRACTOR, permissionsForSubcontractor());
         matrix.put(Role.QUALITY, permissionsForQuality());
         matrix.put(Role.MANAGER, permissionsForManager());
         matrix.put(Role.GENERAL_MANAGER, EnumSet.of(Permission.REPORT_VIEW, Permission.BALANCE_VIEW));
@@ -48,6 +47,7 @@ public final class RolePermissionMatrix {
                 Permission.SHIPMENT_CANCEL,
                 Permission.SHIPMENT_COMPLETE,
                 Permission.DISPATCH_VIEW,
+                Permission.EVIDENCE_UPLOAD_CLAIM,
                 Permission.EVIDENCE_VIEW,
                 Permission.EVIDENCE_INVALIDATE,
                 Permission.CORRECTION_CREATE,
@@ -69,16 +69,6 @@ public final class RolePermissionMatrix {
                 Permission.EVIDENCE_UPLOAD_DISPATCH,
                 Permission.EVIDENCE_VIEW,
                 Permission.YARN_RETURN_RECORD);
-    }
-
-    private static Set<Permission> permissionsForSubcontractor() {
-        return EnumSet.of(
-                Permission.SHIPMENT_VIEW,
-                Permission.DISPATCH_VIEW,
-                Permission.EVIDENCE_UPLOAD_CLAIM,
-                Permission.EVIDENCE_VIEW,
-                Permission.QUALITY_CLAIM_OPEN,
-                Permission.DISCREPANCY_VIEW);
     }
 
     private static Set<Permission> permissionsForQuality() {
@@ -107,7 +97,9 @@ public final class RolePermissionMatrix {
                 Permission.SHIPMENT_CANCEL,
                 Permission.SHIPMENT_COMPLETE,
                 Permission.DISPATCH_VIEW,
+                Permission.EVIDENCE_UPLOAD_CLAIM,
                 Permission.EVIDENCE_VIEW,
+                Permission.QUALITY_CLAIM_OPEN,
                 Permission.DISCREPANCY_VIEW,
                 Permission.AUDIT_VIEW,
                 Permission.REPORT_VIEW,

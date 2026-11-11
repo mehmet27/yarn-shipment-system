@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Rapor kapsamını çözer (SEC-03): yalnızca iç kullanıcılar rapor görür ve yalnızca yetkili oldukları lokasyonları.
- * Şoför ve fasoncu ile {@code site_ids} claim'i boş kullanıcı boş sonuç alır.
+ * Şoför ile {@code site_ids} claim'i boş kullanıcı boş sonuç alır.
  */
 @Component
 final class ReportAccess {
@@ -26,9 +26,8 @@ final class ReportAccess {
     Optional<ReportScope> scopeOf(ReportQuery query) {
         Actor actor = query.actor();
         AccessScope scope = scopeGuard.scopeOf(actor);
-        boolean external = scope.subcontractorId() != null;
         boolean noSites = !scope.allSites() && scope.siteIds().isEmpty();
-        if (external || noSites) {
+        if (noSites) {
             return Optional.empty();
         }
         if (query.siteId() != null && !scope.allSites() && !scope.siteIds().contains(query.siteId())) {

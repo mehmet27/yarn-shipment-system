@@ -42,7 +42,6 @@ public class CurrentUserController implements CurrentUserApi {
                         .toList())
                 .permissions(permissions(actor))
                 .siteIds(List.copyOf(actor.siteIds()))
-                .subcontractorId(actor.subcontractorId())
                 .mfaVerified(actor.mfaVerified());
         return ResponseEntity.ok(response);
     }

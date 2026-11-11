@@ -5,12 +5,6 @@ import { useState } from 'react';
 import { ClaimCard } from './ClaimCard';
 import { OpenClaimForm } from './OpenClaimForm';
 
-/** Teslimde okutulmuş ve henüz itiraz edilmemiş anahtarlar. */
-function unclaimedKeys(view: ShipmentClaimsView): string[] {
-  const claimed = new Set(view.claims.flatMap((claim) => claim.bagKeys));
-  return view.deliveredKeys.filter((key) => !claimed.has(key));
-}
-
 /** İtiraz süresi, yeni itiraz formu ve açılmış itirazlar. */
 export function ShipmentClaims({
   shipmentId,
@@ -41,7 +35,6 @@ export function ShipmentClaims({
       {canOpen && isOpening && (
         <OpenClaimForm
           shipmentId={shipmentId}
-          bagKeys={unclaimedKeys(view)}
           onDone={() => {
             setOpening(false);
           }}

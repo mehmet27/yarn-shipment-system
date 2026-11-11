@@ -12,7 +12,7 @@ info:
     - Zamanlar ISO 8601 UTC, dönem tarihleri Europe/Istanbul takvim günüdür (API-03).
     - Dönem verilmezse son 30 gün alınır. Sevkiyat ölçütleri sevkiyatın oluşturulma gününe, eşleşme raporu
       karşılaştırma gününe göre sayılır.
-    - Kullanıcı yalnızca yetkili olduğu lokasyonların verisini görür (SEC-03). Şoför ve fasoncu rapor görmez.
+    - Kullanıcı yalnızca yetkili olduğu lokasyonların verisini görür (SEC-03). Şoför rapor görmez.
     - Raporlar kişileri etiketlemez; olgusal göstergelerdir. Şoför, fasoncu ve parti kimlikleri döner, adlar tanım
       servislerinden çözülür.
 servers:

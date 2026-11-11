@@ -7,7 +7,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
-import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountRoleLockedException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffAccountSpec;
@@ -125,15 +124,8 @@ class KeycloakStaffAccountAdapterTest {
     }
 
     @Test
-    @DisplayName("Fasoncu hesabının rolü değiştirilemez; kullanıcı yoksa LoginAccountNotFoundException")
+    @DisplayName("Kullanıcı yoksa LoginAccountNotFoundException")
     void shouldRefuseRoleChangeForBoundOrMissingAccounts() throws Exception {
-        userRoles = "[{\"id\":\"r-4\",\"name\":\"subcontractor\"}]";
-        KeycloakStaffAccountAdapter bound = adapter("secret");
-        assertThatThrownBy(() -> bound.changeStaffRole(UUID.fromString(USER_ID), StaffRole.ADMIN))
-                .isInstanceOf(LoginAccountRoleLockedException.class);
-        assertThat(calls).noneMatch(call -> call.startsWith("POST " + USERS + "/" + USER_ID));
-        stopServer();
-
         userRolesStatus = NOT_FOUND;
         KeycloakStaffAccountAdapter missing = adapter("secret");
         assertThatThrownBy(() -> missing.changeStaffRole(UUID.fromString(USER_ID), StaffRole.ADMIN))

@@ -92,9 +92,9 @@ class MasterDataAdapterTest {
     @Test
     @DisplayName("Lokasyonlar kapsama göre süzülür; kapsamsız kullanıcı boş sayfa alır")
     void shouldFilterSitesByScope() {
-        var scoped = adapter.findSites(new AccessScope(Set.of(SITE_A), null, false), query(null));
+        var scoped = adapter.findSites(new AccessScope(Set.of(SITE_A), false), query(null));
         var unrestricted = adapter.findSites(AccessScope.UNRESTRICTED, query(null));
-        var none = adapter.findSites(new AccessScope(Set.of(), null, false), query(null));
+        var none = adapter.findSites(new AccessScope(Set.of(), false), query(null));
 
         assertThat(scoped.items()).extracting(Site::id).containsExactly(SITE_A);
         assertThat(unrestricted.totalElements()).isEqualTo(SAMPLE_SITES);

@@ -480,46 +480,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /api/v1/master-data/subcontractors/{subcontractorId}/login-account:
-    post:
-      tags: [SubcontractorManagement]
-      operationId: createSubcontractorLoginAccount
-      summary: Fasoncu için giriş hesabı açar
-      description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Keycloak'ta kullanıcıyı şifresiz; rol, telefon ve kimlik/lokasyon
-        öznitelikleriyle açar. Şifre üretilmez ve hiçbir yanıtta yer almaz: kişiye SMS ile bir kod gider, kişi giriş
-        sayfasındaki "Şifremi unuttum" ile kodu girip kendi şifresini belirler. SMS gidemezse 502 `SMS_UNAVAILABLE`
-        (hesap açık kalır; yönetici sıfırlamayı yeniden başlatır). Kayıt etkin olmalı, `siteIds` etkin lokasyonlardan oluşmalıdır (`INVALID_MASTER_DATA`). Kayıt için
-        hesap zaten varsa ya da giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak'a ulaşılamazsa ya da
-        yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
-      parameters:
-        - name: subcontractorId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginAccountRequest'
-      responses:
-        '201':
-          description: Hesap açıldı, şifre belirleme kodu SMS'le gönderildi
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '502':
-          $ref: '#/components/responses/BadGateway'
+
   /api/v1/master-data/login-accounts:
     get:
       tags: [LoginAccounts]
@@ -2097,7 +2058,7 @@ components:
       example: '1982.500'
     Role:
       type: string
-      enum: [ADMIN, WAREHOUSE, SUBCONTRACTOR, QUALITY, MANAGER, GENERAL_MANAGER]
+      enum: [ADMIN, WAREHOUSE, QUALITY, MANAGER, GENERAL_MANAGER]
     Permission:
       type: string
       enum:
@@ -2151,10 +2112,6 @@ components:
           items:
             type: string
             format: uuid
-        subcontractorId:
-          description: Yalnızca fasoncu kullanıcılarında
-          type: string
-          format: uuid
         mfaVerified:
           type: boolean
     ShipmentStatus:
@@ -2231,7 +2188,7 @@ components:
     Audience:
       description: Görünüm türü; hangi alanların bulunacağını belirler.
       type: string
-      enum: [INTERNAL, WAREHOUSE, SUBCONTRACTOR]
+      enum: [INTERNAL, WAREHOUSE]
     WeighingView:
       type: object
       required: [grossKg, tareKg, netKg, bagCount, weighedAt]
@@ -2474,33 +2431,7 @@ components:
         subcontractorTitle:
           type: string
           description: Bağlı fasoncunun unvanı; yalnızca liste yanıtında dolar
-    LoginAccountRequest:
-      type: object
-      required: [username, phone, siteIds]
-      properties:
-        username:
-          type: string
-          pattern: '^[a-z0-9][a-z0-9._-]{2,63}$'
-          description: Giriş adı; küçük harf, rakam, nokta, alt çizgi ve tire
-        phone:
-          type: string
-          minLength: 7
-          maxLength: 20
-          description: Cep telefonu (ör. 0532 123 45 67 ya da +905321234567); şifre kodu bu numaraya SMS'le gider
-        email:
-          type: string
-          format: email
-          description: İsteğe bağlı; şoför ve fasoncunun e-postası olmayabilir
-          maxLength: 255
-        siteIds:
-          type: array
-          minItems: 1
-          maxItems: 100
-          uniqueItems: true
-          description: Kişinin sevkiyatlarını göreceği etkin lokasyonlar
-          items:
-            type: string
-            format: uuid
+
     LoginAccountView:
       type: object
       description: Giriş hesabının özeti; şifre ya da kimlik bilgisi içermez.
@@ -3093,17 +3024,15 @@ components:
           minLength: 1
           maxLength: 64
     ShipmentDetailResponse:
-      description: İsteyenin rolüne göre üç görünümden biri (API-09).
+      description: İsteyenin rolüne göre iki görünümden biri (API-09).
       oneOf:
         - $ref: '#/components/schemas/InternalShipmentView'
         - $ref: '#/components/schemas/WarehouseShipmentView'
-        - $ref: '#/components/schemas/SubcontractorShipmentView'
       discriminator:
         propertyName: audience
         mapping:
           INTERNAL: '#/components/schemas/InternalShipmentView'
           WAREHOUSE: '#/components/schemas/WarehouseShipmentView'
-          SUBCONTRACTOR: '#/components/schemas/SubcontractorShipmentView'
     InternalShipmentView:
       description: Admin, kalite ve müdür.
       type: object

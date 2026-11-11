@@ -65,7 +65,7 @@ function readResult(json: unknown): ResultBody | undefined {
 /** Sonuç bir kez yazılır; lab kontrolünde rapor belgesi zorunludur (backend Inspection.recordResult). */
 function resultProblem(inspection: InspectionView, body: ResultBody): Response | undefined {
   if (inspection.result !== undefined) return problem(409, 'QUALITY_CLAIM_INSPECTION_RECORDED');
-  return inspection.kind === 'LAB' && body.evidenceId === undefined
+  return body.evidenceId === undefined
     ? problem(400, 'QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED')
     : undefined;
 }

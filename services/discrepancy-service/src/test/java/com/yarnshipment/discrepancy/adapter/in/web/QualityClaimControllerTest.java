@@ -154,8 +154,8 @@ class QualityClaimControllerTest {
         Jwt manager = manager();
         Jwt warehouse = TestTokens.token("warehouse").build();
 
-        assertThat(post(INSPECTIONS, "{\"kind\":\"SAMPLE\"}", warehouse)).hasStatus(HttpStatus.FORBIDDEN);
-        assertThat(post(INSPECTIONS, "{\"kind\":\"SAMPLE\"}", manager)).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(INSPECTIONS, "{\"kind\":\"LAB\"}", warehouse)).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(INSPECTIONS, "{\"kind\":\"LAB\"}", manager)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(CLAIMS, OPEN_BODY, warehouse)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(CLAIMS, OPEN_BODY, TestTokens.unknownRoleToken())).hasStatus(HttpStatus.FORBIDDEN);
     }

@@ -43,7 +43,7 @@ class InspectionServicesTest {
     void shouldReadShipmentClaims() {
         when(ports.claims.findClaims(TestDiscrepancies.SHIPMENT)).thenReturn(List.of(TestClaims.claim()));
         when(ports.inspections.findInspections(TestDiscrepancies.ID))
-                .thenReturn(List.of(TestClaims.pending(InspectionKind.SAMPLE)));
+                .thenReturn(List.of(TestClaims.pending(InspectionKind.LAB)));
 
         ShipmentClaims file = get.getShipmentClaims(
                 new GetShipmentClaimsQuery(TestTokens.actor("quality"), TestDiscrepancies.SHIPMENT));
@@ -69,7 +69,7 @@ class InspectionServicesTest {
         when(ports.discrepancies.findDiscrepancy(TestDiscrepancies.ID))
                 .thenReturn(Optional.of(TestDiscrepancies.withStatus(TestTokens.SITE_ID, DiscrepancyStatus.RESOLVED)));
         assertThatThrownBy(() -> request.requestInspection(
-                        new RequestInspectionCommand(quality(), TestClaims.CLAIM_ID, InspectionKind.SAMPLE, null)))
+                        new RequestInspectionCommand(quality(), TestClaims.CLAIM_ID, InspectionKind.LAB, null)))
                 .isInstanceOf(DiscrepancyNotOpenException.class);
     }
 

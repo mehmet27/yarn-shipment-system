@@ -16,7 +16,7 @@ class InspectionTest {
     private static final Instant AT = Instant.parse("2026-10-24T09:00:00Z");
 
     @Test
-    @DisplayName("Lab sonucu belgeyle girilir; numune sonucu belgesiz de girilebilir")
+    @DisplayName("Lab sonucu belgeyle girilir")
     void shouldRequireDocumentForLab() {
         assertThatThrownBy(() -> pending(InspectionKind.LAB).recordResult(result(null)))
                 .isInstanceOfSatisfying(
@@ -26,16 +26,14 @@ class InspectionTest {
 
         assertThat(pending(InspectionKind.LAB).recordResult(result(DOCUMENT)).isPending())
                 .isFalse();
-        assertThat(pending(InspectionKind.SAMPLE).recordResult(result(null)).result())
-                .isNotNull();
     }
 
     @Test
     @DisplayName("Sonucu girilmiş kontrole ikinci sonuç girilemez")
     void shouldRejectSecondResult() {
-        Inspection recorded = pending(InspectionKind.SAMPLE).recordResult(result(null));
+        Inspection recorded = pending(InspectionKind.LAB).recordResult(result(DOCUMENT));
 
-        assertThatThrownBy(() -> recorded.recordResult(result(null)))
+        assertThatThrownBy(() -> recorded.recordResult(result(DOCUMENT)))
                 .isInstanceOfSatisfying(
                         ClaimRejectedException.class,
                         exception -> assertThat(exception.rejection()).isEqualTo(ClaimRejection.INSPECTION_RECORDED));
@@ -52,6 +50,6 @@ class InspectionTest {
     }
 
     private static Inspection.Result result(@Nullable UUID evidenceId) {
-        return new Inspection.Result("şahit numuneyle aynı", evidenceId, ACTOR, AT);
+        return new Inspection.Result("lab sonucu uygun", evidenceId, ACTOR, AT);
     }
 }

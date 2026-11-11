@@ -27,7 +27,7 @@ final class InspectionAdapter implements InspectionPort {
             SELECT id, shipment_id, discrepancy_id, kind, request_note, created_by, selected_at, result,
                    result_evidence_id, performed_by, performed_at
               FROM inspection""";
-    private static final String CLAIM_KINDS = " kind IN ('SAMPLE', 'LAB') AND discrepancy_id IS NOT NULL";
+    private static final String CLAIM_KINDS = " kind = 'LAB' AND discrepancy_id IS NOT NULL";
     private static final String INSERT = """
             INSERT INTO inspection (id, shipment_id, discrepancy_id, reason, kind, selected_at, request_note,
                                     created_at, created_by)

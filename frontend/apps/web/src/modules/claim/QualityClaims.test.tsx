@@ -86,8 +86,7 @@ describe('Kalite itirazı', () => {
     renderApp('/panel/sevkiyat/shp-0019');
     await userEvent.click(await screen.findByRole('tab', { name: 'Kalite itirazı' }));
     const card = await screen.findByRole('article', { name: 'UY-shp-0019-1' });
-    await userEvent.click(within(card).getByText('Laboratuvar analizi'));
-    await userEvent.type(within(card).getByLabelText('Talep notu'), 'Şahit numuneyle karşılaştır');
+    await userEvent.type(within(card).getByLabelText('Talep notu'), 'Nem analizi iste');
     await userEvent.click(within(card).getByRole('button', { name: 'Kontrol iste' }));
     expect(await within(card).findByText('Sonuç bekleniyor')).toBeInTheDocument();
     const save = within(card).getByRole('button', { name: 'Sonucu kaydet' });

@@ -1,9 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, TextInput } from '@iplik/ui';
-import { SiteField } from '@/modules/masterdata';
+import { PasswordInput, Stack, TextInput } from '@iplik/ui';
 import type { AccountDraft, AccountField } from '../accountDraft';
 import { StaffRoleSelect } from './StaffRoleSelect';
-import { ContactFields } from './ContactFields';
 
 export type AccountFieldsProps = {
   draft: AccountDraft;
@@ -11,16 +9,13 @@ export type AccountFieldsProps = {
   errorText: (field: AccountField) => string | undefined;
 };
 
-/**
- * Hesap açma formunun alanları; hata metinleri üstten gelir. Şifre alanı yoktur: kişi SMS koduyla kendisi belirler.
- */
+/** Hesap açma formunun alanları; hata metinleri üstten gelir. İlk şifreyi yönetici yazar (SMS/e-posta yok). */
 export function AccountFields({ draft, onChange: change, errorText }: AccountFieldsProps) {
   const { t } = useTranslation();
-  const kind = draft.kind;
   return (
     <Stack>
       <StaffRoleSelect
-        value={kind}
+        value={draft.kind}
         onChange={(next) => {
           change({ kind: next });
         }}
@@ -46,13 +41,16 @@ export function AccountFields({ draft, onChange: change, errorText }: AccountFie
         error={errorText('fullName')}
         withAsterisk
       />
-      <ContactFields draft={draft} onChange={change} errorText={errorText} />
-      <SiteField
-        selected={draft.siteIds}
-        onChange={(siteIds) => {
-          change({ siteIds });
+      <PasswordInput
+        label={t('users.field.password')}
+        description={t('users.create.passwordHint')}
+        value={draft.password}
+        onChange={(event) => {
+          change({ password: event.currentTarget.value });
         }}
-        error={errorText('sites')}
+        error={errorText('password')}
+        autoComplete="new-password"
+        withAsterisk
       />
     </Stack>
   );

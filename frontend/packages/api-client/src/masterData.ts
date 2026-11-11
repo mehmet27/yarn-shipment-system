@@ -79,16 +79,10 @@ export type { CancelShipmentRequest } from './generated/shipmentService';
 
 export { removeShipmentBag } from './generated/shipmentService';
 
-export {
-  changeLoginAccountEnabled,
-  confirmPasswordReset,
-  requestPasswordReset,
-  startLoginAccountPasswordReset,
-} from './generated/shipmentService';
+export { changeLoginAccountEnabled, setLoginAccountPassword } from './generated/shipmentService';
 export type {
   ChangeLoginAccountEnabledRequest,
-  PasswordResetConfirmRequest,
-  PasswordResetRequest,
+  SetLoginAccountPasswordRequest,
 } from './generated/shipmentService';
 export { listLoginAccounts } from './generated/shipmentService';
 export { changeLoginAccountRole, createStaffLoginAccount } from './generated/shipmentService';

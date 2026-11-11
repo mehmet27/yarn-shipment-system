@@ -15,30 +15,26 @@ async function pickRole(dialog: HTMLElement, optionName: string) {
 }
 
 describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
-  it('yönetici depo hesabı açar; şifre sorulmaz ve gösterilmez, SMS gider, hesap ilk giriş bekleyen olarak görünür', async () => {
+  it('yönetici depo hesabı açar; ilk şifreyi yazar, hesap ilk giriş bekleyen olarak görünür', async () => {
     renderApp('/panel/kullanicilar');
     await userEvent.click(await screen.findByRole('button', { name: 'Yeni kullanıcı' }));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).queryByLabelText(/şifre/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByLabelText(/Telefon/)).not.toBeInTheDocument();
+    expect(within(dialog).queryByLabelText(/E-posta/)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/lokasyon/i)).not.toBeInTheDocument();
 
     await userEvent.type(within(dialog).getByLabelText(/Giriş adı/), 'depo.yeni');
     await userEvent.type(within(dialog).getByLabelText(/Ad soyad/), 'Yeni Depocu');
-    await userEvent.type(within(dialog).getByLabelText(/Telefon/), '0532 123 45 67');
+    await userEvent.type(within(dialog).getByLabelText(/İlk şifre/), 'Gecici-Sifre-1');
     await pickRole(dialog, 'Depo');
-    await userEvent.click(await within(dialog).findByRole('switch', { name: 'Merkez Depo' }));
     await userEvent.click(within(dialog).getByRole('button', { name: /Hesabı aç/ }));
 
-    expect(
-      await within(dialog).findByText(
-        /\+?0?532 123 45 67 numarasına gönderildi|numarasına gönderildi/,
-      ),
-    ).toBeInTheDocument();
+    expect(await within(dialog).findByText(/depo\.yeni hesabı açıldı/)).toBeInTheDocument();
     expect(within(dialog).queryByText(/Gecici-Sifre/)).not.toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Tamam' }));
 
     const row = await screen.findByRole('row', { name: /depo\.yeni/ });
     expect(within(row).getByText('Depo')).toBeInTheDocument();
-    expect(within(row).getByText('***4567')).toBeInTheDocument();
     expect(within(row).getByText('İlk giriş bekleniyor')).toBeInTheDocument();
   });
 
@@ -56,16 +52,15 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: /Hesabı aç/ }));
 
     expect(await within(dialog).findByText('Bir rol seçin.')).toBeInTheDocument();
-    expect(within(dialog).getByText(/Geçerli bir cep telefonu girin/)).toBeInTheDocument();
-    expect(within(dialog).getByText('En az bir lokasyon seçin.')).toBeInTheDocument();
+    expect(within(dialog).getByText('Şifre en az 8 karakter olmalı.')).toBeInTheDocument();
     expect(isPosted).toBe(false);
   });
 
-  it('SMS gönderilemezse hata gösterilir; ikinci denemede giriş adı alınmışsa o hata görünür', async () => {
+  it('şifre kurala uymazsa hata gösterilir; ikinci denemede giriş adı alınmışsa o hata görünür', async () => {
     server.use(
       http.post(
         PATH,
-        () => HttpResponse.json({ status: 503, code: 'SMS_UNAVAILABLE' }, { status: 503 }),
+        () => HttpResponse.json({ status: 400, code: 'WEAK_PASSWORD' }, { status: 400 }),
         { once: true },
       ),
     );
@@ -74,15 +69,14 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     const dialog = await screen.findByRole('dialog');
     await userEvent.type(within(dialog).getByLabelText(/Giriş adı/), 'admin');
     await userEvent.type(within(dialog).getByLabelText(/Ad soyad/), 'Başka Biri');
-    await userEvent.type(within(dialog).getByLabelText(/Telefon/), '05321234567');
+    await userEvent.type(within(dialog).getByLabelText(/İlk şifre/), '12345678');
     await pickRole(dialog, 'Kalite');
-    await userEvent.click(await within(dialog).findByRole('switch', { name: 'Merkez Depo' }));
     await userEvent.click(within(dialog).getByRole('button', { name: /Hesabı aç/ }));
-    expect(await within(dialog).findByText(/SMS gönderilemedi/)).toBeInTheDocument();
+    expect(await within(dialog).findByText(/Şifre kurallara uymuyor/)).toBeInTheDocument();
 
     await userEvent.click(within(dialog).getByRole('button', { name: /Hesabı aç/ }));
     expect(
-      await within(dialog).findByText('Bu giriş adı ya da e-posta başka bir hesapta kullanılıyor.'),
+      await within(dialog).findByText('Bu giriş adı başka bir hesapta kullanılıyor.'),
     ).toBeInTheDocument();
   });
 
@@ -127,17 +121,26 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     expect(css).toMatch(/\.mantine-Badge-label\s*{[^}]*white-space:\s*normal/);
   });
 
-  it('yönetici şifre sıfırlamayı başlatır; telefon maskeli görünür ve şifre gösterilmez', async () => {
+  it('yönetici yeni geçici şifre verir; şifre gösterilmez, hesap ilk giriş bekleyen olur', async () => {
     renderApp('/panel/kullanicilar');
     const table = await screen.findByRole('table');
-    const partner = within(table).getByRole('row', { name: /Kalite Uzmanı/ });
-    await userEvent.click(
-      within(partner).getByRole('button', { name: 'kalite için şifre sıfırlamayı başlat' }),
-    );
+    const depo = within(table).getByRole('row', { name: /Depo Sorumlusu/ });
+    await userEvent.click(within(depo).getByRole('button', { name: 'depo için yeni şifre ver' }));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText(/\*\*\*0005/)).toBeInTheDocument();
-    await userEvent.click(within(dialog).getByRole('button', { name: 'SMS gönder' }));
-    expect(await within(dialog).findByText(/Kod .*0005 numarasına gönderildi/)).toBeInTheDocument();
+    const submit = within(dialog).getByRole('button', { name: 'Şifreyi kaydet' });
+    expect(submit).toBeDisabled();
+    await userEvent.type(within(dialog).getByLabelText(/İlk şifre/), 'Yeni-Sifre-2026');
+    await userEvent.click(submit);
+    expect(
+      await within(dialog).findByText(/depo için yeni geçici şifre verildi/),
+    ).toBeInTheDocument();
+    expect(within(dialog).queryByText(/Yeni-Sifre-2026/)).not.toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Tamam' }));
+    expect(
+      await within(await screen.findByRole('table')).findByRole('row', {
+        name: /Depo Sorumlusu.*İlk giriş bekleniyor/,
+      }),
+    ).toBeInTheDocument();
   });
 
   it('yönetici depo hesabının rolünü kaliteye çevirir', async () => {

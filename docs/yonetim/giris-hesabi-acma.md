@@ -1,30 +1,11 @@
-# Şoföre giriş hesabı açma
+# Giriş hesabı açma
 
-> Fasoncu sisteme giriş yapmaz (KR-17): `subcontractor` rolü ve fasoncu giriş hesabı kaldırıldı; fasoncu yalnızca
-> ana veridir (`/subcontractors`) ve verisini fabrika personeli girer.
+> Sisteme yalnızca fabrika personeli (yönetici, depo, kalite, müdür, genel müdür) giriş yapar; fasoncu ve şoför giriş
+> yapmaz, yalnızca ana veridir (KR-17). **SMS ya da e-posta doğrulaması yoktur:** hesabı yönetici açar, ilk (geçici)
+> şifreyi kendisi yazar ve kişiye iletir; kişi ilk girişte şifresini değiştirir. Fabrikada tek merkez lokasyon olduğu
+> için yeni hesap etkin tüm lokasyonları görür (lokasyon seçilmez).
 
-Şoför kaydı uygulamada (`POST /api/v1/master-data/drivers`) açılır; **giriş hesabı**
-Keycloak'ta tutulur. Hesabı yönetici uygulamadan açar, Keycloak adımlarını sistem yapar:
-
-| Kayıt | Uç |
-|---|---|
-| Şoför | `POST /api/v1/master-data/drivers/{driverId}/login-account` |
-
-İstek gövdesi: `username` (3-64 karakter; küçük harf, rakam, `.`, `_`, `-`), `phone` (cep telefonu), isteğe bağlı
-`email` ve `siteIds` (kişinin sevkiyatlarını göreceği etkin lokasyonlar, en az bir tane). Yalnızca
-`MASTER_DATA_MANAGE` yetkisi olan yönetici çağırabilir. Yanıt (201) gövdesizdir: **şifre üretilmez ve hiçbir yerde
-gösterilmez.** Kişinin telefonuna şifre belirleme kodu SMS'le gider (aşağıda "Şifre belirleme ve sıfırlama").
-
-Sistem Keycloak'ta şunları yapar: kullanıcıyı şifresiz açar (`UPDATE_PASSWORD` bekler), şoför için `driver` rolünü verir, kayıt kimliğini (`driver_id`) ve `site_ids` özniteliklerini yazar.
-Rol verilemezse açılan kullanıcı silinir; yarım hesap kalmaz.
-
-| Durum | Yanıt |
-|---|---|
-| Kayıt yok ya da pasif | 404 `MASTER_DATA_NOT_FOUND` |
-| Lokasyon boş, yok ya da pasif | 400 `INVALID_MASTER_DATA` (`errors[0].field` = `siteIds`) |
-| Kayıt için hesap zaten var ya da giriş adı alınmış | 409 `LOGIN_ACCOUNT_EXISTS` |
-| Keycloak'a ulaşılamadı ya da hesap açma yapılandırılmamış | 502 `LOGIN_ACCOUNT_UNAVAILABLE` |
-| SMS sağlayıcısı yok ya da ulaşılamadı (hesap açıldı, kod gitmedi) | 503 `SMS_UNAVAILABLE` |
+Hesap **Kullanıcılar** ekranından (`/panel/kullanicilar`, yalnızca `USER_MANAGE`) açılır; Keycloak adımlarını sistem yapar.
 
 ## Kurulum: servis hesabı istemcisi
 
@@ -46,67 +27,32 @@ shipment-service Keycloak'a `yarnshipment-admin` servis hesabıyla bağlanır (y
 
 ## Sonradan
 
-- Kaydı uygulamada pasife almak giriş hesabını **kapatmaz**; hesabı Kullanıcılar ekranından "Pasife al" ile kapatın.
-- Lokasyon değiştirme Keycloak konsolundan yapılır.
-- Doğrulama: kullanıcıyla `http://localhost:5173` adresinden giriş yapın; yalnızca yetkili olduğu lokasyonların sevkiyatlarını görmelidir. Token'daki claim'leri `tools/keycloak/verify-realm.mjs` ile görebilirsiniz.
+- Hesabı Kullanıcılar ekranından "Pasife al" ile kapatın; kayıtların (şoför, fasoncu) pasife alınması hesabı kapatmaz.
+- Doğrulama: kullanıcıyla `http://localhost:5173` adresinden giriş yapın. Token'daki claim'leri `tools/keycloak/verify-realm.mjs` ile görebilirsiniz.
 
-## Kullanıcılar ekranı: tüm roller
-
-Tüm giriş hesapları **Kullanıcılar** ekranından (`/panel/kullanicilar`, yalnızca `USER_MANAGE`) yönetilir: depo, kalite,
-müdür ve yönetici hesabı açılır. Şifre hiçbir
-yerde üretilmez, sorulmaz ya da gösterilir.
+## Kullanıcılar ekranı
 
 | İşlem | Uç |
 |---|---|
-| Fabrika içi hesap aç | `POST /api/v1/master-data/login-accounts` (`username`, `phone`, `email?`, `fullName`, `role`, `siteIds`) → 201 |
+| Fabrika içi hesap aç | `POST /api/v1/master-data/login-accounts` (`username`, `fullName`, `role`, `password`) → 201 |
 | Rol değiştir | `PUT /api/v1/master-data/login-accounts/{userId}/role` (`role`) → 204 |
 | Pasife al / yeniden aç | `PUT /api/v1/master-data/login-accounts/{userId}/enabled` (`enabled`) → 204 |
-| Şifre sıfırlamayı başlat | `POST /api/v1/master-data/login-accounts/{userId}/password-reset` → 204 |
+| Yeni geçici şifre ver | `PUT /api/v1/master-data/login-accounts/{userId}/password` (`password`) → 204 |
 
-`role` yalnızca `ADMIN`, `WAREHOUSE`, `QUALITY`, `MANAGER`, `GENERAL_MANAGER` olabilir. Rol değişince eski fabrika içi rol kaldırılır ve
-kişinin açık oturumları kapatılır. Kişi kendi rolünü değiştiremez ve kendi hesabını kapatamaz (400
-`INVALID_MASTER_DATA`); kullanıcı yoksa 404
-`LOGIN_ACCOUNT_NOT_FOUND`. Giriş adı ya da e-posta alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`. Rol verilemezse açılan
-kullanıcı silinir; yarım hesap kalmaz. Telefon listede yalnızca son dört haneyle (`***4567`) görünür.
+`role` yalnızca `ADMIN`, `WAREHOUSE`, `QUALITY`, `MANAGER`, `GENERAL_MANAGER` olabilir. Rol değişince eski fabrika içi rol
+kaldırılır ve kişinin açık oturumları kapatılır. Kişi kendi rolünü değiştiremez ve kendi hesabını kapatamaz (400
+`INVALID_MASTER_DATA`); kullanıcı yoksa 404 `LOGIN_ACCOUNT_NOT_FOUND`. Giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`.
+Şifre kurala uymuyorsa 400 `WEAK_PASSWORD`. Rol verilemezse açılan kullanıcı silinir; yarım hesap kalmaz.
 
-## Şifre belirleme ve sıfırlama (SMS)
+## Şifre
 
-Şifreyi her zaman kişinin kendisi belirler; yönetici göremez.
-
-1. **Hesap açılınca** kişinin telefonuna giriş adını içeren bir SMS ve altı haneli kod gider (3 gün geçerli).
-2. Kişi giriş ekranındaki **"Şifremi unuttum"** bağlantısından (`/sifremi-unuttum`) giriş adını yazar, SMS'teki kodla
-   yeni şifresini belirler. Şifre en az 8 karakter olmalıdır; Keycloak'ın şifre politikası da geçerlidir.
-3. **Şifresini unutan** aynı sayfadan kendisi kod ister (10 dakika geçerli); **yönetici** Kullanıcılar ekranında
-   "Şifre sıfırla" ile kodu kişinin kayıtlı telefonuna gönderebilir (3 gün geçerli).
-4. **İlk girişte şifre değişimi**: şifresini belirlemeyen hesap "İlk giriş bekleniyor" görünür; şifre belirlenince
-   Keycloak'taki `UPDATE_PASSWORD` zorunluluğu kalkar.
-5. **Profilden değiştirme**: giriş yapmış herkes üst çubuktaki "Şifremi değiştir" ile Keycloak'ın şifre ekranına gider
+1. **Hesap açılınca** yönetici geçici şifreyi yazar (en az 8 karakter; Keycloak'ın şifre politikası da geçerlidir) ve
+   kişiye iletir. Şifre hiçbir yanıtta ya da logda yer almaz.
+2. **İlk giriş**: hesap "İlk giriş bekleniyor" görünür; Keycloak ilk girişte şifre değiştirtir (`UPDATE_PASSWORD`).
+3. **Şifresini unutan**: giriş ekranında "Şifremi unuttum" yoktur; yönetici Kullanıcılar ekranında "Şifre ver" ile yeni
+   geçici şifre belirler. Kişinin açık oturumları kapanır, bir sonraki girişte şifresini değiştirir.
+4. **Profilden değiştirme**: giriş yapmış herkes üst çubuktaki "Şifremi değiştir" ile Keycloak'ın şifre ekranına gider
    (`kc_action=UPDATE_PASSWORD`); şifre bu uygulamadan geçmez.
-
-Herkese açık uçlar `POST /api/v1/password-reset/request` ve `/confirm`'dir. İstek yanıtı hesabın var olup olmadığını
-açıklamaz (hesap yok, pasif ya da telefonsuzsa da 204). Kod tuzlanmış özetiyle saklanır (`md_password_reset_code`); beş
-yanlış denemede yanar, aynı kullanıcıya bir dakikada en fazla bir SMS gider. Yanlış/süresi dolmuş kod için 400
-`INVALID_RESET_CODE`, kurala uymayan şifre için 400 `WEAK_PASSWORD` (kod yanmaz), SMS gidemezse 503 `SMS_UNAVAILABLE`.
-Uçlarda IP bazlı sınır yoktur, yalnızca kullanıcı bazlı sınır vardır; canlıda gateway önünde hız sınırı önerilir.
-
-### SMS sağlayıcısı
-
-SMS bir porttan (`SmsPort`) gider; sağlayıcı `yarnshipment.sms.provider` ile seçilir:
-
-| Değer | Davranış |
-|---|---|
-| `log` | Gerçek SMS göndermez, mesajı (kodla birlikte) uygulama loguna yazar. Yalnızca yerel geliştirme (`application-local.yml`). |
-| `none` (varsayılan) | Sağlayıcı yok: SMS gerektiren işlemler 503 `SMS_UNAVAILABLE` döner. |
-
-Gerçek sağlayıcı (Netgsm, İleti Merkezi vb.) henüz bağlı değildir; seçim yapıldığında `adapter/out/sms` altına yeni bir
-adaptör eklenir, uygulamanın geri kalanı değişmez.
-
-### Giriş ekranı: "Şifremi unuttum" bağlantısı
-
-Bağlantıyı Keycloak giriş teması `yarnshipment` ekler (`deploy/keycloak/themes/yarnshipment`). Yeni kurulumda realm
-dosyası temayı seçer. Daha önce kurulmuş Keycloak'ta **Realm settings → Themes → Login theme = yarnshipment** seçin
-(tema dosyaları docker-compose ile bağlanır). Bağlantının gideceği adres `resources/js/frontend-config.js` içindeki
-`FRONTEND_URL` değeridir; canlıda bunu uygulamanın adresiyle değiştirin.
 
 ### Giriş ve şifre değiştirme ekranlarının görünümü
 

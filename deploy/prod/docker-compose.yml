@@ -156,14 +156,6 @@ services:
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?.env içinde KEYCLOAK_ADMIN_CLIENT_SECRET tanımlayın}
       INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:?.env içinde INITIAL_ADMIN_EMAIL tanımlayın}
       INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?.env içinde INITIAL_ADMIN_PASSWORD tanımlayın}
-      KEYCLOAK_SMTP_HOST: ${KEYCLOAK_SMTP_HOST}
-      KEYCLOAK_SMTP_PORT: ${KEYCLOAK_SMTP_PORT}
-      KEYCLOAK_SMTP_FROM: ${KEYCLOAK_SMTP_FROM}
-      KEYCLOAK_SMTP_AUTH: ${KEYCLOAK_SMTP_AUTH}
-      KEYCLOAK_SMTP_USER: ${KEYCLOAK_SMTP_USER}
-      KEYCLOAK_SMTP_PASSWORD: ${KEYCLOAK_SMTP_PASSWORD}
-      KEYCLOAK_SMTP_SSL: ${KEYCLOAK_SMTP_SSL}
-      KEYCLOAK_SMTP_STARTTLS: ${KEYCLOAK_SMTP_STARTTLS}
     volumes:
       # Yalnızca realm yoksa içe aktarılır (test kullanıcısı içermeyen üretim realm'i).
       - ../keycloak/yarnshipment-realm-prod.json:/opt/keycloak/data/import/yarnshipment-realm.json:ro
@@ -194,8 +186,6 @@ services:
       # Giriş hesabı açma: Keycloak yönetim API'si (iç ağ).
       YARNSHIPMENT_KEYCLOAK_ADMIN_URL: http://keycloak:8080
       YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET}
-      # SMS sağlayıcısı henüz bağlı değil: şifre sıfırlama SMS'i 503 döner (DEPLOY.md, "Bilinen sınırlar").
-      YARNSHIPMENT_SMS_PROVIDER: none
     depends_on:
       postgres: { condition: service_healthy }
       kafka: { condition: service_healthy }

@@ -16,8 +16,8 @@ import { useLoginAccounts } from '../hooks/useLoginAccounts';
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
-/** Yönetici: giriş hesabı olan tüm kullanıcıları görür, her rolden hesap açar, pasife alır, rolünü değiştirir ve şifre
- * sıfırlamayı başlatır; şifre hiçbir yerde gösterilmez. */
+/** Yönetici: giriş hesabı olan tüm kullanıcıları görür, her rolden hesap açar, pasife alır, rolünü değiştirir ve yeni
+ * geçici şifre verir; şifre listede hiçbir yerde gösterilmez. */
 export function LoginAccountsPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');

@@ -5,16 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-import com.yarnshipment.shipment.masterdata.application.port.out.ResetTarget;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
-import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
 import com.yarnshipment.shipment.masterdata.domain.model.WeakPasswordException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -33,8 +30,7 @@ class KeycloakAccountCredentialAdapterTest {
     private static final int UPDATE_CALL = 3;
     private static final int NOT_FOUND = 404;
     private static final String USER_JSON = "{\"id\":\"" + USER + "\",\"username\":\"ali.yilmaz\",\"enabled\":true,"
-            + "\"requiredActions\":[\"UPDATE_PASSWORD\",\"VERIFY_EMAIL\"],"
-            + "\"attributes\":{\"phone_number\":[\"+905321234567\"]}}";
+            + "\"requiredActions\":[\"VERIFY_EMAIL\"]}";
 
     private final List<String> calls = new ArrayList<>();
     private final List<String> bodies = new ArrayList<>();
@@ -52,45 +48,11 @@ class KeycloakAccountCredentialAdapterTest {
     }
 
     @Test
-    @DisplayName("Giriş adıyla bulunan kullanıcı kimlik, durum ve telefonla döner")
-    void shouldFindByUsername() throws Exception {
+    @DisplayName("Geçici şifre belirlenir, UPDATE_PASSWORD zorunlu eylemi eklenir (diğerleri kalır), oturumlar kapanır")
+    void shouldSetTemporaryPassword() throws Exception {
         KeycloakAccountCredentialAdapter adapter = adapter();
 
-        Optional<ResetTarget> found = adapter.findByUsername("ali.yilmaz");
-
-        assertThat(found).hasValueSatisfying(target -> {
-            assertThat(target.userId()).isEqualTo(USER);
-            assertThat(target.enabled()).isTrue();
-            assertThat(target.phone()).isEqualTo(new PhoneNumber("+905321234567"));
-        });
-        assertThat(calls).contains("GET " + USERS);
-    }
-
-    @Test
-    @DisplayName("Kullanıcı yoksa ya da telefonu okunamıyorsa hata değil boş/telefonsuz sonuç döner")
-    void shouldTolerateMissingUserAndPhone() throws Exception {
-        searchResult = "[]";
-        KeycloakAccountCredentialAdapter empty = adapter();
-        assertThat(empty.findByUsername("yok")).isEmpty();
-        stopServer();
-
-        searchResult = "[{\"id\":\"" + USER + "\",\"username\":\"a\",\"enabled\":true}]";
-        KeycloakAccountCredentialAdapter phoneless = adapter();
-        assertThat(phoneless.findByUsername("a"))
-                .hasValueSatisfying(target -> assertThat(target.phone()).isNull());
-        stopServer();
-
-        userStatus = NOT_FOUND;
-        KeycloakAccountCredentialAdapter missing = adapter();
-        assertThat(missing.findById(USER)).isEmpty();
-    }
-
-    @Test
-    @DisplayName("Şifre kalıcı belirlenir, UPDATE_PASSWORD kalkar (diğer zorunlu eylem kalır), oturumlar kapanır")
-    void shouldSetPermanentPassword() throws Exception {
-        KeycloakAccountCredentialAdapter adapter = adapter();
-
-        adapter.setPassword(USER, "Yeni-Sifre-2026");
+        adapter.setTemporaryPassword(USER, "Yeni-Sifre-2026");
 
         assertThat(calls)
                 .containsExactly(
@@ -99,8 +61,8 @@ class KeycloakAccountCredentialAdapterTest {
                         "GET " + USER_PATH,
                         "PUT " + USER_PATH,
                         "POST " + USER_PATH + "/logout");
-        assertThat(bodies.get(1)).contains("\"temporary\":false").contains("Yeni-Sifre-2026");
-        assertThat(bodies.get(UPDATE_CALL)).contains("VERIFY_EMAIL").doesNotContain("UPDATE_PASSWORD");
+        assertThat(bodies.get(1)).contains("\"temporary\":true").contains("Yeni-Sifre-2026");
+        assertThat(bodies.get(UPDATE_CALL)).contains("VERIFY_EMAIL").contains("UPDATE_PASSWORD");
     }
 
     @Test
@@ -109,7 +71,7 @@ class KeycloakAccountCredentialAdapterTest {
         resetStatus = BAD_REQUEST;
         KeycloakAccountCredentialAdapter adapter = adapter();
 
-        assertThatThrownBy(() -> adapter.setPassword(USER, "kisa")).isInstanceOf(WeakPasswordException.class);
+        assertThatThrownBy(() -> adapter.setTemporaryPassword(USER, "kisa")).isInstanceOf(WeakPasswordException.class);
 
         assertThat(calls).noneMatch(call -> call.endsWith("/logout"));
     }

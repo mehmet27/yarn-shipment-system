@@ -56,11 +56,9 @@ public class LoginAccountController implements LoginAccountsApi {
                 currentActorProvider.getCurrentActor(),
                 new StaffAccountRequest(
                         request.getUsername(),
-                        request.getPhone(),
-                        request.getEmail(),
                         request.getFullName(),
                         StaffRole.valueOf(request.getRole().name()),
-                        request.getSiteIds().stream().toList()));
+                        request.getPassword()));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .cacheControl(CacheControl.noStore())
                 .build();
@@ -92,8 +90,6 @@ public class LoginAccountController implements LoginAccountsApi {
                 .id(account.id())
                 .username(account.username())
                 .fullName(account.fullName())
-                .email(account.email())
-                .phone(account.phone())
                 .roles(account.roles().stream().map(Role::valueOf).toList())
                 .enabled(account.enabled())
                 .passwordChangeRequired(account.passwordChangeRequired())

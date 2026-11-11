@@ -18,7 +18,7 @@ veritabanı, Redis, Kafka, MinIO ve servisler iç ağda kalır. HTTPS sertifikas
 git clone https://github.com/mehmet27/yarn-shipment-system.git
 cd yarn-shipment-system
 ./deploy/prod/install.sh          # ilk çalışmada .env oluşturur ve durur
-nano deploy/prod/.env             # üç adresi, ACME_EMAIL, INITIAL_ADMIN_EMAIL ve SMTP alanlarını doldurun
+nano deploy/prod/.env             # üç adresi, ACME_EMAIL ve INITIAL_ADMIN_EMAIL alanlarını doldurun
 ./deploy/prod/install.sh          # sırları üretir, imajları derler, her şeyi başlatır
 ```
 
@@ -50,7 +50,7 @@ dosyasını güvenli bir yere yedekleyin (içindeki sırlar kaybolursa veriye er
 - Derleme ve imajlar bu ortamda Docker olmadığı için çalıştırılarak denenmedi; ilk kurulumda bir adım hata verirse
   `docker compose ... logs <servis>` çıktısını paylaşın.
 - Veritabanı şifresi yalnızca ilk açılışta yazılır; sonradan `.env` içinde değiştirmek veritabanına yansımaz.
-- Şifre sıfırlama SMS'i için SMS sağlayıcısı henüz bağlı değildir (`YARNSHIPMENT_SMS_PROVIDER=none`); şoför/fasoncu
-  şifre sıfırlama 503 döner. Kullanıcı şifresini yönetici Keycloak'tan sıfırlar.
+- SMS ve e-posta doğrulaması yoktur: yönetici kullanıcı açarken geçici şifreyi kendisi yazar ve unutulan şifreyi
+  Kullanıcılar ekranından yeni geçici şifre vererek sıfırlar; kişi ilk girişte şifresini değiştirir.
 - Tek düğümlü Kafka ve tek veritabanı: pilot ölçeği için uygundur, yüksek erişilebilirlik sağlamaz.
 - Keycloak yönetim konsolu internetten erişilebilir; güçlü şifre kullanın, gerekirse Caddyfile'da IP ile kısıtlayın.

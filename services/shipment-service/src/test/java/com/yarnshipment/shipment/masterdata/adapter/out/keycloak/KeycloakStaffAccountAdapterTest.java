@@ -8,9 +8,9 @@ import com.sun.net.httpserver.HttpServer;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
-import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
+import com.yarnshipment.shipment.masterdata.domain.model.WeakPasswordException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -31,15 +31,11 @@ class KeycloakStaffAccountAdapterTest {
     private static final int CREATED = 201;
     private static final int NO_CONTENT = 204;
     private static final int NOT_FOUND = 404;
+    private static final int BAD_REQUEST = 400;
     private static final int CONFLICT = 409;
     private static final int SERVER_ERROR = 500;
-    private static final StaffAccountSpec STAFF = new StaffAccountSpec(
-            "depo2",
-            "depo2@ornek.com",
-            new PhoneNumber("+905321234567"),
-            "Ayşe Depo",
-            StaffRole.WAREHOUSE,
-            List.of(SITE));
+    private static final StaffAccountSpec STAFF =
+            new StaffAccountSpec("depo2", "Ayşe Depo", StaffRole.WAREHOUSE, "Gecici-Sifre-1", List.of(SITE));
     private static final String NEW_ID = "0192f0a0-0000-7000-8000-000000000201";
     private static final String USER_ID = "0192f0a0-0000-7000-8000-000000000101";
     private static final String USERS = "/admin/realms/yarnshipment/users";
@@ -61,8 +57,8 @@ class KeycloakStaffAccountAdapterTest {
     }
 
     @Test
-    @DisplayName("Fabrika içi kullanıcı şifresiz ve telefonuyla açılır, rol verilir; e-posta davetiyesi istenmez")
-    void shouldCreateStaffWithoutPassword() throws Exception {
+    @DisplayName("Fabrika içi kullanıcı yöneticinin geçici şifresiyle açılır, rol verilir; SMS ya da e-posta istenmez")
+    void shouldCreateStaffWithTemporaryPassword() throws Exception {
         KeycloakStaffAccountAdapter adapter = adapter("secret");
 
         UUID created = adapter.createStaff(STAFF);
@@ -77,10 +73,10 @@ class KeycloakStaffAccountAdapterTest {
         assertThat(bodies.get(2))
                 .contains("\"username\":\"depo2\"")
                 .contains("\"site_ids\":[\"" + SITE + "\"]")
-                .contains("\"phone_number\":[\"+905321234567\"]")
+                .contains("\"credentials\":[{\"type\":\"password\",\"value\":\"Gecici-Sifre-1\",\"temporary\":true}]")
                 .contains("UPDATE_PASSWORD")
-                .doesNotContain("credentials")
-                .doesNotContain("password\"");
+                .doesNotContain("phone")
+                .doesNotContain("email");
     }
 
     @Test
@@ -95,12 +91,21 @@ class KeycloakStaffAccountAdapterTest {
     }
 
     @Test
-    @DisplayName("Giriş adı ya da e-posta alınmışsa fabrika içi hesap LoginAccountExistsException verir")
+    @DisplayName("Giriş adı alınmışsa fabrika içi hesap LoginAccountExistsException verir")
     void shouldReportExistingStaffAccount() throws Exception {
         createStatus = CONFLICT;
         KeycloakStaffAccountAdapter adapter = adapter("secret");
 
         assertThatThrownBy(() -> adapter.createStaff(STAFF)).isInstanceOf(LoginAccountExistsException.class);
+    }
+
+    @Test
+    @DisplayName("Şifre kurala uymuyorsa Keycloak 400 verir ve WeakPasswordException fırlar")
+    void shouldReportWeakPassword() throws Exception {
+        createStatus = BAD_REQUEST;
+        KeycloakStaffAccountAdapter adapter = adapter("secret");
+
+        assertThatThrownBy(() -> adapter.createStaff(STAFF)).isInstanceOf(WeakPasswordException.class);
     }
 
     @Test

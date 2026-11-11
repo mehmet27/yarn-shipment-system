@@ -487,19 +487,16 @@ export interface LoginAccountView {
   username: string;
   /** Ad soyad ya da unvan; profilde yoksa gelmez */
   fullName?: string;
-  email?: string;
-  /** Telefonun yalnızca son dört hanesi (ör. `***4567`); yoksa gelmez, şifre SMS'le sıfırlanamaz */
-  phone?: string;
   roles: Role[];
   /** Hesap girişe açık mı */
   enabled: boolean;
-  /** Kişi henüz şifresini belirlemedi (hesap açıldı, SMS kodu bekleniyor) */
+  /** Kişi geçici şifreyle açıldı, henüz kendi şifresini belirlemedi */
   passwordChangeRequired: boolean;
   createdAt?: string;
 }
 
 /**
- * Şifre davetiyle açılabilen fabrika içi roller; şoför ve fasoncu kayıtlarından açılır
+ * Yönetici tarafından açılabilen fabrika içi roller; şoför ve fasoncu kayıtlarından açılır
  */
 export type StaffRole = typeof StaffRole[keyof typeof StaffRole];
 
@@ -519,52 +516,29 @@ export interface StaffLoginAccountRequest {
      */
   username: string;
   /**
-     * Cep telefonu; şifre kodu bu numaraya SMS'le gider
-     * @minLength 7
-     * @maxLength 20
-     */
-  phone: string;
-  /**
-     * İsteğe bağlı
-     * @maxLength 255
-     */
-  email?: string;
-  /**
      * @minLength 2
      * @maxLength 200
      */
   fullName: string;
   role: StaffRole;
   /**
-     * Kişinin göreceği etkin lokasyonlar
-     * @minItems 1
-     * @maxItems 100
+     * Yöneticinin belirlediği geçici şifre; kişi ilk girişte değiştirir. SMS ya da e-posta doğrulaması yoktur.
+     * @minLength 8
+     * @maxLength 128
      */
-  siteIds: string[];
+  password: string;
 }
 
 export interface ChangeLoginAccountEnabledRequest {
   enabled: boolean;
 }
 
-export interface PasswordResetRequest {
-  /** @maxLength 64 */
-  username: string;
-}
-
-export interface PasswordResetConfirmRequest {
-  /** @maxLength 64 */
-  username: string;
-  /**
-     * SMS'le gelen altı haneli kod
-     * @pattern ^[0-9]{6}$
-     */
-  code: string;
+export interface SetLoginAccountPasswordRequest {
   /**
      * @minLength 8
      * @maxLength 128
      */
-  newPassword: string;
+  password: string;
 }
 
 export interface ChangeLoginAccountRoleRequest {
@@ -1483,7 +1457,7 @@ export const deactivateDriver = (
 
 /**
  * Yalnızca yönetici (USER_MANAGE). Keycloak'ta uygulama rollerinden en az birine sahip kullanıcılar giriş adına
- * göre sıralı gelir; servis hesapları listede yoktur. Arama `q` ile giriş adı, ad ve e-postada yapılır
+ * göre sıralı gelir; servis hesapları listede yoktur. Arama `q` ile giriş adı ve adda yapılır
  * (büyük-küçük harf duyarsız). Şifre ya da başka kimlik bilgisi hiçbir zaman dönmez. Keycloak'a ulaşılamazsa ya
  * da yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE`.
  * @summary Giriş hesabı olan kullanıcıların listesi
@@ -1499,10 +1473,11 @@ export const listLoginAccounts = (
     }
 
 /**
- * Yalnızca yönetici (USER_MANAGE). Depo, kalite, müdür ya da yönetici hesabını Keycloak'ta şifresiz açar ve rolü
- * verir; kişiye şifresini belirleyeceği kod SMS'le gider. Şifre üretilmez, hiçbir yanıtta ya da logda yer almaz.
- * Giriş adı ya da e-posta alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak çalışmazsa 502
- * `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz); SMS gidemezse 502 `SMS_UNAVAILABLE` (hesap açık kalır).
+ * Yalnızca yönetici (USER_MANAGE). Depo, kalite, müdür ya da yönetici hesabını Keycloak'ta yöneticinin yazdığı
+ * geçici şifreyle açar ve rolü verir; kişi ilk girişte şifresini değiştirir. SMS ya da e-posta doğrulaması yoktur.
+ * Fabrikada tek merkez lokasyon vardır; hesap etkin tüm lokasyonları görür. Şifre hiçbir yanıtta ya da logda yer
+ * almaz. Giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; şifre kurala uymuyorsa 400 `WEAK_PASSWORD`; Keycloak
+ * çalışmazsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
  * @summary Fabrika içi giriş hesabı açar
  */
 export const createStaffLoginAccount = (
@@ -1518,7 +1493,7 @@ export const createStaffLoginAccount = (
 
 /**
  * Denetim kaydı gibi ekranlarda kimliği ada çevirir. Yönetici (USER_MANAGE) ve denetim görüntüleyen roller
- * (AUDIT_VIEW) okur; yalnızca ad soyad (yoksa giriş adı) döner, telefon ve e-posta dönmez. Keycloak'ta
+ * (AUDIT_VIEW) okur; yalnızca ad soyad (yoksa giriş adı) döner. Keycloak'ta
  * bulunmayan kimlik yanıtta olmaz. Keycloak'a ulaşılamazsa 502 `LOGIN_ACCOUNT_UNAVAILABLE`.
  * @summary Kullanıcı kimliklerinin okunur adları
  */
@@ -1570,16 +1545,19 @@ export const changeLoginAccountEnabled = (
     }
 
 /**
- * Yalnızca yönetici (USER_MANAGE). Kullanıcının kayıtlı telefonuna SMS kodu gönderir; şifreyi kişi kodla kendisi
- * belirler, yönetici şifreyi görmez. Telefon kayıtlı değilse 400 `INVALID_MASTER_DATA` (`phone`); SMS gidemezse
- * 502 `SMS_UNAVAILABLE`; kullanıcı yoksa 404 `LOGIN_ACCOUNT_NOT_FOUND`.
- * @summary Kullanıcı için şifre sıfırlamayı başlatır
+ * Yalnızca yönetici (USER_MANAGE). Şifre geçicidir: kişi bir sonraki girişte kendi şifresini seçer, açık oturumları
+ * kapanır. SMS ya da e-posta doğrulaması yoktur; şifreyi yönetici kişiye iletir. Şifre kurala uymuyorsa 400
+ * `WEAK_PASSWORD`; kullanıcı yoksa 404 `LOGIN_ACCOUNT_NOT_FOUND`.
+ * @summary Kullanıcıya yeni geçici şifre belirler
  */
-export const startLoginAccountPasswordReset = (
+export const setLoginAccountPassword = (
     userId: string,
+    setLoginAccountPasswordRequest: SetLoginAccountPasswordRequest,
  ) => {
       return customInstance<void>(
-      {url: `/api/v1/master-data/login-accounts/${userId}/password-reset`, method: 'POST'
+      {url: `/api/v1/master-data/login-accounts/${userId}/password`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: setLoginAccountPasswordRequest
     },
       );
     }
@@ -1608,40 +1586,6 @@ export const saveBranding = (
       {url: `/api/v1/branding`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: brandingSaveRequest
-    },
-      );
-    }
-
-/**
- * Girişsiz çağrılır. Giriş adı ne olursa olsun aynı 202 yanıtı döner; böylece hangi giriş adlarının var olduğu
- * anlaşılmaz. Hesap varsa, açıksa ve telefonu kayıtlıysa altı haneli kod SMS'le gider (10 dakika geçerli,
- * dakikada en çok bir kez).
- * @summary Şifremi unuttum; giriş adına kayıtlı telefona kod gönderir
- */
-export const requestPasswordReset = (
-    passwordResetRequest: PasswordResetRequest,
- ) => {
-      return customInstance<void>(
-      {url: `/api/v1/password-reset/request`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: passwordResetRequest
-    },
-      );
-    }
-
-/**
- * Girişsiz çağrılır. Kod yanlış, süresi dolmuş ya da deneme hakkı (5) bitmişse 400 `INVALID_RESET_CODE`; şifre
- * kurala uymuyorsa 400 `WEAK_PASSWORD` (kod yanmaz, tekrar denenebilir). Başarılıysa kişinin açık oturumları
- * kapanır ve yeni şifreyle giriş yapar.
- * @summary SMS kodunu doğrular ve yeni şifreyi belirler
- */
-export const confirmPasswordReset = (
-    passwordResetConfirmRequest: PasswordResetConfirmRequest,
- ) => {
-      return customInstance<void>(
-      {url: `/api/v1/password-reset/confirm`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: passwordResetConfirmRequest
     },
       );
     }
@@ -2313,11 +2257,9 @@ export type CreateStaffLoginAccountResult = NonNullable<Awaited<ReturnType<typeo
 export type ListUserNamesResult = NonNullable<Awaited<ReturnType<typeof listUserNames>>>
 export type ChangeLoginAccountRoleResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountRole>>>
 export type ChangeLoginAccountEnabledResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountEnabled>>>
-export type StartLoginAccountPasswordResetResult = NonNullable<Awaited<ReturnType<typeof startLoginAccountPasswordReset>>>
+export type SetLoginAccountPasswordResult = NonNullable<Awaited<ReturnType<typeof setLoginAccountPassword>>>
 export type GetBrandingResult = NonNullable<Awaited<ReturnType<typeof getBranding>>>
 export type SaveBrandingResult = NonNullable<Awaited<ReturnType<typeof saveBranding>>>
-export type RequestPasswordResetResult = NonNullable<Awaited<ReturnType<typeof requestPasswordReset>>>
-export type ConfirmPasswordResetResult = NonNullable<Awaited<ReturnType<typeof confirmPasswordReset>>>
 export type ActivateDriverResult = NonNullable<Awaited<ReturnType<typeof activateDriver>>>
 export type ListVehiclesResult = NonNullable<Awaited<ReturnType<typeof listVehicles>>>
 export type CreateVehicleResult = NonNullable<Awaited<ReturnType<typeof createVehicle>>>

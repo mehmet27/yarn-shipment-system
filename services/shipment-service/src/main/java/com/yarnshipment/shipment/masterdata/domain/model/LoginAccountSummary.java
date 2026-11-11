@@ -12,19 +12,15 @@ import org.jspecify.annotations.Nullable;
  * @param id Keycloak kullanıcı kimliği
  * @param username giriş adı
  * @param fullName ad soyad ya da unvan; profilde yoksa boş
- * @param email e-posta; profilde yoksa boş
- * @param phone telefonun maskeli hali ({@code ***4567}); kayıtlı değilse boş, şifre SMS'le sıfırlanamaz
  * @param roles uygulama rolleri, büyük harfle (ör. {@code ADMIN}); sıralı ve tekrarsız
  * @param enabled hesap girişe açık mı
- * @param passwordChangeRequired kişi henüz şifresini belirlemedi (SMS kodu bekleniyor)
+ * @param passwordChangeRequired kişi geçici şifreyle açıldı, henüz kendi şifresini belirlemedi
  * @param createdAt hesabın açıldığı an; sağlayıcı vermezse boş
  */
 public record LoginAccountSummary(
         String id,
         String username,
         @Nullable String fullName,
-        @Nullable String email,
-        @Nullable String phone,
         List<String> roles,
         boolean enabled,
         boolean passwordChangeRequired,
@@ -36,10 +32,10 @@ public record LoginAccountSummary(
         roles = roles.stream().distinct().sorted().toList();
     }
 
-    /** Giriş adı, ad ya da e-posta içinde büyük-küçük harf duyarsız arar. */
+    /** Giriş adı ya da ad içinde büyük-küçük harf duyarsız arar. */
     public boolean matches(String text) {
         String needle = text.strip().toLowerCase(Locale.ROOT);
-        return contains(username, needle) || contains(fullName, needle) || contains(email, needle);
+        return contains(username, needle) || contains(fullName, needle);
     }
 
     private static boolean contains(@Nullable String value, String needle) {

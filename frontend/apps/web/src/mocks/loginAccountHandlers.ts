@@ -2,6 +2,7 @@ import type {
   ChangeLoginAccountEnabledRequest,
   ChangeLoginAccountRoleRequest,
   Permission,
+  SetLoginAccountPasswordRequest,
   StaffLoginAccountRequest,
 } from '@iplik/api-client';
 import { http, HttpResponse } from 'msw';
@@ -10,14 +11,14 @@ import {
   changeMockLoginAccountRole,
   isMockUsernameTaken,
   listMockLoginAccounts,
-  mockPasswordResetState,
   setMockLoginAccountEnabled,
+  setMockLoginAccountPassword,
 } from './loginAccounts';
 
 const PATH = '/api/v1/master-data/login-accounts';
 const DEFAULT_PAGE_SIZE = 20;
 
-/** Arama giriş adı, ad ve e-postada; büyük-küçük harf duyarsız (Türkçe yerel ayarla). */
+/** Arama giriş adı ve adda; büyük-küçük harf duyarsız (Türkçe yerel ayarla). */
 function matches(text: string | undefined, q: string): boolean {
   return text?.toLocaleLowerCase('tr').includes(q) ?? false;
 }
@@ -26,7 +27,7 @@ function problem(status: number, code: string, title: string) {
   return HttpResponse.json({ status, code, title }, { status });
 }
 
-/** Giriş hesabı listesi, fabrika içi hesap açma, rol değiştirme, pasife alma ve şifre sıfırlamayı başlatma; yalnızca USER_MANAGE (yönetici), aksi halde 403. */
+/** Giriş hesabı listesi, fabrika içi hesap açma, rol değiştirme, pasife alma ve yeni geçici şifre verme; yalnızca USER_MANAGE (yönetici), aksi halde 403. */
 export function createLoginAccountHandlers(permissions: readonly Permission[]) {
   const canList = permissions.includes('USER_MANAGE');
   return [
@@ -38,8 +39,6 @@ export function createLoginAccountHandlers(permissions: readonly Permission[]) {
       }
       addMockLoginAccount({
         username: body.username,
-        ...(body.email === undefined ? {} : { email: body.email }),
-        phone: body.phone,
         fullName: body.fullName,
         role: body.role,
       });
@@ -62,11 +61,13 @@ export function createLoginAccountHandlers(permissions: readonly Permission[]) {
       }
       return new HttpResponse(null, { status: 204 });
     }),
-    http.post(`${PATH}/:id/password-reset`, ({ params }) => {
+    http.put(`${PATH}/:id/password`, async ({ params, request }) => {
       if (!canList) return problem(403, 'FORBIDDEN', 'Yetkiniz yok');
-      const state = mockPasswordResetState(String(params.id));
-      if (state === 'not-found') return problem(404, 'LOGIN_ACCOUNT_NOT_FOUND', 'Kullanıcı yok');
-      if (state === 'no-phone') return problem(400, 'INVALID_MASTER_DATA', 'Telefon kayıtlı değil');
+      const body = (await request.json()) as SetLoginAccountPasswordRequest;
+      if (body.password.length < 8) return problem(400, 'WEAK_PASSWORD', 'Şifre zayıf');
+      if (!setMockLoginAccountPassword(String(params.id))) {
+        return problem(404, 'LOGIN_ACCOUNT_NOT_FOUND', 'Kullanıcı yok');
+      }
       return new HttpResponse(null, { status: 204 });
     }),
     http.get(PATH, ({ request }) => {
@@ -76,11 +77,7 @@ export function createLoginAccountHandlers(permissions: readonly Permission[]) {
       const size = Number(params.get('size') ?? String(DEFAULT_PAGE_SIZE));
       const q = params.get('q')?.trim().toLocaleLowerCase('tr') ?? '';
       const matching = listMockLoginAccounts().filter(
-        (account) =>
-          q === '' ||
-          matches(account.username, q) ||
-          matches(account.fullName, q) ||
-          matches(account.email, q),
+        (account) => q === '' || matches(account.username, q) || matches(account.fullName, q),
       );
       return HttpResponse.json({
         items: matching.slice(page * size, (page + 1) * size),

@@ -1,9 +1,7 @@
 package com.yarnshipment.shipment.masterdata.adapter.out.keycloak;
 
 import com.yarnshipment.common.security.Role;
-import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
-import com.yarnshipment.shipment.masterdata.domain.model.PhoneNumber;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -59,32 +57,10 @@ final class KeycloakAccountSummaries {
                 id,
                 username,
                 fullName(user),
-                text(user.get("email")),
-                maskedPhone(user),
                 roles,
                 Boolean.TRUE.equals(user.get("enabled")),
                 passwordChangeRequired,
                 createdAt);
-    }
-
-    /** Telefon özniteliği; okunamayan değer listeyi bozmaz, yalnızca telefonsuz sayılır. */
-    static @Nullable PhoneNumber phone(Map<String, Object> user) {
-        if (user.get("attributes") instanceof Map<?, ?> attributes
-                && attributes.get(KeycloakAdminClient.PHONE_ATTRIBUTE) instanceof List<?> values
-                && !values.isEmpty()
-                && values.getFirst() instanceof String raw) {
-            try {
-                return PhoneNumber.parse(raw);
-            } catch (InvalidMasterDataException unreadable) {
-                return null;
-            }
-        }
-        return null;
-    }
-
-    private static @Nullable String maskedPhone(Map<String, Object> user) {
-        PhoneNumber phone = phone(user);
-        return phone == null ? null : phone.masked();
     }
 
     /** Hesap açılırken tek parçalı adlarda soyad da aynı değerle doldurulur; listede bir kez gösterilir. */

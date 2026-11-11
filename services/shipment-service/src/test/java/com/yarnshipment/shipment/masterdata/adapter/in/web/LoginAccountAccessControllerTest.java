@@ -10,10 +10,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.DisableLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.EnableLoginAccountUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.account.StartPasswordResetUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.SetLoginAccountPasswordUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
-import com.yarnshipment.shipment.masterdata.domain.model.SmsUnavailableException;
+import com.yarnshipment.shipment.masterdata.domain.model.WeakPasswordException;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,13 +28,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
-/** Hesabı kapatma/açma ve yönetici başlatmalı şifre sıfırlama: yalnızca USER_MANAGE, hatalar kodla eşlenir. */
+/** Hesabı kapatma/açma ve yöneticinin geçici şifre belirlemesi: yalnızca USER_MANAGE, hatalar kodla eşlenir. */
 @WebMvcTest(controllers = LoginAccountAccessController.class)
 class LoginAccountAccessControllerTest {
 
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-000000000101");
     private static final String ENABLED_URI = "/api/v1/master-data/login-accounts/" + USER + "/enabled";
-    private static final String RESET_URI = "/api/v1/master-data/login-accounts/" + USER + "/password-reset";
+    private static final String PASSWORD_URI = "/api/v1/master-data/login-accounts/" + USER + "/password";
 
     private final MockMvcTester mvc;
 
@@ -45,7 +45,7 @@ class LoginAccountAccessControllerTest {
     private EnableLoginAccountUseCase enableAccount;
 
     @MockitoBean
-    private StartPasswordResetUseCase startReset;
+    private SetLoginAccountPasswordUseCase setPassword;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -76,34 +76,34 @@ class LoginAccountAccessControllerTest {
     }
 
     @Test
-    @DisplayName("Kendi hesabını kapatma 400, kullanıcı yok 404, SMS yok 502 koduyla eşlenir")
+    @DisplayName("Kendi hesabını kapatma 400, kullanıcı yok 404, zayıf şifre 400 koduyla eşlenir")
     void shouldMapErrors() {
         Jwt admin = TestTokens.token("admin").build();
         doThrow(new InvalidMasterDataException("userId", "own account"))
                 .doThrow(new LoginAccountNotFoundException())
                 .when(disableAccount)
                 .disableLoginAccount(any(), any());
-        doThrow(new SmsUnavailableException()).when(startReset).startPasswordReset(any(), any());
+        doThrow(new WeakPasswordException()).when(setPassword).setLoginAccountPassword(any(), any(), any());
 
         MvcTestResult own = put(ENABLED_URI, "{\"enabled\":false}", admin);
         MvcTestResult missing = put(ENABLED_URI, "{\"enabled\":false}", admin);
-        MvcTestResult smsDown = post(RESET_URI, admin);
+        MvcTestResult weak = putPassword(admin);
 
         assertThat(own).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(missing).hasStatus(HttpStatus.NOT_FOUND);
-        assertThat(smsDown).hasStatus(HttpStatus.BAD_GATEWAY);
-        assertThat(smsDown).bodyJson().extractingPath("$.code").isEqualTo("SMS_UNAVAILABLE");
+        assertThat(weak).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(weak).bodyJson().extractingPath("$.code").isEqualTo("WEAK_PASSWORD");
     }
 
     @Test
-    @DisplayName("Yönetici sıfırlamayı başlatır: 202, gövdesiz ve önbelleksiz; şifre dönmez")
-    void shouldStartReset() {
-        MvcTestResult result = post(RESET_URI, TestTokens.token("admin").build());
+    @DisplayName("Yönetici yeni şifre belirler: 204, gövdesiz ve önbelleksiz; şifre dönmez")
+    void shouldSetPassword() {
+        MvcTestResult result = putPassword(TestTokens.token("admin").build());
 
-        assertThat(result).hasStatus(HttpStatus.ACCEPTED);
+        assertThat(result).hasStatus(HttpStatus.NO_CONTENT);
         assertThat(result).bodyText().isEmpty();
         assertThat(result).headers().hasValue("Cache-Control", "no-store");
-        verify(startReset).startPasswordReset(any(), eq(USER));
+        verify(setPassword).setLoginAccountPassword(any(), eq(USER), eq("Gecici-Sifre-1"));
     }
 
     @Test
@@ -112,11 +112,11 @@ class LoginAccountAccessControllerTest {
         Jwt warehouse = TestTokens.token("warehouse").build();
 
         MvcTestResult disable = put(ENABLED_URI, "{\"enabled\":false}", warehouse);
-        MvcTestResult reset = post(RESET_URI, warehouse);
+        MvcTestResult reset = putPassword(warehouse);
 
         assertThat(disable).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(reset).hasStatus(HttpStatus.FORBIDDEN);
-        verifyNoInteractions(disableAccount, enableAccount, startReset);
+        verifyNoInteractions(disableAccount, enableAccount, setPassword);
     }
 
     private MvcTestResult put(String uri, String body, Jwt jwt) {
@@ -129,11 +129,7 @@ class LoginAccountAccessControllerTest {
                 .exchange();
     }
 
-    private MvcTestResult post(String uri, Jwt jwt) {
-        return mvc.post()
-                .uri(uri)
-                .with(SecurityMockMvcRequestPostProcessors.authentication(TestTokens.CONVERTER.convert(jwt)))
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
-                .exchange();
+    private MvcTestResult putPassword(Jwt jwt) {
+        return put(PASSWORD_URI, "{\"password\":\"Gecici-Sifre-1\"}", jwt);
     }
 }

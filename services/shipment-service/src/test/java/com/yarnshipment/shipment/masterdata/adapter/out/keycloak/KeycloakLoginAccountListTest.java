@@ -62,14 +62,12 @@ class KeycloakLoginAccountListTest {
         assertThat(accounts).extracting(LoginAccountSummary::username).containsExactly("admin", "ali.yilmaz");
         LoginAccountSummary admin = accounts.get(0);
         assertThat(admin.fullName()).isEqualTo("Sistem Yöneticisi");
-        assertThat(admin.email()).isEqualTo("admin@fabrika.com");
         assertThat(admin.roles()).containsExactly("ADMIN", "QUALITY");
         assertThat(admin.enabled()).isTrue();
         assertThat(admin.passwordChangeRequired()).isFalse();
         assertThat(admin.createdAt()).isEqualTo(Instant.ofEpochMilli(CREATED_MILLIS));
         LoginAccountSummary driver = accounts.get(1);
         assertThat(driver.fullName()).isEqualTo("Ali");
-        assertThat(driver.email()).isNull();
         assertThat(driver.roles()).containsExactly("WAREHOUSE");
         assertThat(driver.enabled()).isFalse();
         assertThat(driver.passwordChangeRequired()).isTrue();

@@ -2,6 +2,7 @@ package com.yarnshipment.shipment.masterdata.adapter.out.keycloak;
 
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
+import com.yarnshipment.shipment.masterdata.domain.model.WeakPasswordException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -30,8 +31,6 @@ final class KeycloakAdminClient {
 
     static final ParameterizedTypeReference<Map<String, Object>> OBJECT = new ParameterizedTypeReference<>() {};
     static final ParameterizedTypeReference<List<Map<String, Object>>> OBJECTS = new ParameterizedTypeReference<>() {};
-    /** Kullanıcıya yazılan telefon özniteliği (E.164). */
-    static final String PHONE_ATTRIBUTE = "phone_number";
 
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
 
@@ -119,7 +118,7 @@ final class KeycloakAdminClient {
         return Map.of("id", found.get("id"), "name", found.get("name"));
     }
 
-    /** Kullanıcıyı açar ve kimliğini döner; giriş adı ya da e-posta alınmışsa {@link LoginAccountExistsException}. */
+    /** Kullanıcıyı açar ve kimliğini döner; giriş adı alınmışsa {@link LoginAccountExistsException}, şifre kurala uymuyorsa {@link WeakPasswordException}. */
     String createUser(String token, Map<String, Object> user) {
         try {
             URI location = client.post()
@@ -135,6 +134,9 @@ final class KeycloakAdminClient {
         } catch (RestClientResponseException exception) {
             if (exception.getStatusCode().value() == HttpStatus.CONFLICT.value()) {
                 throw new LoginAccountExistsException("username");
+            }
+            if (exception.getStatusCode().value() == HttpStatus.BAD_REQUEST.value()) {
+                throw new WeakPasswordException(exception);
             }
             throw exception;
         }

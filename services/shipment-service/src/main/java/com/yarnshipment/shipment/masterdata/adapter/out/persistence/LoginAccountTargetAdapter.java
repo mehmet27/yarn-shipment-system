@@ -27,4 +27,11 @@ final class LoginAccountTargetAdapter implements LoginAccountTargetPort {
                 .query(UUID.class)
                 .list());
     }
+
+    @Override
+    public Set<UUID> findAllActiveSiteIds() {
+        return Set.copyOf(jdbc.sql("SELECT id FROM md_site WHERE active")
+                .query(UUID.class)
+                .list());
+    }
 }

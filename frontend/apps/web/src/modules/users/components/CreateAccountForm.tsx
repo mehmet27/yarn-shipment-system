@@ -1,6 +1,6 @@
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Stack, Text } from '@iplik/ui';
+import { Alert, Button, Stack } from '@iplik/ui';
 import { useState } from 'react';
 import { useCreateAccount } from '../hooks/useAccountMutations';
 import { EMPTY_DRAFT, invalidFields, toSubmission } from '../accountDraft';
@@ -10,9 +10,8 @@ import { AccountFields } from './AccountFields';
 const KNOWN_CODES = [
   'LOGIN_ACCOUNT_EXISTS',
   'LOGIN_ACCOUNT_UNAVAILABLE',
-  'SMS_UNAVAILABLE',
+  'WEAK_PASSWORD',
   'INVALID_MASTER_DATA',
-  'MASTER_DATA_NOT_FOUND',
 ];
 
 function errorKey(error: unknown): string {
@@ -21,8 +20,8 @@ function errorKey(error: unknown): string {
 }
 
 /**
- * Giriş adı, telefon, rol ve lokasyonla hesap açar. Şifre sorulmaz ve gösterilmez: kişiye SMS'le kod gider, şifresini
- * kendisi belirler. Düğme hep açıktır; basınca eksik alanların altında ne yapılacağı yazar.
+ * Giriş adı, ad soyad, rol ve ilk (geçici) şifreyle hesap açar; SMS ya da e-posta doğrulaması yoktur. Kişi ilk girişte
+ * şifresini değiştirir. Düğme hep açıktır; basınca eksik alanların altında ne yapılacağı yazar.
  */
 export function CreateAccountForm({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
@@ -35,10 +34,7 @@ export function CreateAccountForm({ onClose }: { onClose: () => void }) {
   if (mutation.isSuccess) {
     return (
       <Stack>
-        <Alert color="green">{t('users.create.sent', { phone: draft.phone })}</Alert>
-        <Text size="sm" c="dimmed">
-          {t('users.create.sentHint')}
-        </Text>
+        <Alert color="green">{t('users.create.sent', { username: draft.username })}</Alert>
         <Button onClick={onClose}>{t('masterData.loginAccount.close')}</Button>
       </Stack>
     );

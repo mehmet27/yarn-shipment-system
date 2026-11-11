@@ -235,7 +235,6 @@
     "title": "Çıkış tartısı",
     "hint": "Önce boş araç (dara), yükleme sonrası dolu araç (brüt) tartısını girin. Net, beklenen yükle tutarsa sevkiyat fasoncuya yola çıkmış sayılır.",
     "bagCount": "Çuval sayısı",
-    "scaleTicketNo": "Kantar fişi no (isteğe bağlı)",
     "net": "Net: {{net}}",
     "submit": "Kaydet",
     "back": "Sevkiyata dön",

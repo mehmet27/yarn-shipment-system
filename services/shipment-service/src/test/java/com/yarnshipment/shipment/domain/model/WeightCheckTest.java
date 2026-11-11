@@ -16,7 +16,7 @@ class WeightCheckTest {
     private static final Instant NOW = Instant.parse("2026-11-10T09:00:00Z");
 
     private static DispatchMeasurement measurement(String gross, String tare) {
-        return new DispatchMeasurement(new BigDecimal(gross), new BigDecimal(tare), BAG_COUNT, "KF-1");
+        return new DispatchMeasurement(new BigDecimal(gross), new BigDecimal(tare), BAG_COUNT);
     }
 
     @Test

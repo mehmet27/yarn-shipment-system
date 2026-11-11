@@ -17,7 +17,6 @@ const FIELDS = [
   { name: 'grossKg', inputMode: 'decimal' },
   { name: 'tareKg', inputMode: 'decimal' },
   { name: 'bagCount', inputMode: 'numeric' },
-  { name: 'scaleTicketNo', inputMode: 'text' },
   { name: 'shortfallReason', inputMode: 'text' },
 ] as const satisfies readonly { name: Exclude<keyof DispatchDraft, 'ticket'>; inputMode: string }[];
 

@@ -46,9 +46,9 @@ class CorrectionAdapterTest {
             VALUES (?, '0192f0a0-0000-7000-8000-00000000a001', ?, gen_random_uuid(), 'Örnek Tekstil', 'COMPLETED',
                     now(), ?)""";
     private static final String INSERT_WEIGHING = """
-            INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, scale_ticket_no, weighed_at,
+            INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, weighed_at,
                                   entered_by, created_at, created_by)
-            VALUES (?, ?, 'DISPATCH', 2000.5, 18, 40, 'F-1', now(), ?, now(), ?)""";
+            VALUES (?, ?, 'DISPATCH', 2000.5, 18, 40, now(), ?, now(), ?)""";
     private static final String CURRENT_WEIGHING = """
             SELECT gross_kg FROM weighing
             WHERE shipment_id = ? AND side = 'DISPATCH' AND superseded_by IS NULL""";

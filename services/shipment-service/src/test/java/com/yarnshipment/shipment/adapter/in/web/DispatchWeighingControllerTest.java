@@ -33,8 +33,7 @@ class DispatchWeighingControllerTest {
     private static final String URI = "/api/v1/shipments/" + TestShipments.SHIPMENT_ID + "/dispatch-weighing";
     private static final int BAG_COUNT = 40;
     private static final String KEY = "0192f0a0-0000-7000-8000-0000000000dd";
-    private static final String VALID_BODY =
-            "{\"grossKg\": \"2000.500\", \"tareKg\": \"18.000\", \"bagCount\": 40, \"scaleTicketNo\": \"KF-1\"}";
+    private static final String VALID_BODY = "{\"grossKg\": \"2000.500\", \"tareKg\": \"18.000\", \"bagCount\": 40}";
 
     private final MockMvcTester mvc;
 
@@ -77,7 +76,6 @@ class DispatchWeighingControllerTest {
         verify(recordDispatchUseCase)
                 .recordDispatch(argThat((RecordDispatchCommand command) ->
                         command.measurement().grossKg().compareTo(new BigDecimal("2000.500")) == 0
-                                && "KF-1".equals(command.measurement().scaleTicketNo())
                                 && command.measurement().bagCount() == BAG_COUNT));
     }
 

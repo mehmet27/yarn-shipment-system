@@ -66,7 +66,6 @@ class RecordDispatchServiceTest {
 
         assertThat(commandPort.recordings()).singleElement().satisfies(recording -> {
             assertThat(recording.recordedAt()).isEqualTo(NOW);
-            assertThat(recording.scaleTicketNo()).isEqualTo("KF-1");
         });
     }
 

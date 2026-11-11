@@ -123,7 +123,6 @@ public record Shipment(
                     measurement.tareKg(), measurement.grossKg(), expected, toleranceKg, measurement.shortfallReason());
             check = candidate.exceedsTolerance() ? candidate : null;
         }
-        return new DispatchRecording(
-                id, siteId, parties.subcontractorId(), weighing, measurement.scaleTicketNo(), recordedAt, check);
+        return new DispatchRecording(id, siteId, parties.subcontractorId(), weighing, recordedAt, check);
     }
 }

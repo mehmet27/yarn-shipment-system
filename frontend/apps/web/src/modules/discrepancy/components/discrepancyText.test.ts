@@ -6,42 +6,34 @@ const t = (key: string) => `[${key}]`;
 
 describe('discrepancyText', () => {
   it('bilinen kural kodunu etikete çevirir, bilinmeyeni olduğu gibi bırakır', () => {
-    expect(ruleLabel(t, 'BAG_COUNT_MISMATCH')).toBe('[discrepancy.rule.BAG_COUNT_MISMATCH]');
+    expect(ruleLabel(t, 'QUALITY_CLAIM')).toBe('[discrepancy.rule.QUALITY_CLAIM]');
     expect(ruleLabel(t, 'NEW_RULE')).toBe('NEW_RULE');
   });
 
-  it('kiloyu TR biçiminde, çuval sayısı ve plakayı olduğu gibi yazar', () => {
-    expect(formatFactValue(t, 'QUANTITY', '1000.500')).toBe('1.000,5 kg');
-    expect(formatFactValue(t, 'QUANTITY', '950')).toBe('950 kg');
-    expect(formatFactValue(t, 'BAG', '3')).toBe('3');
-    expect(formatFactValue(t, 'DOCUMENT', '34ABC123')).toBe('34ABC123');
-    expect(formatFactValue(t, 'BAG', undefined)).toBeUndefined();
-  });
-
-  it('yolda kalma süresini saatle, eksik fotoğrafı türüyle yazar', () => {
-    expect(formatFactValue(t, 'TIME', '26')).toBe('26 [discrepancy.hoursUnit]');
-    expect(formatFactValue(t, 'PHOTO', 'BAG_OVERVIEW')).toBe('[evidence.types.BAG_OVERVIEW]');
-    expect(ruleLabel(t, 'PHOTO_REUSED')).toBe('[discrepancy.rule.PHOTO_REUSED]');
+  it('kiloyu TR biçiminde, diğer değerleri olduğu gibi yazar', () => {
+    expect(formatFactValue(t, '1000.500')).toBe('1.000,5 kg');
+    expect(formatFactValue(t, '34ABC123')).toBe('34ABC123');
+    expect(formatFactValue(t, undefined)).toBeUndefined();
   });
 
   it('fiş tartısını brüt, dara ve net olarak yazar', () => {
-    expect(formatFactValue(t, 'DOCUMENT', 'gross=1200.000 tare=250.000 net=950.000')).toBe(
+    expect(formatFactValue(t, 'gross=1200.000 tare=250.000 net=950.000')).toBe(
       '[shipment.file.gross] 1.200 kg · [shipment.file.tare] 250 kg · [shipment.file.net] 950 kg',
     );
   });
 
   it('fark yoksa özet kural ve değerlerden oluşur', () => {
-    const bag = {
-      type: 'BAG',
-      ruleCode: 'BAG_COUNT_MISMATCH',
+    const claim = {
+      type: 'QUALITY',
+      ruleCode: 'QUALITY_CLAIM',
       expectedValue: '3',
       actualValue: '2',
     } as DiscrepancyView;
-    expect(summaryOf(t, bag)).toBe(
-      '[discrepancy.rule.BAG_COUNT_MISMATCH] · [discrepancy.facts.expected] 3, [discrepancy.facts.actual] 2',
+    expect(summaryOf(t, claim)).toBe(
+      '[discrepancy.rule.QUALITY_CLAIM] · [discrepancy.facts.expected] 3, [discrepancy.facts.actual] 2',
     );
-    expect(
-      summaryOf(t, { type: 'DOCUMENT', ruleCode: 'DOCUMENT_MISSING' } as DiscrepancyView),
-    ).toBe('[discrepancy.rule.DOCUMENT_MISSING]');
+    expect(summaryOf(t, { type: 'QUALITY', ruleCode: 'QUALITY_CLAIM' } as DiscrepancyView)).toBe(
+      '[discrepancy.rule.QUALITY_CLAIM]',
+    );
   });
 });

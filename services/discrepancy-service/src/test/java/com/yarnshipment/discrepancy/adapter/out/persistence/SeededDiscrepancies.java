@@ -12,7 +12,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/** Gerçek şemaya iki uyuşmazlık açar: çıkış tartısı yok (Kırmızı) ve imzalı belge yok (Sarı). */
+/** Gerçek şemaya iki uyuşmazlık açar: kalite itirazı (Kırmızı) ve hafif kalite itirazı (Sarı). */
 final class SeededDiscrepancies {
 
     static final UUID SITE = TestComparisons.SITE;
@@ -28,8 +28,8 @@ final class SeededDiscrepancies {
     static void seed(ComparisonSeeder comparisons) {
         comparisons.seed(
                 List.of(
-                        Finding.of(ComparisonRule.QUANTITY_DISPATCH_MISSING, null, TestComparisons.DISPATCH_KG),
-                        Finding.of(ComparisonRule.DOCUMENT_MISSING, null, null)),
+                        Finding.of(ComparisonRule.QUALITY_CLAIM, null, TestComparisons.DISPATCH_KG),
+                        Finding.of(ComparisonRule.QUALITY_CLAIM_MINOR, null, null)),
                 NOW,
                 DUE);
     }

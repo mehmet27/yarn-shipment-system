@@ -441,7 +441,7 @@ components:
       enum: [OVERDUE]
     DiscrepancyType:
       type: string
-      enum: [QUANTITY, BAG, SEAL, QUALITY, DOCUMENT, PHOTO, TIME]
+      enum: [QUALITY]
     Severity:
       type: string
       enum: [YELLOW, RED]

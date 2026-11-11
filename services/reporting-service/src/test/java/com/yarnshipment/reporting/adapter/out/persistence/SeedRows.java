@@ -12,7 +12,7 @@ final class SeedRows {
     private static final String INSERT_DISCREPANCY = """
             INSERT INTO discrepancy_view (discrepancy_id, discrepancy_no, shipment_id, site_id, type, severity,
                                           due_at, resolved_at, created_at)
-            VALUES (gen_random_uuid(), ?, gen_random_uuid(), ?, 'QUANTITY', ?, ?::timestamptz,
+            VALUES (gen_random_uuid(), ?, gen_random_uuid(), ?, 'QUALITY', ?, ?::timestamptz,
                     CASE WHEN ? THEN '2026-11-02T00:00:00Z'::timestamptz END, '2026-10-30T00:00:00Z')""";
 
     private static final String INSERT_SHIPMENT = """

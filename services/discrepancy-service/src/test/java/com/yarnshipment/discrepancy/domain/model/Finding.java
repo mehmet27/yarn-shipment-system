@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @param type uyuşmazlık türü
  * @param severity öncelik
- * @param ruleCode tetikleyen kural, ör. {@code QUANTITY_TOLERANCE}
+ * @param ruleCode tetikleyen kural, ör. {@code QUALITY_CLAIM}
  * @param expectedValue çıkış tarafındaki değer
  * @param actualValue teslim tarafındaki değer
  * @param diffKg miktar uyuşmazlığında ve fiş kilo kontrollerinde net fark

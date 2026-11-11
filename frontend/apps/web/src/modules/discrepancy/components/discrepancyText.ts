@@ -1,27 +1,9 @@
-import type { DiscrepancyView } from '@iplik/api-client';
 import { formatKg, isKilogram } from '@iplik/units';
+import type { DiscrepancyView } from '@iplik/api-client';
 import { formatDifference } from './formatDifference';
 
 /** Türkçe etiketi olan kural kodları (`discrepancy.rule.*`); bilinmeyen kod ham gösterilir. */
-export const KNOWN_RULES: readonly string[] = [
-  'QUANTITY_TOLERANCE',
-  'QUANTITY_DISPATCH_MISSING',
-  'BAG_COUNT_MISMATCH',
-  'BAG_KEYS_MISMATCH',
-  'SEAL_NOT_INTACT',
-  'SEAL_NO_MISMATCH',
-  'DOCUMENT_MISSING',
-  'DOCUMENT_SHIPMENT_NO_MISMATCH',
-  'DOCUMENT_NET_KG_MISMATCH',
-  'DOCUMENT_BAG_COUNT_MISMATCH',
-  'QUALITY_CLAIM',
-  'PHOTO_MISSING',
-  'PHOTO_REUSED',
-  'TIME_IN_TRANSIT_EXCEEDED',
-];
-
-/** Zorunlu fotoğraf kuralında beklenen değer kanıt türüdür (`evidence.types.*`). */
-const EVIDENCE_TYPE_PATTERN = /^[A-Z][A-Z_]+$/;
+export const KNOWN_RULES: readonly string[] = ['QUALITY_CLAIM'];
 
 type Translate = (key: string) => string;
 
@@ -29,7 +11,7 @@ export function ruleLabel(t: Translate, ruleCode: string): string {
   return KNOWN_RULES.includes(ruleCode) ? t(`discrepancy.rule.${ruleCode}`) : ruleCode;
 }
 
-/** Fiş kurallarında değer "gross=… tare=… net=…" biçimindedir (backend ScaleWeights). */
+/** Fiş değerlerinde "gross=… tare=… net=…" biçimi (backend ScaleWeights) okunur yazılır. */
 const WEIGHING_PATTERN = /^gross=(\S+) tare=(\S+) net=(\S+)$/;
 const WEIGHING_PARTS = ['shipment.file.gross', 'shipment.file.tare', 'shipment.file.net'];
 
@@ -37,15 +19,8 @@ function kgText(value: string): string {
   return isKilogram(value) ? formatKg(value) : value;
 }
 
-/**
- * Kuralın ürettiği beklenen/gerçek değeri okunur yazar: kilo "1.000,5 kg", tartı "Brüt … · Dara …",
- * yolda kalma süresi "26 saat", eksik fotoğraf türü adıyla; çuval sayısı ve plaka gibi diğerleri olduğu gibi.
- */
-export function formatFactValue(
-  t: Translate,
-  type: DiscrepancyView['type'],
-  value: string | undefined,
-): string | undefined {
+/** Kuralın ürettiği beklenen/gerçek değeri okunur yazar: kilo "1.000,5 kg", tartı "Brüt … · Dara …". */
+export function formatFactValue(t: Translate, value: string | undefined): string | undefined {
   if (value === undefined) return undefined;
   const weighing = WEIGHING_PATTERN.exec(value);
   if (weighing !== null) {
@@ -53,24 +28,12 @@ export function formatFactValue(
       (key, index) => `${t(key)} ${kgText(weighing[index + 1] ?? '')}`,
     ).join(' · ');
   }
-  if (type === 'TIME') return `${value} ${t('discrepancy.hoursUnit')}`;
-  if (type === 'PHOTO' && EVIDENCE_TYPE_PATTERN.test(value)) return t(`evidence.types.${value}`);
-  const isQuantity = type === 'QUANTITY' || value.includes('.');
-  return isQuantity ? kgText(value) : value;
+  return value.includes('.') ? kgText(value) : value;
 }
 
-/** Beklenen/gerçek değer özeti; eksik fotoğrafta yalnızca beklenen tür (hangi fotoğraf eksik) yazılır. */
-function factSummary(
-  t: Translate,
-  facts: {
-    type: DiscrepancyView['type'];
-    expected?: string | undefined;
-    actual?: string | undefined;
-  },
-): string | undefined {
-  const { type, expected, actual } = facts;
-  if (expected === undefined) return undefined;
-  if (actual === undefined) return type === 'PHOTO' ? expected : undefined;
+/** Beklenen/gerçek değer özeti; ikisi de yoksa boş. */
+function factSummary(t: Translate, expected?: string, actual?: string): string | undefined {
+  if (expected === undefined || actual === undefined) return undefined;
   return `${t('discrepancy.facts.expected')} ${expected}, ${t('discrepancy.facts.actual').toLocaleLowerCase('tr')} ${actual}`;
 }
 
@@ -78,8 +41,8 @@ function factSummary(
 export function summaryOf(t: Translate, d: DiscrepancyView): string {
   const difference = formatDifference(d.diffKg, d.diffPct);
   if (difference !== '') return difference;
-  const expected = formatFactValue(t, d.type, d.expectedValue);
-  const actual = formatFactValue(t, d.type, d.actualValue);
-  const values = factSummary(t, { type: d.type, expected, actual });
+  const expected = formatFactValue(t, d.expectedValue);
+  const actual = formatFactValue(t, d.actualValue);
+  const values = factSummary(t, expected, actual);
   return [ruleLabel(t, d.ruleCode), values].filter((part) => part !== undefined).join(' · ');
 }

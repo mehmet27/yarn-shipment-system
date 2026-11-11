@@ -464,7 +464,7 @@ Diğer servisler: `bag` (çuval, lot, rezervasyon), `evidence` (kanıt, `WAYBILL
 `discrepancy` (uyuşmazlık, kalite itirazı, numune/lab; `comparison_input` salt okunur geçmiş), `reporting`
 (okuma modeli), `audit` (hash zinciri).
 
-### 9.2 Eklenecek [Yapılacak]
+### 9.2 Eklenenler [Bugün]
 
 | Tablo | Amaç | Alanlar |
 |---|---|---|
@@ -478,8 +478,8 @@ Diğer servisler: `bag` (çuval, lot, rezervasyon), `evidence` (kanıt, `WAYBILL
 | `fire_settlement` | Sevkiyatın fire dosyası | `shipment_id`, `status`, `expected_fabric_kg`, `shortage_kg`, `invoice_no?`, `invoiced_at?`, `invoiced_by?` |
 | `yarn_supplier` | İplik tedarikçisi | `name`, `active` |
 
-Bakiye, `balance_movement` üzerinden görünümle (`subcontractor_balance_v`) hesaplanır; rapor servisi olaylarla kendi
-okuma modelini besler.
+Bakiye, `balance_movement` hareketlerinin toplamıdır; rapor servisi olaylarla kendi okuma modelini besler. Ters
+hareket kolonu (`reverses_id`) kullanılmadığı için kaldırıldı; düzeltme `CORRECTION` türüyle yeni satır olarak yazılır.
 
 ---
 
@@ -488,20 +488,20 @@ okuma modelini besler.
 | Ekran | Rol | İçerik | Bugün |
 |---|---|---|:-:|
 | Sevkiyat listesi | Hepsi | Durum süzgeci (4 durum), arama, sayfalama | ✓ |
-| Yeni sevkiyat | Müdür | Lokasyon, fasoncu, şoför/plaka; [Yapılacak] reçete satırları, fire oranı | Kısmen |
+| Yeni sevkiyat | Müdür | Lokasyon, fasoncu, şoför/plaka, reçete satırları, fire oranı | ✓ |
 | Sevkiyat dosyası | Hepsi | Başlık (durum, irsaliye no, ilerleme: Taslak → Yolda → Tamamlandı), çıkış tartısı paneli (net, çuval, brüt/dara/net, dara sapması), çuvallar, geçmiş, kanıtlar, düzeltmeler | ✓ |
 | Çuval atama | Depo | Anahtar ekle/çıkar, toplu ata | ✓ |
 | Çıkış tartısı | Depo | Brüt, dara, çuval sayısı, kantar fişi no, fiş fotoğrafı ve okuma | ✓ |
 | İrsaliyeyle tamamla | Müdür | İrsaliye yükleme, irsaliye no, tamamla | ✓ |
 | İptal | Müdür, Admin | Gerekçe | ✓ |
-| Kantar uyuşmazlığı kararı | Müdür | Beklenen/tartılan/fark, iptal / çuval ekle-çıkar / reçeteyi güncelle | ✗ |
-| Kumaş girişi | Kalite, Müdür | Sevkiyat seç, kumaş kg, iplik dağılımı | ✗ |
-| İplik dönüşü | Depo, Müdür | Sevkiyat, iplik, kg | ✗ |
-| Fire dosyası | Müdür | G, D, I, K, B, hatalı kg, "fatura edildi" | ✗ |
-| Fasoncu bakiyesi | Müdür, Genel müdür | İplik cinsi × fasoncu matrisi, hareket dökümü | ✗ |
+| Kantar uyuşmazlığı kararı | Müdür | Beklenen/tartılan/fark, iptal / çuval ekle-çıkar / reçeteyi güncelle | ✓ |
+| Kumaş girişi | Kalite, Müdür | Sevkiyat seç, kumaş kg, iplik dağılımı | ✓ |
+| İplik dönüşü | Depo, Müdür | Sevkiyat, iplik, kg | ✓ |
+| Fire dosyası | Müdür | G, D, I, K, B, hatalı kg, "fatura edildi" | ✓ |
+| Fasoncu bakiyesi | Müdür, Genel müdür | İplik cinsi × fasoncu matrisi, hareket dökümü | ✓ |
 | Kalite itirazları, uyuşmazlıklar | Kalite, Admin, Müdür | Bugünkü akış | ✓ |
 | Tanımlar, Kullanıcılar, Denetim kaydı | Admin | Bugünkü akış | ✓ |
-| Saha (fasoncu) | — | Geçiş dönemi; kaldırılacak | ✓ |
+| Saha (fasoncu) | — | Kaldırıldı; fasoncu sisteme girmez | — |
 
 Ekranlar telefon (360 px), tablet (768 px) ve masaüstünde (1280 px) yatay taşmasız açılır; e2e testleri her ekranı
 bu üç genişlikte denetler.
@@ -516,15 +516,15 @@ bu üç genişlikte denetler.
 | Fasoncu raporu | ✓ | Fasoncu bazında sevkiyat sayısı, uyuşmazlıklı sevkiyat oranı |
 | Sevkiyat dökümü | ✓ | Sevkiyat no, fasoncu, durum, çıkış neti, tarih |
 | Fasoncu bakiye (basit) | ✓ | Gönderilen / yolda / tamamlanan kg |
-| **Bakiye matrisi** | ✗ | İplik cinsi × fasoncu (09.11.2026 tablosunun ekranı), merkez sütunu, toplamlar |
-| **Fire raporu** | ✗ | Sevkiyat bazında G, D, I, K, beklenen, gerçekleşen fire %, hatalı kg, fatura durumu |
-| **Giden iplik ↔ gelen kumaş** | ✗ | Kırıkhan Excel'inin ekran hali, fasoncu bazında |
-| **Faturalanacaklar** | ✗ | Hatalı kg > 0 ve faturalanmamış dosyalar |
+| **Bakiye matrisi** | ✓ | İplik cinsi × fasoncu (09.11.2026 tablosunun ekranı), merkez sütunu, toplamlar |
+| **Fire raporu** | ✓ | Sevkiyat bazında G, D, I, K, beklenen, gerçekleşen fire %, hatalı kg, fatura durumu |
+| **Giden iplik ↔ gelen kumaş** | ✓ | Kırıkhan Excel'inin ekran hali, fasoncu bazında |
+| **Faturalanacaklar** | ✓ | Hatalı kg > 0 ve faturalanmamış dosyalar |
 
-Bütün raporlar Excel (.xlsx) ve yazdırılabilir PDF olarak indirilir; dönem, lokasyon ve fasoncu süzgeci vardır.
+Bütün raporlar Excel (.xlsx) ve PDF dosyası olarak indirilir; dönem, lokasyon ve fasoncu süzgeci vardır.
 
-> Not: Çıkış–teslim karşılaştırmasına dayanan "Yeşil/Sarı/Kırmızı bant" ve "en büyük farklar" göstergeleri yeni
-> sevkiyatlarda boş kalır; fire raporu gelince yerlerini fire göstergeleri alacak.
+> Not: Çıkış–teslim karşılaştırmasına dayanan "Yeşil/Sarı/Kırmızı bant" ve "en büyük farklar" göstergeleri kaldırıldı;
+> yerlerini fire göstergeleri aldı. Uyuşmazlık servisi yalnızca kalite itirazı (`QUALITY`) üretir.
 
 ---
 
@@ -600,16 +600,16 @@ basımı isteğe bağlı kalsın. Karar Bölüm 15, A4.
 | Sıra | İş | İçerik | Boyut |
 |---|---|---|---|
 | ✓ | **Sadeleştirme (bu sürüm)** | Şoför, mühür, kör teslim, teslim tartısı, otomatik karşılaştırma kaldırıldı; irsaliyeyle tamamlama | — |
-| 1 | Reçete ve fire oranı | `shipment_line`, `fire_rate`, yeni sevkiyat ekranı, ayarlar | K–O |
-| 2 | Kantar uyuşmazlığı | Boş/dolu araç tartısı, `WEIGHT_MISMATCH`, müdür kararı, eksik gönderim nedeni, bildirim | O |
-| 3 | Bakiye defteri | `balance_movement`, tamamlamada `DISPATCH` hareketi, bakiye görünümü | O–B |
-| 4 | Kumaş girişi | Kayıt, iplik dağılımı, bakiyeden düşme | O |
-| 5 | İplik dönüşü / gelen iplik | Kayıt, bakiye ve fire tabanı | K–O |
-| 6 | Fire dosyası ve "fatura edildi" | Hesap, faturalanacaklar listesi, işaret | O |
-| 7 | Kalite itirazının taşınması | Fabrika personeli açar, haklı itiraz bakiye düzeltmesi; fasoncu rolü ve saha ekranı kaldırılır | O |
-| 8 | Raporlar | Bakiye matrisi, fire raporu, giden iplik ↔ gelen kumaş, faturalanacaklar; Excel/PDF | O–B |
-| 9 | Açılış bakiyesi | 09.11.2026 tablosu ve fasoncu sayfalarından içe aktarma, Kırıkhan kabul testi | K–O |
-| 10 | Genel müdür rolü, iplik tedarikçisi | Salt okuma rolü, tedarikçi tanımı ve lota bağlanması | K |
+| ✓ | Reçete ve fire oranı | `shipment_line`, `fire_rate`, yeni sevkiyat ekranı, ayarlar | K–O |
+| ✓ | Kantar uyuşmazlığı | Boş/dolu araç tartısı, `WEIGHT_MISMATCH`, müdür kararı, eksik gönderim nedeni, bildirim | O |
+| ✓ | Bakiye defteri | `balance_movement`, tamamlamada `DISPATCH` hareketi, bakiye görünümü | O–B |
+| ✓ | Kumaş girişi | Kayıt, iplik dağılımı, bakiyeden düşme | O |
+| ✓ | İplik dönüşü / gelen iplik | Kayıt, bakiye ve fire tabanı | K–O |
+| ✓ | Fire dosyası ve "fatura edildi" | Hesap, faturalanacaklar listesi, işaret | O |
+| ✓ | Kalite itirazının taşınması | Fabrika personeli açar, haklı itiraz bakiye düzeltmesi; fasoncu rolü ve saha ekranı kaldırılır | O |
+| ✓ | Raporlar | Bakiye matrisi, fire raporu, giden iplik ↔ gelen kumaş, faturalanacaklar; Excel/PDF | O–B |
+| ✓ | Açılış bakiyesi | 09.11.2026 tablosu ve fasoncu sayfalarından içe aktarma, Kırıkhan kabul testi | K–O |
+| ✓ | Genel müdür rolü, iplik tedarikçisi | Salt okuma rolü, tedarikçi tanımı ve lota bağlanması | K |
 
 Boyut: K ≈ 1–2 gün, O ≈ 3–5 gün, B ≈ 1–2 hafta.
 
@@ -647,7 +647,7 @@ Boyut: K ≈ 1–2 gün, O ≈ 3–5 gün, B ≈ 1–2 hafta.
 7. *Düzeltme:* Admin tamamlanan sevkiyatta brütü 2.010 yapar, gerekçe yazar → eski ve yeni değer düzeltmeler
    sekmesinde görünür; gerekçesiz düzeltme gönderilmez.
 
-**Yapılacaklar için kabul ölçütleri**
+**Sonradan eklenen özellikler için kabul ölçütleri (artık çalışıyor)**
 
 8. *Kantar uyuşmazlığı:* Reçete 1.000 kg, tartı neti 980 kg, tolerans 0 → durum "Kantar uyuşmazlığı", müdüre
    bildirim; depo yola çıkaramaz.

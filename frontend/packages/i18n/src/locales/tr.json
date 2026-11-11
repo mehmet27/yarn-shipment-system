@@ -452,13 +452,7 @@
       "RED": "Kırmızı"
     },
     "type": {
-      "QUANTITY": "Miktar",
-      "BAG": "Çuval",
-      "SEAL": "Mühür",
-      "QUALITY": "Kalite",
-      "DOCUMENT": "Belge",
-      "PHOTO": "Fotoğraf",
-      "TIME": "Süre"
+      "QUALITY": "Kalite"
     },
     "resolution": {
       "TOLERANCE": "Tolerans içinde",
@@ -509,22 +503,8 @@
       "INSPECTION_RESULT": "Kontrol sonucu girildi"
     },
     "rule": {
-      "QUANTITY_TOLERANCE": "Net kilo tolerans dışında",
-      "QUANTITY_DISPATCH_MISSING": "Çıkış tartısı yok",
-      "BAG_COUNT_MISMATCH": "Çuval sayısı tutmuyor",
-      "BAG_KEYS_MISMATCH": "Okutulan çuvallar tutmuyor",
-      "SEAL_NOT_INTACT": "Mühür sağlam değil",
-      "SEAL_NO_MISMATCH": "Mühür numarası tutmuyor",
-      "DOCUMENT_MISSING": "İmzalı irsaliye yok",
-      "DOCUMENT_SHIPMENT_NO_MISMATCH": "İrsaliyedeki sevkiyat no tutmuyor",
-      "DOCUMENT_NET_KG_MISMATCH": "İrsaliyedeki net kilo tutmuyor",
-      "DOCUMENT_BAG_COUNT_MISMATCH": "İrsaliyedeki çuval sayısı tutmuyor",
-      "QUALITY_CLAIM": "Kalite talebi",
-      "PHOTO_MISSING": "Zorunlu fotoğraf yüklenmemiş",
-      "PHOTO_REUSED": "Fotoğraf başka sevkiyatta kullanılmış",
-      "TIME_IN_TRANSIT_EXCEEDED": "Sevkiyat yolda çok kaldı"
-    },
-    "hoursUnit": "saat"
+      "QUALITY_CLAIM": "Kalite talebi"
+    }
   },
   "evidence": {
     "title": "Fotoğraf ve belgeler",

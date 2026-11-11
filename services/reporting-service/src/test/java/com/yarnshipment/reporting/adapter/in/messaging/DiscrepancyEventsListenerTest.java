@@ -27,7 +27,7 @@ class DiscrepancyEventsListenerTest {
     @Test
     @DisplayName("Açılış olayı vade ve öncelik taşır, açılış zamanı olay zamanıdır")
     void shouldMapOpened() {
-        String json = "{" + HEAD + ",\"type\":\"QUANTITY\",\"severity\":\"RED\",\"ruleCode\":\"QTY\","
+        String json = "{" + HEAD + ",\"type\":\"QUALITY\",\"severity\":\"RED\",\"ruleCode\":\"QTY\","
                 + "\"dueAt\":\"2026-11-10T08:00:00Z\"}";
 
         var change = (ReadModelChange.DiscrepancyOpened) apply("discrepancy-opened.v1", json);

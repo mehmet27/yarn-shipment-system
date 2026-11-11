@@ -12,26 +12,11 @@ const SYSTEM_ACTOR_ID = '00000000-0000-0000-0000-000000000000';
 const DAY_MS = 86_400_000;
 const BASE_TIME = Date.parse('2026-10-20T08:00:00Z');
 const STATUSES: readonly DiscrepancyStatus[] = ['OPEN', 'OPEN', 'IN_REVIEW', 'RESOLVED', 'CLOSED'];
-const TYPES = ['QUANTITY', 'BAG', 'SEAL', 'QUALITY', 'DOCUMENT'] as const;
 
-type Facts = Pick<
-  DiscrepancyView,
-  'ruleCode' | 'expectedValue' | 'actualValue' | 'diffKg' | 'diffPct'
->;
-
-/** Backend kural kodları ve değer biçimleri (discrepancy-service ComparisonRule, Comparison). */
-const FACTS: Readonly<Record<(typeof TYPES)[number], Facts>> = {
-  QUANTITY: {
-    ruleCode: 'QUANTITY_TOLERANCE',
-    expectedValue: '2000.000',
-    actualValue: '1960.000',
-    diffKg: '40.000',
-    diffPct: '2.00',
-  },
-  BAG: { ruleCode: 'BAG_COUNT_MISMATCH', expectedValue: '3', actualValue: '2' },
-  SEAL: { ruleCode: 'SEAL_NO_MISMATCH', expectedValue: 'M-0001', actualValue: 'M-0091' },
-  QUALITY: { ruleCode: 'QUALITY_CLAIM' },
-  DOCUMENT: { ruleCode: 'DOCUMENT_MISSING' },
+/** Backend yalnızca kalite itirazı üretir (QualityClaimWriter): kural QUALITY_CLAIM, değer "45.500 kg". */
+const FACTS: Pick<DiscrepancyView, 'ruleCode' | 'actualValue'> = {
+  ruleCode: 'QUALITY_CLAIM',
+  actualValue: '45.500 kg',
 };
 
 function severityOf(index: number): Severity {
@@ -41,16 +26,15 @@ function severityOf(index: number): Severity {
 function create(index: number): DiscrepancyView {
   const status = STATUSES[index % STATUSES.length] ?? 'OPEN';
   const no = String(index + 1).padStart(4, '0');
-  const type = TYPES[index % TYPES.length] ?? 'QUANTITY';
   return {
     id: `disc-${String(index)}`,
     discrepancyNo: `UY-2026-${no}`,
     siteId: 'site-merkez',
     shipmentId: `shipment-${String(index)}`,
-    type,
+    type: 'QUALITY',
     severity: severityOf(index),
     status,
-    ...FACTS[type],
+    ...FACTS,
     dueAt: new Date(BASE_TIME + (index + 5) * DAY_MS).toISOString(),
     createdAt: new Date(BASE_TIME + index * DAY_MS).toISOString(),
     ...(status === 'RESOLVED' || status === 'CLOSED'

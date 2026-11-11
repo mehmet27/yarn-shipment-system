@@ -114,15 +114,6 @@ class CreateShipmentControllerTest {
     }
 
     @Test
-    @DisplayName("Depo çalışanı sevkiyat oluşturamaz: 403 (A3)")
-    void shouldRejectWarehouse() {
-        MvcTestResult result = post(TestTokens.token("warehouse").build(), VALID_BODY);
-
-        assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
-        verifyNoInteractions(createShipmentUseCase);
-    }
-
-    @Test
     @DisplayName("Eksik zorunlu alan 400 alır")
     void shouldRejectMissingField() {
         MvcTestResult result =

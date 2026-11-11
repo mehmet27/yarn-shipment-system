@@ -1,15 +1,13 @@
 import type { Page } from '@playwright/test';
 
-const READABLE_BYTES = 2000;
-const UNREADABLE_BYTES = 10;
+const PHOTO_BYTES = 2000;
 
-/** Kantar fişini kameradan çekmiş gibi yükler; küçük dosya sahte API'de "okunamadı" döner. */
-export async function captureTicket(page: Page, isReadable = true) {
-  const size = isReadable ? READABLE_BYTES : UNREADABLE_BYTES;
+/** Kantar fişini kameradan çekmiş gibi yükler ve gönderir. */
+export async function captureTicket(page: Page) {
   await page.getByTestId('ticket-input').setInputFiles({
     name: 'fis.jpg',
     mimeType: 'image/jpeg',
-    buffer: Buffer.alloc(size),
+    buffer: Buffer.alloc(PHOTO_BYTES),
   });
   await page.getByRole('button', { name: 'Fotoğrafı gönder' }).click();
 }

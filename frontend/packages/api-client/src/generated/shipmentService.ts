@@ -288,7 +288,8 @@ export interface RecipeLineInput {
      */
   yarnTypeText?: string;
   lotId?: string;
-  netKg: Kg;  /**
+  netKg: Kg;
+  /**
      * Sipariş formu, kumaş cinsi
      * @maxLength 200
      */
@@ -360,7 +361,8 @@ export interface RecipeLineView {
   yarnTypeId?: string;
   yarnTypeText?: string;
   lotId?: string;
-  netKg: Kg;  /**
+  netKg: Kg;
+  /**
      * Sipariş formu, kumaş cinsi
      * @maxLength 200
      */

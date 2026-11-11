@@ -21,14 +21,18 @@ public final class PostgresTestDatabase {
         this.postgres = postgres;
     }
 
-    /** Yalnızca çağıran testin kullandığı, commit edilen verinin başka testleri etkilemediği yeni konteyner. */
+    /**
+     * Yalnızca çağıran testin kullandığı, commit edilen verinin başka testleri etkilemediği yeni konteyner. Önbellekteki
+     * her Spring bağlamı kendi havuzunu açtığından bağlantı sınırı yükseltilir ("too many clients" kararsızlığı).
+     */
     public static PostgresTestDatabase startIsolated() {
         PostgreSQLContainer container = new PostgreSQLContainer(
                         DockerImageName.parse("mirror.gcr.io/library/postgres:17")
                                 .asCompatibleSubstituteFor("postgres"))
                 .withDatabaseName("yarnshipment")
                 .withUsername("yarnshipment")
-                .withPassword(APP_PASSWORD);
+                .withPassword(APP_PASSWORD)
+                .withCommand("postgres", "-c", "fsync=off", "-c", "max_connections=400");
         container.start();
         return new PostgresTestDatabase(container);
     }

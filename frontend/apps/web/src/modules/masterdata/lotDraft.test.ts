@@ -6,6 +6,7 @@ const VALID = {
   lotNo: 'p-2026-1',
   productId: 'prd-0',
   qualityGradeId: 'grd-a',
+  yarnSupplierId: '',
   productionDate: '2026-10-10',
 };
 

@@ -9,7 +9,7 @@ describe('appRoutes', () => {
   it.each<[Role, string]>([
     ['ADMIN', '/panel'],
     ['MANAGER', '/panel'],
-    ['SUBCONTRACTOR', '/saha'],
+    ['GENERAL_MANAGER', '/panel/raporlar'],
   ])('%s rolü ana sayfadan %s kabuğuna yönlenir', async (role, expectedPath) => {
     server.use(createMeHandler(role));
     const { router } = renderApp('/');

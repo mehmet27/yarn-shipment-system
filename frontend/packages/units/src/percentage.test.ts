@@ -5,6 +5,8 @@ import {
   fireRateToPctInput,
   formatPct,
   parseFireRatePct,
+  pctInputToRate,
+  rateToPct,
 } from './percentage';
 
 const kg = (value: string) => value as Kilogram;
@@ -53,5 +55,22 @@ describe('fire oranı', () => {
   it('kesri yüzde girdisine çevirir', () => {
     expect(fireRateToPctInput('0.0400')).toBe('4');
     expect(fireRateToPctInput('0.0425')).toBe('4,25');
+  });
+});
+
+describe('fire oranı dönüşümü', () => {
+  it('oranı yüzde metnine çevirir', () => {
+    expect(rateToPct('0.0400')).toBe('4');
+    expect(rateToPct('0.0425')).toBe('4.25');
+    expect(rateToPct('x')).toBeUndefined();
+  });
+
+  it('yüzde girdisini orana çevirir ve sınırı denetler', () => {
+    expect(pctInputToRate('4', 20)).toBe('0.0400');
+    expect(pctInputToRate('4,5', 20)).toBe('0.0450');
+    expect(pctInputToRate('20', 20)).toBe('0.2000');
+    expect(pctInputToRate('20,1', 20)).toBeUndefined();
+    expect(pctInputToRate('abc', 20)).toBeUndefined();
+    expect(pctInputToRate('', 20)).toBeUndefined();
   });
 });

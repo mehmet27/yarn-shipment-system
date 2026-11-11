@@ -13,7 +13,12 @@ type PanelNavItem = {
 };
 
 const ITEMS: readonly PanelNavItem[] = [
-  { to: '/panel/sevkiyat', labelKey: 'nav.shipments', icon: 'shipments' },
+  {
+    to: '/panel/sevkiyat',
+    labelKey: 'nav.shipments',
+    icon: 'shipments',
+    permission: 'SHIPMENT_VIEW',
+  },
   { to: '/panel/cuvallar', labelKey: 'nav.bags', icon: 'bags', permission: 'BAG_CREATE' },
   { to: '/panel/raporlar', labelKey: 'nav.reports', icon: 'reports', permission: 'REPORT_VIEW' },
   {
@@ -40,6 +45,18 @@ const ITEMS: readonly PanelNavItem[] = [
     labelKey: 'nav.branding',
     icon: 'branding',
     permission: 'SETTINGS_MANAGE',
+  },
+  {
+    to: '/panel/bakiye',
+    labelKey: 'nav.balances',
+    icon: 'balances',
+    permission: 'BALANCE_VIEW',
+  },
+  {
+    to: '/panel/faturalanacaklar',
+    labelKey: 'nav.toInvoice',
+    icon: 'invoices',
+    permission: 'INVOICE_MARK',
   },
   { to: '/panel/denetim', labelKey: 'nav.audit', icon: 'audit', permission: 'AUDIT_VIEW' },
   { to: '/panel/kullanicilar', labelKey: 'nav.users', icon: 'users', permission: 'USER_MANAGE' },

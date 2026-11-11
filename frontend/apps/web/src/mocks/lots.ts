@@ -13,6 +13,8 @@ const SEED: readonly LotView[] = [
     qualityGradeId: 'grd-a',
     qualityGradeCode: 'A',
     qualityGradeName: 'Birinci kalite',
+    yarnSupplierId: 'ysup-0',
+    yarnSupplierName: 'Şireci',
     productionDate: '2026-10-01',
     qualityLockedAt: '2026-10-02T08:00:00Z',
     active: true,
@@ -41,6 +43,7 @@ export type MockLotInput = {
   lotNo: string;
   productId: string;
   qualityGradeId: string;
+  yarnSupplierId?: string;
   productionDate: string;
 };
 
@@ -56,7 +59,7 @@ export function isDuplicateLotNo(siteId: string, lotNo: string, exceptId?: strin
   return lots.some((lot) => lot.siteId === siteId && lot.lotNo === lotNo && lot.id !== exceptId);
 }
 
-function labelOf(kind: 'site' | 'product' | 'qualityGrade', id: string) {
+function labelOf(kind: 'site' | 'product' | 'qualityGrade' | 'yarnSupplier', id: string) {
   return listMasterRecords(kind).find((record) => record.id === id && record.isActive);
 }
 
@@ -66,6 +69,9 @@ export function toMockLot(id: string, input: MockLotInput): LotView | undefined 
   const product = labelOf('product', input.productId);
   const grade = labelOf('qualityGrade', input.qualityGradeId);
   if (site === undefined || product === undefined || grade === undefined) return undefined;
+  const supplier =
+    input.yarnSupplierId === undefined ? undefined : labelOf('yarnSupplier', input.yarnSupplierId);
+  if (input.yarnSupplierId !== undefined && supplier === undefined) return undefined;
   return {
     id,
     siteId: site.id,
@@ -77,6 +83,9 @@ export function toMockLot(id: string, input: MockLotInput): LotView | undefined 
     qualityGradeId: grade.id,
     qualityGradeCode: grade.code ?? '',
     qualityGradeName: grade.label,
+    ...(supplier === undefined
+      ? {}
+      : { yarnSupplierId: supplier.id, yarnSupplierName: supplier.label }),
     productionDate: input.productionDate,
     active: true,
   };

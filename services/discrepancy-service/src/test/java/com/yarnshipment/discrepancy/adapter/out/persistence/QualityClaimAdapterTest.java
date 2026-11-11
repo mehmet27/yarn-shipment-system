@@ -28,7 +28,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-    ComparisonSeeder.class,
+    ShipmentWatchAdapter.class,
     DiscrepancyWriter.class,
     QualityClaimAdapter.class,
     QualityClaimWriter.class,
@@ -42,7 +42,7 @@ class QualityClaimAdapterTest {
     private JwtDecoder jwtDecoder;
 
     @Autowired
-    private ComparisonSeeder comparisons;
+    private ShipmentWatchAdapter watch;
 
     @Autowired
     private QualityClaimAdapter claims;
@@ -60,29 +60,31 @@ class QualityClaimAdapterTest {
 
     @BeforeEach
     void cleanDelivery() {
-        SeededClaims.deliver(comparisons);
+        SeededClaims.complete(watch);
     }
 
     @Test
-    @DisplayName("Teslim hedefi karşılaştırma girdisinden okunur; okutulan anahtarlar sırasıyla gelir")
+    @DisplayName("İtiraz hedefi izleme kaydından okunur; tamamlanmamış sevkiyat hedef değildir")
     void shouldReadTarget() {
         ClaimTarget target = claims.findTarget(TestComparisons.SHIPMENT).orElseThrow();
 
         assertThat(target.siteId()).isEqualTo(TestComparisons.SITE);
         assertThat(target.subcontractorId()).isEqualTo(TestComparisons.SUBCONTRACTOR);
-        assertThat(target.deliveredKeys()).containsExactlyElementsOf(TestComparisons.KEYS);
+        assertThat(target.completedAt()).isEqualTo(TestComparisons.RECEIVED_AT);
+        assertThat(target.netKg()).isEqualByComparingTo(TestComparisons.DISPATCH_KG);
         assertThat(claims.findTarget(UUID.randomUUID())).isEmpty();
     }
 
     @Test
-    @DisplayName("İtiraz Kırmızı QUALITY uyuşmazlığı, çuvalları, fotoğrafları ve açılış olayıyla yazılır")
+    @DisplayName("İtiraz Kırmızı QUALITY uyuşmazlığı, kilosu, fotoğrafları ve açılış olayıyla yazılır")
     void shouldSaveClaim() {
         QualityClaim saved = SeededClaims.open(claims);
 
         QualityClaim stored = claims.findClaims(TestComparisons.SHIPMENT).getFirst();
         assertThat(stored).isEqualTo(saved);
         assertThat(claims.findClaim(saved.id())).contains(saved);
-        assertThat(stored.bagKeys()).containsExactly("UK-0001");
+        assertThat(stored.claimedKg()).isEqualByComparingTo("120.5");
+        assertThat(stored.fabricReceiptId()).isNull();
         assertThat(stored.evidenceIds()).containsExactly(SeededClaims.PHOTO);
         Discrepancy discrepancy =
                 discrepancies.findDiscrepancy(saved.discrepancyId()).orElseThrow();

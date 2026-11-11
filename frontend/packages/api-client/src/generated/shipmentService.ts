@@ -42,9 +42,9 @@ export type Role = typeof Role[keyof typeof Role];
 export const Role = {
   ADMIN: 'ADMIN',
   WAREHOUSE: 'WAREHOUSE',
-  SUBCONTRACTOR: 'SUBCONTRACTOR',
   QUALITY: 'QUALITY',
   MANAGER: 'MANAGER',
+  GENERAL_MANAGER: 'GENERAL_MANAGER',
 } as const;
 
 export type Permission = typeof Permission[keyof typeof Permission];
@@ -73,6 +73,12 @@ export const Permission = {
   DISCREPANCY_RESOLVE: 'DISCREPANCY_RESOLVE',
   AUDIT_VIEW: 'AUDIT_VIEW',
   REPORT_VIEW: 'REPORT_VIEW',
+  FABRIC_RECEIPT_RECORD: 'FABRIC_RECEIPT_RECORD',
+  YARN_RETURN_RECORD: 'YARN_RETURN_RECORD',
+  FIRE_RATE_EDIT: 'FIRE_RATE_EDIT',
+  INVOICE_MARK: 'INVOICE_MARK',
+  BALANCE_VIEW: 'BALANCE_VIEW',
+  WEIGHT_MISMATCH_RESOLVE: 'WEIGHT_MISMATCH_RESOLVE',
 } as const;
 
 export interface CurrentUserResponse {
@@ -81,8 +87,6 @@ export interface CurrentUserResponse {
   roles: Role[];
   permissions: Permission[];
   siteIds: string[];
-  /** Yalnızca fasoncu kullanıcılarında */
-  subcontractorId?: string;
   mfaVerified: boolean;
 }
 
@@ -150,7 +154,6 @@ export type Audience = typeof Audience[keyof typeof Audience];
 export const Audience = {
   INTERNAL: 'INTERNAL',
   WAREHOUSE: 'WAREHOUSE',
-  SUBCONTRACTOR: 'SUBCONTRACTOR',
 } as const;
 
 /**
@@ -428,31 +431,6 @@ export interface DriverPageResponse {
   page: PageMetadata;
 }
 
-export interface LoginAccountRequest {
-  /**
-     * Giriş adı; küçük harf, rakam, nokta, alt çizgi ve tire
-     * @pattern ^[a-z0-9][a-z0-9._-]{2,63}$
-     */
-  username: string;
-  /**
-     * Cep telefonu (ör. 0532 123 45 67 ya da +905321234567); şifre kodu bu numaraya SMS'le gider
-     * @minLength 7
-     * @maxLength 20
-     */
-  phone: string;
-  /**
-     * İsteğe bağlı; şoför ve fasoncunun e-postası olmayabilir
-     * @maxLength 255
-     */
-  email?: string;
-  /**
-     * Kişinin sevkiyatlarını göreceği etkin lokasyonlar
-     * @minItems 1
-     * @maxItems 100
-     */
-  siteIds: string[];
-}
-
 /**
  * Giriş hesabının özeti; şifre ya da kimlik bilgisi içermez.
  */
@@ -485,6 +463,7 @@ export const StaffRole = {
   WAREHOUSE: 'WAREHOUSE',
   QUALITY: 'QUALITY',
   MANAGER: 'MANAGER',
+  GENERAL_MANAGER: 'GENERAL_MANAGER',
 } as const;
 
 export interface StaffLoginAccountRequest {
@@ -734,6 +713,35 @@ export interface QualityGradePageResponse {
   page: PageMetadata;
 }
 
+export interface YarnSupplierCreateRequest {
+  /**
+     * Tedarikçi adı; büyük/küçük harf duyarsız tekildir
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+}
+
+export interface YarnSupplierUpdateRequest {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+}
+
+export interface YarnSupplierView {
+  /** Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir */
+  active?: boolean;
+  id: string;
+  name: string;
+}
+
+export interface YarnSupplierPageResponse {
+  items: YarnSupplierView[];
+  page: PageMetadata;
+}
+
 export interface LotCreateRequest {
   siteId: string;
   /**
@@ -745,6 +753,8 @@ export interface LotCreateRequest {
   productId: string;
   qualityGradeId: string;
   productionDate: string;
+  /** İsteğe bağlı iplik tedarikçisi; etkin olmalıdır. Kalite kilitlenmeden önce verilebilir */
+  yarnSupplierId?: string;
 }
 
 export interface LotUpdateRequest {
@@ -757,6 +767,8 @@ export interface LotUpdateRequest {
   productId: string;
   qualityGradeId: string;
   productionDate: string;
+  /** İsteğe bağlı iplik tedarikçisi; etkin olmalıdır. Kalite kilitlenmeden önce verilebilir */
+  yarnSupplierId?: string;
 }
 
 export interface LotView {
@@ -771,6 +783,9 @@ export interface LotView {
   qualityGradeCode: string;
   qualityGradeName: string;
   productionDate: string;
+  /** İplik tedarikçisi; atanmamışsa boş */
+  yarnSupplierId?: string;
+  yarnSupplierName?: string;
   /** Kalitenin kilitlendiği an; boşsa parti kilitsizdir ve düzenlenebilir */
   qualityLockedAt?: string;
   active: boolean;
@@ -909,18 +924,16 @@ export interface WarehouseShipmentView {
   allowedActions: ShipmentAction[];
 }
 
-export type SubcontractorShipmentViewAudience = typeof SubcontractorShipmentViewAudience[keyof typeof SubcontractorShipmentViewAudience];
-
-
-export const SubcontractorShipmentViewAudience = {
-  SUBCONTRACTOR: 'SUBCONTRACTOR',
-} as const;
+/**
+ * İsteyenin rolüne göre iki görünümden biri (API-09).
+ */
+export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView;
 
 /**
  * Fasoncu. Beklenen yükü içermez.
  */
 export interface SubcontractorShipmentView {
-  audience: SubcontractorShipmentViewAudience;
+  audience: Audience;
   shipmentId: string;
   shipmentNo: string;
   siteId: string;
@@ -932,11 +945,6 @@ export interface SubcontractorShipmentView {
   createdAt: string;
   allowedActions: ShipmentAction[];
 }
-
-/**
- * İsteyenin rolüne göre üç görünümden biri (API-09).
- */
-export type ShipmentDetailResponse = InternalShipmentView | WarehouseShipmentView | SubcontractorShipmentView;
 
 /**
  * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE) ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da düzeltilecek kayıt bu arada değişti (CORRECTION_CONFLICT)
@@ -1143,6 +1151,28 @@ siteId?: string;
 };
 
 export type ListQualityGradesParams = {
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
+};
+
+export type ListYarnSuppliersParams = {
 /**
  * @minimum 0
  */
@@ -1404,27 +1434,6 @@ export const deactivateDriver = (
  ) => {
       return customInstance<void>(
       {url: `/api/v1/master-data/drivers/${driverId}/deactivate`, method: 'POST'
-    },
-      );
-    }
-
-/**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Keycloak'ta kullanıcıyı şifresiz; rol, telefon ve kimlik/lokasyon
- * öznitelikleriyle açar. Şifre üretilmez ve hiçbir yanıtta yer almaz: kişiye SMS ile bir kod gider, kişi giriş
- * sayfasındaki "Şifremi unuttum" ile kodu girip kendi şifresini belirler. SMS gidemezse 502 `SMS_UNAVAILABLE`
- * (hesap açık kalır; yönetici sıfırlamayı yeniden başlatır). Kayıt etkin olmalı, `siteIds` etkin lokasyonlardan oluşmalıdır (`INVALID_MASTER_DATA`). Kayıt için
- * hesap zaten varsa ya da giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak'a ulaşılamazsa ya da
- * yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
- * @summary Fasoncu için giriş hesabı açar
- */
-export const createSubcontractorLoginAccount = (
-    subcontractorId: string,
-    loginAccountRequest: LoginAccountRequest,
- ) => {
-      return customInstance<void>(
-      {url: `/api/v1/master-data/subcontractors/${subcontractorId}/login-account`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: loginAccountRequest
     },
       );
     }
@@ -1921,6 +1930,77 @@ export const activateQualityGrade = (
     }
 
 /**
+ * İplik tedarikçisi (Şireci, Karesi ...) seçimi için; ada göre sıralı. Arama `q` ile adda yapılır. Pasifleri yalnızca yönetici `status=ALL` ile görür.
+ * @summary İplik tedarikçisi listesi
+ */
+export const listYarnSuppliers = (
+    params?: ListYarnSuppliersParams,
+ ) => {
+      return customInstance<YarnSupplierPageResponse>(
+      {url: `/api/v1/master-data/yarn-suppliers`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Ad büyük/küçük harf duyarsız tekildir (`DUPLICATE_CODE`, alan `name`). Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz.
+ * @summary İplik tedarikçisi ekler
+ */
+export const createYarnSupplier = (
+    yarnSupplierCreateRequest: YarnSupplierCreateRequest,
+ ) => {
+      return customInstance<YarnSupplierView>(
+      {url: `/api/v1/master-data/yarn-suppliers`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: yarnSupplierCreateRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Adı değiştirir; yeni ad da tekil olmalıdır.
+ * @summary İplik tedarikçisi günceller
+ */
+export const updateYarnSupplier = (
+    yarnSupplierId: string,
+    yarnSupplierUpdateRequest: YarnSupplierUpdateRequest,
+ ) => {
+      return customInstance<YarnSupplierView>(
+      {url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: yarnSupplierUpdateRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez; pasif tedarikçi yeni partiye verilemez. Tekrarı zararsızdır.
+ * @summary İplik tedarikçisi pasife alır
+ */
+export const deactivateYarnSupplier = (
+    yarnSupplierId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}/deactivate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı geri getirir. Tekrarı zararsızdır.
+ * @summary İplik tedarikçisi yeniden etkinleştirir
+ */
+export const activateYarnSupplier = (
+    yarnSupplierId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}/activate`, method: 'POST'
+    },
+      );
+    }
+
+/**
  * Partiler, üretim tarihine göre yeniden eskiye. Yalnızca kullanıcının yetkili olduğu lokasyonların partileri gelir; `MASTER_DATA_MANAGE` izni olan hepsini görür. Arama `q` ile parti numarası, iplik kodu ve adında yapılır. `status=ALL` için `LOT_QUALITY_LOCK` gerekir.
  * @summary Parti listesi
  */
@@ -2189,7 +2269,6 @@ export type ListDriversResult = NonNullable<Awaited<ReturnType<typeof listDriver
 export type CreateDriverResult = NonNullable<Awaited<ReturnType<typeof createDriver>>>
 export type UpdateDriverResult = NonNullable<Awaited<ReturnType<typeof updateDriver>>>
 export type DeactivateDriverResult = NonNullable<Awaited<ReturnType<typeof deactivateDriver>>>
-export type CreateSubcontractorLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createSubcontractorLoginAccount>>>
 export type ListLoginAccountsResult = NonNullable<Awaited<ReturnType<typeof listLoginAccounts>>>
 export type CreateStaffLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createStaffLoginAccount>>>
 export type ListUserNamesResult = NonNullable<Awaited<ReturnType<typeof listUserNames>>>
@@ -2223,6 +2302,11 @@ export type CreateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof cre
 export type UpdateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof updateQualityGrade>>>
 export type DeactivateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof deactivateQualityGrade>>>
 export type ActivateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof activateQualityGrade>>>
+export type ListYarnSuppliersResult = NonNullable<Awaited<ReturnType<typeof listYarnSuppliers>>>
+export type CreateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof createYarnSupplier>>>
+export type UpdateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof updateYarnSupplier>>>
+export type DeactivateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof deactivateYarnSupplier>>>
+export type ActivateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof activateYarnSupplier>>>
 export type ListLotsResult = NonNullable<Awaited<ReturnType<typeof listLots>>>
 export type CreateLotResult = NonNullable<Awaited<ReturnType<typeof createLot>>>
 export type UpdateLotResult = NonNullable<Awaited<ReturnType<typeof updateLot>>>

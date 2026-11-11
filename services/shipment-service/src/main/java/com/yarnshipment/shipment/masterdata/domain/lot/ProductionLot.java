@@ -49,9 +49,24 @@ public record ProductionLot(
      * @param productName iplik adı
      * @param qualityGradeCode kalite kodu; kilitte çuvala kopyalanır
      * @param qualityGradeName kalite adı
+     * @param yarnSupplierName iplik tedarikçisi adı; atanmamışsa boş
      */
     public record Labels(
-            String siteName, String productCode, String productName, String qualityGradeCode, String qualityGradeName) {
+            String siteName,
+            String productCode,
+            String productName,
+            String qualityGradeCode,
+            String qualityGradeName,
+            @Nullable String yarnSupplierName) {
+
+        public Labels(
+                String siteName,
+                String productCode,
+                String productName,
+                String qualityGradeCode,
+                String qualityGradeName) {
+            this(siteName, productCode, productName, qualityGradeCode, qualityGradeName, null);
+        }
 
         public Labels {
             Objects.requireNonNull(siteName, "siteName");

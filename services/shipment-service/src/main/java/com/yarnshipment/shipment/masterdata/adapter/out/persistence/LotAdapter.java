@@ -28,15 +28,17 @@ final class LotAdapter implements LotPort {
     private static final String SET_ACTOR = "SELECT set_config('app.actor_id', ?, true)";
     private static final String LOTS = """
             FROM (SELECT l.id, l.site_id, l.lot_no, l.product_id, l.quality_grade_id, l.production_date,
-                         l.quality_locked_at, l.active, s.name AS site_name, p.code AS product_code,
+                         l.quality_locked_at, l.active, l.yarn_supplier_id, ys.name AS yarn_supplier_name,
+                         s.name AS site_name, p.code AS product_code,
                          p.name AS product_name, g.code AS quality_grade_code, g.name AS quality_grade_name
                   FROM md_production_lot l
                   JOIN md_site s ON s.id = l.site_id
                   JOIN md_product p ON p.id = l.product_id
-                  JOIN md_quality_grade g ON g.id = l.quality_grade_id) AS lot""";
+                  JOIN md_quality_grade g ON g.id = l.quality_grade_id
+                  LEFT JOIN md_yarn_supplier ys ON ys.id = l.yarn_supplier_id) AS lot""";
     private static final String COLUMNS = "id, site_id, lot_no, product_id, quality_grade_id, production_date,"
             + " quality_locked_at, active, site_name, product_code, product_name, quality_grade_code,"
-            + " quality_grade_name";
+            + " quality_grade_name, yarn_supplier_id, yarn_supplier_name";
     private static final String LIST = LOTS + " WHERE (active OR :includeInactive)"
             + " AND (CAST(:pattern AS text) IS NULL OR lot_no ILIKE :pattern ESCAPE '\\'"
             + " OR product_code ILIKE :pattern ESCAPE '\\' OR product_name ILIKE :pattern ESCAPE '\\')"
@@ -44,12 +46,13 @@ final class LotAdapter implements LotPort {
     private static final String FIND = "SELECT " + COLUMNS + " " + LOTS + " WHERE id = :id";
     private static final String INSERT = """
             INSERT INTO md_production_lot (id, site_id, lot_no, product_id, quality_grade_id, production_date,
-                                           created_at, created_by)
-            VALUES (:id, :siteId, :lotNo, :productId, :qualityGradeId, :productionDate, :at, :actor)""";
+                                           yarn_supplier_id, created_at, created_by)
+            VALUES (:id, :siteId, :lotNo, :productId, :qualityGradeId, :productionDate, :yarnSupplierId, :at,
+                    :actor)""";
     private static final String UPDATE = """
             UPDATE md_production_lot
             SET lot_no = :lotNo, product_id = :productId, quality_grade_id = :qualityGradeId,
-                production_date = :productionDate
+                production_date = :productionDate, yarn_supplier_id = :yarnSupplierId
             WHERE id = :id AND quality_locked_at IS NULL""";
     private static final String STATUS = "UPDATE md_production_lot SET active = :active WHERE id = :id";
     private static final String LOCK = """
@@ -57,6 +60,8 @@ final class LotAdapter implements LotPort {
             WHERE id = :id AND quality_locked_at IS NULL""";
     private static final String ACTIVE_SITE = "SELECT EXISTS (SELECT 1 FROM md_site WHERE id = :id AND active)";
     private static final String ACTIVE_PRODUCT = "SELECT EXISTS (SELECT 1 FROM md_product WHERE id = :id AND active)";
+    private static final String ACTIVE_YARN_SUPPLIER =
+            "SELECT EXISTS (SELECT 1 FROM md_yarn_supplier WHERE id = :id AND active)";
     private static final String ACTIVE_QUALITY_GRADE =
             "SELECT EXISTS (SELECT 1 FROM md_quality_grade WHERE id = :id AND active)";
 
@@ -154,6 +159,11 @@ final class LotAdapter implements LotPort {
         return exists(ACTIVE_QUALITY_GRADE, id);
     }
 
+    @Override
+    public boolean activeYarnSupplierExists(UUID id) {
+        return exists(ACTIVE_YARN_SUPPLIER, id);
+    }
+
     private boolean exists(String sql, UUID id) {
         return Boolean.TRUE.equals(
                 jdbc.sql(sql).param("id", id).query(Boolean.class).single());
@@ -167,6 +177,7 @@ final class LotAdapter implements LotPort {
         return spec.param("lotNo", details.lotNo())
                 .param("productId", details.productId())
                 .param("qualityGradeId", details.qualityGradeId())
-                .param("productionDate", details.productionDate());
+                .param("productionDate", details.productionDate())
+                .param("yarnSupplierId", details.yarnSupplierId());
     }
 }

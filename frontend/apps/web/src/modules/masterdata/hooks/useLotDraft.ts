@@ -29,6 +29,7 @@ function fromLot(lot: LotView | undefined): LotDraft {
     lotNo: lot.lotNo,
     productId: lot.productId,
     qualityGradeId: lot.qualityGradeId,
+    yarnSupplierId: lot.yarnSupplierId ?? '',
     productionDate: lot.productionDate,
   };
 }

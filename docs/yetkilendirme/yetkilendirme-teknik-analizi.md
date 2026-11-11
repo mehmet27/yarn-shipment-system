@@ -47,7 +47,7 @@ Keycloak seçildi; kendi yazacağımız bir JWT servisi yerine hazır bir kimlik
 
 Keycloak'ta yalnızca 6 rol tutulur; kod bu rolleri aşağıdaki izinlere çevirir ve endpoint'ler rol değil izin ister. Böylece matris değiştiğinde tek bir sınıf (`RolePermissionMatrix`) değişir, controller'lara dokunulmaz.
 
-Roller: `ADMIN`, `WAREHOUSE` (depo), `DRIVER` (şoför), `SUBCONTRACTOR` (fasoncu), `QUALITY` (kalite), `MANAGER` (yönetici) (+ yalnız servis token'larında `SYSTEM`).
+Roller: `ADMIN`, `WAREHOUSE` (depo), `DRIVER` (şoför), `SUBCONTRACTOR` (fasoncu), `QUALITY` (kalite), `MANAGER` (yönetici), `GENERAL_MANAGER` (genel müdür; yalnız `REPORT_VIEW` + `BALANCE_VIEW`) (+ yalnız servis token'larında `SYSTEM`).
 
 Rol, izin ve claim adları koddaki adlarla aynıdır ve İngilizcedir (kod standartları NAME kuralları); ekranda Türkçe karşılıkları gösterilir. Kaynak: `libs/common-security` içindeki `Role`, `Permission`, `RolePermissionMatrix` ve `TokenClaims`. `/api/v1/me` cevabındaki `permissions[]` bu izin adlarını taşır.
 
@@ -61,7 +61,7 @@ Rol, izin ve claim adları koddaki adlarla aynıdır ve İngilizcedir (kod stand
 | `LOT_QUALITY_LOCK` | ✓ |  |  |  | ✓ |  |
 | `BAG_CREATE` (çuval / Unique Key oluşturma, etiket basımı) | ✓ | ✓ |  |  |  |  |
 | `SHIPMENT_VIEW` | ✓ | ✓ | kendi | kendi | ✓ | ✓ |
-| `SHIPMENT_CREATE` (çuval atama, şoför/araç atama) | ✓ | ✓ |  |  |  |  |
+| `SHIPMENT_CREATE` (çuval atama, şoför/araç atama) | ✓ |  |  |  |  | ✓ |
 | `SHIPMENT_CANCEL` | ✓ |  |  |  |  |  |
 | `DISPATCH_RECORD` (çıkış kilosu, mühür no) |  | ✓ |  |  |  |  |
 | `DISPATCH_VIEW` | ✓ | ✓ | yalnız çuval sayısı + mühür no | sonra | ✓ | ✓ |
@@ -82,6 +82,8 @@ Rol, izin ve claim adları koddaki adlarla aynıdır ve İngilizcedir (kod stand
 
 - `LOT_QUALITY_LOCK` matriste yoktu; ön analiz Bölüm 10'daki "kalite parti bazında belirlenir ve kilitlenir" kuralı için Kalite ve Admin'e eklendi.
 - `BAG_CREATE` matriste ayrı satır değildi; çuval oluşturma ve etiket basımı "Sevkiyat ve çuval ataması" satırı gibi Depo'ya, düzeltme yetkisi için Admin'e verildi. Yeniden baskıda gerekçe zorunludur ve etikete baskı numarası yazılır.
+- Süreç analizi v2 (A3): `SHIPMENT_CREATE` Depo'dan alındı, yalnız Müdür ve Admin sevkiyat açar; Depo yalnız `DISPATCH_RECORD` ile çıkış tartısı girer.
+- Süreç analizi v2, 3.3: `GENERAL_MANAGER` (yalnız `REPORT_VIEW`, `BALANCE_VIEW`) ve yeni izinler eklendi: `FABRIC_RECEIPT_RECORD` (Kalite, Müdür), `YARN_RETURN_RECORD` (Depo, Müdür), `FIRE_RATE_EDIT`, `INVOICE_MARK`, `WEIGHT_MISMATCH_RESOLVE` (Müdür), `BALANCE_VIEW` (Müdür, Genel müdür, Kalite, Admin).
 - `SHIPMENT_CREATE` Admin'e de verildi, çünkü süreç tablosunda (7.1, adım 1) sorumlu "Depo / Admin".
 - Kanıt görüntüleme kör girişe bağlandı: çıkış kantar fotoğrafı kiloyu gösterdiği için fasoncu onu karşılaştırmadan önce göremez; depo da teslim kantar fotoğrafını göremez.
 - Yönetici hiçbir yazma izni almaz; kodda bunu doğrulayan bir test olacak. Şoför çıkış kilosunu görmez, yalnız çuval sayısı ve mühür numarasını görür (Y1).

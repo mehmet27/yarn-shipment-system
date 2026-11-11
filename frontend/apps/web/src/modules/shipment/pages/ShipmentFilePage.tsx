@@ -1,7 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Stack, Tabs, Text } from '@iplik/ui';
-import { usePermission } from '@/modules/auth';
-import { QualityClaimsSection } from '@/modules/claim';
+import { ClaimsTabTrigger, QualityClaimsSection } from '@/modules/claim';
 import { useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
 import { BagsTab } from '../components/BagsTab';
@@ -11,6 +10,8 @@ import { ShipmentFileTop } from '../components/ShipmentFileTop';
 import { isCompleted } from '../components/shipmentViews';
 import { WeightsPanel } from '../components/WeightsPanel';
 import { useShipment } from '../hooks/useShipment';
+import { SettlementTabPanels } from '../settlement/SettlementTabPanels';
+import { SettlementTabTriggers } from '../settlement/SettlementTabTriggers';
 
 const PENDING_TABS = ['evidence'] as const;
 
@@ -20,7 +21,6 @@ export function ShipmentFilePage() {
   const { shipmentId = '' } = useParams();
   const query = useShipment(shipmentId);
   const canSeeCorrections = useCanSeeCorrections();
-  const canViewClaims = usePermission('DISCREPANCY_VIEW');
   return (
     <QueryState query={query}>
       {(shipment) => (
@@ -34,9 +34,8 @@ export function ShipmentFilePage() {
               {canSeeCorrections && shipment.audience === 'INTERNAL' && (
                 <Tabs.Tab value="corrections">{t('shipment.file.tabs.corrections')}</Tabs.Tab>
               )}
-              {canViewClaims && isCompleted(shipment) && (
-                <Tabs.Tab value="claims">{t('shipment.file.tabs.claims')}</Tabs.Tab>
-              )}
+              {isCompleted(shipment) && <ClaimsTabTrigger />}
+              {isCompleted(shipment) && <SettlementTabTriggers />}
               {PENDING_TABS.map((tab) => (
                 <Tabs.Tab key={tab} value={tab} children={t(`shipment.file.tabs.${tab}`)} />
               ))}
@@ -61,6 +60,7 @@ export function ShipmentFilePage() {
             <Tabs.Panel value="claims" pt="md">
               <QualityClaimsSection shipmentId={shipmentId} />
             </Tabs.Panel>
+            {isCompleted(shipment) && <SettlementTabPanels shipmentId={shipmentId} />}
             {PENDING_TABS.map((tab) => (
               <Tabs.Panel key={tab} value={tab} pt="md">
                 <Text c="dimmed">{t('shipment.file.comingSoon')}</Text>

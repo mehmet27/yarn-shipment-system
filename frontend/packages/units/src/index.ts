@@ -14,4 +14,8 @@ export {
   fireRateToPctInput,
   formatPct,
   parseFireRatePct,
+  pctInputToRate,
+  rateToPct,
 } from './percentage';
+export { calculateFire } from './fire';
+export type { FireInput, FireResult } from './fire';

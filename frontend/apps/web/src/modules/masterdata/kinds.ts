@@ -5,6 +5,7 @@ export const MANAGED_KINDS = [
   'site',
   'product',
   'qualityGrade',
+  'yarnSupplier',
 ] as const;
 export type ManagedKind = (typeof MANAGED_KINDS)[number];
 

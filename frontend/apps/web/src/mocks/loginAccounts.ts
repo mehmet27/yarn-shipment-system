@@ -33,7 +33,8 @@ const SEED: readonly LoginAccountView[] = [
     email: 'kalite@iplik.local',
     roles: ['QUALITY'],
     enabled: true,
-    passwordChangeRequired: false,
+    phone: '***0005',
+    passwordChangeRequired: true,
     createdAt: '2026-01-05T08:10:00Z',
   },
   {
@@ -47,15 +48,14 @@ const SEED: readonly LoginAccountView[] = [
     createdAt: '2026-01-05T08:15:00Z',
   },
   {
-    id: 'kc-fasoncu',
-    username: 'fasoncu',
-    fullName: 'Aydın Örme',
-    email: 'fasoncu@aydinorme.local',
-    roles: ['SUBCONTRACTOR'],
+    id: 'kc-genelmudur',
+    username: 'genelmudur',
+    fullName: 'Genel Müdür',
+    email: 'genelmudur@iplik.local',
+    roles: ['GENERAL_MANAGER'],
     enabled: true,
-    phone: '***0005',
-    passwordChangeRequired: true,
-    createdAt: '2026-02-10T09:45:00Z',
+    passwordChangeRequired: false,
+    createdAt: '2026-01-05T08:20:00Z',
   },
   {
     id: 'kc-eski',
@@ -120,11 +120,10 @@ export function mockPasswordResetState(id: string): 'ok' | 'not-found' | 'no-pho
   return account.phone === undefined ? 'no-phone' : 'ok';
 }
 
-/** Rolü değiştirir; bulunamazsa `not-found`, fasoncu hesabıysa `locked` döner. */
-export function changeMockLoginAccountRole(id: string, role: Role): 'ok' | 'not-found' | 'locked' {
+/** Rolü değiştirir; bulunamazsa `not-found` döner. */
+export function changeMockLoginAccountRole(id: string, role: Role): 'ok' | 'not-found' {
   const account = accounts.find((candidate) => candidate.id === id);
   if (account === undefined) return 'not-found';
-  if (account.roles.includes('SUBCONTRACTOR')) return 'locked';
   accounts = accounts.map((candidate) =>
     candidate.id === id ? { ...candidate, roles: [role] } : candidate,
   );

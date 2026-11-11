@@ -9,6 +9,7 @@ type ChoiceFieldProps = {
   data: Choice[];
   draft: ReturnType<typeof useLotDraft>;
   isDisabled?: boolean;
+  isOptional?: boolean;
 };
 
 export function errorOf(
@@ -21,7 +22,13 @@ export function errorOf(
 }
 
 /** Lokasyon, iplik ya da kalite seçimi; hata metni alanın altında. */
-export function LotChoiceField({ field, data, draft, isDisabled = false }: ChoiceFieldProps) {
+export function LotChoiceField({
+  field,
+  data,
+  draft,
+  isDisabled = false,
+  isOptional = false,
+}: ChoiceFieldProps) {
   const { t } = useTranslation();
   return (
     <Select
@@ -34,7 +41,8 @@ export function LotChoiceField({ field, data, draft, isDisabled = false }: Choic
       error={errorOf(draft.errors, field, t)}
       disabled={isDisabled}
       searchable
-      withAsterisk
+      clearable={isOptional}
+      withAsterisk={!isOptional}
     />
   );
 }

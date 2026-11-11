@@ -7,8 +7,7 @@ test.describe('Kullanıcılar', { tag: '@panel' }, () => {
     async ({ page, openAs }) => {
       await openAs('ADMIN', '/panel/kullanicilar');
       const table = page.getByRole('table');
-      await expect(table.getByText('fasoncu', { exact: true })).toBeVisible();
-      await expect(table.getByRole('row', { name: /Aydın Örme/ })).toContainText(
+      await expect(table.getByRole('row', { name: /Kalite Uzmanı/ })).toContainText(
         'İlk giriş bekleniyor',
       );
       await expect(table.getByRole('row', { name: /eski\.depo/ })).toContainText('Devre dışı');
@@ -18,27 +17,6 @@ test.describe('Kullanıcılar', { tag: '@panel' }, () => {
       await expect(table.getByText('Kalite Uzmanı')).toBeVisible();
     },
   );
-
-  test('yönetici fasoncu hesabını Kullanıcılar ekranından açar; SMS gider, hesap listede görünür', async ({
-    page,
-    openAs,
-  }) => {
-    await openAs('ADMIN', '/panel/kullanicilar');
-    await page.getByRole('button', { name: 'Yeni kullanıcı' }).click();
-    const dialog = page.getByRole('dialog');
-    await dialog.getByRole('combobox', { name: /Rol/ }).click();
-    await page.getByRole('option', { name: 'Fasoncu' }).click();
-    await dialog.getByRole('combobox', { name: /Fasoncu kaydı/ }).click();
-    await page.getByRole('option', { name: 'Bursa Tekstil' }).click();
-    await dialog.getByLabel(/Giriş adı/).fill('bursa.tekstil');
-    await dialog.getByLabel(/Telefon/).fill('0532 123 45 67');
-    await dialog.getByRole('switch', { name: 'Merkez Depo' }).click();
-    await dialog.getByRole('button', { name: /Hesabı aç/ }).click();
-    await expect(dialog.getByText(/numarasına gönderildi/)).toBeVisible();
-    await dialog.getByRole('button', { name: 'Tamam' }).click();
-
-    await expect(page.getByRole('row', { name: /bursa\.tekstil/ })).toContainText('Fasoncu');
-  });
 
   test('yönetici olmayan rol ekranı göremez', async ({ page, openAs }) => {
     await openAs('MANAGER', '/panel/kullanicilar');

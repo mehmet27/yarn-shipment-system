@@ -37,8 +37,17 @@ public enum Permission implements GrantedAuthority {
 
     AUDIT_VIEW(AccessType.READ),
     REPORT_VIEW(AccessType.READ),
-    /** Fasoncu bakiye ekranı ve raporu; açılış bakiyesi içe aktarma (analiz 3.3). */
-    BALANCE_VIEW(AccessType.READ);
+
+    /** Kumaş girişi kaydı. */
+    FABRIC_RECEIPT_RECORD(AccessType.WRITE),
+    /** Fasoncudan iplik dönüşü / fasoncudan gelen iplik kaydı. */
+    YARN_RETURN_RECORD(AccessType.WRITE),
+    FIRE_RATE_EDIT(AccessType.WRITE),
+    /** "Fatura edildi" işareti. */
+    INVOICE_MARK(AccessType.WRITE),
+    BALANCE_VIEW(AccessType.READ),
+    /** Kantar uyuşmazlığıyla durmuş sevkiyatı yeniden tartıya açar. */
+    WEIGHT_MISMATCH_RESOLVE(AccessType.WRITE);
 
     private final AccessType accessType;
 

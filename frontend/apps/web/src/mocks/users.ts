@@ -14,6 +14,7 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'SHIPMENT_CANCEL',
     'SHIPMENT_COMPLETE',
     'DISPATCH_VIEW',
+    'EVIDENCE_UPLOAD_CLAIM',
     'EVIDENCE_VIEW',
     'EVIDENCE_INVALIDATE',
     'CORRECTION_CREATE',
@@ -22,6 +23,7 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'DISCREPANCY_RESOLVE',
     'AUDIT_VIEW',
     'REPORT_VIEW',
+    'BALANCE_VIEW',
   ],
   WAREHOUSE: [
     'MASTER_DATA_VIEW',
@@ -31,14 +33,7 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'DISPATCH_VIEW',
     'EVIDENCE_UPLOAD_DISPATCH',
     'EVIDENCE_VIEW',
-  ],
-  SUBCONTRACTOR: [
-    'SHIPMENT_VIEW',
-    'DISPATCH_VIEW',
-    'EVIDENCE_UPLOAD_CLAIM',
-    'EVIDENCE_VIEW',
-    'QUALITY_CLAIM_OPEN',
-    'DISCREPANCY_VIEW',
+    'YARN_RETURN_RECORD',
   ],
   QUALITY: [
     'MASTER_DATA_VIEW',
@@ -52,6 +47,8 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'DISCREPANCY_RESOLVE',
     'AUDIT_VIEW',
     'REPORT_VIEW',
+    'FABRIC_RECEIPT_RECORD',
+    'BALANCE_VIEW',
   ],
   MANAGER: [
     'MASTER_DATA_VIEW',
@@ -60,23 +57,28 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'SHIPMENT_CANCEL',
     'SHIPMENT_COMPLETE',
     'DISPATCH_VIEW',
+    'EVIDENCE_UPLOAD_CLAIM',
     'EVIDENCE_VIEW',
+    'QUALITY_CLAIM_OPEN',
     'DISCREPANCY_VIEW',
     'AUDIT_VIEW',
     'REPORT_VIEW',
+    'FABRIC_RECEIPT_RECORD',
+    'YARN_RETURN_RECORD',
+    'FIRE_RATE_EDIT',
+    'INVOICE_MARK',
+    'BALANCE_VIEW',
+    'WEIGHT_MISMATCH_RESOLVE',
   ],
+  GENERAL_MANAGER: ['REPORT_VIEW', 'BALANCE_VIEW'],
 };
 
 const FULL_NAMES: Readonly<Record<Role, string>> = {
   ADMIN: 'Ayşe Yönetici',
   WAREHOUSE: 'Deniz Depo',
-  SUBCONTRACTOR: 'Fatma Fasoncu',
   QUALITY: 'Kemal Kalite',
   MANAGER: 'Yusuf Müdür',
-};
-
-const SCOPE_BY_ROLE: Readonly<Partial<Record<Role, Pick<CurrentUser, 'subcontractorId'>>>> = {
-  SUBCONTRACTOR: { subcontractorId: 'sub-0' },
+  GENERAL_MANAGER: 'Gül Genel Müdür',
 };
 
 export const MOCK_ROLES = Object.keys(PERMISSIONS_BY_ROLE).filter(
@@ -91,6 +93,5 @@ export function createMockUser(role: Role): CurrentUser {
     permissions: [...PERMISSIONS_BY_ROLE[role]],
     siteIds: ['site-merkez'],
     mfaVerified: true,
-    ...SCOPE_BY_ROLE[role],
   };
 }

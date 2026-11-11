@@ -2,13 +2,11 @@ package com.yarnshipment.shipment.masterdata.adapter.in.web;
 
 import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.shipment.adapter.in.web.api.SubcontractorManagementApi;
-import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.SubcontractorRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.SubcontractorView;
 import com.yarnshipment.shipment.masterdata.application.port.in.ChangeSubcontractorStatusUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.CreateSubcontractorUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.UpdateSubcontractorUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateSubcontractorLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -23,19 +21,16 @@ public class SubcontractorManagementController implements SubcontractorManagemen
     private final CreateSubcontractorUseCase create;
     private final UpdateSubcontractorUseCase update;
     private final ChangeSubcontractorStatusUseCase status;
-    private final CreateSubcontractorLoginAccountUseCase loginAccount;
     private final CurrentActorProvider currentActorProvider;
 
     public SubcontractorManagementController(
             CreateSubcontractorUseCase create,
             UpdateSubcontractorUseCase update,
             ChangeSubcontractorStatusUseCase status,
-            CreateSubcontractorLoginAccountUseCase loginAccount,
             CurrentActorProvider currentActorProvider) {
         this.create = create;
         this.update = update;
         this.status = status;
-        this.loginAccount = loginAccount;
         this.currentActorProvider = currentActorProvider;
     }
 
@@ -68,13 +63,5 @@ public class SubcontractorManagementController implements SubcontractorManagemen
         status.changeSubcontractorStatus(
                 currentActorProvider.getCurrentActor(), subcontractorId, MasterDataStatus.ACTIVE);
         return ResponseEntity.noContent().build();
-    }
-
-    @Override
-    @PreAuthorize("hasAuthority('MASTER_DATA_MANAGE')")
-    public ResponseEntity<Void> createSubcontractorLoginAccount(UUID subcontractorId, LoginAccountRequest request) {
-        loginAccount.createSubcontractorLoginAccount(
-                currentActorProvider.getCurrentActor(), subcontractorId, LoginAccountViews.command(request));
-        return LoginAccountViews.created();
     }
 }

@@ -70,10 +70,8 @@ class DispatchCommandAdapterTest {
                 .isEqualTo("AWAITING_DELIVERY");
         assertThat(adapter.hasDispatchWeighing(SHIPMENT)).isTrue();
         assertThat(jdbc.queryForObject(
-                        "SELECT net_kg::text || ':' || scale_ticket_no FROM weighing WHERE shipment_id = ?",
-                        String.class,
-                        SHIPMENT))
-                .isEqualTo("1982.500:KF-1");
+                        "SELECT net_kg::text FROM weighing WHERE shipment_id = ?", String.class, SHIPMENT))
+                .isEqualTo("1982.500");
         assertThat(jdbc.queryForObject(
                         "SELECT to_status FROM shipment_status_history WHERE shipment_id = ?", String.class, SHIPMENT))
                 .isEqualTo("AWAITING_DELIVERY");
@@ -101,6 +99,6 @@ class DispatchCommandAdapterTest {
 
     private static DispatchRecording recording(UUID shipment) {
         Weighing weighing = new Weighing(new BigDecimal("2000.500"), new BigDecimal("18.000"), BAGS, NOW);
-        return new DispatchRecording(shipment, SITE, SUBCONTRACTOR, weighing, "KF-1", NOW);
+        return new DispatchRecording(shipment, SITE, SUBCONTRACTOR, weighing, NOW);
     }
 }

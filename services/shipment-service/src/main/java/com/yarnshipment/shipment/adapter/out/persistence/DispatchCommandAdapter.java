@@ -20,9 +20,9 @@ final class DispatchCommandAdapter implements DispatchCommandPort {
     private static final String COUNT_WEIGHINGS =
             "SELECT count(*) FROM weighing WHERE shipment_id = ? AND side = 'DISPATCH' AND superseded_by IS NULL";
     private static final String INSERT_WEIGHING = """
-            INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, scale_ticket_no, weighed_at,
+            INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, weighed_at,
                                   entered_by, created_at, created_by, expected_tare_kg, tare_tolerance_pct)
-            VALUES (:id, :shipmentId, 'DISPATCH', :grossKg, :tareKg, :bagCount, :ticketNo, :at, :actor, :at, :actor,
+            VALUES (:id, :shipmentId, 'DISPATCH', :grossKg, :tareKg, :bagCount, :at, :actor, :at, :actor,
                     :expectedTare, :tolerance)""";
 
     private static final String SUPERSEDE_PREVIOUS = """
@@ -98,7 +98,6 @@ final class DispatchCommandAdapter implements DispatchCommandPort {
                 .param("grossKg", recording.weighing().grossKg())
                 .param("tareKg", recording.weighing().tareKg())
                 .param("bagCount", recording.weighing().bagCount())
-                .param("ticketNo", recording.scaleTicketNo())
                 .param("at", at)
                 .param("actor", actor)
                 .param("expectedTare", basis == null ? null : basis.expectedKg(), Types.NUMERIC)

@@ -894,12 +894,6 @@ export interface DispatchWeighingRequest {
      * @minimum 1
      */
   bagCount: number;
-  /**
-     * Kantar fişi numarası
-     * @minLength 1
-     * @maxLength 64
-     */
-  scaleTicketNo?: string;
 }
 
 export type InternalShipmentViewAudience = typeof InternalShipmentViewAudience[keyof typeof InternalShipmentViewAudience];

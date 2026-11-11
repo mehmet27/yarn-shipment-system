@@ -61,10 +61,10 @@ WHERE s.status <> 'DRAFT'
 ON CONFLICT (id) DO NOTHING;
 
 -- Çıkış tartımı: DRAFT dışındaki her sevkiyat. Brüt 253.500, dara 3.500, net 250.000, beş çuval.
-INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, scale_ticket_no, weighed_at, entered_by,
+INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, weighed_at, entered_by,
                       created_at, created_by)
 SELECT ('0192f0a0-0000-7000-8000-0000000d' || lpad(n::text, 4, '0'))::uuid, id, 'DISPATCH', 253.500, 3.500, 5,
-       'KF-' || n, created_at + interval '2 hours', '0192f0a0-0000-7000-8000-00000000d001',
+       created_at + interval '2 hours', '0192f0a0-0000-7000-8000-00000000d001',
        created_at + interval '2 hours', '0192f0a0-0000-7000-8000-00000000d001'
 FROM seed_shipment
 WHERE status <> 'DRAFT'

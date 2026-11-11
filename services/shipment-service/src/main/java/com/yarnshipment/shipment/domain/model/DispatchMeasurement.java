@@ -10,20 +10,18 @@ import org.jspecify.annotations.Nullable;
  * @param grossKg brüt kilo
  * @param tareKg dara
  * @param bagCount tartılan çuval sayısı
- * @param scaleTicketNo kantar fişi numarası
  * @param shortfallReason deponun eksik yükleme nedeni (stok yetmedi gibi); müdürün kararına girdi olur
  */
 public record DispatchMeasurement(
         BigDecimal grossKg,
         BigDecimal tareKg,
         int bagCount,
-        @Nullable String scaleTicketNo,
         @Nullable String shortfallReason) {
 
     private static final int MAX_REASON_LENGTH = 500;
 
-    public DispatchMeasurement(BigDecimal grossKg, BigDecimal tareKg, int bagCount, @Nullable String scaleTicketNo) {
-        this(grossKg, tareKg, bagCount, scaleTicketNo, null);
+    public DispatchMeasurement(BigDecimal grossKg, BigDecimal tareKg, int bagCount) {
+        this(grossKg, tareKg, bagCount, null);
     }
 
     public DispatchMeasurement {

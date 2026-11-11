@@ -14,8 +14,7 @@ final class DispatchRequests {
     static DispatchMeasurement toMeasurement(DispatchWeighingRequest request) {
         BigDecimal gross = either(request.getLoadedVehicleKg(), request.getGrossKg(), "loadedVehicleKg");
         BigDecimal tare = either(request.getEmptyVehicleKg(), request.getTareKg(), "emptyVehicleKg");
-        return new DispatchMeasurement(
-                gross, tare, request.getBagCount(), request.getScaleTicketNo(), request.getShortfallReason());
+        return new DispatchMeasurement(gross, tare, request.getBagCount(), request.getShortfallReason());
     }
 
     /** Eş anlamlı iki alandan biri zorunludur; ikisi de verilirse eşit olmalıdır. */

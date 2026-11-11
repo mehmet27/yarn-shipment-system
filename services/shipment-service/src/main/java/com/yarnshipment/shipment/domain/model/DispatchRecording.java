@@ -12,7 +12,6 @@ import org.jspecify.annotations.Nullable;
  * @param siteId çıkış lokasyonu
  * @param subcontractorId ipliğin gittiği fasoncu
  * @param weighing kantar tartımı
- * @param scaleTicketNo kantar fişi numarası
  * @param recordedAt sunucunun kaydı aldığı zaman (DOM-11)
  * @param mismatch tolerans dışı kantar farkı; doluysa sevkiyat WEIGHT_MISMATCH olur
  */
@@ -21,18 +20,12 @@ public record DispatchRecording(
         UUID siteId,
         UUID subcontractorId,
         Weighing weighing,
-        @Nullable String scaleTicketNo,
         Instant recordedAt,
         @Nullable WeightCheck mismatch) {
 
     public DispatchRecording(
-            UUID shipmentId,
-            UUID siteId,
-            UUID subcontractorId,
-            Weighing weighing,
-            @Nullable String scaleTicketNo,
-            Instant recordedAt) {
-        this(shipmentId, siteId, subcontractorId, weighing, scaleTicketNo, recordedAt, null);
+            UUID shipmentId, UUID siteId, UUID subcontractorId, Weighing weighing, Instant recordedAt) {
+        this(shipmentId, siteId, subcontractorId, weighing, recordedAt, null);
     }
 
     public DispatchRecording {

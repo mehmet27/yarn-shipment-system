@@ -17,7 +17,7 @@ class ShipmentDispatchTest {
     private static final int BAGS = 40;
 
     private static DispatchMeasurement measurement() {
-        return new DispatchMeasurement(new BigDecimal("2000.500"), new BigDecimal("18.000"), BAGS, "KF-1");
+        return new DispatchMeasurement(new BigDecimal("2000.500"), new BigDecimal("18.000"), BAGS);
     }
 
     @Test
@@ -30,7 +30,6 @@ class ShipmentDispatchTest {
         assertThat(recording.toStatus()).isEqualTo(ShipmentStatus.AWAITING_DELIVERY);
         assertThat(recording.weighing().netKg()).isEqualByComparingTo("1982.500");
         assertThat(recording.weighing().bagCount()).isEqualTo(BAGS);
-        assertThat(recording.scaleTicketNo()).isEqualTo("KF-1");
         assertThat(recording.recordedAt()).isEqualTo(NOW);
     }
 

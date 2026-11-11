@@ -3184,11 +3184,6 @@ components:
           type: integer
           format: int32
           minimum: 1
-        scaleTicketNo:
-          description: Kantar fişi numarası
-          type: string
-          minLength: 1
-          maxLength: 64
     ShipmentDetailResponse:
       description: İsteyenin rolüne göre iki görünümden biri (API-09).
       oneOf:

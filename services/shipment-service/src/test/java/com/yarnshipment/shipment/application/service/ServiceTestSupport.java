@@ -32,8 +32,8 @@ final class ServiceTestSupport {
 
     static DispatchMeasurement measurement(String gross, @Nullable String shortfallReason) {
         return shortfallReason == null
-                ? new DispatchMeasurement(decimal(gross), decimal("18.000"), BAG_COUNT, "KF-1")
-                : new DispatchMeasurement(decimal(gross), decimal("18.000"), BAG_COUNT, "KF-1", shortfallReason);
+                ? new DispatchMeasurement(decimal(gross), decimal("18.000"), BAG_COUNT)
+                : new DispatchMeasurement(decimal(gross), decimal("18.000"), BAG_COUNT, shortfallReason);
     }
 
     static RecordDispatchCommand dispatchCommand(

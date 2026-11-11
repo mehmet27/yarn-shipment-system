@@ -6,7 +6,6 @@ const VALID: DispatchDraft = {
   grossKg: '2.000',
   tareKg: '17,5',
   bagCount: '40',
-  scaleTicketNo: ' KF-1 ',
   shortfallReason: '',
   ticket: { kind: 'PHOTO' },
 };
@@ -21,7 +20,6 @@ describe('dispatchDraft', () => {
       grossKg: '2000.000',
       tareKg: '17.500',
       bagCount: 40,
-      scaleTicketNo: 'KF-1',
     });
   });
 
@@ -30,10 +28,6 @@ describe('dispatchDraft', () => {
       shortfallReason: 'Stok yetmedi',
     });
     expect(toDispatchRequest(VALID)).not.toHaveProperty('shortfallReason');
-  });
-
-  it('boş kantar fişini isteğe koymaz', () => {
-    expect(toDispatchRequest({ ...VALID, scaleTicketNo: ' ' })).not.toHaveProperty('scaleTicketNo');
   });
 
   it('hataları sırayla bildirir', () => {

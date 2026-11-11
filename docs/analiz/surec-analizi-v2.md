@@ -455,7 +455,7 @@ Kilolar 3 ondalıkla (gram) saklanır ve hesaplanır; ekranda Türkçe biçimde 
 |---|---|---|
 | `shipment` | Sevkiyat | `shipment_no`, `site_id`, `subcontractor_id/title`, `driver_name`, `plate_no`, `status`, `planned_net_kg`, `planned_bag_count`, `e_waybill_no`, `waybill_evidence_id`, `locked_at` |
 | `shipment_bag` | Sevkiyattaki çuvallar | `unique_key`, `removed_at` |
-| `weighing` | Çıkış tartısı (yalnız `side = 'DISPATCH'`) | `gross_kg`, `tare_kg`, `net_kg`, `bag_count`, `scale_ticket_no`, `superseded_by` |
+| `weighing` | Çıkış tartısı (yalnız `side = 'DISPATCH'`) | `gross_kg`, `tare_kg`, `net_kg`, `bag_count`, `superseded_by` |
 | `shipment_status_history` | Durum geçmişi (değiştirilemez) | `from_status`, `to_status`, `changed_by`, `reason` |
 | `correction_record` | Gerekçeli düzeltmeler | `entity_type` ∈ {SHIPMENT, SHIPMENT_BAG, WEIGHING} |
 | `md_*` | Ana veri | fasoncu, şoför, araç, lokasyon, ürün, kalite sınıfı |

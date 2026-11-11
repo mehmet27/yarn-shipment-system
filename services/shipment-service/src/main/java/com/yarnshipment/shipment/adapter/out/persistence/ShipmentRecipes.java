@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.adapter.out.persistence;
 
+import com.yarnshipment.shipment.domain.model.OrderSpec;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.WeightCheck;
 import com.yarnshipment.shipment.domain.model.WidthType;
@@ -55,19 +56,21 @@ final class ShipmentRecipes {
                 rs.getString("yarn_type_text"),
                 rs.getObject("lot_id", UUID.class),
                 rs.getBigDecimal("net_kg"),
-                rs.getString("fabric_type"),
-                rs.getString("lycra"),
-                widthType(rs.getString("width_type")),
-                rs.getString("yarn_length"),
-                rs.getString("puss_fine"),
-                rs.getBigDecimal("unit_price"));
+                orderSpec(rs));
         lines.computeIfAbsent(rs.getObject("shipment_id", UUID.class), id -> new ArrayList<>())
                 .add(line);
         return line;
     }
 
-    private static @Nullable WidthType widthType(@Nullable String value) {
-        return value == null ? null : WidthType.valueOf(value);
+    private static OrderSpec orderSpec(ResultSet rs) throws SQLException {
+        String width = rs.getString("width_type");
+        return new OrderSpec(
+                rs.getString("fabric_type"),
+                rs.getString("lycra"),
+                width == null ? null : WidthType.valueOf(width),
+                rs.getString("yarn_length"),
+                rs.getString("puss_fine"),
+                rs.getBigDecimal("unit_price"));
     }
 
     private static WeightCheck collectCheck(Map<UUID, WeightCheck> checks, ResultSet rs) throws SQLException {

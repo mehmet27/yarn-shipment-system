@@ -5,6 +5,7 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentAction;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentStatus;
 import com.yarnshipment.shipment.adapter.in.web.api.model.WeighingView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.WeightCheckView;
+import com.yarnshipment.shipment.domain.model.OrderSpec;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.Weighing;
 import com.yarnshipment.shipment.domain.model.WeightCheck;
@@ -36,26 +37,23 @@ final class WebMappings {
     }
 
     static List<RecipeLineView> lines(List<RecipeLine> lines) {
-        return lines.stream()
-                .map(line -> new RecipeLineView()
-                        .lineNo(line.lineNo())
-                        .yarnTypeId(line.yarnTypeId())
-                        .yarnTypeText(line.yarnTypeText())
-                        .lotId(line.lotId())
-                        .netKg(kg(line.netKg()))
-                        .fabricType(line.fabricType())
-                        .lycra(line.lycra())
-                        .widthType(
-                                line.widthType() == null
-                                        ? null
-                                        : line.widthType().name())
-                        .yarnLength(line.yarnLength())
-                        .pussFine(line.pussFine())
-                        .unitPrice(
-                                line.unitPrice() == null
-                                        ? null
-                                        : line.unitPrice().toPlainString()))
-                .toList();
+        return lines.stream().map(WebMappings::lineView).toList();
+    }
+
+    private static RecipeLineView lineView(RecipeLine line) {
+        OrderSpec spec = line.orderSpec();
+        return new RecipeLineView()
+                .lineNo(line.lineNo())
+                .yarnTypeId(line.yarnTypeId())
+                .yarnTypeText(line.yarnTypeText())
+                .lotId(line.lotId())
+                .netKg(kg(line.netKg()))
+                .fabricType(spec.fabricType())
+                .lycra(spec.lycra())
+                .widthType(spec.widthType() == null ? null : spec.widthType().name())
+                .yarnLength(spec.yarnLength())
+                .pussFine(spec.pussFine())
+                .unitPrice(spec.unitPrice() == null ? null : spec.unitPrice().toPlainString());
     }
 
     static @Nullable WeightCheckView weightCheck(@Nullable WeightCheck check) {

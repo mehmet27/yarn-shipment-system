@@ -14,12 +14,6 @@ public enum ComparisonRule {
     DOCUMENT_SHIPMENT_NO_MISMATCH(DiscrepancyType.DOCUMENT, Severity.YELLOW),
     DOCUMENT_NET_KG_MISMATCH(DiscrepancyType.DOCUMENT, Severity.YELLOW),
     DOCUMENT_BAG_COUNT_MISMATCH(DiscrepancyType.DOCUMENT, Severity.YELLOW),
-    TICKET_DISPATCH_PLATE_MISMATCH(DiscrepancyType.DOCUMENT, Severity.YELLOW),
-    TICKET_DELIVERY_PLATE_MISMATCH(DiscrepancyType.DOCUMENT, Severity.YELLOW),
-    TICKET_DISPATCH_REUSED(DiscrepancyType.DOCUMENT, Severity.RED),
-    TICKET_DELIVERY_REUSED(DiscrepancyType.DOCUMENT, Severity.RED),
-    TICKET_DISPATCH_UNVERIFIED(DiscrepancyType.PHOTO, Severity.YELLOW),
-    TICKET_DELIVERY_UNVERIFIED(DiscrepancyType.PHOTO, Severity.YELLOW),
     PHOTO_MISSING(DiscrepancyType.PHOTO, Severity.YELLOW),
     PHOTO_REUSED(DiscrepancyType.PHOTO, Severity.RED),
     TIME_IN_TRANSIT_EXCEEDED(DiscrepancyType.TIME, Severity.YELLOW);

@@ -8,7 +8,7 @@ const VALID: DispatchDraft = {
   bagCount: '40',
   scaleTicketNo: ' KF-1 ',
   shortfallReason: '',
-  ticket: { kind: 'READ' },
+  ticket: { kind: 'PHOTO' },
 };
 
 describe('dispatchDraft', () => {

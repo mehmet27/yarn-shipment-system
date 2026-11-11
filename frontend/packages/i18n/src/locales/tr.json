@@ -401,8 +401,6 @@
       "evidence-invalidated": "Kanıt geçersiz sayıldı",
       "evidence-reuse-detected": "Kanıt tekrar kullanımı tespit edildi",
       "evidence-uploaded": "Kanıt yüklendi",
-      "ticket-read": "Tartı fişi okundu",
-      "ticket-unverified": "Tartı fişi doğrulanamadı",
       "lot-quality-locked": "Parti kalitesi kilitlendi",
       "delivery-received": "Teslim alındı",
       "shipment-arrived": "Sevkiyat vardı",
@@ -509,8 +507,7 @@
       "RESOLVED": "Çözüldü",
       "CLAIM_EVIDENCE": "İtiraz fotoğrafı eklendi",
       "INSPECTION_REQUESTED": "Lab kontrolü istendi",
-      "INSPECTION_RESULT": "Kontrol sonucu girildi",
-      "TICKET_MISREAD": "Fiş okuması \"AI yanıldı\" olarak işaretlendi"
+      "INSPECTION_RESULT": "Kontrol sonucu girildi"
     },
     "rule": {
       "QUANTITY_TOLERANCE": "Net kilo tolerans dışında",
@@ -523,19 +520,10 @@
       "DOCUMENT_SHIPMENT_NO_MISMATCH": "İrsaliyedeki sevkiyat no tutmuyor",
       "DOCUMENT_NET_KG_MISMATCH": "İrsaliyedeki net kilo tutmuyor",
       "DOCUMENT_BAG_COUNT_MISMATCH": "İrsaliyedeki çuval sayısı tutmuyor",
-      "TICKET_DISPATCH_PLATE_MISMATCH": "Çıkış fişindeki plaka tutmuyor",
-      "TICKET_DELIVERY_PLATE_MISMATCH": "Teslim fişindeki plaka tutmuyor",
-      "TICKET_DISPATCH_REUSED": "Çıkış fişi başka sevkiyatta kullanılmış",
-      "TICKET_DELIVERY_REUSED": "Teslim fişi başka sevkiyatta kullanılmış",
-      "TICKET_DISPATCH_WEIGHT_MISMATCH": "Çıkış fişindeki kilo girilenle tutmuyor",
-      "TICKET_DELIVERY_WEIGHT_MISMATCH": "Teslim fişindeki kilo girilenle tutmuyor",
-      "TICKET_QUANTITY_TOLERANCE": "Fişlere göre net kilo tolerans dışında",
       "QUALITY_CLAIM": "Kalite talebi",
       "PHOTO_MISSING": "Zorunlu fotoğraf yüklenmemiş",
       "PHOTO_REUSED": "Fotoğraf başka sevkiyatta kullanılmış",
-      "TIME_IN_TRANSIT_EXCEEDED": "Sevkiyat yolda çok kaldı",
-      "TICKET_DISPATCH_UNVERIFIED": "Çıkış kantar fişi doğrulanamadı",
-      "TICKET_DELIVERY_UNVERIFIED": "Teslim kantar fişi doğrulanamadı"
+      "TIME_IN_TRANSIT_EXCEEDED": "Sevkiyat yolda çok kaldı"
     },
     "hoursUnit": "saat"
   },
@@ -573,39 +561,17 @@
     "retake": "Yeniden çek",
     "send": "Fotoğrafı gönder",
     "previewAlt": "Çekilen kantar fişi",
-    "readTitle": "Fiş okundu",
-    "readValues": "Brüt {{gross}}, dara {{tare}}, net {{net}}",
-    "unreadable": "Kilo bilgisi okunamadı, lütfen tekrar çekin",
-    "skipped": "Fiş okuma servisi şu an kapalı; fotoğraf kaydedildi, devam edebilirsiniz.",
-    "displayDone": "Kantar ekranı fotoğrafı kaydedildi, devam edebilirsiniz.",
-    "unverified": "Fiş doğrulanmadan devam edilecek (K0 doğrulanamadı).",
+    "photoDone": "Kantar fişi fotoğrafı kaydedildi, devam edebilirsiniz.",
     "quality": {
       "BLURRY": "Fotoğraf bulanık görünüyor; yeniden çekmeniz önerilir.",
       "GLARE": "Fotoğrafta parlama var; yeniden çekmeniz önerilir."
     },
-    "problems": {
-      "WEIGHT_NOT_READ": "Kilolar okunamadı.",
-      "WEIGHT_INCONSISTENT": "Okunan kilolar tutarsız.",
-      "ARITHMETIC_MISMATCH": "Brüt, dara ve net birbirini tutmuyor.",
-      "DATE_OUT_OF_RANGE": "Fişteki tarih beklenen aralığın dışında.",
-      "BLURRY": "Fotoğraf bulanık.",
-      "GLARE": "Fotoğrafta parlama var.",
-      "CROPPED": "Fiş kadraja tam sığmamış.",
-      "NOT_A_TICKET": "Bu bir kantar fişine benzemiyor.",
-      "UNSUPPORTED_FORMAT": "Fiş biçimi desteklenmiyor."
-    },
     "fallback": {
-      "intro": "Üç denemede de okunamadı. Kantar ekranını çekin ya da gerekçeyi seçip devam edin.",
-      "display": "Kantar ekranını çek",
-      "reason": "Gerekçe",
-      "continue": "Gerekçeyle devam et",
       "reasons": {
         "PRINTER_BROKEN": "Yazıcı çalışmıyor",
-        "TICKET_DAMAGED": "Fiş hasarlı",
         "NO_TICKET": "Fiş çıkmadı",
         "OTHER": "Diğer"
-      },
-      "failed": "Gerekçe kaydedilemedi, tekrar deneyin."
+      }
     },
     "fileErrors": {
       "wrongType": "Kantar fişi için fotoğraf seçin (JPEG, PNG veya HEIC).",

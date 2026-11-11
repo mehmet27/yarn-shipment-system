@@ -8,9 +8,6 @@ const STORAGE_URL = 'https://mock-storage.local/evidence';
 const MAX_BYTES = 20 * 1024 * 1024;
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/heic', 'application/pdf'];
 const TICKET_TTL_MS = 600_000;
-/** Bu boyutun altındaki yüklemeler "okunamayan fiş" sayılır; testler iki yolu da seçebilir. */
-export const UNREADABLE_BELOW_BYTES = 1000;
-
 type Pending = {
   shipmentId: string;
   evidenceType: EvidenceType;
@@ -24,7 +21,6 @@ const PHOTO_DATA_URL =
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120"><rect width="200" height="120" fill="#eee"/><text x="20" y="65">Kantar fişi</text></svg>',
   );
-const UNVERIFIED_REASONS = ['PRINTER_BROKEN', 'TICKET_DAMAGED', 'NO_TICKET', 'OTHER'] as const;
 
 const pending = new Map<string, Pending>();
 const uploaded = new Set<string>();
@@ -75,49 +71,6 @@ export function createEvidenceHandlers(permissions: readonly Permission[]) {
       uploaded.add(String(params.evidenceId));
       return new HttpResponse(null, { status: 200 });
     }),
-    http.post('/api/v1/evidence/:evidenceId/ticket-reading', ({ params }) => {
-      const id = String(params.evidenceId);
-      const ticket = pending.get(id);
-      if (ticket === undefined) return problem(404, 'UPLOAD_NOT_FOUND');
-      const base = {
-        evidenceId: id,
-        shipmentId: ticket.shipmentId,
-        evidenceType: ticket.evidenceType,
-        readAt: new Date().toISOString(),
-      };
-      if (ticket.sizeBytes < UNREADABLE_BELOW_BYTES) {
-        return HttpResponse.json({ ...base, status: 'UNREADABLE', problems: ['WEIGHT_NOT_READ'] });
-      }
-      return HttpResponse.json({
-        ...base,
-        status: 'READ',
-        grossKg: 12500,
-        tareKg: 2500,
-        netKg: 10000,
-        problems: [],
-      });
-    }),
-    http.post(
-      '/api/v1/evidence/:evidenceId/ticket-reading/unverified',
-      async ({ params, request }) => {
-        const id = String(params.evidenceId);
-        const ticket = pending.get(id);
-        if (ticket === undefined) return problem(404, 'UPLOAD_NOT_FOUND');
-        const json: unknown = await request.json();
-        const reason = UNVERIFIED_REASONS.find((value) => isRecord(json) && json.reason === value);
-        if (reason === undefined) return problem(400, 'VALIDATION_FAILED');
-        if (ticket.sizeBytes >= UNREADABLE_BELOW_BYTES) {
-          return problem(409, 'TICKET_NOT_UNREADABLE');
-        }
-        return HttpResponse.json({
-          evidenceId: id,
-          shipmentId: ticket.shipmentId,
-          evidenceType: ticket.evidenceType,
-          reason,
-          declaredAt: new Date().toISOString(),
-        });
-      },
-    ),
     http.get('/api/v1/evidence/:evidenceId/download-url', () =>
       HttpResponse.json({
         url: PHOTO_DATA_URL,

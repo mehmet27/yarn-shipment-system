@@ -1,7 +1,6 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { http, HttpResponse } from 'msw';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
 import { captureTicket } from '@/test/ticket';
@@ -29,7 +28,9 @@ describe('DispatchWeighingPage', () => {
     });
     expect(screen.getByText('Net: 1.982,5 kg')).toBeInTheDocument();
     await captureTicket();
-    expect(await screen.findByText('Fiş okundu')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Kantar fişi fotoğrafı kaydedildi, devam edebilirsiniz.'),
+    ).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(
       await screen.findByText('Fasoncuya yolda', { selector: '.mantine-Badge-label' }),
@@ -56,83 +57,6 @@ describe('DispatchWeighingPage', () => {
     expect(
       await screen.findByText('Devam etmek için kantar fişinin fotoğrafı gerekli.'),
     ).toBeInTheDocument();
-  });
-
-  it('okunamayan fişi üç kez dener, sonra gerekçeyi son fişe yazıp devam ettirir', async () => {
-    server.use(...createHandlers('WAREHOUSE'));
-    const declared: unknown[] = [];
-    server.events.on('request:start', ({ request }) => {
-      if (request.url.endsWith('/ticket-reading/unverified')) {
-        void request
-          .clone()
-          .json()
-          .then((body: unknown) => declared.push(body));
-      }
-    });
-    renderApp('/panel/sevkiyat/shp-0001/cikis');
-    await screen.findByRole('button', { name: 'Kaydet' });
-    await fill({
-      'Dolu araç tartısı (brüt)': '2.000',
-      'Boş araç tartısı (dara)': '17',
-      'Çuval sayısı': '40',
-    });
-    for (let attempt = 0; attempt < 3; attempt++) {
-      await captureTicket(false);
-      await screen.findByText('Kilo bilgisi okunamadı, lütfen tekrar çekin');
-    }
-    expect(await screen.findByText(/Üç denemede de okunamadı/)).toBeInTheDocument();
-    await userEvent.click(await screen.findByRole('combobox', { name: 'Gerekçe' }));
-    await userEvent.click(await screen.findByRole('option', { name: 'Yazıcı çalışmıyor' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Gerekçeyle devam et' }));
-    expect(await screen.findByText(/K0 doğrulanamadı/)).toBeInTheDocument();
-    expect(declared).toEqual([{ reason: 'PRINTER_BROKEN' }]);
-    server.events.removeAllListeners();
-  });
-
-  it('gerekçe kaydedilemezse adımı tamamlamaz ve uyarır', async () => {
-    server.use(...createHandlers('WAREHOUSE'));
-    server.use(
-      http.post('/api/v1/evidence/:evidenceId/ticket-reading/unverified', () =>
-        HttpResponse.json({ status: 500, code: 'INTERNAL', title: 'x' }, { status: 500 }),
-      ),
-    );
-    renderApp('/panel/sevkiyat/shp-0001/cikis');
-    await screen.findByRole('button', { name: 'Kaydet' });
-    await fill({
-      'Dolu araç tartısı (brüt)': '2.000',
-      'Boş araç tartısı (dara)': '17',
-      'Çuval sayısı': '40',
-    });
-    for (let attempt = 0; attempt < 3; attempt++) {
-      await captureTicket(false);
-      await screen.findByText('Kilo bilgisi okunamadı, lütfen tekrar çekin');
-    }
-    await userEvent.click(await screen.findByRole('combobox', { name: 'Gerekçe' }));
-    await userEvent.click(await screen.findByRole('option', { name: 'Fiş hasarlı' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Gerekçeyle devam et' }));
-    expect(await screen.findByText('Gerekçe kaydedilemedi, tekrar deneyin.')).toBeInTheDocument();
-    expect(screen.queryByText(/K0 doğrulanamadı/)).not.toBeInTheDocument();
-  });
-
-  it('okuma servisi kapalıysa (503) okumayı atlayıp devam ettirir', async () => {
-    server.use(...createHandlers('WAREHOUSE'));
-    server.use(
-      http.post('/api/v1/evidence/:evidenceId/ticket-reading', () =>
-        HttpResponse.json(
-          { status: 503, code: 'TICKET_READING_UNAVAILABLE', title: 'x' },
-          { status: 503 },
-        ),
-      ),
-    );
-    renderApp('/panel/sevkiyat/shp-0001/cikis');
-    await screen.findByRole('button', { name: 'Kaydet' });
-    await fill({
-      'Dolu araç tartısı (brüt)': '2.000',
-      'Boş araç tartısı (dara)': '17',
-      'Çuval sayısı': '40',
-    });
-    await captureTicket();
-    expect(await screen.findByText(/okuma servisi şu an kapalı/)).toBeInTheDocument();
   });
 
   it('çıkış yetkisi olmayan rol 403 sayfasına düşer', async () => {

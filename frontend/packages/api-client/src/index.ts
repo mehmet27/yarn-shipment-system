@@ -1,4 +1,3 @@
-/* eslint-disable max-lines -- paket giriş noktası; her dışa aktarma tek tek listelenir (FE-MOD-08) */
 export { httpClient } from './httpClient';
 export { changePasswordUrl, getCurrentUser, LOGIN_PATH, loginUrl, logout, ME_PATH } from './me';
 export type { CurrentUser, Permission, Role } from './me';
@@ -174,23 +173,16 @@ export type {
 } from './discrepancies';
 export {
   confirmEvidenceUpload,
-  declareTicketUnverified,
   EvidenceType,
   getEvidenceDownloadUrl,
-  ReadingProblem,
-  readEvidenceTicket,
   requestEvidenceUpload,
   StorageUploadError,
-  TicketReadingStatus,
-  UnverifiedReason,
   uploadToStorage,
 } from './evidence';
 export type {
   EvidenceDownloadView,
   EvidenceView,
   RequestUploadRequest,
-  TicketReadingView,
-  TicketUnverifiedView,
   UploadTicketView,
 } from './evidence';
 export {
@@ -250,4 +242,3 @@ export type {
   OpeningImportRow,
   YarnVsFabricRowView,
 } from './faconReports';
-/* eslint-enable max-lines -- dosya sonu */

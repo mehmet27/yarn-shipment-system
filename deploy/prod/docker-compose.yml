@@ -224,8 +224,6 @@ services:
       EVIDENCE_STORAGE_BUCKET: evidence
       EVIDENCE_STORAGE_ACCESS_KEY: ${EVIDENCE_STORAGE_ACCESS_KEY}
       EVIDENCE_STORAGE_SECRET_KEY: ${EVIDENCE_STORAGE_SECRET_KEY}
-      TICKET_READING_ENABLED: ${TICKET_READING_ENABLED:-false}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     depends_on:
       postgres: { condition: service_healthy }
       kafka: { condition: service_healthy }

@@ -6,7 +6,6 @@ import com.yarnshipment.shipment.application.port.in.balance.MovementPage;
 import com.yarnshipment.shipment.application.port.out.ledger.BalanceQueryPort;
 import com.yarnshipment.shipment.application.port.out.ledger.DispatchLedgerPort;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement;
-import com.yarnshipment.shipment.domain.balance.BalanceMovement.Consumption;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement.DispatchContext;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement.DispatchLine;
 import com.yarnshipment.shipment.domain.balance.Kilograms;
@@ -147,24 +146,10 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
         for (DispatchLine line : dispatchLines(shipmentId, weighed)) {
             writer.append(BalanceMovement.dispatch(line, context));
             if (source != null) {
-                writer.append(transferOut(source, line, context));
+                writer.append(BalanceMovement.transferOut(source, line, context));
             }
         }
         return weighed;
-    }
-
-    /** Fasoncudan fasoncuya sevkiyatta gönderen fasoncunun bakiyesinden aynı kilo düşer. */
-    private static BalanceMovement transferOut(UUID source, DispatchLine line, DispatchContext context) {
-        return BalanceMovement.consumption(new Consumption(
-                MovementKind.TRANSFER_OUT,
-                source,
-                context.shipmentId(),
-                line.yarnType(),
-                line.lotId(),
-                line.netKg(),
-                context.at(),
-                context.createdBy(),
-                "TRANSFER:" + context.shipmentId() + ":" + line.lineNo()));
     }
 
     /** Reçete satırları tartı netine eşitse satırlar, değilse tek "(reçetesiz)" satır. */

@@ -63,7 +63,7 @@ public record BalanceMovement(
                 "DISPATCH:" + context.shipmentId() + ":" + line.lineNo());
     }
 
-    /** Bakiyeden düşen hareket (kumaş girişi, dönen iplik, fasoncudan gelen ya da aktarılan iplik); kilo pozitif verilir. */
+    /** Bakiyeden düşen hareket (kumaş girişi, dönen, gelen ya da aktarılan iplik); kilo pozitif verilir. */
     public static BalanceMovement consumption(Consumption consumption) {
         return new BalanceMovement(
                 UUID.randomUUID(),
@@ -76,6 +76,20 @@ public record BalanceMovement(
                 consumption.createdBy(),
                 null,
                 consumption.sourceRef());
+    }
+
+    /** Fasoncudan fasoncuya sevkiyatta gönderen fasoncunun bakiyesinden aynı kilo düşer. */
+    public static BalanceMovement transferOut(UUID source, DispatchLine line, DispatchContext context) {
+        return consumption(new Consumption(
+                MovementKind.TRANSFER_OUT,
+                source,
+                context.shipmentId(),
+                line.yarnType(),
+                line.lotId(),
+                line.netKg(),
+                context.at(),
+                context.createdBy(),
+                "TRANSFER:" + context.shipmentId() + ":" + line.lineNo()));
     }
 
     /** Sevkiyatın tamamlanma bağlamı: hangi fasoncu, hangi sevkiyat, ne zaman, kim. */

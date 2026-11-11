@@ -3,11 +3,11 @@ import { Group } from '@iplik/ui';
 import { useCurrentUser } from '@/modules/auth';
 import { hasChangeableRole } from '../staffRoles';
 import { ChangeRoleButton } from './ChangeRoleButton';
-import { ResetPasswordButton } from './ResetPasswordButton';
+import { SetPasswordButton } from './SetPasswordButton';
 import { ToggleEnabledButton } from './ToggleEnabledButton';
 
 /**
- * Hesap satırının işlemleri: şifre sıfırlama (SMS), pasife alma/açma ve fabrika içi hesapta rol değiştirme. Kişinin
+ * Hesap satırının işlemleri: yeni geçici şifre verme, pasife alma/açma ve fabrika içi hesapta rol değiştirme. Kişinin
  * kendi hesabında pasife alma ve rol değiştirme sunulmaz; sunucu da aynı kuralı uygular (kilitlenmeyi önler).
  */
 export function AccountActions({ account }: { account: LoginAccountView }) {
@@ -15,7 +15,7 @@ export function AccountActions({ account }: { account: LoginAccountView }) {
   const isOwn = me?.userId === account.id;
   return (
     <Group gap="xs" align="flex-start" wrap="nowrap">
-      <ResetPasswordButton account={account} />
+      <SetPasswordButton account={account} />
       {!isOwn && <ToggleEnabledButton account={account} />}
       {!isOwn && hasChangeableRole(account) && <ChangeRoleButton account={account} />}
     </Group>

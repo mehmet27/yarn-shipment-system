@@ -38,10 +38,10 @@ describe('Kullanıcılar ekranı', () => {
     );
   });
 
-  it('arama kullanıcı adı, ad ve e-postada yapılır; sonuç yoksa bilgi verir', async () => {
+  it('arama kullanıcı adı ve adda yapılır; sonuç yoksa bilgi verir', async () => {
     renderApp('/panel/kullanicilar');
-    const search = await screen.findByRole('searchbox', { name: /Giriş adı, ad ya da e-posta/ });
-    await userEvent.type(search, 'kalite@iplik');
+    const search = await screen.findByRole('searchbox', { name: /Giriş adı ya da ad/ });
+    await userEvent.type(search, 'kalite uzm');
     expect(await screen.findByText('1 kullanıcı')).toBeInTheDocument();
     expect(screen.getByText('kalite')).toBeInTheDocument();
 

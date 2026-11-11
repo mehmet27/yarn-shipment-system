@@ -780,31 +780,27 @@
   },
   "users": {
     "title": "Kullanıcılar",
-    "intro": "Sisteme giriş hesabı olan kişiler. Şifreler hiçbir zaman gösterilmez: yeni hesaba ve şifresini unutana telefonuna SMS kodu gider, şifreyi kişi kendisi belirler.",
+    "intro": "Sisteme giriş hesabı olan kişiler. İlk şifreyi siz yazarsınız; kişi ilk girişte kendi şifresini seçer. SMS ya da e-posta doğrulaması yoktur.",
     "create": {
       "open": "Yeni kullanıcı",
       "title": "Yeni kullanıcı aç",
-      "submit": "Hesabı aç ve SMS gönder",
-      "sent": "Hesap açıldı. Şifre belirleme kodu {{phone}} numarasına gönderildi.",
-      "sentHint": "Kişi giriş ekranındaki “Şifremi unuttum” bağlantısından kodla şifresini belirler. Kod 3 gün geçerlidir.",
+      "submit": "Hesabı aç",
+      "sent": "{{username}} hesabı açıldı. Geçici şifreyi kişiye iletin; ilk girişte değiştirmesi istenir.",
       "invalid": {
         "username": "Giriş adı en az 3 karakter olmalı; küçük harf, rakam, nokta, alt çizgi ve tire kullanın (Türkçe karakter ve boşluk olmaz).",
         "fullName": "Ad ve soyadı girin.",
-        "email": "Geçerli bir e-posta girin (ör. ad@firma.com).",
         "role": "Bir rol seçin.",
-        "sites": "En az bir lokasyon seçin.",
-        "phone": "Geçerli bir cep telefonu girin (ör. 0532 123 45 67).",
-        "record": "Bağlanacak kaydı seçin."
+        "record": "Bağlanacak kaydı seçin.",
+        "password": "Şifre en az 8 karakter olmalı."
       },
       "errors": {
-        "LOGIN_ACCOUNT_EXISTS": "Bu giriş adı ya da e-posta başka bir hesapta kullanılıyor.",
+        "LOGIN_ACCOUNT_EXISTS": "Bu giriş adı başka bir hesapta kullanılıyor.",
         "LOGIN_ACCOUNT_UNAVAILABLE": "Giriş sistemine ulaşılamadı; hesap açılmadı. Lütfen tekrar deneyin.",
-        "INVALID_MASTER_DATA": "Bilgiler geçersiz. Seçilen lokasyonların etkin olduğundan emin olun.",
-        "SMS_UNAVAILABLE": "SMS gönderilemedi; hesap açıldı ama kod gitmedi. Kullanıcıyı listeden bulup “Şifre sıfırla” ile kodu yeniden gönderin.",
-        "MASTER_DATA_NOT_FOUND": "Seçilen kayıt bulunamadı ya da pasif.",
-        "unknown": "Hesap açılamadı. Lütfen tekrar deneyin."
+        "INVALID_MASTER_DATA": "Bilgiler geçersiz. Aktif bir lokasyon tanımlı olmalı.",
+        "unknown": "Hesap açılamadı. Lütfen tekrar deneyin.",
+        "WEAK_PASSWORD": "Şifre kurallara uymuyor; daha uzun ve tahmin edilmesi zor bir şifre yazın."
       },
-      "phoneHint": "Şifre belirleme kodu bu numaraya SMS'le gider (ör. 0532 123 45 67)."
+      "passwordHint": "En az 8 karakter. Kişi ilk girişte kendi şifresini seçer."
     },
     "changeRole": {
       "action": "Rolü değiştir",
@@ -820,25 +816,23 @@
         "unknown": "Rol değiştirilemedi. Lütfen tekrar deneyin."
       }
     },
-    "search": "Giriş adı, ad ya da e-posta ara",
+    "search": "Giriş adı ya da ad ara",
     "empty": "Giriş hesabı olan kullanıcı yok.",
     "noMatch": "Aramaya uyan kullanıcı bulunamadı.",
     "count": "{{count}} kullanıcı",
     "field": {
       "username": "Kullanıcı adı",
       "fullName": "Ad soyad",
-      "email": "E-posta",
       "roles": "Rol",
       "status": "Durum",
       "createdAt": "Açılış",
       "actions": "İşlem",
-      "phone": "Telefon",
-      "emailOptional": "E-posta (isteğe bağlı)",
       "record": {
         "driver": "Şoför kaydı",
         "subcontractor": "Fasoncu kaydı"
       },
-      "recordHint": "Hesap bu kaydın sevkiyatlarını görür."
+      "recordHint": "Hesap bu kaydın sevkiyatlarını görür.",
+      "password": "İlk şifre"
     },
     "status": {
       "enabled": "Etkin",
@@ -872,18 +866,18 @@
       "open": "{{username}} hesabını yeniden aç"
     },
     "notFound": "Kullanıcı bulunamadı; liste yenilenecek.",
-    "resetPassword": {
-      "action": "Şifre sıfırla",
-      "open": "{{username}} için şifre sıfırlamayı başlat",
-      "title": "Şifre sıfırlamayı başlat",
-      "intro": "{{username}} kullanıcısının kayıtlı telefonuna ({{phone}}) şifre belirleme kodu SMS'le gider. Şifreyi kişi kendisi belirler; siz göremezsiniz. Kod 3 gün geçerlidir.",
-      "submit": "SMS gönder",
-      "sent": "Kod {{phone}} numarasına gönderildi.",
+    "setPassword": {
+      "action": "Şifre ver",
+      "open": "{{username}} için yeni şifre ver",
+      "title": "Yeni geçici şifre",
+      "intro": "{{username}} için yeni bir geçici şifre yazın ve kişiye iletin. Kişi bir sonraki girişte şifresini değiştirir; açık oturumları kapanır.",
+      "submit": "Şifreyi kaydet",
+      "done": "{{username}} için yeni geçici şifre verildi.",
       "errors": {
         "LOGIN_ACCOUNT_NOT_FOUND": "Kullanıcı bulunamadı; liste yenilenecek.",
-        "SMS_UNAVAILABLE": "SMS gönderilemedi. Lütfen biraz sonra tekrar deneyin.",
-        "INVALID_MASTER_DATA": "Bu kullanıcının kayıtlı telefonu yok; önce kaydından telefon ekleyin.",
-        "unknown": "Şifre sıfırlama başlatılamadı. Lütfen tekrar deneyin."
+        "WEAK_PASSWORD": "Şifre kurallara uymuyor; daha uzun ve tahmin edilmesi zor bir şifre yazın.",
+        "LOGIN_ACCOUNT_UNAVAILABLE": "Giriş sistemine ulaşılamadı; şifre değişmedi. Lütfen tekrar deneyin.",
+        "unknown": "Şifre verilemedi. Lütfen tekrar deneyin."
       }
     }
   },
@@ -1051,31 +1045,6 @@
     },
     "balance": {
       "note": "İptal edilen sevkiyatlar sayılmaz. Yolda kalan: irsaliyesi henüz yüklenmemiş sevkiyatların çıkış net toplamı. Tamamlanan sevkiyatta fasoncuya ulaşan kilo çıkış netidir."
-    }
-  },
-  "forgotPassword": {
-    "title": "Şifremi unuttum",
-    "requestIntro": "Giriş adınızı yazın. Hesabınızda kayıtlı telefon varsa altı haneli kod SMS'le gelir.",
-    "username": "Giriş adı",
-    "requestSubmit": "Kod gönder",
-    "codeIntro": "Hesap ve telefon kayıtlıysa kod gönderildi. Kod 10 dakika geçerlidir; gelmezse bir dakika sonra yeniden isteyebilirsiniz.",
-    "code": "SMS kodu",
-    "password": "Yeni şifre",
-    "passwordHint": "En az 8 karakter",
-    "confirmSubmit": "Şifreyi belirle",
-    "resend": "Kodu yeniden iste",
-    "done": "Şifreniz belirlendi. Şimdi giriş yapabilirsiniz.",
-    "login": "Giriş yap",
-    "invalid": {
-      "username": "Giriş adını yazın.",
-      "code": "Altı haneli kodu girin.",
-      "password": "Şifre en az 8 karakter olmalı."
-    },
-    "errors": {
-      "INVALID_RESET_CODE": "Kod hatalı, süresi dolmuş ya da deneme hakkı bitmiş. Yeni kod isteyin.",
-      "WEAK_PASSWORD": "Şifre kurallara uymuyor; daha uzun ve tahmin edilmesi zor bir şifre seçin.",
-      "SMS_UNAVAILABLE": "SMS şu an gönderilemiyor. Lütfen biraz sonra tekrar deneyin.",
-      "unknown": "İşlem yapılamadı. Lütfen tekrar deneyin."
     }
   },
   "branding": {

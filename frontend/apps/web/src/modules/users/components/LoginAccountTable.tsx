@@ -5,7 +5,7 @@ import { LoginAccountCard } from './LoginAccountCard';
 import { LoginAccountRow } from './LoginAccountRow';
 
 const DESKTOP_QUERY = '(min-width: 48em)';
-const TABLE_MIN_WIDTH = 1100;
+const TABLE_MIN_WIDTH = 800;
 
 export type LoginAccountTableProps = { accounts: readonly LoginAccountView[] };
 
@@ -29,8 +29,6 @@ export function LoginAccountTable({ accounts }: LoginAccountTableProps) {
           <Table.Tr>
             <Table.Th>{t('users.field.username')}</Table.Th>
             <Table.Th>{t('users.field.fullName')}</Table.Th>
-            <Table.Th>{t('users.field.email')}</Table.Th>
-            <Table.Th>{t('users.field.phone')}</Table.Th>
             <Table.Th>{t('users.field.roles')}</Table.Th>
             <Table.Th>{t('users.field.status')}</Table.Th>
             <Table.Th>{t('users.field.createdAt')}</Table.Th>

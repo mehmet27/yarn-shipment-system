@@ -53,27 +53,16 @@ services:
       GATEWAY_CLIENT_SECRET: ${GATEWAY_CLIENT_SECRET:?deploy/.env içinde GATEWAY_CLIENT_SECRET tanımlayın}
       # shipment-service'in giriş hesabı açmak için kullandığı servis hesabı istemcisinin sırrı (yerel varsayılan vardır).
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:-local-admin-client-secret}
-      # Yeni fabrika içi hesaba şifre belirleme bağlantısı bu SMTP sunucusundan gider (yerelde mailpit, arayüz 8025).
-      KEYCLOAK_SMTP_HOST: ${KEYCLOAK_SMTP_HOST:-mailpit}
-      KEYCLOAK_SMTP_PORT: ${KEYCLOAK_SMTP_PORT:-1025}
-      KEYCLOAK_SMTP_FROM: ${KEYCLOAK_SMTP_FROM:-no-reply@yarnshipment.local}
     ports:
       - "8180:8180"
     volumes:
       # Yalnızca realm yoksa içe aktarılır; yeniden aktarmak için konsoldan realm'i silin veya `down -v` yapın.
       - ./keycloak/yarnshipment-realm-local.json:/opt/keycloak/data/import/yarnshipment-realm.json:ro
-      # Giriş sayfasına "Şifremi unuttum" bağlantısı ekleyen tema (yalnızca bu klasör; yerleşik temalar korunur).
+      # Giriş sayfasına marka görünümünü ekleyen tema (yalnızca bu klasör; yerleşik temalar korunur).
       - ./keycloak/themes/yarnshipment:/opt/keycloak/themes/yarnshipment:ro
     depends_on:
       postgres:
         condition: service_healthy
-
-  # Yerel geliştirme için sahte SMTP: Keycloak'ın gönderdiği davet e-postaları http://localhost:8025 adresinde görünür.
-  mailpit:
-    image: axllent/mailpit:v1.27
-    ports:
-      - "1025:1025"
-      - "8025:8025"
 
   kafka:
     image: apache/kafka:4.1.0

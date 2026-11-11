@@ -314,28 +314,6 @@ const createShipmentHandler = http.post(SHIPMENTS_PATH, async ({ request }) => {
 /** Gateway çıkışı: gerçek yanıt Keycloak çıkış adresidir; sahte API ana sayfaya döner. */
 const logoutHandler = http.post('/logout', () => HttpResponse.json({ logoutUrl: '/' }));
 
-/** Herkese açık şifre belirleme uçları: kod her zaman 204; doğru kod `123456`, şifre en az 8 karakter. */
-export const MOCK_RESET_CODE = '123456';
-const passwordResetHandlers = [
-  http.post('/api/v1/password-reset/request', () => new HttpResponse(null, { status: 204 })),
-  http.post('/api/v1/password-reset/confirm', async ({ request }) => {
-    const body = (await request.json()) as { code: string; newPassword: string };
-    if (body.code !== MOCK_RESET_CODE) {
-      return HttpResponse.json(
-        { status: 400, code: 'INVALID_RESET_CODE', title: 'Kod geçersiz' },
-        { status: 400 },
-      );
-    }
-    if (body.newPassword.length < 8) {
-      return HttpResponse.json(
-        { status: 400, code: 'WEAK_PASSWORD', title: 'Şifre zayıf' },
-        { status: 400 },
-      );
-    }
-    return new HttpResponse(null, { status: 204 });
-  }),
-];
-
 export function createHandlers(role: Role) {
   return [
     createMeHandler(role),
@@ -360,7 +338,6 @@ export function createHandlers(role: Role) {
     ...createAuditHandlers(createMockUser(role).permissions),
     ...createReportHandlers(createMockUser(role).permissions),
     ...createSettlementHandlers(createMockUser(role)),
-    ...passwordResetHandlers,
     logoutHandler,
   ];
 }

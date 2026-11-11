@@ -58,11 +58,9 @@ server:
   port: ${SERVER_PORT:8083}
 yarnshipment:
   security:
-    # Şifre sıfırlama uçları girişsiz çağrılır (kullanıcı şifresini unutmuştur).
     public-paths:
       - /actuator/health/**
       - /actuator/info
-      - /api/v1/password-reset/**
       # Giriş sayfası da marka rengini okur; yazma ucu yöntem güvenliğiyle (SETTINGS_MANAGE) korunur.
       - /api/v1/branding
   outbox:

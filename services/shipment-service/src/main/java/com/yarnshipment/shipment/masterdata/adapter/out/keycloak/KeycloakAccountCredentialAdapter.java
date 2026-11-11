@@ -1,9 +1,9 @@
 package com.yarnshipment.shipment.masterdata.adapter.out.keycloak;
 
 import com.yarnshipment.shipment.masterdata.application.port.out.AccountCredentialPort;
-import com.yarnshipment.shipment.masterdata.application.port.out.ResetTarget;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
 import com.yarnshipment.shipment.masterdata.domain.model.WeakPasswordException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
 
 /**
- * {@link AccountCredentialPort}'un Keycloak uygulaması: kullanıcıyı giriş adı ya da kimliğiyle bulur, kalıcı şifre
- * belirler ve hesabı açıp kapatır. Şifre yalnızca Keycloak'a giden istekte bulunur; loglanmaz ve saklanmaz.
+ * {@link AccountCredentialPort}'un Keycloak uygulaması: geçici şifre belirler ve hesabı açıp kapatır. Şifre yalnızca
+ * Keycloak'a giden istekte bulunur; loglanmaz ve saklanmaz.
  */
 @Component
 final class KeycloakAccountCredentialAdapter implements AccountCredentialPort {
@@ -29,17 +29,7 @@ final class KeycloakAccountCredentialAdapter implements AccountCredentialPort {
     }
 
     @Override
-    public Optional<ResetTarget> findByUsername(String username) {
-        return admin.guarded(() -> lookUp(admin.accessToken(), username));
-    }
-
-    @Override
-    public Optional<ResetTarget> findById(UUID userId) {
-        return admin.guarded(() -> user(admin.accessToken(), userId).flatMap(KeycloakAccountCredentialAdapter::target));
-    }
-
-    @Override
-    public void setPassword(UUID userId, String password) {
+    public void setTemporaryPassword(UUID userId, String password) {
         admin.guardedRun(() -> replacePassword(admin.accessToken(), userId, password));
     }
 
@@ -53,19 +43,6 @@ final class KeycloakAccountCredentialAdapter implements AccountCredentialPort {
         admin.guardedRun(() -> switchEnabled(admin.accessToken(), userId, false));
     }
 
-    private Optional<ResetTarget> lookUp(String token, String username) {
-        List<Map<String, Object>> found = admin.http()
-                .get()
-                .uri(uri -> uri.path("/admin/realms/{realm}/users")
-                        .queryParam("username", username)
-                        .queryParam("exact", true)
-                        .build(admin.realm()))
-                .headers(headers -> headers.setBearerAuth(token))
-                .retrieve()
-                .body(KeycloakAdminClient.OBJECTS);
-        return found == null || found.isEmpty() ? Optional.empty() : target(found.getFirst());
-    }
-
     private void replacePassword(String token, UUID userId, String password) {
         try {
             admin.http()
@@ -73,7 +50,7 @@ final class KeycloakAccountCredentialAdapter implements AccountCredentialPort {
                     .uri("/admin/realms/{realm}/users/{id}/reset-password", admin.realm(), userId)
                     .headers(headers -> headers.setBearerAuth(token))
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of("type", "password", "value", password, "temporary", false))
+                    .body(Map.of("type", "password", "value", password, "temporary", true))
                     .retrieve()
                     .toBodilessEntity();
         } catch (RestClientResponseException exception) {
@@ -82,7 +59,7 @@ final class KeycloakAccountCredentialAdapter implements AccountCredentialPort {
             }
             throw exception;
         }
-        clearPasswordChangeRequirement(token, userId);
+        requirePasswordChange(token, userId);
         endSessions(token, userId);
     }
 
@@ -112,14 +89,16 @@ final class KeycloakAccountCredentialAdapter implements AccountCredentialPort {
         }
     }
 
-    /** Şifreyi kişi kendisi belirlediği için "şifre değiştir" zorunluluğu kalkar; diğer zorunlu eylemler kalır. */
-    private void clearPasswordChangeRequirement(String token, UUID userId) {
+    /** Geçici şifre verilen kişi ilk girişte şifresini değiştirir; zorunlu eylem yoksa eklenir. */
+    private void requirePasswordChange(String token, UUID userId) {
         Map<String, Object> current = user(token, userId).orElseThrow(LoginAccountNotFoundException::new);
-        if (current.get("requiredActions") instanceof List<?> actions && actions.contains(UPDATE_PASSWORD)) {
-            List<?> remaining = actions.stream()
-                    .filter(action -> !UPDATE_PASSWORD.equals(action))
-                    .toList();
-            putUser(token, userId, Map.of("requiredActions", remaining));
+        List<Object> actions = new ArrayList<>();
+        if (current.get("requiredActions") instanceof List<?> existing) {
+            actions.addAll(existing);
+        }
+        if (!actions.contains(UPDATE_PASSWORD)) {
+            actions.add(UPDATE_PASSWORD);
+            putUser(token, userId, Map.of("requiredActions", actions));
         }
     }
 
@@ -141,16 +120,5 @@ final class KeycloakAccountCredentialAdapter implements AccountCredentialPort {
                 .headers(headers -> headers.setBearerAuth(token))
                 .retrieve()
                 .toBodilessEntity();
-    }
-
-    private static Optional<ResetTarget> target(Map<String, Object> user) {
-        if (!(user.get("id") instanceof String id) || !(user.get("username") instanceof String username)) {
-            return Optional.empty();
-        }
-        return Optional.of(new ResetTarget(
-                UUID.fromString(id),
-                username,
-                Boolean.TRUE.equals(user.get("enabled")),
-                KeycloakAccountSummaries.phone(user)));
     }
 }

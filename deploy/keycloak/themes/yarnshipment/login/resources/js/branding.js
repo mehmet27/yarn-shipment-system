@@ -32,8 +32,7 @@
     ".pf-v5-c-button.pf-m-primary:hover,.pf-v5-c-button.pf-m-primary:focus{background:var(--ys-brand-dark);}" +
     ".pf-v5-c-form-control{min-height:44px;}" +
     ".pf-v5-c-form-control:focus-within{--pf-v5-c-form-control--after--BorderBottomColor:var(--ys-brand);}" +
-    ".pf-v5-c-login__footer,#kc-info,#kc-info-wrapper{color:var(--ys-brand-light);}" +
-    "#yarnshipment-forgot-password{color:var(--ys-accent);font-weight:600;text-decoration:underline;}";
+    ".pf-v5-c-login__footer,#kc-info,#kc-info-wrapper{color:var(--ys-brand-light);}";
 
   function renameHeader() {
     var header = document.getElementById("kc-header-wrapper");

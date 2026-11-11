@@ -36,15 +36,7 @@ class LoginAccountControllerTest {
     private static final int PAGE_SIZE = 20;
     private static final String URI = "/api/v1/master-data/login-accounts";
     private static final LoginAccountSummary DRIVER = new LoginAccountSummary(
-            "u-2",
-            "ali.yilmaz",
-            "Ali Yılmaz",
-            "ali@ornek.com",
-            "***4567",
-            List.of("WAREHOUSE"),
-            true,
-            true,
-            Instant.parse("2026-01-01T00:00:00Z"));
+            "u-2", "ali.yilmaz", "Ali Yılmaz", List.of("WAREHOUSE"), true, true, Instant.parse("2026-01-01T00:00:00Z"));
 
     private final MockMvcTester mvc;
 

@@ -3,7 +3,7 @@ import {
   changeLoginAccountEnabled,
   changeLoginAccountRole,
   createStaffLoginAccount,
-  startLoginAccountPasswordReset,
+  setLoginAccountPassword,
 } from '@iplik/api-client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AccountSubmission } from '../accountDraft';
@@ -13,7 +13,7 @@ function open(submission: AccountSubmission): Promise<void> {
   return createStaffLoginAccount(submission.request);
 }
 
-/** Hesap açar; şifre üretilmez, kişiye SMS kodu gider. Liste yenilenir. */
+/** Hesap açar; ilk şifreyi yönetici yazar (SMS/e-posta yok). Liste yenilenir. */
 export function useCreateAccount() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -40,9 +40,11 @@ export function useSetAccountEnabled(userId: string) {
   });
 }
 
-/** Yönetici sıfırlamayı başlatır: kişinin telefonuna SMS kodu gider, şifreyi kişi belirler. */
-export function useStartPasswordReset(userId: string) {
+/** Yönetici hesaba yeni geçici şifre verir; kişi ilk girişte değiştirir, liste yenilenir (ilk giriş bekleniyor). */
+export function useSetAccountPassword(userId: string) {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => startLoginAccountPasswordReset(userId),
+    mutationFn: (password: string) => setLoginAccountPassword(userId, { password }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: LOGIN_ACCOUNTS_KEY }),
   });
 }

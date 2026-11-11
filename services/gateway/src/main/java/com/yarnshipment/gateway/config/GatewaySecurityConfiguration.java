@@ -29,8 +29,6 @@ import tools.jackson.databind.json.JsonMapper;
 public class GatewaySecurityConfiguration {
 
     private static final String LOGIN_PATH = "/oauth2/authorization/keycloak";
-    /** Girişsiz çağrılan "şifremi unuttum" uçları; oturum ya da çerez taşımaz, bu yüzden CSRF dışıdır. */
-    private static final String PASSWORD_RESET_PATHS = "/api/v1/password-reset/**";
     /** Marka ayarının okunması girişsizdir; yazma (PUT) oturum ve CSRF ister. */
     private static final String BRANDING_PATH = "/api/v1/branding";
 
@@ -46,7 +44,7 @@ public class GatewaySecurityConfiguration {
                 new JsonLogoutSuccessHandler(registrations, properties.postLogoutUrl(), jsonMapper);
         http.authorizeHttpRequests(requests -> requests.dispatcherTypeMatchers(DispatcherType.ERROR)
                         .permitAll()
-                        .requestMatchers("/actuator/health/**", PASSWORD_RESET_PATHS)
+                        .requestMatchers("/actuator/health/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, BRANDING_PATH)
                         .permitAll()
@@ -57,7 +55,6 @@ public class GatewaySecurityConfiguration {
                         .successHandler(new ReturnToSuccessHandler(properties.postLoginUrl())))
                 .logout(configurer -> configurer.logoutSuccessHandler(logout))
                 .csrf(csrf -> csrf.csrfTokenRepository(csrfTokens)
-                        .ignoringRequestMatchers(PASSWORD_RESET_PATHS)
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 .addFilterAfter(new CsrfCookieFilter(csrfTokens), CsrfFilter.class)
                 .addFilterBefore(

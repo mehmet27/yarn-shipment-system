@@ -7,7 +7,7 @@ import { StatusBadges } from './StatusBadges';
 
 export type LoginAccountCardProps = { account: LoginAccountView };
 
-/** Dar ekranda tek kullanıcı: kullanıcı adı başta, ad, e-posta, rol ve durum altında. */
+/** Dar ekranda tek kullanıcı: kullanıcı adı başta, ad, rol ve durum altında. */
 export function LoginAccountCard({ account }: LoginAccountCardProps) {
   const { t } = useTranslation();
   return (
@@ -22,16 +22,6 @@ export function LoginAccountCard({ account }: LoginAccountCardProps) {
         <Text size="sm" {...(account.fullName === undefined ? { c: 'dimmed' } : {})}>
           {account.fullName ?? t('users.noName')}
         </Text>
-        {account.email !== undefined && (
-          <Text size="sm" c="dimmed" style={{ overflowWrap: 'anywhere' }}>
-            {account.email}
-          </Text>
-        )}
-        {account.phone !== undefined && (
-          <Text size="sm" c="dimmed">
-            {account.phone}
-          </Text>
-        )}
         <RoleBadges account={account} />
         {account.createdAt !== undefined && (
           <Text size="xs" c="dimmed">

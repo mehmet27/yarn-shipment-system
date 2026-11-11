@@ -2,17 +2,15 @@ import type { LoginAccountView, Role } from '@iplik/api-client';
 
 /**
  * Keycloak'taki giriş hesaplarının sahte karşılığı; yerel realm'deki test kullanıcılarıyla aynı giriş adlarını taşır.
- * Şifre tutulmaz, gerçek uç da şifre döndürmez; telefon yalnızca maskeli gelir.
+ * Şifre tutulmaz, gerçek uç da şifre döndürmez.
  */
 const SEED: readonly LoginAccountView[] = [
   {
     id: 'kc-admin',
     username: 'admin',
     fullName: 'Sistem Yöneticisi',
-    email: 'admin@iplik.local',
     roles: ['ADMIN'],
     enabled: true,
-    phone: '***0001',
     passwordChangeRequired: false,
     createdAt: '2026-01-05T08:00:00Z',
   },
@@ -20,7 +18,6 @@ const SEED: readonly LoginAccountView[] = [
     id: 'kc-depo',
     username: 'depo',
     fullName: 'Depo Sorumlusu',
-    email: 'depo@iplik.local',
     roles: ['WAREHOUSE'],
     enabled: true,
     passwordChangeRequired: false,
@@ -30,10 +27,8 @@ const SEED: readonly LoginAccountView[] = [
     id: 'kc-kalite',
     username: 'kalite',
     fullName: 'Kalite Uzmanı',
-    email: 'kalite@iplik.local',
     roles: ['QUALITY'],
     enabled: true,
-    phone: '***0005',
     passwordChangeRequired: true,
     createdAt: '2026-01-05T08:10:00Z',
   },
@@ -41,7 +36,6 @@ const SEED: readonly LoginAccountView[] = [
     id: 'kc-mudur',
     username: 'mudur',
     fullName: 'Fabrika Müdürü',
-    email: 'mudur@iplik.local',
     roles: ['MANAGER'],
     enabled: true,
     passwordChangeRequired: false,
@@ -51,7 +45,6 @@ const SEED: readonly LoginAccountView[] = [
     id: 'kc-genelmudur',
     username: 'genelmudur',
     fullName: 'Genel Müdür',
-    email: 'genelmudur@iplik.local',
     roles: ['GENERAL_MANAGER'],
     enabled: true,
     passwordChangeRequired: false,
@@ -60,7 +53,6 @@ const SEED: readonly LoginAccountView[] = [
   {
     id: 'kc-eski',
     username: 'eski.depo',
-    email: 'eski.depo@iplik.local',
     roles: ['WAREHOUSE'],
     enabled: false,
     passwordChangeRequired: false,
@@ -80,11 +72,9 @@ export function isMockUsernameTaken(username: string): boolean {
   return accounts.some((account) => account.username === username);
 }
 
-/** Açılan hesap, kişi SMS'le şifresini belirleyene kadar ilk girişini bekleyen hesap olarak listeye düşer. */
+/** Açılan hesap, kişi geçici şifresini değiştirene kadar ilk girişini bekleyen hesap olarak listeye düşer. */
 export function addMockLoginAccount(input: {
   username: string;
-  email?: string;
-  phone: string;
   fullName: string;
   role: Role;
 }): void {
@@ -94,8 +84,6 @@ export function addMockLoginAccount(input: {
       id: `kc-new-${String(nextId++)}`,
       username: input.username,
       fullName: input.fullName,
-      ...(input.email === undefined || input.email === '' ? {} : { email: input.email }),
-      phone: `***${input.phone.replace(/\D/g, '').slice(-4)}`,
       roles: [input.role],
       enabled: true,
       passwordChangeRequired: true,
@@ -113,11 +101,13 @@ export function setMockLoginAccountEnabled(id: string, enabled: boolean): boolea
   return true;
 }
 
-/** Yönetici sıfırlaması için hesabın telefonu var mı; yoksa `no-phone`, hesap yoksa `not-found`. */
-export function mockPasswordResetState(id: string): 'ok' | 'not-found' | 'no-phone' {
-  const account = accounts.find((candidate) => candidate.id === id);
-  if (account === undefined) return 'not-found';
-  return account.phone === undefined ? 'no-phone' : 'ok';
+/** Yeni geçici şifre verilince hesap ilk giriş bekleyen olur; bulunamazsa `false` döner. */
+export function setMockLoginAccountPassword(id: string): boolean {
+  if (!accounts.some((candidate) => candidate.id === id)) return false;
+  accounts = accounts.map((candidate) =>
+    candidate.id === id ? { ...candidate, passwordChangeRequired: true } : candidate,
+  );
+  return true;
 }
 
 /** Rolü değiştirir; bulunamazsa `not-found` döner. */

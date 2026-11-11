@@ -15,17 +15,6 @@
   "duplicateEmailsAllowed": false,
   "bruteForceProtected": true,
   "passwordPolicy": "length(8)",
-  "smtpServer": {
-    "host": "${KEYCLOAK_SMTP_HOST}",
-    "port": "${KEYCLOAK_SMTP_PORT}",
-    "from": "${KEYCLOAK_SMTP_FROM}",
-    "fromDisplayName": "İplik Sevkiyat",
-    "auth": "${KEYCLOAK_SMTP_AUTH}",
-    "user": "${KEYCLOAK_SMTP_USER}",
-    "password": "${KEYCLOAK_SMTP_PASSWORD}",
-    "ssl": "${KEYCLOAK_SMTP_SSL}",
-    "starttls": "${KEYCLOAK_SMTP_STARTTLS}"
-  },
   "accessTokenLifespan": 300,
   "ssoSessionIdleTimeout": 1800,
   "ssoSessionMaxLifespan": 36000,

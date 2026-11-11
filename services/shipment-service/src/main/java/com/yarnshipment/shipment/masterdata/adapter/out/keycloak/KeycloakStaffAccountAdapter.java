@@ -18,8 +18,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
 
 /**
- * {@link StaffAccountPort}'un Keycloak uygulaması. Fabrika içi kullanıcı şifresiz açılır; şifreyi kişi SMS koduyla
- * kendisi belirler. Rol verilemezse açılan kullanıcı silinir. Şifre hiçbir yerde üretilmez.
+ * {@link StaffAccountPort}'un Keycloak uygulaması. Fabrika içi kullanıcı yöneticinin yazdığı geçici şifreyle açılır;
+ * kişi ilk girişte şifresini değiştirmek zorundadır. Rol verilemezse açılan kullanıcı silinir. Şifre yalnızca
+ * Keycloak'a giden istekte bulunur; loglanmaz.
  */
 @Component
 final class KeycloakStaffAccountAdapter implements StaffAccountPort {
@@ -120,16 +121,10 @@ final class KeycloakStaffAccountAdapter implements StaffAccountPort {
         user.put("enabled", true);
         user.put("firstName", names[0]);
         user.put("lastName", names[1]);
-        if (spec.email() != null) {
-            user.put("email", spec.email());
-        }
         user.put(
                 "attributes",
-                Map.of(
-                        SITE_IDS,
-                        spec.siteIds().stream().map(Object::toString).toList(),
-                        KeycloakAdminClient.PHONE_ATTRIBUTE,
-                        List.of(spec.phone().e164())));
+                Map.of(SITE_IDS, spec.siteIds().stream().map(Object::toString).toList()));
+        user.put("credentials", List.of(Map.of("type", "password", "value", spec.password(), "temporary", true)));
         user.put("requiredActions", List.of(UPDATE_PASSWORD));
         return user;
     }

@@ -38,7 +38,6 @@ tags:
   - name: LotManagement
   - name: LoginAccounts
   - name: LoginAccountAccess
-  - name: PasswordReset
   - name: Branding
   - name: CurrentUser
 security:
@@ -490,7 +489,7 @@ paths:
       summary: Giriş hesabı olan kullanıcıların listesi
       description: |
         Yalnızca yönetici (USER_MANAGE). Keycloak'ta uygulama rollerinden en az birine sahip kullanıcılar giriş adına
-        göre sıralı gelir; servis hesapları listede yoktur. Arama `q` ile giriş adı, ad ve e-postada yapılır
+        göre sıralı gelir; servis hesapları listede yoktur. Arama `q` ile giriş adı ve adda yapılır
         (büyük-küçük harf duyarsız). Şifre ya da başka kimlik bilgisi hiçbir zaman dönmez. Keycloak'a ulaşılamazsa ya
         da yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE`.
       parameters:
@@ -517,10 +516,11 @@ paths:
       operationId: createStaffLoginAccount
       summary: Fabrika içi giriş hesabı açar
       description: |
-        Yalnızca yönetici (USER_MANAGE). Depo, kalite, müdür ya da yönetici hesabını Keycloak'ta şifresiz açar ve rolü
-        verir; kişiye şifresini belirleyeceği kod SMS'le gider. Şifre üretilmez, hiçbir yanıtta ya da logda yer almaz.
-        Giriş adı ya da e-posta alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; Keycloak çalışmazsa 502
-        `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz); SMS gidemezse 502 `SMS_UNAVAILABLE` (hesap açık kalır).
+        Yalnızca yönetici (USER_MANAGE). Depo, kalite, müdür ya da yönetici hesabını Keycloak'ta yöneticinin yazdığı
+        geçici şifreyle açar ve rolü verir; kişi ilk girişte şifresini değiştirir. SMS ya da e-posta doğrulaması yoktur.
+        Fabrikada tek merkez lokasyon vardır; hesap etkin tüm lokasyonları görür. Şifre hiçbir yanıtta ya da logda yer
+        almaz. Giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; şifre kurala uymuyorsa 400 `WEAK_PASSWORD`; Keycloak
+        çalışmazsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
       requestBody:
         required: true
         content:
@@ -529,7 +529,7 @@ paths:
               $ref: '#/components/schemas/StaffLoginAccountRequest'
       responses:
         '201':
-          description: Hesap açıldı, şifre belirleme kodu SMS'le gönderildi
+          description: Hesap açıldı
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -547,7 +547,7 @@ paths:
       summary: Kullanıcı kimliklerinin okunur adları
       description: |
         Denetim kaydı gibi ekranlarda kimliği ada çevirir. Yönetici (USER_MANAGE) ve denetim görüntüleyen roller
-        (AUDIT_VIEW) okur; yalnızca ad soyad (yoksa giriş adı) döner, telefon ve e-posta dönmez. Keycloak'ta
+        (AUDIT_VIEW) okur; yalnızca ad soyad (yoksa giriş adı) döner. Keycloak'ta
         bulunmayan kimlik yanıtta olmaz. Keycloak'a ulaşılamazsa 502 `LOGIN_ACCOUNT_UNAVAILABLE`.
       parameters:
         - name: ids
@@ -651,15 +651,15 @@ paths:
           $ref: '#/components/responses/NotFound'
         '502':
           $ref: '#/components/responses/BadGateway'
-  /api/v1/master-data/login-accounts/{userId}/password-reset:
-    post:
+  /api/v1/master-data/login-accounts/{userId}/password:
+    put:
       tags: [LoginAccountAccess]
-      operationId: startLoginAccountPasswordReset
-      summary: Kullanıcı için şifre sıfırlamayı başlatır
+      operationId: setLoginAccountPassword
+      summary: Kullanıcıya yeni geçici şifre belirler
       description: |
-        Yalnızca yönetici (USER_MANAGE). Kullanıcının kayıtlı telefonuna SMS kodu gönderir; şifreyi kişi kodla kendisi
-        belirler, yönetici şifreyi görmez. Telefon kayıtlı değilse 400 `INVALID_MASTER_DATA` (`phone`); SMS gidemezse
-        502 `SMS_UNAVAILABLE`; kullanıcı yoksa 404 `LOGIN_ACCOUNT_NOT_FOUND`.
+        Yalnızca yönetici (USER_MANAGE). Şifre geçicidir: kişi bir sonraki girişte kendi şifresini seçer, açık oturumları
+        kapanır. SMS ya da e-posta doğrulaması yoktur; şifreyi yönetici kişiye iletir. Şifre kurala uymuyorsa 400
+        `WEAK_PASSWORD`; kullanıcı yoksa 404 `LOGIN_ACCOUNT_NOT_FOUND`.
       parameters:
         - name: userId
           in: path
@@ -667,9 +667,15 @@ paths:
           schema:
             type: string
             format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetLoginAccountPasswordRequest'
       responses:
-        '202':
-          description: Kod gönderildi
+        '204':
+          description: Şifre belirlendi
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -720,52 +726,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-  /api/v1/password-reset/request:
-    post:
-      tags: [PasswordReset]
-      operationId: requestPasswordReset
-      summary: Şifremi unuttum; giriş adına kayıtlı telefona kod gönderir
-      description: |
-        Girişsiz çağrılır. Giriş adı ne olursa olsun aynı 202 yanıtı döner; böylece hangi giriş adlarının var olduğu
-        anlaşılmaz. Hesap varsa, açıksa ve telefonu kayıtlıysa altı haneli kod SMS'le gider (10 dakika geçerli,
-        dakikada en çok bir kez).
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PasswordResetRequest'
-      responses:
-        '202':
-          description: İstek alındı
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '502':
-          $ref: '#/components/responses/BadGateway'
-  /api/v1/password-reset/confirm:
-    post:
-      tags: [PasswordReset]
-      operationId: confirmPasswordReset
-      summary: SMS kodunu doğrular ve yeni şifreyi belirler
-      description: |
-        Girişsiz çağrılır. Kod yanlış, süresi dolmuş ya da deneme hakkı (5) bitmişse 400 `INVALID_RESET_CODE`; şifre
-        kurala uymuyorsa 400 `WEAK_PASSWORD` (kod yanmaz, tekrar denenebilir). Başarılıysa kişinin açık oturumları
-        kapanır ve yeni şifreyle giriş yapar.
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PasswordResetConfirmRequest'
-      responses:
-        '204':
-          description: Şifre belirlendi
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '502':
-          $ref: '#/components/responses/BadGateway'
   /api/v1/master-data/drivers/{driverId}/activate:
     post:
       tags: [DriverManagement]
@@ -2655,11 +2615,6 @@ components:
         fullName:
           type: string
           description: Ad soyad ya da unvan; profilde yoksa gelmez
-        email:
-          type: string
-        phone:
-          type: string
-          description: Telefonun yalnızca son dört hanesi (ör. `***4567`); yoksa gelmez, şifre SMS'le sıfırlanamaz
         roles:
           type: array
           items:
@@ -2669,72 +2624,45 @@ components:
           description: Hesap girişe açık mı
         passwordChangeRequired:
           type: boolean
-          description: Kişi henüz şifresini belirlemedi (hesap açıldı, SMS kodu bekleniyor)
+          description: Kişi geçici şifreyle açıldı, henüz kendi şifresini belirlemedi
         createdAt:
           type: string
           format: date-time
     StaffRole:
       type: string
-      description: Şifre davetiyle açılabilen fabrika içi roller; şoför ve fasoncu kayıtlarından açılır
+      description: Yönetici tarafından açılabilen fabrika içi roller; şoför ve fasoncu kayıtlarından açılır
       enum: [ADMIN, WAREHOUSE, QUALITY, MANAGER, GENERAL_MANAGER]
     StaffLoginAccountRequest:
       type: object
-      required: [username, phone, fullName, role, siteIds]
+      required: [username, fullName, role, password]
       properties:
         username:
           type: string
           pattern: '^[a-z0-9][a-z0-9._-]{2,63}$'
           description: Giriş adı; küçük harf, rakam, nokta, alt çizgi ve tire
-        phone:
-          type: string
-          minLength: 7
-          maxLength: 20
-          description: Cep telefonu; şifre kodu bu numaraya SMS'le gider
-        email:
-          type: string
-          format: email
-          maxLength: 255
-          description: İsteğe bağlı
         fullName:
           type: string
           minLength: 2
           maxLength: 200
         role:
           $ref: '#/components/schemas/StaffRole'
-        siteIds:
-          type: array
-          minItems: 1
-          maxItems: 100
-          uniqueItems: true
-          description: Kişinin göreceği etkin lokasyonlar
-          items:
-            type: string
-            format: uuid
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          format: password
+          description: Yöneticinin belirlediği geçici şifre; kişi ilk girişte değiştirir. SMS ya da e-posta doğrulaması yoktur.
     ChangeLoginAccountEnabledRequest:
       type: object
       required: [enabled]
       properties:
         enabled:
           type: boolean
-    PasswordResetRequest:
+    SetLoginAccountPasswordRequest:
       type: object
-      required: [username]
+      required: [password]
       properties:
-        username:
-          type: string
-          maxLength: 64
-    PasswordResetConfirmRequest:
-      type: object
-      required: [username, code, newPassword]
-      properties:
-        username:
-          type: string
-          maxLength: 64
-        code:
-          type: string
-          pattern: '^[0-9]{6}$'
-          description: SMS'le gelen altı haneli kod
-        newPassword:
+        password:
           type: string
           minLength: 8
           maxLength: 128

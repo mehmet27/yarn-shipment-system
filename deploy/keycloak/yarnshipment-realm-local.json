@@ -12,15 +12,6 @@
   "duplicateEmailsAllowed": false,
   "bruteForceProtected": true,
   "passwordPolicy": "length(8)",
-  "smtpServer": {
-    "host": "${KEYCLOAK_SMTP_HOST}",
-    "port": "${KEYCLOAK_SMTP_PORT}",
-    "from": "${KEYCLOAK_SMTP_FROM}",
-    "fromDisplayName": "İplik Sevkiyat",
-    "auth": "false",
-    "ssl": "false",
-    "starttls": "false"
-  },
   "accessTokenLifespan": 300,
   "ssoSessionIdleTimeout": 1800,
   "ssoSessionMaxLifespan": 36000,
@@ -199,7 +190,6 @@
       "lastName": "Yönetici",
       "email": "admin@yarnshipment.local",
       "attributes": {
-        "phone_number": ["+905550000001"],
         "site_ids": [
           "0192f0a0-0000-7000-8000-000000000001",
           "0192f0a0-0000-7000-8000-000000000002"
@@ -225,7 +215,6 @@
       "lastName": "Depocu",
       "email": "depo@yarnshipment.local",
       "attributes": {
-        "phone_number": ["+905550000002"],
         "site_ids": [
           "0192f0a0-0000-7000-8000-000000000001"
         ]
@@ -250,7 +239,6 @@
       "lastName": "Kalite",
       "email": "kalite@yarnshipment.local",
       "attributes": {
-        "phone_number": ["+905550000003"],
         "site_ids": [
           "0192f0a0-0000-7000-8000-000000000001",
           "0192f0a0-0000-7000-8000-000000000002"
@@ -276,7 +264,6 @@
       "lastName": "Müdür",
       "email": "mudur@yarnshipment.local",
       "attributes": {
-        "phone_number": ["+905550000004"],
         "site_ids": [
           "0192f0a0-0000-7000-8000-000000000001",
           "0192f0a0-0000-7000-8000-000000000002"

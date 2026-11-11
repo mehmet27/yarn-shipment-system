@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -24,15 +25,20 @@ class StaffLoginAccountServiceTest {
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     private static final int EXPECTED_CHANGES = 3;
     private static final UUID NEW_USER = UUID.fromString("0192f0a0-0000-7000-8000-000000000201");
-    private static final UUID OTHER_SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000002");
 
     private final List<StaffAccountSpec> openedStaff = new ArrayList<>();
     private final List<String> roleChanges = new ArrayList<>();
     private final Actor admin = TestTokens.actor("admin");
+    private Set<UUID> activeSites = Set.of(SITE);
     private final LoginAccountTargetPort targets = new LoginAccountTargetPort() {
         @Override
         public Set<UUID> findActiveSiteIds(Collection<UUID> ids) {
-            return ids.contains(SITE) ? Set.of(SITE) : Set.of();
+            return ids.stream().filter(activeSites::contains).collect(Collectors.toSet());
+        }
+
+        @Override
+        public Set<UUID> findAllActiveSiteIds() {
+            return activeSites;
         }
     };
     private final StaffAccountPort accounts = new StaffAccountPort() {
@@ -47,38 +53,31 @@ class StaffLoginAccountServiceTest {
             roleChanges.add(userId + ":" + role);
         }
     };
-    private final List<String> codesSent = new ArrayList<>();
     private final FakeCredentials credentials = new FakeCredentials();
-    private final StaffLoginAccountService service = new StaffLoginAccountService(
-            targets, accounts, credentials, (userId, username, phone) -> codesSent.add(userId + ":" + phone.e164()));
+    private final StaffLoginAccountService service = new StaffLoginAccountService(targets, accounts, credentials);
 
     @Test
-    @DisplayName("Fabrika içi hesap şifresiz, verilen rol ve lokasyonla açılır")
-    void shouldOpenStaffAccountWithoutPassword() {
+    @DisplayName("Fabrika içi hesap yöneticinin şifresi, verilen rol ve etkin tüm lokasyonlarla açılır")
+    void shouldOpenStaffAccountWithAdminPassword() {
         service.createStaffLoginAccount(
-                admin,
-                new StaffAccountRequest(
-                        "depo2", "05321234567", "depo2@ornek.com", "Ayşe Depo", StaffRole.WAREHOUSE, List.of(SITE)));
+                admin, new StaffAccountRequest("depo2", "Ayşe Depo", StaffRole.WAREHOUSE, "Gecici-Sifre-1"));
 
         assertThat(openedStaff).singleElement().satisfies(spec -> {
             assertThat(spec.username()).isEqualTo("depo2");
             assertThat(spec.role()).isEqualTo(StaffRole.WAREHOUSE);
+            assertThat(spec.password()).isEqualTo("Gecici-Sifre-1");
             assertThat(spec.siteIds()).containsExactly(SITE);
-            assertThat(spec.phone().e164()).isEqualTo("+905321234567");
         });
-        assertThat(codesSent).containsExactly(NEW_USER + ":+905321234567");
     }
 
     @Test
-    @DisplayName("Telefon geçersizse hesap açılmaz ve SMS gitmez")
-    void shouldRejectBadPhone() {
-        StaffAccountRequest request =
-                new StaffAccountRequest("d", "123", null, "Ayşe Depo", StaffRole.QUALITY, List.of(SITE));
+    @DisplayName("Yönetici bir hesaba yeni geçici şifre belirler")
+    void shouldSetTemporaryPassword() {
+        UUID other = UUID.randomUUID();
 
-        assertThatThrownBy(() -> service.createStaffLoginAccount(admin, request))
-                .isInstanceOf(InvalidMasterDataException.class);
-        assertThat(openedStaff).isEmpty();
-        assertThat(codesSent).isEmpty();
+        service.setLoginAccountPassword(admin, other, "Yeni-Sifre-2");
+
+        assertThat(credentials.passwords()).containsExactly(other + ":Yeni-Sifre-2");
     }
 
     @Test
@@ -98,16 +97,12 @@ class StaffLoginAccountServiceTest {
     }
 
     @Test
-    @DisplayName("Lokasyon boşsa ya da etkin değilse hesap açılmaz")
-    void shouldRejectBadSites() {
-        StaffAccountRequest none =
-                new StaffAccountRequest("d", "05321234567", null, "Ayşe Depo", StaffRole.QUALITY, List.of());
-        StaffAccountRequest inactive = new StaffAccountRequest(
-                "d", "05321234567", null, "Ayşe Depo", StaffRole.QUALITY, List.of(SITE, OTHER_SITE));
+    @DisplayName("Etkin lokasyon yoksa hesap açılmaz")
+    void shouldRejectWhenNoActiveSite() {
+        activeSites = Set.of();
+        StaffAccountRequest request = new StaffAccountRequest("d", "Ayşe Depo", StaffRole.QUALITY, "Gecici-Sifre-1");
 
-        assertThatThrownBy(() -> service.createStaffLoginAccount(admin, none))
-                .isInstanceOf(InvalidMasterDataException.class);
-        assertThatThrownBy(() -> service.createStaffLoginAccount(admin, inactive))
+        assertThatThrownBy(() -> service.createStaffLoginAccount(admin, request))
                 .isInstanceOf(InvalidMasterDataException.class);
         assertThat(openedStaff).isEmpty();
     }

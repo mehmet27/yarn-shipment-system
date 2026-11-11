@@ -78,12 +78,10 @@ export {
   saveShipmentSettings,
   changeLoginAccountEnabled,
   changeLoginAccountRole,
-  confirmPasswordReset,
   createStaffLoginAccount,
   listLoginAccounts,
   removeShipmentBag,
-  requestPasswordReset,
-  startLoginAccountPasswordReset,
+  setLoginAccountPassword,
 } from './masterData';
 export type {
   RecipeLineInput,
@@ -100,8 +98,7 @@ export type {
   ListLoginAccountsParams,
   LoginAccountPageResponse,
   LoginAccountView,
-  PasswordResetConfirmRequest,
-  PasswordResetRequest,
+  SetLoginAccountPasswordRequest,
   StaffLoginAccountRequest,
   StaffRole,
 } from './masterData';

@@ -4,7 +4,6 @@ import { balancePanelRoutes } from '@/modules/balance';
 import { bagPanelRoutes } from '@/modules/bag';
 import { brandingPanelRoutes } from '@/modules/branding';
 import { discrepancyPanelRoutes } from '@/modules/discrepancy';
-import { ForgotPasswordPage } from '@/modules/passwordreset';
 import { masterDataPanelRoutes } from '@/modules/masterdata';
 import { reportPanelRoutes } from '@/modules/report';
 import { shipmentPanelRoutes } from '@/modules/shipment';
@@ -49,7 +48,6 @@ const routes: RouteObject[] = [
       ...balancePanelRoutes,
     ],
   },
-  { path: '/sifremi-unuttum', element: <ForgotPasswordPage /> },
   { path: '/403', element: <ErrorPage reason="forbidden" /> },
   { path: '*', element: <ErrorPage reason="notFound" /> },
 ];

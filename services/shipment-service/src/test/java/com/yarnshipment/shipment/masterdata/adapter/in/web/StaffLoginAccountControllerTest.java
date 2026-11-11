@@ -37,11 +37,9 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 class StaffLoginAccountControllerTest {
 
     private static final String URI = "/api/v1/master-data/login-accounts";
-    private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-000000000101");
-    private static final String STAFF_BODY = "{\"username\":\"depo2\",\"phone\":\"05321234567\","
-            + "\"email\":\"depo2@ornek.com\",\"fullName\":\"Ayşe Depo\",\"role\":\"WAREHOUSE\",\"siteIds\":[\"" + SITE
-            + "\"]}";
+    private static final String STAFF_BODY = "{\"username\":\"depo2\",\"fullName\":\"Ayşe Depo\","
+            + "\"role\":\"WAREHOUSE\",\"password\":\"Gecici-Sifre-1\"}";
     private static final String ROLE_BODY = "{\"role\":\"QUALITY\"}";
 
     private final MockMvcTester mvc;
@@ -64,7 +62,7 @@ class StaffLoginAccountControllerTest {
     }
 
     @Test
-    @DisplayName("Yönetici fabrika içi hesap açar: 201, gövdede şifre yok, istek use case'e rol ve lokasyonla gider")
+    @DisplayName("Yönetici fabrika içi hesap açar: 201, gövdede şifre yok, istek use case'e rol ve şifreyle gider")
     void shouldCreateStaffAccount() {
         MvcTestResult result =
                 send(mvc.post().uri(URI), STAFF_BODY, TestTokens.token("admin").build());
@@ -75,21 +73,19 @@ class StaffLoginAccountControllerTest {
         ArgumentCaptor<StaffAccountRequest> request = ArgumentCaptor.forClass(StaffAccountRequest.class);
         verify(createStaff).createStaffLoginAccount(any(), request.capture());
         assertThat(request.getValue().username()).isEqualTo("depo2");
-        assertThat(request.getValue().phone()).isEqualTo("05321234567");
         assertThat(request.getValue().role()).isEqualTo(StaffRole.WAREHOUSE);
-        assertThat(request.getValue().siteIds()).containsExactly(SITE);
+        assertThat(request.getValue().password()).isEqualTo("Gecici-Sifre-1");
     }
 
     @Test
-    @DisplayName(
-            "Fabrika içi hesap açma: admin dışı 403; şoför rolü, bozuk giriş adı ve boş lokasyon 400; var olan 409")
+    @DisplayName("Fabrika içi hesap açma: admin dışı 403; şoför rolü, bozuk giriş adı ve kısa şifre 400; var olan 409")
     void shouldGuardStaffAccountCreation() {
         Jwt admin = TestTokens.token("admin").build();
         MvcTestResult forbidden = send(
                 mvc.post().uri(URI), STAFF_BODY, TestTokens.token("warehouse").build());
         MvcTestResult driverRole = send(mvc.post().uri(URI), STAFF_BODY.replace("WAREHOUSE", "DRIVER"), admin);
         MvcTestResult badName = send(mvc.post().uri(URI), STAFF_BODY.replace("depo2", "A B"), admin);
-        MvcTestResult noSites = send(mvc.post().uri(URI), STAFF_BODY.replace("\"" + SITE + "\"", ""), admin);
+        MvcTestResult shortPassword = send(mvc.post().uri(URI), STAFF_BODY.replace("Gecici-Sifre-1", "kisa"), admin);
         verifyNoInteractions(createStaff);
         doThrow(new LoginAccountExistsException("username")).when(createStaff).createStaffLoginAccount(any(), any());
         MvcTestResult exists = send(mvc.post().uri(URI), STAFF_BODY, admin);
@@ -97,7 +93,7 @@ class StaffLoginAccountControllerTest {
         assertThat(forbidden).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(driverRole).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(badName).hasStatus(HttpStatus.BAD_REQUEST);
-        assertThat(noSites).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(shortPassword).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(exists).hasStatus(HttpStatus.CONFLICT);
         assertThat(exists).bodyJson().extractingPath("$.code").isEqualTo("LOGIN_ACCOUNT_EXISTS");
     }

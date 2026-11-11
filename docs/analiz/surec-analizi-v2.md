@@ -221,7 +221,7 @@ kendisi yazar. Örnek: "36/1 VİSKON / 75 BEYAZ POLY LYC" kumaşı için 36/1 vi
   harfe çevrilir, aynı anahtar iki kez eklenmez, tek istekte en fazla 2.000 çuval.
 - Yanlış eklenen çuval, çıkış tartısından önce çıkarılabilir; satır silinmez, `removed_at` ile işaretlenir.
 - Başka lokasyonun ya da başka sevkiyatın çuvalı reddedilir.
-- **[Yapılacak]** Kodsuz çuval listesi (Bölüm 13.3): sıra no + çuval kg; Ambar Çıkış Fişi çıktısı.
+- **[Bugün]** Kodsuz çuval listesi: sıra no + çuval kg; sevkiyat dosyasındaki "Ambar çıkış fişi" düğmesi yazdırılabilir fişi açar.
 
 ### 5.4 Kantar ve çıkış tartısı (Depo)
 

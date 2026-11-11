@@ -1,6 +1,7 @@
 import type { ShipmentDetail } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Group, Paper, ProgressSteps, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
+import { Button, Group, Paper, ProgressSteps, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
+import { Link } from 'react-router';
 import { findDriverName } from './shipmentViews';
 import { useFieldText } from './useFieldText';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
@@ -39,6 +40,11 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
             {shipment.shipmentNo}
           </Title>
           <ShipmentStatusBadge status={shipment.status} />
+          {shipment.status !== 'CANCELLED' && (
+            <Button component={Link} to="ambar-cikis-fisi" relative="path" variant="light">
+              {t('shipment.exitSlip.open')}
+            </Button>
+          )}
         </Group>
         {shipment.status === 'CANCELLED' ? null : (
           <ProgressSteps

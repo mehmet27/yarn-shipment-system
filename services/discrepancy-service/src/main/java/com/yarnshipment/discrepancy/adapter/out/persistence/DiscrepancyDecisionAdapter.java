@@ -4,12 +4,15 @@ import com.yarnshipment.discrepancy.application.port.out.DiscrepancyDecisionPort
 import com.yarnshipment.discrepancy.domain.model.Discrepancy;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyStatus;
+import com.yarnshipment.discrepancy.domain.model.Resolution;
 import com.yarnshipment.events.discrepancy.DiscrepancyResolved;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
@@ -36,6 +39,8 @@ final class DiscrepancyDecisionAdapter implements DiscrepancyDecisionPort {
              WHERE id = :id AND status IN ('OPEN', 'IN_REVIEW')""";
     private static final String COUNT_UNRESOLVED = """
             SELECT count(*) FROM discrepancy WHERE shipment_id = :shipmentId AND status IN ('OPEN', 'IN_REVIEW')""";
+    private static final String CLAIMED_KG = """
+            SELECT claimed_kg FROM quality_claim WHERE discrepancy_id = :discrepancyId AND claimed_kg > 0""";
     private static final String INSERT_ACTIVITY = """
             INSERT INTO discrepancy_activity (id, created_at, discrepancy_id, action_type, note, actor_id, occurred_at)
             VALUES (:id, :at, :discrepancyId, :action, :note, :actor, :at)""";
@@ -127,7 +132,8 @@ final class DiscrepancyDecisionAdapter implements DiscrepancyDecisionPort {
                 resolved.siteId(),
                 decision.resolution().name(),
                 decision.resolvedAt(),
-                remaining);
+                remaining,
+                justifiedClaimKg(resolved.id(), decision));
         jdbc.sql(INSERT_OUTBOX)
                 .param("id", ids.next())
                 .param("at", stamp.at())
@@ -140,6 +146,18 @@ final class DiscrepancyDecisionAdapter implements DiscrepancyDecisionPort {
                         jsonMapper.writeValueAsString(
                                 Map.of("actorId", stamp.actorId().toString())))
                 .update();
+    }
+
+    /** Haklı bulunan kalite itirazının kilosu; başka karar ya da kilosuz (eski çuval bazlı) itirazda boş. */
+    private @Nullable BigDecimal justifiedClaimKg(UUID discrepancyId, Discrepancy.Decision decision) {
+        if (decision.resolution() != Resolution.CLAIM_JUSTIFIED) {
+            return null;
+        }
+        return jdbc.sql(CLAIMED_KG)
+                .param("discrepancyId", discrepancyId)
+                .query(BigDecimal.class)
+                .optional()
+                .orElse(null);
     }
 
     /** Yazan kişi ve zaman; her yazım satırında aynıdır. */

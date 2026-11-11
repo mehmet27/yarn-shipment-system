@@ -330,7 +330,7 @@ Bkz. Bölüm 8. Fire **sevkiyat** üzerinden hesaplanır (S2); oran sevkiyatta s
 - Her itiraz Kırmızı bir kalite uyuşmazlığı açar; kalite numune ya da lab kontrolü ister, sonucu girer
   (lab sonucunda belge zorunlu), uyuşmazlık `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır.
 
-**[Yapılacak] Bakiye etkisi:** İtiraz haklı bulunursa itiraz edilen kilo **hem kumaştan hem gönderilen iplikten**
+**[Bugün] Bakiye etkisi:** İtiraz haklı bulunursa itiraz edilen kilo **hem kumaştan hem gönderilen iplikten**
 düşülür (`CLAIM_ADJUSTMENT`), böylece fire hesabı sapmaz. Örnek: 1.000 kg iplik, 100 kg itirazlı → fire tabanı
 900 kg, beklenen kumaş 900 × 0,96 = 864 kg.
 
@@ -397,7 +397,7 @@ geçiş yazamaz. Her geçiş `shipment_status_history` tablosuna değiştirileme
 | KR-12 | Bakiye, sevkiyat tamamlanınca artar (yolda olan bakiyeye girmez; raporda ayrı "yolda" sütunu). | ✗ |
 | KR-13 | Bakiye yalnız hareketlerle değişir; hareket silinmez, ters hareketle düzeltilir. | ✗ |
 | KR-14 | Dönen iplik fire tabanından düşer. | ✗ |
-| KR-15 | Haklı itiraz kilosu hem kumaştan hem iplikten düşer. | ✗ |
+| KR-15 | Haklı itiraz kilosu hem kumaştan hem iplikten düşer. | ✓ |
 | KR-16 | Hatalı kg > 0 ise sevkiyatın fire dosyası "fatura edildi" işaretlenmeden kapanmaz (S8). | ✗ |
 | KR-17 | Fasoncu sisteme giriş yapmaz (S5); fasoncu verisi fabrika personelince girilir. | Geçiş dönemi |
 | KR-18 | Fasoncu pasife alınabilir, silinmez; bakiyesi olan fasoncu pasife alınırken uyarı verilir. | Kısmen |

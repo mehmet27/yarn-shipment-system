@@ -3,9 +3,7 @@ info:
   title: bag-service API
   version: 1.0.0
   description: |
-    Çuval oluşturma, etiket basımı, çuval sorgusu ve sevkiyat rezervasyonu (API-01). Bir çuval aynı anda yalnızca bir sevkiyatta olabilir; tek kullanım
-    garantisi bu serviste, tek veritabanı işlemiyle verilir. Rezervasyon aynı sevkiyat için tekrarlanırsa değişiklik
-    yapmaz (idempotent).
+    Çuval oluşturma, etiket basımı, iptal ve çuval sorgusu (API-01). Sevkiyat artık çuval rezervasyonu kullanmaz.
 servers:
   - url: /
 tags:
@@ -196,65 +194,6 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /api/v1/bags/reservations:
-    post:
-      tags: [Bags]
-      operationId: reserveBags
-      summary: Çuvalları sevkiyata ayırır
-      description: |
-        Hepsi ya da hiçbiri: bir çuval bulunamazsa, kullanılamaz durumdaysa ya da başka sevkiyattaysa hiçbiri
-        ayrılmaz. Aynı sevkiyata zaten ayrılmış çuval hata vermez.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReserveBagsRequest'
-      responses:
-        '200':
-          description: Çuvallar sevkiyata ayrıldı
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReserveBagsResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-  /api/v1/bags/reservations/release:
-    post:
-      tags: [Bags]
-      operationId: releaseBags
-      summary: Sevkiyatın rezervasyonlarını bırakır
-      description: |
-        `uniqueKeys` yoksa ya da boşsa sevkiyatın tüm rezervasyonları bırakılır (sevkiyat iptali; `SHIPMENT_CANCEL` gerekir).
-        Doluysa yalnızca o çuvallar bırakılır (taslaktan çuval çıkarma; `DISPATCH_RECORD` yeter). Çuvallar yeniden
-        kullanılabilir olur. Bırakılacak rezervasyon yoksa `releasedCount` 0 döner.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReleaseBagsRequest'
-      responses:
-        '200':
-          description: Rezervasyonlar bırakıldı
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReleaseBagsResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
 components:
   securitySchemes:
     bearerAuth:
@@ -297,7 +236,7 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
     Conflict:
-      description: Çuval kullanılamaz (BAG_NOT_AVAILABLE) ya da başka sevkiyatta (BAG_ALREADY_RESERVED)
+      description: Çuval kullanılamaz (BAG_NOT_AVAILABLE)
       content:
         application/problem+json:
           schema:
@@ -442,50 +381,6 @@ components:
           minLength: 1
           maxLength: 500
           description: Daha önce basılmış çuval varsa zorunlu
-    ReserveBagsRequest:
-      type: object
-      required: [shipmentId, uniqueKeys]
-      properties:
-        shipmentId:
-          type: string
-          format: uuid
-        uniqueKeys:
-          type: array
-          minItems: 1
-          maxItems: 500
-          uniqueItems: true
-          items:
-            type: string
-            minLength: 1
-            maxLength: 100
-    ReserveBagsResponse:
-      type: object
-      required: [bags]
-      properties:
-        bags:
-          type: array
-          items:
-            $ref: '#/components/schemas/BagView'
-    ReleaseBagsRequest:
-      type: object
-      required: [shipmentId, reason]
-      properties:
-        shipmentId:
-          type: string
-          format: uuid
-        uniqueKeys:
-          type: array
-          maxItems: 500
-          uniqueItems: true
-          description: Verilirse yalnızca bu çuvallar bırakılır
-          items:
-            type: string
-            minLength: 1
-            maxLength: 100
-        reason:
-          type: string
-          minLength: 1
-          maxLength: 500
     VoidBagsRequest:
       type: object
       required: [uniqueKeys, reason]
@@ -510,14 +405,6 @@ components:
       required: [voidedCount]
       properties:
         voidedCount:
-          type: integer
-          format: int32
-          minimum: 0
-    ReleaseBagsResponse:
-      type: object
-      required: [releasedCount]
-      properties:
-        releasedCount:
           type: integer
           format: int32
           minimum: 0

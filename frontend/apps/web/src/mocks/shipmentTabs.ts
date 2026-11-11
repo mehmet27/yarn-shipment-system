@@ -35,12 +35,8 @@ export function toHistory(shipment: InternalShipmentView): StatusChangeView[] {
 function dispatchBags(shipment: InternalShipmentView): DispatchBagView[] {
   const count = shipment.dispatchWeighing?.bagCount ?? 0;
   return Array.from({ length: count }, (_, index) => ({
-    bagId: `${shipment.shipmentId}-bag-${String(index)}`,
-    uniqueKey: `BAG-${shipment.shipmentId}-${String(index + 1).padStart(3, '0')}`,
-    packageType: 'BAG',
-    lotNo: 'LOT-2026-17',
-    qualityGradeCode: 'A',
-    scanMethod: 'SCAN',
+    seqNo: index + 1,
+    weightKg: '50.000',
     assignedAt: shipment.createdAt,
   }));
 }

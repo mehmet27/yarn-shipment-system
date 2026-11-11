@@ -2,8 +2,6 @@ package com.yarnshipment.shipment.adapter.in.web;
 
 import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
-import com.yarnshipment.shipment.domain.bag.BagReservationException;
-import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
 import com.yarnshipment.shipment.domain.cancellation.InvalidCancellationException;
 import com.yarnshipment.shipment.domain.completion.InvalidCompletionException;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
@@ -88,21 +86,6 @@ public final class ShipmentExceptionHandler {
         ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_SHIPMENT");
         problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
         return problem;
-    }
-
-    @ExceptionHandler(BagReservationException.class)
-    public ProblemDetail handleBagReservation(BagReservationException exception, HttpServletRequest request) {
-        return switch (exception.reason()) {
-            case NOT_FOUND -> problem(request, HttpStatus.NOT_FOUND, "BAG_NOT_FOUND");
-            case NOT_AVAILABLE -> problem(request, HttpStatus.CONFLICT, "BAG_NOT_AVAILABLE");
-            case ALREADY_RESERVED -> problem(request, HttpStatus.CONFLICT, "BAG_ALREADY_RESERVED");
-            case OUT_OF_SCOPE -> problem(request, HttpStatus.FORBIDDEN, "BAG_OUT_OF_SCOPE");
-        };
-    }
-
-    @ExceptionHandler(BagServiceUnavailableException.class)
-    public ProblemDetail handleBagServiceUnavailable(HttpServletRequest request) {
-        return problem(request, HttpStatus.BAD_GATEWAY, "BAG_SERVICE_UNAVAILABLE");
     }
 
     @ExceptionHandler(InvalidMasterDataException.class)

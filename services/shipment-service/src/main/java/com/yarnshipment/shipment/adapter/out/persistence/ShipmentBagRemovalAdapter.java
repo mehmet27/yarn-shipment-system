@@ -14,7 +14,7 @@ final class ShipmentBagRemovalAdapter implements ShipmentBagRemovalPort {
     private static final String REMOVE = """
             UPDATE shipment_bag
             SET removed_at = :at, removed_by = :actor, updated_at = :at, updated_by = :actor, version = version + 1
-            WHERE shipment_id = :shipmentId AND unique_key = :uniqueKey AND removed_at IS NULL""";
+            WHERE shipment_id = :shipmentId AND seq_no = :seqNo AND removed_at IS NULL""";
 
     private final JdbcClient jdbc;
     private final ShipmentTransitionWriter transitions;
@@ -25,14 +25,14 @@ final class ShipmentBagRemovalAdapter implements ShipmentBagRemovalPort {
     }
 
     @Override
-    public int remove(UUID shipmentId, String uniqueKey, UUID actorUserId, Instant at) {
+    public int remove(UUID shipmentId, int seqNo, UUID actorUserId, Instant at) {
         transitions.actAs(actorUserId);
         Timestamp now = Timestamp.from(at);
         return jdbc.sql(REMOVE)
                 .param("at", now)
                 .param("actor", actorUserId)
                 .param("shipmentId", shipmentId)
-                .param("uniqueKey", uniqueKey)
+                .param("seqNo", seqNo)
                 .update();
     }
 }

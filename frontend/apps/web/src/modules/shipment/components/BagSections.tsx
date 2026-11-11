@@ -1,37 +1,33 @@
-import type { DispatchBagView, ShipmentBagsResponse } from '@iplik/api-client';
+import type { ShipmentBagsResponse } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
+import { formatKgText, sumKg } from '@iplik/units';
 import { Button, Group, Paper, Stack, Text, Title } from '@iplik/ui';
-import { TypeSummary } from './TypeSummary';
 
-/** Sevkiyata atanmış çuvallar: tür özeti ve satır başına çuval. */
+/** Sevkiyattaki çuvallar: sıra no ve kg; altta toplam kg. */
 export function BagSections({
   bags,
   onRemove,
 }: {
   bags: ShipmentBagsResponse;
-  onRemove?: ((uniqueKey: string) => void) | undefined;
+  onRemove?: ((seqNo: number) => void) | undefined;
 }) {
   const { t } = useTranslation();
   const { dispatchBags } = bags;
   return (
     <Stack gap="xs">
       <Title order={5}>{t('shipment.bags.dispatch', { count: dispatchBags.length })}</Title>
-      <TypeSummary types={dispatchBags.map((bag) => bag.packageType)} />
       {dispatchBags.map((bag) => (
-        <Paper key={bag.bagId} withBorder p="sm">
+        <Paper key={bag.seqNo} withBorder p="sm">
           <Group justify="space-between" wrap="nowrap">
-            <div>
-              <Text fw={600}>{bag.uniqueKey}</Text>
-              <Text size="sm" c="dimmed">
-                {bagDetail(t, bag)}
-              </Text>
-            </div>
+            <Text fw={600}>
+              {t('shipment.bags.seq', { seq: bag.seqNo })} · {formatKgText(bag.weightKg)}
+            </Text>
             {onRemove !== undefined && (
               <Button
                 color="red"
                 variant="subtle"
                 onClick={() => {
-                  onRemove(bag.uniqueKey);
+                  onRemove(bag.seqNo);
                 }}
               >
                 {t('shipment.bags.removeFromShipment')}
@@ -40,14 +36,13 @@ export function BagSections({
           </Group>
         </Paper>
       ))}
+      {dispatchBags.length > 0 && (
+        <Text size="sm" c="dimmed">
+          {t('shipment.bags.total', {
+            kg: formatKgText(sumKg(dispatchBags.map((b) => b.weightKg))),
+          })}
+        </Text>
+      )}
     </Stack>
   );
-}
-
-/** Çıkış listesindeki satırın ikinci satırı: ambalaj türü, parti ve kalite. */
-type Translate = ReturnType<typeof useTranslation>['t'];
-
-function bagDetail(t: Translate, bag: DispatchBagView): string {
-  const type = t(`bag.packageTypes.${bag.packageType}`);
-  return `${type} · ${t('shipment.bags.lot')} ${bag.lotNo} · ${bag.qualityGradeCode}`;
 }

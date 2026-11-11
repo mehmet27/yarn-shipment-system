@@ -1,8 +1,8 @@
 package com.yarnshipment.shipment.application.port.in;
 
-/** Çuvalları taslak sevkiyata atar; çuval servisinde ayırır ve sevkiyatın çuval listesine yazar. */
+/** Çuvalları sıra no ve kiloyla taslak sevkiyata ekler. */
 public interface AssignBagsUseCase {
 
-    /** Bu istekle yeni atanan çuval sayısı; daha önce atanmış çuvallar sayılmaz. */
+    /** Eklenen çuval sayısı. */
     int assignBags(AssignBagsCommand command);
 }

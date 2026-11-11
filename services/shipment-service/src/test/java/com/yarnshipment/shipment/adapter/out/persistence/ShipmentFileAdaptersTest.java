@@ -59,15 +59,14 @@ class ShipmentFileAdaptersTest {
     }
 
     @Test
-    @DisplayName("Çıkış çuvalları atanmış olanlardır; taslakta yoktur")
+    @DisplayName("Çıkış çuvalları sıra numarasıyla gelir; taslakta yoktur")
     void shouldReadDispatchBags() {
         List<DispatchBag> assigned = bags.findDispatchBags(COMPLETED);
 
         assertThat(assigned)
                 .hasSize(BAGS_PER_SHIPMENT)
-                .extracting(DispatchBag::uniqueKey)
-                .first()
-                .isEqualTo("BAG-6-1");
+                .extracting(DispatchBag::seqNo)
+                .containsExactly(1, 2, 3, 4, 5);
         assertThat(bags.findDispatchBags(DRAFT)).isEmpty();
     }
 }

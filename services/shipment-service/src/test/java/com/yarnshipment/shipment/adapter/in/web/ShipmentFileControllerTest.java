@@ -12,10 +12,9 @@ import com.yarnshipment.shipment.application.port.in.ShipmentAudience;
 import com.yarnshipment.shipment.application.port.in.ShipmentBags;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
-import com.yarnshipment.shipment.domain.model.ScanMethod;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.model.StatusChange;
-import com.yarnshipment.shipment.domain.packaging.PackageType;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -62,8 +61,7 @@ class ShipmentFileControllerTest {
     }
 
     private void givenBags(ShipmentAudience audience) {
-        List<DispatchBag> bags =
-                List.of(new DispatchBag(UUID.randomUUID(), "K-1", PackageType.BAG, "LOT-1", "A", ScanMethod.SCAN, AT));
+        List<DispatchBag> bags = List.of(new DispatchBag(1, new BigDecimal("25.000"), AT));
         when(getShipmentBagsUseCase.getBags(any())).thenReturn(new ShipmentBags(audience, bags));
     }
 
@@ -103,7 +101,7 @@ class ShipmentFileControllerTest {
     }
 
     @Test
-    @DisplayName("Çıkışta atanan çuvallar görünüm türüyle döner")
+    @DisplayName("Çıkışta girilen çuvallar görünüm türüyle döner")
     void shouldReturnDispatchBags() {
         givenBags(ShipmentAudience.WAREHOUSE);
 
@@ -111,10 +109,7 @@ class ShipmentFileControllerTest {
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.audience").isEqualTo("WAREHOUSE");
-        assertThat(result)
-                .bodyJson()
-                .extractingPath("$.dispatchBags[0].uniqueKey")
-                .isEqualTo("K-1");
+        assertThat(result).bodyJson().extractingPath("$.dispatchBags[0].seqNo").isEqualTo(1);
     }
 
     @Test

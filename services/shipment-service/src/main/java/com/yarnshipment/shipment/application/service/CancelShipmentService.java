@@ -4,7 +4,6 @@ import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.common.security.Permission;
 import com.yarnshipment.shipment.application.port.in.CancelShipmentCommand;
 import com.yarnshipment.shipment.application.port.in.CancelShipmentUseCase;
-import com.yarnshipment.shipment.application.port.out.BagReservationPort;
 import com.yarnshipment.shipment.application.port.out.ShipmentCancellationPort;
 import com.yarnshipment.shipment.domain.cancellation.Cancellation;
 import com.yarnshipment.shipment.domain.model.Shipment;
@@ -23,17 +22,12 @@ public class CancelShipmentService implements CancelShipmentUseCase {
 
     private final ScopedShipmentLoader shipments;
     private final ShipmentCancellationPort cancellationPort;
-    private final BagReservationPort reservationPort;
     private final Clock clock;
 
     public CancelShipmentService(
-            ScopedShipmentLoader shipments,
-            ShipmentCancellationPort cancellationPort,
-            BagReservationPort reservationPort,
-            Clock clock) {
+            ScopedShipmentLoader shipments, ShipmentCancellationPort cancellationPort, Clock clock) {
         this.shipments = shipments;
         this.cancellationPort = cancellationPort;
-        this.reservationPort = reservationPort;
         this.clock = clock;
     }
 
@@ -47,6 +41,5 @@ public class CancelShipmentService implements CancelShipmentUseCase {
         }
         Cancellation cancellation = Cancellation.of(shipment, command.reason(), clock.instant());
         cancellationPort.cancel(cancellation, actor.userId());
-        reservationPort.release(shipment.id(), cancellation.reason());
     }
 }

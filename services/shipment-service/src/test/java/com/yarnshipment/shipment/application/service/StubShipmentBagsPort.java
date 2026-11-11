@@ -2,8 +2,7 @@ package com.yarnshipment.shipment.application.service;
 
 import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
-import com.yarnshipment.shipment.domain.model.ScanMethod;
-import com.yarnshipment.shipment.domain.packaging.PackageType;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +22,6 @@ final class StubShipmentBagsPort implements ShipmentBagsPort {
     @Override
     public List<DispatchBag> findDispatchBags(UUID shipmentId) {
         reads.add("dispatch");
-        return List.of(new DispatchBag(UUID.randomUUID(), "K-1", PackageType.BAG, "LOT-1", "A", ScanMethod.SCAN, AT));
+        return List.of(new DispatchBag(1, new BigDecimal("25.000"), AT));
     }
 }

@@ -10,7 +10,6 @@ import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.CancelShipmentCommand;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.out.ShipmentCancellationPort;
-import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
 import com.yarnshipment.shipment.domain.cancellation.Cancellation;
 import com.yarnshipment.shipment.domain.cancellation.InvalidCancellationException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
@@ -31,14 +30,13 @@ class CancelShipmentServiceTest {
 
     private final InMemoryShipmentQueryPort queryPort = new InMemoryShipmentQueryPort();
     private final List<Cancellation> cancellations = new ArrayList<>();
-    private final RecordingBagReservationPort bags = new RecordingBagReservationPort();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final Actor admin = TestTokens.actor("admin");
 
     private CancelShipmentService service() {
         ShipmentCancellationPort port = (cancellation, actorUserId) -> cancellations.add(cancellation);
         return new CancelShipmentService(
-                new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), port, bags, clock);
+                new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), port, clock);
     }
 
     private CancelShipmentCommand command(String reason) {
@@ -46,8 +44,8 @@ class CancelShipmentServiceTest {
     }
 
     @Test
-    @DisplayName("Taslak ya da teslim bekleyen sevkiyat iptal edilir ve çuvalları serbest bırakılır")
-    void shouldCancelAndReleaseBags() throws Exception {
+    @DisplayName("Taslak ya da teslim bekleyen sevkiyat iptal edilir")
+    void shouldCancelShipment() throws Exception {
         queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
 
         service().cancelShipment(command("  Yanlış sevkiyat  "));
@@ -57,11 +55,10 @@ class CancelShipmentServiceTest {
             assertThat(cancellation.fromStatus()).isEqualTo(ShipmentStatus.AWAITING_DELIVERY);
             assertThat(cancellation.cancelledAt()).isEqualTo(NOW);
         });
-        assertThat(bags.released()).containsExactly(TestShipments.SHIPMENT_ID);
     }
 
     @Test
-    @DisplayName("Tamamlanmış sevkiyat iptal edilemez; çuval servisine gidilmez")
+    @DisplayName("Tamamlanmış sevkiyat iptal edilemez")
     void shouldRejectCompletedShipment() throws Exception {
         queryPort.add(TestShipments.shipment(ShipmentStatus.COMPLETED));
         CancelShipmentService service = service();
@@ -69,7 +66,6 @@ class CancelShipmentServiceTest {
 
         assertThatThrownBy(() -> service.cancelShipment(command)).isInstanceOf(InvalidShipmentStatusException.class);
         assertThat(cancellations).isEmpty();
-        assertThat(bags.released()).isEmpty();
     }
 
     @Test
@@ -93,18 +89,6 @@ class CancelShipmentServiceTest {
         service().cancelShipment(command("Gerekçe"));
 
         assertThat(cancellations).isEmpty();
-        assertThat(bags.released()).isEmpty();
-    }
-
-    @Test
-    @DisplayName("Çuval servisi bırakamazsa istisna yayılır (transaction iptali geri alır)")
-    void shouldPropagateReleaseFailure() throws Exception {
-        queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
-        bags.failOnRelease();
-        CancelShipmentService service = service();
-        CancelShipmentCommand command = command("Gerekçe");
-
-        assertThatThrownBy(() -> service.cancelShipment(command)).isInstanceOf(BagServiceUnavailableException.class);
     }
 
     @Test

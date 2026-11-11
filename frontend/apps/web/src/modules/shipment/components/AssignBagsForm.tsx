@@ -1,69 +1,62 @@
-import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Stack, TextInput } from '@iplik/ui';
+import { parseKg } from '@iplik/units';
+import { Button, Stack } from '@iplik/ui';
 import { useState } from 'react';
-import { addBagKey } from './bagKeys';
 import { useAssignBags } from '../hooks/useAssignBags';
-import { assignErrorKey } from './assignErrors';
-import { PendingKeys } from './PendingKeys';
+import { AssignResult } from './AssignResult';
+import { WeightEntry } from './WeightEntry';
+import { PendingWeights } from './PendingWeights';
 
-/** Depo: çuval anahtarını okutur/yazar, listeden çıkarabilir, sonra hepsini tek istekle atar. */
-export function AssignBagsForm({ shipmentId }: { shipmentId: string }) {
+/** Tek istekte en fazla bu kadar çuval gönderilir (sözleşme sınırı). */
+const MAX_BAGS = 500;
+
+/** Depo: çuvalların kilosunu yazar; numaralar girilme sırasıyla verilir, hepsi tek istekle eklenir. */
+export function AssignBagsForm({
+  shipmentId,
+  assignedCount,
+}: {
+  shipmentId: string;
+  assignedCount: number;
+}) {
   const { t } = useTranslation();
   const [input, setInput] = useState('');
-  const [keys, setKeys] = useState<readonly string[]>([]);
+  const [weights, setWeights] = useState<readonly string[]>([]);
+  const [isInvalid, setIsInvalid] = useState(false);
   const mutation = useAssignBags(shipmentId);
   const add = () => {
-    setKeys(addBagKey(keys, input));
+    if (input.trim() === '' || weights.length >= MAX_BAGS) return;
+    const kg = parseKg(input);
+    if (kg === undefined || Number(kg) <= 0) {
+      setIsInvalid(true);
+      return;
+    }
+    setIsInvalid(false);
+    setWeights([...weights, kg]);
     setInput('');
   };
-  const assign = () => {
+  const submit = () => {
     mutation.mutate(
-      { uniqueKeys: [...keys], scanMethod: 'MANUAL' },
+      { weightsKg: [...weights] },
       {
         onSuccess: () => {
-          setKeys([]);
+          setWeights([]);
         },
       },
     );
   };
   return (
     <Stack>
-      <Group align="flex-end" wrap="nowrap">
-        <TextInput
-          style={{ flex: 1 }}
-          label={t('shipment.bags.assign.key')}
-          value={input}
-          onChange={(event) => {
-            setInput(event.currentTarget.value);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') add();
-          }}
-        />
-        <Button variant="default" onClick={add}>
-          {t('shipment.bags.assign.add')}
-        </Button>
-      </Group>
-      <PendingKeys
-        keys={keys}
-        onRemove={(key) => {
-          setKeys(keys.filter((item) => item !== key));
+      <WeightEntry value={input} isInvalid={isInvalid} onChange={setInput} onAdd={add} />
+      <PendingWeights
+        weights={weights}
+        firstSeq={assignedCount + 1}
+        onRemove={(index) => {
+          setWeights(weights.filter((_, position) => position !== index));
         }}
       />
-      {mutation.isError && (
-        <Alert color="red">{t(assignErrorKey(toProblem(mutation.error).code))}</Alert>
-      )}
-      {mutation.isSuccess &&
-        (mutation.data.assignedCount === 0 ? (
-          <Alert color="yellow">{t('shipment.bags.assign.nothingNew')}</Alert>
-        ) : (
-          <Alert color="green">
-            {t('shipment.bags.assign.done', { count: mutation.data.assignedCount })}
-          </Alert>
-        ))}
-      <Button disabled={keys.length === 0} loading={mutation.isPending} onClick={assign}>
-        {t('shipment.bags.assign.submit', { count: keys.length })}
+      <AssignResult error={mutation.error} count={mutation.data?.assignedCount} />
+      <Button disabled={weights.length === 0} loading={mutation.isPending} onClick={submit}>
+        {t('shipment.bags.assign.submit', { count: weights.length })}
       </Button>
     </Stack>
   );

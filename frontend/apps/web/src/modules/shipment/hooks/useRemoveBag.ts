@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 export function useRemoveBag(shipmentId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (uniqueKey: string) => removeShipmentBag(shipmentId, uniqueKey),
+    mutationFn: (seqNo: number) => removeShipmentBag(shipmentId, seqNo),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [SHIPMENTS_PATH] }),
   });
 }

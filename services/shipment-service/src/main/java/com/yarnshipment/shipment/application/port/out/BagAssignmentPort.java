@@ -4,9 +4,9 @@ import com.yarnshipment.shipment.domain.bag.BagAssignment;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Ayrılan çuvalları sevkiyatın çuval listesine yazar. */
+/** Çuvalları sevkiyatın çuval listesine yazar. */
 public interface BagAssignmentPort {
 
-    /** Yeni yazılan satır sayısı; sevkiyatta zaten olan çuvallar atlanır. */
+    /** Yazılan satır sayısı; sıra numaraları sevkiyattaki son numaradan devam eder. */
     int assign(BagAssignment assignment, UUID actorUserId, Instant at);
 }

@@ -14,9 +14,9 @@ import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
-import com.yarnshipment.shipment.domain.model.ScanMethod;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.packaging.PackageType;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -211,7 +211,7 @@ class RecordDispatchServiceTest {
         public List<DispatchBag> findDispatchBags(UUID shipmentId) {
             List<DispatchBag> bags = new ArrayList<>();
             for (int index = 0; index < assigned; index++) {
-                bags.add(new DispatchBag(UUID.randomUUID(), "K", PackageType.BAG, "L", "A", ScanMethod.SCAN, NOW));
+                bags.add(new DispatchBag(index + 1, BigDecimal.TEN, NOW));
             }
             return bags;
         }

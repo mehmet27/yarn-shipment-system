@@ -54,7 +54,6 @@ migrate bag-service bag
 migrate shipment-service shipment
 migrate evidence-service evidence
 migrate discrepancy-service discrepancy
-migrate notification-service notification
 migrate reporting-service reporting
 migrate audit-service audit
 

@@ -72,7 +72,7 @@ MFA şartını kapatır; üretim ayarı değişmez). Profilsiz açılan serviste
 
 Compose, tek bir PostgreSQL 17 konteynerinde tek veritabanı (`yarnshipment`) ve tek kullanıcı (`yarnshipment`, şifre
 `LOCAL_DB_PASSWORD`) açar. Her servis tablolarını kendi şemasında tutar (`masterdata`, `shipment`, `bag`, `evidence`,
-`discrepancy`, `notification`, `reporting`, `audit`; Keycloak için `keycloak`). Kullanıcının `search_path`'i hepsini
+`discrepancy`, `reporting`, `audit`; Keycloak için `keycloak`). Kullanıcının `search_path`'i hepsini
 kapsar: `psql -h localhost -U yarnshipment yarnshipment` ile tek bağlantıdan her tabloya erişilir (`SELECT * FROM bag.bag`).
 Tabloları servisler açılışta Flyway ile kurar; migration'lar `services/<servis>/src/main/resources/db/migration` altındadır.
 

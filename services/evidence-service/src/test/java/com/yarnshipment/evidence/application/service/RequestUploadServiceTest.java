@@ -73,11 +73,8 @@ class RequestUploadServiceTest {
                 .isInstanceOf(UploadNotAllowedException.class);
         assertThatThrownBy(() -> request.requestUpload(command(quality, EvidenceType.DISPATCH_SCALE)))
                 .isInstanceOf(UploadNotAllowedException.class);
-        UploadIntent.DeclaredFile zip = new UploadIntent.DeclaredFile(
-                EvidenceType.DISPATCH_SCALE,
-                "application/zip",
-                TestUploads.SIZE,
-                null);
+        UploadIntent.DeclaredFile zip =
+                new UploadIntent.DeclaredFile(EvidenceType.DISPATCH_SCALE, "application/zip", TestUploads.SIZE, null);
         assertThatThrownBy(
                         () -> request.requestUpload(new RequestUploadCommand(warehouse, TestUploads.SHIPMENT_ID, zip)))
                 .isInstanceOf(UploadNotAllowedException.class);

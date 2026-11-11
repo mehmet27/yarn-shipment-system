@@ -36,4 +36,6 @@ public interface LotPort {
     boolean activeProductExists(UUID id);
 
     boolean activeQualityGradeExists(UUID id);
+
+    boolean activeYarnSupplierExists(UUID id);
 }

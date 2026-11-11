@@ -4,7 +4,15 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const ROLES = ['ADMIN', 'WAREHOUSE', 'DRIVER', 'SUBCONTRACTOR', 'QUALITY', 'MANAGER'];
+const ROLES = [
+  'ADMIN',
+  'WAREHOUSE',
+  'DRIVER',
+  'SUBCONTRACTOR',
+  'QUALITY',
+  'MANAGER',
+  'GENERAL_MANAGER',
+];
 const FIELD_ROLES = ['DRIVER', 'SUBCONTRACTOR'];
 const [fileName, role, path, title, ready = title] = process.argv.slice(2);
 

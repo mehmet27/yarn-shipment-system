@@ -11,8 +11,8 @@ async function pick(label: string, option: string) {
 }
 
 describe('CreateShipmentPage', () => {
-  it('depo kullanıcısı taslak sevkiyat oluşturur ve dosyasına gider', async () => {
-    server.use(...createHandlers('WAREHOUSE'));
+  it('müdür kullanıcısı taslak sevkiyat oluşturur ve dosyasına gider', async () => {
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat');
     await userEvent.click(await screen.findByRole('link', { name: 'Yeni sevkiyat' }));
     await pick('Lokasyon', 'Merkez Depo');
@@ -24,7 +24,7 @@ describe('CreateShipmentPage', () => {
   });
 
   it('fasoncu seçilmeden göndermeyi engeller', async () => {
-    server.use(...createHandlers('WAREHOUSE'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/yeni');
     await pick('Lokasyon', 'Merkez Depo');
     await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
@@ -32,7 +32,7 @@ describe('CreateShipmentPage', () => {
   });
 
   it('şoför listesi seçilen fasoncuya göre daralır', async () => {
-    server.use(...createHandlers('WAREHOUSE'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/yeni');
     await pick('Fasoncu', 'Aydın Örme');
     await userEvent.click(await screen.findByRole('combobox', { name: /Şoför/ }));

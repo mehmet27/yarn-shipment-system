@@ -27,6 +27,7 @@ export function useSaveLot() {
       lotNo: normalizeLotNo(draft.lotNo),
       productId: draft.productId,
       qualityGradeId: draft.qualityGradeId,
+      ...(draft.yarnSupplierId === '' ? {} : { yarnSupplierId: draft.yarnSupplierId }),
       productionDate: draft.productionDate,
     };
     return id === undefined ? createLot({ siteId: draft.siteId, ...body }) : updateLot(id, body);

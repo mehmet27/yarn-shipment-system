@@ -1,4 +1,4 @@
-import { listLots, listProducts, listQualityGrades } from '@iplik/api-client';
+import { listLots, listProducts, listQualityGrades, listYarnSuppliers } from '@iplik/api-client';
 import type { LotView } from '@iplik/api-client';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { toQuery } from '../catalogAdapters';
@@ -30,12 +30,20 @@ export function useCatalogChoices() {
     queryKey: [MASTER_ADMIN_PATH, 'catalog-choices'],
     queryFn: async () => {
       const query = { page: 0, size: CHOICE_PAGE_SIZE };
-      const [products, grades] = await Promise.all([listProducts(query), listQualityGrades(query)]);
+      const [products, grades, suppliers] = await Promise.all([
+        listProducts(query),
+        listQualityGrades(query),
+        listYarnSuppliers(query),
+      ]);
       const toChoice = (row: { id: string; code: string; name: string }): Choice => ({
         value: row.id,
         label: `${row.code} · ${row.name}`,
       });
-      return { products: products.items.map(toChoice), grades: grades.items.map(toChoice) };
+      return {
+        products: products.items.map(toChoice),
+        grades: grades.items.map(toChoice),
+        suppliers: suppliers.items.map((row) => ({ value: row.id, label: row.name })),
+      };
     },
   });
 }

@@ -17,7 +17,7 @@ describe('LotsPage', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
     await choose(/Lokasyon/, 'Merkez Depo');
     await userEvent.type(screen.getByLabelText(/Parti numarası/), 'p-2026-0009');
-    await choose(/İplik/, 'PES-30-1 · Polyester 30/1');
+    await choose(/İplik(?! ted)/, 'PES-30-1 · Polyester 30/1');
     await choose(/Kalite sınıfı/, 'A · Birinci kalite');
     await userEvent.type(screen.getByLabelText(/Üretim tarihi/), '2026-10-20');
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));

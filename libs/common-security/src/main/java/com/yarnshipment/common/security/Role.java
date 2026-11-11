@@ -14,6 +14,8 @@ public enum Role {
     QUALITY(Party.INTERNAL),
     /** Müdür: sevkiyatı oluşturur, iptal eder ve irsaliye gelince tamamlar; raporları görür. */
     MANAGER(Party.INTERNAL),
+    /** Genel müdür: yalnızca rapor ve bakiye görür; işlem yapmaz. */
+    GENERAL_MANAGER(Party.INTERNAL),
     /** Yalnızca servis hesaplarının (client credentials) token'larında bulunur. */
     SYSTEM(Party.INTERNAL);
 

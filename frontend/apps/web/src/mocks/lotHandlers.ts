@@ -32,11 +32,13 @@ function readInput(json: unknown, siteId: string | undefined): MockLotInput | un
     return undefined;
   }
   const text = (field: (typeof FIELDS)[number]) => String(body[field]);
+  const supplier = body.yarnSupplierId;
   return {
     siteId: site,
     lotNo: text('lotNo'),
     productId: text('productId'),
     qualityGradeId: text('qualityGradeId'),
+    ...(typeof supplier === 'string' && supplier !== '' ? { yarnSupplierId: supplier } : {}),
     productionDate: text('productionDate'),
   };
 }

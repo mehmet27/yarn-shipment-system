@@ -43,7 +43,8 @@ final class DashboardReader {
                        coalesce(sum(delivery_net_kg), 0) AS delivery_net
                   FROM shipment_view WHERE status = 'COMPLETED'""" + FILTERS;
         return query(sql, period, scope)
-                .query((rs, row) -> new QuantitySummary(rs.getBigDecimal("dispatch_net"), rs.getBigDecimal("delivery_net")))
+                .query((rs, row) ->
+                        new QuantitySummary(rs.getBigDecimal("dispatch_net"), rs.getBigDecimal("delivery_net")))
                 .single();
     }
 

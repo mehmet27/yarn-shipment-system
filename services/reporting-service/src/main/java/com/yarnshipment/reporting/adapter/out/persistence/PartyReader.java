@@ -34,9 +34,7 @@ final class PartyReader {
                           %1$s""".formatted(partyColumn, ScopedSql.PERIOD_FILTER + ScopedSql.SITE_FILTER);
         return ScopedSql.withPeriod(ScopedSql.bind(jdbc.sql(sql), scope), period)
                 .query((rs, row) -> new PartyStats(
-                        rs.getObject("party_id", UUID.class),
-                        rs.getInt("shipments"),
-                        rs.getInt("discrepant")))
+                        rs.getObject("party_id", UUID.class), rs.getInt("shipments"), rs.getInt("discrepant")))
                 .list();
     }
 }

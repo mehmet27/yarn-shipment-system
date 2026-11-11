@@ -60,10 +60,7 @@ class ReportControllerTest {
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.shipments.total").isEqualTo(TestDashboards.TOTAL);
-        assertThat(result)
-                .bodyJson()
-                .extractingPath("$.quantity.deliveryNetKg")
-                .isEqualTo("960.000");
+        assertThat(result).bodyJson().extractingPath("$.quantity.deliveryNetKg").isEqualTo("960.000");
         assertThat(result).bodyJson().doesNotHavePath("$.bands");
         assertThat(result).bodyJson().doesNotHavePath("$.largestDifferences");
         assertThat(result).bodyJson().extractingPath("$.discrepancies.overdue").isEqualTo(1);

@@ -41,18 +41,12 @@ final class SeedRows {
     record Discrepancy(String no, String severity, String dueAt, boolean resolved) {}
 
     void shipment(UUID site, Shipment shipment) {
-        jdbc.update(
-                """
+        jdbc.update("""
                 INSERT INTO shipment_view (shipment_id, site_id, shipment_no, subcontractor_id, status,
                                            had_discrepancy, dispatch_net_kg, delivery_net_kg,
                                            dispatched_at, created_at)
                 VALUES (gen_random_uuid(), ?, ?, ?, ?, ?, 100, 100, '2026-11-02T08:00:00Z',
-                        '2026-11-02T09:00:00Z')""",
-                site,
-                shipment.no(),
-                SUBCONTRACTOR,
-                shipment.status(),
-                shipment.discrepant());
+                        '2026-11-02T09:00:00Z')""", site, shipment.no(), SUBCONTRACTOR, shipment.status(), shipment.discrepant());
     }
 
     /**

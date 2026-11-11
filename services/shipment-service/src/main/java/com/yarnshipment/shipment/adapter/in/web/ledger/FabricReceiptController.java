@@ -8,7 +8,7 @@ import com.yarnshipment.shipment.application.port.in.fabric.ListFabricReceiptsUs
 import com.yarnshipment.shipment.application.port.in.fabric.RecordFabricReceiptCommand;
 import com.yarnshipment.shipment.application.port.in.fabric.RecordFabricReceiptUseCase;
 import com.yarnshipment.shipment.application.port.in.fabric.ShipmentRecordsQuery;
-import com.yarnshipment.shipment.application.port.in.stock.WorkAreaUseCase;
+import com.yarnshipment.shipment.application.port.in.stock.RequireWorkAreaUseCase;
 import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.stock.WorkArea;
 import java.util.List;
@@ -31,13 +31,13 @@ public class FabricReceiptController {
     private final ListFabricReceiptsUseCase listFabricReceiptsUseCase;
     private final RecordFabricReceiptUseCase recordFabricReceiptUseCase;
     private final CurrentActorProvider currentActorProvider;
-    private final WorkAreaUseCase workAreas;
+    private final RequireWorkAreaUseCase workAreas;
 
     public FabricReceiptController(
             ListFabricReceiptsUseCase listFabricReceiptsUseCase,
             RecordFabricReceiptUseCase recordFabricReceiptUseCase,
             CurrentActorProvider currentActorProvider,
-            WorkAreaUseCase workAreas) {
+            RequireWorkAreaUseCase workAreas) {
         this.listFabricReceiptsUseCase = listFabricReceiptsUseCase;
         this.recordFabricReceiptUseCase = recordFabricReceiptUseCase;
         this.currentActorProvider = currentActorProvider;

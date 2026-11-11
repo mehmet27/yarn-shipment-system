@@ -9,7 +9,7 @@ import com.yarnshipment.shipment.adapter.in.web.ledger.LedgerRequests.YarnReceip
 import com.yarnshipment.shipment.application.port.in.stock.GetCentralStockUseCase;
 import com.yarnshipment.shipment.application.port.in.stock.RecordCentralProductionUseCase;
 import com.yarnshipment.shipment.application.port.in.stock.RecordYarnReceiptUseCase;
-import com.yarnshipment.shipment.application.port.in.stock.WorkAreaUseCase;
+import com.yarnshipment.shipment.application.port.in.stock.RequireWorkAreaUseCase;
 import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.stock.WorkArea;
 import java.util.List;
@@ -31,14 +31,14 @@ public class CentralStockController {
     private final RecordYarnReceiptUseCase recordReceipt;
     private final RecordCentralProductionUseCase recordProduction;
     private final CurrentActorProvider currentActorProvider;
-    private final WorkAreaUseCase workAreas;
+    private final RequireWorkAreaUseCase workAreas;
 
     public CentralStockController(
             GetCentralStockUseCase getStock,
             RecordYarnReceiptUseCase recordReceipt,
             RecordCentralProductionUseCase recordProduction,
             CurrentActorProvider currentActorProvider,
-            WorkAreaUseCase workAreas) {
+            RequireWorkAreaUseCase workAreas) {
         this.stockUseCase = getStock;
         this.recordReceipt = recordReceipt;
         this.recordProduction = recordProduction;

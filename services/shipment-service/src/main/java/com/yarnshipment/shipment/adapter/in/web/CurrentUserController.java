@@ -8,7 +8,7 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.CurrentUserResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.Permission;
 import com.yarnshipment.shipment.adapter.in.web.api.model.Role;
 import com.yarnshipment.shipment.adapter.in.web.api.model.WorkArea;
-import com.yarnshipment.shipment.application.port.in.stock.WorkAreaUseCase;
+import com.yarnshipment.shipment.application.port.in.stock.GetWorkAreaUseCase;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -31,9 +31,9 @@ public class CurrentUserController implements CurrentUserApi {
     private static final Set<String> SUBCONTRACTOR_HIDDEN = Set.of("CENTRAL_STOCK_VIEW", "CENTRAL_PRODUCTION_RECORD");
 
     private final CurrentActorProvider currentActorProvider;
-    private final WorkAreaUseCase workAreas;
+    private final GetWorkAreaUseCase workAreas;
 
-    public CurrentUserController(CurrentActorProvider currentActorProvider, WorkAreaUseCase workAreas) {
+    public CurrentUserController(CurrentActorProvider currentActorProvider, GetWorkAreaUseCase workAreas) {
         this.currentActorProvider = currentActorProvider;
         this.workAreas = workAreas;
     }

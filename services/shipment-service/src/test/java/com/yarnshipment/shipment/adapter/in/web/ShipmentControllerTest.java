@@ -16,7 +16,7 @@ import com.yarnshipment.shipment.application.port.in.ShipmentDetails;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.in.ShipmentPage;
 import com.yarnshipment.shipment.application.port.in.ShipmentPage.ShipmentListItem;
-import com.yarnshipment.shipment.application.port.in.stock.WorkAreaUseCase;
+import com.yarnshipment.shipment.application.port.in.stock.GetWorkAreaUseCase;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.stock.WorkArea;
 import java.util.List;
@@ -45,7 +45,7 @@ class ShipmentControllerTest {
     private final MockMvcTester mvc;
 
     @MockitoBean
-    private WorkAreaUseCase workAreaUseCase;
+    private GetWorkAreaUseCase workAreaUseCase;
 
     @MockitoBean
     private ListShipmentsUseCase listShipmentsUseCase;

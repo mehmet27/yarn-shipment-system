@@ -3,7 +3,8 @@ package com.yarnshipment.shipment.application.service;
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.common.security.Role;
 import com.yarnshipment.common.security.scope.OutOfScopeAccessException;
-import com.yarnshipment.shipment.application.port.in.stock.WorkAreaUseCase;
+import com.yarnshipment.shipment.application.port.in.stock.GetWorkAreaUseCase;
+import com.yarnshipment.shipment.application.port.in.stock.RequireWorkAreaUseCase;
 import com.yarnshipment.shipment.application.port.out.ledger.WorkAreaPort;
 import com.yarnshipment.shipment.domain.stock.WorkArea;
 import java.util.Optional;
@@ -12,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Kalite kullanıcısının çalışma alanını uygular; yalnız kalite rolündeki (yönetici olmayan) kullanıcı kısıtlıdır. */
 @Service
-public class WorkAreaService implements WorkAreaUseCase {
+public class WorkAreaService implements GetWorkAreaUseCase, RequireWorkAreaUseCase {
 
     private final WorkAreaPort workAreas;
 

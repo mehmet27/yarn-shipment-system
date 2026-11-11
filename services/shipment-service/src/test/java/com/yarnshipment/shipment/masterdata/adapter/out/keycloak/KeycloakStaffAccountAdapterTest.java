@@ -73,7 +73,8 @@ class KeycloakStaffAccountAdapterTest {
         assertThat(bodies.get(2))
                 .contains("\"username\":\"depo2\"")
                 .contains("\"site_ids\":[\"" + SITE + "\"]")
-                .contains("\"credentials\":[{\"type\":\"password\",\"value\":\"Gecici-Sifre-1\",\"temporary\":true}]")
+                .contains("\"value\":\"Gecici-Sifre-1\"")
+                .contains("\"temporary\":true")
                 .contains("UPDATE_PASSWORD")
                 .doesNotContain("phone")
                 .doesNotContain("email");

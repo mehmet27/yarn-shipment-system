@@ -135,8 +135,8 @@ Endpoint'ler rol değil izin ister; matrisin tek kaynağı `libs/common-security
 | `MASTER_DATA_VIEW` / `_MANAGE` | ✓ / ✓ | ✓ / | ✓ / | ✓ / | |
 | `USER_MANAGE`, `SETTINGS_MANAGE` | ✓ | | | | |
 
-> Not: Depo sevkiyat açabiliyor (`SHIPMENT_CREATE`). Sahada sevkiyatı müdür açtığı için bu izin depodan
-> alınabilir; karar Bölüm 15, A3'te.
+> Not: Depo sevkiyat açamaz; `SHIPMENT_CREATE` yalnız Müdür ve Admin'dedir (karar Bölüm 15, A3). Depo yalnız
+> `DISPATCH_RECORD` ile çıkış tartısı girer.
 
 ### 3.3 Eklenecek izinler [Yapılacak]
 

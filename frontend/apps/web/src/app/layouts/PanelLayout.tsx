@@ -11,6 +11,7 @@ import {
 } from '@iplik/ui';
 import { BrandMark } from '@/modules/branding';
 import { Outlet } from 'react-router';
+import { NotificationBell } from './NotificationBell';
 import { PanelNav } from './PanelNav';
 import { UserMenu } from './UserMenu';
 
@@ -51,7 +52,10 @@ export function PanelLayout() {
             />
             <BrandMark />
           </Group>
-          <UserMenu />
+          <Group gap="sm" wrap="nowrap">
+            <NotificationBell />
+            <UserMenu />
+          </Group>
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="sm" c="white" style={{ background: BRAND_SIDEBAR_GRADIENT, border: 0 }}>

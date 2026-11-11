@@ -14,7 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
 
 /**
- * {@link AccountCredentialPort}'un Keycloak uygulaması: geçici şifre belirler ve hesabı açıp kapatır. Şifre yalnızca Keycloak'a giden istekte bulunur; loglanmaz ve saklanmaz.
+ * {@link AccountCredentialPort}'un Keycloak uygulaması: geçici şifre belirler ve hesabı açıp kapatır. Şifre yalnızca
+ * Keycloak'a giden istekte bulunur; loglanmaz ve saklanmaz.
  */
 @Component
 final class KeycloakAccountCredentialAdapter implements AccountCredentialPort {

@@ -8,6 +8,9 @@ import com.yarnshipment.common.security.Actor;
  */
 public interface CreateStaffLoginAccountUseCase {
 
-    /** Şifre kurala uymuyorsa {@code WeakPasswordException}; giriş adı alınmışsa {@code LoginAccountExistsException}. */
+    /**
+     * Şifre kurala uymuyorsa {@code WeakPasswordException}; giriş adı alınmışsa
+     * {@code LoginAccountExistsException}.
+     */
     void createStaffLoginAccount(Actor actor, StaffAccountRequest request);
 }

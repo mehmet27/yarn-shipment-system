@@ -118,7 +118,10 @@ final class KeycloakAdminClient {
         return Map.of("id", found.get("id"), "name", found.get("name"));
     }
 
-    /** Kullanıcıyı açar ve kimliğini döner; giriş adı alınmışsa {@link LoginAccountExistsException}, şifre kurala uymuyorsa {@link WeakPasswordException}. */
+    /**
+     * Kullanıcıyı açar ve kimliğini döner; giriş adı alınmışsa {@link LoginAccountExistsException}, şifre kurala
+     * uymuyorsa {@link WeakPasswordException}.
+     */
     String createUser(String token, Map<String, Object> user) {
         try {
             URI location = client.post()

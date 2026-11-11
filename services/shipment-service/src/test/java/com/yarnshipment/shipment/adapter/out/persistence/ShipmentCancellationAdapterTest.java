@@ -39,9 +39,9 @@ class ShipmentCancellationAdapterTest {
                                   created_at, created_by)
             VALUES (?, ?, 'SV-2', ?, 'Örnek Tekstil', 'DRAFT', now(), ?)""";
     private static final String INSERT_BAG = """
-            INSERT INTO shipment_bag (id, shipment_id, bag_id, unique_key, lot_no, quality_grade_code, scan_method,
+            INSERT INTO shipment_bag (id, shipment_id, bag_id, unique_key, seq_no, weight_kg, scan_method,
                                       assigned_at, assigned_by, created_at, created_by)
-            VALUES (?, ?, ?, ?, 'P-1', 'A', 'SCAN', now(), ?, now(), ?)""";
+            VALUES (?, ?, ?, ?, 1, 50, 'MANUAL', now(), ?, now(), ?)""";
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

@@ -45,6 +45,7 @@ export const Role = {
   SUBCONTRACTOR: 'SUBCONTRACTOR',
   QUALITY: 'QUALITY',
   MANAGER: 'MANAGER',
+  GENERAL_MANAGER: 'GENERAL_MANAGER',
 } as const;
 
 export type Permission = typeof Permission[keyof typeof Permission];
@@ -73,11 +74,12 @@ export const Permission = {
   DISCREPANCY_RESOLVE: 'DISCREPANCY_RESOLVE',
   AUDIT_VIEW: 'AUDIT_VIEW',
   REPORT_VIEW: 'REPORT_VIEW',
-  BALANCE_VIEW: 'BALANCE_VIEW',
   FABRIC_RECEIPT_RECORD: 'FABRIC_RECEIPT_RECORD',
   YARN_RETURN_RECORD: 'YARN_RETURN_RECORD',
   FIRE_RATE_EDIT: 'FIRE_RATE_EDIT',
   INVOICE_MARK: 'INVOICE_MARK',
+  BALANCE_VIEW: 'BALANCE_VIEW',
+  WEIGHT_MISMATCH_RESOLVE: 'WEIGHT_MISMATCH_RESOLVE',
 } as const;
 
 export interface CurrentUserResponse {
@@ -414,6 +416,7 @@ export const StaffRole = {
   WAREHOUSE: 'WAREHOUSE',
   QUALITY: 'QUALITY',
   MANAGER: 'MANAGER',
+  GENERAL_MANAGER: 'GENERAL_MANAGER',
 } as const;
 
 export interface StaffLoginAccountRequest {
@@ -663,6 +666,35 @@ export interface QualityGradePageResponse {
   page: PageMetadata;
 }
 
+export interface YarnSupplierCreateRequest {
+  /**
+     * Tedarikçi adı; büyük/küçük harf duyarsız tekildir
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+}
+
+export interface YarnSupplierUpdateRequest {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+}
+
+export interface YarnSupplierView {
+  /** Yalnızca liste yanıtında dolar; pasif kayıt yalnızca status=ALL ile gelir */
+  active?: boolean;
+  id: string;
+  name: string;
+}
+
+export interface YarnSupplierPageResponse {
+  items: YarnSupplierView[];
+  page: PageMetadata;
+}
+
 export interface LotCreateRequest {
   siteId: string;
   /**
@@ -674,6 +706,8 @@ export interface LotCreateRequest {
   productId: string;
   qualityGradeId: string;
   productionDate: string;
+  /** İsteğe bağlı iplik tedarikçisi; etkin olmalıdır. Kalite kilitlenmeden önce verilebilir */
+  yarnSupplierId?: string;
 }
 
 export interface LotUpdateRequest {
@@ -686,6 +720,8 @@ export interface LotUpdateRequest {
   productId: string;
   qualityGradeId: string;
   productionDate: string;
+  /** İsteğe bağlı iplik tedarikçisi; etkin olmalıdır. Kalite kilitlenmeden önce verilebilir */
+  yarnSupplierId?: string;
 }
 
 export interface LotView {
@@ -700,6 +736,9 @@ export interface LotView {
   qualityGradeCode: string;
   qualityGradeName: string;
   productionDate: string;
+  /** İplik tedarikçisi; atanmamışsa boş */
+  yarnSupplierId?: string;
+  yarnSupplierName?: string;
   /** Kalitenin kilitlendiği an; boşsa parti kilitsizdir ve düzenlenebilir */
   qualityLockedAt?: string;
   active: boolean;
@@ -1053,6 +1092,28 @@ siteId?: string;
 };
 
 export type ListQualityGradesParams = {
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
+};
+
+export type ListYarnSuppliersParams = {
 /**
  * @minimum 0
  */
@@ -1831,6 +1892,77 @@ export const activateQualityGrade = (
     }
 
 /**
+ * İplik tedarikçisi (Şireci, Karesi ...) seçimi için; ada göre sıralı. Arama `q` ile adda yapılır. Pasifleri yalnızca yönetici `status=ALL` ile görür.
+ * @summary İplik tedarikçisi listesi
+ */
+export const listYarnSuppliers = (
+    params?: ListYarnSuppliersParams,
+ ) => {
+      return customInstance<YarnSupplierPageResponse>(
+      {url: `/api/v1/master-data/yarn-suppliers`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Ad büyük/küçük harf duyarsız tekildir (`DUPLICATE_CODE`, alan `name`). Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz.
+ * @summary İplik tedarikçisi ekler
+ */
+export const createYarnSupplier = (
+    yarnSupplierCreateRequest: YarnSupplierCreateRequest,
+ ) => {
+      return customInstance<YarnSupplierView>(
+      {url: `/api/v1/master-data/yarn-suppliers`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: yarnSupplierCreateRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Adı değiştirir; yeni ad da tekil olmalıdır.
+ * @summary İplik tedarikçisi günceller
+ */
+export const updateYarnSupplier = (
+    yarnSupplierId: string,
+    yarnSupplierUpdateRequest: YarnSupplierUpdateRequest,
+ ) => {
+      return customInstance<YarnSupplierView>(
+      {url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: yarnSupplierUpdateRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez; pasif tedarikçi yeni partiye verilemez. Tekrarı zararsızdır.
+ * @summary İplik tedarikçisi pasife alır
+ */
+export const deactivateYarnSupplier = (
+    yarnSupplierId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}/deactivate`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı geri getirir. Tekrarı zararsızdır.
+ * @summary İplik tedarikçisi yeniden etkinleştirir
+ */
+export const activateYarnSupplier = (
+    yarnSupplierId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}/activate`, method: 'POST'
+    },
+      );
+    }
+
+/**
  * Partiler, üretim tarihine göre yeniden eskiye. Yalnızca kullanıcının yetkili olduğu lokasyonların partileri gelir; `MASTER_DATA_MANAGE` izni olan hepsini görür. Arama `q` ile parti numarası, iplik kodu ve adında yapılır. `status=ALL` için `LOT_QUALITY_LOCK` gerekir.
  * @summary Parti listesi
  */
@@ -2085,6 +2217,11 @@ export type CreateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof cre
 export type UpdateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof updateQualityGrade>>>
 export type DeactivateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof deactivateQualityGrade>>>
 export type ActivateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof activateQualityGrade>>>
+export type ListYarnSuppliersResult = NonNullable<Awaited<ReturnType<typeof listYarnSuppliers>>>
+export type CreateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof createYarnSupplier>>>
+export type UpdateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof updateYarnSupplier>>>
+export type DeactivateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof deactivateYarnSupplier>>>
+export type ActivateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof activateYarnSupplier>>>
 export type ListLotsResult = NonNullable<Awaited<ReturnType<typeof listLots>>>
 export type CreateLotResult = NonNullable<Awaited<ReturnType<typeof createLot>>>
 export type UpdateLotResult = NonNullable<Awaited<ReturnType<typeof updateLot>>>

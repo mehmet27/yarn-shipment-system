@@ -295,6 +295,10 @@
         "tab": "Kalite sınıfları",
         "field": "Kalite adı",
         "extra": "Etiket rengi"
+      },
+      "yarnSupplier": {
+        "tab": "İplik tedarikçileri",
+        "field": "Tedarikçi adı"
       }
     },
     "tareStandard": {
@@ -740,11 +744,14 @@
     "unlocked": "Kalite kilitli değil",
     "lockedAt": "Kalite kilitli · {{at}}",
     "summary": "Kalite {{grade}} · {{site}} · {{date}}",
+    "supplier": "Tedarikçi: {{name}}",
+    "noSupplier": "Tedarikçi girilmemiş",
     "fields": {
       "siteId": "Lokasyon",
       "lotNo": "Parti numarası",
       "productId": "İplik",
       "qualityGradeId": "Kalite sınıfı",
+      "yarnSupplierId": "İplik tedarikçisi (isteğe bağlı)",
       "productionDate": "Üretim tarihi"
     },
     "lock": {
@@ -840,7 +847,8 @@
       "DRIVER": "Şoför",
       "SUBCONTRACTOR": "Fasoncu",
       "QUALITY": "Kalite",
-      "MANAGER": "Müdür"
+      "MANAGER": "Müdür",
+      "GENERAL_MANAGER": "Genel müdür"
     },
     "noName": "Ad girilmemiş",
     "errors": {

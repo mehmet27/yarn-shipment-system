@@ -1,5 +1,5 @@
 export type MasterKind =
-  'subcontractor' | 'driver' | 'vehicle' | 'site' | 'product' | 'qualityGrade';
+  'subcontractor' | 'driver' | 'vehicle' | 'site' | 'product' | 'qualityGrade' | 'yarnSupplier';
 
 /** Dört ana veri türünün ortak sahte kaydı; `label` ünvan, ad-soyad, plaka veya lokasyon adıdır. */
 export type MockRecord = {
@@ -38,6 +38,11 @@ const SEED: Readonly<Record<MasterKind, readonly MockRecord[]>> = {
   qualityGrade: [
     { id: 'grd-a', label: 'Birinci kalite', isActive: true, code: 'A' },
     { id: 'grd-b', label: 'İkinci kalite', isActive: true, code: 'B' },
+  ],
+  yarnSupplier: [
+    { id: 'ysup-0', label: 'Şireci', isActive: true },
+    { id: 'ysup-1', label: 'Karesi', isActive: true },
+    { id: 'ysup-2', label: 'Eski Tedarik', isActive: false },
   ],
 };
 

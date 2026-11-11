@@ -47,6 +47,10 @@
         "description": "Rol: manager"
       },
       {
+        "name": "general_manager",
+        "description": "Rol: general_manager"
+      },
+      {
         "name": "system",
         "description": "Rol: system"
       }

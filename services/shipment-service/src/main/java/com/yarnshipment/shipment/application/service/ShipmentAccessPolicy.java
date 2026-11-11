@@ -23,7 +23,7 @@ public final class ShipmentAccessPolicy {
         if (actor.hasRole(Role.SUBCONTRACTOR)) {
             return ShipmentAudience.SUBCONTRACTOR;
         }
-        boolean internal = actor.hasAnyRole(Role.ADMIN, Role.QUALITY, Role.MANAGER, Role.SYSTEM);
+        boolean internal = actor.hasAnyRole(Role.ADMIN, Role.QUALITY, Role.MANAGER, Role.GENERAL_MANAGER, Role.SYSTEM);
         return internal ? ShipmentAudience.INTERNAL : ShipmentAudience.WAREHOUSE;
     }
 

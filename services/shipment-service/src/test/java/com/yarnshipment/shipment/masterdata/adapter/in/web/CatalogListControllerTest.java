@@ -8,6 +8,7 @@ import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.catalog.ListProductsUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.catalog.ListQualityGradesUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.catalog.ListYarnSuppliersUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.lot.ListLotsUseCase;
 import com.yarnshipment.shipment.masterdata.domain.catalog.Product;
 import com.yarnshipment.shipment.masterdata.domain.catalog.ProductDetails;
@@ -43,6 +44,9 @@ class CatalogListControllerTest {
 
     @MockitoBean
     private ListQualityGradesUseCase qualityGrades;
+
+    @MockitoBean
+    private ListYarnSuppliersUseCase yarnSuppliers;
 
     @MockitoBean
     private ListLotsUseCase lots;

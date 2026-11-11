@@ -27,11 +27,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Haklı itirazın bakiye düzeltmesi gerçek PostgreSQL ve uygulama rolünün yetkileriyle yazılır. */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({
-    BalanceMovementWriter.class,
-    BalanceLedgerAdapter.class,
-    FireSettlementAdapter.class,
-    ClaimLedgerAdapter.class
+@Import({BalanceMovementWriter.class, BalanceLedgerAdapter.class, FireSettlementAdapter.class, ClaimLedgerAdapter.class
 })
 class ClaimLedgerAdapterTest {
 

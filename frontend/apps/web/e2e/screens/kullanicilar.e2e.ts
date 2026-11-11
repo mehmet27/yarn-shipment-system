@@ -12,7 +12,7 @@ test.describe('Kullanıcılar', { tag: '@panel' }, () => {
       );
       await expect(table.getByRole('row', { name: /eski\.depo/ })).toContainText('Devre dışı');
 
-      await page.getByRole('searchbox', { name: /Giriş adı, ad ya da e-posta/ }).fill('kalite');
+      await page.getByRole('searchbox', { name: /Giriş adı ya da ad ara/ }).fill('kalite');
       await expect(page.getByText('1 kullanıcı')).toBeVisible();
       await expect(table.getByText('Kalite Uzmanı')).toBeVisible();
     },

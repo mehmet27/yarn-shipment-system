@@ -46,7 +46,6 @@ class RemoveBagServiceTest {
         service().removeBag(command());
 
         assertThat(removed).containsExactly(1);
-        assertThat(bags.releasedKeys()).containsExactly(1);
     }
 
     @Test

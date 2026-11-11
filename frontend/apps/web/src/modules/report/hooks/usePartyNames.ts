@@ -22,6 +22,8 @@ async function fetchAll<T>(fetchPage: (page: number) => Promise<Page<T>>): Promi
 export type PartyNames = {
   /** Adı bilinmeyen (pasif ya da silinmiş) kimlik kısaltılarak gösterilir. */
   nameOf: (id: string) => string;
+  /** Ada göre kimlik (büyük/küçük harf duyarsız); bilinmiyorsa undefined. */
+  idOf: (name: string) => string | undefined;
 };
 
 /** Fasoncu adlarını tanım listelerinden çözer; liste alınamazsa kimlik kısaltması kalır. */
@@ -39,5 +41,14 @@ export function usePartyNames(): PartyNames {
     },
   });
   const names = query.data;
-  return { nameOf: (id) => names?.get(id) ?? shortId(id) };
+  return {
+    nameOf: (id) => names?.get(id) ?? shortId(id),
+    idOf: (name) => {
+      const wanted = name.trim().toLocaleLowerCase('tr');
+      for (const [id, title] of names ?? []) {
+        if (title.trim().toLocaleLowerCase('tr') === wanted) return id;
+      }
+      return undefined;
+    },
+  };
 }

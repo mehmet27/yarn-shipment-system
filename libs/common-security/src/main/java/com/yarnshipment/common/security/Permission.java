@@ -36,7 +36,9 @@ public enum Permission implements GrantedAuthority {
     DISCREPANCY_RESOLVE(AccessType.WRITE),
 
     AUDIT_VIEW(AccessType.READ),
-    REPORT_VIEW(AccessType.READ);
+    REPORT_VIEW(AccessType.READ),
+    /** Fasoncu bakiye ekranı ve raporu; açılış bakiyesi içe aktarma (analiz 3.3). */
+    BALANCE_VIEW(AccessType.READ);
 
     private final AccessType accessType;
 

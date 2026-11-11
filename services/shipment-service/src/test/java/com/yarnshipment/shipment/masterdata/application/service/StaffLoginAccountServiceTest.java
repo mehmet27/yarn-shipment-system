@@ -8,9 +8,11 @@ import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.StaffAccountRequest;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.StaffAccountPort;
+import com.yarnshipment.shipment.masterdata.application.port.out.StaffWorkAreaPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
+import com.yarnshipment.shipment.masterdata.domain.model.StaffWorkArea;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -54,7 +56,36 @@ class StaffLoginAccountServiceTest {
         }
     };
     private final FakeCredentials credentials = new FakeCredentials();
-    private final StaffLoginAccountService service = new StaffLoginAccountService(targets, accounts, credentials);
+    private final List<String> savedAreas = new ArrayList<>();
+    private final StaffWorkAreaPort workAreas = (userId, area) -> savedAreas.add(userId + ":" + area);
+    private final StaffLoginAccountService service =
+            new StaffLoginAccountService(targets, accounts, credentials, workAreas);
+
+    @Test
+    @DisplayName("Kalite hesabı çalışma alanıyla açılır ve alan yeni kullanıcıya yazılır")
+    void shouldSaveWorkAreaForQuality() {
+        service.createStaffLoginAccount(
+                admin,
+                new StaffAccountRequest(
+                        "kalite1", "Ali Kalite", StaffRole.QUALITY, "Gecici-Sifre-1", StaffWorkArea.CENTRAL));
+
+        assertThat(savedAreas).containsExactly(NEW_USER + ":CENTRAL");
+    }
+
+    @Test
+    @DisplayName("Kalite hesabında alan zorunlu, diğer rollerde verilemez")
+    void shouldRequireWorkAreaOnlyForQuality() {
+        StaffAccountRequest noArea = new StaffAccountRequest("k", "Ali Kalite", StaffRole.QUALITY, "Gecici-Sifre-1");
+        StaffAccountRequest extraArea =
+                new StaffAccountRequest("d", "Ayşe Depo", StaffRole.WAREHOUSE, "Gecici-Sifre-1", StaffWorkArea.CENTRAL);
+
+        assertThatThrownBy(() -> service.createStaffLoginAccount(admin, noArea))
+                .isInstanceOf(InvalidMasterDataException.class);
+        assertThatThrownBy(() -> service.createStaffLoginAccount(admin, extraArea))
+                .isInstanceOf(InvalidMasterDataException.class);
+        assertThat(openedStaff).isEmpty();
+        assertThat(savedAreas).isEmpty();
+    }
 
     @Test
     @DisplayName("Fabrika içi hesap yöneticinin şifresi, verilen rol ve etkin tüm lokasyonlarla açılır")

@@ -10,6 +10,7 @@ import com.yarnshipment.shipment.masterdata.application.port.in.account.StaffAcc
 import com.yarnshipment.shipment.masterdata.application.port.out.AccountCredentialPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTargetPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.StaffAccountPort;
+import com.yarnshipment.shipment.masterdata.application.port.out.StaffWorkAreaPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
@@ -22,7 +23,8 @@ import org.springframework.stereotype.Service;
  * Fabrika içi hesap açar, rolünü değiştirir, pasife alır, yeniden açar ve şifresini belirler. İlk şifreyi yönetici
  * yazar (geçici; kişi ilk girişte değiştirir); SMS ya da e-posta doğrulaması yoktur. Fabrikada tek merkez lokasyon
  * olduğu için yeni hesap etkin tüm lokasyonları görür. Kişi kendi rolünü değiştiremez ve kendi hesabını kapatamaz
- * (kilitlenmeyi önler). Yerel veritabanına yazılmadığı için transaction açılmaz.
+ * (kilitlenmeyi önler). Kalite rolünde çalışma alanı (merkez / fasoncu) zorunludur, başka rolde verilemez. Asıl
+ * yazım kimlik sağlayıcıda olduğu için transaction açılmaz.
  */
 @Service
 public final class StaffLoginAccountService
@@ -35,12 +37,17 @@ public final class StaffLoginAccountService
     private final LoginAccountTargetPort targets;
     private final StaffAccountPort accounts;
     private final AccountCredentialPort credentials;
+    private final StaffWorkAreaPort workAreas;
 
     public StaffLoginAccountService(
-            LoginAccountTargetPort targets, StaffAccountPort accounts, AccountCredentialPort credentials) {
+            LoginAccountTargetPort targets,
+            StaffAccountPort accounts,
+            AccountCredentialPort credentials,
+            StaffWorkAreaPort workAreas) {
         this.targets = targets;
         this.accounts = accounts;
         this.credentials = credentials;
+        this.workAreas = workAreas;
     }
 
     @Override
@@ -49,8 +56,15 @@ public final class StaffLoginAccountService
         if (siteIds.isEmpty()) {
             throw new InvalidMasterDataException("siteIds", "no active site");
         }
-        accounts.createStaff(new StaffAccountSpec(
+        boolean quality = request.role() == StaffRole.QUALITY;
+        if (quality != (request.workArea() != null)) {
+            throw new InvalidMasterDataException("workArea", quality ? "required for quality" : "only for quality");
+        }
+        UUID userId = accounts.createStaff(new StaffAccountSpec(
                 request.username(), request.fullName(), request.role(), request.password(), siteIds));
+        if (request.workArea() != null) {
+            workAreas.save(userId, request.workArea());
+        }
     }
 
     @Override

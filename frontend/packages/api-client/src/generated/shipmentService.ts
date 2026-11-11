@@ -84,6 +84,17 @@ export const Permission = {
   CENTRAL_PRODUCTION_RECORD: 'CENTRAL_PRODUCTION_RECORD',
 } as const;
 
+/**
+ * Kalite kullanıcısının çalışma alanı; merkez kalite yalnız merkez fabrikanın kumaşını, fasoncu kalite yalnız fasoncuların kumaşını görür
+ */
+export type WorkArea = typeof WorkArea[keyof typeof WorkArea];
+
+
+export const WorkArea = {
+  CENTRAL: 'CENTRAL',
+  SUBCONTRACTOR: 'SUBCONTRACTOR',
+} as const;
+
 export interface CurrentUserResponse {
   userId: string;
   fullName: string;
@@ -91,6 +102,7 @@ export interface CurrentUserResponse {
   permissions: Permission[];
   siteIds: string[];
   mfaVerified: boolean;
+  workArea?: WorkArea;
 }
 
 export type ShipmentStatus = typeof ShipmentStatus[keyof typeof ShipmentStatus];
@@ -533,6 +545,7 @@ export interface StaffLoginAccountRequest {
      */
   fullName: string;
   role: StaffRole;
+  workArea?: WorkArea;
   /**
      * Yöneticinin belirlediği geçici şifre; kişi ilk girişte değiştirir. SMS ya da e-posta doğrulaması yoktur.
      * @minLength 8

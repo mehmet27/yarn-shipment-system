@@ -90,6 +90,7 @@ export type {
   ChangeLoginAccountRoleRequest,
   StaffLoginAccountRequest,
   StaffRole,
+  WorkArea,
 } from './generated/shipmentService';
 export type {
   ListLoginAccountsParams,

@@ -2154,6 +2154,8 @@ components:
             format: uuid
         mfaVerified:
           type: boolean
+        workArea:
+          $ref: '#/components/schemas/WorkArea'
     ShipmentStatus:
       type: string
       enum: [DRAFT, WEIGHT_MISMATCH, AWAITING_DELIVERY, COMPLETED, CANCELLED]
@@ -2646,6 +2648,10 @@ components:
       type: string
       description: Yönetici tarafından açılabilen fabrika içi roller; şoför ve fasoncu kayıtlarından açılır
       enum: [ADMIN, WAREHOUSE, QUALITY, MANAGER, GENERAL_MANAGER]
+    WorkArea:
+      type: string
+      description: Kalite kullanıcısının çalışma alanı; merkez kalite yalnız merkez fabrikanın kumaşını, fasoncu kalite yalnız fasoncuların kumaşını görür
+      enum: [CENTRAL, SUBCONTRACTOR]
     StaffLoginAccountRequest:
       type: object
       required: [username, fullName, role, password]
@@ -2660,6 +2666,8 @@ components:
           maxLength: 200
         role:
           $ref: '#/components/schemas/StaffRole'
+        workArea:
+          $ref: '#/components/schemas/WorkArea'
         password:
           type: string
           minLength: 8

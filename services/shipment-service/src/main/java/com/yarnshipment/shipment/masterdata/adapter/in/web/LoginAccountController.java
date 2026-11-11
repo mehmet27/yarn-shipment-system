@@ -12,7 +12,6 @@ import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
-import com.yarnshipment.shipment.masterdata.application.port.in.account.StaffAccountRequest;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import java.time.Instant;
@@ -53,12 +52,7 @@ public class LoginAccountController implements LoginAccountsApi {
     @PreAuthorize("hasAuthority('USER_MANAGE')")
     public ResponseEntity<Void> createStaffLoginAccount(StaffLoginAccountRequest request) {
         createStaff.createStaffLoginAccount(
-                currentActorProvider.getCurrentActor(),
-                new StaffAccountRequest(
-                        request.getUsername(),
-                        request.getFullName(),
-                        StaffRole.valueOf(request.getRole().name()),
-                        request.getPassword()));
+                currentActorProvider.getCurrentActor(), StaffAccountMapper.toRequest(request));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .cacheControl(CacheControl.noStore())
                 .build();

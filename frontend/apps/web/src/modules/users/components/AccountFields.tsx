@@ -1,7 +1,9 @@
 import { useTranslation } from '@iplik/i18n';
 import { PasswordInput, Stack, TextInput } from '@iplik/ui';
 import type { AccountDraft, AccountField } from '../accountDraft';
+import { needsWorkArea } from '../staffRoles';
 import { StaffRoleSelect } from './StaffRoleSelect';
+import { WorkAreaSelect } from './WorkAreaSelect';
 
 export type AccountFieldsProps = {
   draft: AccountDraft;
@@ -21,6 +23,15 @@ export function AccountFields({ draft, onChange: change, errorText }: AccountFie
         }}
         error={errorText('role')}
       />
+      {needsWorkArea(draft.kind) && (
+        <WorkAreaSelect
+          value={draft.workArea}
+          onChange={(next) => {
+            change({ workArea: next });
+          }}
+          error={errorText('workArea')}
+        />
+      )}
       <TextInput
         label={t('masterData.loginAccount.username')}
         description={t('masterData.loginAccount.usernameHint')}

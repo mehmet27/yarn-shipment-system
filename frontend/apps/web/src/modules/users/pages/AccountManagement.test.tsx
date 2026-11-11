@@ -14,6 +14,11 @@ async function pickRole(dialog: HTMLElement, optionName: string) {
   await userEvent.click(await screen.findByRole('option', { name: optionName }));
 }
 
+async function pickWorkArea(dialog: HTMLElement, optionName: string) {
+  await userEvent.click(within(dialog).getByRole('combobox', { name: /Çalışma alanı/ }));
+  await userEvent.click(await screen.findByRole('option', { name: optionName }));
+}
+
 describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
   it('yönetici depo hesabı açar; ilk şifreyi yazar, hesap ilk giriş bekleyen olarak görünür', async () => {
     renderApp('/panel/kullanicilar');
@@ -56,6 +61,20 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     expect(isPosted).toBe(false);
   });
 
+  it('çalışma alanı yalnız kalite rolünde sorulur ve zorunludur', async () => {
+    renderApp('/panel/kullanicilar');
+    await userEvent.click(await screen.findByRole('button', { name: 'Yeni kullanıcı' }));
+    const dialog = await screen.findByRole('dialog');
+    await pickRole(dialog, 'Depo');
+    expect(
+      within(dialog).queryByRole('combobox', { name: /Çalışma alanı/ }),
+    ).not.toBeInTheDocument();
+
+    await pickRole(dialog, 'Kalite');
+    await userEvent.click(within(dialog).getByRole('button', { name: /Hesabı aç/ }));
+    expect(await within(dialog).findByText('Çalışma alanını seçin.')).toBeInTheDocument();
+  });
+
   it('şifre kurala uymazsa hata gösterilir; ikinci denemede giriş adı alınmışsa o hata görünür', async () => {
     server.use(
       http.post(
@@ -71,6 +90,7 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     await userEvent.type(within(dialog).getByLabelText(/Ad soyad/), 'Başka Biri');
     await userEvent.type(within(dialog).getByLabelText(/İlk şifre/), '12345678');
     await pickRole(dialog, 'Kalite');
+    await pickWorkArea(dialog, 'Merkez fabrika');
     await userEvent.click(within(dialog).getByRole('button', { name: /Hesabı aç/ }));
     expect(await within(dialog).findByText(/Şifre kurallara uymuyor/)).toBeInTheDocument();
 

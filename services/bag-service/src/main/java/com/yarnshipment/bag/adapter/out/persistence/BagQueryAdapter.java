@@ -65,14 +65,6 @@ final class BagQueryAdapter implements BagQueryPort {
     }
 
     @Override
-    public List<Bag> findReservedFor(UUID shipmentId) {
-        return jdbc.sql(SELECT + "WHERE r.shipment_id = :shipmentId ORDER BY b.unique_key")
-                .param("shipmentId", shipmentId)
-                .query((rs, rowNumber) -> map(rs))
-                .list();
-    }
-
-    @Override
     public List<LabeledBag> findByLot(UUID lotId, int limit) {
         return jdbc.sql(SELECT_LABELED)
                 .param("lotId", lotId)

@@ -14,8 +14,6 @@ public interface BagQueryPort {
 
     List<Bag> findByUniqueKeys(Collection<String> uniqueKeys);
 
-    List<Bag> findReservedFor(UUID shipmentId);
-
     /** Partinin çuvalları baskı sayılarıyla, en son oluşturulan önce, en fazla {@code limit} adet. */
     List<LabeledBag> findByLot(UUID lotId, int limit);
 }

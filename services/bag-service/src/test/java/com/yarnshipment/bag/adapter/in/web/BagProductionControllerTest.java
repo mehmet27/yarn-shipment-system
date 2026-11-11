@@ -178,8 +178,7 @@ class BagProductionControllerTest {
                 PackageType.BAG,
                 "P-2026-0001",
                 "A",
-                BagStatus.CREATED,
-                null);
+                BagStatus.CREATED);
     }
 
     private MvcTestResult get(String uri, Jwt jwt) {

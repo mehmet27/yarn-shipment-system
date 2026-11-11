@@ -95,13 +95,6 @@ final class BagCreationAdapter implements BagCreationPort {
     private static Bag created(UUID id, String key, NewBags newBags) {
         LockedLot lot = newBags.lot();
         return new Bag(
-                id,
-                lot.siteId(),
-                key,
-                newBags.packageType(),
-                lot.lotNo(),
-                lot.qualityGradeCode(),
-                BagStatus.CREATED,
-                null);
+                id, lot.siteId(), key, newBags.packageType(), lot.lotNo(), lot.qualityGradeCode(), BagStatus.CREATED);
     }
 }

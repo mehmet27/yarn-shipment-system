@@ -45,8 +45,6 @@ export interface BagView {
   lotNo: string;
   qualityGradeCode: string;
   status: BagStatus;
-  /** Çuval bir sevkiyata ayrılmışsa o sevkiyat */
-  reservedShipmentId?: string;
 }
 
 export interface CreateBagsRequest {

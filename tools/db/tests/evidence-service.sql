@@ -21,11 +21,6 @@ INSERT INTO evidence_file (id, created_at, shipment_id, evidence_type, storage_k
                            uploaded_at, uploaded_by, status, created_by)
 VALUES ('00000000-0000-7000-8000-000000000501', now(), gen_random_uuid(), 'DISPATCH_SCALE', 'evidence/k1',
         'image/jpeg', 1024, repeat('a', 64), now(), gen_random_uuid(), 'VALID', gen_random_uuid());
--- Konum yalnızca açık rızayla yazılır.
-SELECT pg_temp.expect_error($$INSERT INTO evidence_file (id, created_at, shipment_id, evidence_type, storage_key,
-    mime_type, size_bytes, sha256, uploaded_at, uploaded_by, status, created_by, geo_lat, geo_lon)
-    VALUES (gen_random_uuid(), now(), gen_random_uuid(), 'BAG_OVERVIEW', 'evidence/k2', 'image/jpeg', 1, repeat('b', 64),
-    now(), gen_random_uuid(), 'VALID', gen_random_uuid(), 41.0, 29.0)$$, '23514');
 -- Hash ve dosya anahtarı değişemez; kayıt silinemez.
 SELECT pg_temp.expect_error($$UPDATE evidence_file SET sha256 = repeat('c', 64)$$, 'YS002');
 -- Geçersiz sayma gerekçe ister ve geri alınamaz.

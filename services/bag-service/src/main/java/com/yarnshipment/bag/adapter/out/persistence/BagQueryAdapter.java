@@ -16,22 +16,19 @@ import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
-/** {@link BagQueryPort}'un JDBC uygulaması. Açık rezervasyon varsa sevkiyatı çuvalla birlikte okunur. */
+/** {@link BagQueryPort}'un JDBC uygulaması. Çuvalları ve etiket baskı özetini okur. */
 @Component
 final class BagQueryAdapter implements BagQueryPort {
 
     private static final String SELECT = """
-            SELECT b.id, b.site_id, b.unique_key, b.package_type, b.lot_no, b.quality_grade_code, b.status,
-                   r.shipment_id
+            SELECT b.id, b.site_id, b.unique_key, b.package_type, b.lot_no, b.quality_grade_code, b.status
             FROM bag b
-            LEFT JOIN bag_reservation r ON r.bag_id = b.id AND r.released_at IS NULL
             """;
 
     private static final String SELECT_LABELED = """
             SELECT b.id, b.site_id, b.unique_key, b.package_type, b.lot_no, b.quality_grade_code, b.status,
-                   r.shipment_id, coalesce(p.print_count, 0) AS print_count, p.last_printed_at
+                   coalesce(p.print_count, 0) AS print_count, p.last_printed_at
             FROM bag b
-            LEFT JOIN bag_reservation r ON r.bag_id = b.id AND r.released_at IS NULL
             LEFT JOIN (SELECT bag_id, max(print_no) AS print_count, max(printed_at) AS last_printed_at
                        FROM label_print GROUP BY bag_id) p ON p.bag_id = b.id
             WHERE b.lot_id = :lotId
@@ -85,7 +82,6 @@ final class BagQueryAdapter implements BagQueryPort {
                 PackageType.valueOf(rs.getString("package_type")),
                 rs.getString("lot_no"),
                 rs.getString("quality_grade_code"),
-                BagStatus.valueOf(rs.getString("status")),
-                rs.getObject("shipment_id", UUID.class));
+                BagStatus.valueOf(rs.getString("status")));
     }
 }

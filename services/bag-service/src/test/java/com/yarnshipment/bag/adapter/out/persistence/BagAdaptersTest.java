@@ -37,12 +37,11 @@ class BagAdaptersTest {
     }
 
     @Test
-    @DisplayName("Çuval Unique Key ile okunur; ayrılmamış çuvalda sevkiyat yoktur")
+    @DisplayName("Çuval Unique Key ile okunur")
     void shouldFindBagByUniqueKey() {
         Bag bag = queries.findByUniqueKey("BAG-0001").orElseThrow();
 
         assertThat(bag.status()).isEqualTo(BagStatus.CREATED);
-        assertThat(bag.reservedShipmentId()).isNull();
         assertThat(queries.findByUniqueKey("YOK")).isEmpty();
         assertThat(queries.findByUniqueKeys(List.of())).isEmpty();
     }

@@ -285,10 +285,6 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/BagStatus'
-        reservedShipmentId:
-          type: string
-          format: uuid
-          description: Çuval bir sevkiyata ayrılmışsa o sevkiyat
     CreateBagsRequest:
       type: object
       required: [lotId, packageType, count]

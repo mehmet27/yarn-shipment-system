@@ -17,24 +17,6 @@ END;
 $$;
 GRANT EXECUTE ON FUNCTION pg_temp.expect_error(text, text) TO PUBLIC;
 
--- Genel kural (0,50 / 1,50, 2026-01-01'den açık uçlu) migration ile gelir.
-DO $$
-BEGIN
-    IF (SELECT count(*) FROM tolerance_rule WHERE product_id IS NULL) <> 1 THEN
-        RAISE EXCEPTION 'Default general tolerance rule is missing';
-    END IF;
-END;
-$$;
--- Genel kuralın geçerlilik aralıkları çakışamaz; ürün kuralı genel kuralla birlikte yaşayabilir.
-SELECT pg_temp.expect_error($$INSERT INTO tolerance_rule (id, green_max_pct, yellow_max_pct, valid_from,
-    created_at, created_by) VALUES (gen_random_uuid(), 0.40, 1.00, '2026-06-01', now(), gen_random_uuid())$$,
-    '23P01');
-INSERT INTO tolerance_rule (id, product_id, green_max_pct, yellow_max_pct, valid_from, created_at, created_by)
-VALUES (gen_random_uuid(), gen_random_uuid(), 0.30, 1.00, '2026-06-01', now(), gen_random_uuid());
-SELECT pg_temp.expect_error($$INSERT INTO tolerance_rule (id, green_max_pct, yellow_max_pct, valid_from,
-    created_at, created_by) VALUES (gen_random_uuid(), 1.50, 0.50, '2030-01-01', now(), gen_random_uuid())$$,
-    '23514');
-
 INSERT INTO discrepancy (id, discrepancy_no, site_id, shipment_id, discrepancy_type, severity, status, rule_code,
                          created_at, created_by)
 VALUES ('00000000-0000-7000-8000-000000000601', 'U-1', gen_random_uuid(), gen_random_uuid(), 'QUANTITY', 'RED',

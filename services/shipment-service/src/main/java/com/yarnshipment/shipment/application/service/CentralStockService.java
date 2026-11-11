@@ -42,9 +42,7 @@ public class CentralStockService
     @Transactional
     public CentralStockMovement recordYarnReceipt(RecordYarnReceiptUseCase.Command command) {
         CentralStockMovement receipt = CentralStockMovement.receipt(
-                command.yarnType(),
-                command.netKg(),
-                command.note(),
+                new CentralStockMovement.Receipt(command.yarnType(), command.netKg(), command.note()),
                 clock.instant(),
                 command.actor().userId());
         stock.saveReceipt(receipt);

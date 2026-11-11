@@ -27,11 +27,11 @@ class ShipmentAccessPolicyTest {
     }
 
     @Test
-    @DisplayName("Taslak sevkiyatta depo yalnızca çıkış tartısı girer; çuval atayamaz, iptal edemez")
+    @DisplayName("Taslak sevkiyatta depo çuval atar ve çıkış tartısı girer; iptal edemez")
     void shouldAllowWarehouseActionsOnDraft() {
         // when / then
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.DRAFT), TestTokens.actor("warehouse")))
-                .containsExactlyInAnyOrder(ShipmentAction.RECORD_DISPATCH);
+                .containsExactlyInAnyOrder(ShipmentAction.ASSIGN_BAGS, ShipmentAction.RECORD_DISPATCH);
     }
 
     @Test
@@ -45,14 +45,14 @@ class ShipmentAccessPolicyTest {
     }
 
     @Test
-    @DisplayName("Müdür taslağa çuval ekler ya da iptal eder; teslim bekleyeni tamamlar ya da iptal eder")
+    @DisplayName("Müdür taslağı iptal eder; teslim bekleyeni tamamlar ya da iptal eder")
     void shouldAllowManagerLifecycleActions() {
         // given
         Actor manager = TestTokens.actor("manager");
 
         // when / then
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.DRAFT), manager))
-                .containsExactlyInAnyOrder(ShipmentAction.ASSIGN_BAGS, ShipmentAction.CANCEL);
+                .containsExactlyInAnyOrder(ShipmentAction.CANCEL);
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY), manager))
                 .containsExactlyInAnyOrder(ShipmentAction.COMPLETE, ShipmentAction.CANCEL);
     }

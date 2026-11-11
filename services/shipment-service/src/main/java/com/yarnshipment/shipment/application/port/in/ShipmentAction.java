@@ -10,7 +10,7 @@ import java.util.Set;
  * bir izin ve izin verildiği durumlarla tanımlıdır; frontend butonu yalnızca bu listeye göre gösterir (FE-SEC-03).
  */
 public enum ShipmentAction {
-    ASSIGN_BAGS(Permission.SHIPMENT_CREATE, EnumSet.of(ShipmentStatus.DRAFT)),
+    ASSIGN_BAGS(Permission.DISPATCH_RECORD, EnumSet.of(ShipmentStatus.DRAFT)),
     RECORD_DISPATCH(Permission.DISPATCH_RECORD, EnumSet.of(ShipmentStatus.DRAFT)),
     CANCEL(Permission.SHIPMENT_CANCEL, EnumSet.of(ShipmentStatus.DRAFT, ShipmentStatus.AWAITING_DELIVERY)),
     /** İrsaliye müdüre ulaştı. */

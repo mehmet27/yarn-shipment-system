@@ -24,8 +24,7 @@ export function InspectionResultForm({
   const [result, setResult] = useState('');
   const [evidenceId, setEvidenceId] = useState<string>();
   const mutation = useRecordInspectionResult(claimId, inspection.id);
-  const isLab = inspection.kind === 'LAB';
-  const canSubmit = result.trim() !== '' && (!isLab || evidenceId !== undefined);
+  const canSubmit = result.trim() !== '' && evidenceId !== undefined;
   return (
     <Stack gap="xs">
       <Textarea
@@ -41,7 +40,7 @@ export function InspectionResultForm({
       <TypedEvidenceUpload
         shipmentId={shipmentId}
         evidenceType="LAB_RESULT"
-        label={t(isLab ? 'claim.inspection.labDocument' : 'claim.inspection.optionalDocument')}
+        label={t('claim.inspection.labDocument')}
         doneLabel={t('evidence.done')}
         onUploaded={setEvidenceId}
       />

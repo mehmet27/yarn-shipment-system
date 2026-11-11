@@ -647,7 +647,6 @@
       "requestedAt": "İstendi",
       "result": "Sonuç",
       "labDocument": "Laboratuvar raporu (zorunlu)",
-      "optionalDocument": "Belge (isteğe bağlı)",
       "documentAttached": "Rapor belgesi eklendi.",
       "saveResult": "Sonucu kaydet"
     },

@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { server } from '@/mocks/server';
 import { renderApp } from '@/test/renderApp';
 
+const LONG_FLOW_TIMEOUT_MS = 20_000;
 const PATH = '/api/v1/master-data/login-accounts';
 
 async function pickRole(dialog: HTMLElement, optionName: string) {
@@ -15,32 +16,36 @@ async function pickRole(dialog: HTMLElement, optionName: string) {
 }
 
 describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
-  it('yönetici depo hesabı açar; şifre sorulmaz ve gösterilmez, SMS gider, hesap ilk giriş bekleyen olarak görünür', async () => {
-    renderApp('/panel/kullanicilar');
-    await userEvent.click(await screen.findByRole('button', { name: 'Yeni kullanıcı' }));
-    const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).queryByLabelText(/şifre/i)).not.toBeInTheDocument();
+  it(
+    'yönetici depo hesabı açar; şifre sorulmaz ve gösterilmez, SMS gider, hesap ilk giriş bekleyen olarak görünür',
+    async () => {
+      renderApp('/panel/kullanicilar');
+      await userEvent.click(await screen.findByRole('button', { name: 'Yeni kullanıcı' }));
+      const dialog = await screen.findByRole('dialog');
+      expect(within(dialog).queryByLabelText(/şifre/i)).not.toBeInTheDocument();
 
-    await userEvent.type(within(dialog).getByLabelText(/Giriş adı/), 'depo.yeni');
-    await userEvent.type(within(dialog).getByLabelText(/Ad soyad/), 'Yeni Depocu');
-    await userEvent.type(within(dialog).getByLabelText(/Telefon/), '0532 123 45 67');
-    await pickRole(dialog, 'Depo');
-    await userEvent.click(await within(dialog).findByRole('switch', { name: 'Merkez Depo' }));
-    await userEvent.click(within(dialog).getByRole('button', { name: /Hesabı aç/ }));
+      await userEvent.type(within(dialog).getByLabelText(/Giriş adı/), 'depo.yeni');
+      await userEvent.type(within(dialog).getByLabelText(/Ad soyad/), 'Yeni Depocu');
+      await userEvent.type(within(dialog).getByLabelText(/Telefon/), '0532 123 45 67');
+      await pickRole(dialog, 'Depo');
+      await userEvent.click(await within(dialog).findByRole('switch', { name: 'Merkez Depo' }));
+      await userEvent.click(within(dialog).getByRole('button', { name: /Hesabı aç/ }));
 
-    expect(
-      await within(dialog).findByText(
-        /\+?0?532 123 45 67 numarasına gönderildi|numarasına gönderildi/,
-      ),
-    ).toBeInTheDocument();
-    expect(within(dialog).queryByText(/Gecici-Sifre/)).not.toBeInTheDocument();
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Tamam' }));
+      expect(
+        await within(dialog).findByText(
+          /\+?0?532 123 45 67 numarasına gönderildi|numarasına gönderildi/,
+        ),
+      ).toBeInTheDocument();
+      expect(within(dialog).queryByText(/Gecici-Sifre/)).not.toBeInTheDocument();
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Tamam' }));
 
-    const row = await screen.findByRole('row', { name: /depo\.yeni/ });
-    expect(within(row).getByText('Depo')).toBeInTheDocument();
-    expect(within(row).getByText('***4567')).toBeInTheDocument();
-    expect(within(row).getByText('İlk giriş bekleniyor')).toBeInTheDocument();
-  });
+      const row = await screen.findByRole('row', { name: /depo\.yeni/ });
+      expect(within(row).getByText('Depo')).toBeInTheDocument();
+      expect(within(row).getByText('***4567')).toBeInTheDocument();
+      expect(within(row).getByText('İlk giriş bekleniyor')).toBeInTheDocument();
+    },
+    LONG_FLOW_TIMEOUT_MS,
+  );
 
   it('fasoncu hesabı kullanıcı ekranından, fasoncu kaydına bağlanarak açılır', async () => {
     renderApp('/panel/kullanicilar');

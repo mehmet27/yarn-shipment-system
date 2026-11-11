@@ -139,12 +139,10 @@ describe('MasterDataPage', () => {
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('tab', { name: 'Standart dara' }));
     expect(await screen.findByText(/Henüz standart dara tanımlanmadı/)).toBeInTheDocument();
-    await userEvent.click(await screen.findByRole('combobox', { name: /Lokasyon/ }));
-    await userEvent.click(await screen.findByRole('option', { name: 'Merkez Depo' }));
     await userEvent.type(screen.getByLabelText(/Standart dara \(kg/), '0,45');
     await userEvent.type(screen.getByLabelText(/İzin verilen sapma/), '5');
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
-    const row = await screen.findByRole('row', { name: /Merkez Depo/ });
+    const row = await screen.findByRole('row', { name: /Çuval/ });
     expect(within(row).getByText('0.450')).toBeInTheDocument();
     expect(within(row).getByText('5.00')).toBeInTheDocument();
   });
@@ -158,6 +156,5 @@ describe('MasterDataPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(await screen.findByText(/Dara 0 ile 999999/)).toBeInTheDocument();
     expect(screen.getByText(/Sapma 0 ile 100/)).toBeInTheDocument();
-    expect(screen.getByText('Lokasyon seçin.')).toBeInTheDocument();
   });
 });

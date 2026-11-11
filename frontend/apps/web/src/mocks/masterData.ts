@@ -30,7 +30,7 @@ const SEED: Readonly<Record<MasterKind, readonly MockRecord[]>> = {
     { id: 'veh-0', label: '34ABC123', isActive: true },
     { id: 'veh-1', label: '16XYZ456', isActive: true },
   ],
-  site: [{ id: 'site-merkez', label: 'Merkez Depo', isActive: true }],
+  site: [{ id: 'site-merkez', label: 'Merkez Fabrika', isActive: true }],
   product: [
     { id: 'prd-0', label: 'Polyester 30/1', isActive: true, code: 'PES-30-1', extra: 'Ne 30/1' },
     { id: 'prd-1', label: 'Pamuk 20/1', isActive: true, code: 'CO-20-1' },

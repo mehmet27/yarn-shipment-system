@@ -14,7 +14,6 @@ const MAX_LENGTH: Readonly<Record<ManagedKind, number>> = {
   subcontractor: 200,
   driver: 200,
   vehicle: 20,
-  site: 200,
   product: 200,
   qualityGrade: 200,
   yarnSupplier: 200,

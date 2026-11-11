@@ -24,7 +24,6 @@ describe('CreateShipmentPage', () => {
       server.use(...createHandlers('MANAGER'));
       renderApp('/panel/sevkiyat');
       await userEvent.click(await screen.findByRole('link', { name: 'Yeni sevkiyat' }));
-      await pick('Lokasyon', 'Merkez Depo');
       await pick('Fasoncu', 'Bursa Tekstil');
       await pick('Şoför', 'Mert Kaya');
       await fillRecipe('2.036');
@@ -40,8 +39,7 @@ describe('CreateShipmentPage', () => {
   it('fasoncu seçilmeden göndermeyi engeller', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/yeni');
-    await pick('Lokasyon', 'Merkez Depo');
-    await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Taslak oluştur' }));
     expect(await screen.findByText('Fasoncu seçin.')).toBeInTheDocument();
   });
 
@@ -60,7 +58,6 @@ describe('CreateShipmentPage', () => {
   it('geçersiz reçete satırı ve fire oranını engeller', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/yeni');
-    await pick('Lokasyon', 'Merkez Depo');
     await pick('Fasoncu', 'Bursa Tekstil');
     await userEvent.clear(screen.getByLabelText(/Fire oranı/));
     await userEvent.type(screen.getByLabelText(/Fire oranı/), '25');

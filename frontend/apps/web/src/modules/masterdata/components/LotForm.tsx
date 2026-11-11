@@ -3,7 +3,6 @@ import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Modal, Stack, TextInput, useMediaQuery } from '@iplik/ui';
 import { useLotDraft } from '../hooks/useLotDraft';
 import { useCatalogChoices } from '../hooks/useLots';
-import { useLotSiteChoices } from '../hooks/useLotSiteChoices';
 import { errorOf, LotChoiceField } from './LotChoiceField';
 
 export type LotFormProps = {
@@ -13,12 +12,11 @@ export type LotFormProps = {
   onSaved: (isNew: boolean) => void;
 };
 
-/** Parti ekle/düzenle; lokasyon yalnızca eklerken seçilir. Dar ekranda tam ekran açılır. */
+/** Parti ekle/düzenle. Dar ekranda tam ekran açılır. */
 export function LotForm({ lot, onClose, onSaved }: LotFormProps) {
   const { t } = useTranslation();
   const isNarrow = useMediaQuery('(max-width: 47.99em)', false);
   const draft = useLotDraft(lot, onSaved);
-  const sites = useLotSiteChoices();
   const catalog = useCatalogChoices();
   const formError = errorOf(draft.errors, 'form', t);
   return (
@@ -30,7 +28,6 @@ export function LotForm({ lot, onClose, onSaved }: LotFormProps) {
       title={t(lot === undefined ? 'lots.add' : 'lots.edit')}
     >
       <Stack>
-        <LotChoiceField field="siteId" data={sites} draft={draft} isDisabled={lot !== undefined} />
         <TextInput
           label={t('lots.fields.lotNo')}
           value={draft.draft.lotNo}

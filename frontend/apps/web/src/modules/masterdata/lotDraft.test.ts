@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { localToday, validateLot } from './lotDraft';
 
 const VALID = {
-  siteId: 'site-merkez',
   lotNo: 'p-2026-1',
   productId: 'prd-0',
   qualityGradeId: 'grd-a',

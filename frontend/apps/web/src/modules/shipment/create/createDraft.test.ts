@@ -9,20 +9,19 @@ import {
   withSubcontractor,
 } from './createDraft';
 
-const site = { value: 'site-merkez', label: 'Merkez Depo' };
+const SITE = 'site-merkez';
 const subcontractor = { value: 'sub-1', label: 'Bursa Tekstil' };
 const line = { ...newLine(), yarnText: '20 denye likra', netKg: '2.036' };
-const base = { ...EMPTY_CREATE_DRAFT, site, subcontractor, lines: [line] };
+const base = { ...EMPTY_CREATE_DRAFT, subcontractor, lines: [line] };
 
 describe('createDraft', () => {
-  it('lokasyon ve fasoncu zorunludur', () => {
-    expect(validateCreate(EMPTY_CREATE_DRAFT)).toBe('siteRequired');
-    expect(validateCreate({ ...EMPTY_CREATE_DRAFT, site })).toBe('subcontractorRequired');
+  it('fasoncu zorunludur', () => {
+    expect(validateCreate(EMPTY_CREATE_DRAFT)).toBe('subcontractorRequired');
     expect(validateCreate(base)).toBeUndefined();
   });
 
   it('şoför ve araç boşsa istekte yer almaz', () => {
-    expect(toCreateRequest(base)).toEqual({
+    expect(toCreateRequest(base, SITE)).toEqual({
       siteId: 'site-merkez',
       subcontractorId: 'sub-1',
       subcontractorTitle: 'Bursa Tekstil',
@@ -37,7 +36,7 @@ describe('createDraft', () => {
       driver: { value: 'drv-1', label: 'Mert Kaya' },
       vehicle: { value: 'veh-0', label: '34 ABC 123' },
     };
-    expect(toCreateRequest(draft)).toMatchObject({
+    expect(toCreateRequest(draft, SITE)).toMatchObject({
       driverId: 'drv-1',
       driverName: 'Mert Kaya',
       vehicleId: 'veh-0',
@@ -58,18 +57,21 @@ describe('createDraft', () => {
   });
 
   it('satır liste kimliği ya da serbest metin, lot isteğe bağlı gider', () => {
-    const request = toCreateRequest({
-      ...base,
-      lines: [
-        {
-          ...newLine(),
-          yarn: { value: 'prd-1', label: 'Viskon' },
-          lot: { value: 'lot-1', label: 'L1' },
-          netKg: '19.488',
-        },
-        line,
-      ],
-    });
+    const request = toCreateRequest(
+      {
+        ...base,
+        lines: [
+          {
+            ...newLine(),
+            yarn: { value: 'prd-1', label: 'Viskon' },
+            lot: { value: 'lot-1', label: 'L1' },
+            netKg: '19.488',
+          },
+          line,
+        ],
+      },
+      SITE,
+    );
     expect(request?.lines).toEqual([
       { yarnTypeId: 'prd-1', lotId: 'lot-1', netKg: '19488.000' },
       { yarnTypeText: '20 denye likra', netKg: '2036.000' },
@@ -77,8 +79,8 @@ describe('createDraft', () => {
   });
 
   it('fire oranı yüzdeden kesire çevrilir ve 0-20 dışı reddedilir', () => {
-    expect(toCreateRequest({ ...base, fireRatePct: '4,5' })?.fireRate).toBe('0.0450');
-    expect(toCreateRequest(base, '3')?.fireRate).toBe('0.0300');
+    expect(toCreateRequest({ ...base, fireRatePct: '4,5' }, SITE)?.fireRate).toBe('0.0450');
+    expect(toCreateRequest(base, SITE, '3')?.fireRate).toBe('0.0300');
     expect(validateCreateFields({ ...base, fireRatePct: '21' }).fireRate).toBe('fireRateInvalid');
     expect(validateCreateFields({ ...base, fireRatePct: '4,123' }).fireRate).toBe(
       'fireRateInvalid',
@@ -106,7 +108,7 @@ describe('createDraft', () => {
       pussFine: '32/28',
       unitPrice: '21,5',
     };
-    expect(toCreateRequest({ ...base, lines: [full] })?.lines[0]).toEqual({
+    expect(toCreateRequest({ ...base, lines: [full] }, SITE)?.lines[0]).toEqual({
       netKg: '2036.000',
       yarnTypeText: '20 denye likra',
       fabricType: '30/150 Penye Siyah',

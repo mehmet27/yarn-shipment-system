@@ -1,22 +1,23 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Stack } from '@iplik/ui';
 import { useState } from 'react';
+import { useSoleSiteId } from '../hooks/useSoleSiteId';
 import { useSaveTareStandard } from '../hooks/useTareStandards';
 import type { TareStandardDraft } from '../tareStandardDraft';
 import { toRequest, validateTareStandard } from '../tareStandardDraft';
 import { TareStandardFields } from './TareStandardFields';
 
 const EMPTY: TareStandardDraft = {
-  siteId: '',
   packagingType: 'BAG',
   standardTareKg: '',
   maxDeviationPct: '',
 };
 
-/** Lokasyon ve ambalaj için standart dara ile izin verilen sapmayı kaydeder; varsa günceller. */
+/** Ambalaj için standart dara ile izin verilen sapmayı kaydeder; varsa günceller. */
 export function TareStandardForm() {
   const { t } = useTranslation();
   const save = useSaveTareStandard();
+  const siteId = useSoleSiteId();
   const [draft, setDraft] = useState<TareStandardDraft>(EMPTY);
   const [isChecked, setChecked] = useState(false);
   const [isSaved, setSaved] = useState(false);
@@ -29,8 +30,8 @@ export function TareStandardForm() {
 
   function submit() {
     setChecked(true);
-    if (Object.keys(validateTareStandard(draft)).length > 0) return;
-    save.mutate(toRequest(draft), {
+    if (siteId === undefined || Object.keys(validateTareStandard(draft)).length > 0) return;
+    save.mutate(toRequest(draft, siteId), {
       onSuccess: () => {
         setSaved(true);
       },

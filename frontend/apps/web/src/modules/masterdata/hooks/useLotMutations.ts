@@ -9,6 +9,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { LotDraft } from '../lotDraft';
 import { normalizeLotNo } from '../lotDraft';
 import { LOTS_KEY } from './useLots';
+import { useSoleSiteId } from './useSoleSiteId';
+
+/** Tek lokasyon yüklenmeden parti açılamaz; hata genel hata olarak gösterilir. */
+function requireSite(siteId: string | undefined): string {
+  if (siteId === undefined) throw new Error('Lokasyon henüz yüklenmedi');
+  return siteId;
+}
 
 export type SaveLotRequest = { id: string | undefined; draft: LotDraft };
 
@@ -20,8 +27,9 @@ function useInvalidatingMutation<T>(mutationFn: (request: T) => Promise<unknown>
   });
 }
 
-/** Lokasyon yalnızca yeni partide gönderilir; partinin lokasyonu sonradan değişmez. */
+/** Lokasyon yalnızca yeni partide, firmanın tek lokasyonu olarak gönderilir; sonradan değişmez. */
 export function useSaveLot() {
+  const siteId = useSoleSiteId();
   return useInvalidatingMutation(({ id, draft }: SaveLotRequest) => {
     const body = {
       lotNo: normalizeLotNo(draft.lotNo),
@@ -30,7 +38,9 @@ export function useSaveLot() {
       ...(draft.yarnSupplierId === '' ? {} : { yarnSupplierId: draft.yarnSupplierId }),
       productionDate: draft.productionDate,
     };
-    return id === undefined ? createLot({ siteId: draft.siteId, ...body }) : updateLot(id, body);
+    return id === undefined
+      ? createLot({ siteId: requireSite(siteId), ...body })
+      : updateLot(id, body);
   });
 }
 

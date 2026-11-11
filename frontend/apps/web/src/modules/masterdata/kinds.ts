@@ -2,7 +2,6 @@ export const MANAGED_KINDS = [
   'subcontractor',
   'driver',
   'vehicle',
-  'site',
   'product',
   'qualityGrade',
   'yarnSupplier',

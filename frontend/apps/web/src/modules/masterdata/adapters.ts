@@ -1,22 +1,17 @@
 import {
   activateDriver,
-  activateSite,
   activateSubcontractor,
   activateVehicle,
   createDriver,
-  createSite,
   createSubcontractor,
   createVehicle,
   deactivateDriver,
-  deactivateSite,
   deactivateSubcontractor,
   deactivateVehicle,
   listDrivers,
-  listSites,
   listSubcontractors,
   listVehicles,
   updateDriver,
-  updateSite,
   updateSubcontractor,
   updateVehicle,
 } from '@iplik/api-client';
@@ -86,28 +81,10 @@ const vehicle: Adapter = {
   setActive: (id, isActive) => discard(isActive ? activateVehicle(id) : deactivateVehicle(id)),
 };
 
-const site: Adapter = {
-  async list(params) {
-    const page = await listSites(toQuery(params));
-    return {
-      rows: page.items.map((row) => ({
-        id: row.id,
-        label: row.name,
-        isActive: row.active ?? true,
-      })),
-      totalPages: page.page.totalPages,
-    };
-  },
-  save: (id, { label }) =>
-    discard(id === undefined ? createSite({ name: label }) : updateSite(id, { name: label })),
-  setActive: (id, isActive) => discard(isActive ? activateSite(id) : deactivateSite(id)),
-};
-
 export const ADAPTERS: Readonly<Record<ManagedKind, Adapter>> = {
   subcontractor,
   driver,
   vehicle,
-  site,
   product,
   qualityGrade,
   yarnSupplier,

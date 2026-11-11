@@ -3,7 +3,7 @@ import { Loader, Stack, Table, Text } from '@iplik/ui';
 import { useTareStandards } from '../hooks/useTareStandards';
 import { TareStandardForm } from './TareStandardForm';
 
-/** Yönetici "Standart dara": lokasyon ve ambalaj başına standart dara ile izin verilen sapma. */
+/** Yönetici "Standart dara": ambalaj başına standart dara ile izin verilen sapma. */
 export function TareStandardsPanel() {
   const { t } = useTranslation();
   const standards = useTareStandards();
@@ -20,7 +20,6 @@ export function TareStandardsPanel() {
         <Table>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>{t('masterData.tareStandard.site')}</Table.Th>
               <Table.Th>{t('masterData.tareStandard.packagingType')}</Table.Th>
               <Table.Th ta="right">{t('masterData.tareStandard.standardTareKg')}</Table.Th>
               <Table.Th ta="right">{t('masterData.tareStandard.maxDeviationPct')}</Table.Th>
@@ -29,7 +28,6 @@ export function TareStandardsPanel() {
           <Table.Tbody>
             {rows.map((row) => (
               <Table.Tr key={row.id}>
-                <Table.Td>{row.siteName}</Table.Td>
                 <Table.Td>{t(`masterData.tareStandard.types.${row.packagingType}`)}</Table.Td>
                 <Table.Td ta="right">{row.standardTareKg}</Table.Td>
                 <Table.Td ta="right">{row.maxDeviationPct}</Table.Td>

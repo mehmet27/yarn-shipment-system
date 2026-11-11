@@ -251,7 +251,6 @@
     "title": "Yeni sevkiyat",
     "selectPlaceholder": "Seçin",
     "hint": "Lokasyon, fasoncu, reçete ve fire oranını girin; şoför ve araç sonradan da atanabilir.",
-    "site": "Lokasyon",
     "subcontractor": "Fasoncu",
     "driver": "Şoför (isteğe bağlı)",
     "vehicle": "Araç (isteğe bağlı)",
@@ -260,7 +259,6 @@
     "failed": "Sevkiyat oluşturulamadı. Lütfen tekrar deneyin.",
     "invalid": "Seçimler geçersiz. Lütfen kontrol edin.",
     "errors": {
-      "siteRequired": "Lokasyon seçin.",
       "subcontractorRequired": "Fasoncu seçin.",
       "linesRequired": "En az bir reçete satırı girin.",
       "lineYarnRequired": "Her satırda iplik cinsi seçin ya da yazın.",
@@ -298,7 +296,6 @@
     "loginAccount": {
       "username": "Giriş adı",
       "usernameHint": "Küçük harf, rakam, nokta, alt çizgi ve tire; en az 3 karakter",
-      "sites": "Görebileceği lokasyonlar",
       "close": "Tamam"
     },
     "ownerOf": "Fasoncu: {{title}}",
@@ -337,10 +334,6 @@
         "tab": "Araçlar",
         "field": "Plaka"
       },
-      "site": {
-        "tab": "Lokasyonlar",
-        "field": "Lokasyon adı"
-      },
       "product": {
         "tab": "İplikler",
         "field": "İplik adı",
@@ -359,7 +352,6 @@
     "tareStandard": {
       "tab": "Standart dara",
       "intro": "Çıkış tartısında girilen dara, çuval başına standart × çuval sayısıyla karşılaştırılır; sınır aşılırsa sevkiyat dosyasında uyarı görünür. Kayıt engellenmez.",
-      "site": "Lokasyon",
       "packagingType": "Ambalaj",
       "standardTareKg": "Standart dara (kg, ambalaj başına)",
       "maxDeviationPct": "İzin verilen sapma (%)",
@@ -368,7 +360,6 @@
       "empty": "Henüz standart dara tanımlanmadı; tanımlanana kadar sapma uyarısı çıkmaz.",
       "invalidKg": "Dara 0 ile 999999 arasında, en çok üç ondalıklı olmalı (ör. 0,450).",
       "invalidPct": "Sapma 0 ile 100 arasında, en çok iki ondalıklı olmalı.",
-      "invalidSite": "Lokasyon seçin.",
       "failed": "Standart kaydedilemedi. Bilgileri kontrol edip tekrar deneyin.",
       "types": {
         "BAG": "Çuval"
@@ -747,11 +738,10 @@
     "edit": "Partiyi düzenle",
     "unlocked": "Kalite kilitli değil",
     "lockedAt": "Kalite kilitli · {{at}}",
-    "summary": "Kalite {{grade}} · {{site}} · {{date}}",
+    "summary": "Kalite {{grade}} · {{date}}",
     "supplier": "Tedarikçi: {{name}}",
     "noSupplier": "Tedarikçi girilmemiş",
     "fields": {
-      "siteId": "Lokasyon",
       "lotNo": "Parti numarası",
       "productId": "İplik",
       "qualityGradeId": "Kalite sınıfı",

@@ -1,8 +1,7 @@
 import { normalizeCode, validateCode } from './recordDraft';
 
-/** Parti formu; seçimler kimlik, tarih `YYYY-MM-DD`. Lokasyon yalnızca eklerken seçilir. */
+/** Parti formu; seçimler kimlik, tarih `YYYY-MM-DD`. */
 export type LotDraft = {
-  siteId: string;
   lotNo: string;
   productId: string;
   qualityGradeId: string;
@@ -17,7 +16,6 @@ export type LotField = keyof LotDraft;
 export type LotError = 'required' | 'invalidLotNo' | 'futureDate';
 
 export const EMPTY_LOT: LotDraft = {
-  siteId: '',
   lotNo: '',
   productId: '',
   qualityGradeId: '',
@@ -27,7 +25,6 @@ export const EMPTY_LOT: LotDraft = {
 
 /** Zorunlu alanlar; tedarikçi isteğe bağlıdır. */
 export const LOT_FIELDS: readonly LotField[] = [
-  'siteId',
   'lotNo',
   'productId',
   'qualityGradeId',

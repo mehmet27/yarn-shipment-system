@@ -2,6 +2,7 @@ import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Stack } from '@iplik/ui';
 import { useState } from 'react';
+import { useSoleSiteId } from '@/modules/masterdata';
 import { useCreateShipment } from '../hooks/useCreateShipment';
 import { useFireRateDefault } from '../hooks/useFireRateDefault';
 import { CreateFields } from './CreateFields';
@@ -22,10 +23,12 @@ export function CreateShipmentForm({ onCreated }: CreateShipmentFormProps) {
   const [fieldErrors, setFieldErrors] = useState<CreateFieldErrors>({});
   const defaultFirePct = useFireRateDefault();
   const mutation = useCreateShipment();
+  const siteId = useSoleSiteId();
   const submit = () => {
     const validation = validateCreate(draft, defaultFirePct);
     setFieldErrors(validateCreateFields(draft, defaultFirePct));
-    const request = toCreateRequest(draft, defaultFirePct);
+    const request =
+      siteId === undefined ? undefined : toCreateRequest(draft, siteId, defaultFirePct);
     if (validation === undefined && request !== undefined) {
       mutation.mutate(request, {
         onSuccess: (created) => {

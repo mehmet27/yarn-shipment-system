@@ -13,21 +13,11 @@ export type CreateFieldsProps = {
   defaultFirePct: string;
 };
 
-/** Dört seçici tek sütunda; şoför listesi seçili fasoncuya göre daralır. */
+/** Üç seçici tek sütunda; şoför listesi seçili fasoncuya göre daralır. */
 export function CreateFields({ draft, onChange, errors = {}, defaultFirePct }: CreateFieldsProps) {
   const { t } = useTranslation();
   return (
     <Stack>
-      <MasterSelect
-        kind="site"
-        label={t('create.site')}
-        value={draft.site}
-        isRequired
-        {...(errors.site === undefined ? {} : { error: t(`create.errors.${errors.site}`) })}
-        onChange={(site) => {
-          onChange({ ...draft, site });
-        }}
-      />
       <MasterSelect
         kind="subcontractor"
         label={t('create.subcontractor')}

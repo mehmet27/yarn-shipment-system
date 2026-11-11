@@ -105,6 +105,9 @@ export function addMockShipment(request: CreateShipmentRequest): InternalShipmen
     status: 'DRAFT',
     subcontractorId: request.subcontractorId,
     subcontractorTitle: request.subcontractorTitle,
+    ...(request.sourceSubcontractorTitle === undefined
+      ? {}
+      : { sourceSubcontractorTitle: request.sourceSubcontractorTitle }),
     ...(request.driverName === undefined ? {} : { driverName: request.driverName }),
     ...(request.plateNo === undefined ? {} : { plateNo: request.plateNo }),
     createdAt: new Date().toISOString(),

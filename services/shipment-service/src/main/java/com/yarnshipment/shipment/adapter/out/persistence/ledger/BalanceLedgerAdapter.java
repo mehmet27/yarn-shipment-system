@@ -60,6 +60,9 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
     private static final String WEIGHED_NET = """
             SELECT coalesce(sum(net_kg), 0) FROM weighing
             WHERE shipment_id = ? AND side = 'DISPATCH' AND superseded_by IS NULL""";
+    private static final String SOURCE_SUBCONTRACTOR = """
+            SELECT source_subcontractor_id FROM shipment
+            WHERE id = :shipmentId AND source_subcontractor_id IS NOT NULL""";
     private static final String LINE_COLUMNS = """
             SELECT column_name FROM information_schema.columns
             WHERE table_schema = current_schema() AND table_name = 'shipment_line'""";
@@ -134,8 +137,17 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
             return Kilograms.ZERO;
         }
         DispatchContext context = new DispatchContext(subcontractorId, shipmentId, at, createdBy);
+        @Nullable
+        UUID source = jdbc.sql(SOURCE_SUBCONTRACTOR)
+                .param("shipmentId", shipmentId)
+                .query(UUID.class)
+                .optional()
+                .orElse(null);
         for (DispatchLine line : dispatchLines(shipmentId, weighed)) {
             writer.append(BalanceMovement.dispatch(line, context));
+            if (source != null) {
+                writer.append(BalanceMovement.transferOut(source, line, context));
+            }
         }
         return weighed;
     }

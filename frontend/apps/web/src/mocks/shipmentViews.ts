@@ -22,6 +22,9 @@ function toBase(shipment: InternalShipmentView) {
     createdAt,
     allowedActions,
     ...(shipment.plateNo === undefined ? {} : { plateNo: shipment.plateNo }),
+    ...(shipment.sourceSubcontractorTitle === undefined
+      ? {}
+      : { sourceSubcontractorTitle: shipment.sourceSubcontractorTitle }),
   };
 }
 

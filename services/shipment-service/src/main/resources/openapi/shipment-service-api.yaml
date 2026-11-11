@@ -2212,6 +2212,9 @@ components:
           format: uuid
         subcontractorTitle:
           type: string
+        sourceSubcontractorTitle:
+          description: Gönderen fasoncu; boşsa iplik merkezden çıkar
+          type: string
         driverName:
           type: string
         plateNo:
@@ -2370,6 +2373,14 @@ components:
           type: string
           format: uuid
         subcontractorTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        sourceSubcontractorId:
+          description: İplik merkezden değil başka bir fasoncudan gidiyorsa gönderen fasoncu; sourceSubcontractorTitle ile birlikte verilir
+          type: string
+          format: uuid
+        sourceSubcontractorTitle:
           type: string
           minLength: 1
           maxLength: 200
@@ -3200,6 +3211,9 @@ components:
           format: uuid
         subcontractorTitle:
           type: string
+        sourceSubcontractorTitle:
+          description: Gönderen fasoncu; boşsa iplik merkezden çıkar
+          type: string
         driverName:
           type: string
         plateNo:
@@ -3251,6 +3265,9 @@ components:
           type: string
           format: uuid
         subcontractorTitle:
+          type: string
+        sourceSubcontractorTitle:
+          description: Gönderen fasoncu; boşsa iplik merkezden çıkar
           type: string
         driverName:
           type: string

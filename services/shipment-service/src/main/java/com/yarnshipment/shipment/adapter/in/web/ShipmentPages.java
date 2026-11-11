@@ -27,6 +27,7 @@ final class ShipmentPages {
                 .status(WebMappings.status(shipment.status()))
                 .subcontractorId(shipment.subcontractorId())
                 .subcontractorTitle(shipment.parties().subcontractorTitle())
+                .sourceSubcontractorTitle(shipment.parties().sourceSubcontractorTitle())
                 .driverName(shipment.parties().driverName())
                 .plateNo(shipment.parties().plateNo())
                 .createdAt(WebMappings.utc(shipment.createdAt()))

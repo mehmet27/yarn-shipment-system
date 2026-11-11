@@ -28,7 +28,20 @@ final class PartiesEmbeddable {
     @Column(name = "plate_no", columnDefinition = TEXT)
     private @Nullable String plateNo;
 
+    @Column(name = "source_subcontractor_id")
+    private @Nullable UUID sourceSubcontractorId;
+
+    @Column(name = "source_subcontractor_title", columnDefinition = TEXT)
+    private @Nullable String sourceSubcontractorTitle;
+
     ShipmentParties toDomain() {
-        return new ShipmentParties(subcontractorId, subcontractorTitle, driverId, driverName, plateNo);
+        return new ShipmentParties(
+                subcontractorId,
+                subcontractorTitle,
+                driverId,
+                driverName,
+                plateNo,
+                sourceSubcontractorId,
+                sourceSubcontractorTitle);
     }
 }

@@ -63,7 +63,7 @@ public record BalanceMovement(
                 "DISPATCH:" + context.shipmentId() + ":" + line.lineNo());
     }
 
-    /** Bakiyeden düşen hareket (kumaş girişi, dönen iplik, fasoncudan gelen iplik); kilo pozitif verilir. */
+    /** Bakiyeden düşen hareket (kumaş girişi, dönen, gelen ya da aktarılan iplik); kilo pozitif verilir. */
     public static BalanceMovement consumption(Consumption consumption) {
         return new BalanceMovement(
                 UUID.randomUUID(),
@@ -78,6 +78,20 @@ public record BalanceMovement(
                 consumption.sourceRef());
     }
 
+    /** Fasoncudan fasoncuya sevkiyatta gönderen fasoncunun bakiyesinden aynı kilo düşer. */
+    public static BalanceMovement transferOut(UUID source, DispatchLine line, DispatchContext context) {
+        return consumption(new Consumption(
+                MovementKind.TRANSFER_OUT,
+                source,
+                context.shipmentId(),
+                line.yarnType(),
+                line.lotId(),
+                line.netKg(),
+                context.at(),
+                context.createdBy(),
+                "TRANSFER:" + context.shipmentId() + ":" + line.lineNo()));
+    }
+
     /** Sevkiyatın tamamlanma bağlamı: hangi fasoncu, hangi sevkiyat, ne zaman, kim. */
     public record DispatchContext(UUID subcontractorId, UUID shipmentId, Instant at, UUID createdBy) {}
 
@@ -88,7 +102,7 @@ public record BalanceMovement(
     /**
      * Bakiyeden düşen hareketin girdisi.
      *
-     * @param kind FABRIC_RECEIPT, YARN_RETURN veya YARN_FROM_SUBCONTRACTOR
+     * @param kind FABRIC_RECEIPT, YARN_RETURN, YARN_FROM_SUBCONTRACTOR veya TRANSFER_OUT
      * @param netKg düşülecek kilo, pozitif
      */
     public record Consumption(

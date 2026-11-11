@@ -58,6 +58,12 @@ class LedgerAdaptersTest {
             INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status,
                                   created_at, created_by)
             VALUES (?, ?, 'SV-L1', ?, 'Örnek Tekstil', 'AWAITING_DELIVERY', now(), ?)""";
+    private static final UUID TRANSFER_SHIPMENT = UUID.fromString("0192f0a0-0000-7000-8000-000000000703");
+    private static final UUID SOURCE_SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000704");
+    private static final String INSERT_TRANSFER_SHIPMENT = """
+            INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status,
+                                  source_subcontractor_id, source_subcontractor_title, created_at, created_by)
+            VALUES (?, ?, 'SV-L2', ?, 'Örnek Tekstil', 'AWAITING_DELIVERY', ?, 'Kaynak Dokuma', now(), ?)""";
     private static final String INSERT_WEIGHING = """
             INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, weighed_at, entered_by,
                                   created_at, created_by)
@@ -116,6 +122,28 @@ class LedgerAdaptersTest {
                         SHIPMENT))
                 .isEqualTo(1);
         assertThat(balanceOf("(reçetesiz)")).isEqualByComparingTo("34032");
+    }
+
+    @Test
+    @DisplayName("Fasoncudan fasoncuya sevkiyatta alıcıya DISPATCH yazılır, gönderenin bakiyesinden aynı kilo düşer")
+    void shouldDeductTransferFromSourceSubcontractor() {
+        // given
+        jdbc.update(INSERT_TRANSFER_SHIPMENT, TRANSFER_SHIPMENT, SITE, SUBCONTRACTOR, SOURCE_SUBCONTRACTOR, USER);
+        jdbc.update(INSERT_WEIGHING, UUID.randomUUID(), TRANSFER_SHIPMENT, USER, USER);
+
+        // when
+        ledger.recordDispatch(TRANSFER_SHIPMENT, SUBCONTRACTOR, AT, USER);
+        ledger.recordDispatch(TRANSFER_SHIPMENT, SUBCONTRACTOR, AT, USER);
+
+        // then
+        BigDecimal sourceBalance = ledger.findBalances(SOURCE_SUBCONTRACTOR).stream()
+                .map(BalanceRow::balanceKg)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal receiverBalance = ledger.findBalances(SUBCONTRACTOR).stream()
+                .map(BalanceRow::balanceKg)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        assertThat(sourceBalance).isEqualByComparingTo("-34032");
+        assertThat(receiverBalance).isEqualByComparingTo("34032");
     }
 
     @Test

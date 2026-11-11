@@ -15,8 +15,11 @@ export type ShipmentHeaderProps = {
 export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
   const { t } = useTranslation();
   const text = useFieldText();
+  const source =
+    'sourceSubcontractorTitle' in shipment ? shipment.sourceSubcontractorTitle : undefined;
   const facts = [
     { labelKey: 'shipment.field.subcontractor', value: shipment.subcontractorTitle },
+    ...(source === undefined ? [] : [{ labelKey: 'shipment.field.source', value: source }]),
     { labelKey: 'shipment.field.driver', value: text(findDriverName(shipment)) },
     { labelKey: 'shipment.field.plate', value: shipment.plateNo ?? t('common.notRecorded') },
     {

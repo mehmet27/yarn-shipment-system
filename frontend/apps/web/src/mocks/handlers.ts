@@ -282,6 +282,14 @@ const fireRateHandler = http.get('/api/v1/settings/shipment', () =>
   HttpResponse.json({ defaultFireRate: '0.0400', weightToleranceKg: '0.000' }),
 );
 
+/** Gönderen fasoncu kimlik ve unvanıyla birlikte geldiyse isteğe eklenir. */
+function readSource(body: Record<string, unknown>) {
+  const { sourceSubcontractorId, sourceSubcontractorTitle } = body;
+  return isNonEmpty(sourceSubcontractorId) && isNonEmpty(sourceSubcontractorTitle)
+    ? { sourceSubcontractorId, sourceSubcontractorTitle }
+    : {};
+}
+
 /** Sevkiyat oluşturma: zorunlu alanlar eksikse 400, aksi halde 201 ve yeni numara. */
 const createShipmentHandler = http.post(SHIPMENTS_PATH, async ({ request }) => {
   const json: unknown = await request.json();
@@ -302,6 +310,7 @@ const createShipmentHandler = http.post(SHIPMENTS_PATH, async ({ request }) => {
     subcontractorTitle,
     lines,
     fireRate,
+    ...readSource(body),
     ...(isNonEmpty(driverName) ? { driverName } : {}),
     ...(isNonEmpty(plateNo) ? { plateNo } : {}),
   });

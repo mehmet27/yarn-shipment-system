@@ -23,7 +23,6 @@ export type RecipeLineDraft = {
 
 /** Seçilen kayıtlar kimlik ve görünen ad birlikte tutulur; istek ikisini de ister. */
 export type CreateDraft = {
-  site: MasterOption | undefined;
   subcontractor: MasterOption | undefined;
   driver: MasterOption | undefined;
   vehicle: MasterOption | undefined;
@@ -52,7 +51,6 @@ export function newLine(): RecipeLineDraft {
 }
 
 export const EMPTY_CREATE_DRAFT: CreateDraft = {
-  site: undefined,
   subcontractor: undefined,
   driver: undefined,
   vehicle: undefined,
@@ -62,7 +60,6 @@ export const EMPTY_CREATE_DRAFT: CreateDraft = {
 
 /** i18n anahtarı (`create.errors.*`). */
 export type CreateError =
-  | 'siteRequired'
   | 'subcontractorRequired'
   | 'linesRequired'
   | 'lineYarnRequired'
@@ -71,7 +68,7 @@ export type CreateError =
   | 'fireRateInvalid';
 
 export type CreateFieldErrors = Partial<
-  Record<'site' | 'subcontractor' | 'lines' | 'fireRate', CreateError>
+  Record<'subcontractor' | 'lines' | 'fireRate', CreateError>
 >;
 
 const POSITIVE_KG = /[1-9]/;
@@ -100,7 +97,6 @@ export function lineError(line: RecipeLineDraft): CreateError | undefined {
 export function validateCreateFields(draft: CreateDraft, defaultFirePct = '4'): CreateFieldErrors {
   const firstLineError = draft.lines.map(lineError).find((error) => error !== undefined);
   return {
-    ...(draft.site === undefined ? { site: 'siteRequired' as const } : {}),
     ...(draft.subcontractor === undefined
       ? { subcontractor: 'subcontractorRequired' as const }
       : {}),
@@ -115,7 +111,7 @@ export function validateCreateFields(draft: CreateDraft, defaultFirePct = '4'): 
 /** İlk hatayı döner; hata yoksa undefined. */
 export function validateCreate(draft: CreateDraft, defaultFirePct = '4'): CreateError | undefined {
   const errors = validateCreateFields(draft, defaultFirePct);
-  return errors.site ?? errors.subcontractor ?? errors.lines ?? errors.fireRate;
+  return errors.subcontractor ?? errors.lines ?? errors.fireRate;
 }
 
 /** Fasoncu değişince önceki fasoncunun şoförü seçili kalmaz. */
@@ -164,18 +160,19 @@ function toRecipeLine(line: RecipeLineDraft): RecipeLineInput | undefined {
   };
 }
 
-/** Boş bırakılan şoför ve araç istekte hiç yer almaz; fire oranı kesirdir (%4 → 0.04). */
+/** Lokasyon firmanın tek lokasyonudur, formda seçilmez. Boş bırakılan şoför ve araç istekte hiç yer almaz; fire oranı kesirdir (%4 → 0.04). */
 export function toCreateRequest(
   draft: CreateDraft,
+  siteId: string,
   defaultFirePct = '4',
 ): CreateShipmentRequest | undefined {
-  const { site, subcontractor, driver, vehicle } = draft;
+  const { subcontractor, driver, vehicle } = draft;
   const lines = draft.lines.map(toRecipeLine);
   const fireRate = parseFireRatePct(draft.fireRatePct ?? defaultFirePct);
-  if (site === undefined || subcontractor === undefined || fireRate === undefined) return undefined;
+  if (subcontractor === undefined || fireRate === undefined) return undefined;
   if (lines.length === 0 || lines.some((line) => line === undefined)) return undefined;
   return {
-    siteId: site.value,
+    siteId,
     subcontractorId: subcontractor.value,
     subcontractorTitle: subcontractor.label,
     lines: lines.filter((line): line is RecipeLineInput => line !== undefined),

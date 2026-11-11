@@ -117,6 +117,10 @@ VALUES ('0192f0a0-0000-7000-8000-000000000001', 'Merkez Fabrika', '2026-10-01T08
        ('0192f0a0-0000-7000-8000-000000000002', 'Çorlu Depo', '2026-10-01T08:00:00Z', '0192f0a0-0000-7000-8000-00000000d001')
 ON CONFLICT (id) DO NOTHING;
 
+-- Firmanın tek lokasyonu Merkez Fabrika'dır; ekranlar lokasyon seçtirmez. Çorlu Depo yalnızca eski örnek
+-- kayıtların (sevkiyat, parti) lokasyon bağı için durur, yeni kayıt açılamaz ve hesaplara atanmaz.
+UPDATE md_site SET active = false WHERE id = '0192f0a0-0000-7000-8000-000000000002' AND active;
+
 INSERT INTO md_subcontractor (id, title, created_at, created_by)
 VALUES ('0192f0a0-0000-7000-8000-000000000003', 'Örnek Tekstil A.Ş.', '2026-10-01T08:00:00Z', '0192f0a0-0000-7000-8000-00000000d001'),
        ('0192f0a0-0000-7000-8000-000000000013', 'Başka Dokuma Ltd.', '2026-10-01T08:00:00Z', '0192f0a0-0000-7000-8000-00000000d001'),

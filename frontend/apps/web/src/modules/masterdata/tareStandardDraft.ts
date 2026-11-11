@@ -3,15 +3,12 @@ import type { PackagingType, TareStandardSaveRequest } from '@iplik/api-client';
 export const PACKAGING_TYPES: readonly PackagingType[] = ['BAG'];
 
 export type TareStandardDraft = {
-  siteId: string;
   packagingType: PackagingType;
   standardTareKg: string;
   maxDeviationPct: string;
 };
 
-export type TareStandardErrors = Partial<
-  Record<'siteId' | 'standardTareKg' | 'maxDeviationPct', true>
->;
+export type TareStandardErrors = Partial<Record<'standardTareKg' | 'maxDeviationPct', true>>;
 
 const KG_SCALE = 3;
 const PCT_SCALE = 2;
@@ -27,7 +24,6 @@ function normalize(value: string, scale: number): string {
 
 export function validateTareStandard(draft: TareStandardDraft): TareStandardErrors {
   const errors: TareStandardErrors = {};
-  if (draft.siteId === '') errors.siteId = true;
   if (!KG_PATTERN.test(draft.standardTareKg.trim())) errors.standardTareKg = true;
   const pct = draft.maxDeviationPct.trim();
   if (!PCT_PATTERN.test(pct) || Number(pct.replace(',', '.')) > MAX_PCT) {
@@ -36,9 +32,9 @@ export function validateTareStandard(draft: TareStandardDraft): TareStandardErro
   return errors;
 }
 
-export function toRequest(draft: TareStandardDraft): TareStandardSaveRequest {
+export function toRequest(draft: TareStandardDraft, siteId: string): TareStandardSaveRequest {
   return {
-    siteId: draft.siteId,
+    siteId,
     packagingType: draft.packagingType,
     standardTareKg: normalize(draft.standardTareKg, KG_SCALE),
     maxDeviationPct: normalize(draft.maxDeviationPct, PCT_SCALE),

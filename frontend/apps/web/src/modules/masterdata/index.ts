@@ -1,2 +1,2 @@
 export { masterDataPanelRoutes } from './routes';
-export { SiteField } from './components/SiteField';
+export { useSoleSiteId } from './hooks/useSoleSiteId';

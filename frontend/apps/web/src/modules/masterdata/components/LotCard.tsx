@@ -37,7 +37,6 @@ export function LotCard({ lot, onEdit }: LotCardProps) {
         <Text size="sm" c="dimmed">
           {t('lots.summary', {
             grade: `${lot.qualityGradeCode} · ${lot.qualityGradeName}`,
-            site: lot.siteName,
             date: formatDay(lot.productionDate),
           })}
         </Text>

@@ -14,7 +14,6 @@ test.describe('Yeni sevkiyat', { tag: '@panel' }, () => {
     async ({ page, openAs }) => {
       await openAs('MANAGER', '/panel/sevkiyat');
       await page.getByRole('link', { name: 'Yeni sevkiyat' }).click();
-      await pick(page, /Lokasyon/, 'Merkez Depo');
       await pick(page, /Fasoncu/, 'Bursa Tekstil');
       await pick(page, /Şoför/, 'Mert Kaya');
       await fillRecipe(page);
@@ -26,7 +25,6 @@ test.describe('Yeni sevkiyat', { tag: '@panel' }, () => {
 
   test('fasoncu seçilmeden göndermeyi engeller', async ({ page, openAs }) => {
     await openAs('MANAGER', '/panel/sevkiyat/yeni');
-    await pick(page, /Lokasyon/, 'Merkez Depo');
     await page.getByRole('button', { name: 'Taslak oluştur' }).click();
     await expect(page.getByText('Fasoncu seçin.')).toBeVisible();
   });

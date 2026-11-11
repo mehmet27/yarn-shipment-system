@@ -1,6 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Select, SimpleGrid, TextInput } from '@iplik/ui';
-import { useSiteChoices } from '../hooks/useSiteChoices';
+import { SimpleGrid, TextInput } from '@iplik/ui';
 import type { TareStandardDraft, TareStandardErrors } from '../tareStandardDraft';
 
 type Props = {
@@ -11,19 +10,8 @@ type Props = {
 
 export function TareStandardFields({ draft, errors, onChange }: Props) {
   const { t } = useTranslation();
-  const sites = useSiteChoices();
   return (
     <SimpleGrid cols={{ base: 1, sm: 2 }}>
-      <Select
-        label={t('masterData.tareStandard.site')}
-        withAsterisk
-        data={(sites.data ?? []).map((site) => ({ value: site.id, label: site.name }))}
-        value={draft.siteId === '' ? null : draft.siteId}
-        onChange={(value) => {
-          onChange({ siteId: value ?? '' });
-        }}
-        error={errors.siteId ? t('masterData.tareStandard.invalidSite') : undefined}
-      />
       <TextInput
         label={t('masterData.tareStandard.standardTareKg')}
         withAsterisk

@@ -3,7 +3,6 @@ import type { TareStandardDraft } from './tareStandardDraft';
 import { toRequest, validateTareStandard } from './tareStandardDraft';
 
 const DRAFT: TareStandardDraft = {
-  siteId: 'site-1',
   packagingType: 'BAG',
   standardTareKg: '0,45',
   maxDeviationPct: '5',
@@ -17,8 +16,7 @@ describe('validateTareStandard', () => {
     ).toEqual({});
   });
 
-  it('lokasyonsuz, harfli ve aralık dışı değerleri işaretler', () => {
-    expect(validateTareStandard({ ...DRAFT, siteId: '' })).toEqual({ siteId: true });
+  it('harfli ve aralık dışı değerleri işaretler', () => {
     expect(validateTareStandard({ ...DRAFT, standardTareKg: 'abc' })).toEqual({
       standardTareKg: true,
     });
@@ -36,13 +34,15 @@ describe('validateTareStandard', () => {
 
 describe('toRequest', () => {
   it('sözleşmedeki üç ve iki ondalık biçime çevirir', () => {
-    expect(toRequest(DRAFT)).toEqual({
+    expect(toRequest(DRAFT, 'site-1')).toEqual({
       siteId: 'site-1',
       packagingType: 'BAG',
       standardTareKg: '0.450',
       maxDeviationPct: '5.00',
     });
-    expect(toRequest({ ...DRAFT, standardTareKg: '2', maxDeviationPct: '2,5' })).toMatchObject({
+    expect(
+      toRequest({ ...DRAFT, standardTareKg: '2', maxDeviationPct: '2,5' }, 'site-1'),
+    ).toMatchObject({
       standardTareKg: '2.000',
       maxDeviationPct: '2.50',
     });

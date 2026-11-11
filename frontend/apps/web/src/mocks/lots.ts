@@ -5,7 +5,7 @@ const SEED: readonly LotView[] = [
   {
     id: 'lot-1',
     siteId: 'site-merkez',
-    siteName: 'Merkez Depo',
+    siteName: 'Merkez Fabrika',
     lotNo: 'P-2026-0001',
     productId: 'prd-0',
     productCode: 'PES-30-1',
@@ -22,7 +22,7 @@ const SEED: readonly LotView[] = [
   {
     id: 'lot-2',
     siteId: 'site-merkez',
-    siteName: 'Merkez Depo',
+    siteName: 'Merkez Fabrika',
     lotNo: 'P-2026-0002',
     productId: 'prd-1',
     productCode: 'CO-20-1',

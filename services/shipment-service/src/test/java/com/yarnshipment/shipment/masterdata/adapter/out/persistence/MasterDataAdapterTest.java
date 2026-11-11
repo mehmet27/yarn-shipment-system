@@ -32,7 +32,7 @@ class MasterDataAdapterTest {
     private static final UUID SITE_A = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     private static final int PAGE_SIZE = 20;
     private static final int SAMPLE_DRIVERS = 3;
-    private static final int SAMPLE_SITES = 2;
+    private static final int SAMPLE_SITES = 1;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;

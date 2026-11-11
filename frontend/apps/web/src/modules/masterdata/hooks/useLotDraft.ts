@@ -25,7 +25,6 @@ function errorKeys(validation: Partial<Record<LotField, LotError>>, failure: unk
 function fromLot(lot: LotView | undefined): LotDraft {
   if (lot === undefined) return EMPTY_LOT;
   return {
-    siteId: lot.siteId,
     lotNo: lot.lotNo,
     productId: lot.productId,
     qualityGradeId: lot.qualityGradeId,

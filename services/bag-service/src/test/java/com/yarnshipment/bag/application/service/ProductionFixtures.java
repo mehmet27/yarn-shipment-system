@@ -33,6 +33,6 @@ final class ProductionFixtures {
     }
 
     static Bag bagAt(UUID siteId, String key, BagStatus status) {
-        return new Bag(UUID.randomUUID(), siteId, key, PackageType.BAG, "P-2026-0001", "A", status, null);
+        return new Bag(UUID.randomUUID(), siteId, key, PackageType.BAG, "P-2026-0001", "A", status);
     }
 }

@@ -11,7 +11,6 @@ import com.yarnshipment.bag.domain.model.Bag;
 import com.yarnshipment.bag.domain.model.BagStatus;
 import com.yarnshipment.bag.domain.model.PackageType;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,10 +41,10 @@ class BagControllerTest {
     }
 
     @Test
-    @DisplayName("Çuval alanları döner; ayrılmamış çuvalda sevkiyat alanı hiç yoktur")
+    @DisplayName("Çuval alanları döner")
     void shouldReturnBag() {
         // given
-        when(getBagUseCase.getBag(any())).thenReturn(bag(BagStatus.CREATED, null));
+        when(getBagUseCase.getBag(any())).thenReturn(bag(BagStatus.CREATED));
 
         // when
         MvcTestResult result = get("/api/v1/bags/BAG-0001", warehouse());
@@ -54,7 +53,6 @@ class BagControllerTest {
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.uniqueKey").isEqualTo("BAG-0001");
         assertThat(result).bodyJson().extractingPath("$.status").isEqualTo("CREATED");
-        assertThat(result).bodyJson().doesNotHavePath("$.reservedShipmentId");
     }
 
     @Test
@@ -85,16 +83,8 @@ class BagControllerTest {
         return TestTokens.token("warehouse").build();
     }
 
-    private static Bag bag(BagStatus status, @Nullable UUID reservedShipmentId) {
-        return new Bag(
-                UUID.randomUUID(),
-                TestTokens.SITE_ID,
-                "BAG-0001",
-                PackageType.BAG,
-                "P-2026-0001",
-                "A",
-                status,
-                reservedShipmentId);
+    private static Bag bag(BagStatus status) {
+        return new Bag(UUID.randomUUID(), TestTokens.SITE_ID, "BAG-0001", PackageType.BAG, "P-2026-0001", "A", status);
     }
 
     private MvcTestResult get(String uri, Jwt jwt) {

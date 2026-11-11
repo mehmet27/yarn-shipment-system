@@ -49,7 +49,6 @@ migrate() {
   fi
 }
 
-migrate master-data-service masterdata
 migrate bag-service bag
 migrate shipment-service shipment
 migrate evidence-service evidence

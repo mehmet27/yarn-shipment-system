@@ -47,24 +47,6 @@ SELECT pg_temp.expect_error($$INSERT INTO bag (id, site_id, unique_key, package_
 SELECT pg_temp.expect_error($$UPDATE bag SET lot_no = 'L-2' WHERE unique_key = 'K-1'$$, 'YS002');
 UPDATE bag SET status = 'RESERVED' WHERE unique_key = 'K-1';
 
-INSERT INTO bag_reservation (id, bag_id, shipment_id, reserved_at, reserved_by, created_at, created_by)
-VALUES ('00000000-0000-7000-8000-0000000000c1', '00000000-0000-7000-8000-0000000000b1', gen_random_uuid(), now(),
-        gen_random_uuid(), now(), gen_random_uuid());
--- Bir çuval aynı anda iki sevkiyatta olamaz.
-SELECT pg_temp.expect_error($$INSERT INTO bag_reservation (id, bag_id, shipment_id, reserved_at, reserved_by,
-    created_at, created_by) VALUES (gen_random_uuid(), '00000000-0000-7000-8000-0000000000b1', gen_random_uuid(),
-    now(), gen_random_uuid(), now(), gen_random_uuid())$$, '23505');
--- Bırakmada gerekçe zorunlu; bırakılan rezervasyon tekrar değişmez.
-SELECT pg_temp.expect_error($$UPDATE bag_reservation SET released_at = now(), released_by = gen_random_uuid()
-    WHERE id = '00000000-0000-7000-8000-0000000000c1'$$, '23514');
-UPDATE bag_reservation SET released_at = now(), released_by = gen_random_uuid(), release_reason = 'ShipmentCancelled'
-WHERE id = '00000000-0000-7000-8000-0000000000c1';
-SELECT pg_temp.expect_error($$UPDATE bag_reservation SET release_reason = 'x'
-    WHERE id = '00000000-0000-7000-8000-0000000000c1'$$, 'YS002');
--- Bırakılan çuval yeni sevkiyata bağlanabilir.
-INSERT INTO bag_reservation (id, bag_id, shipment_id, reserved_at, reserved_by, created_at, created_by)
-VALUES (gen_random_uuid(), '00000000-0000-7000-8000-0000000000b1', gen_random_uuid(), now(), gen_random_uuid(),
-        now(), gen_random_uuid());
 -- Yeniden baskıda gerekçe zorunlu.
 INSERT INTO label_print (id, bag_id, print_no, printed_at, printed_by, created_at, created_by)
 VALUES (gen_random_uuid(), '00000000-0000-7000-8000-0000000000b1', 1, now(), gen_random_uuid(), now(),

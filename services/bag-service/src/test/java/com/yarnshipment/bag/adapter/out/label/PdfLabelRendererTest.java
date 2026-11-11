@@ -52,7 +52,6 @@ class PdfLabelRendererTest {
     }
 
     private static Bag bag(String key, String grade, PackageType packageType) {
-        return new Bag(
-                UUID.randomUUID(), UUID.randomUUID(), key, packageType, "P-2026-0001", grade, BagStatus.CREATED, null);
+        return new Bag(UUID.randomUUID(), UUID.randomUUID(), key, packageType, "P-2026-0001", grade, BagStatus.CREATED);
     }
 }

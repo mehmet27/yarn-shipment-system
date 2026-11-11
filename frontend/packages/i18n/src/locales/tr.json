@@ -149,6 +149,25 @@
         "blocked": "Sevkiyat kantar uyuşmazlığı nedeniyle yola çıkamaz; müdür kararı bekleniyor."
       }
     },
+    "exitSlip": {
+      "open": "Ambar çıkış fişi",
+      "print": "Yazdır",
+      "title": "Ambar Çıkış Fişi",
+      "no": "Fiş No",
+      "sender": "Gönderen",
+      "center": "Merkez",
+      "receiver": "Alıcı fasoncu",
+      "driver": "Şoför",
+      "plate": "Plaka",
+      "yarnType": "İplik cinsi",
+      "plannedKg": "Net kg",
+      "seq": "Çuval no",
+      "kg": "Kg",
+      "total": "Toplam ({{count}} çuval)",
+      "noBags": "Bu sevkiyata henüz çuval eklenmedi.",
+      "deliveredBy": "Teslim eden",
+      "receivedBy": "Teslim alan"
+    },
     "history": {
       "label": "Durum geçmişi",
       "empty": "Henüz durum geçişi yok."

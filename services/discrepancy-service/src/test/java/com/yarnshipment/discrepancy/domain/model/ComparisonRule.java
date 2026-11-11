@@ -2,7 +2,7 @@ package com.yarnshipment.discrepancy.domain.model;
 
 /**
  * Sabit öncelikli karşılaştırma kuralları; adı {@code discrepancy.rule_code} olarak saklanır. Miktar toleransı
- * ve fiş kilo kontrolleri ({@link TicketChecks}) önceliği banda göre değiştiği için burada değildir.
+ * önceliği banda göre değiştiği için burada değildir.
  */
 public enum ComparisonRule {
     QUANTITY_DISPATCH_MISSING(DiscrepancyType.QUANTITY, Severity.RED),

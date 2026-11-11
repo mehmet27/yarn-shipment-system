@@ -50,11 +50,6 @@ yarnshipment:
   outbox:
     topic: discrepancy.events.v1
     source: /yarn-shipment/discrepancy-service
-  discrepancy:
-    # Yolda kalma süresi kontrolü (TIME uyuşmazlığı); sınırın kendisi Admin ayar ekranından gelir.
-    transit-check:
-      initial-delay: ${TRANSIT_CHECK_INITIAL_DELAY:PT1M}
-      interval: ${TRANSIT_CHECK_INTERVAL:PT15M}
   evidence-service:
     # İtiraza bağlanan fotoğraf ve lab belgesi isteyenin token'ıyla doğrulanır.
     url: ${EVIDENCE_SERVICE_URL:http://localhost:8086}

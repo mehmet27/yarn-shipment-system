@@ -7,9 +7,7 @@ import com.yarnshipment.discrepancy.domain.claim.InspectionNotFoundException;
 import com.yarnshipment.discrepancy.domain.claim.QualityClaimNotFoundException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotFoundException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
-import com.yarnshipment.discrepancy.domain.model.InvalidSettingException;
 import com.yarnshipment.discrepancy.domain.model.LiablePartyRequiredException;
-import com.yarnshipment.discrepancy.domain.ticket.TicketReadingNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -45,13 +43,6 @@ public final class DiscrepancyExceptionHandler {
         return problems.create(request, HttpStatus.BAD_REQUEST, "LIABLE_PARTY_REQUIRED");
     }
 
-    /** Süre sınırı alanı ayrı kod alır; diğer alanlar tolerans bantlarıdır. */
-    @ExceptionHandler(InvalidSettingException.class)
-    public ProblemDetail handleInvalidSetting(InvalidSettingException exception, HttpServletRequest request) {
-        String code = "inTransitMaxHours".equals(exception.field()) ? "TIME_LIMIT_INVALID" : "TOLERANCE_BANDS_INVALID";
-        return problems.create(request, HttpStatus.BAD_REQUEST, code);
-    }
-
     @ExceptionHandler(QualityClaimNotFoundException.class)
     public ProblemDetail handleClaimNotFound(HttpServletRequest request) {
         return problems.create(request, HttpStatus.NOT_FOUND, "QUALITY_CLAIM_NOT_FOUND");
@@ -79,10 +70,5 @@ public final class DiscrepancyExceptionHandler {
     @ExceptionHandler(EvidenceServiceUnavailableException.class)
     public ProblemDetail handleEvidenceUnavailable(HttpServletRequest request) {
         return problems.create(request, HttpStatus.SERVICE_UNAVAILABLE, "EVIDENCE_SERVICE_UNAVAILABLE");
-    }
-
-    @ExceptionHandler(TicketReadingNotFoundException.class)
-    public ProblemDetail handleTicketReadingNotFound(HttpServletRequest request) {
-        return problems.create(request, HttpStatus.NOT_FOUND, "TICKET_READING_NOT_FOUND");
     }
 }

@@ -67,4 +67,39 @@ class CentralProductionTest {
                 AT,
                 USER);
     }
+
+    @Test
+    @DisplayName("Boş kumaş cinsi, geçersiz top sayısı ve boş irsaliye no reddedilir")
+    void shouldRejectInvalidTextAndRollCount() {
+        List<YarnShare> yarns = List.of(new YarnShare("A", new BigDecimal("10")));
+
+        assertThatThrownBy(() -> new CentralProduction(
+                        UUID.randomUUID(), " ", new BigDecimal("10"), BigDecimal.ZERO, null, null, AT, yarns, USER))
+                .hasMessageContaining("fabricType");
+        assertThatThrownBy(() -> new CentralProduction(
+                        UUID.randomUUID(), "S", new BigDecimal("10"), BigDecimal.ZERO, 0, null, AT, yarns, USER))
+                .hasMessageContaining("rollCount");
+        assertThatThrownBy(() -> new CentralProduction(
+                        UUID.randomUUID(), "S", new BigDecimal("10"), BigDecimal.ZERO, null, " ", AT, yarns, USER))
+                .hasMessageContaining("waybillNo");
+        assertThatThrownBy(() -> new CentralProduction(
+                        UUID.randomUUID(), "S", BigDecimal.ZERO, BigDecimal.ZERO, null, null, AT, yarns, USER))
+                .hasMessageContaining("netKg");
+    }
+
+    @Test
+    @DisplayName("İplik girişinde boş cins ve çok uzun not reddedilir; boş not atılır")
+    void shouldValidateReceipt() {
+        assertThatThrownBy(() -> CentralStockMovement.receipt(
+                        new CentralStockMovement.Receipt(" ", new BigDecimal("1"), null), AT, USER))
+                .hasMessageContaining("yarnType");
+        String longNote = "x".repeat(CentralStockMovement.MAX_NOTE_LENGTH + 1);
+        assertThatThrownBy(() -> CentralStockMovement.receipt(
+                        new CentralStockMovement.Receipt("A", new BigDecimal("1"), longNote), AT, USER))
+                .hasMessageContaining("note");
+        assertThat(CentralStockMovement.receipt(
+                                new CentralStockMovement.Receipt("A", new BigDecimal("1"), "  "), AT, USER)
+                        .note())
+                .isNull();
+    }
 }

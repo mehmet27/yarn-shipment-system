@@ -7,6 +7,7 @@ import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.model.StatusChange;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,15 +60,15 @@ class ShipmentFileAdaptersTest {
     }
 
     @Test
-    @DisplayName("Çıkış çuvalları atanmış olanlardır; taslakta yoktur")
+    @DisplayName("Çıkış çuvalları sıra numarasıyla gelir; taslakta yoktur")
     void shouldReadDispatchBags() {
         List<DispatchBag> assigned = bags.findDispatchBags(COMPLETED);
 
         assertThat(assigned)
                 .hasSize(BAGS_PER_SHIPMENT)
-                .extracting(DispatchBag::uniqueKey)
-                .first()
-                .isEqualTo("BAG-6-1");
+                .extracting(DispatchBag::seqNo)
+                .containsExactlyElementsOf(
+                        IntStream.rangeClosed(1, BAGS_PER_SHIPMENT).boxed().toList());
         assertThat(bags.findDispatchBags(DRAFT)).isEmpty();
     }
 }

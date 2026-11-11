@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.CancelShipmentCommand;
 import com.yarnshipment.shipment.application.port.in.CancelShipmentUseCase;
-import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
 import com.yarnshipment.shipment.domain.cancellation.InvalidCancellationException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
@@ -80,7 +79,7 @@ class ShipmentCancellationControllerTest {
     }
 
     @Test
-    @DisplayName("Alan ve durum hataları kodlarıyla eşlenir: 400, 409 ve 502")
+    @DisplayName("Alan ve durum hataları kodlarıyla eşlenir: 400 ve 409")
     void shouldMapErrors() throws Exception {
         Jwt admin = TestTokens.token("admin").build();
         doThrow(new InvalidCancellationException("reason"))
@@ -92,15 +91,10 @@ class ShipmentCancellationControllerTest {
                 .when(cancelShipmentUseCase)
                 .cancelShipment(any());
         MvcTestResult conflict = post(admin, BODY);
-        doThrow(new BagServiceUnavailableException("down"))
-                .when(cancelShipmentUseCase)
-                .cancelShipment(any());
-        MvcTestResult unavailable = post(admin, BODY);
 
         assertThat(invalid).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(invalid).bodyJson().extractingPath("$.code").isEqualTo("INVALID_CANCELLATION");
         assertThat(conflict).hasStatus(HttpStatus.CONFLICT);
-        assertThat(unavailable).hasStatus(HttpStatus.BAD_GATEWAY);
     }
 
     private MvcTestResult post(Jwt jwt, String body) {

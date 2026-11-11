@@ -152,30 +152,22 @@
       "empty": "Henüz durum geçişi yok."
     },
     "bags": {
-      "dispatch": "Çıkıştaki çuvallar ({{count}})",
-      "delivery": "Teslimde okutulanlar ({{count}})",
-      "lot": "Lot",
-      "matched": "Eşleşti",
-      "unmatched": "Eşleşmedi",
-      "byType": "Türe göre: {{summary}}",
+      "dispatch": "Sevkiyattaki çuvallar ({{count}})",
+      "seq": "Çuval {{seq}}",
+      "total": "Toplam: {{kg}}",
       "removeFromShipment": "Sevkiyattan çıkar",
       "removeFailed": "Çuval çıkarılamadı. Lütfen tekrar deneyin.",
       "assign": {
-        "key": "Çuval anahtarı",
+        "weight": "Çuval kilosu (kg)",
+        "invalidKg": "Kiloyu sıfırdan büyük bir sayı olarak girin, ör. 50,5.",
         "add": "Listeye ekle",
-        "remove": "{{key}} çuvalını listeden çıkar",
-        "submit": "{{count}} çuvalı ata",
-        "done": "{{count}} çuval atandı.",
+        "remove": "Çuval {{seq}} listeden çıkar",
+        "submit": "{{count}} çuvalı ekle",
+        "done": "{{count}} çuval eklendi.",
         "errors": {
-          "BAG_NOT_FOUND": "Bir çuval bulunamadı; hiçbiri atanmadı.",
-          "BAG_NOT_AVAILABLE": "Bir çuval kullanılabilir durumda değil; hiçbiri atanmadı.",
-          "BAG_ALREADY_RESERVED": "Bir çuval başka sevkiyata ayrılmış; hiçbiri atanmadı.",
-          "INVALID_SHIPMENT_STATUS": "Çuval yalnızca taslak sevkiyata atanabilir.",
-          "BAG_SERVICE_UNAVAILABLE": "Çuval servisi yanıt vermiyor. Lütfen biraz sonra tekrar deneyin.",
-          "BAG_OUT_OF_SCOPE": "Bir çuval bu sevkiyatın lokasyonuna ait değil; hiçbiri atanmadı.",
-          "unknown": "Çuvallar atanamadı. Lütfen tekrar deneyin."
-        },
-        "nothingNew": "Bu çuvallar zaten bu sevkiyata atanmış; yeni çuval atanmadı."
+          "INVALID_SHIPMENT_STATUS": "Çuval yalnızca taslak sevkiyatta eklenip çıkarılabilir.",
+          "unknown": "Çuvallar eklenemedi. Lütfen tekrar deneyin."
+        }
       }
     },
     "correction": {

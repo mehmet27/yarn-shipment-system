@@ -1,63 +1,36 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '../support/test';
 
-test.describe('Çuval atama', { tag: '@panel' }, () => {
+test.describe('Çuval girişi', { tag: '@panel' }, () => {
   const openBags = async (page: Page) => {
     await page.getByRole('tab', { name: 'Çuvallar' }).click();
   };
 
-  // H-17: aynı anahtar büyük/küçük harf farkıyla iki kez listeye girmez.
-  test('anahtarı büyük harfe çevirir, tekrarını eklemez', async ({ page, openAs }) => {
-    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001');
-    await openBags(page);
-    const key = page.getByLabel('Çuval anahtarı');
-    for (const value of ['bag-0002', 'BAG-0002 ']) {
-      await key.fill(value);
-      await key.press('Enter');
-    }
-    await expect(page.getByRole('button', { name: '1 çuvalı ata' })).toBeVisible();
-    await expect(page.getByText('BAG-0002', { exact: true })).toHaveCount(1);
-  });
-
-  // H-17: zaten atanmış çuval tekrar gönderilince "0 çuval atandı." yerine açıklama.
-  test('zaten atanmış çuvalı yeniden atayınca yeni çuval olmadığını söyler', async ({
+  test('kiloyu yazınca listeye sıra numarasıyla eklenir ve tek istekle gönderilir', async ({
     page,
     openAs,
   }) => {
     await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001');
     await openBags(page);
-    const key = page.getByLabel('Çuval anahtarı');
-    for (let round = 0; round < 2; round++) {
-      await key.fill('BAG-0001');
-      await key.press('Enter');
-      await page.getByRole('button', { name: '1 çuvalı ata' }).click();
+    const weight = page.getByLabel('Çuval kilosu (kg)');
+    for (const value of ['50,5', '49']) {
+      await weight.fill(value);
+      await weight.press('Enter');
     }
-    await expect(
-      page.getByText('Bu çuvallar zaten bu sevkiyata atanmış; yeni çuval atanmadı.'),
-    ).toBeVisible();
-    await expect(page.getByText('0 çuval atandı.')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '2 çuvalı ekle' })).toBeVisible();
+    await page.getByRole('button', { name: '2 çuvalı ekle' }).click();
+    await expect(page.getByText('2 çuval eklendi.')).toBeVisible();
   });
 
-  // H-03: başka lokasyonun çuvalı servis hatası gibi değil, kapsam mesajıyla reddedilir.
-  test('başka lokasyonun çuvalını kapsam mesajıyla reddeder', async ({ page, openAs }) => {
+  test('geçersiz kiloyu listeye almaz', async ({ page, openAs }) => {
     await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001');
     await openBags(page);
-    const key = page.getByLabel('Çuval anahtarı');
-    await key.fill('BAG-0005');
-    await key.press('Enter');
-    await page.getByRole('button', { name: '1 çuvalı ata' }).click();
+    const weight = page.getByLabel('Çuval kilosu (kg)');
+    await weight.fill('abc');
+    await weight.press('Enter');
     await expect(
-      page.getByText('Bir çuval bu sevkiyatın lokasyonuna ait değil; hiçbiri atanmadı.'),
+      page.getByText('Kiloyu sıfırdan büyük bir sayı olarak girin, ör. 50,5.'),
     ).toBeVisible();
-  });
-
-  test('olmayan çuvalı bulunamadı mesajıyla reddeder', async ({ page, openAs }) => {
-    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001');
-    await openBags(page);
-    const key = page.getByLabel('Çuval anahtarı');
-    await key.fill('BAG-9999');
-    await key.press('Enter');
-    await page.getByRole('button', { name: '1 çuvalı ata' }).click();
-    await expect(page.getByText('Bir çuval bulunamadı; hiçbiri atanmadı.')).toBeVisible();
+    await expect(page.getByRole('button', { name: '0 çuvalı ekle' })).toBeDisabled();
   });
 });

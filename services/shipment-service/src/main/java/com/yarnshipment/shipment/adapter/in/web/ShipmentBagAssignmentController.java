@@ -8,8 +8,7 @@ import com.yarnshipment.shipment.application.port.in.AssignBagsCommand;
 import com.yarnshipment.shipment.application.port.in.AssignBagsUseCase;
 import com.yarnshipment.shipment.application.port.in.RemoveBagUseCase;
 import com.yarnshipment.shipment.application.port.in.RemoveBagUseCase.RemoveBagCommand;
-import com.yarnshipment.shipment.domain.model.ScanMethod;
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,15 +38,14 @@ public class ShipmentBagAssignmentController implements ShipmentBagsApi {
         AssignBagsCommand command = new AssignBagsCommand(
                 currentActorProvider.getCurrentActor(),
                 shipmentId,
-                List.copyOf(request.getUniqueKeys()),
-                ScanMethod.valueOf(request.getScanMethod().name()));
+                request.getWeightsKg().stream().map(BigDecimal::new).toList());
         return ResponseEntity.ok(new AssignShipmentBagsResponse(assignBagsUseCase.assignBags(command)));
     }
 
     @Override
     @PreAuthorize("hasAuthority('DISPATCH_RECORD')")
-    public ResponseEntity<Void> removeShipmentBag(UUID shipmentId, String uniqueKey) {
-        removeBagUseCase.removeBag(new RemoveBagCommand(currentActorProvider.getCurrentActor(), shipmentId, uniqueKey));
+    public ResponseEntity<Void> removeShipmentBag(UUID shipmentId, Integer seqNo) {
+        removeBagUseCase.removeBag(new RemoveBagCommand(currentActorProvider.getCurrentActor(), shipmentId, seqNo));
         return ResponseEntity.noContent().build();
     }
 }

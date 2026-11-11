@@ -3,9 +3,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.shipment.domain.bag.BagAssignment;
-import com.yarnshipment.shipment.domain.bag.ReservedBag;
-import com.yarnshipment.shipment.domain.model.ScanMethod;
-import com.yarnshipment.shipment.domain.packaging.PackageType;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -39,8 +37,7 @@ class ShipmentBagRemovalAdapterTest {
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-00000000a001");
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-00000000d001");
     private static final Instant AT = Instant.parse("2026-10-23T09:00:00Z");
-    private static final ReservedBag BAG = new ReservedBag(UUID.randomUUID(), "BAG-0001", PackageType.BAG, "P-1", "A");
-    private static final BagAssignment ASSIGNMENT = new BagAssignment(SHIPMENT, List.of(BAG), ScanMethod.SCAN);
+    private static final BagAssignment ASSIGNMENT = new BagAssignment(SHIPMENT, List.of(new BigDecimal("25.000")));
     private static final String INSERT_SHIPMENT = """
             INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status,
                                   created_at, created_by)
@@ -74,23 +71,27 @@ class ShipmentBagRemovalAdapterTest {
     @Test
     @DisplayName("Çıkarma satırı silmez, işaretler; ikinci çıkarma 0 satır etkiler")
     void shouldMarkBagRemoved() {
-        assertThat(removal.remove(SHIPMENT, "BAG-0001", USER, AT)).isEqualTo(1);
+        assertThat(removal.remove(SHIPMENT, 1, USER, AT)).isEqualTo(1);
 
         assertThat(jdbc.queryForObject(ACTIVE_COUNT, Integer.class, SHIPMENT)).isZero();
         assertThat(jdbc.queryForObject(
                         "SELECT count(*) FROM shipment_bag WHERE shipment_id = ?", Integer.class, SHIPMENT))
                 .isEqualTo(1);
-        assertThat(removal.remove(SHIPMENT, "BAG-0001", USER, AT)).isZero();
+        assertThat(removal.remove(SHIPMENT, 1, USER, AT)).isZero();
     }
 
     @Test
-    @DisplayName("Çıkarılan çuval aynı sevkiyata yeniden atanabilir; aktif çuval ikinci kez eklenmez")
+    @DisplayName("Çıkarılan sıra numarası yeniden kullanılır")
     void shouldAllowReassignmentAfterRemoval() {
-        assertThat(assignment.assign(ASSIGNMENT, USER, AT)).isZero();
-        removal.remove(SHIPMENT, "BAG-0001", USER, AT);
+        removal.remove(SHIPMENT, 1, USER, AT);
 
         assertThat(assignment.assign(ASSIGNMENT, USER, AT)).isEqualTo(1);
 
         assertThat(jdbc.queryForObject(ACTIVE_COUNT, Integer.class, SHIPMENT)).isEqualTo(1);
+        assertThat(jdbc.queryForObject(
+                        "SELECT seq_no FROM shipment_bag WHERE shipment_id = ? AND removed_at IS NULL",
+                        Integer.class,
+                        SHIPMENT))
+                .isEqualTo(1);
     }
 }

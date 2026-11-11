@@ -1913,14 +1913,11 @@ paths:
     post:
       tags: [ShipmentBags]
       operationId: assignShipmentBags
-      summary: Çuvalları taslak sevkiyata atar
+      summary: Çuvalları taslak sevkiyata ekler
       description: |
-        Depo personeli çuvalları okutur ya da listeden seçer; her çuval bag-service'te bu sevkiyata ayrılır ve
-        sevkiyatın çuval listesine yazılır. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Hepsi ya da hiçbiri:
-        bir çuval bulunamazsa (`BAG_NOT_FOUND`), kullanılamaz durumdaysa (`BAG_NOT_AVAILABLE`) ya da başka
-        sevkiyattaysa (`BAG_ALREADY_RESERVED`) hiçbiri atanmaz. Çuval isteyenin lokasyon kapsamı dışındaysa 403
-        `BAG_OUT_OF_SCOPE` döner. Aynı çuvalı tekrar göndermek hata vermez; `assignedCount` yalnızca yeni atananları
-        sayar. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
+        Depo çuvalları sıra numarasıyla ve kiloyla yazar; her kilo bir çuvaldır ve sevkiyattaki son sıradan devam eden
+        numarayı alır (1, 2, 3...). Çuval anahtarı ya da QR kullanılmaz. Yalnızca çıkış tartımından önce (DRAFT)
+        yapılabilir. Yanıttaki `assignedCount` eklenen çuval sayısıdır.
       parameters:
         - name: shipmentId
           in: path
@@ -1951,14 +1948,12 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
-        '502':
-          $ref: '#/components/responses/BadGateway'
     get:
       tags: [ShipmentFile]
       operationId: getShipmentBags
       summary: Sevkiyatın çuvalları, isteyenin görünümüyle
       description: |
-        Çıkışta atanan çuvallar. Liste sayfalanmaz: bir sevkiyatın çuval sayısıyla sınırlıdır.
+        Çıkışta girilen çuvallar (sıra no ve kg). Liste sayfalanmaz: bir sevkiyatın çuval sayısıyla sınırlıdır.
       parameters:
         - name: shipmentId
           in: path
@@ -1979,15 +1974,14 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /api/v1/shipments/{shipmentId}/bags/{uniqueKey}:
+  /api/v1/shipments/{shipmentId}/bags/{seqNo}:
     delete:
       tags: [ShipmentBags]
       operationId: removeShipmentBag
       summary: Çuvalı taslak sevkiyattan çıkarır
       description: |
-        Yanlış okutulan çuvalı sevkiyat listesinden çıkarır ve bag-service'te rezervasyonunu bırakır; çuval başka bir
-        sevkiyata atanabilir olur. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Çuval sevkiyatta değilse de
-        204 döner, böylece istek güvenle tekrarlanır. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
+        Yanlış girilen çuvalı sıra numarasıyla sevkiyat listesinden çıkarır. Yalnızca çıkış tartımından önce (DRAFT)
+        yapılabilir. Çuval sevkiyatta değilse de 204 döner, böylece istek güvenle tekrarlanır.
       parameters:
         - name: shipmentId
           in: path
@@ -1995,13 +1989,13 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: uniqueKey
+        - name: seqNo
           in: path
           required: true
           schema:
-            type: string
-            minLength: 1
-            maxLength: 100
+            type: integer
+            format: int32
+            minimum: 1
       responses:
         '204':
           description: Çuval sevkiyattan çıkarıldı
@@ -2298,10 +2292,6 @@ components:
         tareAlert:
           type: boolean
           description: Dara, kayıt anındaki standarttan izin verilenden fazla saptı. Standart tanımsızsa false ve sapma alanları yok
-    ScanMethod:
-      description: Çuval anahtarının nasıl girildiği
-      type: string
-      enum: [SCAN, LIST, MANUAL]
     CorrectionTarget:
       description: |
         Düzeltilen kayıt: çıkış tartımı (brüt ve dara)
@@ -2382,19 +2372,15 @@ components:
           maxLength: 500
     AssignShipmentBagsRequest:
       type: object
-      required: [uniqueKeys, scanMethod]
+      required: [weightsKg]
       properties:
-        uniqueKeys:
+        weightsKg:
+          description: Eklenecek çuvalların kiloları; her kilo bir çuvaldır, girilme sırasıyla numaralanır
           type: array
           minItems: 1
           maxItems: 500
-          uniqueItems: true
           items:
-            type: string
-            minLength: 1
-            maxLength: 100
-        scanMethod:
-          $ref: '#/components/schemas/ScanMethod'
+            $ref: '#/components/schemas/Kg'
     AssignShipmentBagsResponse:
       type: object
       required: [assignedCount]
@@ -2403,7 +2389,7 @@ components:
           type: integer
           format: int32
           minimum: 0
-          description: Bu istekle yeni atanan çuval sayısı
+          description: Bu istekle eklenen çuval sayısı
     CreateShipmentRequest:
       type: object
       required: [siteId, subcontractorId, subcontractorTitle, lines]
@@ -3210,21 +3196,15 @@ components:
             $ref: '#/components/schemas/DispatchBagView'
     DispatchBagView:
       type: object
-      required: [bagId, uniqueKey, packageType, lotNo, qualityGradeCode, scanMethod, assignedAt]
+      required: [seqNo, weightKg, assignedAt]
       properties:
-        bagId:
-          type: string
-          format: uuid
-        uniqueKey:
-          type: string
-        packageType:
-          $ref: '#/components/schemas/PackagingType'
-        lotNo:
-          type: string
-        qualityGradeCode:
-          type: string
-        scanMethod:
-          $ref: '#/components/schemas/ScanMethod'
+        seqNo:
+          description: Sevkiyat içindeki çuval sırası
+          type: integer
+          format: int32
+          minimum: 1
+        weightKg:
+          $ref: '#/components/schemas/Kg'
         assignedAt:
           type: string
           format: date-time

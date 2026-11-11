@@ -9,7 +9,6 @@ import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.RemoveBagUseCase.RemoveBagCommand;
 import com.yarnshipment.shipment.application.port.out.ShipmentBagRemovalPort;
-import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.time.Clock;
@@ -25,34 +24,32 @@ class RemoveBagServiceTest {
     private static final Instant NOW = Instant.parse("2026-10-23T10:00:00Z");
 
     private final InMemoryShipmentQueryPort queryPort = new InMemoryShipmentQueryPort();
-    private final List<String> removed = new ArrayList<>();
-    private final RecordingBagReservationPort bags = new RecordingBagReservationPort();
+    private final List<Integer> removed = new ArrayList<>();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final Actor warehouse = TestTokens.actor("warehouse");
 
     private RemoveBagService service() {
-        ShipmentBagRemovalPort port = (shipmentId, uniqueKey, actorUserId, at) -> removed.add(uniqueKey) ? 1 : 0;
+        ShipmentBagRemovalPort port = (shipmentId, seqNo, actorUserId, at) -> removed.add(seqNo) ? 1 : 0;
         return new RemoveBagService(
-                new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), port, bags, clock);
+                new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), port, clock);
     }
 
     private RemoveBagCommand command() {
-        return new RemoveBagCommand(warehouse, TestShipments.SHIPMENT_ID, "BAG-0001");
+        return new RemoveBagCommand(warehouse, TestShipments.SHIPMENT_ID, 1);
     }
 
     @Test
-    @DisplayName("Taslak sevkiyattan çıkarılan çuvalın rezervasyonu çuval servisinde bırakılır")
-    void shouldRemoveAndRelease() throws Exception {
+    @DisplayName("Taslak sevkiyattan çuval sıra numarasıyla çıkarılır")
+    void shouldRemoveBag() throws Exception {
         queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
 
         service().removeBag(command());
 
-        assertThat(removed).containsExactly("BAG-0001");
-        assertThat(bags.releasedKeys()).containsExactly("BAG-0001");
+        assertThat(removed).containsExactly(1);
     }
 
     @Test
-    @DisplayName("Çıkıştan sonra çuval çıkarılamaz ve çuval servisine gidilmez")
+    @DisplayName("Çıkıştan sonra çuval çıkarılamaz")
     void shouldRejectNonDraftShipment() throws Exception {
         queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
         RemoveBagService service = service();
@@ -60,17 +57,5 @@ class RemoveBagServiceTest {
 
         assertThatThrownBy(() -> service.removeBag(command)).isInstanceOf(InvalidShipmentStatusException.class);
         assertThat(removed).isEmpty();
-        assertThat(bags.releasedKeys()).isEmpty();
-    }
-
-    @Test
-    @DisplayName("Çuval servisi bırakamazsa istisna fırlar; transaction çıkarmayı geri alır")
-    void shouldPropagateReleaseFailure() throws Exception {
-        queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
-        bags.failOnRelease();
-        RemoveBagService service = service();
-        RemoveBagCommand command = command();
-
-        assertThatThrownBy(() -> service.removeBag(command)).isInstanceOf(BagServiceUnavailableException.class);
     }
 }

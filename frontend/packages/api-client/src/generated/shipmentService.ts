@@ -176,18 +176,6 @@ export interface WeighingView {
 }
 
 /**
- * Çuval anahtarının nasıl girildiği
- */
-export type ScanMethod = typeof ScanMethod[keyof typeof ScanMethod];
-
-
-export const ScanMethod = {
-  SCAN: 'SCAN',
-  LIST: 'LIST',
-  MANUAL: 'MANUAL',
-} as const;
-
-/**
  * Düzeltilen kayıt: çıkış tartımı (brüt ve dara)
  */
 export type CorrectionTarget = typeof CorrectionTarget[keyof typeof CorrectionTarget];
@@ -260,18 +248,16 @@ export interface CancelShipmentRequest {
 
 export interface AssignShipmentBagsRequest {
   /**
+     * Eklenecek çuvalların kiloları; her kilo bir çuvaldır, girilme sırasıyla numaralanır
      * @minItems 1
      * @maxItems 500
-     * @items.minLength 1
-     * @items.maxLength 100
      */
-  uniqueKeys: string[];
-  scanMethod: ScanMethod;
+  weightsKg: Kg[];
 }
 
 export interface AssignShipmentBagsResponse {
   /**
-     * Bu istekle yeni atanan çuval sayısı
+     * Bu istekle eklenen çuval sayısı
      * @minimum 0
      */
   assignedCount: number;
@@ -873,12 +859,12 @@ export interface ShipmentHistoryResponse {
 }
 
 export interface DispatchBagView {
-  bagId: string;
-  uniqueKey: string;
-  packageType: PackagingType;
-  lotNo: string;
-  qualityGradeCode: string;
-  scanMethod: ScanMethod;
+  /**
+     * Sevkiyat içindeki çuval sırası
+     * @minimum 1
+     */
+  seqNo: number;
+  weightKg: Kg;
   assignedAt: string;
 }
 
@@ -2257,13 +2243,10 @@ export const listCorrections = (
     }
 
 /**
- * Depo personeli çuvalları okutur ya da listeden seçer; her çuval bag-service'te bu sevkiyata ayrılır ve
- * sevkiyatın çuval listesine yazılır. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Hepsi ya da hiçbiri:
- * bir çuval bulunamazsa (`BAG_NOT_FOUND`), kullanılamaz durumdaysa (`BAG_NOT_AVAILABLE`) ya da başka
- * sevkiyattaysa (`BAG_ALREADY_RESERVED`) hiçbiri atanmaz. Çuval isteyenin lokasyon kapsamı dışındaysa 403
- * `BAG_OUT_OF_SCOPE` döner. Aynı çuvalı tekrar göndermek hata vermez; `assignedCount` yalnızca yeni atananları
- * sayar. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
- * @summary Çuvalları taslak sevkiyata atar
+ * Depo çuvalları sıra numarasıyla ve kiloyla yazar; her kilo bir çuvaldır ve sevkiyattaki son sıradan devam eden
+ * numarayı alır (1, 2, 3...). Çuval anahtarı ya da QR kullanılmaz. Yalnızca çıkış tartımından önce (DRAFT)
+ * yapılabilir. Yanıttaki `assignedCount` eklenen çuval sayısıdır.
+ * @summary Çuvalları taslak sevkiyata ekler
  */
 export const assignShipmentBags = (
     shipmentId: string,
@@ -2278,7 +2261,7 @@ export const assignShipmentBags = (
     }
 
 /**
- * Çıkışta atanan çuvallar. Liste sayfalanmaz: bir sevkiyatın çuval sayısıyla sınırlıdır.
+ * Çıkışta girilen çuvallar (sıra no ve kg). Liste sayfalanmaz: bir sevkiyatın çuval sayısıyla sınırlıdır.
  * @summary Sevkiyatın çuvalları, isteyenin görünümüyle
  */
 export const getShipmentBags = (
@@ -2291,17 +2274,16 @@ export const getShipmentBags = (
     }
 
 /**
- * Yanlış okutulan çuvalı sevkiyat listesinden çıkarır ve bag-service'te rezervasyonunu bırakır; çuval başka bir
- * sevkiyata atanabilir olur. Yalnızca çıkış tartımından önce (DRAFT) yapılabilir. Çuval sevkiyatta değilse de
- * 204 döner, böylece istek güvenle tekrarlanır. Çuval servisi yanıt vermezse `BAG_SERVICE_UNAVAILABLE`.
+ * Yanlış girilen çuvalı sıra numarasıyla sevkiyat listesinden çıkarır. Yalnızca çıkış tartımından önce (DRAFT)
+ * yapılabilir. Çuval sevkiyatta değilse de 204 döner, böylece istek güvenle tekrarlanır.
  * @summary Çuvalı taslak sevkiyattan çıkarır
  */
 export const removeShipmentBag = (
     shipmentId: string,
-    uniqueKey: string,
+    seqNo: number,
  ) => {
       return customInstance<void>(
-      {url: `/api/v1/shipments/${shipmentId}/bags/${uniqueKey}`, method: 'DELETE'
+      {url: `/api/v1/shipments/${shipmentId}/bags/${seqNo}`, method: 'DELETE'
     },
       );
     }

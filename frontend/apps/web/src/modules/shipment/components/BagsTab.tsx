@@ -1,5 +1,4 @@
 import { Alert, Stack } from '@iplik/ui';
-import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { useRemoveBag } from '../hooks/useRemoveBag';
 import { useShipmentBags } from '../hooks/useShipmentBags';
@@ -14,28 +13,24 @@ export function BagsTab({ shipmentId, canAssign }: { shipmentId: string; canAssi
   const remove = useRemoveBag(shipmentId);
   return (
     <Stack>
-      {canAssign && <AssignBagsForm shipmentId={shipmentId} />}
-      {remove.isError && (
-        <Alert color="red">
-          {t(
-            toProblem(remove.error).code === 'BAG_SERVICE_UNAVAILABLE'
-              ? 'shipment.bags.assign.errors.BAG_SERVICE_UNAVAILABLE'
-              : 'shipment.bags.removeFailed',
-          )}
-        </Alert>
-      )}
+      {remove.isError && <Alert color="red">{t('shipment.bags.removeFailed')}</Alert>}
       <QueryState query={query}>
         {(bags) => (
-          <BagSections
-            bags={bags}
-            onRemove={
-              canAssign
-                ? (key) => {
-                    remove.mutate(key);
-                  }
-                : undefined
-            }
-          />
+          <>
+            {canAssign && (
+              <AssignBagsForm shipmentId={shipmentId} assignedCount={bags.dispatchBags.length} />
+            )}
+            <BagSections
+              bags={bags}
+              onRemove={
+                canAssign
+                  ? (seqNo) => {
+                      remove.mutate(seqNo);
+                    }
+                  : undefined
+              }
+            />
+          </>
         )}
       </QueryState>
     </Stack>

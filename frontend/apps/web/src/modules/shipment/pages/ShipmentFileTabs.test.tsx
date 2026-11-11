@@ -17,6 +17,6 @@ describe('Sevkiyat dosyası sekmeleri', () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/sevkiyat/shp-0003');
     await userEvent.click(await screen.findByRole('tab', { name: 'Çuvallar' }));
-    expect(await screen.findByText(/Çıkıştaki çuvallar/)).toBeInTheDocument();
+    expect(await screen.findByText(/Sevkiyattaki çuvallar/)).toBeInTheDocument();
   });
 });

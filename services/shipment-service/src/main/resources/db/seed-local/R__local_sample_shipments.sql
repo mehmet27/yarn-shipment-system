@@ -48,13 +48,13 @@ SELECT id, site_id, shipment_no, subcontractor_id, subcontractor_title, driver_i
 FROM seed_shipment
 ON CONFLICT (id) DO NOTHING;
 
--- Çuvallar: atanmış (DRAFT dışı) sevkiyatlara beşer çuval.
-INSERT INTO shipment_bag (id, shipment_id, bag_id, unique_key, lot_no, quality_grade_code, scan_method,
+-- Çuvallar: atanmış (DRAFT dışı) sevkiyatlara beşer çuval; sıra no 1-5, her biri 50 kg (net 250 kg).
+INSERT INTO shipment_bag (id, shipment_id, bag_id, unique_key, seq_no, weight_kg, scan_method,
                           assigned_at, assigned_by, created_at, created_by)
 SELECT ('0192f0a0-0000-7000-8000-0000000b' || lpad(s.n::text, 2, '0') || lpad(b::text, 2, '0'))::uuid,
        s.id,
        ('0192f0a0-0000-7000-8000-0000000c' || lpad(s.n::text, 2, '0') || lpad(b::text, 2, '0'))::uuid,
-       'BAG-' || s.n || '-' || b, 'LOT-2610-' || s.n, 'A', 'SCAN',
+       b::text, b, 50.000, 'MANUAL',
        s.created_at, '0192f0a0-0000-7000-8000-00000000d001', s.created_at, '0192f0a0-0000-7000-8000-00000000d001'
 FROM seed_shipment s CROSS JOIN generate_series(1, 5) AS b
 WHERE s.status <> 'DRAFT'

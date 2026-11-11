@@ -2,7 +2,6 @@ package com.yarnshipment.shipment.adapter.in.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -12,10 +11,7 @@ import com.yarnshipment.shipment.application.port.in.AssignBagsCommand;
 import com.yarnshipment.shipment.application.port.in.AssignBagsUseCase;
 import com.yarnshipment.shipment.application.port.in.RemoveBagUseCase;
 import com.yarnshipment.shipment.application.port.in.RemoveBagUseCase.RemoveBagCommand;
-import com.yarnshipment.shipment.domain.bag.BagReservationException;
-import com.yarnshipment.shipment.domain.bag.BagReservationException.Reason;
-import com.yarnshipment.shipment.domain.bag.BagServiceUnavailableException;
-import com.yarnshipment.shipment.domain.model.ScanMethod;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -35,7 +31,7 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 class ShipmentBagAssignmentControllerTest {
 
     private static final String URI = "/api/v1/shipments/" + TestShipments.SHIPMENT_ID + "/bags";
-    private static final String BODY = "{\"uniqueKeys\":[\"BAG-0001\",\"BAG-0002\"],\"scanMethod\":\"SCAN\"}";
+    private static final String BODY = "{\"weightsKg\":[\"25.000\",\"24.500\"]}";
 
     private final MockMvcTester mvc;
 
@@ -54,7 +50,7 @@ class ShipmentBagAssignmentControllerTest {
     }
 
     @Test
-    @DisplayName("Atanan çuval sayısı döner ve komut sevkiyat, anahtarlar ve yöntemi taşır")
+    @DisplayName("Eklenen çuval sayısı döner ve komut sevkiyat ile kiloları taşır")
     void shouldAssignBags() {
         when(assignBagsUseCase.assignBags(any())).thenReturn(2);
 
@@ -65,68 +61,14 @@ class ShipmentBagAssignmentControllerTest {
         ArgumentCaptor<AssignBagsCommand> command = ArgumentCaptor.forClass(AssignBagsCommand.class);
         verify(assignBagsUseCase).assignBags(command.capture());
         assertThat(command.getValue().shipmentId()).isEqualTo(TestShipments.SHIPMENT_ID);
-        assertThat(command.getValue().uniqueKeys()).containsExactlyInAnyOrder("BAG-0001", "BAG-0002");
-        assertThat(command.getValue().scanMethod()).isEqualTo(ScanMethod.SCAN);
+        assertThat(command.getValue().weightsKg()).containsExactly(new BigDecimal("25.000"), new BigDecimal("24.500"));
     }
 
     @Test
-    @DisplayName("Çuval servisinin reddi BAG_* koduyla 404 ve 409 döner")
-    void shouldMapReservationRejections() {
-        Jwt warehouse = TestTokens.token("warehouse").build();
-
-        doThrow(new BagReservationException(Reason.NOT_FOUND))
-                .when(assignBagsUseCase)
-                .assignBags(any());
-        MvcTestResult missing = post(BODY, warehouse);
-        doThrow(new BagReservationException(Reason.NOT_AVAILABLE))
-                .when(assignBagsUseCase)
-                .assignBags(any());
-        MvcTestResult unavailable = post(BODY, warehouse);
-        doThrow(new BagReservationException(Reason.ALREADY_RESERVED))
-                .when(assignBagsUseCase)
-                .assignBags(any());
-        MvcTestResult reserved = post(BODY, warehouse);
-
-        assertThat(missing).hasStatus(HttpStatus.NOT_FOUND);
-        assertThat(missing).bodyJson().extractingPath("$.code").isEqualTo("BAG_NOT_FOUND");
-        assertThat(unavailable).hasStatus(HttpStatus.CONFLICT);
-        assertThat(unavailable).bodyJson().extractingPath("$.code").isEqualTo("BAG_NOT_AVAILABLE");
-        assertThat(reserved).hasStatus(HttpStatus.CONFLICT);
-        assertThat(reserved).bodyJson().extractingPath("$.code").isEqualTo("BAG_ALREADY_RESERVED");
-        assertThat(reserved).bodyJson().extractingPath("$.title").isEqualTo("Çuval başka sevkiyatta");
-    }
-
-    @Test
-    @DisplayName("Başka lokasyonun çuvalı BAG_OUT_OF_SCOPE koduyla 403 döner, 502 değil")
-    void shouldReturnForbiddenForBagOutOfScope() {
-        doThrow(new BagReservationException(Reason.OUT_OF_SCOPE))
-                .when(assignBagsUseCase)
-                .assignBags(any());
-
-        MvcTestResult result = post(BODY, TestTokens.token("warehouse").build());
-
-        assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
-        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("BAG_OUT_OF_SCOPE");
-        assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Çuval bu lokasyona ait değil");
-    }
-
-    @Test
-    @DisplayName("Çuval servisine ulaşılamazsa BAG_SERVICE_UNAVAILABLE koduyla 502 döner")
-    void shouldReturnBadGatewayWhenBagServiceIsDown() {
-        when(assignBagsUseCase.assignBags(any())).thenThrow(new BagServiceUnavailableException("down"));
-
-        MvcTestResult result = post(BODY, TestTokens.token("warehouse").build());
-
-        assertThat(result).hasStatus(HttpStatus.BAD_GATEWAY);
-        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("BAG_SERVICE_UNAVAILABLE");
-    }
-
-    @Test
-    @DisplayName("Boş anahtar listesi 400 alır")
-    void shouldRejectEmptyKeys() {
-        MvcTestResult result = post(
-                "{\"uniqueKeys\":[],\"scanMethod\":\"SCAN\"}",
-                TestTokens.token("warehouse").build());
+    @DisplayName("Boş kilo listesi 400 alır")
+    void shouldRejectEmptyWeights() {
+        MvcTestResult result =
+                post("{\"weightsKg\":[]}", TestTokens.token("warehouse").build());
 
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
     }
@@ -138,7 +80,7 @@ class ShipmentBagAssignmentControllerTest {
     }
 
     @Test
-    @DisplayName("Çuval çıkarma 204 döner ve komut sevkiyat ile anahtarı taşır; şoför 403 alır")
+    @DisplayName("Çuval çıkarma 204 döner ve komut sevkiyat ile sıra numarasını taşır; şoför 403 alır")
     void shouldRemoveBag() {
         MvcTestResult removed = delete(TestTokens.token("warehouse").build());
         MvcTestResult denied = delete(TestTokens.token("offline_access").build());
@@ -148,12 +90,12 @@ class ShipmentBagAssignmentControllerTest {
         ArgumentCaptor<RemoveBagCommand> command = ArgumentCaptor.forClass(RemoveBagCommand.class);
         verify(removeBagUseCase).removeBag(command.capture());
         assertThat(command.getValue().shipmentId()).isEqualTo(TestShipments.SHIPMENT_ID);
-        assertThat(command.getValue().uniqueKey()).isEqualTo("BAG-0001");
+        assertThat(command.getValue().seqNo()).isEqualTo(1);
     }
 
     private MvcTestResult delete(Jwt jwt) {
         return mvc.delete()
-                .uri(URI + "/BAG-0001")
+                .uri(URI + "/1")
                 .with(SecurityMockMvcRequestPostProcessors.authentication(TestTokens.CONVERTER.convert(jwt)))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .exchange();

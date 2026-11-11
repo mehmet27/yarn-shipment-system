@@ -80,5 +80,7 @@ class FireFileTest {
         assertThat(rows).hasSize(1);
         assertThat(rows.get(0).actualFireRate()).isEqualByComparingTo("0.0700");
         assertThat(rows.get(0).shortageKg()).isEqualByComparingTo("60");
+        assertThat(rows.get(0).overLimitShipmentCount()).isEqualTo(1);
+        assertThat(rows.get(0).overLimitFireKg()).isEqualByComparingTo("100");
     }
 }

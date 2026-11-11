@@ -143,6 +143,8 @@ const MOCK_YARN_VS_FABRIC: YarnVsFabricRowView[] = [
     fabricKg: '900.000',
     actualFireRate: '0.10',
     shortageKg: '60.000',
+    overLimitShipmentCount: 1,
+    overLimitFireKg: '100.000',
   },
 ];
 

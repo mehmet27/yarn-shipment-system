@@ -921,7 +921,9 @@
         "AWAITING_FABRIC": "Kumaş bekleniyor",
         "TO_INVOICE": "Faturalanacak",
         "CLOSED": "Kapandı"
-      }
+      },
+      "overLimitCount": "Fireyi aşan sevkiyat",
+      "overLimitFire": "Aşanların toplam fire kg"
     },
     "opening": {
       "title": "Açılış bakiyesi yükle",

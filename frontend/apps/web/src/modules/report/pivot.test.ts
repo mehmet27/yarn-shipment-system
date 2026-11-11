@@ -89,6 +89,8 @@ describe('fire ve iplik-kumaş tabloları', () => {
           fabricKg: '960',
           actualFireRate: '0.04',
           shortageKg: '0',
+          overLimitShipmentCount: 0,
+          overLimitFireKg: '0',
         },
       ],
       t,

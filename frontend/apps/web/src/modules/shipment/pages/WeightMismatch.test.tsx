@@ -9,6 +9,17 @@ import { renderApp } from '@/test/renderApp';
 const MISMATCH = '/panel/sevkiyat/shp-0045';
 
 describe('Kantar uyuşmazlığı', () => {
+  it('müdürün ana sayfasında karar bekleyen sevkiyatı bildirir ve dosyaya bağlar', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel');
+    const notice = await screen.findByTestId('pending-weight-decisions');
+    expect(within(notice).getByText(/1 sevkiyat kararınızı bekliyor/)).toBeInTheDocument();
+    expect(within(notice).getByRole('link', { name: 'SVK-2026-0045' })).toHaveAttribute(
+      'href',
+      MISMATCH,
+    );
+  });
+
   it('sevkiyat dosyasında beklenen, tartılan ve farkı gösterir', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp(MISMATCH);

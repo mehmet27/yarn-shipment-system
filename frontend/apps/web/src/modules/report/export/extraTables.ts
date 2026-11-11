@@ -1,7 +1,7 @@
 import type { ShipmentRowView, SubcontractorBalanceView } from '@iplik/api-client';
 import { formatDateTime } from '@iplik/i18n';
 import type { ReportCell, ReportMeta, ReportTable } from './reportModel';
-import { count, kg, optionalKg, optionalPercent, sumKg, text } from './reportModel';
+import { count, kg, optionalKg, sumKg, text } from './reportModel';
 
 type Translate = (key: string) => string;
 
@@ -24,9 +24,6 @@ export function shipmentsTable(
       t('report.export.status'),
       t('report.dashboard.dispatchNet'),
       t('report.dashboard.deliveryNet'),
-      t('report.export.diffKg'),
-      t('report.export.diffPct'),
-      t('report.export.band'),
       t('report.export.hadDiscrepancy'),
       t('report.export.createdAt'),
       t('report.export.completedAt'),
@@ -37,9 +34,6 @@ export function shipmentsTable(
       text(t(`shipment.status.${row.status}`)),
       optionalKg(row.dispatchNetKg),
       optionalKg(row.deliveryNetKg),
-      optionalKg(row.diffKg),
-      optionalPercent(row.diffPct),
-      text(row.band === undefined ? '' : t(`report.dashboard.band.${row.band}`)),
       text(row.hadDiscrepancy ? t('report.export.yes') : t('report.export.no')),
       dateOrEmpty(row.createdAt),
       dateOrEmpty(row.completedAt),
@@ -53,9 +47,6 @@ export function shipmentsTable(
             count(visible.length),
             kg(sumKg(visible.map((row) => row.dispatchNetKg))),
             kg(sumKg(visible.map((row) => row.deliveryNetKg))),
-            kg(sumKg(visible.map((row) => row.diffKg))),
-            text(''),
-            text(''),
             count(visible.filter((row) => row.hadDiscrepancy).length),
             text(''),
             text(''),
@@ -64,7 +55,7 @@ export function shipmentsTable(
   };
 }
 
-/** Fasoncu bakiyesi: gönderilen − yolda kalan − teslim alınan = fire. */
+/** Fasoncu bakiyesi: gönderilen, yolda kalan ve teslim alınan kilolar. */
 export function balanceTable(
   rows: SubcontractorBalanceView[],
   meta: ReportMeta,
@@ -78,7 +69,6 @@ export function balanceTable(
       t('report.export.dispatched'),
       t('report.export.delivered'),
       t('report.export.inTransit'),
-      t('report.export.loss'),
     ],
     rows: rows.map((row) => [
       text(meta.nameOf(row.subcontractorId)),
@@ -86,7 +76,6 @@ export function balanceTable(
       kg(row.dispatchedKg),
       kg(row.deliveredKg),
       kg(row.inTransitKg),
-      kg(row.differenceKg),
     ]),
     ...(rows.length === 0
       ? {}
@@ -97,7 +86,6 @@ export function balanceTable(
             kg(sumKg(rows.map((row) => row.dispatchedKg))),
             kg(sumKg(rows.map((row) => row.deliveredKg))),
             kg(sumKg(rows.map((row) => row.inTransitKg))),
-            kg(sumKg(rows.map((row) => row.differenceKg))),
           ],
         }),
   };

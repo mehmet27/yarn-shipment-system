@@ -2,7 +2,7 @@ import type { FireRowView, YarnVsFabricRowView } from '@iplik/api-client';
 import { formatDateTime } from '@iplik/i18n';
 import type { BalanceMatrix } from '../pivot';
 import type { ReportCell, ReportTable } from './reportModel';
-import { kg, percent, sumKg, text } from './reportModel';
+import { count, kg, percent, sumKg, text } from './reportModel';
 
 type Translate = (key: string) => string;
 
@@ -120,6 +120,8 @@ export function yarnVsFabricTable(rows: YarnVsFabricRowView[], t: Translate): Re
       t('report.fire.fabric'),
       t('report.fire.actualFireRate'),
       t('report.fire.shortage'),
+      t('report.fire.overLimitCount'),
+      t('report.fire.overLimitFire'),
     ],
     rows: rows.map((row) => [
       text(row.subcontractorName),
@@ -128,6 +130,8 @@ export function yarnVsFabricTable(rows: YarnVsFabricRowView[], t: Translate): Re
       kg(row.fabricKg),
       rate(row.actualFireRate),
       kg(row.shortageKg),
+      count(row.overLimitShipmentCount),
+      kg(row.overLimitFireKg),
     ]),
     ...(rows.length === 0
       ? {}
@@ -139,6 +143,8 @@ export function yarnVsFabricTable(rows: YarnVsFabricRowView[], t: Translate): Re
             kg(fabric),
             percent(base === 0 ? 0 : ((base - fabric) / base) * 100),
             kg(sumKg(rows.map((row) => row.shortageKg))),
+            count(rows.reduce((sum, row) => sum + row.overLimitShipmentCount, 0)),
+            kg(sumKg(rows.map((row) => row.overLimitFireKg))),
           ],
         }),
   };

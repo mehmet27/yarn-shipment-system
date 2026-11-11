@@ -5,9 +5,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
 import { renderApp } from '@/test/renderApp';
+import { downloadPdf } from '../export/writePdf';
+
+vi.mock('../export/writePdf', () => ({ downloadPdf: vi.fn(() => Promise.resolve()) }));
 
 describe('Panel ana sayfası ve raporlar', () => {
-  it('yönetici ana sayfada dashboard kartlarını, süresi geçen uyuşmazlığı ve en büyük farkı görür', async () => {
+  it('yönetici ana sayfada dashboard kartlarını, ve süresi geçen uyuşmazlığı görür', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel');
     expect(await screen.findByTestId('stat-total')).toHaveTextContent('12');
@@ -17,7 +20,6 @@ describe('Panel ana sayfası ve raporlar', () => {
       'href',
       '/panel/uyusmazliklar/disc-0',
     );
-    expect(screen.getByRole('link', { name: 'SV-2026-0007' })).toBeInTheDocument();
   });
 
   it('rapor yetkisi olmayan kullanıcıya dashboard göstermez ve çağırmaz', async () => {
@@ -95,15 +97,18 @@ describe('Panel ana sayfası ve raporlar', () => {
     expect(screen.getByRole('button', { name: 'Excel indir (.xlsx)' })).toBeDisabled();
   });
 
-  it('PDF düğmesi yazdırılabilir raporu imza alanlarıyla hazırlar ve yazdırmayı açar', async () => {
+  it('PDF düğmesi raporu imza alanlarıyla gerçek PDF dosyası olarak indirir', async () => {
     server.use(...createHandlers('MANAGER'));
-    const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
+    vi.mocked(downloadPdf).mockClear();
     renderApp('/panel/raporlar');
-    await userEvent.click(await screen.findByRole('button', { name: 'PDF / Yazdır' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'PDF indir' }));
     await waitFor(() => {
-      expect(print).toHaveBeenCalledTimes(1);
+      expect(downloadPdf).toHaveBeenCalledTimes(1);
     });
-    print.mockRestore();
+    const [tables, options, fileName] = vi.mocked(downloadPdf).mock.calls[0] ?? [];
+    expect(tables?.length).toBeGreaterThan(0);
+    expect(options?.signatures).toEqual(['Hazırlayan', 'Kontrol eden', 'Onaylayan']);
+    expect(fileName).toMatch(/^rapor_.*\.pdf$/);
   });
 
   it('Excel düğmesi dosyayı indirir', async () => {
@@ -139,9 +144,9 @@ describe('Panel ana sayfası ve raporlar', () => {
     expect(screen.getByText('b2c3d4e5')).toBeInTheDocument();
   });
 
-  it('logo eklenir, geçersiz dosya reddedilir ve yazdırma görünümüne girer', async () => {
+  it('logo eklenir, geçersiz dosya reddedilir ve PDF çıktısının başına girer', async () => {
     server.use(...createHandlers('MANAGER'));
-    const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
+    vi.mocked(downloadPdf).mockClear();
     renderApp('/panel/raporlar');
     await screen.findByRole('button', { name: 'Rapor logosu ekle' });
     const input = screen.getByLabelText('Logo dosyası');
@@ -151,10 +156,11 @@ describe('Panel ana sayfası ve raporlar', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('PNG veya JPEG');
     await userEvent.upload(input, new File(['x'], 'logo.png', { type: 'image/png' }));
     expect(await screen.findByRole('button', { name: 'Logoyu kaldır' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'PDF / Yazdır' }));
+    await userEvent.click(screen.getByRole('button', { name: 'PDF indir' }));
     await waitFor(() => {
-      expect(print).toHaveBeenCalled();
+      expect(downloadPdf).toHaveBeenCalled();
     });
+    expect(vi.mocked(downloadPdf).mock.calls[0]?.[1].logo).toMatch(/^data:image\/png/);
     await userEvent.click(screen.getByRole('button', { name: 'Logoyu kaldır' }));
     expect(screen.getByRole('button', { name: 'Rapor logosu ekle' })).toBeInTheDocument();
     window.localStorage.clear();

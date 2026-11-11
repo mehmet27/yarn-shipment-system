@@ -6,10 +6,10 @@ import { StatCard } from './StatCard';
 
 const CARD_COLUMNS = { base: 1, sm: 2, lg: 4 } as const;
 
-/** Dashboard kartları: sevkiyat durumu, kilo, bantlar ve açık uyuşmazlıklar. */
+/** Dashboard kartları: sevkiyat durumu, kilo ve açık uyuşmazlıklar. */
 export function DashboardSummary({ dashboard }: { dashboard: DashboardView }) {
   const { t } = useTranslation();
-  const { shipments, quantity, bands, discrepancies } = dashboard;
+  const { shipments, quantity, discrepancies } = dashboard;
   return (
     <Stack>
       <Title order={2} size="h3">
@@ -26,24 +26,12 @@ export function DashboardSummary({ dashboard }: { dashboard: DashboardView }) {
       </Title>
       <SimpleGrid cols={CARD_COLUMNS}>
         <StatCard
-          label={t('report.dashboard.compared')}
-          value={quantity.comparedShipments}
-          hint={t('report.dashboard.comparedHint')}
-        />
-        <StatCard label={t('report.dashboard.band.GREEN')} value={bands.green} color="green" />
-        <StatCard label={t('report.dashboard.band.YELLOW')} value={bands.yellow} color="yellow.8" />
-        <StatCard label={t('report.dashboard.band.RED')} value={bands.red} color="red" />
-        <StatCard
           label={t('report.dashboard.dispatchNet')}
           value={formatKilograms(quantity.dispatchNetKg)}
         />
         <StatCard
           label={t('report.dashboard.deliveryNet')}
           value={formatKilograms(quantity.deliveryNetKg)}
-        />
-        <StatCard
-          label={t('report.dashboard.absoluteDiff')}
-          value={formatKilograms(quantity.absoluteDiffKg)}
         />
       </SimpleGrid>
       <Title order={2} size="h3">

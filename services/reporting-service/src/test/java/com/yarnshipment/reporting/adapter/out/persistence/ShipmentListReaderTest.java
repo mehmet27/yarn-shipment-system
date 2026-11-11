@@ -51,20 +51,17 @@ class ShipmentListReaderTest {
         UUID site = UUID.randomUUID();
         UUID other = UUID.randomUUID();
         SeedRows seed = new SeedRows(jdbc);
-        seed.shipment(site, new Shipment("SHP-1", "COMPLETED", "GREEN", "0.000", false));
-        seed.shipment(site, new Shipment("SHP-2", "AWAITING_DELIVERY", "RED", "-40.000", true));
-        seed.shipment(site, new Shipment("SHP-3", "DRAFT", null, null, false));
-        seed.shipment(other, new Shipment("SHP-X", "COMPLETED", "GREEN", "0.000", false));
+        seed.shipment(site, new Shipment("SHP-1", "COMPLETED", false));
+        seed.shipment(site, new Shipment("SHP-2", "AWAITING_DELIVERY", true));
+        seed.shipment(site, new Shipment("SHP-3", "DRAFT", false));
+        seed.shipment(other, new Shipment("SHP-X", "COMPLETED", false));
         seed.oldShipment(site);
 
         var rows = reader.findShipments(PERIOD, scope(site), LIMIT);
 
         assertThat(rows).extracting("shipmentNo").containsExactly("SHP-1", "SHP-2", "SHP-3");
-        var red = rows.get(1);
-        assertThat(red.hadDiscrepancy()).isTrue();
-        assertThat(red.comparison().band()).isEqualTo("RED");
-        assertThat(red.comparison().diffKg()).isEqualByComparingTo("-40.000");
-        assertThat(rows.get(2).comparison().band()).isNull();
+        assertThat(rows.get(1).hadDiscrepancy()).isTrue();
+        assertThat(rows.get(1).dispatchNetKg()).isEqualByComparingTo("100");
         assertThat(rows.get(2).completedAt()).isNull();
         assertThat(reader.findShipments(PERIOD, scope(site), 2)).hasSize(2);
         assertThat(reader.findShipments(PERIOD, new ReportScope(Set.of(), false, null), LIMIT))
@@ -90,7 +87,6 @@ class ShipmentListReaderTest {
         assertThat(balance.dispatchedKg()).isEqualByComparingTo("1500.000");
         assertThat(balance.deliveredKg()).isEqualByComparingTo("990.000");
         assertThat(balance.inTransitKg()).isEqualByComparingTo("500.000");
-        assertThat(balance.differenceKg()).isEqualByComparingTo("10.000");
     }
 
     private static ReportScope scope(UUID site) {

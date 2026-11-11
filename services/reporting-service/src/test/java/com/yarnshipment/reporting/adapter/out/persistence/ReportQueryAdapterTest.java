@@ -54,13 +54,13 @@ class ReportQueryAdapterTest {
     }
 
     @Test
-    @DisplayName("Dashboard dönemdeki sevkiyatları, bantları, farkları ve vadesi geçen uyuşmazlıkları toplar")
+    @DisplayName("Dashboard dönemdeki sevkiyatları, miktarlarını ve vadesi geçen uyuşmazlıkları toplar")
     void shouldBuildDashboard() {
         UUID site = UUID.randomUUID();
         SeedRows seed = new SeedRows(jdbc);
-        seed.shipment(site, new Shipment("SHP-1", "COMPLETED", "GREEN", "0.000", false));
-        seed.shipment(site, new Shipment("SHP-2", "AWAITING_DELIVERY", "RED", "-40.000", true));
-        seed.shipment(site, new Shipment("SHP-3", "DRAFT", null, null, false));
+        seed.shipment(site, new Shipment("SHP-1", "COMPLETED", false));
+        seed.shipment(site, new Shipment("SHP-2", "AWAITING_DELIVERY", true));
+        seed.shipment(site, new Shipment("SHP-3", "DRAFT", false));
         seed.oldShipment(site);
         seed.discrepancy(site, new Discrepancy("UY-1", "RED", "2026-11-02T00:00:00Z", false));
         seed.discrepancy(site, new Discrepancy("UY-2", "YELLOW", "2026-11-09T00:00:00Z", false));
@@ -72,14 +72,11 @@ class ReportQueryAdapterTest {
         assertThat(dashboard.shipments().inProgress()).isEqualTo(2);
         assertThat(dashboard.shipments().inReview()).isZero();
         assertThat(dashboard.shipments().completed()).isEqualTo(1);
-        assertThat(dashboard.quantity().comparedShipments()).isEqualTo(2);
-        assertThat(dashboard.quantity().absoluteDiffKg()).isEqualByComparingTo("40.000");
-        assertThat(dashboard.bands().green()).isEqualTo(1);
-        assertThat(dashboard.bands().red()).isEqualTo(1);
+        assertThat(dashboard.quantity().dispatchNetKg()).isEqualByComparingTo("100");
+        assertThat(dashboard.quantity().deliveryNetKg()).isEqualByComparingTo("100");
         assertThat(dashboard.discrepancies().open()).isEqualTo(2);
         assertThat(dashboard.discrepancies().overdue()).isEqualTo(1);
         assertThat(dashboard.overdueDiscrepancies()).extracting("discrepancyNo").containsExactly("UY-1");
-        assertThat(dashboard.largestDifferences()).extracting("shipmentNo").containsExactly("SHP-2", "SHP-1");
     }
 
     @Test
@@ -87,9 +84,9 @@ class ReportQueryAdapterTest {
     void shouldSumSubcontractorStats() {
         UUID site = UUID.randomUUID();
         SeedRows seed = new SeedRows(jdbc);
-        seed.shipment(site, new Shipment("SHP-1", "COMPLETED", "GREEN", "0.000", false));
-        seed.shipment(site, new Shipment("SHP-2", "AWAITING_DELIVERY", "RED", "-40.000", true));
-        seed.shipment(site, new Shipment("SHP-3", "AWAITING_DELIVERY", "YELLOW", "10.000", true));
+        seed.shipment(site, new Shipment("SHP-1", "COMPLETED", false));
+        seed.shipment(site, new Shipment("SHP-2", "AWAITING_DELIVERY", true));
+        seed.shipment(site, new Shipment("SHP-3", "AWAITING_DELIVERY", true));
 
         var subcontractors = reports.findSubcontractorStats(PERIOD, scope(site));
 
@@ -104,8 +101,8 @@ class ReportQueryAdapterTest {
         UUID site = UUID.randomUUID();
         UUID other = UUID.randomUUID();
         SeedRows seed = new SeedRows(jdbc);
-        seed.shipment(site, new Shipment("SHP-1", "COMPLETED", "GREEN", "0.000", false));
-        seed.shipment(other, new Shipment("SHP-2", "COMPLETED", "GREEN", "0.000", false));
+        seed.shipment(site, new Shipment("SHP-1", "COMPLETED", false));
+        seed.shipment(other, new Shipment("SHP-2", "COMPLETED", false));
 
         assertThat(reports.findSubcontractorStats(PERIOD, scope(site)).get(0).shipmentCount())
                 .isEqualTo(1);

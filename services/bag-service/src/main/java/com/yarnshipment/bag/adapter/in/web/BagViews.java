@@ -17,15 +17,14 @@ final class BagViews {
 
     static BagView toView(Bag bag) {
         return new BagView(
-                        bag.id(),
-                        bag.uniqueKey(),
-                        com.yarnshipment.bag.adapter.in.web.api.model.PackageType.valueOf(
-                                bag.packageType().name()),
-                        bag.lotNo(),
-                        bag.qualityGradeCode(),
-                        com.yarnshipment.bag.adapter.in.web.api.model.BagStatus.valueOf(
-                                bag.status().name()))
-                .reservedShipmentId(bag.reservedShipmentId());
+                bag.id(),
+                bag.uniqueKey(),
+                com.yarnshipment.bag.adapter.in.web.api.model.PackageType.valueOf(
+                        bag.packageType().name()),
+                bag.lotNo(),
+                bag.qualityGradeCode(),
+                com.yarnshipment.bag.adapter.in.web.api.model.BagStatus.valueOf(
+                        bag.status().name()));
     }
 
     static LockedLotView toView(LockedLot lot) {

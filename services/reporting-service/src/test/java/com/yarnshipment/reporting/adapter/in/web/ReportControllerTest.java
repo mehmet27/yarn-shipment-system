@@ -60,19 +60,14 @@ class ReportControllerTest {
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.shipments.total").isEqualTo(TestDashboards.TOTAL);
-        assertThat(result)
-                .bodyJson()
-                .extractingPath("$.quantity.absoluteDiffKg")
-                .isEqualTo("40.000");
-        assertThat(result)
-                .bodyJson()
-                .extractingPath("$.largestDifferences[0].band")
-                .isEqualTo("RED");
+        assertThat(result).bodyJson().extractingPath("$.quantity.deliveryNetKg").isEqualTo("960.000");
+        assertThat(result).bodyJson().doesNotHavePath("$.bands");
+        assertThat(result).bodyJson().doesNotHavePath("$.largestDifferences");
         assertThat(result).bodyJson().extractingPath("$.discrepancies.overdue").isEqualTo(1);
     }
 
     @Test
-    @DisplayName("Fasoncu raporu oranı ve ortalamayı hesaplanmış döner")
+    @DisplayName("Fasoncu raporu uyuşmazlık oranını hesaplanmış döner")
     void shouldReturnSubcontractorReport() {
         when(listSubcontractors.listSubcontractorReport(any())).thenReturn(List.of(TestFigures.subcontractor()));
 
@@ -80,10 +75,7 @@ class ReportControllerTest {
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$[0].discrepancyRate").isEqualTo("25.00");
-        assertThat(result)
-                .bodyJson()
-                .extractingPath("$[0].averageAbsoluteDiffKg")
-                .isEqualTo("2.500");
+        assertThat(result).bodyJson().doesNotHavePath("$[0].averageAbsoluteDiffKg");
     }
 
     @Test

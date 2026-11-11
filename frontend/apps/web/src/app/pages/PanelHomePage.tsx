@@ -3,6 +3,7 @@ import { Button, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
 import { Link } from 'react-router';
 import { Can, useCurrentUser } from '@/modules/auth';
 import { DashboardSection } from '@/modules/report';
+import { PendingWeightDecisions } from '@/modules/shipment';
 
 export function PanelHomePage() {
   const { t } = useTranslation();
@@ -12,6 +13,7 @@ export function PanelHomePage() {
       <Title order={1} size="h2">
         {t('home.welcome', { name: user?.fullName ?? '' })}
       </Title>
+      <PendingWeightDecisions />
       <Can
         permission="REPORT_VIEW"
         fallback={

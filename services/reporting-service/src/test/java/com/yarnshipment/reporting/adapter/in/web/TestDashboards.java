@@ -1,6 +1,5 @@
 package com.yarnshipment.reporting.adapter.in.web;
 
-import com.yarnshipment.reporting.domain.model.BandCounts;
 import com.yarnshipment.reporting.domain.model.Dashboard;
 import com.yarnshipment.reporting.domain.model.OpenDiscrepancies;
 import com.yarnshipment.reporting.domain.model.OverdueDiscrepancy;
@@ -30,9 +29,7 @@ final class TestDashboards {
                 new ReportPeriod(LocalDate.parse("2026-11-01"), LocalDate.parse("2026-11-03")),
                 new ShipmentTotals(TOTAL, 2, 1, 1, 1),
                 TestFigures.quantity(),
-                new BandCounts(1, 0, 1),
                 new OpenDiscrepancies(OPEN, 1, 2, 1),
-                overdue,
-                List.of(TestFigures.largest()));
+                overdue);
     }
 }

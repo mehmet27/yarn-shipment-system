@@ -40,7 +40,6 @@ public class ResolveDiscrepancyService implements ResolveDiscrepancyUseCase {
                 command.actor().userId(),
                 at));
         decisionPort.saveResolution(resolved, command.actor().userId(), at);
-        // CLAIM_JUSTIFIED için CLAIM_ADJUSTMENT bakiye düzeltmesi paralel ledger işinde bağlanacak; burada olay yok.
         return resolved;
     }
 }

@@ -17,10 +17,4 @@ public record SubcontractorBalance(
         int shipmentCount,
         BigDecimal dispatchedKg,
         BigDecimal deliveredKg,
-        BigDecimal inTransitKg) {
-
-    /** Teslim edilmiş sevkiyatlarda çıkış − teslim: fasonda ya da yolda kaybolan miktar (fire). */
-    public BigDecimal differenceKg() {
-        return dispatchedKg.subtract(inTransitKg).subtract(deliveredKg);
-    }
-}
+        BigDecimal inTransitKg) {}

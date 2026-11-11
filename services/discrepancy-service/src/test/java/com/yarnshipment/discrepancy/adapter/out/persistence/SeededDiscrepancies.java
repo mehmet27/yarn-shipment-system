@@ -27,7 +27,6 @@ final class SeededDiscrepancies {
 
     static void seed(ComparisonSeeder comparisons) {
         comparisons.seed(
-                null,
                 List.of(
                         Finding.of(ComparisonRule.QUANTITY_DISPATCH_MISSING, null, TestComparisons.DISPATCH_KG),
                         Finding.of(ComparisonRule.DOCUMENT_MISSING, null, null)),

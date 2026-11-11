@@ -5,8 +5,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Kantar uyuşmazlığı: tartı beklenen yükü tutmadı, müdürün kararı bekleniyor. Bildirim servisi müdüre haber verir.
- * Kişisel veri taşımaz (EVT-08).
+ * Kantar uyuşmazlığı: tartı beklenen yükü tutmadı, müdürün kararı bekleniyor. Müdüre bildirim, panel ana
+ * sayfasındaki karar bekleyen sevkiyat uyarısıdır. Kişisel veri taşımaz (EVT-08).
  *
  * @param shipmentId sevkiyat
  * @param siteId çıkış lokasyonu

@@ -3,12 +3,9 @@ package com.yarnshipment.reporting.domain.model;
 import java.math.BigDecimal;
 
 /**
- * Karşılaştırması tamamlanan sevkiyatların kilo toplamları.
+ * Tamamlanan sevkiyatların kilo toplamları.
  *
  * @param dispatchNetKg çıkış net toplamı
- * @param deliveryNetKg teslim net toplamı
- * @param absoluteDiffKg sevkiyat başına mutlak farkların toplamı
- * @param comparedShipments karşılaştırılan sevkiyat sayısı
+ * @param deliveryNetKg fasoncuya ulaşan net toplam (irsaliyeyle tamamlananlar)
  */
-public record QuantitySummary(
-        BigDecimal dispatchNetKg, BigDecimal deliveryNetKg, BigDecimal absoluteDiffKg, int comparedShipments) {}
+public record QuantitySummary(BigDecimal dispatchNetKg, BigDecimal deliveryNetKg) {}

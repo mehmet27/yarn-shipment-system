@@ -14,7 +14,7 @@ public enum MovementKind {
     YARN_FROM_SUBCONTRACTOR(Sign.NEGATIVE),
     /** Fasoncunun elindeki iplikten başka fasoncuya gönderilen kısım; gönderenin bakiyesini düşer. */
     TRANSFER_OUT(Sign.NEGATIVE),
-    /** Haklı kalite itirazının karara bağlanması; tanımlıdır, itiraz akışına henüz bağlı değildir. */
+    /** Haklı kalite itirazının karara bağlanması; itiraz kilosu iplik bakiyesinden düşer (eksi). */
     CLAIM_ADJUSTMENT(Sign.EITHER),
     /** Excel'den açılış bakiyesi. */
     OPENING(Sign.EITHER),

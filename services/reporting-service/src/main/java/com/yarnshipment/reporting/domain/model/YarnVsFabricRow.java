@@ -5,7 +5,13 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
-/** Fasoncu bazında giden iplik ↔ gelen kumaş toplamı. */
+/**
+ * Fasoncu bazında giden iplik ↔ gelen kumaş toplamı. Fire sınırını aşan sevkiyatların sayısı ve toplam fire kilosu
+ * ceza değil rapordur (S14).
+ *
+ * @param overLimitShipmentCount fire sınırını aşan sevkiyat sayısı
+ * @param overLimitFireKg fire sınırını aşan sevkiyatların toplam fire kilosu (T − K)
+ */
 public record YarnVsFabricRow(
         UUID subcontractorId,
         String subcontractorName,
@@ -13,7 +19,9 @@ public record YarnVsFabricRow(
         BigDecimal returnedYarnKg,
         BigDecimal fabricKg,
         BigDecimal actualFireRate,
-        BigDecimal shortageKg) {
+        BigDecimal shortageKg,
+        int overLimitShipmentCount,
+        BigDecimal overLimitFireKg) {
 
     /** Dosyaları fasoncuya göre toplar; fire oranı toplamlardan, eksik kilo dosya eksiklerinin toplamından gelir. */
     public static List<YarnVsFabricRow> aggregate(List<FireFile> files) {
@@ -31,6 +39,7 @@ public record YarnVsFabricRow(
         BigDecimal returned = sum(group, FireFile::returnedYarnKg);
         BigDecimal fabric = sum(group, FireFile::fabricKg);
         BigDecimal shortage = sum(group, FireFile::shortageKg);
+        List<FireFile> over = group.stream().filter(FireFile::exceedsLimit).toList();
         return new YarnVsFabricRow(
                 group.get(0).subcontractorId(),
                 group.get(0).subcontractorName(),
@@ -38,7 +47,9 @@ public record YarnVsFabricRow(
                 returned,
                 fabric,
                 FireFile.actualFireRate(sent.subtract(returned), fabric),
-                shortage.setScale(FireFile.KG_SCALE, RoundingMode.HALF_UP));
+                shortage.setScale(FireFile.KG_SCALE, RoundingMode.HALF_UP),
+                over.size(),
+                sum(over, FireFile::fireKg).setScale(FireFile.KG_SCALE, RoundingMode.HALF_UP));
     }
 
     private static BigDecimal sum(List<FireFile> files, java.util.function.Function<FireFile, BigDecimal> getter) {

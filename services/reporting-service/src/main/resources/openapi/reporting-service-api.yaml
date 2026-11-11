@@ -323,7 +323,7 @@ components:
           type: string
     DashboardView:
       type: object
-      required: [from, to, shipments, quantity, bands, discrepancies, overdueDiscrepancies, largestDifferences]
+      required: [from, to, shipments, quantity, discrepancies, overdueDiscrepancies]
       properties:
         from:
           type: string
@@ -335,8 +335,6 @@ components:
           $ref: '#/components/schemas/ShipmentTotalsView'
         quantity:
           $ref: '#/components/schemas/QuantityView'
-        bands:
-          $ref: '#/components/schemas/BandCountsView'
         discrepancies:
           $ref: '#/components/schemas/OpenDiscrepanciesView'
         overdueDiscrepancies:
@@ -344,11 +342,6 @@ components:
           description: Süresi en çok geçen önce gelir; en çok 10 kayıt
           items:
             $ref: '#/components/schemas/OverdueDiscrepancyView'
-        largestDifferences:
-          type: array
-          description: Mutlak kilo farkı en büyük 5 sevkiyat
-          items:
-            $ref: '#/components/schemas/LargestDifferenceView'
     ShipmentTotalsView:
       type: object
       required: [total, inProgress, inReview, completed, cancelled]
@@ -371,31 +364,13 @@ components:
           format: int32
     QuantityView:
       type: object
-      required: [dispatchNetKg, deliveryNetKg, absoluteDiffKg, comparedShipments]
-      description: Yalnızca karşılaştırması tamamlanan sevkiyatlar
+      required: [dispatchNetKg, deliveryNetKg]
+      description: Yalnızca irsaliyeyle tamamlanan sevkiyatlar
       properties:
         dispatchNetKg:
           type: string
         deliveryNetKg:
           type: string
-        absoluteDiffKg:
-          type: string
-        comparedShipments:
-          type: integer
-          format: int32
-    BandCountsView:
-      type: object
-      required: [green, yellow, red]
-      properties:
-        green:
-          type: integer
-          format: int32
-        yellow:
-          type: integer
-          format: int32
-        red:
-          type: integer
-          format: int32
     OpenDiscrepanciesView:
       type: object
       description: Dönemden bağımsız, şu an açık olan uyuşmazlıklar
@@ -431,26 +406,9 @@ components:
         dueAt:
           type: string
           format: date-time
-    LargestDifferenceView:
-      type: object
-      required: [shipmentId, shipmentNo, diffKg, band]
-      properties:
-        shipmentId:
-          type: string
-          format: uuid
-        shipmentNo:
-          type: string
-        diffKg:
-          type: string
-          description: Çıkış net − teslim net
-        diffPct:
-          type: string
-        band:
-          type: string
-          enum: [GREEN, YELLOW, RED]
     PartyStatsView:
       type: object
-      required: [id, shipmentCount, discrepantShipmentCount, discrepancyRate, averageAbsoluteDiffKg]
+      required: [id, shipmentCount, discrepantShipmentCount, discrepancyRate]
       properties:
         id:
           type: string
@@ -459,15 +417,13 @@ components:
         shipmentCount:
           type: integer
           format: int32
-          description: Karşılaştırması tamamlanan sevkiyat sayısı
+          description: Çıkış tartısı yapılmış sevkiyat sayısı
         discrepantShipmentCount:
           type: integer
           format: int32
         discrepancyRate:
           type: string
           description: Uyuşmazlıklı sevkiyat yüzdesi
-        averageAbsoluteDiffKg:
-          type: string
     ShipmentRowView:
       type: object
       required: [shipmentId, shipmentNo, subcontractorId, status, hadDiscrepancy, createdAt]
@@ -486,14 +442,6 @@ components:
           type: string
         deliveryNetKg:
           type: string
-        diffKg:
-          type: string
-          description: Çıkış net − teslim net; karşılaştırılmadıysa yoktur
-        diffPct:
-          type: string
-        band:
-          type: string
-          enum: [GREEN, YELLOW, RED]
         hadDiscrepancy:
           type: boolean
         createdAt:
@@ -504,7 +452,7 @@ components:
           format: date-time
     SubcontractorBalanceView:
       type: object
-      required: [subcontractorId, shipmentCount, dispatchedKg, deliveredKg, inTransitKg, differenceKg]
+      required: [subcontractorId, shipmentCount, dispatchedKg, deliveredKg, inTransitKg]
       properties:
         subcontractorId:
           type: string
@@ -521,9 +469,6 @@ components:
         inTransitKg:
           type: string
           description: Henüz teslim kaydı olmayan sevkiyatların çıkış net toplamı
-        differenceKg:
-          type: string
-          description: Teslim edilmiş sevkiyatlarda çıkış − teslim (fire)
     BalanceMatrixRowView:
       type: object
       required: [yarnType, subcontractorId, subcontractorName, balanceKg, inTransitKg]
@@ -553,7 +498,7 @@ components:
         invoicedAt: {type: string, format: date-time, nullable: true}
     YarnVsFabricRowView:
       type: object
-      required: [subcontractorId, subcontractorName, sentKg, returnedYarnKg, fabricKg, actualFireRate, shortageKg]
+      required: [subcontractorId, subcontractorName, sentKg, returnedYarnKg, fabricKg, actualFireRate, shortageKg, overLimitShipmentCount, overLimitFireKg]
       properties:
         subcontractorId: {type: string, format: uuid}
         subcontractorName: {type: string}
@@ -562,6 +507,14 @@ components:
         fabricKg: {type: string}
         actualFireRate: {type: string}
         shortageKg: {type: string}
+        overLimitShipmentCount:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Fire sınırını aşan sevkiyat sayısı (rapor, ceza değil)
+        overLimitFireKg:
+          type: string
+          description: Fire sınırını aşan sevkiyatların toplam fire kilosu (T − K)
     OpeningRowRequest:
       type: object
       required: [subcontractorId, subcontractorName, yarnType, netKg]

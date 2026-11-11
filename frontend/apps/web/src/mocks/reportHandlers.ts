@@ -18,10 +18,7 @@ const MOCK_DASHBOARD: DashboardView = {
   quantity: {
     dispatchNetKg: '24000.000',
     deliveryNetKg: '23820.500',
-    absoluteDiffKg: '310.500',
-    comparedShipments: 7,
   },
-  bands: { green: 4, yellow: 2, red: 1 },
   discrepancies: { open: 3, red: 1, yellow: 2, overdue: 1 },
   overdueDiscrepancies: [
     {
@@ -32,15 +29,6 @@ const MOCK_DASHBOARD: DashboardView = {
       dueAt: '2026-11-01T09:00:00Z',
     },
   ],
-  largestDifferences: [
-    {
-      shipmentId: 'shp-0007',
-      shipmentNo: 'SV-2026-0007',
-      diffKg: '180.000',
-      diffPct: '3.60',
-      band: 'RED',
-    },
-  ],
 };
 
 const MOCK_SUBCONTRACTORS: PartyStatsView[] = [
@@ -49,14 +37,12 @@ const MOCK_SUBCONTRACTORS: PartyStatsView[] = [
     shipmentCount: 4,
     discrepantShipmentCount: 2,
     discrepancyRate: '50.00',
-    averageAbsoluteDiffKg: '62.500',
   },
   {
     id: 'b2c3d4e5-0000-7000-8000-000000000002',
     shipmentCount: 3,
     discrepantShipmentCount: 0,
     discrepancyRate: '0.00',
-    averageAbsoluteDiffKg: '4.000',
   },
 ];
 
@@ -68,9 +54,6 @@ const MOCK_SHIPMENTS: ShipmentRowView[] = [
     status: 'COMPLETED',
     dispatchNetKg: '5000.000',
     deliveryNetKg: '4820.000',
-    diffKg: '180.000',
-    diffPct: '3.60',
-    band: 'RED',
     hadDiscrepancy: true,
     createdAt: '2026-11-02T09:00:00Z',
   },
@@ -92,7 +75,6 @@ const MOCK_BALANCES: SubcontractorBalanceView[] = [
     dispatchedKg: '7000.000',
     deliveredKg: '4820.000',
     inTransitKg: '2000.000',
-    differenceKg: '180.000',
   },
 ];
 
@@ -161,6 +143,8 @@ const MOCK_YARN_VS_FABRIC: YarnVsFabricRowView[] = [
     fabricKg: '900.000',
     actualFireRate: '0.10',
     shortageKg: '60.000',
+    overLimitShipmentCount: 1,
+    overLimitFireKg: '100.000',
   },
 ];
 

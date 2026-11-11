@@ -2,7 +2,6 @@ import type { GetDashboardParams } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Group, Switch } from '@iplik/ui';
 import { useReportExport } from '../hooks/useReportExport';
-import { PrintableReport } from './PrintableReport';
 
 export type ExportToolbarProps = {
   params: GetDashboardParams;
@@ -12,7 +11,7 @@ export type ExportToolbarProps = {
   logo: string | null;
 };
 
-/** Excel indirme ve PDF (yazdır) düğmeleri; ekrandaki dönem ve süzgeç tüm sayfalara uygulanır. */
+/** Excel ve PDF indirme düğmeleri; ekrandaki dönem ve süzgeç tüm sayfalara uygulanır. */
 export function ExportToolbar({
   params,
   isOnlyDiscrepant,
@@ -21,7 +20,7 @@ export function ExportToolbar({
   logo,
 }: ExportToolbarProps) {
   const { t } = useTranslation();
-  const { busy, hasFailed, printTables, run } = useReportExport(params, isOnlyDiscrepant);
+  const { busy, hasFailed, run } = useReportExport(params, isOnlyDiscrepant, logo);
   return (
     <>
       <Group>
@@ -53,9 +52,6 @@ export function ExportToolbar({
         <Alert color="red" role="alert">
           {t('report.export.failed')}
         </Alert>
-      )}
-      {printTables !== null && (
-        <PrintableReport tables={printTables} title={t('report.title')} logo={logo} />
       )}
     </>
   );

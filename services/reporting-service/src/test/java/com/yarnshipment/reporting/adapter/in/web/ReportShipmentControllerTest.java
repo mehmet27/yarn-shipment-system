@@ -9,7 +9,6 @@ import com.yarnshipment.reporting.application.port.in.GetDashboardUseCase;
 import com.yarnshipment.reporting.application.port.in.ListShipmentReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorBalanceUseCase;
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorReportUseCase;
-import com.yarnshipment.reporting.domain.model.ShipmentComparison;
 import com.yarnshipment.reporting.domain.model.ShipmentRow;
 import com.yarnshipment.reporting.domain.model.SubcontractorBalance;
 import java.math.BigDecimal;
@@ -66,12 +65,8 @@ class ReportShipmentControllerTest {
                         "SHP-1",
                         UUID.randomUUID(),
                         "COMPLETED",
-                        new ShipmentComparison(
-                                new BigDecimal("1000.000"),
-                                new BigDecimal("990.000"),
-                                new BigDecimal("10.000"),
-                                new BigDecimal("1.00"),
-                                "GREEN"),
+                        new BigDecimal("1000.000"),
+                        new BigDecimal("990.000"),
                         false,
                         Instant.parse("2026-11-02T09:00:00Z"),
                         null)));
@@ -80,14 +75,14 @@ class ReportShipmentControllerTest {
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$[0].shipmentNo").isEqualTo("SHP-1");
-        assertThat(result).bodyJson().extractingPath("$[0].diffKg").isEqualTo("10.000");
-        assertThat(result).bodyJson().extractingPath("$[0].band").isEqualTo("GREEN");
+        assertThat(result).bodyJson().extractingPath("$[0].deliveryNetKg").isEqualTo("990.000");
+        assertThat(result).bodyJson().doesNotHavePath("$[0].band");
         assertThat(result).bodyJson().extractingPath("$[0].hadDiscrepancy").isEqualTo(false);
         assertThat(result).bodyJson().doesNotHavePath("$[0].driverId");
     }
 
     @Test
-    @DisplayName("Fasoncu bakiyesi çıkış, teslim, yolda kalan ve farkı döner; izinsiz kullanıcı 403 alır")
+    @DisplayName("Fasoncu bakiyesi çıkış, teslim ve yolda kalanı döner; izinsiz kullanıcı 403 alır")
     void shouldReturnSubcontractorBalance() {
         when(listBalances.listSubcontractorBalance(any()))
                 .thenReturn(List.of(new SubcontractorBalance(
@@ -101,7 +96,7 @@ class ReportShipmentControllerTest {
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$[0].inTransitKg").isEqualTo("500.000");
-        assertThat(result).bodyJson().extractingPath("$[0].differenceKg").isEqualTo("10.000");
+        assertThat(result).bodyJson().doesNotHavePath("$[0].differenceKg");
         assertThat(get(
                         BASE + "/subcontractor-balance",
                         TestTokens.token("warehouse").build()))

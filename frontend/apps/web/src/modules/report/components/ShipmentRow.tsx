@@ -2,7 +2,7 @@ import type { ShipmentRowView } from '@iplik/api-client';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Anchor, Table } from '@iplik/ui';
 import { Link } from 'react-router';
-import { formatKilograms, formatPercent } from '../format';
+import { formatKilograms } from '../format';
 import { usePartyNames } from '../hooks/usePartyNames';
 
 const DASH = '—';
@@ -26,9 +26,6 @@ export function ShipmentRow({ row }: { row: ShipmentRowView }) {
       <Table.Td>{t(`shipment.status.${row.status}`)}</Table.Td>
       <Table.Td>{orDash(row.dispatchNetKg, formatKilograms)}</Table.Td>
       <Table.Td>{orDash(row.deliveryNetKg, formatKilograms)}</Table.Td>
-      <Table.Td>{orDash(row.diffKg, formatKilograms)}</Table.Td>
-      <Table.Td>{orDash(row.diffPct, formatPercent)}</Table.Td>
-      <Table.Td>{orDash(row.band, (band) => t(`report.dashboard.band.${band}`))}</Table.Td>
       <Table.Td>{formatDateTime(row.createdAt)}</Table.Td>
     </Table.Tr>
   );

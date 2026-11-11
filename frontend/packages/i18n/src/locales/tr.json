@@ -940,7 +940,6 @@
       "shipments": "Çıkışı yapılan sevkiyat",
       "discrepant": "Uyuşmazlıklı",
       "rate": "Uyuşmazlık oranı",
-      "averageDiff": "Ortalama fark",
       "empty": "Bu dönemde çıkışı yapılmış sevkiyat yok."
     },
     "dashboard": {
@@ -950,17 +949,9 @@
       "inProgress": "Süren",
       "inReview": "İncelemede",
       "completed": "Tamamlanan",
-      "comparison": "Karşılaştırma",
-      "compared": "Karşılaştırılan sevkiyat",
-      "comparedHint": "Teslim girişi yapılmış olanlar",
-      "band": {
-        "GREEN": "Yeşil",
-        "YELLOW": "Sarı",
-        "RED": "Kırmızı"
-      },
+      "comparison": "Miktar",
       "dispatchNet": "Çıkış net",
       "deliveryNet": "Teslim net",
-      "absoluteDiff": "Toplam mutlak fark",
       "discrepancies": "Açık uyuşmazlıklar",
       "open": "Açık",
       "openRed": "Kırmızı",
@@ -968,9 +959,7 @@
       "overdue": "Süresi geçen",
       "overdueList": "Süresi geçen uyuşmazlıklar",
       "noOverdue": "Süresi geçen uyuşmazlık yok.",
-      "dueAt": "Vade: {{at}}",
-      "largestList": "Kilo farkı en büyük sevkiyatlar",
-      "noDifferences": "Bu dönemde fark kaydı yok."
+      "dueAt": "Vade: {{at}}"
     },
     "range": {
       "from": "Başlangıç tarihi",
@@ -989,20 +978,15 @@
       "generatedBy": "Oluşturan",
       "filter": "Süzgeç",
       "cancelled": "İptal",
-      "differenceRate": "Mutlak fark oranı (çıkış net üzerinden)",
       "indicator": "Gösterge",
       "value": "Değer",
       "discrepancyNo": "Uyuşmazlık no",
       "severity": "Önem",
       "dueAt": "Vade",
       "shipmentNo": "Sevkiyat no",
-      "diffKg": "Fark (kg)",
-      "diffPct": "Fark oranı",
-      "band": "Bant",
       "sheets": {
         "summary": "Özet",
         "overdue": "Süresi geçenler",
-        "largest": "En büyük farklar",
         "subcontractors": "Fasoncular",
         "shipments": "Sevkiyat dökümü",
         "balance": "Fasoncu bakiye",
@@ -1025,8 +1009,7 @@
       "completedAt": "Tamamlanma",
       "dispatched": "Gönderilen (çıkış net)",
       "delivered": "Fasoncuya ulaşan (tamamlanan sevkiyatlar)",
-      "inTransit": "Yolda kalan",
-      "loss": "Fire (çıkış − yolda − teslim)"
+      "inTransit": "Yolda kalan"
     },
     "logo": {
       "add": "Rapor logosu ekle",

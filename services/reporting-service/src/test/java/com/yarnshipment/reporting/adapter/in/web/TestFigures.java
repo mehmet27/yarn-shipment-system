@@ -1,6 +1,5 @@
 package com.yarnshipment.reporting.adapter.in.web;
 
-import com.yarnshipment.reporting.domain.model.LargestDifference;
 import com.yarnshipment.reporting.domain.model.OverdueDiscrepancy;
 import com.yarnshipment.reporting.domain.model.PartyStats;
 import com.yarnshipment.reporting.domain.model.QuantitySummary;
@@ -16,16 +15,11 @@ final class TestFigures {
     private TestFigures() {}
 
     static QuantitySummary quantity() {
-        return new QuantitySummary(new BigDecimal("1000.000"), new BigDecimal("960.000"), new BigDecimal("40.000"), 2);
-    }
-
-    static LargestDifference largest() {
-        return new LargestDifference(
-                UUID.randomUUID(), "SHP-7", new BigDecimal("40.000"), new BigDecimal("4.00"), "RED");
+        return new QuantitySummary(new BigDecimal("1000.000"), new BigDecimal("960.000"));
     }
 
     static PartyStats subcontractor() {
-        return new PartyStats(UUID.randomUUID(), PARTY_SHIPMENTS, 1, new BigDecimal("10.000"));
+        return new PartyStats(UUID.randomUUID(), PARTY_SHIPMENTS, 1);
     }
 
     static OverdueDiscrepancy overdue() {

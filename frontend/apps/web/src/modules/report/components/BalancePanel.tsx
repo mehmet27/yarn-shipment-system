@@ -21,7 +21,7 @@ export function BalancePanel({ params, isEnabled }: ReportPanelProps) {
             <Text size="sm" c="dimmed">
               {t('report.balance.note')}
             </Text>
-            <Table.ScrollContainer minWidth={640}>
+            <Table.ScrollContainer minWidth={560}>
               <Table striped>
                 <Table.Thead>
                   <Table.Tr>
@@ -30,7 +30,6 @@ export function BalancePanel({ params, isEnabled }: ReportPanelProps) {
                     <Table.Th>{t('report.export.dispatched')}</Table.Th>
                     <Table.Th>{t('report.export.delivered')}</Table.Th>
                     <Table.Th>{t('report.export.inTransit')}</Table.Th>
-                    <Table.Th>{t('report.export.loss')}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -41,7 +40,6 @@ export function BalancePanel({ params, isEnabled }: ReportPanelProps) {
                       <Table.Td>{formatKilograms(row.dispatchedKg)}</Table.Td>
                       <Table.Td>{formatKilograms(row.deliveredKg)}</Table.Td>
                       <Table.Td>{formatKilograms(row.inTransitKg)}</Table.Td>
-                      <Table.Td>{formatKilograms(row.differenceKg)}</Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>

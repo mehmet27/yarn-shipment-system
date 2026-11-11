@@ -20,8 +20,7 @@ final class PartyViews {
                 stats.id(),
                 stats.shipmentCount(),
                 stats.discrepantShipmentCount(),
-                stats.discrepancyRate().toPlainString(),
-                stats.averageAbsoluteDiffKg().toPlainString());
+                stats.discrepancyRate().toPlainString());
     }
 
     static SubcontractorBalanceView toView(SubcontractorBalance balance) {
@@ -30,8 +29,7 @@ final class PartyViews {
                 balance.shipmentCount(),
                 balance.dispatchedKg().toPlainString(),
                 balance.deliveredKg().toPlainString(),
-                balance.inTransitKg().toPlainString(),
-                balance.differenceKg().toPlainString());
+                balance.inTransitKg().toPlainString());
     }
 
     static ShipmentRowView toView(ShipmentRow row) {
@@ -42,14 +40,8 @@ final class PartyViews {
                 row.status(),
                 row.hadDiscrepancy(),
                 row.createdAt().atOffset(ZoneOffset.UTC));
-        var comparison = row.comparison();
-        view.setDispatchNetKg(plain(comparison.dispatchNetKg()));
-        view.setDeliveryNetKg(plain(comparison.deliveryNetKg()));
-        view.setDiffKg(plain(comparison.diffKg()));
-        view.setDiffPct(plain(comparison.diffPct()));
-        if (comparison.band() != null) {
-            view.setBand(ShipmentRowView.BandEnum.fromValue(comparison.band()));
-        }
+        view.setDispatchNetKg(plain(row.dispatchNetKg()));
+        view.setDeliveryNetKg(plain(row.deliveryNetKg()));
         if (row.completedAt() != null) {
             view.setCompletedAt(row.completedAt().atOffset(ZoneOffset.UTC));
         }

@@ -60,7 +60,6 @@ type PartyLike = {
   shipmentCount: number;
   discrepantShipmentCount: number;
   discrepancyRate: string;
-  averageAbsoluteDiffKg: string;
 };
 
 /** "Yalnızca uyuşmazlıklılar" süzgeci; tüm rapor türlerinde aynı kural. */
@@ -68,41 +67,25 @@ export function filterRows<T extends PartyLike>(rows: T[], onlyDiscrepant: boole
   return onlyDiscrepant ? rows.filter((row) => row.discrepantShipmentCount > 0) : rows;
 }
 
-/** Toplam satırı: oran ve ortalama fark sevkiyat sayısıyla ağırlıklıdır, satır oranlarının ortalaması değildir. */
+/** Toplam satırı: oran toplam sayılardan hesaplanır, satır oranlarının ortalaması değildir. */
 export function partyTotals(rows: PartyLike[]): {
   shipments: number;
   discrepant: number;
   rate: number;
-  averageDiffKg: number;
 } {
   const shipments = rows.reduce((sum, row) => sum + row.shipmentCount, 0);
   const discrepant = rows.reduce((sum, row) => sum + row.discrepantShipmentCount, 0);
-  const weightedDiff = rows.reduce(
-    (sum, row) => sum + Number(row.averageAbsoluteDiffKg) * row.shipmentCount,
-    0,
-  );
   return {
     shipments,
     discrepant,
     rate: shipments === 0 ? 0 : (discrepant / shipments) * PERCENT_SCALE,
-    averageDiffKg: shipments === 0 ? 0 : round3(weightedDiff / shipments),
   };
 }
 
-/** Karşılaştırılan toplam çıkış kilosuna göre mutlak fark yüzdesi; çıkış 0 ise 0. */
 /** Boş olabilen kilo/yüzde dizesi → hücre; yoksa boş metin. */
 export const optionalKg = (value: string | undefined): ReportCell =>
   value === undefined ? text('') : kg(value);
-export const optionalPercent = (value: string | undefined): ReportCell =>
-  value === undefined ? text('') : percent(value);
 
 export function sumKg(values: (string | undefined)[]): number {
   return round3(values.reduce((sum, value) => sum + (value === undefined ? 0 : Number(value)), 0));
-}
-
-export function differencePercent(dashboard: DashboardView): number {
-  const dispatch = Number(dashboard.quantity.dispatchNetKg);
-  return dispatch === 0
-    ? 0
-    : (Number(dashboard.quantity.absoluteDiffKg) / dispatch) * PERCENT_SCALE;
 }

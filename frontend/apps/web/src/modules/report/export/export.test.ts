@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { buildTables } from './buildTables';
 import { formatCell } from './formatCell';
 import type { ReportBundle, ReportCell, ReportMeta, ReportTable } from './reportModel';
-import { differencePercent, filterRows, partyTotals } from './reportModel';
+import { filterRows, partyTotals } from './reportModel';
 import {
   buildWorkbookBlob,
   columnWidths,
@@ -24,10 +24,7 @@ const dashboard: DashboardView = {
   quantity: {
     dispatchNetKg: '24000.000',
     deliveryNetKg: '23820.500',
-    absoluteDiffKg: '240.000',
-    comparedShipments: 7,
   },
-  bands: { green: 4, yellow: 2, red: 1 },
   discrepancies: { open: 3, red: 1, yellow: 2, overdue: 1 },
   overdueDiscrepancies: [
     {
@@ -38,9 +35,6 @@ const dashboard: DashboardView = {
       dueAt: '2026-11-01T09:00:00Z',
     },
   ],
-  largestDifferences: [
-    { shipmentId: 's1', shipmentNo: 'SV-1', diffKg: '180.000', diffPct: '3.60', band: 'RED' },
-  ],
 };
 const subcontractors: PartyStatsView[] = [
   {
@@ -48,14 +42,12 @@ const subcontractors: PartyStatsView[] = [
     shipmentCount: 4,
     discrepantShipmentCount: 2,
     discrepancyRate: '50.00',
-    averageAbsoluteDiffKg: '60.000',
   },
   {
     id: 'bbbbbbbb-2',
     shipmentCount: 6,
     discrepantShipmentCount: 0,
     discrepancyRate: '0.00',
-    averageAbsoluteDiffKg: '10.000',
   },
 ];
 const shipments: ShipmentRowView[] = [
@@ -66,9 +58,6 @@ const shipments: ShipmentRowView[] = [
     status: 'COMPLETED',
     dispatchNetKg: '1000.000',
     deliveryNetKg: '900.000',
-    diffKg: '100.000',
-    diffPct: '10.00',
-    band: 'RED',
     hadDiscrepancy: true,
     createdAt: '2026-11-02T09:00:00Z',
   },
@@ -89,7 +78,6 @@ const balances: SubcontractorBalanceView[] = [
     dispatchedKg: '1500.000',
     deliveredKg: '900.000',
     inTransitKg: '500.000',
-    differenceKg: '100.000',
   },
 ];
 const bundle: ReportBundle = {
@@ -111,41 +99,29 @@ const meta: ReportMeta = {
 const t = (key: string) => key;
 
 describe('rapor modeli', () => {
-  it('toplam satırı oranı ve ortalamayı sevkiyat sayısıyla ağırlıklandırır', () => {
+  it('toplam satırı oranı toplam sayılardan hesaplar', () => {
     const totals = partyTotals(subcontractors);
     expect(totals.shipments).toBe(10);
     expect(totals.discrepant).toBe(2);
     expect(totals.rate).toBe(20);
-    expect(totals.averageDiffKg).toBe(30);
   });
 
   it('boş listede toplam sıfırdır (sıfıra bölme yok)', () => {
-    expect(partyTotals([])).toEqual({ shipments: 0, discrepant: 0, rate: 0, averageDiffKg: 0 });
+    expect(partyTotals([])).toEqual({ shipments: 0, discrepant: 0, rate: 0 });
   });
 
   it('uyuşmazlık süzgeci yalnızca uyuşmazlıklı satırları bırakır', () => {
     expect(filterRows(subcontractors, true)).toHaveLength(1);
     expect(filterRows(subcontractors, false)).toHaveLength(2);
   });
-
-  it('mutlak fark oranı çıkış net üzerinden hesaplanır; çıkış 0 ise 0', () => {
-    expect(differencePercent(dashboard)).toBeCloseTo(1, 5);
-    expect(
-      differencePercent({
-        ...dashboard,
-        quantity: { ...dashboard.quantity, dispatchNetKg: '0.000' },
-      }),
-    ).toBe(0);
-  });
 });
 
 describe('tablolar ve biçim', () => {
-  it('altı tablo üretir: özet, süresi geçenler, en büyük farklar, fasoncu, döküm, bakiye', () => {
+  it('beş tablo üretir: özet, süresi geçenler, fasoncu, döküm, bakiye', () => {
     const tables = buildTables(bundle, meta, t);
     expect(tables.map((table) => table.title)).toEqual([
       'report.export.sheets.summary',
       'report.export.sheets.overdue',
-      'report.export.sheets.largest',
       'report.export.sheets.subcontractors',
       'report.export.sheets.shipments',
       'report.export.sheets.balance',
@@ -153,14 +129,14 @@ describe('tablolar ve biçim', () => {
   });
 
   it('süzgeç tablolara da uygulanır; toplam yalnızca görünen satırlardan hesaplanır', () => {
-    const [, , , partyTable] = buildTables(bundle, { ...meta, onlyDiscrepant: true }, t);
+    const [, , partyTable] = buildTables(bundle, { ...meta, onlyDiscrepant: true }, t);
     expect(partyTable?.rows).toHaveLength(1);
     expect(formatCell(partyTable?.total?.[1] ?? { kind: 'text', value: '' })).toBe('4');
   });
 
   it('boş tabloda toplam satırı yoktur', () => {
     const empty = { ...bundle, subcontractors: [] };
-    const [, , , partyTable] = buildTables(empty, meta, t);
+    const [, , partyTable] = buildTables(empty, meta, t);
     expect(partyTable?.total).toBeUndefined();
   });
 
@@ -173,7 +149,7 @@ describe('tablolar ve biçim', () => {
 
 describe('adlar', () => {
   it('çözülen kimlik ad olarak, çözülemeyen kısaltma olarak yazılır', () => {
-    const [, , , partyTable] = buildTables(bundle, meta, t);
+    const [, , partyTable] = buildTables(bundle, meta, t);
     expect(partyTable?.rows[0]?.[0]).toEqual({ kind: 'text', value: 'Ali Veli' });
     expect(partyTable?.rows[1]?.[0]).toEqual({ kind: 'text', value: 'bbbbbbbb' });
   });
@@ -195,46 +171,44 @@ describe('sevkiyat dökümü ve bakiye', () => {
   const emptyText = { kind: 'text', value: '' };
 
   it('dökümde eksik alanlar boş kalır', () => {
-    const table = buildTables(bundle, meta, t)[4];
+    const table = buildTables(bundle, meta, t)[3];
     expect(table?.rows).toHaveLength(2);
     expect(cellAt(table, 0, 1)).toEqual({ kind: 'text', value: 'cccccccc' });
     expect(cellAt(table, 1, 4)).toEqual(emptyText);
-    expect(cellAt(table, 1, 5)).toEqual(emptyText);
+    expect(cellAt(table, 1, 7)).toEqual(emptyText);
   });
 
   it('dökümün toplam satırı kiloları ve uyuşmazlık sayısını verir', () => {
-    const table = buildTables(bundle, meta, t)[4];
+    const table = buildTables(bundle, meta, t)[3];
     expect(totalAt(table, 3)).toEqual({ kind: 'kg', value: 1500 });
     expect(totalAt(table, 4)).toEqual({ kind: 'kg', value: 900 });
-    expect(totalAt(table, 8)).toEqual({ kind: 'count', value: 1 });
+    expect(totalAt(table, 5)).toEqual({ kind: 'count', value: 1 });
   });
 
   it('uyuşmazlık süzgeci dökümü de daraltır; boş dökümde toplam satırı yoktur', () => {
-    const filtered = buildTables(bundle, { ...meta, onlyDiscrepant: true }, t)[4];
+    const filtered = buildTables(bundle, { ...meta, onlyDiscrepant: true }, t)[3];
     expect(filtered?.rows).toHaveLength(1);
-    const none = buildTables({ ...bundle, shipments: [] }, meta, t)[4];
+    const none = buildTables({ ...bundle, shipments: [] }, meta, t)[3];
     expect(none?.total).toBeUndefined();
   });
 
-  it('bakiye tablosu fasoncu adını ve fireyi verir, toplam satırı toplar', () => {
-    const table = buildTables(bundle, meta, t)[5];
+  it('bakiye tablosu fasoncu adını verir, toplam satırı toplar', () => {
+    const table = buildTables(bundle, meta, t)[4];
     expect(cellAt(table, 0, 0)).toEqual({ kind: 'text', value: 'cccccccc' });
-    expect(cellAt(table, 0, 5)).toEqual({ kind: 'kg', value: 100 });
     expect(totalAt(table, 4)).toEqual({ kind: 'kg', value: 500 });
-    expect(buildTables({ ...bundle, balances: [] }, meta, t)[5]?.total).toBeUndefined();
+    expect(buildTables({ ...bundle, balances: [] }, meta, t)[4]?.total).toBeUndefined();
   });
 });
 
 describe('Excel çıktısı', () => {
   it('sayısal hücreler metne çevrilmez; kg ve oran biçim kodu taşır', () => {
-    const [, , , partyTable] = buildTables(bundle, meta, t);
+    const [, , partyTable] = buildTables(bundle, meta, t);
     if (partyTable === undefined) throw new Error('tablo yok');
     const data = toSheetData(partyTable);
     expect(data).toHaveLength(1 + 2 + 1);
     const row = data[1];
     expect(row?.[1]).toMatchObject({ type: Number, value: 4 });
     expect(row?.[3]).toMatchObject({ type: Number, value: 0.5, format: '0.00%' });
-    expect(row?.[4]).toMatchObject({ type: Number, value: 60, format: '#,##0.000' });
     expect(data[3]?.[0]).toMatchObject({ fontWeight: 'bold' });
   });
 

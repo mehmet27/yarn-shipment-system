@@ -227,7 +227,6 @@ export {
 export type {
   DashboardView,
   GetDashboardParams,
-  LargestDifferenceView,
   OpenDiscrepanciesView,
   OverdueDiscrepancyView,
   PartyStatsView,

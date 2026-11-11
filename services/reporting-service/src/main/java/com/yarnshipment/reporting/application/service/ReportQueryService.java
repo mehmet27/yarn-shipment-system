@@ -6,7 +6,6 @@ import com.yarnshipment.reporting.application.port.in.ListSubcontractorBalanceUs
 import com.yarnshipment.reporting.application.port.in.ListSubcontractorReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ReportQuery;
 import com.yarnshipment.reporting.application.port.out.ReportQueryPort;
-import com.yarnshipment.reporting.domain.model.BandCounts;
 import com.yarnshipment.reporting.domain.model.Dashboard;
 import com.yarnshipment.reporting.domain.model.OpenDiscrepancies;
 import com.yarnshipment.reporting.domain.model.PartyStats;
@@ -88,10 +87,8 @@ public class ReportQueryService
         return new Dashboard(
                 period,
                 new ShipmentTotals(0, 0, 0, 0, 0),
-                new QuantitySummary(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0),
-                new BandCounts(0, 0, 0),
+                new QuantitySummary(BigDecimal.ZERO, BigDecimal.ZERO),
                 new OpenDiscrepancies(0, 0, 0, 0),
-                List.of(),
                 List.of());
     }
 }

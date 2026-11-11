@@ -37,10 +37,8 @@ final class ReportQueryAdapter implements ReportQueryPort {
                 period,
                 dashboardReader.findTotals(period, scope),
                 dashboardReader.findQuantity(period, scope),
-                dashboardReader.findBands(period, scope),
                 discrepancyReader.findOpen(scope, now),
-                discrepancyReader.findOverdue(scope, now),
-                dashboardReader.findLargest(period, scope));
+                discrepancyReader.findOverdue(scope, now));
     }
 
     @Override

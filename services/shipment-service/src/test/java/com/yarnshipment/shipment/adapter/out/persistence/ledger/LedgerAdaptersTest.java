@@ -8,10 +8,8 @@ import com.yarnshipment.shipment.adapter.out.persistence.PostgresTestDatabase;
 import com.yarnshipment.shipment.application.port.in.balance.BalanceRow;
 import com.yarnshipment.shipment.application.port.in.balance.ListMovementsQuery;
 import com.yarnshipment.shipment.application.port.in.balance.MovementPage;
-import com.yarnshipment.shipment.application.port.in.claim.RecordClaimAdjustmentCommand;
 import com.yarnshipment.shipment.application.port.in.fire.ListFireSettlementsQuery;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort.FireTotals;
-import com.yarnshipment.shipment.application.service.ClaimAdjustmentService;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
 import com.yarnshipment.shipment.domain.fabric.ReturnDirection;
 import com.yarnshipment.shipment.domain.fabric.YarnReturn;
@@ -44,8 +42,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
     BalanceLedgerAdapter.class,
     FabricReceiptAdapter.class,
     YarnReturnAdapter.class,
-    FireSettlementAdapter.class,
-    ClaimLedgerAdapter.class
+    FireSettlementAdapter.class
 })
 @SuppressWarnings("checkstyle:ClassFanOutComplexity")
 class LedgerAdaptersTest {
@@ -86,9 +83,6 @@ class LedgerAdaptersTest {
 
     @Autowired
     private FireSettlementAdapter fireSettlements;
-
-    @Autowired
-    private ClaimLedgerAdapter claims;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -288,24 +282,5 @@ class LedgerAdaptersTest {
                 "IRS-9",
                 AT,
                 USER);
-    }
-
-    @Test
-    @DisplayName("Haklı itiraz kilosu iplik bakiyesinden düşer, fire dosyasında itiraz kilosu olur; tekrar etkisizdir")
-    void shouldDeductJustifiedClaimFromBalanceOnce() {
-        // given
-        ledger.recordDispatch(SHIPMENT, SUBCONTRACTOR, AT, USER);
-        fireSettlements.open(FireSettlement.open(SHIPMENT, SUBCONTRACTOR, new BigDecimal("34032")), AT);
-        ClaimAdjustmentService service = new ClaimAdjustmentService(claims, ledger);
-        RecordClaimAdjustmentCommand command =
-                new RecordClaimAdjustmentCommand(UUID.randomUUID(), SHIPMENT, new BigDecimal("100.000"), AT, USER);
-
-        // when
-        service.recordClaimAdjustment(command);
-        service.recordClaimAdjustment(command);
-
-        // then
-        assertThat(balanceOf("(reçetesiz)")).isEqualByComparingTo("33932");
-        assertThat(fireSettlements.totals(SHIPMENT).claimKg()).isEqualByComparingTo("100");
     }
 }

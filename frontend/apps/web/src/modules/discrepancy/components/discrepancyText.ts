@@ -14,15 +14,6 @@ export const KNOWN_RULES: readonly string[] = [
   'DOCUMENT_SHIPMENT_NO_MISMATCH',
   'DOCUMENT_NET_KG_MISMATCH',
   'DOCUMENT_BAG_COUNT_MISMATCH',
-  'TICKET_DISPATCH_PLATE_MISMATCH',
-  'TICKET_DELIVERY_PLATE_MISMATCH',
-  'TICKET_DISPATCH_REUSED',
-  'TICKET_DELIVERY_REUSED',
-  'TICKET_DISPATCH_WEIGHT_MISMATCH',
-  'TICKET_DELIVERY_WEIGHT_MISMATCH',
-  'TICKET_QUANTITY_TOLERANCE',
-  'TICKET_DISPATCH_UNVERIFIED',
-  'TICKET_DELIVERY_UNVERIFIED',
   'QUALITY_CLAIM',
   'PHOTO_MISSING',
   'PHOTO_REUSED',
@@ -31,14 +22,6 @@ export const KNOWN_RULES: readonly string[] = [
 
 /** Zorunlu fotoğraf kuralında beklenen değer kanıt türüdür (`evidence.types.*`). */
 const EVIDENCE_TYPE_PATTERN = /^[A-Z][A-Z_]+$/;
-
-/** K0'da gerçek değer, kullanıcının seçtiği "fiş doğrulanamadı" gerekçesidir (`ticket.fallback.reasons.*`). */
-const UNVERIFIED_REASONS: readonly string[] = [
-  'PRINTER_BROKEN',
-  'TICKET_DAMAGED',
-  'NO_TICKET',
-  'OTHER',
-];
 
 type Translate = (key: string) => string;
 
@@ -71,9 +54,6 @@ export function formatFactValue(
     ).join(' · ');
   }
   if (type === 'TIME') return `${value} ${t('discrepancy.hoursUnit')}`;
-  if (type === 'PHOTO' && UNVERIFIED_REASONS.includes(value)) {
-    return t(`ticket.fallback.reasons.${value}`);
-  }
   if (type === 'PHOTO' && EVIDENCE_TYPE_PATTERN.test(value)) return t(`evidence.types.${value}`);
   const isQuantity = type === 'QUANTITY' || value.includes('.');
   return isQuantity ? kgText(value) : value;

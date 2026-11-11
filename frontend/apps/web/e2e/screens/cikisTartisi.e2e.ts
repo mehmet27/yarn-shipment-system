@@ -18,7 +18,9 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
       await fillFields(page, WEIGHING);
       await expect(page.getByText('Net: 1.982,5 kg')).toBeVisible();
       await captureTicket(page);
-      await expect(page.getByText('Fiş okundu')).toBeVisible();
+      await expect(
+        page.getByText('Kantar fişi fotoğrafı kaydedildi, devam edebilirsiniz.'),
+      ).toBeVisible();
       await page.getByRole('button', { name: 'Kaydet' }).click();
       await expect(page.getByTestId('shipment-status')).toHaveText('Fasoncuya yolda');
     },

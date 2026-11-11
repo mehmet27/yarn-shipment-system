@@ -92,7 +92,9 @@ describe('Kantar uyuşmazlığı', () => {
     await userEvent.type(screen.getByLabelText('Çuval sayısı'), '40');
     await userEvent.type(screen.getByLabelText(/Eksik gönderim nedeni/), 'Stok yetmedi');
     await captureTicket();
-    expect(await screen.findByText('Fiş okundu')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Kantar fişi fotoğrafı kaydedildi, devam edebilirsiniz.'),
+    ).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(
       await screen.findByText('Kantar uyuşmazlığı', { selector: '.mantine-Badge-label' }),

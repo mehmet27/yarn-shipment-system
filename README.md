@@ -222,7 +222,7 @@ Dosya servisten geçmez; iki adımda doğrudan nesne deposuna (S3 uyumlu, yereld
 
 Yükleme izni kanıt türüne bağlıdır: sevk fotoğrafları ve kantar fişi (`EVIDENCE_UPLOAD_DISPATCH`), irsaliye (`WAYBILL`, `SHIPMENT_COMPLETE`), şikâyet ve lab belgesi (`EVIDENCE_UPLOAD_CLAIM`). Aynı dosya (aynı hash) başka sevkiyatta daha önce yüklenmişse kayıt yine alınır ama `evidence_duplicate` satırı ve `evidence-reuse-detected.v1` olayı yazılır. Kanıt kaydı ile `evidence-uploaded.v1` olayı (`evidence.events.v1`) aynı transaction'da yazılır.
 
-**Kantar fişi okuma.** `POST /api/v1/evidence/{evidenceId}/ticket-reading` çıkış kantar fişinin (`DISPATCH_SCALE`) fotoğrafını Claude ile okur ve sonucu çekim ekranına hemen döner: brüt ve dara güvenle okunamazsa `UNREADABLE` ve sorunlar (bulanık, parlama, kesik), istemci yeniden çekim ister. Okuma `ticket_reading` tablosuna ve `ticket-read.v1` olayıyla tek komutta yazılır; elle girilen tartımın yerine geçmez. Bayrak kapalıyken (`TICKET_READING_ENABLED=false`, varsayılan) uç `503 TICKET_READING_UNAVAILABLE` döner; açmak için `ANTHROPIC_API_KEY` verilir, model `TICKET_READING_MODEL` ile değişir.
+**Kantar fişi.** Çıkış kantar fişi (`DISPATCH_SCALE`) yalnızca fotoğraf olarak yüklenir ve sevkiyat için zorunludur; sistem fişi okumaz, kilolar elle girilir.
 
 Fiş okumasının elle girilen çıkış tartısıyla (±1 kg), plakayla ve başka sevkiyatların fişleriyle karşılaştırılması eskiden teslim karşılaştırmasına bağlıydı; yeni akışta kantar uyuşmazlığı kuralının parçası olarak yeniden kurulacaktır (süreç analizi v2).
 

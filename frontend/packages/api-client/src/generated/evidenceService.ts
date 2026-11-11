@@ -18,12 +18,8 @@
  *   ve ilgili uyuşmazlık otomatik açılır.
  * - Zamanlar ISO 8601 UTC (API-03).
  *
- * Kantar fişi okuma: `DISPATCH_SCALE` kanıtı onaylandıktan sonra
- * `POST /api/v1/evidence/{evidenceId}/ticket-reading` ile okunur. Cevap `UNREADABLE` ise brüt veya dara güvenle
- * okunamamıştır ve istemci yeniden çekim ister. Okuma kapalıysa ya da modele ulaşılamazsa 503
- * `TICKET_READING_UNAVAILABLE` döner; istemci okumasız devam eder. Üç denemede kilo okunamazsa kullanıcı gerekçe
- * seçip `POST /api/v1/evidence/{evidenceId}/ticket-reading/unverified` ile devam eder; kontrol "doğrulanamadı"
- * uyuşmazlığına düşer.
+ * Kantar fişi (`DISPATCH_SCALE`) yalnızca fotoğraf olarak yüklenir; sistem fişi okumaz. Fotoğraf sevkiyat için
+ * zorunludur, kilolar elle girilir.
  *
  * OpenAPI spec version: 1.0.0
  */
@@ -105,73 +101,6 @@ export interface EvidenceView {
   uploadedAt: string;
 }
 
-export type TicketReadingStatus = typeof TicketReadingStatus[keyof typeof TicketReadingStatus];
-
-
-export const TicketReadingStatus = {
-  READ: 'READ',
-  UNREADABLE: 'UNREADABLE',
-} as const;
-
-/**
- * WEIGHT_NOT_READ, WEIGHT_INCONSISTENT ve ARITHMETIC_MISMATCH yeniden çekim gerektirir; diğerleri bilgi amaçlıdır.
- */
-export type ReadingProblem = typeof ReadingProblem[keyof typeof ReadingProblem];
-
-
-export const ReadingProblem = {
-  WEIGHT_NOT_READ: 'WEIGHT_NOT_READ',
-  WEIGHT_INCONSISTENT: 'WEIGHT_INCONSISTENT',
-  ARITHMETIC_MISMATCH: 'ARITHMETIC_MISMATCH',
-  DATE_OUT_OF_RANGE: 'DATE_OUT_OF_RANGE',
-  BLURRY: 'BLURRY',
-  GLARE: 'GLARE',
-  CROPPED: 'CROPPED',
-  NOT_A_TICKET: 'NOT_A_TICKET',
-  UNSUPPORTED_FORMAT: 'UNSUPPORTED_FORMAT',
-} as const;
-
-export interface TicketReadingView {
-  evidenceId: string;
-  shipmentId: string;
-  evidenceType: EvidenceType;
-  status: TicketReadingStatus;
-  /** Yalnızca READ iken dolu. */
-  grossKg?: number;
-  /** Yalnızca READ iken dolu. */
-  tareKg?: number;
-  /** Brüt eksi dara; yalnızca READ iken dolu. */
-  netKg?: number;
-  plate?: string;
-  weighedAt?: string;
-  ticketNo?: string;
-  scaleName?: string;
-  problems: ReadingProblem[];
-  readAt: string;
-}
-
-export type UnverifiedReason = typeof UnverifiedReason[keyof typeof UnverifiedReason];
-
-
-export const UnverifiedReason = {
-  PRINTER_BROKEN: 'PRINTER_BROKEN',
-  TICKET_DAMAGED: 'TICKET_DAMAGED',
-  NO_TICKET: 'NO_TICKET',
-  OTHER: 'OTHER',
-} as const;
-
-export interface DeclareTicketUnverifiedRequest {
-  reason: UnverifiedReason;
-}
-
-export interface TicketUnverifiedView {
-  evidenceId: string;
-  shipmentId: string;
-  evidenceType: EvidenceType;
-  reason: UnverifiedReason;
-  declaredAt: string;
-}
-
 export interface EvidenceListView {
   items: EvidenceView[];
 }
@@ -182,7 +111,7 @@ export interface EvidenceDownloadView {
 }
 
 /**
- * İstek hatalı (UPLOAD_NOT_ALLOWED, VALIDATION_FAILED, TICKET_READING_NOT_SUPPORTED)
+ * İstek hatalı (UPLOAD_NOT_ALLOWED, VALIDATION_FAILED)
  */
 export type BadRequestResponse = Problem;
 
@@ -202,7 +131,7 @@ export type ForbiddenResponse = Problem;
 export type NotFoundResponse = Problem;
 
 /**
- * Sevkiyat kilitli (SHIPMENT_LOCKED), dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED) ya da kanıt zaten geçersiz kılınmış (EVIDENCE_ALREADY_INVALIDATED); okunamamış fiş yokken "doğrulanamadı" seçilmiş (TICKET_NOT_UNREADABLE)
+ * Sevkiyat kilitli (SHIPMENT_LOCKED), dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED) ya da kanıt zaten geçersiz kılınmış (EVIDENCE_ALREADY_INVALIDATED)
  */
 export type ConflictResponse = Problem;
 
@@ -212,7 +141,7 @@ export type ConflictResponse = Problem;
 export type UnprocessableResponse = Problem;
 
 /**
- * Sevkiyat doğrulanamadı (SHIPMENT_SERVICE_UNAVAILABLE) ya da fiş okunamadı (TICKET_READING_UNAVAILABLE)
+ * Sevkiyat doğrulanamadı (SHIPMENT_SERVICE_UNAVAILABLE)
  */
 export type UnavailableResponse = Problem;
 
@@ -249,38 +178,6 @@ export const confirmEvidenceUpload = (
  ) => {
       return customInstance<EvidenceView>(
       {url: `/api/v1/evidence/uploads/${evidenceId}/confirm`, method: 'POST'
-    },
-      );
-    }
-
-/**
- * Fotoğraftan brüt, dara, plaka, tarih ve fiş numarasını okur; brüt ve dara güvenle okunamazsa sonuç
- * `UNREADABLE` olur. Yalnızca kanıtı yükleyen ister; tekrar çağrılırsa kayıtlı okuma döner.
- * @summary Kantar fişini oku
- */
-export const readEvidenceTicket = (
-    evidenceId: string,
- ) => {
-      return customInstance<TicketReadingView>(
-      {url: `/api/v1/evidence/${evidenceId}/ticket-reading`, method: 'POST'
-    },
-      );
-    }
-
-/**
- * Son denemenin okuması `UNREADABLE` olan fiş için gerekçe yazar ve fotoğraf uyuşmazlığı ("doğrulanamadı")
- * açılmasını sağlar. Yalnızca kanıtı yükleyen ister; tekrar çağrılırsa ilk kayıt döner. Okunmamış ya da güvenle
- * okunmuş fiş için 409 `TICKET_NOT_UNREADABLE` döner.
- * @summary Okunamayan fişle gerekçe seçip devam et
- */
-export const declareTicketUnverified = (
-    evidenceId: string,
-    declareTicketUnverifiedRequest: DeclareTicketUnverifiedRequest,
- ) => {
-      return customInstance<TicketUnverifiedView>(
-      {url: `/api/v1/evidence/${evidenceId}/ticket-reading/unverified`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: declareTicketUnverifiedRequest
     },
       );
     }
@@ -354,8 +251,6 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 
 export type RequestEvidenceUploadResult = NonNullable<Awaited<ReturnType<typeof requestEvidenceUpload>>>
 export type ConfirmEvidenceUploadResult = NonNullable<Awaited<ReturnType<typeof confirmEvidenceUpload>>>
-export type ReadEvidenceTicketResult = NonNullable<Awaited<ReturnType<typeof readEvidenceTicket>>>
-export type DeclareTicketUnverifiedResult = NonNullable<Awaited<ReturnType<typeof declareTicketUnverified>>>
 export type ListEvidenceResult = NonNullable<Awaited<ReturnType<typeof listEvidence>>>
 export type GetEvidenceDownloadUrlResult = NonNullable<Awaited<ReturnType<typeof getEvidenceDownloadUrl>>>
 export type InvalidateEvidenceResult = NonNullable<Awaited<ReturnType<typeof invalidateEvidence>>>

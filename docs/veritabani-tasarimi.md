@@ -257,7 +257,7 @@ Bekleyen: fasoncu kör girişi için Row Level Security (isteğe bağlı ek güv
 - **Tek veritabanı `yarnshipment`, tek kullanıcı `yarnshipment`.** Flyway ve uygulama aynı kullanıcıyla bağlanır
   (`DB_URL`, `DB_USER`, `DB_PASSWORD`). Migration'lardaki `${app_role}` / `${readonly_role}` yer tutucuları bu kullanıcıya bağlanır.
 - **Servis başına şema, ortak `public` değil.** Servislerin ortak adlı nesneleri vardır (`outbox_event`, `audit_local`, `processed_event`,
-  `idempotency_record`, `ticket_reading`, `reject_modification()`, `audit_local_capture()` …). Hepsini tek şemaya koymak çakışır ve her
+  `idempotency_record`, `reject_modification()`, `audit_local_capture()` …). Hepsini tek şemaya koymak çakışır ve her
   servisin kendi `flyway_schema_history` tablosunu da ayırmak gerekir. Servis başına şema (`masterdata`, `shipment`, `bag`, `evidence`,
   `discrepancy`, `notification`, `reporting`, `audit`, ayrıca `keycloak`) hem bu çakışmayı çözer hem servis sınırını korur.
 - **Tek bağlantıdan erişim.** Kullanıcının `search_path`'i tüm servis şemalarını kapsar; DBeaver/psql ile tek bağlantıyla her tabloya bakılır.

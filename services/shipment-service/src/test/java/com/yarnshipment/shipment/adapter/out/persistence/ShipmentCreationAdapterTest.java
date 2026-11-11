@@ -4,8 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.shipment.application.port.in.CreatedShipment;
 import com.yarnshipment.shipment.domain.model.NewShipment;
+import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.ShipmentParties;
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,6 +36,10 @@ class ShipmentCreationAdapterTest {
     private static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-00000000c001");
     private static final Instant NOW = Instant.parse("2026-10-21T09:00:00Z");
 
+    private static final List<RecipeLine> LINES = List.of(
+            new RecipeLine(1, null, "36/1 VİSKON", null, new BigDecimal("19488.000")),
+            new RecipeLine(2, null, "70 DENYE POLY", null, new BigDecimal("13492.000")));
+
     @MockitoBean
     private JwtDecoder jwtDecoder;
 
@@ -52,7 +59,8 @@ class ShipmentCreationAdapterTest {
     void shouldCreateDraftWithHistoryAndOutbox() {
         ShipmentParties parties = new ShipmentParties(SUBCONTRACTOR, "Örnek Tekstil", null, null, null);
 
-        CreatedShipment created = adapter.create(new NewShipment(SITE, parties, null, NOW), USER);
+        CreatedShipment created =
+                adapter.create(new NewShipment(SITE, parties, null, LINES, new BigDecimal("0.0400"), NOW), USER);
 
         assertThat(created.shipmentNo()).startsWith("SV-20261021-");
         assertThat(jdbc.queryForObject("SELECT status FROM shipment WHERE id = ?", String.class, created.id()))
@@ -71,13 +79,32 @@ class ShipmentCreationAdapterTest {
     }
 
     @Test
+    @DisplayName("Reçete satırları, fire oranı ve satır toplamından beklenen net yazılır")
+    void shouldStoreRecipeLinesAndFireRate() {
+        ShipmentParties parties = new ShipmentParties(SUBCONTRACTOR, "Örnek Tekstil", null, null, null);
+
+        CreatedShipment created =
+                adapter.create(new NewShipment(SITE, parties, null, LINES, new BigDecimal("0.0600"), NOW), USER);
+
+        assertThat(jdbc.queryForObject(
+                        "SELECT planned_net_kg FROM shipment WHERE id = ?", BigDecimal.class, created.id()))
+                .isEqualByComparingTo("32980.000");
+        assertThat(jdbc.queryForObject("SELECT fire_rate FROM shipment WHERE id = ?", BigDecimal.class, created.id()))
+                .isEqualByComparingTo("0.0600");
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM shipment_line WHERE shipment_id = ?", Long.class, created.id()))
+                .isEqualTo(2L);
+    }
+
+    @Test
     @DisplayName("Şoför ve araç anlık görüntüsüyle birlikte yazılır")
     void shouldStoreDriverAndVehicleSnapshots() {
         UUID driver = UUID.randomUUID();
         UUID vehicle = UUID.randomUUID();
         ShipmentParties parties = new ShipmentParties(SUBCONTRACTOR, "Örnek Tekstil", driver, "Ali Yılmaz", "34ABC123");
 
-        CreatedShipment created = adapter.create(new NewShipment(SITE, parties, vehicle, NOW), USER);
+        CreatedShipment created =
+                adapter.create(new NewShipment(SITE, parties, vehicle, LINES, new BigDecimal("0.0400"), NOW), USER);
 
         assertThat(jdbc.queryForObject("SELECT plate_no FROM shipment WHERE id = ?", String.class, created.id()))
                 .isEqualTo("34ABC123");

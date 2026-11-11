@@ -1,17 +1,20 @@
 import { useTranslation } from '@iplik/i18n';
 import { Stack } from '@iplik/ui';
-import type { CreateDraft } from './createDraft';
+import type { CreateDraft, CreateFieldErrors } from './createDraft';
 import { withSubcontractor } from './createDraft';
 import { MasterSelect } from './MasterSelect';
+import { RecipeSection } from './RecipeSection';
 
 export type CreateFieldsProps = {
   draft: CreateDraft;
   onChange: (draft: CreateDraft) => void;
-  errors?: Partial<Record<'site' | 'subcontractor', string>>;
+  errors?: CreateFieldErrors;
+  /** Ayardaki varsayılan fire yüzdesi (ör. "4"). */
+  defaultFirePct: string;
 };
 
 /** Dört seçici tek sütunda; şoför listesi seçili fasoncuya göre daralır. */
-export function CreateFields({ draft, onChange, errors = {} }: CreateFieldsProps) {
+export function CreateFields({ draft, onChange, errors = {}, defaultFirePct }: CreateFieldsProps) {
   const { t } = useTranslation();
   return (
     <Stack>
@@ -55,6 +58,12 @@ export function CreateFields({ draft, onChange, errors = {} }: CreateFieldsProps
         onChange={(vehicle) => {
           onChange({ ...draft, vehicle });
         }}
+      />
+      <RecipeSection
+        draft={draft}
+        onChange={onChange}
+        errors={errors}
+        defaultFirePct={defaultFirePct}
       />
     </Stack>
   );

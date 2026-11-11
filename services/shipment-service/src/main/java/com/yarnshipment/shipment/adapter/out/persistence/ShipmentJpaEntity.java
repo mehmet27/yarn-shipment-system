@@ -41,6 +41,9 @@ class ShipmentJpaEntity {
     @Column(name = "planned_bag_count")
     private @Nullable Integer plannedBagCount;
 
+    @Column(name = "fire_rate")
+    private BigDecimal fireRate;
+
     @Column(name = "e_waybill_no", columnDefinition = TEXT)
     private @Nullable String waybillNo;
 
@@ -79,6 +82,10 @@ class ShipmentJpaEntity {
     @Nullable
     Integer getPlannedBagCount() {
         return plannedBagCount;
+    }
+
+    BigDecimal getFireRate() {
+        return fireRate;
     }
 
     @Nullable

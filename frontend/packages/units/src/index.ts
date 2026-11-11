@@ -1,3 +1,17 @@
 export type { Kilogram } from './kilogram';
-export { calculateNetKg, formatKg, isKilogram, parseKg, subtractKg } from './kilogram';
-export { calculateDifferencePct, formatPct } from './percentage';
+export {
+  calculateNetKg,
+  formatKg,
+  formatKgText,
+  formatSignedKg,
+  isKilogram,
+  parseKg,
+  subtractKg,
+  sumKg,
+} from './kilogram';
+export {
+  calculateDifferencePct,
+  fireRateToPctInput,
+  formatPct,
+  parseFireRatePct,
+} from './percentage';

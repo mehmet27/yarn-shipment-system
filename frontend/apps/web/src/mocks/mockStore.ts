@@ -1,9 +1,11 @@
 import type {
   CreateShipmentRequest,
+  WeightCheckView,
   InternalShipmentView,
   ShipmentStatus,
   Weighing,
 } from '@iplik/api-client';
+import { isKilogram, sumKg } from '@iplik/units';
 import { resetMockCorrections } from './corrections';
 import { resetDiscrepancySettings } from './discrepancySettings';
 import { resetMockClaims } from './claims';
@@ -30,16 +32,39 @@ export function updateMockShipmentStatus(shipmentId: string, status: ShipmentSta
   );
 }
 
-/** Çıkış tartısı: DRAFT → AWAITING_DELIVERY; tartı sevkiyata yazılır. */
-export function recordMockDispatch(shipmentId: string, dispatchWeighing: Weighing): void {
+/** Çıkış tartısı: beklenenle tutarsa AWAITING_DELIVERY, tutmazsa WEIGHT_MISMATCH. */
+export function recordMockDispatch(
+  shipmentId: string,
+  dispatchWeighing: Weighing,
+  weightCheck?: WeightCheckView,
+): void {
+  const status: ShipmentStatus =
+    weightCheck === undefined ? 'AWAITING_DELIVERY' : 'WEIGHT_MISMATCH';
   shipments = shipments.map((shipment) =>
     shipment.shipmentId === shipmentId
       ? {
           ...shipment,
-          status: 'AWAITING_DELIVERY',
-          allowedActions: allowedActionsOf('AWAITING_DELIVERY'),
+          status,
+          allowedActions: allowedActionsOf(status),
           dispatchWeighing,
+          ...(weightCheck === undefined ? {} : { weightCheck }),
         }
+      : shipment,
+  );
+}
+
+const DECISION_STATUS: Readonly<Record<string, ShipmentStatus>> = {
+  CANCEL: 'CANCELLED',
+  ADD_REMOVE_BAGS: 'DRAFT',
+  UPDATE_RECIPE: 'AWAITING_DELIVERY',
+};
+
+/** Müdür kararı: çuval ekle/çıkar taslağa döner; reçete güncellenirse sevkiyat yola çıkar. */
+export function decideMockWeight(shipmentId: string, decision: string): void {
+  const status = DECISION_STATUS[decision] ?? 'DRAFT';
+  shipments = shipments.map((shipment) =>
+    shipment.shipmentId === shipmentId
+      ? { ...shipment, status, allowedActions: allowedActionsOf(status) }
       : shipment,
   );
 }
@@ -71,6 +96,7 @@ export function patchMockShipment(
 /** Sevkiyat oluşturma: yeni kayıt DRAFT durumunda ve en başa eklenir. */
 export function addMockShipment(request: CreateShipmentRequest): InternalShipmentView {
   const no = String(shipments.length + 1).padStart(4, '0');
+  const planned = sumKg(request.lines.map((line) => line.netKg));
   const created: InternalShipmentView = {
     audience: 'INTERNAL',
     shipmentId: `shp-${no}`,
@@ -83,6 +109,15 @@ export function addMockShipment(request: CreateShipmentRequest): InternalShipmen
     ...(request.plateNo === undefined ? {} : { plateNo: request.plateNo }),
     createdAt: new Date().toISOString(),
     allowedActions: ['ASSIGN_BAGS', 'RECORD_DISPATCH', 'CANCEL'],
+    lines: request.lines.map(({ yarnTypeId, yarnTypeText, lotId, netKg }, index) => ({
+      lineNo: index + 1,
+      netKg,
+      ...(yarnTypeId === undefined ? {} : { yarnTypeId }),
+      ...(yarnTypeText === undefined ? {} : { yarnTypeText }),
+      ...(lotId === undefined ? {} : { lotId }),
+    })),
+    ...(request.fireRate === undefined ? {} : { fireRate: request.fireRate }),
+    ...(isKilogram(planned) ? { plannedNetKg: planned } : {}),
   };
   shipments = [created, ...shipments];
   return created;

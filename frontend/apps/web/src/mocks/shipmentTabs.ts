@@ -2,19 +2,30 @@ import type {
   DispatchBagView,
   InternalShipmentView,
   Role,
+  ShipmentStatus,
   ShipmentBagsResponse,
   StatusChangeView,
 } from '@iplik/api-client';
-import { SHIPMENT_STATUSES } from '@iplik/api-client';
 
 const HOUR_MS = 3_600_000;
 
 /** Durum sırası boyunca (iptal hariç) taslaktan mevcut duruma saatlik geçişler üretir. */
+const HISTORY_ORDER: readonly ShipmentStatus[] = [
+  'DRAFT',
+  'AWAITING_DELIVERY',
+  'COMPLETED',
+  'CANCELLED',
+  'WEIGHT_MISMATCH',
+];
+
 export function toHistory(shipment: InternalShipmentView): StatusChangeView[] {
-  const target = shipment.status === 'CANCELLED' ? 0 : SHIPMENT_STATUSES.indexOf(shipment.status);
+  const target =
+    shipment.status === 'CANCELLED' || shipment.status === 'WEIGHT_MISMATCH'
+      ? 0
+      : HISTORY_ORDER.indexOf(shipment.status);
   const start = new Date(shipment.createdAt).getTime();
-  return SHIPMENT_STATUSES.slice(0, target + 1).map((toStatus, index) => ({
-    ...(index === 0 ? {} : { fromStatus: SHIPMENT_STATUSES[index - 1] }),
+  return HISTORY_ORDER.slice(0, target + 1).map((toStatus, index) => ({
+    ...(index === 0 ? {} : { fromStatus: HISTORY_ORDER[index - 1] }),
     toStatus,
     changedAt: new Date(start + index * HOUR_MS).toISOString(),
     changedBy: toStatus === 'COMPLETED' ? 'user-manager' : 'user-warehouse',

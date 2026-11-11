@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Kilogram } from './kilogram';
-import { calculateDifferencePct, formatPct } from './percentage';
+import {
+  calculateDifferencePct,
+  fireRateToPctInput,
+  formatPct,
+  parseFireRatePct,
+} from './percentage';
 
 const kg = (value: string) => value as Kilogram;
 
@@ -30,5 +35,23 @@ describe('formatPct', () => {
 
   it('sayı olmayan değerde hata verir', () => {
     expect(() => formatPct('abc')).toThrow(RangeError);
+  });
+});
+
+describe('fire oranı', () => {
+  it('yüzdeyi kesire çevirir', () => {
+    expect(parseFireRatePct('4')).toBe('0.0400');
+    expect(parseFireRatePct('4,25')).toBe('0.0425');
+    expect(parseFireRatePct('20')).toBe('0.2000');
+    expect(parseFireRatePct('0')).toBe('0.0000');
+  });
+
+  it.each(['', '20,01', '21', 'x', '1,234', '-1'])('"%s" geçersizdir', (input) => {
+    expect(parseFireRatePct(input)).toBeUndefined();
+  });
+
+  it('kesri yüzde girdisine çevirir', () => {
+    expect(fireRateToPctInput('0.0400')).toBe('4');
+    expect(fireRateToPctInput('0.0425')).toBe('4,25');
   });
 });

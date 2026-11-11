@@ -22,6 +22,8 @@ tags:
   - name: ShipmentFile
   - name: ShipmentBags
   - name: ShipmentCancellation
+  - name: ShipmentWeightDecision
+  - name: ShipmentSettings
   - name: ShipmentCorrection
   - name: MasterData
   - name: SubcontractorManagement
@@ -1625,7 +1627,7 @@ paths:
       operationId: cancelShipment
       summary: Tamamlanmamış sevkiyatı iptal eder
       description: |
-        Müdür ya da yönetici (SHIPMENT_CANCEL). Taslak (DRAFT) ya da teslim bekleyen (AWAITING_DELIVERY) sevkiyat
+        Müdür ya da yönetici (SHIPMENT_CANCEL). Taslak (DRAFT), kantar uyuşmazlığındaki (WEIGHT_MISMATCH) ya da teslim bekleyen (AWAITING_DELIVERY) sevkiyat
         iptal edilir, ör. kantar farkı nedeniyle durdurulan sevkiyat; gerekçe zorunludur. Sevkiyata atanmış çuvallar bag-service'te serbest bırakılır ve yeniden
         kullanılabilir olur. Çuval servisi yanıt vermezse iptal de yapılmaz (`BAG_SERVICE_UNAVAILABLE`) ve istek
         güvenle tekrarlanır. Zaten iptal edilmiş sevkiyata gelen istek başarılı döner. Tamamlanmış sevkiyat iptal
@@ -1659,6 +1661,87 @@ paths:
           $ref: '#/components/responses/Conflict'
         '502':
           $ref: '#/components/responses/BadGateway'
+  /api/v1/shipments/{shipmentId}/weight-decision:
+    post:
+      tags: [ShipmentWeightDecision]
+      operationId: decideWeightMismatch
+      summary: Kantar uyuşmazlığına karar verir (WEIGHT_MISMATCH)
+      description: |
+        Müdür ya da yönetici (SHIPMENT_CANCEL). `CANCEL`: sevkiyat iptal olur, çuvallar serbest kalır. `ADD_REMOVE_BAGS`:
+        sevkiyat DRAFT'a döner, depo çuvalı düzeltip yeniden tartar (önceki tartım silinmez). `UPDATE_RECIPE`: reçete
+        satırları tartılan net'e orantılı ölçeklenir (yuvarlama farkı son satırda) ve sevkiyat `AWAITING_DELIVERY` olur.
+        Gerekçe zorunludur. Sevkiyat `WEIGHT_MISMATCH` değilse `INVALID_SHIPMENT_STATUS`.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WeightDecisionRequest'
+      responses:
+        '204':
+          description: Karar uygulandı
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+  /api/v1/settings/shipment:
+    get:
+      tags: [ShipmentSettings]
+      operationId: getShipmentSettings
+      summary: Varsayılan fire oranı ve kantar toleransı
+      description: Sevkiyat görüntüleme izni olan herkes okur; müdür yeni sevkiyat formunu bununla doldurur.
+      responses:
+        '200':
+          description: Ayarlar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShipmentSettingsView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      tags: [ShipmentSettings]
+      operationId: saveShipmentSettings
+      summary: Varsayılan fire oranını ve kantar toleransını kaydeder
+      description: |
+        Yalnızca yönetici (SETTINGS_MANAGE). Fire oranı 0–0.20, tolerans kg ≥ 0. Değişiklik denetim kaydına düşer.
+        Geçersiz değer `INVALID_SHIPMENT`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShipmentSettingsRequest'
+      responses:
+        '200':
+          description: Kaydedildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShipmentSettingsView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /api/v1/shipments/{shipmentId}/corrections:
     post:
       tags: [ShipmentCorrection]
@@ -2015,7 +2098,7 @@ components:
           type: boolean
     ShipmentStatus:
       type: string
-      enum: [DRAFT, AWAITING_DELIVERY, COMPLETED, CANCELLED]
+      enum: [DRAFT, WEIGHT_MISMATCH, AWAITING_DELIVERY, COMPLETED, CANCELLED]
     ShipmentAction:
       description: Kullanıcının bu sevkiyatta şu an yapabileceği işlem; buton yalnızca listede varsa gösterilir.
       type: string
@@ -2023,6 +2106,7 @@ components:
         - ASSIGN_BAGS
         - RECORD_DISPATCH
         - CANCEL
+        - RESOLVE_WEIGHT_MISMATCH
         - COMPLETE
         - OPEN_QUALITY_CLAIM
         - CREATE_CORRECTION
@@ -2221,8 +2305,17 @@ components:
           description: Bu istekle yeni atanan çuval sayısı
     CreateShipmentRequest:
       type: object
-      required: [siteId, subcontractorId, subcontractorTitle]
+      required: [siteId, subcontractorId, subcontractorTitle, lines]
       properties:
+        lines:
+          description: Reçete satırları (en az bir); beklenen net kilo satırların toplamıdır
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/RecipeLineInput'
+        fireRate:
+          $ref: '#/components/schemas/FireRate'
         siteId:
           type: string
           format: uuid
@@ -2247,6 +2340,88 @@ components:
           type: string
           minLength: 1
           maxLength: 20
+    FireRate:
+      description: Fire oranı, ondalık dize, 0–0.20 (ör. "0.0400" = %4). Oluşturmada verilmezse ayardaki varsayılan kullanılır
+      type: string
+      pattern: '^0\.\d{1,4}$|^[01]$'
+      example: '0.0400'
+    RecipeLineInput:
+      type: object
+      required: [netKg]
+      description: En az biri verilir, yarnTypeId ya da yarnTypeText
+      properties:
+        yarnTypeId:
+          type: string
+          format: uuid
+        yarnTypeText:
+          type: string
+          minLength: 1
+          maxLength: 200
+        lotId:
+          type: string
+          format: uuid
+        netKg:
+          $ref: '#/components/schemas/Kg'
+    RecipeLineView:
+      type: object
+      required: [lineNo, netKg]
+      properties:
+        lineNo:
+          type: integer
+          format: int32
+        yarnTypeId:
+          type: string
+          format: uuid
+        yarnTypeText:
+          type: string
+        lotId:
+          type: string
+          format: uuid
+        netKg:
+          $ref: '#/components/schemas/Kg'
+    WeightCheckView:
+      type: object
+      required: [expectedKg, measuredKg, diffKg]
+      properties:
+        expectedKg:
+          $ref: '#/components/schemas/Kg'
+        measuredKg:
+          $ref: '#/components/schemas/Kg'
+        diffKg:
+          description: Tartılan - beklenen; eksik yükte negatif
+          type: string
+          pattern: '^-?\d{1,9}\.\d{3}$'
+        shortfallReason:
+          type: string
+    WeightDecisionKind:
+      type: string
+      enum: [CANCEL, ADD_REMOVE_BAGS, UPDATE_RECIPE]
+    WeightDecisionRequest:
+      type: object
+      required: [decision, reason]
+      properties:
+        decision:
+          $ref: '#/components/schemas/WeightDecisionKind'
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    ShipmentSettingsView:
+      type: object
+      required: [defaultFireRate, weightToleranceKg]
+      properties:
+        defaultFireRate:
+          $ref: '#/components/schemas/FireRate'
+        weightToleranceKg:
+          $ref: '#/components/schemas/Kg'
+    ShipmentSettingsRequest:
+      type: object
+      required: [defaultFireRate, weightToleranceKg]
+      properties:
+        defaultFireRate:
+          $ref: '#/components/schemas/FireRate'
+        weightToleranceKg:
+          $ref: '#/components/schemas/Kg'
     CreateShipmentResponse:
       type: object
       required: [id, shipmentNo]
@@ -2879,12 +3054,25 @@ components:
           format: date-time
     DispatchWeighingRequest:
       type: object
-      required: [grossKg, tareKg, bagCount]
+      required: [bagCount]
+      description: |
+        Dolu araç tartısı `loadedVehicleKg` (= `grossKg`) ve boş araç tartısı `emptyVehicleKg` (= `tareKg`) eş anlamlıdır;
+        her çiftten biri zorunludur (ikisi de verilirse eşit olmalı). Net beklenen net'ten kantar toleransından fazla
+        saparsa sevkiyat `WEIGHT_MISMATCH` olur (yine 204 döner).
       properties:
         grossKg:
           $ref: '#/components/schemas/Kg'
         tareKg:
           $ref: '#/components/schemas/Kg'
+        loadedVehicleKg:
+          $ref: '#/components/schemas/Kg'
+        emptyVehicleKg:
+          $ref: '#/components/schemas/Kg'
+        shortfallReason:
+          description: Depo eksik yüklüyorsa nedeni (stok yetmedi gibi); müdürün kararına girdi olur
+          type: string
+          minLength: 1
+          maxLength: 500
         bagCount:
           description: Tartılan çuval sayısı
           type: integer
@@ -2947,6 +3135,14 @@ components:
         createdAt:
           type: string
           format: date-time
+        fireRate:
+          $ref: '#/components/schemas/FireRate'
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipeLineView'
+        weightCheck:
+          $ref: '#/components/schemas/WeightCheckView'
         allowedActions:
           type: array
           items:
@@ -2991,6 +3187,14 @@ components:
         createdAt:
           type: string
           format: date-time
+        fireRate:
+          $ref: '#/components/schemas/FireRate'
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipeLineView'
+        weightCheck:
+          $ref: '#/components/schemas/WeightCheckView'
         allowedActions:
           type: array
           items:

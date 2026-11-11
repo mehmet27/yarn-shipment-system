@@ -1,7 +1,9 @@
 package com.yarnshipment.shipment.domain.model;
 
 import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -18,6 +20,7 @@ import org.jspecify.annotations.Nullable;
  * @param dispatchWeighing geçerli çıkış tartımı; henüz girilmediyse {@code null}
  * @param waybillNo tamamlarken girilen irsaliye numarası
  * @param createdAt oluşturma zamanı
+ * @param recipe reçete satırları, fire oranı ve son kantar karşılaştırması
  */
 public record Shipment(
         UUID id,
@@ -28,7 +31,31 @@ public record Shipment(
         PlannedLoad planned,
         @Nullable Weighing dispatchWeighing,
         @Nullable String waybillNo,
-        Instant createdAt) {
+        Instant createdAt,
+        RecipeState recipe) {
+
+    /**
+     * Reçete tarafı.
+     *
+     * @param lines reçete satırları
+     * @param fireRate fire oranı (0.04 = %4)
+     * @param weightCheck son kantar karşılaştırması; uyuşmazlık olmadıysa {@code null}
+     */
+    public record RecipeState(
+            List<RecipeLine> lines,
+            BigDecimal fireRate,
+            @Nullable WeightCheck weightCheck) {
+
+        /** Reçetesiz (eski) kayıt: varsayılan fire oranı, uyuşmazlık yok. */
+        public static final RecipeState LEGACY =
+                new RecipeState(List.of(), ShipmentSettings.DEFAULTS.defaultFireRate(), null);
+
+        public RecipeState {
+            Objects.requireNonNull(lines, "lines");
+            Objects.requireNonNull(fireRate, "fireRate");
+            lines = List.copyOf(lines);
+        }
+    }
 
     public Shipment {
         Objects.requireNonNull(id, "id");
@@ -38,6 +65,19 @@ public record Shipment(
         Objects.requireNonNull(parties, "parties");
         Objects.requireNonNull(planned, "planned");
         Objects.requireNonNull(createdAt, "createdAt");
+        Objects.requireNonNull(recipe, "recipe");
+    }
+
+    public List<RecipeLine> lines() {
+        return recipe.lines();
+    }
+
+    public BigDecimal fireRate() {
+        return recipe.fireRate();
+    }
+
+    public @Nullable WeightCheck weightCheck() {
+        return recipe.weightCheck();
     }
 
     public UUID subcontractorId() {
@@ -56,15 +96,34 @@ public record Shipment(
         return recordDispatch(measurement, recordedAt, null);
     }
 
-    /** Aynı kayıt; çıkış tartımına kayıt anındaki standart dara eklenir. */
+    /** Aynı kayıt; çıkış tartımına kayıt anındaki standart dara eklenir. Kantar farkı denetlenmez. */
     public DispatchRecording recordDispatch(
             DispatchMeasurement measurement, Instant recordedAt, @Nullable TareBasis tareBasis) {
+        return recordDispatch(measurement, recordedAt, tareBasis, null);
+    }
+
+    /**
+     * Çıkış tartımı; beklenen net biliniyorsa ve fark {@code toleranceKg}'yi aşıyorsa sevkiyat WEIGHT_MISMATCH olur
+     * (süreç analizi 5.4). {@code toleranceKg} boşsa karşılaştırma yapılmaz.
+     */
+    public DispatchRecording recordDispatch(
+            DispatchMeasurement measurement,
+            Instant recordedAt,
+            @Nullable TareBasis tareBasis,
+            @Nullable BigDecimal toleranceKg) {
         if (status != ShipmentStatus.DRAFT) {
             throw new InvalidShipmentStatusException(id, status, ShipmentStatus.AWAITING_DELIVERY);
         }
         Weighing weighing = new Weighing(
                 measurement.grossKg(), measurement.tareKg(), measurement.bagCount(), recordedAt, tareBasis);
+        WeightCheck check = null;
+        BigDecimal expected = planned.netKg();
+        if (toleranceKg != null && expected != null) {
+            WeightCheck candidate = new WeightCheck(
+                    measurement.tareKg(), measurement.grossKg(), expected, toleranceKg, measurement.shortfallReason());
+            check = candidate.exceedsTolerance() ? candidate : null;
+        }
         return new DispatchRecording(
-                id, siteId, parties.subcontractorId(), weighing, measurement.scaleTicketNo(), recordedAt);
+                id, siteId, parties.subcontractorId(), weighing, measurement.scaleTicketNo(), recordedAt, check);
     }
 }

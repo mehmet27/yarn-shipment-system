@@ -9,7 +9,7 @@ final class ShipmentMapper {
 
     private ShipmentMapper() {}
 
-    static Shipment toDomain(ShipmentJpaEntity entity, ShipmentSides sides) {
+    static Shipment toDomain(ShipmentJpaEntity entity, ShipmentSides sides, ShipmentRecipes recipes) {
         return new Shipment(
                 entity.getId(),
                 entity.getShipmentNo(),
@@ -19,6 +19,8 @@ final class ShipmentMapper {
                 new PlannedLoad(entity.getPlannedBagCount(), entity.getPlannedNetKg()),
                 sides.dispatchWeighing(entity.getId()),
                 entity.getWaybillNo(),
-                entity.getCreatedAt());
+                entity.getCreatedAt(),
+                new Shipment.RecipeState(
+                        recipes.lines(entity.getId()), entity.getFireRate(), recipes.weightCheck(entity.getId())));
     }
 }

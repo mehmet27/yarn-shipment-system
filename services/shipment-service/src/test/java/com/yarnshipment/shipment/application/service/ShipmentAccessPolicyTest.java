@@ -45,14 +45,16 @@ class ShipmentAccessPolicyTest {
     }
 
     @Test
-    @DisplayName("Müdür taslağa çuval ekler ya da iptal eder; teslim bekleyeni tamamlar ya da iptal eder")
+    @DisplayName("Müdür taslağı iptal eder, uyuşmazlığa karar verir; teslim bekleyeni tamamlar ya da iptal eder")
     void shouldAllowManagerLifecycleActions() {
         // given
         Actor manager = TestTokens.actor("manager");
 
         // when / then
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.DRAFT), manager))
-                .containsExactlyInAnyOrder(ShipmentAction.ASSIGN_BAGS, ShipmentAction.CANCEL);
+                .containsExactlyInAnyOrder(ShipmentAction.CANCEL);
+        assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.WEIGHT_MISMATCH), manager))
+                .containsExactlyInAnyOrder(ShipmentAction.CANCEL, ShipmentAction.RESOLVE_WEIGHT_MISMATCH);
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY), manager))
                 .containsExactlyInAnyOrder(ShipmentAction.COMPLETE, ShipmentAction.CANCEL);
     }

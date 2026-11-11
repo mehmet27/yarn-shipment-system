@@ -9,6 +9,8 @@ export function toStatusColor(status: ShipmentStatus): string {
       return 'yellow';
     case 'COMPLETED':
       return 'green';
+    case 'WEIGHT_MISMATCH':
+      return 'orange';
     case 'CANCELLED':
       return 'red';
   }

@@ -36,7 +36,8 @@ public final class TestShipments {
                 new PlannedLoad(BAG_COUNT, new BigDecimal("1982.5")),
                 dispatch,
                 status == ShipmentStatus.COMPLETED ? WAYBILL_NO : null,
-                CREATED_AT);
+                CREATED_AT,
+                Shipment.RecipeState.LEGACY);
     }
 
     /** Çıkış tartımı henüz girilmemiş sevkiyat. */
@@ -51,6 +52,7 @@ public final class TestShipments {
                 shipment.planned(),
                 null,
                 null,
-                shipment.createdAt());
+                shipment.createdAt(),
+                Shipment.RecipeState.LEGACY);
     }
 }

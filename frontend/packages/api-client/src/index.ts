@@ -74,6 +74,9 @@ export type {
 export {
   assignShipmentBags,
   cancelShipment,
+  decideWeightMismatch,
+  getShipmentSettings,
+  saveShipmentSettings,
   changeLoginAccountEnabled,
   changeLoginAccountRole,
   confirmPasswordReset,
@@ -83,6 +86,15 @@ export {
   removeShipmentBag,
   requestPasswordReset,
   startLoginAccountPasswordReset,
+} from './masterData';
+export type {
+  RecipeLineInput,
+  ShipmentSettingsRequest,
+  ShipmentSettingsView,
+  RecipeLineView,
+  WeightCheckView,
+  WeightDecisionKind,
+  WeightDecisionRequest,
 } from './masterData';
 export type {
   ChangeLoginAccountEnabledRequest,

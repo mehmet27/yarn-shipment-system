@@ -1,12 +1,19 @@
-import type { InternalShipmentView, Role, Weighing } from '@iplik/api-client';
+import type {
+  InternalShipmentView,
+  RecipeLineInput,
+  Role,
+  WeightCheckView,
+  Weighing,
+} from '@iplik/api-client';
 import { ME_PATH, SHIPMENTS_PATH } from '@iplik/api-client';
 import type { Kilogram } from '@iplik/units';
-import { calculateNetKg, isKilogram } from '@iplik/units';
+import { calculateNetKg, isKilogram, subtractKg } from '@iplik/units';
 import { http, HttpResponse } from 'msw';
 import {
   assignMockBagKeys,
   addMockShipment,
   completeMockShipment,
+  decideMockWeight,
   findMockShipment,
   listMockShipments,
   recordMockDispatch,
@@ -32,7 +39,12 @@ const DEFAULT_PAGE_SIZE = 20;
 const problem = (status: number, code: string, title: string) =>
   HttpResponse.json({ status, code, title }, { status });
 
-type DispatchBody = { grossKg: Kilogram; tareKg: Kilogram; bagCount: number };
+type DispatchBody = {
+  grossKg: Kilogram;
+  tareKg: Kilogram;
+  bagCount: number;
+  shortfallReason?: string;
+};
 
 /** İstek gövdesini sözleşmeye göre daraltır; sahte API gerçek backend gibi 400 döner. */
 const isKg = (value: unknown): value is Kilogram => typeof value === 'string' && isKilogram(value);
@@ -42,9 +54,15 @@ const isNonEmpty = (value: unknown): value is string => typeof value === 'string
 
 function readDispatchBody(json: unknown): DispatchBody | undefined {
   if (typeof json !== 'object' || json === null) return undefined;
-  const { grossKg, tareKg, bagCount } = json as Record<string, unknown>;
+  const { grossKg, tareKg, bagCount, shortfallReason } = json as Record<string, unknown>;
   if (!isKg(grossKg) || !isKg(tareKg)) return undefined;
-  return isPositiveInt(bagCount) ? { grossKg, tareKg, bagCount } : undefined;
+  if (!isPositiveInt(bagCount)) return undefined;
+  return {
+    grossKg,
+    tareKg,
+    bagCount,
+    ...(isNonEmpty(shortfallReason) ? { shortfallReason } : {}),
+  };
 }
 
 function toMockWeighing({ grossKg, tareKg, bagCount }: DispatchBody): Weighing {
@@ -161,7 +179,11 @@ function createTabHandlers(role: Role) {
 const cancelShipmentHandler = http.post(`${SHIPMENTS_PATH}/:shipmentId/cancel`, ({ params }) => {
   const shipment = findMockShipment(params.shipmentId);
   if (shipment === undefined) return notFound();
-  if (shipment.status !== 'DRAFT' && shipment.status !== 'AWAITING_DELIVERY') {
+  if (
+    shipment.status !== 'DRAFT' &&
+    shipment.status !== 'AWAITING_DELIVERY' &&
+    shipment.status !== 'WEIGHT_MISMATCH'
+  ) {
     return HttpResponse.json({ code: 'INVALID_SHIPMENT_STATUS' }, { status: 409 });
   }
   updateMockShipmentStatus(shipment.shipmentId, 'CANCELLED');
@@ -199,9 +221,81 @@ const dispatchWeighingHandler = http.post(
     if (shipment.status !== 'DRAFT') {
       return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
     }
-    recordMockDispatch(shipment.shipmentId, toMockWeighing(body));
+    const weighing = toMockWeighing(body);
+    const expected = shipment.plannedNetKg;
+    const diff = expected === undefined ? undefined : subtractKg(weighing.netKg, expected);
+    if (expected !== undefined && diff !== undefined && !diff.eq(0)) {
+      recordMockDispatch(shipment.shipmentId, weighing, {
+        expectedKg: expected,
+        measuredKg: weighing.netKg,
+        diffKg: diff.toFixed(3),
+        ...(body.shortfallReason === undefined ? {} : { shortfallReason: body.shortfallReason }),
+      } satisfies WeightCheckView);
+    } else {
+      recordMockDispatch(shipment.shipmentId, weighing);
+    }
     return new HttpResponse(null, { status: 204 });
   },
+);
+
+const MAX_FIRE_RATE = 0.2;
+const FIRE_RATE_PATTERN = /^0\.\d{1,4}$|^[01]$/;
+
+function readFireRate(value: unknown): string | undefined {
+  return typeof value === 'string' &&
+    FIRE_RATE_PATTERN.test(value) &&
+    Number(value) <= MAX_FIRE_RATE
+    ? value
+    : undefined;
+}
+
+function readRecipeLine(item: unknown): RecipeLineInput | undefined {
+  const line = typeof item === 'object' && item !== null ? (item as Record<string, unknown>) : {};
+  const { yarnTypeId, yarnTypeText, lotId, netKg } = line;
+  if (!isKg(netKg) || Number(netKg) <= 0) return undefined;
+  if (!isNonEmpty(yarnTypeId) && !isNonEmpty(yarnTypeText)) return undefined;
+  return {
+    netKg,
+    ...(isNonEmpty(yarnTypeId) ? { yarnTypeId } : {}),
+    ...(isNonEmpty(yarnTypeText) ? { yarnTypeText } : {}),
+    ...(isNonEmpty(lotId) ? { lotId } : {}),
+  };
+}
+
+/** En az bir satır; her satırda iplik cinsi (kimlik ya da metin) ve 0'dan büyük net kg. */
+function readRecipeLines(value: unknown): RecipeLineInput[] | undefined {
+  if (!Array.isArray(value) || value.length === 0) return undefined;
+  const lines = (value as unknown[]).map(readRecipeLine);
+  return lines.every((line) => line !== undefined) ? lines : undefined;
+}
+
+const DECISIONS: readonly unknown[] = ['CANCEL', 'ADD_REMOVE_BAGS', 'UPDATE_RECIPE'];
+
+function readDecisionBody(json: unknown): { decision: string; reason: string } | undefined {
+  const { decision, reason } =
+    typeof json === 'object' && json !== null ? (json as Record<string, unknown>) : {};
+  if (typeof decision !== 'string' || !DECISIONS.includes(decision)) return undefined;
+  return isNonEmpty(reason) && reason.trim() !== '' ? { decision, reason } : undefined;
+}
+
+/** Kantar kararı: yalnız WEIGHT_MISMATCH durumunda ve gerekçeyle. */
+const weightDecisionHandler = http.post(
+  `${SHIPMENTS_PATH}/:shipmentId/weight-decision`,
+  async ({ params, request }) => {
+    const shipment = findMockShipment(params.shipmentId);
+    if (shipment === undefined) return notFound();
+    const body = readDecisionBody(await request.json());
+    if (body === undefined) return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
+    if (shipment.status !== 'WEIGHT_MISMATCH') {
+      return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
+    }
+    decideMockWeight(shipment.shipmentId, body.decision);
+    return new HttpResponse(null, { status: 204 });
+  },
+);
+
+const fireRateHandler = http.get('/api/v1/settings/shipment', () =>
+  HttpResponse.json({ defaultFireRate: '0.0400', weightToleranceKg: '0.000' }),
 );
 
 /** Sevkiyat oluşturma: zorunlu alanlar eksikse 400, aksi halde 201 ve yeni numara. */
@@ -213,10 +307,17 @@ const createShipmentHandler = http.post(SHIPMENTS_PATH, async ({ request }) => {
     return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
   }
   const { driverName, plateNo } = body;
+  const lines = readRecipeLines(body.lines);
+  const fireRate = readFireRate(body.fireRate);
+  if (lines === undefined || fireRate === undefined) {
+    return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
+  }
   const created = addMockShipment({
     siteId,
     subcontractorId,
     subcontractorTitle,
+    lines,
+    fireRate,
     ...(isNonEmpty(driverName) ? { driverName } : {}),
     ...(isNonEmpty(plateNo) ? { plateNo } : {}),
   });
@@ -259,6 +360,8 @@ export function createHandlers(role: Role) {
     cancelShipmentHandler,
     completeShipmentHandler,
     dispatchWeighingHandler,
+    weightDecisionHandler,
+    fireRateHandler,
     ...createTabHandlers(role),
     createShipmentHandler,
     ...createMasterDataHandlers(createMockUser(role).permissions),

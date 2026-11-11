@@ -54,6 +54,16 @@ public record FireFile(
         return baseKg.subtract(fabricKg).divide(baseKg, RATE_SCALE, RoundingMode.HALF_UP);
     }
 
+    /** Fire sınırı aşıldı mı: hatalı kg sıfırdan büyük. */
+    public boolean exceedsLimit() {
+        return shortageKg().signum() > 0;
+    }
+
+    /** Toplam fire kilosu T − K; fire sınırı içinde ya da dışında, kumaşta kaybolan iplik. */
+    public BigDecimal fireKg() {
+        return baseKg().subtract(fabricKg).setScale(KG_SCALE, RoundingMode.HALF_UP);
+    }
+
     /** H = max(0, B − K), 3 ondalık. Ara yuvarlama yapılmaz. */
     public BigDecimal shortageKg() {
         BigDecimal exact = baseKg().multiply(BigDecimal.ONE.subtract(fireRate)).subtract(fabricKg);

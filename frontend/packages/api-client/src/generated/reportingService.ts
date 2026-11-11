@@ -165,6 +165,13 @@ export interface YarnVsFabricRowView {
   fabricKg: string;
   actualFireRate: string;
   shortageKg: string;
+  /**
+     * Fire sınırını aşan sevkiyat sayısı (rapor, ceza değil)
+     * @minimum 0
+     */
+  overLimitShipmentCount: number;
+  /** Fire sınırını aşan sevkiyatların toplam fire kilosu (T − K) */
+  overLimitFireKg: string;
 }
 
 export interface OpeningRowRequest {

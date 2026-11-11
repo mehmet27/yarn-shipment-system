@@ -38,6 +38,8 @@ export type YarnVsFabricRowView = {
   fabricKg: string;
   actualFireRate: string;
   shortageKg: string;
+  overLimitShipmentCount: number;
+  overLimitFireKg: string;
 };
 
 export type FireReportParams = GetDashboardParams & { subcontractorId?: string };

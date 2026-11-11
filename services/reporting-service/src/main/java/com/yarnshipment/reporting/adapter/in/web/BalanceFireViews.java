@@ -54,7 +54,9 @@ final class BalanceFireViews {
                 row.returnedYarnKg().toPlainString(),
                 row.fabricKg().toPlainString(),
                 row.actualFireRate().toPlainString(),
-                row.shortageKg().toPlainString());
+                row.shortageKg().toPlainString(),
+                row.overLimitShipmentCount(),
+                row.overLimitFireKg().toPlainString());
     }
 
     static OpeningBalanceRow toDomain(OpeningRowRequest row) {

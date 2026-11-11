@@ -498,7 +498,7 @@ components:
         invoicedAt: {type: string, format: date-time, nullable: true}
     YarnVsFabricRowView:
       type: object
-      required: [subcontractorId, subcontractorName, sentKg, returnedYarnKg, fabricKg, actualFireRate, shortageKg]
+      required: [subcontractorId, subcontractorName, sentKg, returnedYarnKg, fabricKg, actualFireRate, shortageKg, overLimitShipmentCount, overLimitFireKg]
       properties:
         subcontractorId: {type: string, format: uuid}
         subcontractorName: {type: string}
@@ -507,6 +507,14 @@ components:
         fabricKg: {type: string}
         actualFireRate: {type: string}
         shortageKg: {type: string}
+        overLimitShipmentCount:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Fire sınırını aşan sevkiyat sayısı (rapor, ceza değil)
+        overLimitFireKg:
+          type: string
+          description: Fire sınırını aşan sevkiyatların toplam fire kilosu (T − K)
     OpeningRowRequest:
       type: object
       required: [subcontractorId, subcontractorName, yarnType, netKg]

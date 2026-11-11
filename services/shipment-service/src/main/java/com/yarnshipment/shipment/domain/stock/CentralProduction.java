@@ -43,23 +43,13 @@ public record CentralProduction(
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(producedAt, "producedAt");
         Objects.requireNonNull(createdBy, "createdBy");
-        fabricType = fabricType.strip();
-        if (fabricType.isEmpty() || fabricType.length() > MAX_TEXT_LENGTH) {
-            throw new InvalidLedgerInputException("fabricType");
-        }
+        fabricType = requiredText(fabricType, "fabricType");
         netKg = Kilograms.round(netKg);
         if (netKg.signum() <= 0) {
             throw new InvalidLedgerInputException("netKg");
         }
-        if (fireRate.signum() < 0 || fireRate.compareTo(MAX_FIRE_RATE) > 0) {
-            throw new InvalidLedgerInputException("fireRate");
-        }
-        if (rollCount != null && rollCount <= 0) {
-            throw new InvalidLedgerInputException("rollCount");
-        }
-        if (waybillNo != null && (waybillNo.isBlank() || waybillNo.length() > MAX_TEXT_LENGTH)) {
-            throw new InvalidLedgerInputException("waybillNo");
-        }
+        requireValidFireRate(fireRate);
+        requireValidOptionals(rollCount, waybillNo);
         yarns = List.copyOf(yarns);
         BigDecimal total = yarns.stream().map(YarnShare::netKg).reduce(BigDecimal.ZERO, BigDecimal::add);
         if (yarns.isEmpty() || total.compareTo(netKg) != 0) {
@@ -67,22 +57,46 @@ public record CentralProduction(
         }
     }
 
+    private static String requiredText(String value, String field) {
+        String text = value.strip();
+        if (text.isEmpty() || text.length() > MAX_TEXT_LENGTH) {
+            throw new InvalidLedgerInputException(field);
+        }
+        return text;
+    }
+
+    private static void requireValidFireRate(BigDecimal fireRate) {
+        if (fireRate.signum() < 0 || fireRate.compareTo(MAX_FIRE_RATE) > 0) {
+            throw new InvalidLedgerInputException("fireRate");
+        }
+    }
+
+    private static void requireValidOptionals(@Nullable Integer rollCount, @Nullable String waybillNo) {
+        if (rollCount != null && rollCount <= 0) {
+            throw new InvalidLedgerInputException("rollCount");
+        }
+        if (waybillNo != null) {
+            requiredText(waybillNo, "waybillNo");
+        }
+    }
+
     /** Her iplik payı için stoktan düşen (eksi işaretli, fire dahil) hareketler. */
     public List<CentralStockMovement> consumptions() {
         BigDecimal keep = BigDecimal.ONE.subtract(fireRate);
-        return yarns.stream()
-                .map(share -> new CentralStockMovement(
-                        UUID.randomUUID(),
-                        share.yarnType(),
-                        CentralStockKind.PRODUCTION,
-                        share.netKg()
-                                .divide(keep, Kilograms.SCALE, RoundingMode.HALF_UP)
-                                .negate(),
-                        id,
-                        share.netKg(),
-                        null,
-                        producedAt,
-                        createdBy))
-                .toList();
+        return yarns.stream().map(share -> consumption(share, keep)).toList();
+    }
+
+    private CentralStockMovement consumption(YarnShare share, BigDecimal keep) {
+        BigDecimal withFire = share.netKg().divide(keep, Kilograms.SCALE, RoundingMode.HALF_UP);
+        return new CentralStockMovement(
+                UUID.randomUUID(),
+                share.yarnType(),
+                CentralStockKind.PRODUCTION,
+                withFire.negate(),
+                id,
+                share.netKg(),
+                null,
+                producedAt,
+                createdBy);
     }
 }

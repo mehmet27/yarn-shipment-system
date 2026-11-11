@@ -104,8 +104,8 @@ class CentralStockAdapterTest {
     @DisplayName("İplik girişi stoğu artırır; üretim iplikleri fire ile düşer ve stok eksiye düşebilir")
     void shouldAddReceiptAndDeductProductionWithFire() {
         // given
-        stock.saveReceipt(
-                CentralStockMovement.receipt(YARN, new BigDecimal("20000"), "Tedarikçi irsaliyesi", AT, USER));
+        stock.saveReceipt(CentralStockMovement.receipt(
+                new CentralStockMovement.Receipt(YARN, new BigDecimal("20000"), "Tedarikçi irsaliyesi"), AT, USER));
         CentralProduction production = new CentralProduction(
                 UUID.randomUUID(),
                 "Süprem",

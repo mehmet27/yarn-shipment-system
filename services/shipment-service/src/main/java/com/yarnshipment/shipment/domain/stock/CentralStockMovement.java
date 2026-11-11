@@ -53,11 +53,30 @@ public record CentralStockMovement(
         }
     }
 
+    /**
+     * Merkeze gelen iplik isteği.
+     *
+     * @param yarnType iplik cinsi
+     * @param netKg gelen net kg
+     * @param note not, isteğe bağlı
+     */
+    public record Receipt(
+            String yarnType, BigDecimal netKg, @Nullable String note) {}
+
     /** Merkeze iplik girişi. */
-    public static CentralStockMovement receipt(
-            String yarnType, BigDecimal netKg, @Nullable String note, Instant at, UUID createdBy) {
-        String text = note == null || note.isBlank() ? null : note.strip();
+    public static CentralStockMovement receipt(Receipt receipt, Instant at, UUID createdBy) {
+        String text = receipt.note() == null || receipt.note().isBlank()
+                ? null
+                : receipt.note().strip();
         return new CentralStockMovement(
-                UUID.randomUUID(), yarnType, CentralStockKind.YARN_RECEIPT, netKg, null, null, text, at, createdBy);
+                UUID.randomUUID(),
+                receipt.yarnType(),
+                CentralStockKind.YARN_RECEIPT,
+                receipt.netKg(),
+                null,
+                null,
+                text,
+                at,
+                createdBy);
     }
 }

@@ -5,6 +5,8 @@ import com.yarnshipment.shipment.application.port.out.ledger.CentralStockPort;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockKind;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
@@ -68,19 +70,20 @@ final class CentralStockAdapter implements CentralStockPort {
 
     @Override
     public List<CentralStockMovement> findRecent(int limit) {
-        return jdbc.sql(RECENT)
-                .param(limit)
-                .query((rs, i) -> new CentralStockMovement(
-                        rs.getObject("id", UUID.class),
-                        rs.getString("yarn_type"),
-                        CentralStockKind.valueOf(rs.getString("kind")),
-                        rs.getBigDecimal("net_kg"),
-                        rs.getObject("production_id", UUID.class),
-                        rs.getBigDecimal("fabric_kg"),
-                        rs.getString("note"),
-                        rs.getTimestamp("occurred_at").toInstant(),
-                        rs.getObject("created_by", UUID.class)))
-                .list();
+        return jdbc.sql(RECENT).param(limit).query((rs, i) -> toMovement(rs)).list();
+    }
+
+    private static CentralStockMovement toMovement(ResultSet rs) throws SQLException {
+        return new CentralStockMovement(
+                rs.getObject("id", UUID.class),
+                rs.getString("yarn_type"),
+                CentralStockKind.valueOf(rs.getString("kind")),
+                rs.getBigDecimal("net_kg"),
+                rs.getObject("production_id", UUID.class),
+                rs.getBigDecimal("fabric_kg"),
+                rs.getString("note"),
+                rs.getTimestamp("occurred_at").toInstant(),
+                rs.getObject("created_by", UUID.class));
     }
 
     private void insert(CentralStockMovement movement, String sourceRef) {

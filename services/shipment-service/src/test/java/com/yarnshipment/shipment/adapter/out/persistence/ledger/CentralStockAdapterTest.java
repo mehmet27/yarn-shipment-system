@@ -35,6 +35,7 @@ class CentralStockAdapterTest {
     private static final UUID TRANSFER_SHIPMENT = UUID.fromString("0192f0a0-0000-7000-8000-000000000802");
     private static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000803");
     private static final UUID SOURCE_SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000804");
+    private static final UUID DIRECT_SHIPMENT = UUID.fromString("0192f0a0-0000-7000-8000-000000000805");
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-00000000d001");
     private static final Instant AT = Instant.parse("2026-11-13T09:00:00Z");
     private static final int RECENT_LIMIT = 10;
@@ -124,5 +125,36 @@ class CentralStockAdapterTest {
         // then
         assertThat(stockOf(YARN)).isEqualByComparingTo("18958.333");
         assertThat(stock.findRecent(RECENT_LIMIT)).hasSize(2);
+    }
+
+    @Test
+    @DisplayName(
+            "Kapıdan aktarmada aynı kilo giriş (+) ve çıkış (-) yazılır: stok eksiye düşmez, iz kalır, tekrar yazılmaz")
+    void shouldWriteReceiptAndDispatchForDirectTransfer() {
+        // given
+        jdbc.update(INSERT_SHIPMENT, DIRECT_SHIPMENT, TestTokens.SITE_ID, "SV-C3", SUBCONTRACTOR, null, null, USER);
+        jdbc.update(
+                "UPDATE shipment SET direct_transfer_supplier = 'Esha İplik', direct_transfer_waybill_no = 'IRS-77'"
+                        + " WHERE id = ?",
+                DIRECT_SHIPMENT);
+        jdbc.update(INSERT_WEIGHING, UUID.randomUUID(), DIRECT_SHIPMENT, USER, USER);
+
+        // when
+        ledger.recordDispatch(DIRECT_SHIPMENT, SUBCONTRACTOR, AT, USER);
+        ledger.recordDispatch(DIRECT_SHIPMENT, SUBCONTRACTOR, AT, USER);
+
+        // then
+        assertThat(stockOf(BalanceLedgerAdapter.UNSPECIFIED_YARN)).isEqualByComparingTo("0");
+        assertThat(jdbc.queryForList(
+                        "SELECT kind FROM central_stock_movement WHERE shipment_id = ? ORDER BY net_kg DESC",
+                        String.class,
+                        DIRECT_SHIPMENT))
+                .containsExactly("YARN_RECEIPT", "TO_SUBCONTRACTOR");
+        assertThat(jdbc.queryForObject(
+                        "SELECT note FROM central_stock_movement WHERE shipment_id = ? AND kind = 'YARN_RECEIPT'",
+                        String.class,
+                        DIRECT_SHIPMENT))
+                .contains("Esha İplik")
+                .contains("IRS-77");
     }
 }

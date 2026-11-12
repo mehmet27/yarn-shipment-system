@@ -352,6 +352,18 @@ export interface CreateShipmentRequest {
      * @maxLength 200
      */
   sourceSubcontractorTitle?: string;
+  /**
+     * Doluysa iplik depoya girmeden kamyondan kamyona aktarılır; gelen tedarikçi. Gönderen fasoncu ile birlikte verilemez
+     * @minLength 1
+     * @maxLength 200
+     */
+  directTransferSupplier?: string;
+  /**
+     * Kapıdan aktarılan ipliğin geliş irsaliye numarası; directTransferSupplier ile birlikte verilir
+     * @minLength 1
+     * @maxLength 100
+     */
+  directTransferWaybillNo?: string;
   driverId?: string;
   /**
      * @minLength 1
@@ -916,6 +928,9 @@ export interface InternalShipmentView {
   subcontractorTitle: string;
   /** Gönderen fasoncu; boşsa iplik merkezden çıkar */
   sourceSubcontractorTitle?: string;
+  /** Doluysa iplik depoya girmeden kapıdan aktarılır; gelen tedarikçi */
+  directTransferSupplier?: string;
+  directTransferWaybillNo?: string;
   driverName?: string;
   plateNo?: string;
   plannedBagCount?: number;
@@ -950,6 +965,9 @@ export interface WarehouseShipmentView {
   subcontractorTitle: string;
   /** Gönderen fasoncu; boşsa iplik merkezden çıkar */
   sourceSubcontractorTitle?: string;
+  /** Doluysa iplik depoya girmeden kapıdan aktarılır; gelen tedarikçi */
+  directTransferSupplier?: string;
+  directTransferWaybillNo?: string;
   driverName?: string;
   plateNo?: string;
   plannedBagCount?: number;

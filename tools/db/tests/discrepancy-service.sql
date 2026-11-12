@@ -19,7 +19,7 @@ GRANT EXECUTE ON FUNCTION pg_temp.expect_error(text, text) TO PUBLIC;
 
 INSERT INTO discrepancy (id, discrepancy_no, site_id, shipment_id, discrepancy_type, severity, status, rule_code,
                          created_at, created_by)
-VALUES ('00000000-0000-7000-8000-000000000601', 'U-1', gen_random_uuid(), gen_random_uuid(), 'QUANTITY', 'RED',
+VALUES ('00000000-0000-7000-8000-000000000601', 'U-1', gen_random_uuid(), gen_random_uuid(), 'QUALITY', 'RED',
         'OPEN', 'NET_KG_DIFF', now(), gen_random_uuid());
 -- Karar ve not olmadan RESOLVED olamaz.
 SELECT pg_temp.expect_error($$UPDATE discrepancy SET status = 'RESOLVED'

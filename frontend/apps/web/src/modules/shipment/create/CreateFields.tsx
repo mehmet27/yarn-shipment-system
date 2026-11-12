@@ -2,6 +2,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Stack } from '@iplik/ui';
 import type { CreateDraft, CreateFieldErrors } from './createDraft';
 import { withSubcontractor } from './createDraft';
+import { DirectTransferFields } from './DirectTransferFields';
 import { MasterSelect } from './MasterSelect';
 import { RecipeSection } from './RecipeSection';
 
@@ -41,6 +42,7 @@ export function CreateFields({ draft, onChange, errors = {}, defaultFirePct }: C
           onChange({ ...draft, sourceSubcontractor });
         }}
       />
+      <DirectTransferFields draft={draft} onChange={onChange} errors={errors} />
       <MasterSelect
         kind="driver"
         label={t('create.driver')}

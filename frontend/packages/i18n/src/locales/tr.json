@@ -298,7 +298,9 @@
       "lineKgInvalid": "Net kg 0'dan büyük olmalı (ör. 1.982,5).",
       "fireRateInvalid": "Fire oranı 0 ile 20 arasında, en çok 2 ondalıklı olmalı.",
       "linePriceInvalid": "Fiyat en çok 4 ondalıklı, negatif olmayan bir sayı olmalı.",
-      "sourceSameAsReceiver": "Gönderen ve alıcı fasoncu aynı olamaz."
+      "sourceSameAsReceiver": "Gönderen ve alıcı fasoncu aynı olamaz.",
+      "directTransferWithSource": "Kapıdan aktarma, gönderen fasoncu ile birlikte seçilemez.",
+      "waybillNeedsSupplier": "İrsaliye numarası için tedarikçiyi de yazın."
     },
     "recipe": {
       "title": "Reçete satırları",
@@ -324,7 +326,10 @@
     },
     "fireRate": "Fire oranı (%)",
     "fireRateHint": "0 ile 20 arasında, en çok 2 ondalık.",
-    "sourceSubcontractor": "Gönderen (isteğe bağlı, boşsa merkezden)"
+    "sourceSubcontractor": "Gönderen (isteğe bağlı, boşsa merkezden)",
+    "directTransferSupplier": "Kapıdan aktarma tedarikçisi (isteğe bağlı)",
+    "directTransferHint": "İplik depoya girmeden kamyondan kamyona aktarılıyorsa tedarikçiyi yazın; merkez stok eksiye düşmez.",
+    "directTransferWaybillNo": "Geliş irsaliye no (isteğe bağlı)"
   },
   "masterData": {
     "title": "Tanımlar",

@@ -2389,6 +2389,16 @@ components:
           type: string
           minLength: 1
           maxLength: 200
+        directTransferSupplier:
+          description: Doluysa iplik depoya girmeden kamyondan kamyona aktarılır; gelen tedarikçi. Gönderen fasoncu ile birlikte verilemez
+          type: string
+          minLength: 1
+          maxLength: 200
+        directTransferWaybillNo:
+          description: Kapıdan aktarılan ipliğin geliş irsaliye numarası; directTransferSupplier ile birlikte verilir
+          type: string
+          minLength: 1
+          maxLength: 100
         driverId:
           type: string
           format: uuid
@@ -3220,6 +3230,11 @@ components:
         sourceSubcontractorTitle:
           description: Gönderen fasoncu; boşsa iplik merkezden çıkar
           type: string
+        directTransferSupplier:
+          description: Doluysa iplik depoya girmeden kapıdan aktarılır; gelen tedarikçi
+          type: string
+        directTransferWaybillNo:
+          type: string
         driverName:
           type: string
         plateNo:
@@ -3274,6 +3289,11 @@ components:
           type: string
         sourceSubcontractorTitle:
           description: Gönderen fasoncu; boşsa iplik merkezden çıkar
+          type: string
+        directTransferSupplier:
+          description: Doluysa iplik depoya girmeden kapıdan aktarılır; gelen tedarikçi
+          type: string
+        directTransferWaybillNo:
           type: string
         driverName:
           type: string

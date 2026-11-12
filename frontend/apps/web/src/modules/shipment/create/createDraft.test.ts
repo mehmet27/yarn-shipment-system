@@ -42,6 +42,30 @@ describe('createDraft', () => {
     );
   });
 
+  it('kapıdan aktarma tedarikçisi ve irsaliyesi istekte gider; boşsa hiç yer almaz', () => {
+    const direct = {
+      ...base,
+      directTransferSupplier: ' Esha İplik ',
+      directTransferWaybillNo: 'IRS-7',
+    };
+    expect(toCreateRequest(direct, SITE)).toMatchObject({
+      directTransferSupplier: 'Esha İplik',
+      directTransferWaybillNo: 'IRS-7',
+    });
+    expect(toCreateRequest(base, SITE)).not.toHaveProperty('directTransferSupplier');
+    expect(validateCreate(direct)).toBeUndefined();
+  });
+
+  it('kapıdan aktarma gönderen fasoncu ile seçilemez; irsaliye tedarikçisiz olmaz', () => {
+    const source = { value: 'sub-2', label: 'Aydın Örme' };
+    expect(
+      validateCreate({ ...base, sourceSubcontractor: source, directTransferSupplier: 'Esha' }),
+    ).toBe('directTransferWithSource');
+    expect(validateCreate({ ...base, directTransferWaybillNo: 'IRS-7' })).toBe(
+      'waybillNeedsSupplier',
+    );
+  });
+
   it('şoför ve araç seçilmişse kimlik ve adı birlikte gider', () => {
     const draft = {
       ...base,

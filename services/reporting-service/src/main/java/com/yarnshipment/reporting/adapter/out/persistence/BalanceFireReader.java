@@ -69,18 +69,26 @@ final class BalanceFireReader implements BalanceFirePort {
                 .list();
     }
 
+    /**
+     * Açılış, defterin kendisine yazılır ({@code balance_movement_view} bir görünümdür). {@code source_ref}
+     * (fasoncu, iplik) başına tek açılış sağlar; defter sıfır kiloyu kabul etmez.
+     */
     @Override
-    public boolean insertOpeningIfAbsent(OpeningBalanceRow row, Instant occurredAt) {
+    public boolean insertOpeningIfAbsent(OpeningBalanceRow row, Instant occurredAt, UUID actorId) {
+        if (row.netKg().signum() == 0) {
+            return false;
+        }
         int rows = jdbc.sql("""
-                        INSERT INTO balance_movement_view (id, subcontractor_id, subcontractor_name, yarn_type, kind,
-                                                           net_kg, occurred_at)
-                        VALUES (gen_random_uuid(), :sub, :name, :yarn, 'OPENING', :kg, :at)
+                        INSERT INTO shipment.balance_movement (id, subcontractor_id, yarn_type, kind, net_kg,
+                                                               occurred_at, created_by, source_ref)
+                        VALUES (gen_random_uuid(), :sub, :yarn, 'OPENING', :kg, :at, :actor,
+                                'OPENING:' || :sub || ':' || :yarn)
                         ON CONFLICT DO NOTHING""")
                 .param("sub", row.subcontractorId())
-                .param("name", row.subcontractorName())
                 .param("yarn", row.yarnType())
                 .param("kg", row.netKg())
                 .param("at", Timestamp.from(occurredAt))
+                .param("actor", actorId)
                 .update();
         return rows > 0;
     }

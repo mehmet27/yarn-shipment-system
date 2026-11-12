@@ -64,10 +64,11 @@ class BalanceFireServiceTest {
     void shouldCountImportedAndSkipped() {
         OpeningBalanceRow written = new OpeningBalanceRow(UUID.randomUUID(), "A", "Viskon", new BigDecimal("10.000"));
         OpeningBalanceRow existing = new OpeningBalanceRow(UUID.randomUUID(), "B", "Poly", new BigDecimal("5.000"));
-        when(port.insertOpeningIfAbsent(eq(written), any())).thenReturn(true);
-        when(port.insertOpeningIfAbsent(eq(existing), any())).thenReturn(false);
+        when(port.insertOpeningIfAbsent(eq(written), any(), any())).thenReturn(true);
+        when(port.insertOpeningIfAbsent(eq(existing), any(), any())).thenReturn(false);
 
-        OpeningImportResult result = service.importOpening(LocalDate.parse("2026-11-09"), List.of(written, existing));
+        OpeningImportResult result =
+                service.importOpening(UUID.randomUUID(), LocalDate.parse("2026-11-09"), List.of(written, existing));
 
         assertThat(result.imported()).isEqualTo(1);
         assertThat(result.skipped()).isEqualTo(1);

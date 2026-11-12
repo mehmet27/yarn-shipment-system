@@ -56,7 +56,6 @@ export const Permission = {
   USER_MANAGE: 'USER_MANAGE',
   SETTINGS_MANAGE: 'SETTINGS_MANAGE',
   LOT_QUALITY_LOCK: 'LOT_QUALITY_LOCK',
-  BAG_CREATE: 'BAG_CREATE',
   SHIPMENT_VIEW: 'SHIPMENT_VIEW',
   SHIPMENT_CREATE: 'SHIPMENT_CREATE',
   SHIPMENT_CANCEL: 'SHIPMENT_CANCEL',
@@ -987,7 +986,7 @@ export type UnauthorizedResponse = Problem;
 export type ForbiddenResponse = Problem;
 
 /**
- * Çuval servisine (BAG_SERVICE_UNAVAILABLE), kanıt servisine (EVIDENCE_SERVICE_UNAVAILABLE) ya da Keycloak'a (LOGIN_ACCOUNT_UNAVAILABLE) ulaşılamadı
+ * Kanıt servisine (EVIDENCE_SERVICE_UNAVAILABLE) ya da Keycloak'a (LOGIN_ACCOUNT_UNAVAILABLE) ulaşılamadı
  */
 export type BadGatewayResponse = Problem;
 
@@ -2029,7 +2028,7 @@ export const activateLot = (
     }
 
 /**
- * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında (rapor Bölüm 10). Kilitten sonra partinin numarası, ipliği, kalitesi ve üretim tarihi değişmez ve kilit geri alınamaz; çuvallar yalnızca kilitli partiye bağlanır ve kaliteyi partiden alır. Kilit `LotQualityLocked` olayıyla çuval servisine gider. Kilitli parti 409 `LOT_QUALITY_LOCKED`; pasif parti ya da pasif kalite sınıfı 400 `INVALID_MASTER_DATA` verir.
+ * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında (rapor Bölüm 10). Kilitten sonra partinin numarası, ipliği, kalitesi ve üretim tarihi değişmez ve kilit geri alınamaz; Kilitli parti 409 `LOT_QUALITY_LOCKED`; pasif parti ya da pasif kalite sınıfı 400 `INVALID_MASTER_DATA` verir.
  * @summary Partinin kalitesini kilitler
  */
 export const lockLotQuality = (
@@ -2056,9 +2055,8 @@ export const getShipmentHistory = (
 
 /**
  * Müdür ya da yönetici (SHIPMENT_CANCEL). Taslak (DRAFT), kantar uyuşmazlığındaki (WEIGHT_MISMATCH) ya da teslim bekleyen (AWAITING_DELIVERY) sevkiyat
- * iptal edilir, ör. kantar farkı nedeniyle durdurulan sevkiyat; gerekçe zorunludur. Sevkiyata atanmış çuvallar bag-service'te serbest bırakılır ve yeniden
- * kullanılabilir olur. Çuval servisi yanıt vermezse iptal de yapılmaz (`BAG_SERVICE_UNAVAILABLE`) ve istek
- * güvenle tekrarlanır. Zaten iptal edilmiş sevkiyata gelen istek başarılı döner. Tamamlanmış sevkiyat iptal
+ * iptal edilir, ör. kantar farkı nedeniyle durdurulan sevkiyat; gerekçe zorunludur.
+ * Zaten iptal edilmiş sevkiyata gelen istek başarılı döner. Tamamlanmış sevkiyat iptal
  * edilemez (`INVALID_SHIPMENT_STATUS`).
  * @summary Tamamlanmamış sevkiyatı iptal eder
  */

@@ -19,7 +19,6 @@ const ITEMS: readonly PanelNavItem[] = [
     icon: 'shipments',
     permission: 'SHIPMENT_VIEW',
   },
-  { to: '/panel/cuvallar', labelKey: 'nav.bags', icon: 'bags', permission: 'BAG_CREATE' },
   { to: '/panel/raporlar', labelKey: 'nav.reports', icon: 'reports', permission: 'REPORT_VIEW' },
   {
     to: '/panel/uyusmazliklar',

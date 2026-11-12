@@ -186,27 +186,6 @@ export type {
   UploadTicketView,
 } from './evidence';
 export {
-  BAGS_PATH,
-  BagStatus,
-  createBags,
-  listLockedLots,
-  listLotBags,
-  PackageType,
-  printBagLabels,
-  voidBags,
-} from './bags';
-export type {
-  BagView,
-  CreateBagsRequest,
-  CreateBagsResponse,
-  LabeledBagView,
-  LockedLotView,
-  LotBagsResponse,
-  PrintLabelsRequest,
-  VoidBagsRequest,
-  VoidBagsResponse,
-} from './bags';
-export {
   getDashboard,
   getShipmentReport,
   getSubcontractorBalanceReport,

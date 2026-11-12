@@ -59,7 +59,6 @@ Rol, izin ve claim adları koddaki adlarla aynıdır ve İngilizcedir (kod stand
 | `MASTER_DATA_MANAGE` (fasoncu, şoför, araç, ürün) | ✓ |  |  |  |  |  |
 | `USER_MANAGE`, `SETTINGS_MANAGE` (tolerans, zorunlu kanıt) | ✓ |  |  |  |  |  |
 | `LOT_QUALITY_LOCK` | ✓ |  |  |  | ✓ |  |
-| `BAG_CREATE` (çuval / Unique Key oluşturma, etiket basımı) | ✓ | ✓ |  |  |  |  |
 | `SHIPMENT_VIEW` | ✓ | ✓ | kendi | kendi | ✓ | ✓ |
 | `SHIPMENT_CREATE` (çuval atama, şoför/araç atama) | ✓ |  |  |  |  | ✓ |
 | `SHIPMENT_CANCEL` | ✓ |  |  |  |  |  |
@@ -81,7 +80,7 @@ Rol, izin ve claim adları koddaki adlarla aynıdır ve İngilizcedir (kod stand
 **Matristen farklılaşan veya eklenen noktalar** (son bölümde karara bağlandı):
 
 - `LOT_QUALITY_LOCK` matriste yoktu; ön analiz Bölüm 10'daki "kalite parti bazında belirlenir ve kilitlenir" kuralı için Kalite ve Admin'e eklendi.
-- `BAG_CREATE` matriste ayrı satır değildi; çuval oluşturma ve etiket basımı "Sevkiyat ve çuval ataması" satırı gibi Depo'ya, düzeltme yetkisi için Admin'e verildi. Yeniden baskıda gerekçe zorunludur ve etikete baskı numarası yazılır.
+- `BAG_CREATE` (çuval oluşturma ve etiket basımı) çuval etiketi işi iptal edildiği için kaldırıldı; sevkiyat çuvalı kg girişi `DISPATCH_RECORD` ile yapılır.
 - Süreç analizi v2 (A3): `SHIPMENT_CREATE` Depo'dan alındı, yalnız Müdür ve Admin sevkiyat açar; Depo yalnız `DISPATCH_RECORD` ile çıkış tartısı girer.
 - Süreç analizi v2, 3.3: `GENERAL_MANAGER` (yalnız `REPORT_VIEW`, `BALANCE_VIEW`) ve yeni izinler eklendi: `FABRIC_RECEIPT_RECORD` (Kalite, Müdür), `YARN_RETURN_RECORD` (Depo, Müdür), `FIRE_RATE_EDIT`, `INVOICE_MARK`, `WEIGHT_MISMATCH_RESOLVE` (Müdür), `BALANCE_VIEW` (Müdür, Genel müdür, Kalite, Admin).
 - `SHIPMENT_CREATE` Admin'e de verildi, çünkü süreç tablosunda (7.1, adım 1) sorumlu "Depo / Admin".

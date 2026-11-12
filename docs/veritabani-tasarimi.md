@@ -32,7 +32,6 @@ Mikroservis mimarisi dokümanındaki (java\_mikroservis\_mimarisi\_v1) 8 servisi
 | Veritabanı | Sahip servis | Tuttuğu veri |
 | --- | --- | --- |
 | `masterdata_db` | master-data-service | Fasoncu, şoför, araç, iplik, kalite, parti ve kalite kilidi, şahit numune, kullanıcı profili (kullanıcı–fasoncu/şoför bağı) |
-| `bag_db` | bag-service | Çuval (Unique Key), etiket baskısı, çuval rezervasyonu ve tek kullanım garantisi |
 | `shipment_db` | shipment-service | Sevkiyat, çuval listesi kopyası, tartım, mühür, şoför beyanı, kör teslim girişi, durum geçmişi, düzeltme kayıtları |
 | `evidence_db` + MinIO | evidence-service | Fotoğraf/belge üst verisi, SHA-256, zaman damgaları; dosyanın kendisi MinIO'da |
 | `discrepancy_db` | discrepancy-service | Tolerans kuralları, uyuşmazlık, kalite itirazı, karar, fiziki kontrol/numune/lab |
@@ -85,16 +84,6 @@ Tüm servislerdeki `created_by`, `assignee_id` gibi kullanıcı alanları Keyclo
 | `user_site` | user\_id, site\_id | PK (user\_id, site\_id); depo ve kalite kullanıcısının hangi lokasyonlarda yetkili olduğu |
 | `evidence_requirement` | stage (DISPATCH, DELIVERY, CLAIM), evidence\_type, min\_count, mandatory | Rapor Bölüm 11.1 ayarları |
 | `system_setting` | key, value jsonb | itiraz süresi, rastgele kontrol oranı, saklama süresi vb. |
-
-### bag\_db
-
-| Tablo | Önemli kolonlar | Kısıt / not |
-| --- | --- | --- |
-| `bag` (çuval) | site\_id, unique\_key, package\_type (BAG, BOX, PALLET, BOBBIN), parent\_bag\_id (palet içindeki çuvallar için), lot\_id, lot\_no, product\_id, quality\_grade\_code, status (CREATED, RESERVED, SHIPPED, DELIVERED, VOID) | unique\_key unique; kalite partiden kopyalanır, elle girilmez; parti kalitesi kilitli değilse çuval oluşturulamaz |
-| `label_print` (etiket baskısı) | bag\_id, printed\_at, printed\_by, reprint\_reason | yeniden baskıda gerekçe zorunlu |
-| `bag_reservation` | bag\_id, shipment\_id, reserved\_at, reserved\_by, released\_at, release\_reason | **kısmi unique (bag\_id) WHERE released\_at IS NULL**: bir çuval aynı anda tek sevkiyatta. ShipmentCancelled olayı gelince rezervasyon bırakılır |
-
-Unique Key'in tek kullanımı burada, tek veritabanı işlemiyle garanti edilir. shipment-service okutmayı REST ile bag-service'e sorar; anahtar başka sevkiyattaysa depo personeli bunu okuttuğu anda görür.
 
 ### shipment\_db
 

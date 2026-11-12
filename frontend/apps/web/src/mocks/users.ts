@@ -8,7 +8,6 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
     'USER_MANAGE',
     'SETTINGS_MANAGE',
     'LOT_QUALITY_LOCK',
-    'BAG_CREATE',
     'SHIPMENT_VIEW',
     'SHIPMENT_CREATE',
     'SHIPMENT_CANCEL',
@@ -30,7 +29,6 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
   ],
   WAREHOUSE: [
     'MASTER_DATA_VIEW',
-    'BAG_CREATE',
     'SHIPMENT_VIEW',
     'DISPATCH_RECORD',
     'DISPATCH_VIEW',

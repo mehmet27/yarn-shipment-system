@@ -1,1 +1,0 @@
-export { bagPanelRoutes } from './routes';

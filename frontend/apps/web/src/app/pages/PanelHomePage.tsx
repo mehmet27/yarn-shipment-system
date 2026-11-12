@@ -23,11 +23,6 @@ export function PanelHomePage() {
               <Button component={Link} to="/panel/sevkiyat" size="lg" variant="light">
                 {t('nav.shipments')}
               </Button>
-              <Can permission="BAG_CREATE">
-                <Button component={Link} to="/panel/cuvallar" size="lg" variant="light">
-                  {t('nav.bags')}
-                </Button>
-              </Can>
             </SimpleGrid>
           </Stack>
         }

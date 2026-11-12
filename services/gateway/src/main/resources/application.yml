@@ -56,13 +56,6 @@ spring:
               filters:
                 - RemoveRequestHeader=Cookie
                 - TokenRelay=
-            - id: bag-service
-              uri: ${BAG_SERVICE_URL:http://localhost:8084}
-              predicates:
-                - Path=/api/v1/bags/**
-              filters:
-                - RemoveRequestHeader=Cookie
-                - TokenRelay=
             - id: discrepancy-service
               uri: ${DISCREPANCY_SERVICE_URL:http://localhost:8085}
               predicates:

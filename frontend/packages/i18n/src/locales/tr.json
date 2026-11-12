@@ -764,6 +764,19 @@
       },
       "passwordHint": "En az 8 karakter. Kişi ilk girişte kendi şifresini seçer."
     },
+    "changeName": {
+      "action": "Adı düzenle",
+      "open": "{{username}} ad soyadını düzenle",
+      "title": "Ad soyadı düzenle",
+      "intro": "{{username}} için ad ve soyadı yazın. Giriş adı, rol ve açık oturumlar değişmez.",
+      "submit": "Adı kaydet",
+      "errors": {
+        "LOGIN_ACCOUNT_NOT_FOUND": "Kullanıcı bulunamadı; liste yenilenecek.",
+        "LOGIN_ACCOUNT_UNAVAILABLE": "Giriş sistemine ulaşılamadı; ad değişmedi. Lütfen tekrar deneyin.",
+        "INVALID_MASTER_DATA": "Ad soyad en az 2 karakter olmalı.",
+        "unknown": "Ad soyad değiştirilemedi. Lütfen tekrar deneyin."
+      }
+    },
     "changeRole": {
       "action": "Rolü değiştir",
       "open": "{{username}} rolünü değiştir",

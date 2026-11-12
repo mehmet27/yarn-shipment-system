@@ -2,23 +2,19 @@ package com.yarnshipment.shipment.masterdata.adapter.in.web;
 
 import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.shipment.adapter.in.web.api.LoginAccountsApi;
+import com.yarnshipment.shipment.adapter.in.web.api.model.ChangeLoginAccountNameRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ChangeLoginAccountRoleRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountPageResponse;
-import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountView;
-import com.yarnshipment.shipment.adapter.in.web.api.model.Role;
 import com.yarnshipment.shipment.adapter.in.web.api.model.StaffLoginAccountRequest;
-import com.yarnshipment.shipment.adapter.in.web.api.model.WorkArea;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountNameUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffWorkArea;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.CacheControl;
@@ -37,16 +33,19 @@ public class LoginAccountController implements LoginAccountsApi {
     private final ListLoginAccountsUseCase listLoginAccounts;
     private final CreateStaffLoginAccountUseCase createStaff;
     private final ChangeLoginAccountRoleUseCase changeRole;
+    private final ChangeLoginAccountNameUseCase changeName;
     private final CurrentActorProvider currentActorProvider;
 
     public LoginAccountController(
             ListLoginAccountsUseCase listLoginAccounts,
             CreateStaffLoginAccountUseCase createStaff,
             ChangeLoginAccountRoleUseCase changeRole,
+            ChangeLoginAccountNameUseCase changeName,
             CurrentActorProvider currentActorProvider) {
         this.listLoginAccounts = listLoginAccounts;
         this.createStaff = createStaff;
         this.changeRole = changeRole;
+        this.changeName = changeName;
         this.currentActorProvider = currentActorProvider;
     }
 
@@ -75,31 +74,19 @@ public class LoginAccountController implements LoginAccountsApi {
 
     @Override
     @PreAuthorize("hasAuthority('USER_MANAGE')")
+    public ResponseEntity<Void> changeLoginAccountName(UUID userId, ChangeLoginAccountNameRequest request) {
+        changeName.changeLoginAccountName(currentActorProvider.getCurrentActor(), userId, request.getFullName());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('USER_MANAGE')")
     public ResponseEntity<LoginAccountPageResponse> listLoginAccounts(
             Integer page, Integer size, @Nullable String search) {
         MasterDataPage<LoginAccountSummary> found =
                 listLoginAccounts.listLoginAccounts(new MasterDataQuery(search, page, size));
         LoginAccountPageResponse response = new LoginAccountPageResponse(
-                found.items().stream().map(LoginAccountController::view).toList(), MasterDataPages.metadata(found));
+                found.items().stream().map(LoginAccountViewMapper::view).toList(), MasterDataPages.metadata(found));
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(response);
-    }
-
-    private static LoginAccountView view(LoginAccountSummary account) {
-        return new LoginAccountView()
-                .id(account.id())
-                .username(account.username())
-                .fullName(account.fullName())
-                .roles(account.roles().stream().map(Role::valueOf).toList())
-                .enabled(account.enabled())
-                .passwordChangeRequired(account.passwordChangeRequired())
-                .createdAt(utc(account.createdAt()))
-                .workArea(
-                        account.workArea() == null
-                                ? null
-                                : WorkArea.valueOf(account.workArea().name()));
-    }
-
-    private static @Nullable OffsetDateTime utc(@Nullable Instant instant) {
-        return instant == null ? null : OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
     }
 }

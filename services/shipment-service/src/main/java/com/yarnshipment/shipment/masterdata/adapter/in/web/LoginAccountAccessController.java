@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Giriş hesabının erişimi: pasife alma, yeniden açma ve yöneticinin yeni geçici şifre belirlemesi; yalnızca
- * USER_MANAGE yetkisi olan yönetici. Kişi bir sonraki girişte şifresini kendisi değiştirir. Method security proxy'si
- * gerektirdiği için final değildir (SEC-02).
+ * USER_MANAGE yetkisi olan yönetici. Kişi bir sonraki girişte şifresini kendisi değiştirir. Method security
+ * proxy'si gerektirdiği için final değildir (SEC-02).
  */
 @RestController
 public class LoginAccountAccessController implements LoginAccountAccessApi {

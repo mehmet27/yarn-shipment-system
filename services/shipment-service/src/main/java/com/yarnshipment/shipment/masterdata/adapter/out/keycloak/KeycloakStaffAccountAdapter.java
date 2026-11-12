@@ -44,6 +44,31 @@ final class KeycloakStaffAccountAdapter implements StaffAccountPort {
         admin.guardedRun(() -> replaceRole(userId.toString(), role));
     }
 
+    @Override
+    public void changeStaffName(UUID userId, String fullName) {
+        admin.guardedRun(() -> replaceName(userId.toString(), fullName));
+    }
+
+    private void replaceName(String userId, String fullName) {
+        String token = admin.accessToken();
+        String[] names = KeycloakAdminClient.splitName(fullName);
+        try {
+            admin.http()
+                    .put()
+                    .uri("/admin/realms/{realm}/users/{id}", admin.realm(), userId)
+                    .headers(headers -> headers.setBearerAuth(token))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("firstName", names[0], "lastName", names[1]))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientResponseException exception) {
+            if (exception.getStatusCode().value() == HttpStatus.NOT_FOUND.value()) {
+                throw new LoginAccountNotFoundException();
+            }
+            throw exception;
+        }
+    }
+
     private UUID open(StaffAccountSpec spec) {
         String token = admin.accessToken();
         Map<String, Object> role = admin.realmRole(token, spec.role().realmRole());

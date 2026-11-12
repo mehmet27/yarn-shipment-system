@@ -19,4 +19,11 @@ public interface StaffAccountPort {
      * {@code LoginAccountNotFoundException}; şoför/fasoncu hesabıysa {@code LoginAccountRoleLockedException}.
      */
     void changeStaffRole(UUID userId, StaffRole role);
+
+    /**
+     * Kullanıcının ad ve soyadını profilinde günceller; oturumlar, rol ve giriş adı değişmez. Kullanıcı yoksa
+     * {@code LoginAccountNotFoundException}; sağlayıcı yanıt vermezse {@code LoginAccountUnavailableException}
+     * fırlatır.
+     */
+    void changeStaffName(UUID userId, String fullName);
 }

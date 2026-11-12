@@ -85,8 +85,13 @@ export type {
   SetLoginAccountPasswordRequest,
 } from './generated/shipmentService';
 export { listLoginAccounts } from './generated/shipmentService';
-export { changeLoginAccountRole, createStaffLoginAccount } from './generated/shipmentService';
+export {
+  changeLoginAccountName,
+  changeLoginAccountRole,
+  createStaffLoginAccount,
+} from './generated/shipmentService';
 export type {
+  ChangeLoginAccountNameRequest,
   ChangeLoginAccountRoleRequest,
   StaffLoginAccountRequest,
   StaffRole,

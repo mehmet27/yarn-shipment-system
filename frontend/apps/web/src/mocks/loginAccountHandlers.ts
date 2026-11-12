@@ -1,5 +1,6 @@
 import type {
   ChangeLoginAccountEnabledRequest,
+  ChangeLoginAccountNameRequest,
   ChangeLoginAccountRoleRequest,
   Permission,
   SetLoginAccountPasswordRequest,
@@ -8,6 +9,7 @@ import type {
 import { http, HttpResponse } from 'msw';
 import {
   addMockLoginAccount,
+  changeMockLoginAccountName,
   changeMockLoginAccountRole,
   isMockUsernameTaken,
   listMockLoginAccounts,
@@ -27,7 +29,7 @@ function problem(status: number, code: string, title: string) {
   return HttpResponse.json({ status, code, title }, { status });
 }
 
-/** Giriş hesabı listesi, fabrika içi hesap açma, rol değiştirme, pasife alma ve yeni geçici şifre verme; yalnızca USER_MANAGE (yönetici), aksi halde 403. */
+/** Giriş hesabı listesi, fabrika içi hesap açma, rol ve ad soyad değiştirme, pasife alma ve yeni geçici şifre verme; yalnızca USER_MANAGE (yönetici), aksi halde 403. */
 export function createLoginAccountHandlers(permissions: readonly Permission[]) {
   const canList = permissions.includes('USER_MANAGE');
   return [
@@ -50,6 +52,17 @@ export function createLoginAccountHandlers(permissions: readonly Permission[]) {
       const body = (await request.json()) as ChangeLoginAccountRoleRequest;
       const result = changeMockLoginAccountRole(String(params.id), body.role, body.workArea);
       if (result === 'not-found') {
+        return problem(404, 'LOGIN_ACCOUNT_NOT_FOUND', 'Kullanıcı yok');
+      }
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.put(`${PATH}/:id/name`, async ({ params, request }) => {
+      if (!canList) return problem(403, 'FORBIDDEN', 'Yetkiniz yok');
+      const body = (await request.json()) as ChangeLoginAccountNameRequest;
+      if (body.fullName.trim().length < 2) {
+        return problem(400, 'INVALID_MASTER_DATA', 'Ad soyad geçersiz');
+      }
+      if (!changeMockLoginAccountName(String(params.id), body.fullName.trim())) {
         return problem(404, 'LOGIN_ACCOUNT_NOT_FOUND', 'Kullanıcı yok');
       }
       return new HttpResponse(null, { status: 204 });

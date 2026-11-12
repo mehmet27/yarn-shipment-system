@@ -1,6 +1,7 @@
 import type { InspectionView } from '@iplik/api-client';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Badge, Group, Paper, Stack, Text } from '@iplik/ui';
+import { EvidenceById } from '@/modules/evidence';
 import { InspectionResultForm } from './InspectionResultForm';
 
 export type InspectionItemProps = {
@@ -28,9 +29,7 @@ export function InspectionItem({ claimId, shipmentId, inspection }: InspectionIt
         </Text>
         {inspection.result !== undefined && <Text>{inspection.result}</Text>}
         {inspection.resultEvidenceId !== undefined && (
-          <Text size="sm" c="dimmed">
-            {t('claim.inspection.documentAttached')}
-          </Text>
+          <EvidenceById evidenceId={inspection.resultEvidenceId} />
         )}
         {inspection.allowedActions?.includes('RECORD_RESULT') && (
           <InspectionResultForm claimId={claimId} shipmentId={shipmentId} inspection={inspection} />

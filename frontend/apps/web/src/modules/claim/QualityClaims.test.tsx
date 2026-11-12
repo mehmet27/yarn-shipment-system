@@ -95,7 +95,7 @@ describe('Kalite itirazı', () => {
     await userEvent.upload(within(card).getByTestId('upload-file-input'), report());
     await userEvent.click(await within(card).findByRole('button', { name: 'Sonucu kaydet' }));
     expect(await within(card).findByText('Sonuçlandı')).toBeInTheDocument();
-    expect(within(card).getByText('Rapor belgesi eklendi.')).toBeInTheDocument();
+    expect(await within(card).findByLabelText('Laboratuvar sonucu')).toBeInTheDocument();
     expect(within(card).queryByRole('button', { name: 'Sonucu kaydet' })).not.toBeInTheDocument();
   });
 

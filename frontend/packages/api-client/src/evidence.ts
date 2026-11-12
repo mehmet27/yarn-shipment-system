@@ -2,8 +2,11 @@ import axios from 'axios';
 
 export {
   confirmEvidenceUpload,
+  EvidenceStatus,
   EvidenceType,
+  getEvidence,
   getEvidenceDownloadUrl,
+  listEvidence,
   requestEvidenceUpload,
 } from './generated/evidenceService';
 export type {

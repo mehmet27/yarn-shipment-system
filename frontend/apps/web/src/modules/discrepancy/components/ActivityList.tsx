@@ -1,5 +1,6 @@
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Paper, Stack, Text, Title } from '@iplik/ui';
+import { EvidenceById } from '@/modules/evidence';
 import { QueryState, useActorLabel } from '@/modules/shipment';
 import { useDiscrepancyActivity } from '../hooks/useDiscrepancy';
 import { ruleLabel } from './discrepancyText';
@@ -35,6 +36,7 @@ export function ActivityList({ discrepancyId }: { discrepancyId: string }) {
                   {item.actionType === 'OPENED' ? ruleLabel(t, item.note) : item.note}
                 </Text>
               )}
+              {item.evidenceId !== undefined && <EvidenceById evidenceId={item.evidenceId} />}
               <Text size="sm" c="dimmed">
                 {formatDateTime(item.occurredAt)} · {actorLabel(item.actorId)}
               </Text>

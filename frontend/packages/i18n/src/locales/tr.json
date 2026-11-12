@@ -123,7 +123,6 @@
         "yarn": "İplik dönüşü",
         "fire": "Fire dosyası"
       },
-      "comingSoon": "Bu sekme sonraki adımda eklenecek.",
       "dispatch": "Çıkış",
       "gross": "Brüt",
       "tare": "Dara",
@@ -593,6 +592,17 @@
     "camera": "Fotoğraf çek",
     "file": "Dosya seç",
     "done": "Yüklendi.",
+    "view": {
+      "empty": "Henüz yüklenmiş fotoğraf ya da belge yok.",
+      "loadFailed": "Dosya açılamadı. Lütfen sayfayı yenileyip tekrar deneyin.",
+      "enlarge": "{{type}} fotoğrafını büyüt",
+      "openPdf": "PDF'yi aç",
+      "openFile": "Dosyayı aç",
+      "invalidated": "Geçersiz",
+      "reason": "Gerekçe",
+      "scaleTicket": "Kantar fişi",
+      "waybill": "İrsaliye"
+    },
     "types": {
       "DISPATCH_SCALE": "Çıkış tartısı",
       "BAG_OVERVIEW": "Çuvallara genel bakış",
@@ -676,7 +686,6 @@
       "requestedAt": "İstendi",
       "result": "Sonuç",
       "labDocument": "Laboratuvar raporu (zorunlu)",
-      "documentAttached": "Rapor belgesi eklendi.",
       "saveResult": "Sonucu kaydet"
     },
     "errors": {

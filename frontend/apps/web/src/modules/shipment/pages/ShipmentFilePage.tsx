@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Tabs, Text } from '@iplik/ui';
+import { Stack, Tabs } from '@iplik/ui';
+import { EvidenceGallery } from '@/modules/evidence';
 import { ClaimsTabTrigger, QualityClaimsSection } from '@/modules/claim';
 import { useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
@@ -12,8 +13,6 @@ import { WeightsPanel } from '../components/WeightsPanel';
 import { useShipment } from '../hooks/useShipment';
 import { SettlementTabPanels } from '../settlement/SettlementTabPanels';
 import { SettlementTabTriggers } from '../settlement/SettlementTabTriggers';
-
-const PENDING_TABS = ['evidence'] as const;
 
 /** Mimari doküman "Sevkiyat dosyası ekranı": Yönetici ve Kalite için merkez ekran. */
 export function ShipmentFilePage() {
@@ -36,9 +35,7 @@ export function ShipmentFilePage() {
               )}
               {isCompleted(shipment) && <ClaimsTabTrigger />}
               {isCompleted(shipment) && <SettlementTabTriggers />}
-              {PENDING_TABS.map((tab) => (
-                <Tabs.Tab key={tab} value={tab} children={t(`shipment.file.tabs.${tab}`)} />
-              ))}
+              <Tabs.Tab value="evidence">{t('shipment.file.tabs.evidence')}</Tabs.Tab>
             </Tabs.List>
             <Tabs.Panel value="weights" pt="md">
               <WeightsPanel shipment={shipment} />
@@ -61,11 +58,9 @@ export function ShipmentFilePage() {
               <QualityClaimsSection shipmentId={shipmentId} />
             </Tabs.Panel>
             {isCompleted(shipment) && <SettlementTabPanels shipmentId={shipmentId} />}
-            {PENDING_TABS.map((tab) => (
-              <Tabs.Panel key={tab} value={tab} pt="md">
-                <Text c="dimmed">{t('shipment.file.comingSoon')}</Text>
-              </Tabs.Panel>
-            ))}
+            <Tabs.Panel value="evidence" pt="md">
+              <EvidenceGallery shipmentId={shipmentId} />
+            </Tabs.Panel>
           </Tabs>
         </Stack>
       )}

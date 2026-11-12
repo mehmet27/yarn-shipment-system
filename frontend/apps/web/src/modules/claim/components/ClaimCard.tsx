@@ -2,6 +2,7 @@ import type { QualityClaimView } from '@iplik/api-client';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { formatKg, isKilogram } from '@iplik/units';
 import { Badge, Group, Paper, Stack, Text, Title } from '@iplik/ui';
+import { EvidenceByIds } from '@/modules/evidence';
 import { InspectionItem } from './InspectionItem';
 import { RequestInspectionForm } from './RequestInspectionForm';
 
@@ -28,6 +29,7 @@ export function ClaimCard({ claim }: { claim: QualityClaimView }) {
           {t('claim.card.photos', { count: claim.evidenceIds.length })} · {t('claim.card.openedAt')}
           : {formatDateTime(claim.openedAt)}
         </Text>
+        <EvidenceByIds evidenceIds={claim.evidenceIds} />
         {claim.resolution !== undefined && (
           <Text size="sm">
             {t('discrepancy.facts.resolution')}: {t(`discrepancy.resolution.${claim.resolution}`)}

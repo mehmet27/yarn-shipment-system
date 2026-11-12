@@ -226,4 +226,37 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
       await within(dialog).findByText('Şoför ve fasoncu hesabının rolü değiştirilemez.'),
     ).toBeInTheDocument();
   });
+
+  it('şifre penceresi okunur bir geçici şifre üretir', async () => {
+    renderApp('/panel/kullanicilar');
+    const depo = within(await screen.findByRole('table')).getByRole('row', {
+      name: /Depo Sorumlusu/,
+    });
+    await openMenu(depo, 'depo', 'depo için yeni şifre ver');
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('button', { name: 'Kopyala' })).toBeDisabled();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Rastgele üret' }));
+    expect(within(dialog).getByRole('button', { name: 'Kopyala' })).toBeEnabled();
+    const input = within(dialog).getByLabelText(/İlk şifre/);
+    expect(input).toBeInstanceOf(HTMLInputElement);
+    if (!(input instanceof HTMLInputElement)) return;
+    expect(input.value).toMatch(/^[A-Z][a-z]\d[a-z](-[A-Z][a-z]\d[a-z]){2}$/);
+  });
+
+  it('düzenleme kaydedilince satırda kısa süre "Kaydedildi" görünür', async () => {
+    renderApp('/panel/kullanicilar');
+    const depo = within(await screen.findByRole('table')).getByRole('row', {
+      name: /Depo Sorumlusu/,
+    });
+    await userEvent.click(within(depo).getByRole('button', { name: 'depo hesabını düzenle' }));
+    const dialog = await screen.findByRole('dialog');
+    const name = within(dialog).getByLabelText(/Ad soyad/);
+    await userEvent.clear(name);
+    await userEvent.type(name, 'Depo Şefi');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Adı kaydet' }));
+    const row = await within(await screen.findByRole('table')).findByRole('row', {
+      name: /Depo Şefi/,
+    });
+    expect(within(row).getByText('Kaydedildi.')).toBeInTheDocument();
+  });
 });

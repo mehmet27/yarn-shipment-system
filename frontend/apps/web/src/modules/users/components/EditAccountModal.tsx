@@ -8,6 +8,7 @@ export type EditAccountModalProps = {
   account: LoginAccountView;
   opened: boolean;
   onClose: () => void;
+  onSaved?: () => void;
   /** Rol yalnız kişinin kendisi dışındaki fabrika içi hesapta değişir; kendi hesabında yalnız ad soyad sunulur. */
   canChangeRole: boolean;
 };
@@ -17,17 +18,22 @@ export function EditAccountModal({
   account,
   opened,
   onClose,
+  onSaved,
   canChangeRole,
 }: EditAccountModalProps) {
   const { t } = useTranslation();
+  const done = () => {
+    onClose();
+    onSaved?.();
+  };
   return (
     <Modal opened={opened} onClose={onClose} title={t('users.edit.title')}>
       <Stack>
-        <ChangeNameForm account={account} onClose={onClose} />
+        <ChangeNameForm account={account} onClose={done} />
         {canChangeRole && (
           <>
             <Divider />
-            <ChangeRoleForm account={account} onClose={onClose} />
+            <ChangeRoleForm account={account} onClose={done} />
           </>
         )}
       </Stack>

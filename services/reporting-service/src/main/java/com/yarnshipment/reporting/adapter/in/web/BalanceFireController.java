@@ -86,6 +86,7 @@ public class BalanceFireController implements BalanceFireApi {
     @PreAuthorize("hasAuthority('BALANCE_VIEW')")
     public ResponseEntity<OpeningImportResult> importOpeningBalance(OpeningImportRequest request) {
         var result = importOpening.importOpening(
+                currentActorProvider.getCurrentActor().userId(),
                 request.getAsOf(),
                 request.getRows().stream().map(BalanceFireViews::toDomain).toList());
         return ResponseEntity.ok(new OpeningImportResult(result.imported(), result.skipped()));

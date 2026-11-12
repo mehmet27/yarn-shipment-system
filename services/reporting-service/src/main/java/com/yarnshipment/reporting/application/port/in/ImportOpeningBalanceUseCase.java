@@ -4,9 +4,10 @@ import com.yarnshipment.reporting.domain.model.OpeningBalanceRow;
 import com.yarnshipment.reporting.domain.model.OpeningImportResult;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 /** Açılış bakiyesini OPENING hareketi olarak yazar; (fasoncu, iplik) için açılış varsa satırı atlar. */
 public interface ImportOpeningBalanceUseCase {
 
-    OpeningImportResult importOpening(LocalDate asOf, List<OpeningBalanceRow> rows);
+    OpeningImportResult importOpening(UUID actorId, LocalDate asOf, List<OpeningBalanceRow> rows);
 }

@@ -115,7 +115,7 @@ class BalanceFireControllerTest {
     @Test
     @DisplayName("Açılış bakiyesi içe aktarılan ve atlanan satırları döner")
     void shouldImportOpeningBalance() {
-        when(importOpening.importOpening(any(), any())).thenReturn(new OpeningImportResult(1, 0));
+        when(importOpening.importOpening(any(), any(), any())).thenReturn(new OpeningImportResult(1, 0));
         String row = "{\"subcontractorId\":\"" + UUID.randomUUID() + "\",\"subcontractorName\":\"A\","
                 + "\"yarnType\":\"Viskon\",\"netKg\":\"10.500\"}";
         String body = "{\"asOf\":\"2026-11-09\",\"rows\":[" + row + "]}";

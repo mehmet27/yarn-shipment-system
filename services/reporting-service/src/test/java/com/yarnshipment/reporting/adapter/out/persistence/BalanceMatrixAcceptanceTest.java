@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -106,6 +107,9 @@ class BalanceMatrixAcceptanceTest {
     @Autowired
     private BalanceFireReader reader;
 
+    @Autowired
+    private JdbcTemplate jdbc;
+
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
         PostgresTestDatabase.register(registry);
@@ -132,6 +136,7 @@ class BalanceMatrixAcceptanceTest {
         UUID[] holderIds = new UUID[HOLDERS.length];
         for (int col = 0; col < HOLDERS.length; col++) {
             holderIds[col] = UUID.randomUUID();
+            new SeedRows(jdbc).subcontractor(holderIds[col], HOLDERS[col]);
         }
         for (Row row : TABLE) {
             for (int col = 0; col < HOLDERS.length; col++) {
@@ -141,7 +146,8 @@ class BalanceMatrixAcceptanceTest {
                             HOLDERS[col],
                             row.yarnType(),
                             BigDecimal.valueOf(row.kg().get(col)));
-                    assertThat(reader.insertOpeningIfAbsent(opening, OPENED_AT)).isTrue();
+                    assertThat(reader.insertOpeningIfAbsent(opening, OPENED_AT, UUID.randomUUID()))
+                            .isTrue();
                 }
             }
         }

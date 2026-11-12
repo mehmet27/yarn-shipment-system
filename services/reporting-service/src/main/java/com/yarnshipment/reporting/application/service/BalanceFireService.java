@@ -71,11 +71,11 @@ public class BalanceFireService
 
     @Override
     @Transactional
-    public OpeningImportResult importOpening(LocalDate asOf, List<OpeningBalanceRow> rows) {
+    public OpeningImportResult importOpening(UUID actorId, LocalDate asOf, List<OpeningBalanceRow> rows) {
         var occurredAt = asOf.atStartOfDay(ReportPeriod.ZONE).toInstant();
         int imported = 0;
         for (OpeningBalanceRow row : rows) {
-            if (port.insertOpeningIfAbsent(row, occurredAt)) {
+            if (port.insertOpeningIfAbsent(row, occurredAt, actorId)) {
                 imported++;
             }
         }

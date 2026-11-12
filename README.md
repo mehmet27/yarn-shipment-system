@@ -180,7 +180,7 @@ DB_PASSWORD=... \
 
 ## reporting-service (dashboard ve raporlar)
 
-Okuma modeli servisidir: `shipment.events.v1` ve `discrepancy.events.v1` olaylarından `shipment_view` ve `discrepancy_view` tablolarını besler; kayıt kaynağı değildir, silinip konuyu baştan okuyarak yeniden kurulabilir. Olay kimliği `processed_event`'e aynı transaction'da yazıldığı için tekrar gelen olay iki kez sayılmaz; sevkiyatı okuma modelinde olmayan olay hata verir ve ortak hata politikasıyla yeniden denenir. Sözleşme `services/reporting-service/src/main/resources/openapi/reporting-service-api.yaml`, gateway `/api/v1/reports/**` yolunu bu servise (`8087`) yönlendirir. Uçlar `REPORT_VIEW` izni ister (Admin, Kalite, Yönetici); fasoncu rapor görmez, diğerleri yalnızca `site_ids` lokasyonlarını görür.
+Rapor servisidir; kendi veri kopyası tutmaz. `shipment_view`, `discrepancy_view`, `balance_movement_view` ve `fire_file_view` `reporting` şemasında, `shipment` ve `discrepancy` şemalarındaki kayıt tablolarını okuyan canlı SQL görünümleridir (olay dinleyicisi, `processed_event` ve yeniden oynatma yoktur). Bu yüzden servisin migration'ı, shipment-service ve discrepancy-service migration'larından sonra çalışmalıdır. Açılış bakiyesi aktarımı tek yazma yoludur ve doğrudan `shipment.balance_movement` defterine `OPENING` satırı ekler. Sözleşme `services/reporting-service/src/main/resources/openapi/reporting-service-api.yaml`, gateway `/api/v1/reports/**` yolunu bu servise (`8087`) yönlendirir. Uçlar `REPORT_VIEW` izni ister (Admin, Kalite, Yönetici); fasoncu rapor görmez, diğerleri yalnızca `site_ids` lokasyonlarını görür.
 
 | Uç | İçerik |
 |---|---|

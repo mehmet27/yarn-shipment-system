@@ -74,9 +74,9 @@ class ShipmentListReaderTest {
         UUID site = UUID.randomUUID();
         UUID subcontractor = UUID.randomUUID();
         SeedRows seed = new SeedRows(jdbc);
-        seed.balanceShipment(site, new Balance(subcontractor, "COMPLETED", "1000.000", "990.000"));
-        seed.balanceShipment(site, new Balance(subcontractor, "AWAITING_DELIVERY", "500.000", null));
-        seed.balanceShipment(site, new Balance(subcontractor, "CANCELLED", "300.000", null));
+        seed.balanceShipment(site, new Balance(subcontractor, "COMPLETED", "1000.000"));
+        seed.balanceShipment(site, new Balance(subcontractor, "AWAITING_DELIVERY", "500.000"));
+        seed.balanceShipment(site, new Balance(subcontractor, "CANCELLED", "300.000"));
 
         var balances = reader.findSubcontractorBalances(PERIOD, scope(site));
 
@@ -85,7 +85,7 @@ class ShipmentListReaderTest {
         assertThat(balance.subcontractorId()).isEqualTo(subcontractor);
         assertThat(balance.shipmentCount()).isEqualTo(2);
         assertThat(balance.dispatchedKg()).isEqualByComparingTo("1500.000");
-        assertThat(balance.deliveredKg()).isEqualByComparingTo("990.000");
+        assertThat(balance.deliveredKg()).isEqualByComparingTo("1000.000");
         assertThat(balance.inTransitKg()).isEqualByComparingTo("500.000");
     }
 

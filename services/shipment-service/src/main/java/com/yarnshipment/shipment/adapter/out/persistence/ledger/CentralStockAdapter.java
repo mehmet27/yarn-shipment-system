@@ -24,13 +24,13 @@ final class CentralStockAdapter implements CentralStockPort {
             VALUES (:id, :yarnType, :kind, :netKg, :productionId, :fabricKg, :note, :occurredAt, :createdBy,
                     :sourceRef)""";
     private static final String INSERT_PRODUCTION = """
-            INSERT INTO central_production (id, fabric_type, net_kg, fire_rate, roll_count, waybill_no, produced_at,
-                                            created_by)
-            VALUES (:id, :fabricType, :netKg, :fireRate, :rollCount, :waybillNo, :producedAt, :createdBy)""";
+            INSERT INTO fabric_lot (id, source, fabric_type, net_kg, fire_rate, roll_count, waybill_no, occurred_at,
+                                    created_by)
+            VALUES (:id, 'CENTRAL', :fabricType, :netKg, :fireRate, :rollCount, :waybillNo, :producedAt, :createdBy)""";
     private static final String STOCK = """
             SELECT yarn_type, sum(net_kg) AS stock_kg FROM central_stock_movement
             GROUP BY yarn_type ORDER BY yarn_type""";
-    private static final String PRODUCED = "SELECT coalesce(sum(net_kg), 0) FROM central_production";
+    private static final String PRODUCED = "SELECT coalesce(sum(net_kg), 0) FROM fabric_lot WHERE source = 'CENTRAL'";
     private static final String RECENT = """
             SELECT id, yarn_type, kind, net_kg, production_id, fabric_kg, note, occurred_at, created_by
             FROM central_stock_movement ORDER BY occurred_at DESC, id DESC LIMIT ?""";

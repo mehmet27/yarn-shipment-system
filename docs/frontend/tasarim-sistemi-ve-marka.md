@@ -8,7 +8,7 @@ yalnızca bu paket üzerinden alır. Bu belge ortak bileşenleri ve her kurulumu
 Her firma ayrı kurulumdur (ayrı veritabanı), bu yüzden tek bir marka ayarı vardır.
 
 - Yönetici **Yönetim > Görünüm** ekranından ana rengi, firma adını ve logoyu belirler (yetki: `SETTINGS_MANAGE`).
-- Ayar `md_branding` tablosunda tek satırdır; her değişiklik `audit_local` ile denetim kaydına düşer.
+- Ayar `app_setting` tablosunda `branding_company_name`, `branding_primary_color` ve `branding_logo` anahtarlarıdır (eski `md_branding` birleştirildi); her değişiklik `audit_local` ile denetim kaydına düşer.
 - `GET /api/v1/branding` girişsizdir (giriş sayfası da markalı olsun). `PUT /api/v1/branding` yalnızca `SETTINGS_MANAGE`.
 - Kayıt yoksa varsayılan renk `#17527a` kullanılır.
 

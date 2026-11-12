@@ -24,7 +24,7 @@ describe('CreateShipmentPage', () => {
       server.use(...createHandlers('MANAGER'));
       renderApp('/panel/sevkiyat');
       await userEvent.click(await screen.findByRole('link', { name: 'Yeni sevkiyat' }));
-      await pick('Fasoncu', 'Bursa Tekstil');
+      await pick('Alıcı fasoncu', 'Bursa Tekstil');
       await pick('Şoför', 'Mert Kaya');
       await fillRecipe('2.036');
       expect(screen.getByLabelText(/Fire oranı/)).toHaveValue('4');
@@ -58,7 +58,7 @@ describe('CreateShipmentPage', () => {
   it('geçersiz reçete satırı ve fire oranını engeller', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/yeni');
-    await pick('Fasoncu', 'Bursa Tekstil');
+    await pick('Alıcı fasoncu', 'Bursa Tekstil');
     await userEvent.clear(screen.getByLabelText(/Fire oranı/));
     await userEvent.type(screen.getByLabelText(/Fire oranı/), '25');
     await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
@@ -71,7 +71,7 @@ describe('CreateShipmentPage', () => {
   it('şoför listesi seçilen fasoncuya göre daralır', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/yeni');
-    await pick('Fasoncu', 'Aydın Örme');
+    await pick('Alıcı fasoncu', 'Aydın Örme');
     await userEvent.click(await screen.findByRole('combobox', { name: /Şoför/ }));
     expect(await screen.findByRole('option', { name: 'Şahin Şoför' })).toBeInTheDocument();
     expect(screen.queryByRole('option', { name: 'Mert Kaya' })).not.toBeInTheDocument();

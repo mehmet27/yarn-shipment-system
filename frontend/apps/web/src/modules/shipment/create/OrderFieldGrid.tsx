@@ -1,9 +1,9 @@
 import { useTranslation } from '@iplik/i18n';
-import { Select, TextInput } from '@iplik/ui';
+import { Select, SimpleGrid, TextInput } from '@iplik/ui';
 import type { RecipeLineDraft } from './createDraft';
 import { priceValid } from './createDraft';
 
-type OrderFormFieldsProps = {
+type OrderFieldGridProps = {
   line: RecipeLineDraft;
   showErrors: boolean;
   onPatch: (patch: Partial<RecipeLineDraft>) => void;
@@ -11,8 +11,8 @@ type OrderFormFieldsProps = {
 
 type TextField = 'fabricType' | 'lycra' | 'yarnLength' | 'pussFine';
 
-/** Sipariş formundaki satır başlıkları (Excel formu): kumaş cinsi, LYC, en türü, iplik uzunluğu, puss-fine, fiyat. */
-export function OrderFormFields({ line, showErrors, onPatch }: OrderFormFieldsProps) {
+/** Sipariş formu alanları: kumaş cinsi, LYC, en türü, iplik uzunluğu, puss-fine, birim fiyat. */
+export function OrderFieldGrid({ line, showErrors, onPatch }: OrderFieldGridProps) {
   const { t } = useTranslation();
   const text = (field: TextField) => (
     <TextInput
@@ -25,7 +25,7 @@ export function OrderFormFields({ line, showErrors, onPatch }: OrderFormFieldsPr
     />
   );
   return (
-    <>
+    <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xs">
       {text('fabricType')}
       {text('lycra')}
       <Select
@@ -54,6 +54,6 @@ export function OrderFormFields({ line, showErrors, onPatch }: OrderFormFieldsPr
           onPatch({ unitPrice: event.currentTarget.value });
         }}
       />
-    </>
+    </SimpleGrid>
   );
 }

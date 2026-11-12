@@ -1,9 +1,10 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, Paper, Stack, TextInput } from '@iplik/ui';
+import { Button, Group, Paper, Stack, Tabs, Text } from '@iplik/ui';
+import { useState } from 'react';
 import type { RecipeLineDraft } from './createDraft';
-import { lineError } from './createDraft';
-import { MasterSelect } from './MasterSelect';
-import { OrderFormFields } from './OrderFormFields';
+import { lineError, priceValid } from './createDraft';
+import { OrderFieldGrid } from './OrderFieldGrid';
+import { YarnTabFields } from './YarnTabFields';
 
 type RecipeLineRowProps = {
   line: RecipeLineDraft;
@@ -14,6 +15,7 @@ type RecipeLineRowProps = {
   onRemove: () => void;
 };
 
+/** Bir reçete satırı iki sekmedir: İplik (cins, lot, net kg) ve Sipariş (Excel formundaki kumaş/LYC/en/fiyat). */
 export function RecipeLineRow({
   line,
   index,
@@ -24,50 +26,36 @@ export function RecipeLineRow({
 }: RecipeLineRowProps) {
   const { t } = useTranslation();
   const error = showErrors ? lineError(line) : undefined;
-  const label = t('create.recipe.remove', { index: index + 1 });
+  const [tab, setTab] = useState<string>('yarn');
+  const active = showErrors && !priceValid(line.unitPrice) ? 'order' : tab;
   return (
     <Paper withBorder p="sm" radius="md">
       <Stack gap="xs">
-        <MasterSelect
-          kind="product"
-          label={`${t('create.recipe.yarnType')} ${String(index + 1)}`}
-          value={line.yarn}
-          onChange={(yarn) => {
-            onPatch({ yarn });
+        <Group justify="space-between" wrap="nowrap">
+          <Text fw={600}>{t('create.recipe.lineTitle', { index: index + 1 })}</Text>
+          {removable && (
+            <Button variant="subtle" color="red" size="compact-sm" onClick={onRemove}>
+              {t('create.recipe.remove', { index: index + 1 })}
+            </Button>
+          )}
+        </Group>
+        <Tabs
+          value={active}
+          onChange={(value) => {
+            setTab(value ?? 'yarn');
           }}
-        />
-        <TextInput
-          label={t('create.recipe.yarnTypeText')}
-          value={line.yarnText}
-          disabled={line.yarn !== undefined}
-          maxLength={200}
-          onChange={(event) => {
-            onPatch({ yarnText: event.currentTarget.value });
-          }}
-        />
-        <OrderFormFields line={line} showErrors={showErrors} onPatch={onPatch} />
-        <MasterSelect
-          kind="lot"
-          label={t('create.recipe.lot')}
-          value={line.lot}
-          onChange={(lot) => {
-            onPatch({ lot });
-          }}
-        />
-        <TextInput
-          label={`${t('create.recipe.netKg')} ${String(index + 1)}`}
-          inputMode="decimal"
-          value={line.netKg}
-          {...(error === undefined ? {} : { error: t(`create.errors.${error}`) })}
-          onChange={(event) => {
-            onPatch({ netKg: event.currentTarget.value });
-          }}
-        />
-        {removable && (
-          <Button variant="subtle" color="red" w="fit-content" onClick={onRemove}>
-            {label}
-          </Button>
-        )}
+        >
+          <Tabs.List>
+            <Tabs.Tab value="yarn">{t('create.recipe.tabYarn')}</Tabs.Tab>
+            <Tabs.Tab value="order">{t('create.recipe.tabOrder')}</Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panel value="yarn" pt="xs">
+            <YarnTabFields line={line} index={index} error={error} onPatch={onPatch} />
+          </Tabs.Panel>
+          <Tabs.Panel value="order" pt="xs">
+            <OrderFieldGrid line={line} showErrors={showErrors} onPatch={onPatch} />
+          </Tabs.Panel>
+        </Tabs>
       </Stack>
     </Paper>
   );

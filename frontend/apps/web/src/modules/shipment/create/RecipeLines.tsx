@@ -1,8 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Button, Group, Stack, Text } from '@iplik/ui';
-import { formatKgText } from '@iplik/units';
 import type { RecipeLineDraft } from './createDraft';
-import { newLine, totalNetKg } from './createDraft';
+import { newLine } from './createDraft';
 import { RecipeLineRow } from './RecipeLineRow';
 
 export type RecipeLinesProps = {
@@ -45,9 +44,6 @@ export function RecipeLines({ lines, onChange, showErrors }: RecipeLinesProps) {
         >
           {t('create.recipe.add')}
         </Button>
-        <Text fw={700} data-testid="recipe-total">
-          {t('create.recipe.total', { total: formatKgText(totalNetKg(lines)) })}
-        </Text>
       </Group>
     </Stack>
   );

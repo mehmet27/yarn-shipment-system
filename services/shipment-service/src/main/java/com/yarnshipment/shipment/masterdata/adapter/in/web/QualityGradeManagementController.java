@@ -11,6 +11,7 @@ import com.yarnshipment.shipment.masterdata.application.port.in.catalog.UpdateQu
 import com.yarnshipment.shipment.masterdata.domain.catalog.QualityGradeDetails;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -72,7 +73,7 @@ public class QualityGradeManagementController implements QualityGradeManagementA
         return ResponseEntity.noContent().build();
     }
 
-    private static int sortOrder(Integer value) {
+    private static int sortOrder(@Nullable Integer value) {
         return value == null ? 0 : value;
     }
 }

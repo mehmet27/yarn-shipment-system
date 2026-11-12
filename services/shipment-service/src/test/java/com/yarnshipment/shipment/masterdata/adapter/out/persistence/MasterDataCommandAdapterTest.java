@@ -72,7 +72,7 @@ class MasterDataCommandAdapterTest {
                         "SELECT title || '/' || active FROM md_subcontractor WHERE id = ?", String.class, created.id()))
                 .isEqualTo("Yeni Tekstil AŞ/false");
         assertThat(owner.queryForObject(
-                        "SELECT count(*) FROM audit_local WHERE table_name = 'md_subcontractor' AND row_id = ?"
+                        "SELECT count(*) FROM platform.audit_local WHERE table_name = 'md_subcontractor' AND row_id = ?"
                                 + " AND actor_id = ?",
                         Long.class,
                         created.id(),

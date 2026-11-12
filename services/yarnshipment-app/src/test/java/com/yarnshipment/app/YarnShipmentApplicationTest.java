@@ -122,6 +122,51 @@ class YarnShipmentApplicationTest {
                 .isZero();
     }
 
+    @Test
+    @DisplayName("Ortak tablolar yalnız platform şemasında: modüllerde idempotency_record ve audit_local kopyası yok")
+    void shouldKeepSharedTablesInPlatformSchemaOnly() {
+        List<@Nullable String> found = jdbc.queryForList("""
+                SELECT table_schema || '.' || table_name
+                  FROM information_schema.tables
+                 WHERE table_name IN ('idempotency_record', 'audit_local') AND table_type = 'BASE TABLE'
+                 ORDER BY 1""", String.class);
+
+        assertThat(found).containsExactly("platform.audit_local", "platform.idempotency_record");
+    }
+
+    @Test
+    @DisplayName("Modül tablosundaki değişiklik platform.audit_local'e şema adı ve aktörle düşer")
+    void shouldCaptureTableChangesIntoPlatformAuditLocal() {
+        String actor = "app-test-" + UUID.randomUUID();
+
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            jdbc.queryForObject("SELECT set_config('app.actor_id', ?, true)", String.class, actor);
+            jdbc.update("""
+                    INSERT INTO shipment.app_setting (key, value, updated_at, updated_by)
+                    VALUES ('default_fire_rate', '5', now(), ?)
+                    ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at""", ACTOR);
+        });
+
+        String sql = """
+                SELECT count(*) FROM platform.audit_local
+                 WHERE table_schema = 'shipment' AND table_name = 'app_setting' AND actor_id = ?""";
+        Integer captured = jdbc.queryForObject(sql, Integer.class, actor);
+
+        assertThat(captured).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("audit_writer ve audit_reader giriş yapamayan rollerdir; uygulama kullanıcısı ikisine de geçebilir")
+    void shouldProvideAuditRoles() {
+        assertThat(jdbc.queryForList(
+                        "SELECT rolname FROM pg_roles WHERE rolname LIKE 'audit\\_%' AND NOT rolcanlogin ORDER BY 1",
+                        String.class))
+                .containsExactly("audit_reader", "audit_writer");
+        assertThat(jdbc.queryForObject("""
+                        SELECT pg_has_role(current_user, 'audit_writer', 'SET')
+                           AND pg_has_role(current_user, 'audit_reader', 'SET')""", Boolean.class)).isTrue();
+    }
+
     private static DomainEvent created(UUID shipment) {
         return new DomainEvent(
                 "Shipment",

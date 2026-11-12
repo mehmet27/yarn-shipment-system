@@ -58,4 +58,14 @@ dosyasını güvenli bir yere yedekleyin (içindeki sırlar kaybolursa veriye er
   sonra yeni imajla `docker compose up -d --build` çalıştırın. Açılışta şema başına Flyway migration'ları çalışır;
   `outbox_event` ve `reporting.processed_event` tabloları düşürülür. `kafka-data` birimi artık kullanılmaz
   (`docker volume rm yarn-shipment-prod_kafka-data` ile silinebilir).
+- **Audit rolleri (mevcut veritabanını yükseltirken).** Yeni kurulumda `audit_writer` ve `audit_reader` rolleri
+  `deploy/postgres/initdb` ile gelir. Bu sürümden önce kurulmuş bir veritabanında initdb tekrar çalışmaz; uygulama
+  `yarnshipment` kullanıcısı rol oluşturamadığı için açılışta "audit_writer / audit_reader roles are missing" hatasıyla
+  durur. Tek seferlik, yönetici olarak (veri korunur):
+  ```bash
+  docker compose -f deploy/prod/docker-compose.yml --env-file deploy/prod/.env exec postgres psql -U postgres -d yarnshipment -c \
+    "CREATE ROLE audit_writer NOLOGIN; CREATE ROLE audit_reader NOLOGIN; GRANT audit_writer, audit_reader TO yarnshipment WITH INHERIT FALSE, SET TRUE;"
+  ```
+  Yerel Compose'ta hacmi sıfırlamak (`down -v`) da yeterlidir. Aynı açılışta `platform` şeması kurulur, her modülün `audit_local` ve
+  `idempotency_record` verisi oraya taşınır ve eski tablolar düşer; yükseltmeden önce yedek alın.
 - Keycloak yönetim konsolu internetten erişilebilir; güçlü şifre kullanın, gerekirse Caddyfile'da IP ile kısıtlayın.

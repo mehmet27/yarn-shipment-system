@@ -5,7 +5,7 @@ spring:
     name: yarnshipment-app
   datasource:
     # Tek veritabanı, tek kullanıcı, tek bağlantı havuzu. Modül tabloları kendi şemasında durur ve şemasız adlarla
-    # erişilir; search_path sırası önemlidir (idempotency_record gibi iki şemada bulunan adlar ilk şemadan okunur).
+    # erişilir; ortak tablolar (idempotency_record, audit_local) platform şemasındadır ve şema adıyla yazılır.
     url: ${DB_URL:jdbc:postgresql://localhost:5432/yarnshipment}
     username: ${DB_USER:yarnshipment}
     password: ${DB_PASSWORD}

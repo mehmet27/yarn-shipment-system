@@ -48,6 +48,25 @@ DO $$ BEGIN
     END IF;
 END $$;
 
+-- Rol ayrımı: audit_writer tabloya dokunamaz ama fonksiyonları çalıştırır, audit_reader okur ama ekleyemez.
+SET LOCAL ROLE audit_writer;
+SELECT pg_temp.expect_error($$SELECT count(*) FROM audit_log$$, '42501');
+SELECT pg_temp.expect_error($$DELETE FROM audit_chain_head$$, '42501');
+DO $$ BEGIN
+    IF audit_verify_chain(1, 2) IS NOT NULL THEN
+        RAISE EXCEPTION 'Writer must be able to verify the chain';
+    END IF;
+END $$;
+RESET ROLE;
+SET LOCAL ROLE audit_reader;
+SELECT pg_temp.expect_error($$SELECT audit_append('{}'::jsonb)$$, '42501');
+DO $$ BEGIN
+    IF (SELECT count(*) FROM audit_log) <> 2 THEN
+        RAISE EXCEPTION 'Reader must see two rows';
+    END IF;
+END $$;
+RESET ROLE;
+
 -- Tablo sahibi bile güncelleyemez; trigger kapatılıp kayıt değiştirilirse zincir bozulmayı yakalar.
 SELECT pg_temp.expect_error($$UPDATE audit_log SET action = 'x' WHERE id = 1$$, 'YS001');
 ALTER TABLE audit_log DISABLE TRIGGER audit_log_append_only;

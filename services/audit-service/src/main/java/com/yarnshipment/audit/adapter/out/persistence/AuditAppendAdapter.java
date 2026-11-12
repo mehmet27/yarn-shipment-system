@@ -4,30 +4,36 @@ import com.yarnshipment.audit.application.port.in.AppendAuditEntryCommand;
 import com.yarnshipment.audit.application.port.out.AuditAppendPort;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 /**
- * {@link AuditAppendPort}'un JDBC uygulaması. Yazan rolün tablolara yetkisi yoktur; ekleme yalnızca
- * {@code audit_append(jsonb)} ile yapılır, hash zincirini ve olay tekilliğini o sağlar.
+ * {@link AuditAppendPort}'un JDBC uygulaması. Yazma {@code audit_writer} rolü altında çalışır; rolün tablolara
+ * yetkisi yoktur, ekleme yalnızca {@code audit_append(jsonb)} ile yapılır, hash zincirini ve olay tekilliğini o sağlar.
  */
 @Component
 final class AuditAppendAdapter implements AuditAppendPort {
 
     private final JdbcClient jdbc;
     private final JsonMapper jsonMapper;
+    private final AuditRoleScope roles;
 
-    AuditAppendAdapter(JdbcClient jdbc, JsonMapper jsonMapper) {
+    AuditAppendAdapter(JdbcClient jdbc, JsonMapper jsonMapper, PlatformTransactionManager transactionManager) {
         this.jdbc = jdbc;
         this.jsonMapper = jsonMapper;
+        this.roles = new AuditRoleScope(jdbc, transactionManager);
     }
 
     @Override
     public long append(AppendAuditEntryCommand command) {
-        return jdbc.sql("SELECT audit_append(CAST(:entry AS jsonb))")
-                .param("entry", jsonMapper.writeValueAsString(toEntry(command)))
-                .query(Long.class)
-                .single();
+        String entry = jsonMapper.writeValueAsString(toEntry(command));
+        return roles.runAs(
+                AuditRoleScope.WRITER,
+                () -> jdbc.sql("SELECT audit_append(CAST(:entry AS jsonb))")
+                        .param("entry", entry)
+                        .query(Long.class)
+                        .single());
     }
 
     /** audit_log kolonlarının camelCase adlarını taşıyan nesne; boş alanlar hiç yazılmaz. */

@@ -32,19 +32,22 @@ describe('createDraft', () => {
 
   it('gönderen fasoncu seçilmişse kimlik ve unvanı istekte gider; alıcıyla aynı olamaz', () => {
     const source = { value: 'sub-2', label: 'Aydın Örme' };
-    expect(toCreateRequest({ ...base, sourceSubcontractor: source }, SITE)).toMatchObject({
+    expect(
+      toCreateRequest({ ...base, sourceKind: 'SUBCONTRACTOR', sourceSubcontractor: source }, SITE),
+    ).toMatchObject({
       sourceSubcontractorId: 'sub-2',
       sourceSubcontractorTitle: 'Aydın Örme',
     });
     expect(toCreateRequest(base, SITE)).not.toHaveProperty('sourceSubcontractorId');
-    expect(validateCreate({ ...base, sourceSubcontractor: subcontractor })).toBe(
-      'sourceSameAsReceiver',
-    );
+    expect(
+      validateCreate({ ...base, sourceKind: 'SUBCONTRACTOR', sourceSubcontractor: subcontractor }),
+    ).toBe('sourceSameAsReceiver');
   });
 
-  it('kapıdan aktarma tedarikçisi ve irsaliyesi istekte gider; boşsa hiç yer almaz', () => {
+  it('kapıdan aktarma tedarikçisi ve irsaliyesi istekte gider; başka kaynakta hiç yer almaz', () => {
     const direct = {
       ...base,
+      sourceKind: 'DIRECT' as const,
       directTransferSupplier: ' Esha İplik ',
       directTransferWaybillNo: 'IRS-7',
     };
@@ -52,18 +55,18 @@ describe('createDraft', () => {
       directTransferSupplier: 'Esha İplik',
       directTransferWaybillNo: 'IRS-7',
     });
-    expect(toCreateRequest(base, SITE)).not.toHaveProperty('directTransferSupplier');
+    expect(toCreateRequest({ ...direct, sourceKind: 'CENTRAL' }, SITE)).not.toHaveProperty(
+      'directTransferSupplier',
+    );
     expect(validateCreate(direct)).toBeUndefined();
   });
 
-  it('kapıdan aktarma gönderen fasoncu ile seçilemez; irsaliye tedarikçisiz olmaz', () => {
-    const source = { value: 'sub-2', label: 'Aydın Örme' };
-    expect(
-      validateCreate({ ...base, sourceSubcontractor: source, directTransferSupplier: 'Esha' }),
-    ).toBe('directTransferWithSource');
-    expect(validateCreate({ ...base, directTransferWaybillNo: 'IRS-7' })).toBe(
-      'waybillNeedsSupplier',
-    );
+  it('seçilen kaynağın zorunlu alanı boşsa hata verir', () => {
+    expect(validateCreate({ ...base, sourceKind: 'DIRECT' })).toBe('supplierRequired');
+    expect(validateCreate({ ...base, sourceKind: 'SUBCONTRACTOR' })).toBe('sourceRequired');
+    const stale = { ...base, sourceSubcontractor: subcontractor, directTransferSupplier: 'Esha' };
+    expect(validateCreate(stale)).toBeUndefined();
+    expect(toCreateRequest(stale, SITE)).not.toHaveProperty('sourceSubcontractorId');
   });
 
   it('şoför ve araç seçilmişse kimlik ve adı birlikte gider', () => {

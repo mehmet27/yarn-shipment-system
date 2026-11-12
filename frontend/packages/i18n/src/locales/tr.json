@@ -280,8 +280,17 @@
     "open": "Yeni sevkiyat",
     "title": "Yeni sevkiyat",
     "selectPlaceholder": "Seçin",
-    "hint": "Fasoncu, reçete ve fire oranını girin; şoför ve araç sonradan da atanabilir. İplik başka bir fasoncudan gidiyorsa gönderen fasoncuyu da seçin.",
-    "subcontractor": "Fasoncu",
+    "hint": "Alıcı fasoncuyu, ipliğin nereden çıktığını ve reçeteyi girin. Şoför ve araç sonradan da atanabilir.",
+    "sections": { "parties": "Taraflar", "summary": "Özet" },
+    "source": {
+      "title": "İplik nereden çıkıyor?",
+      "CENTRAL": "Merkez stok",
+      "SUBCONTRACTOR": "Başka fasoncu",
+      "DIRECT": "Kapıdan aktarma"
+    },
+    "summary": { "total": "Toplam net", "expectedFabric": "Beklenen kumaş" },
+    "siteMissing": "Lokasyonunuz belirlenemedi; sevkiyat oluşturulamıyor. Yöneticinize başvurun.",
+    "subcontractor": "Alıcı fasoncu",
     "driver": "Şoför (isteğe bağlı)",
     "vehicle": "Araç (isteğe bağlı)",
     "submit": "Taslak oluştur",
@@ -296,14 +305,17 @@
       "fireRateInvalid": "Fire oranı 0 ile 20 arasında, en çok 2 ondalıklı olmalı.",
       "linePriceInvalid": "Fiyat en çok 4 ondalıklı, negatif olmayan bir sayı olmalı.",
       "sourceSameAsReceiver": "Gönderen ve alıcı fasoncu aynı olamaz.",
-      "directTransferWithSource": "Kapıdan aktarma, gönderen fasoncu ile birlikte seçilemez.",
-      "waybillNeedsSupplier": "İrsaliye numarası için tedarikçiyi de yazın."
+      "sourceRequired": "Gönderen fasoncuyu seçin.",
+      "supplierRequired": "Kapıdan aktarma için tedarikçiyi yazın."
     },
     "recipe": {
       "title": "Reçete satırları",
       "yarnType": "İplik cinsi",
       "yarnTypePlaceholder": "Listeden seçin",
       "yarnTypeText": "ya da serbest metin",
+      "lineTitle": "{{index}}. satır",
+      "tabYarn": "İplik",
+      "tabOrder": "Sipariş bilgileri",
       "lot": "Lot (isteğe bağlı)",
       "netKg": "Net kg",
       "fabricType": "Kumaş cinsi",
@@ -323,9 +335,9 @@
     },
     "fireRate": "Fire oranı (%)",
     "fireRateHint": "0 ile 20 arasında, en çok 2 ondalık.",
-    "sourceSubcontractor": "Gönderen (isteğe bağlı, boşsa merkezden)",
-    "directTransferSupplier": "Kapıdan aktarma tedarikçisi (isteğe bağlı)",
-    "directTransferHint": "İplik depoya girmeden kamyondan kamyona aktarılıyorsa tedarikçiyi yazın; merkez stok eksiye düşmez.",
+    "sourceSubcontractor": "Gönderen fasoncu",
+    "directTransferSupplier": "Tedarikçi",
+    "directTransferHint": "İplik depoya girmeden kamyondan kamyona aktarılır; merkez stok eksiye düşmez.",
     "directTransferWaybillNo": "Geliş irsaliye no (isteğe bağlı)"
   },
   "masterData": {

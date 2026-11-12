@@ -21,9 +21,14 @@ export type RecipeLineDraft = {
   unitPrice: string;
 };
 
+/** İpliğin nereden çıktığı: merkez stok, başka bir fasoncu ya da depoya girmeden kapıdan aktarma. */
+export type SourceKind = 'CENTRAL' | 'SUBCONTRACTOR' | 'DIRECT';
+
 /** Seçilen kayıtlar kimlik ve görünen ad birlikte tutulur; istek ikisini de ister. */
 export type CreateDraft = {
   subcontractor: MasterOption | undefined;
+  /** Yalnızca seçili kaynağın alanları dikkate alınır; diğerleri istekte yer almaz. */
+  sourceKind: SourceKind;
   /** İplik başka bir fasoncudan gidiyorsa gönderen fasoncu; boşsa merkezden. */
   sourceSubcontractor: MasterOption | undefined;
   /** Doluysa iplik depoya girmeden kapıdan aktarılır; gelen tedarikçi. Boş metin "merkez stoktan" demektir. */
@@ -58,6 +63,7 @@ export function newLine(): RecipeLineDraft {
 
 export const EMPTY_CREATE_DRAFT: CreateDraft = {
   subcontractor: undefined,
+  sourceKind: 'CENTRAL',
   sourceSubcontractor: undefined,
   directTransferSupplier: '',
   directTransferWaybillNo: '',
@@ -71,8 +77,8 @@ export const EMPTY_CREATE_DRAFT: CreateDraft = {
 export type CreateError =
   | 'subcontractorRequired'
   | 'sourceSameAsReceiver'
-  | 'directTransferWithSource'
-  | 'waybillNeedsSupplier'
+  | 'sourceRequired'
+  | 'supplierRequired'
   | 'linesRequired'
   | 'lineYarnRequired'
   | 'lineKgInvalid'
@@ -108,16 +114,20 @@ export function lineError(line: RecipeLineDraft): CreateError | undefined {
   return priceValid(line.unitPrice) ? undefined : 'linePriceInvalid';
 }
 
-/** Kapıdan aktarma gönderen fasoncu ile birlikte seçilemez; irsaliye tedarikçisiz olmaz. */
-function directTransferError(draft: CreateDraft): { directTransfer?: CreateError } {
-  const supplier = draft.directTransferSupplier.trim();
-  if (supplier !== '' && draft.sourceSubcontractor !== undefined) {
-    return { directTransfer: 'directTransferWithSource' };
+/** Seçili kaynağın zorunlu alanı boşsa hata; kaynaklar birbirini dışladığı için çelişki oluşamaz. */
+function sourceError(draft: CreateDraft): {
+  sourceSubcontractor?: CreateError;
+  directTransfer?: CreateError;
+} {
+  if (draft.sourceKind === 'SUBCONTRACTOR') {
+    if (draft.sourceSubcontractor === undefined) return { sourceSubcontractor: 'sourceRequired' };
+    return draft.sourceSubcontractor.value === draft.subcontractor?.value
+      ? { sourceSubcontractor: 'sourceSameAsReceiver' }
+      : {};
   }
-  if (supplier === '' && draft.directTransferWaybillNo.trim() !== '') {
-    return { directTransfer: 'waybillNeedsSupplier' };
-  }
-  return {};
+  return draft.sourceKind === 'DIRECT' && draft.directTransferSupplier.trim() === ''
+    ? { directTransfer: 'supplierRequired' }
+    : {};
 }
 
 /** Tüm eksik zorunlu alanlar birden döner; hata mesajı ilgili alanın altında gösterilir. */
@@ -127,11 +137,7 @@ export function validateCreateFields(draft: CreateDraft, defaultFirePct = '4'): 
     ...(draft.subcontractor === undefined
       ? { subcontractor: 'subcontractorRequired' as const }
       : {}),
-    ...(draft.sourceSubcontractor !== undefined &&
-    draft.sourceSubcontractor.value === draft.subcontractor?.value
-      ? { sourceSubcontractor: 'sourceSameAsReceiver' as const }
-      : {}),
-    ...directTransferError(draft),
+    ...sourceError(draft),
     ...(draft.lines.length === 0 ? { lines: 'linesRequired' as const } : {}),
     ...(firstLineError === undefined ? {} : { lines: firstLineError }),
     ...(parseFireRatePct(draft.fireRatePct ?? defaultFirePct) === undefined
@@ -200,6 +206,7 @@ function toRecipeLine(line: RecipeLineDraft): RecipeLineInput | undefined {
 
 /** Boş tedarikçi "merkez stoktan" demektir; istekte hiç yer almaz. */
 function directTransferFields(draft: CreateDraft): Partial<CreateShipmentRequest> {
+  if (draft.sourceKind !== 'DIRECT') return {};
   const directTransferSupplier = draft.directTransferSupplier.trim();
   const directTransferWaybillNo = draft.directTransferWaybillNo.trim();
   if (directTransferSupplier === '') return {};
@@ -209,13 +216,23 @@ function directTransferFields(draft: CreateDraft): Partial<CreateShipmentRequest
   };
 }
 
+/** Gönderen fasoncu yalnız o kaynak seçiliyken istekte yer alır. */
+function sourceSubcontractorFields(draft: CreateDraft): Partial<CreateShipmentRequest> {
+  const { sourceKind, sourceSubcontractor } = draft;
+  if (sourceKind !== 'SUBCONTRACTOR' || sourceSubcontractor === undefined) return {};
+  return {
+    sourceSubcontractorId: sourceSubcontractor.value,
+    sourceSubcontractorTitle: sourceSubcontractor.label,
+  };
+}
+
 /** Lokasyon firmanın tek lokasyonudur, formda seçilmez. Boş bırakılan şoför ve araç istekte hiç yer almaz; fire oranı kesirdir (%4 → 0.04). */
 export function toCreateRequest(
   draft: CreateDraft,
   siteId: string,
   defaultFirePct = '4',
 ): CreateShipmentRequest | undefined {
-  const { subcontractor, sourceSubcontractor, driver, vehicle } = draft;
+  const { subcontractor, driver, vehicle } = draft;
   const lines = draft.lines.map(toRecipeLine);
   const fireRate = parseFireRatePct(draft.fireRatePct ?? defaultFirePct);
   if (subcontractor === undefined || fireRate === undefined) return undefined;
@@ -224,12 +241,7 @@ export function toCreateRequest(
     siteId,
     subcontractorId: subcontractor.value,
     subcontractorTitle: subcontractor.label,
-    ...(sourceSubcontractor === undefined
-      ? {}
-      : {
-          sourceSubcontractorId: sourceSubcontractor.value,
-          sourceSubcontractorTitle: sourceSubcontractor.label,
-        }),
+    ...sourceSubcontractorFields(draft),
     ...directTransferFields(draft),
     lines: lines.filter((line): line is RecipeLineInput => line !== undefined),
     fireRate,

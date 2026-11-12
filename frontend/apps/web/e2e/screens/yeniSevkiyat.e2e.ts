@@ -14,7 +14,7 @@ test.describe('Yeni sevkiyat', { tag: '@panel' }, () => {
     async ({ page, openAs }) => {
       await openAs('MANAGER', '/panel/sevkiyat');
       await page.getByRole('link', { name: 'Yeni sevkiyat' }).click();
-      await pick(page, /Fasoncu/, 'Bursa Tekstil');
+      await pick(page, /Alıcı fasoncu/, 'Bursa Tekstil');
       await pick(page, /Şoför/, 'Mert Kaya');
       await fillRecipe(page);
       await page.getByRole('button', { name: 'Taslak oluştur' }).click();
@@ -31,7 +31,7 @@ test.describe('Yeni sevkiyat', { tag: '@panel' }, () => {
 
   test('şoför listesi seçilen fasoncuya göre daralır', async ({ page, openAs }) => {
     await openAs('MANAGER', '/panel/sevkiyat/yeni');
-    await pick(page, /Fasoncu/, 'Aydın Örme');
+    await pick(page, /Alıcı fasoncu/, 'Aydın Örme');
     await page.getByRole('combobox', { name: /Şoför/ }).click();
     await expect(page.getByRole('option', { name: 'Şahin Şoför' })).toBeVisible();
     await expect(page.getByRole('option', { name: 'Mert Kaya' })).toHaveCount(0);

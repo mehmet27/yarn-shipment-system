@@ -280,3 +280,10 @@ Servis eşleşmesi: `masterdata_db→masterdata`, `shipment_db→shipment`, `bag
 `notification_db→notification`, `reporting_db→reporting`, `audit_db→audit`. `--disable-triggers` `audit_local` ve `outbox_event` çiftlenmesini
 önler; audit zincirinin sıra numaraları dump içindeki `setval` ile korunur. Yükledikten sonra `SELECT audit.audit_verify_chain(1, (SELECT max(id) FROM audit.audit_log))` boş (NULL) dönmelidir.
 Servisleri yeniden başlatın. (`reporting_db` Kafka olaylarından yeniden üretilebildiği için taşımak şart değildir.)
+
+## Kullanılmayan ortak tabloların temizliği (modüler monolit geçişi, Adım 1)
+
+`V202611161000__drop_unused_common_tables.sql` ile şu tablolar düşürüldü (56 → 51 tablo): `reporting.audit_local` (hiçbir tetikleyici bağlı değildi),
+`reporting.outbox_event` (reporting olay yayınlamaz) ve `shipment`, `evidence`, `discrepancy` şemalarındaki `processed_event`
+(yalnız reporting-service okur ve yazar). `idempotency_record` her serviste kalır: frontend her durum değiştiren istekte
+`Idempotency-Key` gönderdiği ve filtre `common-web` içinde tüm servislerde açık olduğu için discrepancy-service de kullanır.

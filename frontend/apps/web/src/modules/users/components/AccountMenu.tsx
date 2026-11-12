@@ -19,7 +19,7 @@ export function AccountMenu({ account, isOwn, onPassword, onDisable, onEnable }:
   return (
     <Menu position="bottom-end" withinPortal>
       <Menu.Target>
-        <ActionIcon variant="default" size="lg" aria-label={t('users.menu.open', { username })}>
+        <ActionIcon variant="default" size={44} aria-label={t('users.menu.open', { username })}>
           {MENU_ICON}
         </ActionIcon>
       </Menu.Target>

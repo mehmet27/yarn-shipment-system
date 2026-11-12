@@ -41,3 +41,14 @@ ALTER TABLE central_stock_movement
 DROP TABLE central_production;
 
 CREATE INDEX fabric_lot_central_idx ON fabric_lot (occurred_at) WHERE source = 'CENTRAL';
+
+-- Uyumluluk görünümü: reporting-service'in V202611161100 görünümleri shipment.fabric_receipt'i okur ve taze kurulumda
+-- shipment geçmişi önce tamamlanırsa bu ad bulunmalıdır. Yalnız fasoncu kayıtlarını eski şekliyle verir; reporting
+-- görünümleri fabric_lot'a çevrilince kaldırılabilir.
+CREATE VIEW fabric_receipt AS
+SELECT id, shipment_id, fabric_type, net_kg, roll_count, waybill_no, occurred_at AS received_at, created_at, created_by
+FROM fabric_lot
+WHERE source = 'SUBCONTRACTOR';
+
+COMMENT ON VIEW fabric_receipt IS 'Geçici uyumluluk görünümü; yeni kod fabric_lot kullanır';
+GRANT SELECT ON fabric_receipt TO ${app_role};

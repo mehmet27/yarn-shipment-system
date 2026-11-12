@@ -195,7 +195,13 @@ class KeycloakStaffAccountAdapterTest {
             reply(exchange, userRolesStatus, userRoles);
         } else if (method.equals("POST") && path.endsWith("/role-mappings/realm")) {
             reply(exchange, roleStatus, "");
-        } else if (method.equals("PUT") && path.equals(USERS + "/" + USER_ID)) {
+        } else {
+            answerUser(exchange, method, path);
+        }
+    }
+
+    private void answerUser(HttpExchange exchange, String method, String path) throws IOException {
+        if (method.equals("PUT") && path.equals(USERS + "/" + USER_ID)) {
             reply(exchange, nameStatus, "");
         } else if (method.equals("GET")) {
             reply(exchange, OK, "{\"id\":\"r-1\",\"name\":\"" + path.substring(path.lastIndexOf('/') + 1) + "\"}");

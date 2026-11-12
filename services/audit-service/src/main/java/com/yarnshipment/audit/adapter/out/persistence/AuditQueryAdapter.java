@@ -13,12 +13,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
 
-/** {@link AuditQueryPort}'un JDBC uygulaması. Okuma rolüyle ayrı bağlantı kullanır. */
+/** {@link AuditQueryPort}'un JDBC uygulaması. Okuma modeli denetim zincirinin tablolarından okur. */
 @Component
 final class AuditQueryAdapter implements AuditQueryPort {
 
@@ -31,7 +30,7 @@ final class AuditQueryAdapter implements AuditQueryPort {
     private final JdbcClient jdbc;
     private final JsonMapper jsonMapper;
 
-    AuditQueryAdapter(@Qualifier(AuditJdbcConfiguration.READER) JdbcClient jdbc, JsonMapper jsonMapper) {
+    AuditQueryAdapter(JdbcClient jdbc, JsonMapper jsonMapper) {
         this.jdbc = jdbc;
         this.jsonMapper = jsonMapper;
     }

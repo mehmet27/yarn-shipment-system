@@ -1,8 +1,8 @@
 package com.yarnshipment.audit.adapter.in.messaging;
 
 import com.yarnshipment.audit.application.port.in.AppendAuditEntryUseCase;
-import com.yarnshipment.common.outbox.DomainEventConsumer;
-import com.yarnshipment.common.outbox.IncomingEvent;
+import com.yarnshipment.common.events.DomainEventConsumer;
+import com.yarnshipment.common.events.IncomingEvent;
 import org.springframework.stereotype.Component;
 
 /**

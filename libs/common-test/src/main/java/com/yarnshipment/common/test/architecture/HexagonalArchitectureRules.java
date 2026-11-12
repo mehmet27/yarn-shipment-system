@@ -107,13 +107,11 @@ public final class HexagonalArchitectureRules {
             .because("ARCH-06: web DTO'ları yalnızca adapter.in.web içinde yaşar");
 
     @ArchTest
-    public static final ArchRule KAFKA_TEMPLATE_ONLY_IN_OUTBOX_PUBLISHER = noClasses()
-            .that()
-            .resideOutsideOfPackage("com.yarnshipment.common.outbox..")
+    public static final ArchRule NO_KAFKA = noClasses()
             .should()
             .dependOnClassesThat()
-            .haveFullyQualifiedName("org.springframework.kafka.core.KafkaTemplate")
-            .because("ARCH-07: servis kodu olayı outbox'a yazar");
+            .resideInAnyPackage("org.springframework.kafka..", "org.apache.kafka..")
+            .because("ARCH-07: modüller arası olay süreç içidir (DomainEventPublisher); Kafka kullanılmaz");
 
     @ArchTest
     public static final ArchRule PACKAGES_ARE_FREE_OF_CYCLES = SlicesRuleDefinition.slices()

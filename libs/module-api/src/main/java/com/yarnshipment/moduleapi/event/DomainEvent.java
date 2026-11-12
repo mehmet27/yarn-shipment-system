@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Bir modülün yayınladığı olay. Zarf kimliğini yayıncı atar; taşıyıcı (outbox/Kafka ya da süreç içi) üreten modülü
+ * Bir modülün yayınladığı olay. Zarf kimliğini yayıncı atar; süreç içi taşıyıcı üreten modülü
  * ilgilendirmez.
  *
  * @param aggregateType olayın ait olduğu kök, ör. {@code Shipment}

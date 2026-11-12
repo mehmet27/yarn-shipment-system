@@ -3,7 +3,7 @@ package com.yarnshipment.discrepancy.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
+import com.yarnshipment.common.events.testing.RecordingDomainEventPublisher;
 import com.yarnshipment.discrepancy.application.port.out.InspectionPort.NewInspection;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRejectedException;
 import com.yarnshipment.discrepancy.domain.claim.Inspection;
@@ -27,7 +27,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-    OutboxDomainEventPublisher.class,
+    RecordingDomainEventPublisher.class,
     ShipmentWatchAdapter.class,
     DiscrepancyWriter.class,
     QualityClaimAdapter.class,

@@ -1,7 +1,7 @@
 package com.yarnshipment.shipment.adapter.in.messaging;
 
-import com.yarnshipment.common.outbox.DomainEventConsumer;
-import com.yarnshipment.common.outbox.IncomingEvent;
+import com.yarnshipment.common.events.DomainEventConsumer;
+import com.yarnshipment.common.events.IncomingEvent;
 import com.yarnshipment.events.discrepancy.DiscrepancyResolved;
 import com.yarnshipment.shipment.application.port.in.claim.RecordClaimAdjustmentCommand;
 import com.yarnshipment.shipment.application.port.in.claim.RecordClaimAdjustmentUseCase;

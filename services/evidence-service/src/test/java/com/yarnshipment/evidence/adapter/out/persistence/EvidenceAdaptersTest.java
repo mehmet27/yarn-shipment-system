@@ -3,7 +3,7 @@ package com.yarnshipment.evidence.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
+import com.yarnshipment.common.events.testing.RecordingDomainEventPublisher;
 import com.yarnshipment.evidence.TestTokens;
 import com.yarnshipment.evidence.TestUploads;
 import com.yarnshipment.evidence.domain.model.EvidenceAlreadyInvalidatedException;
@@ -31,7 +31,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @Import({
     EvidenceStoreAdapter.class,
     EvidenceInvalidationAdapter.class,
-    OutboxDomainEventPublisher.class,
+    RecordingDomainEventPublisher.class,
     UploadIntentAdapter.class,
     UuidV7Generator.class
 })
@@ -55,6 +55,9 @@ class EvidenceAdaptersTest {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @Autowired
+    private RecordingDomainEventPublisher events;
+
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
         PostgresTestDatabase.register(registry);
@@ -73,14 +76,14 @@ class EvidenceAdaptersTest {
 
     @Test
     @DisplayName("Kanıt, EvidenceUploaded olayıyla birlikte yazılır ve aynen okunur")
-    void shouldSaveEvidenceWithOutboxEvent() {
+    void shouldSaveEvidenceWithUploadedEvent() {
         EvidenceFile file = newEvidence(UUID.randomUUID(), TestUploads.SHA);
 
         evidence.saveEvidence(file);
 
         assertThat(evidence.findEvidence(file.id())).contains(file);
-        assertThat(outboxCount(file.shipmentId(), "com.yarnshipment.evidence.evidence-uploaded.v1"))
-                .isEqualTo(1);
+        assertThat(publishedCount(file.shipmentId(), "com.yarnshipment.evidence.evidence-uploaded.v1"))
+                .isEqualTo(1L);
     }
 
     @Test
@@ -99,7 +102,7 @@ class EvidenceAdaptersTest {
         evidence.saveEvidence(reused);
 
         assertThat(duplicateCount(reused.id())).isEqualTo(1);
-        assertThat(outboxCount(reused.shipmentId(), "com.yarnshipment.evidence.evidence-reuse-detected.v1"))
+        assertThat(publishedCount(reused.shipmentId(), "com.yarnshipment.evidence.evidence-reuse-detected.v1"))
                 .isEqualTo(1);
     }
 
@@ -127,19 +130,14 @@ class EvidenceAdaptersTest {
         invalidations.saveInvalidation(invalidated, USER, TestUploads.NOW);
 
         assertThat(evidence.findEvidence(file.id())).contains(invalidated);
-        assertThat(outboxCount(file.shipmentId(), "com.yarnshipment.evidence.evidence-invalidated.v1"))
+        assertThat(publishedCount(file.shipmentId(), "com.yarnshipment.evidence.evidence-invalidated.v1"))
                 .isEqualTo(1);
         assertThatThrownBy(() -> invalidations.saveInvalidation(invalidated, USER, TestUploads.NOW))
                 .isInstanceOf(EvidenceAlreadyInvalidatedException.class);
     }
 
-    private int outboxCount(UUID shipmentId, String type) {
-        Integer count = jdbc.queryForObject(
-                "SELECT count(*) FROM outbox_event WHERE aggregate_id = ? AND event_type = ?",
-                Integer.class,
-                shipmentId,
-                type);
-        return count == null ? 0 : count;
+    private long publishedCount(UUID shipmentId, String type) {
+        return events.count(shipmentId, type);
     }
 
     private int duplicateCount(UUID evidenceId) {

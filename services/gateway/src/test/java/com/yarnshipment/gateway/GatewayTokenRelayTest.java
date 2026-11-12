@@ -44,8 +44,7 @@ class GatewayTokenRelayTest {
     static void downstreamUrl(DynamicPropertyRegistry registry) {
         TestRedis.register(registry);
         registry.add(
-                "SHIPMENT_SERVICE_URL",
-                () -> "http://localhost:" + DOWNSTREAM.getAddress().getPort());
+                "APP_URL", () -> "http://localhost:" + DOWNSTREAM.getAddress().getPort());
     }
 
     @AfterAll

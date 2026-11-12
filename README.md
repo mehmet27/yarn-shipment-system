@@ -67,7 +67,7 @@ KEYCLOAK_TEST_USER_PASSWORD=<deploy/.env değeri> node tools/keycloak/verify-rea
 ```
 
 Yerel Keycloak'ta ikinci faktör kurulu değildir; `admin` ve `kalite` rolleri MFA'sız oturumda düşürüldüğü için
-shipment, bag, discrepancy ve evidence servislerini `--spring.profiles.active=local` ile başlatın (yalnızca yerelde
+`yarnshipment-app`'i `--spring.profiles.active=local` ile başlatın (yalnızca yerelde
 MFA şartını kapatır; üretim ayarı değişmez). Profilsiz açılan serviste bu iki rol 403 `ACCESS_DENIED` alır.
 
 Compose, tek bir PostgreSQL 17 konteynerinde tek veritabanı (`yarnshipment`) ve tek kullanıcı (`yarnshipment`, şifre
@@ -82,15 +82,16 @@ Migration'ları ve veritabanı kısıt testlerini servisler olmadan doğrulamak 
 tools/db/verify-migrations.sh
 ```
 
-## shipment-service'i çalıştırma
+## Uygulamayı çalıştırma (yarnshipment-app)
 
-PostgreSQL'i ayrıca kurmanız gerekmez; yukarıdaki Compose yeterlidir. Servis açılışta Flyway ile tabloları
-`yarnshipment` kullanıcısıyla `shipment` şemasına kurar.
+shipment, discrepancy, evidence, reporting ve audit modülleri `services/yarnshipment-app` içinde tek Spring Boot uygulaması olarak çalışır (port `8083`); gateway ayrı süreçtir. Tek `application.yml` ve tek bağlantı havuzu vardır; her şema kendi Flyway'iyle (kendi `flyway_schema_history` tablosu) açılışta kurulur, migration'lar `services/<modül>-service/src/main/resources/db/migration/<şema>/` altındadır. PostgreSQL'i ayrıca kurmanız gerekmez; yukarıdaki Compose yeterlidir.
 
 ```bash
 export DB_PASSWORD=<LOCAL_DB_PASSWORD>
 export YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET=<deploy/.env içindeki KEYCLOAK_ADMIN_CLIENT_SECRET>
-./mvnw -pl services/shipment-service spring-boot:run -Dspring-boot.run.profiles=local
+export EVIDENCE_STORAGE_ACCESS_KEY=<deploy/.env değeri> EVIDENCE_STORAGE_SECRET_KEY=<deploy/.env değeri>
+./mvnw -pl services/yarnshipment-app -am install -DskipTests
+./mvnw -pl services/yarnshipment-app spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET` verilmezse servis yine açılır, ama Tanımlar ekranındaki "Giriş hesabı aç"
@@ -123,7 +124,7 @@ Persistence testleri Testcontainers ile gerçek PostgreSQL'e karşı çalışır
 
 Tarayıcı yalnızca gateway ile konuşur (`http://localhost:8080`). Giriş Keycloak'ta yapılır, token tarayıcıya inmez;
 gateway oturum çerezini tutar ve `/api/v1/shipments/**` ile `/api/v1/me` isteklerini access token'ı `Authorization:
-Bearer` olarak ekleyip shipment-service'e (`8083`) iletir. Keycloak açık olmalıdır; gateway açılışta Keycloak'tan
+Bearer` olarak ekleyip tek uygulamaya (`APP_URL`, varsayılan `http://localhost:8083`) iletir. Keycloak açık olmalıdır; gateway açılışta Keycloak'tan
 yapılandırmayı okur.
 
 ```bash
@@ -147,11 +148,11 @@ export REDIS_PASSWORD=<deploy/.env içindeki REDIS_PASSWORD>
 | `SHIPMENT_SERVICE_URL` | `http://localhost:8083` |
 | `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` | `localhost` / `6379` / boş (oturumlar Redis'te tutulur; gateway yeniden başlasa da oturum düşmez) |
 
-## common-outbox (olay yayını)
+## common-events (süreç içi olay yolu)
 
-Servis iş verisiyle aynı transaction'da `outbox_event` tablosuna yazdığı olayları (EVT-03) bu kütüphanenin yoklamalı yayıncısı Kafka'ya iletir. Mesajlar CloudEvents ikili kipindedir (`ce_id`, `ce_type`, `ce_source`, `ce_subject`, `ce_time` başlıkları, gövde JSON), anahtar sevkiyat kimliğidir. Kafka onayından sonra satıra `published_at` yazılır; gönderim başarısızsa satır bir sonraki turda yeniden gönderilir (en az bir kez teslim). Birden çok servis örneği aynı satırı göndermez (`FOR UPDATE SKIP LOCKED`).
+Modüller arası olaylar tek süreçte taşınır; Kafka ve `outbox_event` yoktur. Bir modül `DomainEventPublisher.publish` ile olay yayınlar; `InProcessDomainEventPublisher` olayı kayıtlı `DomainEventConsumer`'lara iletir. `BEFORE_COMMIT` tüketiciler (audit, uyuşmazlık, sevkiyat defteri) üreten işlemle aynı transaction'da çalışır ve hata verirse iş işlemi geri alınır; `AFTER_COMMIT` tüketiciler commit'ten sonra kendi transaction'ında çalışır.
 
-Servis `yarnshipment.outbox.topic` (ör. `shipment.events.v1`) ve `yarnshipment.outbox.source` verirse yayıncı açılır; `yarnshipment.outbox.enabled=false` kapatır. Tüketen servisler `ProcessedEvents.markProcessed(eventId, type)` ile olayı işlemle aynı transaction'da kaydeder; ikinci kez gelen olay `false` döner (EVT-05). Kafka Compose ile `localhost:9092` adresinde açılır; shipment-service `KAFKA_BOOTSTRAP_SERVERS` ile başka adrese yönlendirilir.
+Konu (`shipment.events.v1` vb.) ve kaynak (`/yarn-shipment/shipment-service` vb.) olay türünün önekinden gelir: `yarnshipment.events.routes` listesi (`type-prefix`, `topic`, `source`) `yarnshipment-app/src/main/resources/application.yml` içindedir; eşleşmeyen olay türü yayın anında hata verir. Audit varlık türünü konudan türetir. Testlerde `RecordingDomainEventPublisher` yayınlanan olayları tutar.
 
 ## discrepancy-service (uyuşmazlık ve kalite itirazı)
 
@@ -171,7 +172,7 @@ Fabrika personeli (kalite, müdür, admin; fasoncu sisteme giriş yapmaz, KR-17)
 | `QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED` | 400 | Lab sonucunda belge yok |
 | `EVIDENCE_SERVICE_UNAVAILABLE` | 503 | Kanıtlar doğrulanamadı |
 
-Gateway `/api/v1/discrepancies/**` ve `/api/v1/quality-claims/**` yollarını bu servise yönlendirir. Çalıştırmak için `DB_PASSWORD`, gerekirse `KAFKA_BOOTSTRAP_SERVERS` ve `EVIDENCE_SERVICE_URL` verilir:
+Gateway `/api/v1/discrepancies/**` ve `/api/v1/quality-claims/**` yollarını bu servise yönlendirir. Çalıştırmak için `DB_PASSWORD`, verilir:
 
 ```bash
 DB_PASSWORD=... \
@@ -223,7 +224,7 @@ EVIDENCE_STORAGE_ACCESS_KEY=... EVIDENCE_STORAGE_SECRET_KEY=... \
 
 `GET /api/v1/evidence/{evidenceId}` kanıt üst verisini (dosyayı değil), `GET /api/v1/evidence?shipmentId=` sevkiyatın kanıtlarını, `GET /api/v1/evidence/{evidenceId}/download-url` dosya için yaklaşık 5 dakika geçerli imzalı indirme adresini verir. Üçü de sevkiyat kapsamına uyar: kullanıcı yalnızca görebildiği sevkiyatların kanıtlarını görür; görünmeyen kanıt listede yer almaz ve tek tek istenirse `404 EVIDENCE_NOT_FOUND` döner.
 
-shipment-service sevkiyatı tamamlarken `waybillEvidenceId` kanıtını bu servisten doğrular: yoksa, başka sevkiyata aitse ya da türü `WAYBILL` değilse `422 WAYBILL_EVIDENCE_INVALID`, servise ulaşılamazsa `502 EVIDENCE_SERVICE_UNAVAILABLE` (adres: `yarnshipment.evidence-service.url`, varsayılan `http://localhost:8086`). Yalnız `EVIDENCE_INVALIDATE` yetkisi olan (admin) `POST /api/v1/evidence/{id}/invalidate` ile gerekçe vererek kanıtı geçersiz kılabilir: kayıt silinmez, `status=INVALIDATED` olur, `EvidenceInvalidated` olayı yayımlanır; geçersiz kanıt tamamlamada kabul edilmez. Tekrar geçersiz kılma `409 EVIDENCE_ALREADY_INVALIDATED`, gerekçesiz istek `400 INVALIDATION_REASON_REQUIRED` döner.
+shipment-service sevkiyatı tamamlarken `waybillEvidenceId` kanıtını bu servisten doğrular: yoksa, başka sevkiyata aitse ya da türü `WAYBILL` değilse `422 WAYBILL_EVIDENCE_INVALID`, servise ulaşılamazsa `502 EVIDENCE_SERVICE_UNAVAILABLE` (modüller aynı süreçte olduğundan artık ağ çağrısı yoktur). Yalnız `EVIDENCE_INVALIDATE` yetkisi olan (admin) `POST /api/v1/evidence/{id}/invalidate` ile gerekçe vererek kanıtı geçersiz kılabilir: kayıt silinmez, `status=INVALIDATED` olur, `EvidenceInvalidated` olayı yayımlanır; geçersiz kanıt tamamlamada kabul edilmez. Tekrar geçersiz kılma `409 EVIDENCE_ALREADY_INVALIDATED`, gerekçesiz istek `400 INVALIDATION_REASON_REQUIRED` döner.
 
 ## common-web (ortak web altyapısı)
 
@@ -235,7 +236,7 @@ Servis ana sınıfına `@EnableYarnShipmentWeb` eklenir; şunları verir:
 
 ## audit-service (denetim izi)
 
-`shipment.events.v1`, `evidence.events.v1` ve `discrepancy.events.v1` konularındaki her olay, `audit` şemasındaki değiştirilemez hash zincirine `audit_append()` ile yazılır. Aktör (`actorId`, `actorRoles`) ve korelasyon (`correlationId`) CloudEvents başlıklarından gelir; aktörsüz sistem olayı, olayı üreten servisin adıyla `client_id` taşır. Aynı olayın tekrar teslimi ikinci satır üretmez (tekillik veritabanı fonksiyonundadır), bu yüzden işlenmiş olay tablosu yoktur. Zarfı bozuk olay kalıcı hatadır ve DLT'ye gider.
+`shipment.events.v1`, `evidence.events.v1` ve `discrepancy.events.v1` konularına yayınlanan her olay, `audit` şemasındaki değiştirilemez hash zincirine `audit_append()` ile yazılır. Aktör (`actorId`, `actorRoles`) ve korelasyon (`correlationId`) CloudEvents başlıklarından gelir; aktörsüz sistem olayı, olayı üreten servisin adıyla `client_id` taşır. Aynı olayın tekrar teslimi ikinci satır üretmez (tekillik veritabanı fonksiyonundadır), bu yüzden işlenmiş olay tablosu yoktur. 
 
 Tek veritabanı kullanıcısına geçildiği için okuma/yazma rol ayrımı kalktı: audit tablolarını sahibi olan kullanıcı doğrudan değiştirebilir. Değişmezlik artık yalnızca `reject_modification` tetikleyicisi ve hash zinciriyle (bozulmayı günlük doğrulama yakalar) sağlanır; ayrıntı için `docs/veritabani-tasarimi.md`. Her gün 03:00 UTC'de (`AUDIT_CHAIN_VERIFICATION_CRON`) son doğrulamadan sonraki kayıtlar `audit_verify_chain()` ile doğrulanır; bozulma `ERROR` olarak loglanır.
 

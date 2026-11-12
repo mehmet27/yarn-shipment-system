@@ -2,7 +2,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
+import com.yarnshipment.common.events.testing.RecordingDomainEventPublisher;
 import com.yarnshipment.shipment.application.port.in.CreatedShipment;
 import com.yarnshipment.shipment.domain.model.NewShipment;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
@@ -14,9 +14,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,16 +23,15 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-/** Taslak, durum geçmişi ve outbox olayı gerçek tetikleyiciler ve uygulama rolüyle yazılır. */
+/** Taslak, durum geçmişi ve yayınlanan olay gerçek tetikleyiciler ve uygulama rolüyle yazılır. */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-    OutboxDomainEventPublisher.class,
+    RecordingDomainEventPublisher.class,
     ShipmentCreationAdapter.class,
     ShipmentTransitionWriter.class,
     UuidV7Generator.class
 })
-@ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class ShipmentCreationAdapterTest {
 
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-00000000a001");
@@ -50,6 +47,9 @@ class ShipmentCreationAdapterTest {
     private JwtDecoder jwtDecoder;
 
     @Autowired
+    private RecordingDomainEventPublisher events;
+
+    @Autowired
     private ShipmentCreationAdapter adapter;
 
     @Autowired
@@ -61,8 +61,8 @@ class ShipmentCreationAdapterTest {
     }
 
     @Test
-    @DisplayName("Taslak numarasıyla yazılır; ilk geçmiş satırı önceki durumsuzdur ve olay outbox'a girer")
-    void shouldCreateDraftWithHistoryAndOutbox() {
+    @DisplayName("Taslak numarasıyla yazılır; ilk geçmiş satırı önceki durumsuzdur ve olay yayınlanır")
+    void shouldCreateDraftWithHistoryAndEvent() {
         ShipmentParties parties = new ShipmentParties(SUBCONTRACTOR, "Örnek Tekstil", null, null, null);
 
         CreatedShipment created =
@@ -76,11 +76,7 @@ class ShipmentCreationAdapterTest {
                         String.class,
                         created.id()))
                 .isNull();
-        assertThat(jdbc.queryForObject(
-                        "SELECT count(*) FROM outbox_event WHERE aggregate_id = ? AND event_type = ?",
-                        Long.class,
-                        created.id(),
-                        "com.yarnshipment.shipment.shipment-created.v1"))
+        assertThat(events.count(created.id(), "com.yarnshipment.shipment.shipment-created.v1"))
                 .isEqualTo(1L);
     }
 

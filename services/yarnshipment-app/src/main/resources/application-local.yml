@@ -1,0 +1,8 @@
+# Yalnızca `--spring.profiles.active=local` ile yerel geliştirmede kullanılır; üretimde açılmaz.
+yarnshipment:
+  database:
+    # Yerel örnek veri (R__ tekrarlanabilir migration); üretim ayarlarında bu konumlar yoktur.
+    seed-local: true
+  security:
+    # Yerel Keycloak'ta ikinci faktör kurulumu yok; bu yüzden ADMIN ve QUALITY rolleri MFA'sız da geçerli sayılır.
+    mfa-required-roles: []

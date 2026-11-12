@@ -5,13 +5,11 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * Bir PostgreSQL konteyneri. Flyway sahibi (migrator) rolle, yazma ve okuma uygulama rolleriyle ayrı bağlanır; böylece
- * migration'lardaki GRANT eksikleri testte yakalanır. Testler veri bıraktığı için her sınıf kendi konteynerini alır.
+ * Bir PostgreSQL konteyneri. Testler veri bıraktığı için her sınıf kendi konteynerini alır.
  */
 final class PostgresTestDatabase {
 
     private static final String WRITER_ROLE = "yarnshipment";
-    private static final String READER_ROLE = "yarnshipment";
     private static final String PASSWORD = "test";
 
     private final PostgreSQLContainer postgres;
@@ -37,9 +35,5 @@ final class PostgresTestDatabase {
         registry.add("spring.datasource.password", () -> PASSWORD);
         registry.add("spring.flyway.url", postgres::getJdbcUrl);
         registry.add("spring.flyway.password", postgres::getPassword);
-        registry.add("yarnshipment.audit.reader.url", postgres::getJdbcUrl);
-        registry.add("yarnshipment.audit.reader.username", () -> READER_ROLE);
-        registry.add("yarnshipment.audit.reader.password", () -> PASSWORD);
-        registry.add("yarnshipment.audit.reader.schema", () -> "audit");
     }
 }

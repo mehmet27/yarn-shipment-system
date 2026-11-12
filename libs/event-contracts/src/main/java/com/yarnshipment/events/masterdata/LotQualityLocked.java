@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * PartiKalitesiKilitlendi: partinin kalitesi kilitlendi, artık değişmez (rapor Bölüm 10). Olay outbox'tan
+ * PartiKalitesiKilitlendi: partinin kalitesi kilitlendi, artık değişmez (rapor Bölüm 10). Olay olay yayıncısından
  * yayınlanır; şu an dinleyen servis yoktur.
  *
  * @param lotId parti

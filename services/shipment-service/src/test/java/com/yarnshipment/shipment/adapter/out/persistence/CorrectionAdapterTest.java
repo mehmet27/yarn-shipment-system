@@ -3,7 +3,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
+import com.yarnshipment.common.events.testing.RecordingDomainEventPublisher;
 import com.yarnshipment.shipment.domain.correction.CorrectedValue.Weight;
 import com.yarnshipment.shipment.domain.correction.Correction;
 import com.yarnshipment.shipment.domain.correction.CorrectionConflictException;
@@ -30,7 +30,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-    OutboxDomainEventPublisher.class,
+    RecordingDomainEventPublisher.class,
     CorrectionAdapter.class,
     ShipmentTransitionWriter.class,
     UuidV7Generator.class

@@ -3,7 +3,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
+import com.yarnshipment.common.events.testing.RecordingDomainEventPublisher;
 import com.yarnshipment.shipment.domain.completion.Completion;
 import com.yarnshipment.shipment.domain.completion.ShipmentCompleted;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
@@ -28,7 +28,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-    OutboxDomainEventPublisher.class,
+    RecordingDomainEventPublisher.class,
     CompletionAdapter.class,
     ShipmentTransitionWriter.class,
     UuidV7Generator.class
@@ -51,6 +51,9 @@ class CompletionAdapterTest {
     private JwtDecoder jwtDecoder;
 
     @Autowired
+    private RecordingDomainEventPublisher events;
+
+    @Autowired
     private CompletionAdapter adapter;
 
     @Autowired
@@ -63,11 +66,12 @@ class CompletionAdapterTest {
 
     @BeforeEach
     void insertAwaitingShipment() {
+        events.clear();
         jdbc.update(INSERT_SHIPMENT, SHIPMENT, SITE, UUID.randomUUID(), USER);
     }
 
     @Test
-    @DisplayName("Tamamlama irsaliyeyi yazar, sevkiyatı kilitler; geçmiş müdür adına, olay outbox'a yazılır")
+    @DisplayName("Tamamlama irsaliyeyi yazar, sevkiyatı kilitler; geçmiş müdür adına, olay yayınlanır")
     void shouldCompleteAndLockShipment() {
         // when
         adapter.complete(COMPLETION, USER);
@@ -84,12 +88,7 @@ class CompletionAdapterTest {
         assertThat(jdbc.queryForObject(
                         "SELECT changed_by FROM shipment_status_history WHERE shipment_id = ?", UUID.class, SHIPMENT))
                 .isEqualTo(USER);
-        assertThat(jdbc.queryForObject(
-                        "SELECT count(*) FROM outbox_event WHERE aggregate_id = ? AND event_type = ?",
-                        Integer.class,
-                        SHIPMENT,
-                        ShipmentCompleted.TYPE))
-                .isEqualTo(1);
+        assertThat(events.count(SHIPMENT, ShipmentCompleted.TYPE)).isEqualTo(1L);
     }
 
     @Test

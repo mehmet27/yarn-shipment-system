@@ -3,7 +3,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
+import com.yarnshipment.common.events.testing.RecordingDomainEventPublisher;
 import com.yarnshipment.shipment.domain.cancellation.Cancellation;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
@@ -27,7 +27,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-    OutboxDomainEventPublisher.class,
+    RecordingDomainEventPublisher.class,
     ShipmentCancellationAdapter.class,
     ShipmentTransitionWriter.class,
     UuidV7Generator.class
@@ -53,6 +53,9 @@ class ShipmentCancellationAdapterTest {
     private JwtDecoder jwtDecoder;
 
     @Autowired
+    private RecordingDomainEventPublisher events;
+
+    @Autowired
     private ShipmentCancellationAdapter adapter;
 
     @Autowired
@@ -65,6 +68,7 @@ class ShipmentCancellationAdapterTest {
 
     @BeforeEach
     void insertDraftShipmentWithBag() {
+        events.clear();
         jdbc.update(INSERT_SHIPMENT, SHIPMENT, SITE, UUID.randomUUID(), USER);
         jdbc.update(INSERT_BAG, UUID.randomUUID(), SHIPMENT, UUID.randomUUID(), "BAG-0001", USER, USER);
     }
@@ -88,11 +92,7 @@ class ShipmentCancellationAdapterTest {
                         Long.class,
                         SHIPMENT))
                 .isEqualTo(1L);
-        assertThat(jdbc.queryForObject(
-                        "SELECT count(*) FROM outbox_event WHERE aggregate_id = ? AND event_type = ?",
-                        Long.class,
-                        SHIPMENT,
-                        "com.yarnshipment.shipment.shipment-cancelled.v1"))
+        assertThat(events.count(SHIPMENT, "com.yarnshipment.shipment.shipment-cancelled.v1"))
                 .isEqualTo(1L);
     }
 

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Olayı ayrı {@code AUDIT} logger'ına yazar. Outbox tabanlı yayıncı gelene kadar geçici varsayılandır; IP ve cihaz
+ * Olayı ayrı {@code AUDIT} logger'ına yazar. Başka bir yayıncı tanımlanmadıysa varsayılandır; IP ve cihaz
  * gibi istemci bilgileri log'a yazılmaz (SEC-12), izleme kimliği MDC'den gelir (LOG-02).
  */
 public final class LogAuditPublisher implements AuditPublisher {

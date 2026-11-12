@@ -4,7 +4,7 @@ import com.yarnshipment.discrepancy.domain.model.Discrepancy;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Atama ve karar yazımları; her biri geçmiş kaydını ve outbox olayını aynı transaction'da yazar. */
+/** Atama ve karar yazımları; her biri geçmiş kaydını ve olayı aynı transaction'da yazar. */
 public interface DiscrepancyDecisionPort {
 
     /** Atamayı yazar. Uyuşmazlık bu arada çözüldüyse {@code DiscrepancyNotOpenException} fırlatır. */

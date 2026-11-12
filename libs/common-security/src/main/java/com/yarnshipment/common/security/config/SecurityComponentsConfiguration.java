@@ -5,7 +5,6 @@ import com.yarnshipment.common.security.audit.AuditPublisher;
 import com.yarnshipment.common.security.audit.AuthorizationDeniedAuditListener;
 import com.yarnshipment.common.security.audit.LogAuditPublisher;
 import com.yarnshipment.common.security.scope.ScopeGuard;
-import com.yarnshipment.common.security.web.TokenRelayInterceptor;
 import java.time.Clock;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
@@ -16,7 +15,7 @@ import org.springframework.security.authorization.SpringAuthorizationEventPublis
 
 /**
  * Servis kodunun kullandığı güvenlik bileşenleri ve yetki reddi audit'i. Servis kendi {@link AuditPublisher}
- * (outbox) veya {@link Clock} bean'ini tanımlarsa o kullanılır; yoksa log yayıncısı ve UTC saati devreye girer.
+ * veya {@link Clock} bean'ini tanımlarsa o kullanılır; yoksa log yayıncısı ve UTC saati devreye girer.
  */
 @Configuration(proxyBeanMethods = false)
 public final class SecurityComponentsConfiguration {
@@ -40,11 +39,6 @@ public final class SecurityComponentsConfiguration {
     @Bean
     CurrentActorProvider currentActorProvider() {
         return new CurrentActorProvider();
-    }
-
-    @Bean
-    TokenRelayInterceptor tokenRelayInterceptor() {
-        return new TokenRelayInterceptor();
     }
 
     private static AuditPublisher auditPublisherOf(ObjectProvider<AuditPublisher> provider) {

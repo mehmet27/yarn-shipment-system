@@ -26,7 +26,7 @@
         <module>libs/common-test</module>
         <module>libs/common-security</module>
         <module>libs/common-web</module>
-        <module>libs/common-outbox</module>
+        <module>libs/common-events</module>
         <module>libs/event-contracts</module>
         <module>libs/module-api</module>
         <module>services/shipment-service</module>
@@ -35,6 +35,7 @@
         <module>services/evidence-service</module>
         <module>services/reporting-service</module>
         <module>services/audit-service</module>
+        <module>services/yarnshipment-app</module>
     </modules>
 
     <properties>
@@ -97,7 +98,7 @@
             </dependency>
             <dependency>
                 <groupId>com.yarnshipment</groupId>
-                <artifactId>common-outbox</artifactId>
+                <artifactId>common-events</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -113,6 +114,31 @@
             <dependency>
                 <groupId>com.yarnshipment</groupId>
                 <artifactId>common-test</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yarnshipment</groupId>
+                <artifactId>shipment-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yarnshipment</groupId>
+                <artifactId>discrepancy-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yarnshipment</groupId>
+                <artifactId>evidence-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yarnshipment</groupId>
+                <artifactId>reporting-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yarnshipment</groupId>
+                <artifactId>audit-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -353,6 +379,8 @@
                                 <bannedDependencies>
                                     <excludes>
                                         <exclude>com.yarnshipment:*-service</exclude>
+                                        <exclude>org.springframework.kafka:*</exclude>
+                                        <exclude>org.apache.kafka:*</exclude>
                                     </excludes>
                                 </bannedDependencies>
                             </rules>

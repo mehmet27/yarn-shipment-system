@@ -11,7 +11,7 @@ import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
-/** {@link DispatchCommandPort}'un JDBC uygulaması: tartım, durum geçişi ve outbox olayı aynı transaction'da. */
+/** {@link DispatchCommandPort}'un JDBC uygulaması: tartım, durum geçişi ve olay yayını aynı transaction'da. */
 @Component
 final class DispatchCommandAdapter implements DispatchCommandPort {
 

@@ -57,7 +57,9 @@ public class RecordDispatchService implements RecordDispatchUseCase {
         }
         dispatchCommandPort.recordDispatch(
                 shipment.recordDispatch(
-                        command.measurement(), clock.instant(), settingsPort.find().weightToleranceKg()),
+                        command.measurement(),
+                        clock.instant(),
+                        settingsPort.find().weightToleranceKg()),
                 actor.userId());
     }
 

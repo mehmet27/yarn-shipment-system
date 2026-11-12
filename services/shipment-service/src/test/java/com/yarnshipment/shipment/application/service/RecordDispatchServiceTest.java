@@ -38,11 +38,7 @@ class RecordDispatchServiceTest {
             new FixedBagCountPort(TestDispatches.measurement().bagCount());
     private final StubSettingsPort settings = new StubSettingsPort();
     private final RecordDispatchService service = new RecordDispatchService(
-            ServiceTestSupport.loader(queryPort, clock),
-            commandPort,
-            bagsPort,
-            settings,
-            clock);
+            ServiceTestSupport.loader(queryPort, clock), commandPort, bagsPort, settings, clock);
     private final Actor warehouse = TestTokens.actor("warehouse");
 
     private RecordDispatchCommand command(Actor actor) {

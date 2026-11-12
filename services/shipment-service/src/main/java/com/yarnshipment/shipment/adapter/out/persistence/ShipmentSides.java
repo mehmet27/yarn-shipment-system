@@ -1,7 +1,6 @@
 package com.yarnshipment.shipment.adapter.out.persistence;
 
 import com.yarnshipment.shipment.domain.model.Weighing;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;

@@ -11,8 +11,4 @@ public final class EvidenceServiceUnavailableException extends RuntimeException 
     public EvidenceServiceUnavailableException(String message, Throwable cause) {
         super(message, cause);
     }
-
-    public EvidenceServiceUnavailableException(String message) {
-        super(message);
-    }
 }

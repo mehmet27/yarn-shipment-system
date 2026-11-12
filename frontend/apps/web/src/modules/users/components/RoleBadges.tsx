@@ -4,7 +4,7 @@ import { Badge, Group } from '@iplik/ui';
 
 export type RoleBadgesProps = { account: LoginAccountView };
 
-/** Hesabın rolleri. */
+/** Hesabın rolleri; kalite kullanıcısında çalışma alanı da gösterilir. */
 export function RoleBadges({ account }: RoleBadgesProps) {
   const { t } = useTranslation();
   return (
@@ -14,6 +14,11 @@ export function RoleBadges({ account }: RoleBadgesProps) {
           {t(`users.role.${role}`)}
         </Badge>
       ))}
+      {account.workArea !== undefined && (
+        <Badge variant="outline" color="gray">
+          {t(`users.workArea.${account.workArea}`)}
+        </Badge>
+      )}
     </Group>
   );
 }

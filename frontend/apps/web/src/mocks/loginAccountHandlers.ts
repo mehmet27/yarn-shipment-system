@@ -41,13 +41,14 @@ export function createLoginAccountHandlers(permissions: readonly Permission[]) {
         username: body.username,
         fullName: body.fullName,
         role: body.role,
+        workArea: body.workArea,
       });
       return new HttpResponse(null, { status: 201 });
     }),
     http.put(`${PATH}/:id/role`, async ({ params, request }) => {
       if (!canList) return problem(403, 'FORBIDDEN', 'Yetkiniz yok');
       const body = (await request.json()) as ChangeLoginAccountRoleRequest;
-      const result = changeMockLoginAccountRole(String(params.id), body.role);
+      const result = changeMockLoginAccountRole(String(params.id), body.role, body.workArea);
       if (result === 'not-found') {
         return problem(404, 'LOGIN_ACCOUNT_NOT_FOUND', 'Kullanıcı yok');
       }

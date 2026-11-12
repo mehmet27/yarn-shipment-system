@@ -7,6 +7,7 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountPageRespon
 import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.Role;
 import com.yarnshipment.shipment.adapter.in.web.api.model.StaffLoginAccountRequest;
+import com.yarnshipment.shipment.adapter.in.web.api.model.WorkArea;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
@@ -14,6 +15,7 @@ import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateSt
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
+import com.yarnshipment.shipment.masterdata.domain.model.StaffWorkArea;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -64,7 +66,10 @@ public class LoginAccountController implements LoginAccountsApi {
         changeRole.changeLoginAccountRole(
                 currentActorProvider.getCurrentActor(),
                 userId,
-                StaffRole.valueOf(request.getRole().name()));
+                StaffRole.valueOf(request.getRole().name()),
+                request.getWorkArea() == null
+                        ? null
+                        : StaffWorkArea.valueOf(request.getWorkArea().name()));
         return ResponseEntity.noContent().build();
     }
 
@@ -87,7 +92,8 @@ public class LoginAccountController implements LoginAccountsApi {
                 .roles(account.roles().stream().map(Role::valueOf).toList())
                 .enabled(account.enabled())
                 .passwordChangeRequired(account.passwordChangeRequired())
-                .createdAt(utc(account.createdAt()));
+                .createdAt(utc(account.createdAt()))
+                .workArea(account.workArea() == null ? null : WorkArea.valueOf(account.workArea().name()));
     }
 
     private static @Nullable OffsetDateTime utc(@Nullable Instant instant) {

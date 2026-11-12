@@ -16,6 +16,7 @@ import com.yarnshipment.shipment.masterdata.domain.model.StaffWorkArea;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -57,7 +58,22 @@ class StaffLoginAccountServiceTest {
     };
     private final FakeCredentials credentials = new FakeCredentials();
     private final List<String> savedAreas = new ArrayList<>();
-    private final StaffWorkAreaPort workAreas = (userId, area) -> savedAreas.add(userId + ":" + area);
+    private final StaffWorkAreaPort workAreas = new StaffWorkAreaPort() {
+        @Override
+        public void save(UUID userId, StaffWorkArea area) {
+            savedAreas.add(userId + ":" + area);
+        }
+
+        @Override
+        public void delete(UUID userId) {
+            savedAreas.add(userId + ":deleted");
+        }
+
+        @Override
+        public Map<UUID, StaffWorkArea> findAll() {
+            return Map.of();
+        }
+    };
     private final StaffLoginAccountService service =
             new StaffLoginAccountService(targets, accounts, credentials, workAreas);
 
@@ -143,10 +159,27 @@ class StaffLoginAccountServiceTest {
     void shouldChangeRoleOfOthersOnly() {
         UUID other = UUID.randomUUID();
 
-        service.changeLoginAccountRole(admin, other, StaffRole.QUALITY);
+        service.changeLoginAccountRole(admin, other, StaffRole.QUALITY, StaffWorkArea.SUBCONTRACTOR);
 
         assertThat(roleChanges).containsExactly(other + ":QUALITY");
-        assertThatThrownBy(() -> service.changeLoginAccountRole(admin, admin.userId(), StaffRole.MANAGER))
+        assertThat(savedAreas).containsExactly(other + ":SUBCONTRACTOR");
+        assertThatThrownBy(() -> service.changeLoginAccountRole(admin, admin.userId(), StaffRole.MANAGER, null))
+                .isInstanceOf(InvalidMasterDataException.class);
+        assertThat(roleChanges).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("Kalite dışı role geçince çalışma alanı silinir; kalite alansız ya da başka rol alanlı reddedilir")
+    void shouldClearOrRequireWorkAreaOnRoleChange() {
+        UUID other = UUID.randomUUID();
+
+        service.changeLoginAccountRole(admin, other, StaffRole.MANAGER, null);
+
+        assertThat(savedAreas).containsExactly(other + ":deleted");
+        assertThatThrownBy(() -> service.changeLoginAccountRole(admin, other, StaffRole.QUALITY, null))
+                .isInstanceOf(InvalidMasterDataException.class);
+        assertThatThrownBy(() ->
+                        service.changeLoginAccountRole(admin, other, StaffRole.MANAGER, StaffWorkArea.CENTRAL))
                 .isInstanceOf(InvalidMasterDataException.class);
         assertThat(roleChanges).hasSize(1);
     }

@@ -517,6 +517,7 @@ export interface LoginAccountView {
   /** Kişi geçici şifreyle açıldı, henüz kendi şifresini belirlemedi */
   passwordChangeRequired: boolean;
   createdAt?: string;
+  workArea?: WorkArea;
 }
 
 /**
@@ -568,6 +569,8 @@ export interface SetLoginAccountPasswordRequest {
 
 export interface ChangeLoginAccountRoleRequest {
   role: StaffRole;
+  /** Kalite rolünde zorunlu, başka rolde verilmez; rol kalite olarak kalıyorsa alan yalnız değişir */
+  workArea?: WorkArea;
 }
 
 export interface UserNameView {

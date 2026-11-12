@@ -3,6 +3,7 @@ import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Badge, Group, Paper, Stack, Text } from '@iplik/ui';
 import { EvidenceFileLink } from './EvidenceFileLink';
 import { EvidenceImageThumb } from './EvidenceImageThumb';
+import { InvalidateEvidenceButton } from './InvalidateEvidenceButton';
 
 const isImage = (mimeType: string) => mimeType.startsWith('image/');
 
@@ -33,6 +34,7 @@ export function EvidenceItem({ evidence }: { evidence: EvidenceView }) {
         <Text size="xs" c="dimmed">
           {formatDateTime(evidence.uploadedAt)}
         </Text>
+        {!isInvalid && <InvalidateEvidenceButton evidenceId={evidence.id} />}
         {isInvalid && evidence.invalidatedReason !== undefined && (
           <Text size="xs" c="red">
             {t('evidence.view.reason')}: {evidence.invalidatedReason}

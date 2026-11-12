@@ -575,6 +575,15 @@ export interface ChangeLoginAccountRoleRequest {
   workArea?: WorkArea;
 }
 
+export interface ChangeLoginAccountNameRequest {
+  /**
+     * Ad soyad; son boşluktan öncesi ad, sonrası soyad olarak yazılır
+     * @minLength 2
+     * @maxLength 200
+     */
+  fullName: string;
+}
+
 export interface UserNameView {
   id: string;
   /** Ad soyad; profilde yoksa giriş adı */
@@ -1536,6 +1545,24 @@ export const changeLoginAccountRole = (
     }
 
 /**
+ * Yalnızca yönetici (USER_MANAGE). Kullanıcının ad soyadını kimlik sağlayıcıdaki profilinde günceller; giriş adı,
+ * rol ve açık oturumlar değişmez. Kişi kendi adını da değiştirebilir. Fasoncu ve şoför hesaplarının adı kayda
+ * bağlı olduğundan bu uçla değiştirilmez. Kullanıcı yoksa 404 `LOGIN_ACCOUNT_NOT_FOUND`.
+ * @summary Fabrika içi hesabın ad soyadını değiştirir
+ */
+export const changeLoginAccountName = (
+    userId: string,
+    changeLoginAccountNameRequest: ChangeLoginAccountNameRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/login-accounts/${userId}/name`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: changeLoginAccountNameRequest
+    },
+      );
+    }
+
+/**
  * Yalnızca yönetici (USER_MANAGE). Pasife alınan kullanıcı giremez ve açık oturumları kapanır; veri silinmez.
  * Kişi kendi hesabını kapatamaz (400 `INVALID_MASTER_DATA`, `userId`). Kullanıcı yoksa 404
  * `LOGIN_ACCOUNT_NOT_FOUND`.
@@ -2235,6 +2262,7 @@ export type ListLoginAccountsResult = NonNullable<Awaited<ReturnType<typeof list
 export type CreateStaffLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createStaffLoginAccount>>>
 export type ListUserNamesResult = NonNullable<Awaited<ReturnType<typeof listUserNames>>>
 export type ChangeLoginAccountRoleResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountRole>>>
+export type ChangeLoginAccountNameResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountName>>>
 export type ChangeLoginAccountEnabledResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountEnabled>>>
 export type SetLoginAccountPasswordResult = NonNullable<Awaited<ReturnType<typeof setLoginAccountPassword>>>
 export type GetBrandingResult = NonNullable<Awaited<ReturnType<typeof getBranding>>>

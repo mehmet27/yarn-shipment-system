@@ -1,6 +1,7 @@
 package com.yarnshipment.shipment.masterdata.application.service;
 
 import com.yarnshipment.common.security.Actor;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountNameUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.DisableLoginAccountUseCase;
@@ -22,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 /**
- * Fabrika içi hesap açar, rolünü değiştirir, pasife alır, yeniden açar ve şifresini belirler. İlk şifreyi yönetici
+ * Fabrika içi hesap açar, rolünü ve ad soyadını değiştirir, pasife alır, yeniden açar ve şifresini belirler. İlk şifreyi yönetici
  * yazar (geçici; kişi ilk girişte değiştirir); SMS ya da e-posta doğrulaması yoktur. Fabrikada tek merkez lokasyon
  * olduğu için yeni hesap etkin tüm lokasyonları görür. Kişi kendi rolünü değiştiremez ve kendi hesabını kapatamaz
  * (kilitlenmeyi önler). Kalite rolünde çalışma alanı (merkez / fasoncu) zorunludur, başka rolde verilemez. Asıl
@@ -32,9 +33,12 @@ import org.springframework.stereotype.Service;
 public final class StaffLoginAccountService
         implements CreateStaffLoginAccountUseCase,
                 ChangeLoginAccountRoleUseCase,
+                ChangeLoginAccountNameUseCase,
                 EnableLoginAccountUseCase,
                 DisableLoginAccountUseCase,
                 SetLoginAccountPasswordUseCase {
+
+    private static final int MIN_NAME_LENGTH = 2;
 
     private final LoginAccountTargetPort targets;
     private final StaffAccountPort accounts;
@@ -83,6 +87,15 @@ public final class StaffLoginAccountService
         } else {
             workAreas.save(userId, workArea);
         }
+    }
+
+    @Override
+    public void changeLoginAccountName(Actor actor, UUID userId, String fullName) {
+        String name = fullName.strip();
+        if (name.length() < MIN_NAME_LENGTH) {
+            throw new InvalidMasterDataException("fullName", "too short");
+        }
+        accounts.changeStaffName(userId, name);
     }
 
     private static void requireWorkAreaOnlyForQuality(StaffRole role, @Nullable StaffWorkArea workArea) {

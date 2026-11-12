@@ -113,6 +113,15 @@ export function setMockLoginAccountPassword(id: string): boolean {
   return true;
 }
 
+/** Ad soyadı değiştirir; bulunamazsa `false` döner. */
+export function changeMockLoginAccountName(id: string, fullName: string): boolean {
+  if (!accounts.some((candidate) => candidate.id === id)) return false;
+  accounts = accounts.map((candidate) =>
+    candidate.id === id ? { ...candidate, fullName } : candidate,
+  );
+  return true;
+}
+
 /** Rolü değiştirir; bulunamazsa `not-found` döner. */
 export function changeMockLoginAccountRole(
   id: string,

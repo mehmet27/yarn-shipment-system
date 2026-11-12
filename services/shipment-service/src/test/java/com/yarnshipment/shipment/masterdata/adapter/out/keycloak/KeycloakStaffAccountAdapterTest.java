@@ -46,6 +46,7 @@ class KeycloakStaffAccountAdapterTest {
     private int createStatus = CREATED;
     private int roleStatus = NO_CONTENT;
     private int userRolesStatus = OK;
+    private int nameStatus = NO_CONTENT;
     private String userRoles = "[]";
 
     @AfterEach
@@ -130,6 +131,31 @@ class KeycloakStaffAccountAdapterTest {
     }
 
     @Test
+    @DisplayName("Ad soyad değişince yalnızca ad ve soyad profile yazılır; rol ve oturumlara dokunulmaz")
+    void shouldChangeStaffName() throws Exception {
+        KeycloakStaffAccountAdapter adapter = adapter("secret");
+
+        adapter.changeStaffName(UUID.fromString(USER_ID), "Ayşe Nur Yılmaz");
+
+        assertThat(calls)
+                .containsExactly(
+                        "POST /realms/yarnshipment/protocol/openid-connect/token", "PUT " + USERS + "/" + USER_ID);
+        assertThat(bodies.get(1))
+                .contains("\"firstName\":\"Ayşe Nur\"")
+                .contains("\"lastName\":\"Yılmaz\"");
+    }
+
+    @Test
+    @DisplayName("Ad değişirken kullanıcı Keycloak'ta yoksa LoginAccountNotFoundException")
+    void shouldReportMissingUserOnNameChange() throws Exception {
+        nameStatus = NOT_FOUND;
+        KeycloakStaffAccountAdapter adapter = adapter("secret");
+
+        assertThatThrownBy(() -> adapter.changeStaffName(UUID.fromString(USER_ID), "Ayşe Yılmaz"))
+                .isInstanceOf(LoginAccountNotFoundException.class);
+    }
+
+    @Test
     @DisplayName("Kullanıcı yoksa LoginAccountNotFoundException")
     void shouldRefuseRoleChangeForBoundOrMissingAccounts() throws Exception {
         userRolesStatus = NOT_FOUND;
@@ -171,6 +197,8 @@ class KeycloakStaffAccountAdapterTest {
             reply(exchange, userRolesStatus, userRoles);
         } else if (method.equals("POST") && path.endsWith("/role-mappings/realm")) {
             reply(exchange, roleStatus, "");
+        } else if (method.equals("PUT") && path.equals(USERS + "/" + USER_ID)) {
+            reply(exchange, nameStatus, "");
         } else if (method.equals("GET")) {
             reply(exchange, OK, "{\"id\":\"r-1\",\"name\":\"" + path.substring(path.lastIndexOf('/') + 1) + "\"}");
         } else if (method.equals("POST") && path.endsWith("/users")) {

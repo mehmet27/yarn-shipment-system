@@ -76,6 +76,7 @@ export {
   getShipmentSettings,
   saveShipmentSettings,
   changeLoginAccountEnabled,
+  changeLoginAccountName,
   changeLoginAccountRole,
   createStaffLoginAccount,
   listLoginAccounts,
@@ -93,6 +94,7 @@ export type {
 } from './masterData';
 export type {
   ChangeLoginAccountEnabledRequest,
+  ChangeLoginAccountNameRequest,
   ChangeLoginAccountRoleRequest,
   ListLoginAccountsParams,
   LoginAccountPageResponse,

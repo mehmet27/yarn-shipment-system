@@ -615,6 +615,41 @@ paths:
           $ref: '#/components/responses/Conflict'
         '502':
           $ref: '#/components/responses/BadGateway'
+  /api/v1/master-data/login-accounts/{userId}/name:
+    put:
+      tags: [LoginAccounts]
+      operationId: changeLoginAccountName
+      summary: Fabrika içi hesabın ad soyadını değiştirir
+      description: |
+        Yalnızca yönetici (USER_MANAGE). Kullanıcının ad soyadını kimlik sağlayıcıdaki profilinde günceller; giriş adı,
+        rol ve açık oturumlar değişmez. Kişi kendi adını da değiştirebilir. Fasoncu ve şoför hesaplarının adı kayda
+        bağlı olduğundan bu uçla değiştirilmez. Kullanıcı yoksa 404 `LOGIN_ACCOUNT_NOT_FOUND`.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeLoginAccountNameRequest'
+      responses:
+        '204':
+          description: Ad soyad değişti
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   /api/v1/master-data/login-accounts/{userId}/enabled:
     put:
       tags: [LoginAccountAccess]
@@ -2646,6 +2681,15 @@ components:
           $ref: '#/components/schemas/StaffRole'
         workArea:
           $ref: '#/components/schemas/WorkArea'
+    ChangeLoginAccountNameRequest:
+      type: object
+      required: [fullName]
+      properties:
+        fullName:
+          type: string
+          minLength: 2
+          maxLength: 200
+          description: Ad soyad; son boşluktan öncesi ad, sonrası soyad olarak yazılır
     UserNameListResponse:
       type: object
       required: [items]

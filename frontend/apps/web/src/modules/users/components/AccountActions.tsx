@@ -2,13 +2,14 @@ import type { LoginAccountView } from '@iplik/api-client';
 import { Group } from '@iplik/ui';
 import { useCurrentUser } from '@/modules/auth';
 import { hasChangeableRole } from '../staffRoles';
+import { ChangeNameButton } from './ChangeNameButton';
 import { ChangeRoleButton } from './ChangeRoleButton';
 import { SetPasswordButton } from './SetPasswordButton';
 import { ToggleEnabledButton } from './ToggleEnabledButton';
 
 /**
- * Hesap satırının işlemleri: yeni geçici şifre verme, pasife alma/açma ve fabrika içi hesapta rol değiştirme. Kişinin
- * kendi hesabında pasife alma ve rol değiştirme sunulmaz; sunucu da aynı kuralı uygular (kilitlenmeyi önler).
+ * Hesap satırının işlemleri: yeni geçici şifre verme, pasife alma/açma ve fabrika içi hesapta ad soyad ile rol
+ * değiştirme. Kişinin kendi hesabında pasife alma ve rol değiştirme sunulmaz (ad soyadı değiştirilebilir); sunucu da aynı kuralı uygular (kilitlenmeyi önler).
  */
 export function AccountActions({ account }: { account: LoginAccountView }) {
   const { data: me } = useCurrentUser();
@@ -16,6 +17,7 @@ export function AccountActions({ account }: { account: LoginAccountView }) {
   return (
     <Group gap="xs" align="flex-start" wrap="nowrap">
       <SetPasswordButton account={account} />
+      {hasChangeableRole(account) && <ChangeNameButton account={account} />}
       {!isOwn && <ToggleEnabledButton account={account} />}
       {!isOwn && hasChangeableRole(account) && <ChangeRoleButton account={account} />}
     </Group>

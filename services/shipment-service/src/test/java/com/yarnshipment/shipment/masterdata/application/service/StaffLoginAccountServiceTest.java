@@ -31,6 +31,7 @@ class StaffLoginAccountServiceTest {
 
     private final List<StaffAccountSpec> openedStaff = new ArrayList<>();
     private final List<String> roleChanges = new ArrayList<>();
+    private final List<String> nameChanges = new ArrayList<>();
     private final Actor admin = TestTokens.actor("admin");
     private Set<UUID> activeSites = Set.of(SITE);
     private final LoginAccountTargetPort targets = new LoginAccountTargetPort() {
@@ -54,6 +55,11 @@ class StaffLoginAccountServiceTest {
         @Override
         public void changeStaffRole(UUID userId, StaffRole role) {
             roleChanges.add(userId + ":" + role);
+        }
+
+        @Override
+        public void changeStaffName(UUID userId, String fullName) {
+            nameChanges.add(userId + ":" + fullName);
         }
     };
     private final FakeCredentials credentials = new FakeCredentials();
@@ -115,6 +121,20 @@ class StaffLoginAccountServiceTest {
             assertThat(spec.password()).isEqualTo("Gecici-Sifre-1");
             assertThat(spec.siteIds()).containsExactly(SITE);
         });
+    }
+
+    @Test
+    @DisplayName("Ad soyad kırpılarak yazılır; kişi kendi adını da değiştirebilir, çok kısa ad reddedilir")
+    void shouldChangeName() {
+        UUID other = UUID.randomUUID();
+
+        service.changeLoginAccountName(admin, other, "  Ayşe Yılmaz ");
+        service.changeLoginAccountName(admin, admin.userId(), "Ali Veli");
+
+        assertThat(nameChanges).containsExactly(other + ":Ayşe Yılmaz", admin.userId() + ":Ali Veli");
+        assertThatThrownBy(() -> service.changeLoginAccountName(admin, other, " A "))
+                .isInstanceOf(InvalidMasterDataException.class);
+        assertThat(nameChanges).hasSize(2);
     }
 
     @Test

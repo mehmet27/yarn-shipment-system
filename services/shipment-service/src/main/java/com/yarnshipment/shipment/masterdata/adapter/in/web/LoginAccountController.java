@@ -2,6 +2,7 @@ package com.yarnshipment.shipment.masterdata.adapter.in.web;
 
 import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.shipment.adapter.in.web.api.LoginAccountsApi;
+import com.yarnshipment.shipment.adapter.in.web.api.model.ChangeLoginAccountNameRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ChangeLoginAccountRoleRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountPageResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.LoginAccountView;
@@ -10,6 +11,7 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.StaffLoginAccountReque
 import com.yarnshipment.shipment.adapter.in.web.api.model.WorkArea;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountNameUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
@@ -37,16 +39,19 @@ public class LoginAccountController implements LoginAccountsApi {
     private final ListLoginAccountsUseCase listLoginAccounts;
     private final CreateStaffLoginAccountUseCase createStaff;
     private final ChangeLoginAccountRoleUseCase changeRole;
+    private final ChangeLoginAccountNameUseCase changeName;
     private final CurrentActorProvider currentActorProvider;
 
     public LoginAccountController(
             ListLoginAccountsUseCase listLoginAccounts,
             CreateStaffLoginAccountUseCase createStaff,
             ChangeLoginAccountRoleUseCase changeRole,
+            ChangeLoginAccountNameUseCase changeName,
             CurrentActorProvider currentActorProvider) {
         this.listLoginAccounts = listLoginAccounts;
         this.createStaff = createStaff;
         this.changeRole = changeRole;
+        this.changeName = changeName;
         this.currentActorProvider = currentActorProvider;
     }
 
@@ -70,6 +75,13 @@ public class LoginAccountController implements LoginAccountsApi {
                 request.getWorkArea() == null
                         ? null
                         : StaffWorkArea.valueOf(request.getWorkArea().name()));
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('USER_MANAGE')")
+    public ResponseEntity<Void> changeLoginAccountName(UUID userId, ChangeLoginAccountNameRequest request) {
+        changeName.changeLoginAccountName(currentActorProvider.getCurrentActor(), userId, request.getFullName());
         return ResponseEntity.noContent().build();
     }
 

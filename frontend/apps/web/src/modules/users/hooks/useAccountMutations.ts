@@ -1,6 +1,7 @@
 import type { ChangeLoginAccountRoleRequest } from '@iplik/api-client';
 import {
   changeLoginAccountEnabled,
+  changeLoginAccountName,
   changeLoginAccountRole,
   createStaffLoginAccount,
   setLoginAccountPassword,
@@ -27,6 +28,15 @@ export function useChangeAccountRole(userId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: ChangeLoginAccountRoleRequest) => changeLoginAccountRole(userId, request),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: LOGIN_ACCOUNTS_KEY }),
+  });
+}
+
+/** Fabrika içi hesabın ad soyadını değiştirir; liste yenilenir. */
+export function useChangeAccountName(userId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (fullName: string) => changeLoginAccountName(userId, { fullName }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: LOGIN_ACCOUNTS_KEY }),
   });
 }

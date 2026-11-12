@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.yarnshipment.shipment.TestTokens;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountNameUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountRoleUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
@@ -53,6 +54,9 @@ class StaffLoginAccountControllerTest {
 
     @MockitoBean
     private ChangeLoginAccountRoleUseCase changeRole;
+
+    @MockitoBean
+    private ChangeLoginAccountNameUseCase changeName;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
@@ -126,6 +130,27 @@ class StaffLoginAccountControllerTest {
         assertThat(missing).bodyJson().extractingPath("$.code").isEqualTo("LOGIN_ACCOUNT_NOT_FOUND");
         assertThat(locked).hasStatus(HttpStatus.CONFLICT);
         assertThat(locked).bodyJson().extractingPath("$.code").isEqualTo("LOGIN_ACCOUNT_ROLE_LOCKED");
+    }
+
+    @Test
+    @DisplayName("Ad soyad değiştirme: 204 ve use case'e kırpılmamış ad gider; kısa ad 400, bulunamayan 404, admin dışı 403")
+    void shouldChangeName() {
+        Jwt admin = TestTokens.token("admin").build();
+        String uri = URI + "/" + USER + "/name";
+        String body = "{\"fullName\":\"Ayşe Yılmaz\"}";
+        MvcTestResult changed = send(mvc.put().uri(uri), body, admin);
+        MvcTestResult forbidden =
+                send(mvc.put().uri(uri), body, TestTokens.token("quality").build());
+        MvcTestResult tooShort = send(mvc.put().uri(uri), "{\"fullName\":\"A\"}", admin);
+        verify(changeName).changeLoginAccountName(any(), eq(USER), eq("Ayşe Yılmaz"));
+        doThrow(new LoginAccountNotFoundException()).when(changeName).changeLoginAccountName(any(), any(), any());
+        MvcTestResult missing = send(mvc.put().uri(uri), body, admin);
+
+        assertThat(changed).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(forbidden).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(tooShort).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(missing).hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(missing).bodyJson().extractingPath("$.code").isEqualTo("LOGIN_ACCOUNT_NOT_FOUND");
     }
 
     private MvcTestResult send(MockMvcTester.MockMvcRequestBuilder builder, String body, Jwt jwt) {

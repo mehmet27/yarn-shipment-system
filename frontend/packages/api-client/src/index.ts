@@ -177,6 +177,7 @@ export {
   EvidenceType,
   getEvidence,
   getEvidenceDownloadUrl,
+  invalidateEvidence,
   listEvidence,
   requestEvidenceUpload,
   StorageUploadError,

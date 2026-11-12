@@ -25,6 +25,7 @@ const PHOTO_DATA_URL =
 type StoredEvidence = Pending & {
   id: string;
   status: 'VALID' | 'INVALIDATED';
+  invalidatedReason?: string;
   sha256: string;
   uploadedAt: string;
 };
@@ -110,6 +111,18 @@ export function createEvidenceHandlers(permissions: readonly Permission[]) {
     http.get('/api/v1/evidence/:evidenceId', ({ params }) => {
       const found = stored.get(String(params.evidenceId));
       return found === undefined ? problem(404, 'EVIDENCE_NOT_FOUND') : HttpResponse.json(found);
+    }),
+    http.post('/api/v1/evidence/:evidenceId/invalidate', async ({ params, request }) => {
+      const found = stored.get(String(params.evidenceId));
+      if (found === undefined) return problem(404, 'EVIDENCE_NOT_FOUND');
+      if (!permissions.includes('EVIDENCE_INVALIDATE')) return problem(403, 'FORBIDDEN');
+      if (found.status === 'INVALIDATED') return problem(409, 'EVIDENCE_ALREADY_INVALIDATED');
+      const body: unknown = await request.json();
+      const reason = isRecord(body) && typeof body.reason === 'string' ? body.reason.trim() : '';
+      if (reason === '') return problem(400, 'INVALIDATION_REASON_REQUIRED');
+      const view: StoredEvidence = { ...found, status: 'INVALIDATED', invalidatedReason: reason };
+      stored.set(found.id, view);
+      return HttpResponse.json(view);
     }),
     http.post(`${EVIDENCE_PATH}/:evidenceId/confirm`, ({ params }) => {
       const id = String(params.evidenceId);

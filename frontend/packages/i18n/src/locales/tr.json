@@ -592,6 +592,18 @@
     "camera": "Fotoğraf çek",
     "file": "Dosya seç",
     "done": "Yüklendi.",
+    "invalidate": {
+      "button": "Geçersiz kıl",
+      "title": "Kanıtı geçersiz kıl",
+      "warning": "Dosya silinmez; kayıt geçersiz olarak işaretlenir ve geri alınamaz.",
+      "reason": "Gerekçe",
+      "confirm": "Geçersiz kıl",
+      "errors": {
+        "EVIDENCE_ALREADY_INVALIDATED": "Bu kanıt zaten geçersiz kılınmış.",
+        "INVALIDATION_REASON_REQUIRED": "Gerekçe yazmanız gerekir.",
+        "unknown": "Kanıt geçersiz kılınamadı. Lütfen tekrar deneyin."
+      }
+    },
     "view": {
       "empty": "Henüz yüklenmiş fotoğraf ya da belge yok.",
       "loadFailed": "Dosya açılamadı. Lütfen sayfayı yenileyip tekrar deneyin.",

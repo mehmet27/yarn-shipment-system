@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { createHandlers } from '@/mocks/handlers';
@@ -49,5 +50,28 @@ describe('Kanıtlar sekmesi', () => {
     expect(
       await screen.findByText('Henüz yüklenmiş fotoğraf ya da belge yok.'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('Kanıt geçersiz kılma', () => {
+  it('admin gerekçeyle geçersiz kılar, kanıt rozetle görünür', async () => {
+    server.use(...createHandlers('ADMIN'));
+    renderApp('/panel/sevkiyat/shp-0001');
+    (await screen.findByRole('tab', { name: 'Kanıtlar' })).click();
+    (await screen.findAllByRole('button', { name: 'Geçersiz kıl' }))[0]?.click();
+    const reason = await screen.findByLabelText(/Gerekçe/);
+    await userEvent.type(reason, 'Yanlış sevkiyatın fişi');
+    const confirm = (await screen.findAllByRole('button', { name: 'Geçersiz kıl' })).at(-1);
+    if (confirm === undefined) throw new Error('onay düğmesi yok');
+    await userEvent.click(confirm);
+    expect(await screen.findByText('Geçersiz')).toBeInTheDocument();
+  });
+
+  it('izni olmayan kullanıcıda düğme hiç görünmez', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/sevkiyat/shp-0001');
+    (await screen.findByRole('tab', { name: 'Kanıtlar' })).click();
+    await screen.findByRole('button', { name: /fotoğrafını büyüt/ });
+    expect(screen.queryByRole('button', { name: 'Geçersiz kıl' })).not.toBeInTheDocument();
   });
 });

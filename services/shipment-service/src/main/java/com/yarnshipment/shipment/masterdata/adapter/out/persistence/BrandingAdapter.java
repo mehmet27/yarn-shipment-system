@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * {@link BrandingPort}'un JDBC uygulaması; marka {@code app_setting} tablosunda üç anahtar olarak durur
- * ({@code branding_*}; kaldırılan değer boş metindir), iz {@code audit_local} trigger'ından düşer. Ana renk satırı yoksa marka tanımsızdır.
+ * ({@code branding_*}; kaldırılan değer boş metindir), iz {@code audit_local} trigger'ından düşer.
+ * Ana renk satırı yoksa marka tanımsızdır.
  */
 @Component
 final class BrandingAdapter implements BrandingPort {

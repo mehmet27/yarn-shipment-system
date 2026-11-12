@@ -567,9 +567,11 @@ export interface SetLoginAccountPasswordRequest {
   password: string;
 }
 
+/**
+ * Rol kalite ise workArea zorunludur ve aynı çağrıda değişebilir; başka rolde verilmez, kayıtlı alan silinir.
+ */
 export interface ChangeLoginAccountRoleRequest {
   role: StaffRole;
-  /** Kalite rolünde zorunlu, başka rolde verilmez; rol kalite olarak kalıyorsa alan yalnız değişir */
   workArea?: WorkArea;
 }
 

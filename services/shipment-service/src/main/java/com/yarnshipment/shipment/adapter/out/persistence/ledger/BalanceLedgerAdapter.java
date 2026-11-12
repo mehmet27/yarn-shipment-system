@@ -75,7 +75,7 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
             WHERE bm.shipment_id = :shipmentId AND bm.kind = 'DISPATCH'
             ON CONFLICT (source_ref) DO NOTHING""";
 
-    /** Kapıdan aktarmada iplik depoya hiç girmez; çıkıştan önce aynı kilo giriş (+) olarak yazılır, stok eksiye düşmez. */
+    /** Kapıdan aktarmada iplik depoya girmez; çıkıştan önce aynı kilo giriş (+) yazılır, stok eksiye düşmez. */
     private static final String CENTRAL_STOCK_DIRECT_IN = """
             INSERT INTO central_stock_movement (id, yarn_type, kind, net_kg, shipment_id, note, occurred_at, created_by,
                                                 source_ref)

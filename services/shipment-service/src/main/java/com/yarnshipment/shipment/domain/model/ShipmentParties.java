@@ -70,11 +70,6 @@ public record ShipmentParties(
                 null);
     }
 
-    /** İplik depoya girmeden kapıdan aktarılıyor mu. */
-    public boolean directTransfer() {
-        return directTransferSupplier != null;
-    }
-
     /** Merkezden çıkan sevkiyat: gönderen fasoncu yok. */
     public ShipmentParties(
             UUID subcontractorId,
@@ -83,6 +78,11 @@ public record ShipmentParties(
             @Nullable String driverName,
             @Nullable String plateNo) {
         this(subcontractorId, subcontractorTitle, driverId, driverName, plateNo, null, null);
+    }
+
+    /** İplik depoya girmeden kapıdan aktarılıyor mu. */
+    public boolean directTransfer() {
+        return directTransferSupplier != null;
     }
 
     /** SEC-13: şoför adı kişisel veridir. */

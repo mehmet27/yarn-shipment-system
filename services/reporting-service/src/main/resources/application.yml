@@ -41,4 +41,4 @@ spring:
       auto-offset-reset: earliest
 server:
   port: ${SERVER_PORT:8087}
-# Bu servis olay yayınlamaz ve tüketmez; okuma modelleri canlı SQL görünümüdür (V202611161000).
+# Bu servis olay yayınlamaz ve tüketmez; okuma modelleri canlı SQL görünümüdür (V202611161100).

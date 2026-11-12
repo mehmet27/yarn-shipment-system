@@ -1,5 +1,5 @@
 -- YALNIZ TEST: Üretimde bu tabloları shipment-service ve discrepancy-service migration'ları kurar. Rapor görünümlerini
--- (V202611161000) bu modülün testinde sınamak için, görünümlerin okuduğu kolonların birebir aynı adlı kopyasıdır.
+-- (V202611161100) bu modülün testinde sınamak için, görünümlerin okuduğu kolonların birebir aynı adlı kopyasıdır.
 -- Kolon adı ya da türü kaynak şemada değişirse bu dosya ve görünüm birlikte güncellenmelidir.
 CREATE SCHEMA IF NOT EXISTS shipment;
 CREATE SCHEMA IF NOT EXISTS discrepancy;

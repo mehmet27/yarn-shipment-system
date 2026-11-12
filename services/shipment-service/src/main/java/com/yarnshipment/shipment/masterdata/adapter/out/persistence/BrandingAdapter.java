@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
@@ -63,7 +64,7 @@ final class BrandingAdapter implements BrandingPort {
         return findBranding().orElse(branding);
     }
 
-    private void upsert(String key, String value, UUID actorId) {
+    private void upsert(String key, @Nullable String value, UUID actorId) {
         jdbc.sql(UPSERT)
                 .param("key", key)
                 .param("value", value == null ? "" : value)
@@ -72,7 +73,7 @@ final class BrandingAdapter implements BrandingPort {
                 .update();
     }
 
-    private static String blankToNull(String value) {
+    private static @Nullable String blankToNull(@Nullable String value) {
         return value == null || value.isEmpty() ? null : value;
     }
 }

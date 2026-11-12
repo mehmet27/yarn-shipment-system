@@ -3,6 +3,7 @@ package com.yarnshipment.evidence.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
 import com.yarnshipment.evidence.TestTokens;
 import com.yarnshipment.evidence.TestUploads;
 import com.yarnshipment.evidence.domain.model.EvidenceAlreadyInvalidatedException;
@@ -30,7 +31,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @Import({
     EvidenceStoreAdapter.class,
     EvidenceInvalidationAdapter.class,
-    EvidenceOutbox.class,
+    OutboxDomainEventPublisher.class,
     UploadIntentAdapter.class,
     UuidV7Generator.class
 })

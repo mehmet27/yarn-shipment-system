@@ -5,10 +5,6 @@ public final class EvidenceServiceUnavailableException extends RuntimeException 
 
     private static final long serialVersionUID = 1L;
 
-    public EvidenceServiceUnavailableException(String message) {
-        super(message);
-    }
-
     public EvidenceServiceUnavailableException(String message, Throwable cause) {
         super(message, cause);
     }

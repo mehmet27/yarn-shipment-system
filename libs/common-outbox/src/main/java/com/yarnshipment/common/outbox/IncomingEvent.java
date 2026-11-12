@@ -1,6 +1,7 @@
 package com.yarnshipment.common.outbox;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -14,6 +15,9 @@ import org.jspecify.annotations.Nullable;
  * @param time olayın gerçekleştiği zaman
  * @param actorId olayı doğuran kullanıcı; sistem olaylarında boş
  * @param data olay gövdesi (JSON)
+ * @param topic olayın yayınlandığı konu; denetim kaydında varlık türünü belirler
+ * @param source CloudEvents {@code source}, ör. {@code /yarn-shipment/shipment-service}
+ * @param headers ek başlıklar (actorRoles, correlationId); taşıyıcıdan bağımsız
  */
 public record IncomingEvent(
         UUID id,
@@ -21,7 +25,15 @@ public record IncomingEvent(
         UUID subject,
         Instant time,
         @Nullable String actorId,
-        String data) {
+        String data,
+        @Nullable String topic,
+        @Nullable String source,
+        Map<String, String> headers) {
+
+    /** Zarf bilgisi bilinmeyen (yalnızca gövdesi okunan) olay. */
+    public IncomingEvent(UUID id, String type, UUID subject, Instant time, @Nullable String actorId, String data) {
+        this(id, type, subject, time, actorId, data, null, null, Map.of());
+    }
 
     public IncomingEvent {
         Objects.requireNonNull(id, "id");
@@ -29,5 +41,6 @@ public record IncomingEvent(
         Objects.requireNonNull(subject, "subject");
         Objects.requireNonNull(time, "time");
         Objects.requireNonNull(data, "data");
+        headers = Map.copyOf(headers);
     }
 }

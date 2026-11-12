@@ -30,7 +30,7 @@ class AuditEventsListenerTest {
     private static final String DATA = "{\"status\":\"LOADED\"}";
 
     private final AppendAuditEntryUseCase useCase = mock(AppendAuditEntryUseCase.class);
-    private final AuditEventsListener listener = new AuditEventsListener(useCase);
+    private final AuditEventsListener listener = new AuditEventsListener(new AuditEventsConsumer(useCase));
 
     @Test
     @DisplayName("Kullanıcı olayı aktörü, rolü, korelasyonu ve gövdeyle zincire yazılır")

@@ -1,19 +1,19 @@
 package com.yarnshipment.shipment.adapter.out.persistence;
 
+import com.yarnshipment.moduleapi.event.DomainEvent;
+import com.yarnshipment.moduleapi.event.DomainEventPublisher;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Durum geçişlerinin ortak yazımı: işlemi yapanı audit tetikleyicisine bildirir, durumu beklenen eski durum
- * koşuluyla değiştirir (CONC-07), geçmiş satırını (DOM-14) ve outbox olayını (EVT-03) yazar.
+ * koşuluyla değiştirir (CONC-07), geçmiş satırını (DOM-14) ve olayı (EVT-03) yayınlar.
  */
 @Component
 final class ShipmentTransitionWriter {
@@ -27,18 +27,14 @@ final class ShipmentTransitionWriter {
             INSERT INTO shipment_status_history (id, created_at, shipment_id, from_status, to_status, changed_by,
                                                  changed_at, reason)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)""";
-    private static final String INSERT_OUTBOX = """
-            INSERT INTO outbox_event (id, created_at, aggregate_type, aggregate_id, event_type, payload, headers,
-                                      occurred_at)
-            VALUES (?, ?, ?, ?, ?, ?::jsonb, ?::jsonb, ?)""";
 
     private final JdbcClient jdbc;
-    private final JsonMapper jsonMapper;
+    private final DomainEventPublisher events;
     private final UuidV7Generator ids;
 
-    ShipmentTransitionWriter(JdbcClient jdbc, JsonMapper jsonMapper, UuidV7Generator ids) {
+    ShipmentTransitionWriter(JdbcClient jdbc, DomainEventPublisher events, UuidV7Generator ids) {
         this.jdbc = jdbc;
-        this.jsonMapper = jsonMapper;
+        this.events = events;
         this.ids = ids;
     }
 
@@ -85,19 +81,13 @@ final class ShipmentTransitionWriter {
     }
 
     void publish(Transition transition, String eventType, Object payload) {
-        Timestamp at = transition.at();
-        jdbc.sql(INSERT_OUTBOX)
-                .params(
-                        ids.next(),
-                        at,
-                        AGGREGATE_TYPE,
-                        transition.shipmentId(),
-                        eventType,
-                        jsonMapper.writeValueAsString(payload),
-                        jsonMapper.writeValueAsString(
-                                Map.of("actorId", transition.actorUserId().toString())),
-                        at)
-                .update();
+        events.publish(new DomainEvent(
+                AGGREGATE_TYPE,
+                transition.shipmentId(),
+                eventType,
+                payload,
+                transition.at().toInstant(),
+                transition.actorUserId()));
     }
 
     /**

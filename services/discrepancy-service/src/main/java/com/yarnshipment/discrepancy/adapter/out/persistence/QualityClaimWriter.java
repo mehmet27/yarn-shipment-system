@@ -6,13 +6,13 @@ import com.yarnshipment.discrepancy.domain.claim.QualityClaim;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyType;
 import com.yarnshipment.discrepancy.domain.model.Severity;
 import com.yarnshipment.events.discrepancy.DiscrepancyOpened;
+import com.yarnshipment.moduleapi.event.DomainEvent;
+import com.yarnshipment.moduleapi.event.DomainEventPublisher;
 import java.sql.Timestamp;
-import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Kalite itirazını yazar: Kırmızı {@code QUALITY} uyuşmazlığı, itiraz, açılış ve fotoğraf geçmişi ve
@@ -43,18 +43,14 @@ final class QualityClaimWriter {
             INSERT INTO discrepancy_activity (id, created_at, discrepancy_id, action_type, note, evidence_id, actor_id,
                                               occurred_at)
             VALUES (:id, :at, :discrepancyId, :action, :note, :evidenceId, :actor, :at)""";
-    private static final String INSERT_OUTBOX = """
-            INSERT INTO outbox_event (id, created_at, aggregate_type, aggregate_id, event_type, payload, headers,
-                                      occurred_at)
-            VALUES (:id, :at, :aggregateType, :shipmentId, :type, :payload::jsonb, :headers::jsonb, :at)""";
 
     private final JdbcClient jdbc;
-    private final JsonMapper jsonMapper;
+    private final DomainEventPublisher events;
     private final UuidV7Generator ids;
 
-    QualityClaimWriter(JdbcClient jdbc, JsonMapper jsonMapper, UuidV7Generator ids) {
+    QualityClaimWriter(JdbcClient jdbc, DomainEventPublisher events, UuidV7Generator ids) {
         this.jdbc = jdbc;
-        this.jsonMapper = jsonMapper;
+        this.events = events;
         this.ids = ids;
     }
 
@@ -154,17 +150,12 @@ final class QualityClaimWriter {
                 Severity.RED.name(),
                 RULE_CODE,
                 claim.dueAt());
-        jdbc.sql(INSERT_OUTBOX)
-                .param("id", ids.next())
-                .param("at", Timestamp.from(written.opening().openedAt()))
-                .param("aggregateType", AGGREGATE_TYPE)
-                .param("shipmentId", written.shipmentId())
-                .param("type", DiscrepancyOpened.TYPE)
-                .param("payload", jsonMapper.writeValueAsString(opened))
-                .param(
-                        "headers",
-                        jsonMapper.writeValueAsString(
-                                Map.of("actorId", claim.openedBy().toString())))
-                .update();
+        events.publish(new DomainEvent(
+                AGGREGATE_TYPE,
+                written.shipmentId(),
+                DiscrepancyOpened.TYPE,
+                opened,
+                written.opening().openedAt(),
+                claim.openedBy()));
     }
 }

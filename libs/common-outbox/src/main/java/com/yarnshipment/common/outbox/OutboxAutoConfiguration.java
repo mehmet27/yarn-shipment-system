@@ -1,5 +1,6 @@
 package com.yarnshipment.common.outbox;
 
+import com.yarnshipment.moduleapi.event.DomainEventPublisher;
 import java.time.Clock;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -13,6 +14,7 @@ import org.springframework.boot.kafka.autoconfigure.KafkaAutoConfiguration;
 import org.springframework.boot.transaction.autoconfigure.TransactionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.CommonErrorHandler;
@@ -34,6 +36,37 @@ public class OutboxAutoConfiguration {
     @Bean
     ProcessedEvents processedEvents(JdbcClient jdbcClient, ObjectProvider<Clock> clock) {
         return new ProcessedEvents(jdbcClient, clock.getIfAvailable(Clock::systemUTC));
+    }
+
+    /**
+     * Varsayılan taşıyıcı: olay outbox tablosuna yazılır, yoklamalı yayıncı Kafka'ya taşır. Süreç içi taşıyıcı
+     * {@code yarnshipment.events.transport=in-process} ile seçilir (tek Spring Boot uygulaması).
+     */
+    @Bean
+    @ConditionalOnMissingBean(DomainEventPublisher.class)
+    @ConditionalOnProperty(
+            prefix = "yarnshipment.events",
+            name = "transport",
+            havingValue = "outbox",
+            matchIfMissing = true)
+    DomainEventPublisher outboxDomainEventPublisher(JdbcClient jdbcClient, JsonMapper jsonMapper) {
+        return new OutboxDomainEventPublisher(jdbcClient, jsonMapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(DomainEventPublisher.class)
+    @ConditionalOnProperty(prefix = "yarnshipment.events", name = "transport", havingValue = "in-process")
+    DomainEventPublisher inProcessDomainEventPublisher(
+            JsonMapper jsonMapper,
+            ObjectProvider<DomainEventConsumer> consumers,
+            PlatformTransactionManager transactionManager,
+            Environment environment) {
+        return new InProcessDomainEventPublisher(
+                jsonMapper,
+                () -> consumers.orderedStream().toList(),
+                transactionManager,
+                environment.getProperty("yarnshipment.outbox.topic", ""),
+                environment.getProperty("yarnshipment.outbox.source", ""));
     }
 
     /**

@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
 import com.yarnshipment.shipment.adapter.out.persistence.PostgresTestDatabase;
 import com.yarnshipment.shipment.masterdata.domain.catalog.DuplicateCodeException;
 import java.util.UUID;
@@ -27,7 +28,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 /** Parti yazmaları gerçek PostgreSQL'de: tek kilit, kilitten sonra düzenleme yok, tekil numara ve outbox olayı. */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({LotAdapter.class, LotOutboxAdapter.class})
+@Import({OutboxDomainEventPublisher.class, LotAdapter.class, LotOutboxAdapter.class})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class LotAdapterTest {

@@ -10,14 +10,14 @@ yükleyip numarasını yazar ve sevkiyatı tamamlar (`COMPLETED`). Ayrıntılı 
 
 ## Dokümanlar
 
-- [Java 25 kod standartları](docs/standartlar/java-kod-standartlari.md): projedeki tüm Java kodu için bağlayıcı kurallar.
+- [Java 21 kod standartları](docs/standartlar/java-kod-standartlari.md): projedeki tüm Java kodu için bağlayıcı kurallar.
 - [React ve TypeScript kod standartları](docs/standartlar/react-typescript-kod-standartlari.md): frontend kodu için bağlayıcı kurallar.
 - [Veritabanı tasarımı](docs/veritabani-tasarimi.md): servis başına PostgreSQL 17 veritabanları ve tablolar.
 - [Süreç analizi v2](docs/analiz/surec-analizi-v2.md): Kasım 2026 saha incelemesinden sonraki iş akışı, roller, kurallar ve yol haritası.
 
 ## Derleme
 
-Java 25 ve Docker gerekir; Maven, `./mvnw` ile kendiliğinden iner.
+Java 21 ve Docker gerekir; Maven, `./mvnw` ile kendiliğinden iner.
 
 ```bash
 ./mvnw spotless:apply   # biçimi düzeltir (BUILD-05)

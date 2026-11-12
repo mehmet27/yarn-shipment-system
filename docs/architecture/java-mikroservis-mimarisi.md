@@ -9,7 +9,7 @@ Backend, iş alanına göre ayrılmış 8 Spring Boot servisinden, önlerinde te
 | Konu                | Karar                                                       | Kısa gerekçe                                                                         |
 |---------------------|-------------------------------------------------------------|--------------------------------------------------------------------------------------|
 | Mimari              | Alan bazlı mikroservis, 8 iş servisi + gateway              | Modüller birbirinden net ayrılıyor; kanıt ve audit gibi hassas alanlar izole kalıyor |
-| Dil ve çatı         | Java 25 LTS, Spring Boot 4.x, Spring Cloud                  | Ekip Java yazacak; Spring en olgun ve en çok destek bulunan ekosistem                |
+| Dil ve çatı         | Java 21 LTS, Spring Boot 4.x, Spring Cloud                  | Ekip Java yazacak; Spring en olgun ve en çok destek bulunan ekosistem                |
 | Senkron iletişim    | REST + JSON (OpenAPI 3), Spring RestClient / HTTP Interface | Anında cevap gereken az sayıdaki çağrı için basit ve izlenebilir                     |
 | Asenkron iletişim   | Apache Kafka (KRaft), transactional outbox                  | Olaylar kalıcı ve tekrar oynatılabilir; audit ve raporlama aynı akıştan beslenir     |
 | Süreç koordinasyonu | Olay tabanlı koreografi (saga)                              | Sevkiyat akışı adım adım ilerliyor; merkezi orkestratöre gerek yok                   |
@@ -172,7 +172,7 @@ Sürümler projenin başladığı günün güncel kararlı sürümleriyle kesinl
 
 | Katman                 | Seçim                                                                               | Gerekçe                                                                                                       |
 |------------------------|-------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| Dil                    | Java 25 LTS (Java 21 LTS yedek)                                                     | Uzun süreli destek; sanal thread'ler yüksek eşzamanlı G/Ç'yi basitleştirir                                    |
+| Dil                    | Java 21 LTS (Java 25 LTS'e geçiş ileride değerlendirilir)                                                     | Uzun süreli destek; sanal thread'ler yüksek eşzamanlı G/Ç'yi basitleştirir                                    |
 | Çatı                   | Spring Boot 4.x (Spring Framework 7)                                                | Olgun ekosistem, geniş geliştirici havuzu, Kafka/Keycloak/S3 entegrasyonları hazır                            |
 | Bulut bileşenleri      | Spring Cloud (Gateway, Kubernetes, Stream veya Spring Kafka)                        | Gateway ve K8s entegrasyonu tek ekosistemden                                                                  |
 | Web                    | Spring MVC + sanal thread'ler                                                       | Reaktif programlamanın karmaşıklığı olmadan yeterli ölçek                                                     |
@@ -193,7 +193,7 @@ Sürümler projenin başladığı günün güncel kararlı sürümleriyle kesinl
 
 - **CONC-01** Tüm servislerde `spring.threads.virtual.enabled=true`. Web istekleri, Kafka dinleyicileri ve `@Async`/zamanlanmış işler sanal thread'lerde çalışır. Kod bloklayan, düz, okunabilir G/Ç yazar.
 - **CONC-02 Reaktif programlama kullanılmaz** (WebFlux, Reactor, RxJava). Tek istisna API Gateway'dir (karar D-3); reaktif kod yalnızca `platform/api-gateway` içinde kalır.
-- **BUILD-07** Container imajı Jib ile üretilir; temel imaj Eclipse Temurin 25 JRE'dir. JVM parametreleri: `-XX:MaxRAMPercentage=75 -XX:+UseCompactObjectHeaders -XX:+ExitOnOutOfMemoryError` ve NAME-10'daki yerel ayarlar. Çöp toplayıcı varsayılan G1'dir; değiştirmek ölçüm ve ADR gerektirir.
+- **BUILD-07** Container imajı Jib ile üretilir; temel imaj Eclipse Temurin 21 JRE'dir. JVM parametreleri: `-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError` (`-XX:+UseCompactObjectHeaders` Java 24+ gerektirir, 21'de kullanılmaz) ve NAME-10'daki yerel ayarlar. Çöp toplayıcı varsayılan G1'dir; değiştirmek ölçüm ve ADR gerektirir.
 
 ## Gözlemlenebilirlik, güvenlik ve dağıtım
 

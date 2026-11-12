@@ -1,4 +1,4 @@
-# İplik Sevkiyat Sistemi – Java 25 Kod Standartları
+# İplik Sevkiyat Sistemi – Java 21 Kod Standartları
 
 | Alan | Değer |
 | --- | --- |
@@ -22,7 +22,7 @@ Kural belirtilmeden yazılan her madde ZORUNLU kabul edilir.
 ## İçindekiler
 
 1. [Temel ilkeler](#1-temel-ilkeler)
-2. [Java 25 dil kullanımı](#2-java-25-dil-kullanımı)
+2. [Java 21 dil kullanımı](#2-java-21-dil-kullanımı)
 3. [Adlandırma ve dil](#3-adlandırma-ve-dil)
 4. [Kod boyutu, karmaşıklık ve yapı sınırları](#4-kod-boyutu-karmaşıklık-ve-yapı-sınırları)
 5. [Domain modelleme](#5-domain-modelleme)
@@ -57,12 +57,12 @@ Bu sistemin değeri **kanıt bütünlüğünden** gelir: kör giriş, değiştir
 
 ---
 
-## 2. Java 25 dil kullanımı
+## 2. Java 21 dil kullanımı
 
 ### 2.1 Sürüm ve önizleme özellikleri
 
-- **LANG-01** Hedef **Java 25 LTS**'tir. Tüm modüllerde `maven.compiler.release=25`. Yedek plan Java 21 LTS'tir (mimari doküman); bu yüzden aşağıda "25'e özgü" işaretli özellikler yalnızca belirtilen yerlerde kullanılır ki gerekirse geri dönüş maliyeti düşük kalsın.
-- **LANG-02 Önizleme (preview) ve incubator özellikleri üretim kodunda yasaktır.** `--enable-preview` hiçbir modülde açılmaz. Java 25'te hâlâ önizlemede olan özellikler (ör. Structured Concurrency, ilkel tiplerle desen eşleme, Stable Values, Vector API) kullanılmaz. Bu özellikler kalıcı hale geldiğinde bu doküman güncellenir.
+- **LANG-01** Hedef **Java 21 LTS**'tir. Tüm modüllerde `maven.compiler.release=21`. Java 22+ ile kesinleşen özellikler (adsız değişken `_`, esnek yapıcı gövdeleri, `ScopedValue`, Stream Gatherers, `///` yorumları) kullanılmaz; ileride Java 25'e geçildiğinde bu bölüm yeniden açılır.
+- **LANG-02 Önizleme (preview) ve incubator özellikleri üretim kodunda yasaktır.** `--enable-preview` hiçbir modülde açılmaz. Java 21'de önizlemede olan özellikler (ör. Structured Concurrency, `ScopedValue`, adsız değişken `_`, esnek yapıcı gövdeleri, Stream Gatherers) kullanılmaz. Bu özellikler kalıcı hale geldiğinde bu doküman güncellenir.
 
 ### 2.2 Kullanılması beklenen özellikler
 
@@ -72,12 +72,9 @@ Bu sistemin değeri **kanıt bütünlüğünden** gelir: kör giriş, değiştir
 | `sealed` sınıf/arayüz | Kapalı tip hiyerarşileri (sonuç tipleri, uyuşmazlık bulguları, domain istisnaları) `sealed` yazılır (LANG-04). |
 | `switch` ifadesi + desen eşleme | `sealed` tip ve `enum` üzerinde `switch` **ifade** olarak ve `default` dalı **olmadan** yazılır; böylece yeni bir alt tip eklendiğinde derleyici eksik dalı yakalar (LANG-05). |
 | Record desenleri | Record'u açmak için kullanılabilir: `case Discrepant(var id, var findings) ->` (ÖNERİLEN). |
-| Adsız değişken `_` | Kullanılmayan değişken, yakalanan ama kullanılmayan istisna ve desen bileşenleri için `_` kullanılır: `catch (DuplicateKeyException _)` (LANG-06). |
+| Kullanılmayan değişken | Java 21'de `_` yoktur (LANG-06). Boş record deseni değişkensiz yazılır: `case Claim.Acquired() ->`. Yakalanan ama kullanılmayan istisna ise açık adla yazılır ve adı niyeti söyler: `catch (DuplicateKeyException ignored)`. |
 | Sıralı koleksiyonlar | `list.get(0)` yerine `getFirst()`, `list.get(list.size() - 1)` yerine `getLast()`, ters gezinti için `reversed()` (ÖNERİLEN). |
-| Esnek yapıcı gövdeleri (25'e özgü) | `super(...)` çağrısından önce argüman doğrulaması yapılabilir. Yalnızca doğrulama ve argüman hazırlığı için kullanılır, `this` erişimi yoktur (ÖNERİLEN). |
-| `ScopedValue` (25'e özgü) | Kendi yazdığımız istek bağlamı taşıma ihtiyacında `ThreadLocal` yerine kullanılır (bkz. CONC-05). |
-| Stream Gatherers | Pencereleme, gruplu toplama gibi işlerde özel `Collector` yazmak yerine `Gatherers` kullanılabilir (ÖNERİLEN). |
-| Javadoc | Javadoc klasik `/** ... */` biçimindedir (LANG-07). Java 23+ `///` Markdown yorumları, Checkstyle Javadoc kontrolleri (COMM-02) bunları tanımadığı için kullanılmaz. |
+| Javadoc | Javadoc klasik `/** ... */` biçimindedir (LANG-07). Java 23+ `///` Markdown yorumları (Java 21'de zaten yok), Checkstyle Javadoc kontrolleri (COMM-02) bunları tanımadığı için kullanılmaz. |
 | `var` | Sağ taraf tipi açıkça gösteriyorsa kullanılır (`var shipment = new Shipment(...)`). Dönüş tipi belirsiz metot çağrılarında, alanlarda ve lambda parametrelerinde kullanılmaz (LANG-08). |
 | Metin blokları `"""` | Çok satırlı SQL, JSON test verisi ve şablonlar için kullanılır (ÖNERİLEN). |
 
@@ -115,18 +112,6 @@ ShipmentStatus next = switch (result) {
     case ComparisonResult.Clean _ -> ShipmentStatus.COMPLETED;
     case ComparisonResult.Discrepant _ -> ShipmentStatus.IN_REVIEW;
 };
-```
-
-### 2.5 Örnek: super() öncesi doğrulama (Java 25)
-
-```java
-public final class ShipmentLockedException extends DomainException {
-
-    public ShipmentLockedException(ShipmentId shipmentId) {
-        Objects.requireNonNull(shipmentId, "shipmentId");
-        super(ErrorCode.SHIPMENT_LOCKED, "Sevkiyat kilitli: " + shipmentId.value());
-    }
-}
 ```
 
 ---
@@ -631,10 +616,10 @@ public record DeliveryReceived(
 
 - **CONC-03** Sanal thread havuzlanmaz. `Executors.newFixedThreadPool` ile sanal thread sınırlandırılmaz; G/Ç işleri için `Executors.newVirtualThreadPerTaskExecutor()` kullanılır (try-with-resources ile kapatılır).
 - **CONC-04** Sınırlı bir kaynağa (başka servis, veritabanı bağlantısı) eşzamanlılık sınırı gerekiyorsa thread havuzu değil `Semaphore` veya Resilience4j `Bulkhead` kullanılır.
-- **CONC-05** Kendi `ThreadLocal`'ımızı tanımlamayız. Uygulama kodunda istek bağlamı (kullanıcı, kapsam) metot parametresiyle taşınır; bu mümkün değilse `ScopedValue` kullanılır. Framework'ün yönettiği `ThreadLocal`'lar (Spring Security `SecurityContextHolder`, MDC, transaction senkronizasyonu) bu kuralın dışındadır.
+- **CONC-05** Kendi `ThreadLocal`'ımızı tanımlamayız. Uygulama kodunda istek bağlamı (kullanıcı, kapsam) metot parametresiyle taşınır; bu mümkün değilse gerekçeli bir ADR ile istisna alınır (`ScopedValue` Java 21'de önizlemedir). Framework'ün yönettiği `ThreadLocal`'lar (Spring Security `SecurityContextHolder`, MDC, transaction senkronizasyonu) bu kuralın dışındadır.
 - **CONC-06** Paylaşılan değişebilir durum yazılmaz. Gerekirse `java.util.concurrent` atomik tipleri ve eşzamanlı koleksiyonları kullanılır. Kilit gerekiyorsa `ReentrantLock` tercih edilir (zaman aşımlı `tryLock` için); Java 24'ten itibaren `synchronized` sanal thread'i taşıyıcıya sabitlemediği için yasak değildir ama uzun G/Ç'yi kilit altında yapmak her iki durumda da yasaktır.
 - **CONC-07** Dağıtık tutarlılık için JVM kilidi kullanılmaz. Aynı sevkiyatın eşzamanlı güncellenmesi `@Version` iyimser kilidiyle, Unique Key'in tek kullanımı veritabanı kısmi unique indeksiyle engellenir.
-- **CONC-08** Structured Concurrency Java 25'te önizlemede olduğu için kullanılmaz (LANG-02). Paralel alt görev ihtiyacı `newVirtualThreadPerTaskExecutor()` + `Future` ile çözülür.
+- **CONC-08** Structured Concurrency Java 21'de önizlemede olduğu için kullanılmaz (LANG-02). Paralel alt görev ihtiyacı `newVirtualThreadPerTaskExecutor()` + `Future` ile çözülür.
 - **CONC-09** `CompletableFuture` zincirleri iş mantığında kullanılmaz; sanal thread'lerle bloklayan kod aynı ölçeği daha okunur sağlar.
 
 ---
@@ -764,7 +749,7 @@ void shouldRejectBagAlreadyAssignedToAnotherShipment() {
 ## 15. Derleme, bağımlılık ve araç zinciri
 
 - **BUILD-01** Maven Wrapper (`./mvnw`) kullanılır. Tüm sürümler kök `pom.xml` içindeki `dependencyManagement` ve Spring Boot BOM'undan gelir; alt modüllerde sürüm numarası yazılmaz.
-- **BUILD-02** Maven Enforcer: Java sürümü `[25,)`, Maven sürümü alt sınırı, `dependencyConvergence`, `banDuplicatePomDependencyVersions`, yasaklı bağımlılık listesi.
+- **BUILD-02** Maven Enforcer: Java sürümü `[21,)`, Maven sürümü alt sınırı, `dependencyConvergence`, `banDuplicatePomDependencyVersions`, yasaklı bağımlılık listesi.
 - **BUILD-03 Yasaklı bağımlılıklar:** Lombok, H2/HSQLDB (test dahil), `spring-boot-starter-webflux` (gateway hariç), `commons-lang` 2.x, Guava (JDK karşılığı olan işler için gereksiz; gerekçeyle istisna alınabilir), JUnit 4, log4j 1.x.
 - **BUILD-04** Derleyici: `-parameters -Xlint:all -Werror`. Error Prone + NullAway hata seviyesinde (NULL-02). Bilinçli bastırma `@SuppressWarnings("Kontrol")` ile en dar kapsamda ve yanında yorumla yapılır.
 - **BUILD-05 Biçimlendirme otomatiktir.** Spotless + Palantir Java Format. `./mvnw spotless:apply` biçimi düzeltir, CI'da `spotless:check` biçimsiz kodu reddeder. Biçim tartışması review konusu değildir. Satır uzunluğu 120, girinti 4 boşluk, dosya kodlaması UTF-8, satır sonu LF.
@@ -869,7 +854,7 @@ Servis adları mimari dokümandaki gibidir: `master-data-service`, `bag-service`
 
 Bu ek, Bölüm 3 ve 4'teki kuralların araç karşılığıdır. İskelet kurulurken dosyalar `build-tools/` altına **bu içerikle** konur; doküman ile ayar dosyası arasında fark olursa doküman esastır ve ayar dosyası düzeltilir. Her kuralın şiddeti `error`'dır; Maven `checkstyle:check` ve `pmd:check` hedefleri `validate`/`verify` aşamasına bağlıdır ve ihlalde derleme durur (`failOnViolation=true`, `violationSeverity=warning` ile uyarı dahi hata sayılır).
 
-Kullanılan araç sürümleri Java 25 sözdizimini (adsız değişken `_`, esnek yapıcı gövdeleri) ayrıştırabilen sürümler olmalıdır. Bir kontrol Java 25 sözdizimini henüz desteklemiyorsa, ilgili kural ArchUnit veya PMD karşılığıyla denetlenir ve bu ek güncellenir; kural kaldırılmaz.
+Kullanılan araç sürümleri Java 21 sözdizimini ayrıştırabilen sürümler olmalıdır. Bir kontrol Java 21 sözdizimini henüz desteklemiyorsa, ilgili kural ArchUnit veya PMD karşılığıyla denetlenir ve bu ek güncellenir; kural kaldırılmaz.
 
 ### C.1 Checkstyle (`build-tools/checkstyle/checkstyle.xml`)
 
@@ -1099,7 +1084,7 @@ Kullanılan araç sürümleri Java 25 sözdizimini (adsız değişken `_`, esnek
          xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
-    <description>Java 25 kod standartları, Bölüm 4</description>
+    <description>Java 21 kod standartları, Bölüm 4</description>
 
     <!-- SIZE-10 -->
     <rule ref="category/java/design.xml/TooManyFields">

@@ -1,6 +1,6 @@
 # Java servisleri için ortak imaj tanımı. Kullanım: --build-arg MODULE=shipment-service (bkz. deploy/prod/docker-compose.yml)
 # Derleme bağlamı depo kökündür. Testler ve kod denetimleri (Checkstyle, PMD, Spotless, JaCoCo) CI'da çalışır; imaj derlemesinde atlanır.
-FROM eclipse-temurin:25-jdk AS build
+FROM eclipse-temurin:21-jdk AS build
 ARG MODULE
 WORKDIR /src
 COPY . .
@@ -9,7 +9,7 @@ RUN --mount=type=cache,target=/root/.m2 \
       -Dspotless.check.skip=true -Dcheckstyle.skip=true -Dpmd.skip=true -Djacoco.skip=true \
  && cp services/${MODULE}/target/${MODULE}-*.jar /app.jar
 
-FROM eclipse-temurin:25-jre
+FROM eclipse-temurin:21-jre
 RUN useradd --system --uid 10001 --create-home app
 USER app
 WORKDIR /home/app

@@ -143,7 +143,7 @@ public final class ArchitectureConditions {
         try {
             return Optional.of(Class.forName(
                     javaClass.getName(), false, Thread.currentThread().getContextClassLoader()));
-        } catch (ClassNotFoundException | LinkageError _) {
+        } catch (ClassNotFoundException | LinkageError unloadable) {
             // Sınıf yüklenemiyorsa sealed olduğu kanıtlanamaz; kural güvenli tarafta kalır.
             return Optional.empty();
         }

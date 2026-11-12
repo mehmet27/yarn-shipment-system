@@ -4,11 +4,9 @@ import com.yarnshipment.shipment.adapter.out.persistence.ShipmentTransitionWrite
 import com.yarnshipment.shipment.application.port.out.DispatchCommandPort;
 import com.yarnshipment.shipment.domain.model.DispatchRecording;
 import com.yarnshipment.shipment.domain.model.ShipmentDispatched;
-import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import com.yarnshipment.shipment.domain.model.WeightCheck;
 import com.yarnshipment.shipment.domain.model.WeightMismatchDetected;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
@@ -21,9 +19,8 @@ final class DispatchCommandAdapter implements DispatchCommandPort {
             "SELECT count(*) FROM weighing WHERE shipment_id = ? AND side = 'DISPATCH' AND superseded_by IS NULL";
     private static final String INSERT_WEIGHING = """
             INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, weighed_at,
-                                  entered_by, created_at, created_by, expected_tare_kg, tare_tolerance_pct)
-            VALUES (:id, :shipmentId, 'DISPATCH', :grossKg, :tareKg, :bagCount, :at, :actor, :at, :actor,
-                    :expectedTare, :tolerance)""";
+                                  entered_by, created_at, created_by)
+            VALUES (:id, :shipmentId, 'DISPATCH', :grossKg, :tareKg, :bagCount, :at, :actor, :at, :actor)""";
 
     private static final String SUPERSEDE_PREVIOUS = """
             UPDATE weighing SET superseded_by = :newId, updated_at = now(), version = version + 1
@@ -90,7 +87,6 @@ final class DispatchCommandAdapter implements DispatchCommandPort {
 
     /** Yeni tartım eklenir, öncekinin yerine geçtiği işaretlenir (silinmez). */
     private UUID insertWeighing(DispatchRecording recording, Timestamp at, UUID actor) {
-        TareBasis basis = recording.weighing().tareBasis();
         UUID id = transitions.nextId();
         jdbc.sql(INSERT_WEIGHING)
                 .param("id", id)
@@ -100,8 +96,6 @@ final class DispatchCommandAdapter implements DispatchCommandPort {
                 .param("bagCount", recording.weighing().bagCount())
                 .param("at", at)
                 .param("actor", actor)
-                .param("expectedTare", basis == null ? null : basis.expectedKg(), Types.NUMERIC)
-                .param("tolerance", basis == null ? null : basis.tolerancePct(), Types.NUMERIC)
                 .update();
         jdbc.sql(SUPERSEDE_PREVIOUS)
                 .param("newId", id)

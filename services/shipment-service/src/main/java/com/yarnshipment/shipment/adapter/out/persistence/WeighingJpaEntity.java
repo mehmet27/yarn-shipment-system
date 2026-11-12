@@ -38,12 +38,6 @@ class WeighingJpaEntity {
     @Column(name = "weighed_at")
     private Instant weighedAt;
 
-    @Column(name = "expected_tare_kg")
-    private @Nullable BigDecimal expectedTareKg;
-
-    @Column(name = "tare_tolerance_pct")
-    private @Nullable BigDecimal tareTolerancePct;
-
     @Column(name = "superseded_by")
     private @Nullable UUID supersededBy;
 
@@ -73,15 +67,5 @@ class WeighingJpaEntity {
 
     Instant getWeighedAt() {
         return weighedAt;
-    }
-
-    @Nullable
-    BigDecimal getExpectedTareKg() {
-        return expectedTareKg;
-    }
-
-    @Nullable
-    BigDecimal getTareTolerancePct() {
-        return tareTolerancePct;
     }
 }

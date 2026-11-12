@@ -27,37 +27,9 @@ function renderWith(value: Weighing | undefined) {
 }
 
 describe('DispatchWeighingPanel', () => {
-  it('sınır aşıldığında dara sapmasını ve uyarı rozetini gösterir', () => {
-    renderWith(
-      weighing({
-        expectedTareKg: kg('20.000'),
-        tareTolerancePct: '5.00',
-        tareDeviationPct: '-10.00',
-        tareAlert: true,
-      }),
-    );
-    expect(screen.getByText('Dara sapması')).toBeInTheDocument();
-    expect(screen.getByText('-%10')).toBeInTheDocument();
-    expect(screen.getByText('Standart dışı')).toBeInTheDocument();
-  });
-
-  it('sınır içindeyse rozet göstermez', () => {
-    renderWith(
-      weighing({
-        expectedTareKg: kg('18.000'),
-        tareTolerancePct: '5.00',
-        tareDeviationPct: '1.50',
-        tareAlert: false,
-      }),
-    );
-    expect(screen.getByText('%1,5')).toBeInTheDocument();
-    expect(screen.queryByText('Standart dışı')).not.toBeInTheDocument();
-  });
-
-  it('çuval sayısını gösterir; standart tanımsızsa sapma satırı yoktur', () => {
+  it('çuval sayısını gösterir', () => {
     renderWith(weighing({}));
     expect(screen.getByText('40')).toBeInTheDocument();
-    expect(screen.queryByText('Dara sapması')).not.toBeInTheDocument();
   });
 
   it('çıkış tartısı yoksa kaydedilmedi yazar', () => {

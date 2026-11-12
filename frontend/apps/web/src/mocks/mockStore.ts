@@ -12,7 +12,6 @@ import { resetMockLoginAccounts } from './loginAccounts';
 import { resetMockLots } from './lots';
 import { resetMockSettlements } from './settlements';
 import { resetMasterData } from './masterData';
-import { resetTareStandards } from './tareStandards';
 import { allowedActionsOf, MOCK_SHIPMENTS } from './shipments';
 
 /** Sahte API'nin değişebilir durumu; testler arasında resetMockStore ile sıfırlanır. */
@@ -137,7 +136,6 @@ export function assignMockBagWeights(shipmentId: string, weights: readonly strin
 
 export function resetMockStore(): void {
   resetMasterData();
-  resetTareStandards();
   resetMockCorrections();
   resetMockClaims();
   resetMockLots();

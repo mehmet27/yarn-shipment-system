@@ -206,9 +206,6 @@ export type {
   VoidBagsRequest,
   VoidBagsResponse,
 } from './bags';
-export { listTareStandards, saveTareStandard } from './masterData';
-export type { PackagingType, TareStandardListResponse } from './masterData';
-export type { TareStandardSaveRequest, TareStandardView } from './masterData';
 export {
   getDashboard,
   getShipmentReport,

@@ -231,7 +231,7 @@ kendisi yazar. Örnek: "36/1 VİSKON / 75 BEYAZ POLY LYC" kumaşı için 36/1 vi
 2. Kantar fişinin fotoğrafı zorunludur. Fiş okuma açıksa fiş fotoğrafı okunur; okunamazsa üç denemeden sonra
    gerekçeyle devam edilir (yazıcı bozuk, fiş hasarlı…).
 3. Kayıtla sevkiyat `AWAITING_DELIVERY` ("Fasoncuya yolda") olur; çuval rezervasyonları kesinleşir.
-4. Dara standart darayı aşarsa ekranda "dara sapması" uyarısı gösterilir.
+4. Standart dara tanımı ve "dara sapması" uyarısı yoktur: dara boş araç tartısıdır, araçtan araca değişir.
 
 **[Yapılacak] Kantar uyuşmazlığı kuralı (S4)**
 
@@ -489,7 +489,7 @@ hareket kolonu (`reverses_id`) kullanılmadığı için kaldırıldı; düzeltme
 |---|---|---|:-:|
 | Sevkiyat listesi | Hepsi | Durum süzgeci (4 durum), arama, sayfalama | ✓ |
 | Yeni sevkiyat | Müdür | Lokasyon, fasoncu, şoför/plaka, reçete satırları, fire oranı | ✓ |
-| Sevkiyat dosyası | Hepsi | Başlık (durum, irsaliye no, ilerleme: Taslak → Yolda → Tamamlandı), çıkış tartısı paneli (net, çuval, brüt/dara/net, dara sapması), çuvallar, geçmiş, kanıtlar, düzeltmeler | ✓ |
+| Sevkiyat dosyası | Hepsi | Başlık (durum, irsaliye no, ilerleme: Taslak → Yolda → Tamamlandı), çıkış tartısı paneli (net, çuval, brüt/dara/net), çuvallar, geçmiş, kanıtlar, düzeltmeler | ✓ |
 | Çuval atama | Depo | Anahtar ekle/çıkar, toplu ata | ✓ |
 | Çıkış tartısı | Depo | Brüt, dara, çuval sayısı, kantar fişi no, fiş fotoğrafı ve okuma | ✓ |
 | İrsaliyeyle tamamla | Müdür | İrsaliye yükleme, irsaliye no, tamamla | ✓ |

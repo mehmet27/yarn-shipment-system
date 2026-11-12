@@ -1,7 +1,6 @@
 import type { Permission } from '@iplik/api-client';
 import { http, HttpResponse } from 'msw';
 import type { MasterKind, MockRecord, MockValues } from './masterData';
-import { listTareStandards, saveTareStandard } from './tareStandards';
 import {
   createMasterRecord,
   isDuplicateCode,
@@ -185,41 +184,5 @@ export function createMasterDataHandlers(permissions: readonly Permission[]) {
   const canManage = permissions.includes('MASTER_DATA_MANAGE');
   return [
     ...KINDS.flatMap((kind) => [listHandler(kind, canManage), ...writeHandlers(kind, canManage)]),
-    ...tareStandardHandlers(canManage),
-  ];
-}
-
-const PACKAGING_TYPES = ['BAG'] as const;
-
-/** Standart dara: liste herkese açık, tanımlama (PUT) yalnızca yönetici. */
-function tareStandardHandlers(canManage: boolean) {
-  const path = `${BASE}/tare-standards`;
-  return [
-    http.get(path, ({ request }) =>
-      HttpResponse.json({
-        items: listTareStandards(new URL(request.url).searchParams.get('siteId')),
-      }),
-    ),
-    http.put(path, async ({ request }) => {
-      if (!canManage) return problem(403, 'FORBIDDEN', 'Yetkiniz yok');
-      const body = (await request.json()) as Record<string, string | undefined>;
-      const site = listMasterRecords('site').find((row) => row.id === body.siteId);
-      if (
-        site === undefined ||
-        body.standardTareKg === undefined ||
-        body.maxDeviationPct === undefined
-      ) {
-        return problem(400, 'INVALID_MASTER_DATA', 'Geçersiz kayıt');
-      }
-      const packagingType = PACKAGING_TYPES.find((type) => type === body.packagingType);
-      if (packagingType === undefined) return problem(400, 'INVALID_MASTER_DATA', 'Geçersiz kayıt');
-      return HttpResponse.json(
-        saveTareStandard(site, {
-          packagingType,
-          standardTareKg: body.standardTareKg,
-          maxDeviationPct: body.maxDeviationPct,
-        }),
-      );
-    }),
   ];
 }

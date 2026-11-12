@@ -822,7 +822,6 @@ void shouldRejectBagAlreadyAssignedToAnotherShipment() {
 | Sevkiyat satırı (plan) | `ShipmentLine` | |
 | Tartım | `Weighing` | Taraf: `WeighingSide.DISPATCH` / `DELIVERY` |
 | Brüt / Dara / Net | `gross` / `tare` / `net` | Değer nesnesi `Kilogram` |
-| Standart dara | `TareStandard` | |
 | Mühür | `Seal` | Durum: `SealCondition.INTACT/DAMAGED/MISSING` |
 | Şoför beyanı | `DriverDeclaration` | Tür: `PICKUP`, `ARRIVAL` |
 | Kör teslim girişi | `DeliveryReceipt` | Fiil: `submitDeliveryReceipt` |

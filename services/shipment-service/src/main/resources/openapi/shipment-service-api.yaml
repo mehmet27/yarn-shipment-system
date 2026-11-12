@@ -2820,10 +2820,11 @@ components:
           type: string
           minLength: 1
           maxLength: 200
-        labelColor:
-          type: string
-          pattern: '^#[0-9A-Fa-f]{6}$'
-          description: Etiket rengi; A/B etiketlerini ayırmak için
+        sortOrder:
+          type: integer
+          minimum: 0
+          maximum: 9999
+          description: Listelerde ve seçicilerde görünme sırası; küçük olan önce gelir (boşsa 0)
     QualityGradeUpdateRequest:
       type: object
       required: [name]
@@ -2832,9 +2833,10 @@ components:
           type: string
           minLength: 1
           maxLength: 200
-        labelColor:
-          type: string
-          pattern: '^#[0-9A-Fa-f]{6}$'
+        sortOrder:
+          type: integer
+          minimum: 0
+          maximum: 9999
     QualityGradeView:
       type: object
       required: [id, code, name]
@@ -2849,9 +2851,13 @@ components:
           type: string
         name:
           type: string
-        labelColor:
-          type: string
-          description: '#RRGGBB'
+        sortOrder:
+          type: integer
+          description: Görünme sırası, küçük olan önce gelir
+        lotCount:
+          type: integer
+          format: int64
+          description: Sınıfın verildiği parti sayısı (pasif partiler dahil); yalnızca liste yanıtında dolar
     QualityGradePageResponse:
       type: object
       required: [items, page]

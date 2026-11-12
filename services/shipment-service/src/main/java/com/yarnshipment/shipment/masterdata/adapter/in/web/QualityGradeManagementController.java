@@ -11,6 +11,7 @@ import com.yarnshipment.shipment.masterdata.application.port.in.catalog.UpdateQu
 import com.yarnshipment.shipment.masterdata.domain.catalog.QualityGradeDetails;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,7 +43,7 @@ public class QualityGradeManagementController implements QualityGradeManagementA
         var created = create.createQualityGrade(
                 currentActorProvider.getCurrentActor(),
                 request.getCode(),
-                new QualityGradeDetails(request.getName(), request.getLabelColor()));
+                new QualityGradeDetails(request.getName(), sortOrder(request.getSortOrder())));
         return ResponseEntity.status(HttpStatus.CREATED).body(CatalogPages.view(created));
     }
 
@@ -52,7 +53,7 @@ public class QualityGradeManagementController implements QualityGradeManagementA
         var updated = update.updateQualityGrade(
                 currentActorProvider.getCurrentActor(),
                 qualityGradeId,
-                new QualityGradeDetails(request.getName(), request.getLabelColor()));
+                new QualityGradeDetails(request.getName(), sortOrder(request.getSortOrder())));
         return ResponseEntity.ok(CatalogPages.view(updated));
     }
 
@@ -70,5 +71,9 @@ public class QualityGradeManagementController implements QualityGradeManagementA
         status.changeQualityGradeStatus(
                 currentActorProvider.getCurrentActor(), qualityGradeId, MasterDataStatus.ACTIVE);
         return ResponseEntity.noContent().build();
+    }
+
+    private static int sortOrder(@Nullable Integer value) {
+        return value == null ? 0 : value;
     }
 }

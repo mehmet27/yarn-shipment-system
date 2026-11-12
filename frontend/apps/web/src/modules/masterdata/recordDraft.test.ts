@@ -55,10 +55,12 @@ describe('validateCode / validateExtra', () => {
     expect(validateCode('A'.repeat(41))).toBe('invalidCode');
   });
 
-  it('etiket rengi #RRGGBB olmalı, boş bırakılabilir', () => {
-    expect(validateExtra('qualityGrade', ' #2e7d32 ')).toBeUndefined();
+  it('kalite sınıfı sırası 0-9999 arası tam sayı olmalı, boş bırakılabilir', () => {
+    expect(validateExtra('qualityGrade', ' 12 ')).toBeUndefined();
     expect(validateExtra('qualityGrade', '')).toBeUndefined();
-    expect(validateExtra('qualityGrade', 'yeşil')).toBe('invalidColor');
+    expect(validateExtra('qualityGrade', 'yeşil')).toBe('invalidSortOrder');
+    expect(validateExtra('qualityGrade', '10000')).toBe('invalidSortOrder');
+    expect(validateExtra('qualityGrade', '-1')).toBe('invalidSortOrder');
     expect(validateExtra('product', 'Ne 30/1')).toBeUndefined();
     expect(validateExtra('product', 'x'.repeat(51))).toBe('extraTooLong');
   });

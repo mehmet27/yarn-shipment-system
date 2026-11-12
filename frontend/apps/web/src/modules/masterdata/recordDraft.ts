@@ -8,7 +8,7 @@ export type RecordError =
   | 'codeRequired'
   | 'invalidCode'
   | 'extraTooLong'
-  | 'invalidColor';
+  | 'invalidSortOrder';
 
 const MAX_LENGTH: Readonly<Record<ManagedKind, number>> = {
   subcontractor: 200,
@@ -40,7 +40,7 @@ export function validateLabel(kind: ManagedKind, label: string): RecordError | u
 
 /** Backend `MasterDataCode`: harf/rakamla başlar; harf, rakam ve `+ . _ / -`; en çok 40 karakter. */
 const CODE_PATTERN = /^[A-Z0-9][A-Z0-9+._/-]{0,39}$/;
-const COLOR_PATTERN = /^#[0-9A-F]{6}$/;
+const SORT_ORDER_PATTERN = /^\d{1,4}$/;
 const EXTRA_MAX_LENGTH = 50;
 
 /** Kod sunucuda da büyük harfe çevrilir; "i" Türkçe "İ" değil "I" olur (desende yalnızca ASCII var). */
@@ -54,16 +54,17 @@ export function validateCode(code: string): RecordError | undefined {
   return CODE_PATTERN.test(normalized) ? undefined : 'invalidCode';
 }
 
-/** İplik numarası serbest metindir; etiket rengi `#RRGGBB`. Boş bırakılabilir. */
-export function normalizeExtra(kind: ManagedKind, extra: string): string | undefined {
+/** İplik numarası serbest metindir; kalite sınıfı sırası 0-9999 arası tam sayıdır. Boş bırakılabilir. */
+export function normalizeExtra(extra: string): string | undefined {
   const trimmed = extra.trim();
-  if (trimmed === '') return undefined;
-  return kind === 'qualityGrade' ? trimmed.toUpperCase() : trimmed;
+  return trimmed === '' ? undefined : trimmed;
 }
 
 export function validateExtra(kind: ManagedKind, extra: string): RecordError | undefined {
-  const normalized = normalizeExtra(kind, extra);
+  const normalized = normalizeExtra(extra);
   if (normalized === undefined) return undefined;
-  if (kind === 'qualityGrade') return COLOR_PATTERN.test(normalized) ? undefined : 'invalidColor';
+  if (kind === 'qualityGrade') {
+    return SORT_ORDER_PATTERN.test(normalized) ? undefined : 'invalidSortOrder';
+  }
   return normalized.length > EXTRA_MAX_LENGTH ? 'extraTooLong' : undefined;
 }

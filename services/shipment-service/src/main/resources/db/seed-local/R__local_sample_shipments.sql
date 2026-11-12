@@ -145,9 +145,9 @@ VALUES ('0192f0a0-0000-7000-8000-000000000201', 'PES-30-1', 'Polyester 30/1', 'N
        ('0192f0a0-0000-7000-8000-000000000202', 'CO-20-1', 'Pamuk 20/1', 'Ne 20/1', '2026-10-01T08:00:00Z', '0192f0a0-0000-7000-8000-00000000d001')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO md_quality_grade (id, code, name, label_color, created_at, created_by)
-VALUES ('0192f0a0-0000-7000-8000-000000000211', 'A', 'Birinci kalite', '#2E7D32', '2026-10-01T08:00:00Z', '0192f0a0-0000-7000-8000-00000000d001'),
-       ('0192f0a0-0000-7000-8000-000000000212', 'B', 'İkinci kalite', '#F9A825', '2026-10-01T08:00:00Z', '0192f0a0-0000-7000-8000-00000000d001')
+INSERT INTO md_quality_grade (id, code, name, sort_order, created_at, created_by)
+VALUES ('0192f0a0-0000-7000-8000-000000000211', 'A', 'Birinci kalite', 1, '2026-10-01T08:00:00Z', '0192f0a0-0000-7000-8000-00000000d001'),
+       ('0192f0a0-0000-7000-8000-000000000212', 'B', 'İkinci kalite', 2, '2026-10-01T08:00:00Z', '0192f0a0-0000-7000-8000-00000000d001')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO md_production_lot (id, site_id, lot_no, product_id, quality_grade_id, production_date, quality_locked_at,

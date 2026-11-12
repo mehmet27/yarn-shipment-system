@@ -229,15 +229,15 @@ VALUES ('00000000-0000-7000-8000-000000000601', 'Lokasyon', now(), gen_random_uu
        ('00000000-0000-7000-8000-000000000606', 'Diğer lokasyon', now(), gen_random_uuid());
 INSERT INTO md_product (id, code, name, created_at, created_by)
 VALUES ('00000000-0000-7000-8000-000000000602', 'PES-30', 'Polyester 30/1', now(), gen_random_uuid());
-INSERT INTO md_quality_grade (id, code, name, label_color, created_at, created_by)
-VALUES ('00000000-0000-7000-8000-000000000603', 'A', 'Birinci kalite', '#2E7D32', now(), gen_random_uuid()),
-       ('00000000-0000-7000-8000-000000000604', 'B', 'İkinci kalite', NULL, now(), gen_random_uuid());
+INSERT INTO md_quality_grade (id, code, name, sort_order, created_at, created_by)
+VALUES ('00000000-0000-7000-8000-000000000603', 'A', 'Birinci kalite', 1, now(), gen_random_uuid()),
+       ('00000000-0000-7000-8000-000000000604', 'B', 'İkinci kalite', 2, now(), gen_random_uuid());
 SELECT pg_temp.expect_error($$INSERT INTO md_product (id, code, name, created_at, created_by)
     VALUES (gen_random_uuid(), 'pes-30', 'Tekrar', now(), gen_random_uuid())$$, '23505');
 SELECT pg_temp.expect_error($$UPDATE md_quality_grade SET code = 'C'
     WHERE id = '00000000-0000-7000-8000-000000000603'$$, 'YS002');
-SELECT pg_temp.expect_error($$INSERT INTO md_quality_grade (id, code, name, label_color, created_at, created_by)
-    VALUES (gen_random_uuid(), 'X', 'Renk', 'red', now(), gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO md_quality_grade (id, code, name, sort_order, created_at, created_by)
+    VALUES (gen_random_uuid(), 'X', 'Sıra', -1, now(), gen_random_uuid())$$, '23514');
 INSERT INTO md_production_lot (id, site_id, lot_no, product_id, quality_grade_id, production_date, created_at,
                                created_by)
 VALUES ('00000000-0000-7000-8000-000000000605', '00000000-0000-7000-8000-000000000601', 'P-1',

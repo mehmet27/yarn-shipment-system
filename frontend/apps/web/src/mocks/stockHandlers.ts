@@ -18,6 +18,7 @@ export function createStockHandlers(user: CurrentUser) {
     user.permissions.includes(permission);
   const movements: CentralStockMovement[] = [];
   let counter = 0;
+  const producedKg: string[] = [];
   const add = (yarnType: string, kind: CentralStockMovement['kind'], netKg: string) => {
     counter += 1;
     const movement: CentralStockMovement = {
@@ -52,6 +53,7 @@ export function createStockHandlers(user: CurrentUser) {
       return HttpResponse.json({
         rows: current,
         totalKg: sumKg(current.map((r) => r.stockKg)),
+        producedFabricKg: sumKg(producedKg),
         movements,
       });
     }),
@@ -73,6 +75,7 @@ export function createStockHandlers(user: CurrentUser) {
       }
       const consumed = consume(json.yarns as unknown[], Number(json.fireRate));
       if (consumed === undefined) return problem(400, 'INVALID_LEDGER_INPUT');
+      producedKg.push(sumKg((json.yarns as { netKg: string }[]).map((y) => y.netKg)));
       return HttpResponse.json(
         {
           id: 'central-production-1',

@@ -8,7 +8,7 @@ export const MANAGED_KINDS = [
 ] as const;
 export type ManagedKind = (typeof MANAGED_KINDS)[number];
 
-/** Kodlu türler: kod yalnızca eklerken girilir, sonra değişmez; `extra` iplik numarası ya da etiket rengi. */
+/** Kodlu türler: kod yalnızca eklerken girilir, sonra değişmez; `extra` iplik numarası ya da kalite sınıfı sırası. */
 export const CODED_KINDS: readonly ManagedKind[] = ['product', 'qualityGrade'];
 
 export function isCodedKind(kind: ManagedKind): boolean {
@@ -26,6 +26,8 @@ export type RecordRow = {
   ownerTitle?: string;
   code?: string;
   extra?: string;
+  /** Kalite sınıfının verildiği parti sayısı. */
+  lotCount?: number;
 };
 
 export type RecordValues = {

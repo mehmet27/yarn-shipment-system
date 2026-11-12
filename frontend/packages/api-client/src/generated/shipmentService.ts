@@ -697,10 +697,11 @@ export interface QualityGradeCreateRequest {
      */
   name: string;
   /**
-     * Etiket rengi; A/B etiketlerini ayırmak için
-     * @pattern ^#[0-9A-Fa-f]{6}$
+     * Listelerde ve seçicilerde görünme sırası; küçük olan önce gelir (boşsa 0)
+     * @minimum 0
+     * @maximum 9999
      */
-  labelColor?: string;
+  sortOrder?: number;
 }
 
 export interface QualityGradeUpdateRequest {
@@ -709,8 +710,11 @@ export interface QualityGradeUpdateRequest {
      * @maxLength 200
      */
   name: string;
-  /** @pattern ^#[0-9A-Fa-f]{6}$ */
-  labelColor?: string;
+  /**
+     * @minimum 0
+     * @maximum 9999
+     */
+  sortOrder?: number;
 }
 
 export interface QualityGradeView {
@@ -719,8 +723,10 @@ export interface QualityGradeView {
   id: string;
   code: string;
   name: string;
-  /** #RRGGBB */
-  labelColor?: string;
+  /** Görünme sırası, küçük olan önce gelir */
+  sortOrder?: number;
+  /** Sınıfın verildiği parti sayısı (pasif partiler dahil); yalnızca liste yanıtında dolar */
+  lotCount?: number;
 }
 
 export interface QualityGradePageResponse {

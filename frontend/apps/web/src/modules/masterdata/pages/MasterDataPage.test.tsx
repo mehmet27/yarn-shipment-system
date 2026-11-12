@@ -160,18 +160,18 @@ describe('MasterDataPage', () => {
     expect(await screen.findByText('PES-40-1')).toBeInTheDocument();
   });
 
-  it('kalite sınıfında geçersiz etiket rengini göndermeden reddeder; kod düzenlenemez', async () => {
+  it('kalite sınıfında geçersiz sırayı göndermeden reddeder; kod düzenlenemez', async () => {
     server.use(...createHandlers('ADMIN'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('tab', { name: 'Kalite sınıfları' }));
     const card = await screen.findByRole('group', { name: 'İkinci kalite' });
     await userEvent.click(within(card).getByRole('button', { name: 'Düzenle' }));
     expect(screen.getByLabelText(/^Kod/)).toBeDisabled();
-    await userEvent.clear(screen.getByLabelText(/Etiket rengi/));
-    await userEvent.type(screen.getByLabelText(/Etiket rengi/), 'sarı');
+    await userEvent.clear(screen.getByLabelText(/Sıra/));
+    await userEvent.type(screen.getByLabelText(/Sıra/), 'sarı');
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(
-      await screen.findByText('Rengi #RRGGBB biçiminde girin (ör. #2E7D32).'),
+      await screen.findByText('Sırayı 0 ile 9999 arasında bir sayı olarak girin.'),
     ).toBeInTheDocument();
   });
 

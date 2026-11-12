@@ -7,6 +7,7 @@ import type { PeriodDays } from '../period';
 import { DEFAULT_PERIOD, toPeriodParams } from '../period';
 import { AttentionLists } from './AttentionLists';
 import { DashboardSummary } from './DashboardSummary';
+import { StockOverview } from './StockOverview';
 import { PeriodSelect } from './PeriodSelect';
 
 /** Panel ana sayfasının dashboard bölümü; yalnızca rapor yetkisi olan kullanıcıya gösterilir. */
@@ -25,6 +26,7 @@ export function DashboardSection() {
       <QueryState query={query}>
         {(dashboard) => (
           <Stack>
+            <StockOverview params={toPeriodParams(days)} />
             <DashboardSummary dashboard={dashboard} />
             <AttentionLists dashboard={dashboard} />
           </Stack>

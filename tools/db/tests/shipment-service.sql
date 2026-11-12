@@ -76,14 +76,10 @@ INSERT INTO shipment_status_history (id, created_at, shipment_id, from_status, t
 VALUES (gen_random_uuid(), now(), '00000000-0000-7000-8000-000000000101', 'DRAFT', 'AWAITING_DELIVERY',
         gen_random_uuid(), now());
 
--- Outbox: yalnızca published_at doldurulabilir; olay tipi CloudEvents biçimindedir.
-INSERT INTO outbox_event (id, created_at, aggregate_type, aggregate_id, event_type, payload, occurred_at)
-VALUES (gen_random_uuid(), now(), 'Shipment', '00000000-0000-7000-8000-000000000101',
-        'com.yarnshipment.shipment.shipment-completed.v1', '{}', now());
-UPDATE outbox_event SET published_at = now();
-SELECT pg_temp.expect_error($$INSERT INTO outbox_event (id, created_at, aggregate_type, aggregate_id, event_type,
-    payload, occurred_at) VALUES (gen_random_uuid(), now(), 'Shipment', gen_random_uuid(), 'ShipmentCompleted',
-    '{}', now())$$, '23514');
+-- Outbox tablosu kaldırıldı (olaylar süreç içi taşınır); migration'ın tabloyu düşürdüğü doğrulanır.
+DO $$ BEGIN
+    IF to_regclass('outbox_event') IS NOT NULL THEN RAISE EXCEPTION 'outbox_event hala var'; END IF;
+END $$;
 ROLLBACK;
 
 

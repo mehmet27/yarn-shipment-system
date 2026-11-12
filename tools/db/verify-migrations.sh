@@ -34,7 +34,7 @@ migrate() {
   local service="$1" schema="$2"
   echo "==> $service (şema $schema)"
   docker run --rm --network "container:$CONTAINER" \
-    -v "$ROOT/services/$service/src/main/resources/db/migration:/flyway/sql:ro" \
+    -v "$ROOT/services/$service/src/main/resources/db/migration/$schema:/flyway/sql:ro" \
     "$FLYWAY_IMAGE" -q \
     -url="jdbc:postgresql://127.0.0.1:5432/yarnshipment" -user=yarnshipment -password="$PASSWORD" \
     -defaultSchema="$schema" -schemas="$schema" -createSchemas=true \

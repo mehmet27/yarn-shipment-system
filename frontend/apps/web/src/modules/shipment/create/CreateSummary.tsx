@@ -4,6 +4,7 @@ import { calculateFire, formatKgText, isKilogram, parseFireRatePct } from '@ipli
 import type { CreateDraft, CreateFieldErrors } from './createDraft';
 import { totalNetKg } from './createDraft';
 import { FireRateField } from './FireRateField';
+import { useOrderFormPdf } from './useOrderFormPdf';
 
 export type CreateSummaryProps = {
   draft: CreateDraft;
@@ -41,6 +42,7 @@ export function CreateSummary({
   onSubmit,
 }: CreateSummaryProps) {
   const { t } = useTranslation();
+  const downloadPdf = useOrderFormPdf();
   const total = totalNetKg(draft.lines);
   const firePct = draft.fireRatePct ?? defaultFirePct;
   const fabric = expectedFabric(total, firePct);
@@ -68,6 +70,14 @@ export function CreateSummary({
         {failureKey !== undefined && <Alert color="red">{t(failureKey)}</Alert>}
         <Button size="lg" loading={isSubmitting} onClick={onSubmit}>
           {t('create.submit')}
+        </Button>
+        <Button
+          variant="default"
+          onClick={() => {
+            void downloadPdf(draft);
+          }}
+        >
+          {t('create.pdf.button')}
         </Button>
       </Stack>
     </Paper>

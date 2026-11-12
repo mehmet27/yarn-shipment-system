@@ -9,6 +9,8 @@ import {
   useDisclosure,
 } from '@iplik/ui';
 import { useState } from 'react';
+import { type AccountFilter, NO_FILTER } from '../accountFilter';
+import { AccountFilters } from '../components/AccountFilters';
 import { CreateAccountModal } from '../components/CreateAccountModal';
 import { LoginAccountResults } from '../components/LoginAccountResults';
 import { useLoginAccounts } from '../hooks/useLoginAccounts';
@@ -23,6 +25,7 @@ export function LoginAccountsPage() {
   const [search, setSearch] = useState('');
   const [q] = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   const [page, setPage] = useState(1);
+  const [filter, setFilter] = useState<AccountFilter>(NO_FILTER);
   const [isCreating, { open, close }] = useDisclosure(false);
   const query = useLoginAccounts({ q, page: page - 1, size: PAGE_SIZE });
   return (
@@ -47,7 +50,9 @@ export function LoginAccountsPage() {
           setPage(1);
         }}
       />
+      <AccountFilters value={filter} onChange={setFilter} />
       <LoginAccountResults
+        filter={filter}
         query={query}
         isSearching={q.trim() !== ''}
         page={page}

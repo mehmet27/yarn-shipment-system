@@ -13,6 +13,7 @@ export {
   Checkbox,
   ColorInput,
   Container,
+  Divider,
   FileButton,
   Group,
   Indicator,

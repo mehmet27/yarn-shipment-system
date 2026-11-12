@@ -2,12 +2,14 @@ import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Center, Group, Loader, Stack, Text } from '@iplik/ui';
 import { ListPagination } from '@/modules/shipment';
+import { type AccountFilter, applyFilter, isFiltering } from '../accountFilter';
 import type { useLoginAccounts } from '../hooks/useLoginAccounts';
 import { LoginAccountTable } from './LoginAccountTable';
 
 export type LoginAccountResultsProps = {
   query: ReturnType<typeof useLoginAccounts>;
   isSearching: boolean;
+  filter: AccountFilter;
   page: number;
   onPage: (page: number) => void;
 };
@@ -16,6 +18,7 @@ export type LoginAccountResultsProps = {
 export function LoginAccountResults({
   query,
   isSearching,
+  filter,
   page,
   onPage,
 }: LoginAccountResultsProps) {
@@ -51,12 +54,19 @@ export function LoginAccountResults({
   if (rows.length === 0) {
     return <Text c="dimmed">{t(isSearching ? 'users.noMatch' : 'users.empty')}</Text>;
   }
+  const visible = applyFilter(rows, filter);
   return (
     <Stack>
       <Text size="sm" c="dimmed">
-        {t('users.count', { count: totalElements })}
+        {isFiltering(filter)
+          ? t('users.filter.countOnPage', { count: visible.length })
+          : t('users.count', { count: totalElements })}
       </Text>
-      <LoginAccountTable accounts={rows} />
+      {visible.length === 0 ? (
+        <Text c="dimmed">{t('users.filter.noMatch')}</Text>
+      ) : (
+        <LoginAccountTable accounts={visible} />
+      )}
       {totalPages > 1 && (
         <Group justify="center">
           <ListPagination total={totalPages} value={page} onChange={onPage} />

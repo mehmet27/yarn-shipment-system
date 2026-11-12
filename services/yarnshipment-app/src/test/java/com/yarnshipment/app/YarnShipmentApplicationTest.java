@@ -147,9 +147,12 @@ class YarnShipmentApplicationTest {
                     ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at""", ACTOR);
         });
 
-        assertThat(jdbc.queryForObject("""
-                        SELECT count(*) FROM platform.audit_local
-                         WHERE table_schema = 'shipment' AND table_name = 'app_setting' AND actor_id = ?""", Integer.class, actor)).isEqualTo(1);
+        String sql = """
+                SELECT count(*) FROM platform.audit_local
+                 WHERE table_schema = 'shipment' AND table_name = 'app_setting' AND actor_id = ?""";
+        Integer captured = jdbc.queryForObject(sql, Integer.class, actor);
+
+        assertThat(captured).isEqualTo(1);
     }
 
     @Test

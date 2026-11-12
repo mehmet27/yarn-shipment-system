@@ -86,9 +86,11 @@ class AuditRolesTest {
     @Test
     @DisplayName("Uygulama kullanıcısı rollerin yetkisini kendiliğinden miras almaz ama SET ROLE yapabilir")
     void shouldBeMemberWithoutInheriting() {
-        assertThat(jdbc.sql("""
+        Boolean member = jdbc.sql("""
                         SELECT pg_has_role(current_user, 'audit_writer', 'SET')
-                           AND pg_has_role(current_user, 'audit_reader', 'SET')""").query(Boolean.class).single()).isTrue();
+                           AND pg_has_role(current_user, 'audit_reader', 'SET')""").query(Boolean.class).single();
+
+        assertThat(member).isTrue();
     }
 
     @Test

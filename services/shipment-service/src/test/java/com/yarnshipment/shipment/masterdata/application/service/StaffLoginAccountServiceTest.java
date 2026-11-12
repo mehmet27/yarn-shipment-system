@@ -178,8 +178,7 @@ class StaffLoginAccountServiceTest {
         assertThat(savedAreas).containsExactly(other + ":deleted");
         assertThatThrownBy(() -> service.changeLoginAccountRole(admin, other, StaffRole.QUALITY, null))
                 .isInstanceOf(InvalidMasterDataException.class);
-        assertThatThrownBy(() ->
-                        service.changeLoginAccountRole(admin, other, StaffRole.MANAGER, StaffWorkArea.CENTRAL))
+        assertThatThrownBy(() -> service.changeLoginAccountRole(admin, other, StaffRole.MANAGER, StaffWorkArea.CENTRAL))
                 .isInstanceOf(InvalidMasterDataException.class);
         assertThat(roleChanges).hasSize(1);
     }

@@ -93,7 +93,10 @@ public class LoginAccountController implements LoginAccountsApi {
                 .enabled(account.enabled())
                 .passwordChangeRequired(account.passwordChangeRequired())
                 .createdAt(utc(account.createdAt()))
-                .workArea(account.workArea() == null ? null : WorkArea.valueOf(account.workArea().name()));
+                .workArea(
+                        account.workArea() == null
+                                ? null
+                                : WorkArea.valueOf(account.workArea().name()));
     }
 
     private static @Nullable OffsetDateTime utc(@Nullable Instant instant) {

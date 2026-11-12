@@ -42,10 +42,12 @@ final class StaffWorkAreaAdapter implements StaffWorkAreaPort {
     @Override
     public Map<UUID, StaffWorkArea> findAll() {
         Map<UUID, StaffWorkArea> areas = new HashMap<>();
-        jdbc.sql(SELECT_ALL).query((rs, rowNum) -> {
-            areas.put(rs.getObject("user_id", UUID.class), StaffWorkArea.valueOf(rs.getString("work_area")));
-            return rowNum;
-        }).list();
+        jdbc.sql(SELECT_ALL)
+                .query((rs, rowNum) -> {
+                    areas.put(rs.getObject("user_id", UUID.class), StaffWorkArea.valueOf(rs.getString("work_area")));
+                    return rowNum;
+                })
+                .list();
         return areas;
     }
 }

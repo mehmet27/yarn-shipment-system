@@ -58,6 +58,8 @@ class StaffWorkAreaAdapterTest {
 
         adapter.delete(USER);
 
-        assertThat(adapter.findAll()).containsEntry(other, StaffWorkArea.SUBCONTRACTOR).doesNotContainKey(USER);
+        assertThat(adapter.findAll())
+                .containsEntry(other, StaffWorkArea.SUBCONTRACTOR)
+                .doesNotContainKey(USER);
     }
 }

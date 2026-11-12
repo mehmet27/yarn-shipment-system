@@ -41,4 +41,32 @@ class ShipmentPartiesTest {
         assertThatThrownBy(() -> new ShipmentParties(RECEIVER, "Örnek Tekstil", null, null, null, RECEIVER, "Örnek"))
                 .isInstanceOf(InvalidNewShipmentException.class);
     }
+
+    @Test
+    @DisplayName("Kapıdan aktarma tedarikçi ile işaretlenir; irsaliye tedarikçisiz olmaz")
+    void shouldMarkDirectTransferBySupplier() {
+        // when
+        ShipmentParties direct =
+                new ShipmentParties(RECEIVER, "Örnek Tekstil", null, null, null, null, null, "Esha İplik", "IRS-1");
+
+        // then
+        assertThat(direct.directTransfer()).isTrue();
+        assertThat(new ShipmentParties(RECEIVER, "Örnek Tekstil", null, null, null).directTransfer())
+                .isFalse();
+        assertThatThrownBy(() ->
+                        new ShipmentParties(RECEIVER, "Örnek Tekstil", null, null, null, null, null, null, "IRS-1"))
+                .isInstanceOf(InvalidNewShipmentException.class);
+    }
+
+    @Test
+    @DisplayName("Kapıdan aktarma gönderen fasoncu ile birlikte verilemez ve tedarikçi boş olamaz")
+    void shouldRejectDirectTransferFromSubcontractorOrBlankSupplier() {
+        // when / then
+        assertThatThrownBy(() -> new ShipmentParties(
+                        RECEIVER, "Örnek Tekstil", null, null, null, SOURCE, "Başka Dokuma", "Esha İplik", null))
+                .isInstanceOf(InvalidNewShipmentException.class);
+        assertThatThrownBy(
+                        () -> new ShipmentParties(RECEIVER, "Örnek Tekstil", null, null, null, null, null, " ", null))
+                .isInstanceOf(InvalidNewShipmentException.class);
+    }
 }

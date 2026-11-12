@@ -14,6 +14,8 @@ import org.jspecify.annotations.Nullable;
  * @param plateNo araç plakası
  * @param sourceSubcontractorId iplik başka bir fasoncudan gidiyorsa gönderen fasoncu; boşsa merkezden
  * @param sourceSubcontractorTitle gönderen fasoncu unvanı
+ * @param directTransferSupplier doluysa iplik depoya girmeden kapıdan aktarılır; gelen tedarikçi
+ * @param directTransferWaybillNo kapıdan aktarılan ipliğin geliş irsaliye numarası
  */
 public record ShipmentParties(
         UUID subcontractorId,
@@ -22,7 +24,9 @@ public record ShipmentParties(
         @Nullable String driverName,
         @Nullable String plateNo,
         @Nullable UUID sourceSubcontractorId,
-        @Nullable String sourceSubcontractorTitle) {
+        @Nullable String sourceSubcontractorTitle,
+        @Nullable String directTransferSupplier,
+        @Nullable String directTransferWaybillNo) {
 
     public ShipmentParties {
         Objects.requireNonNull(subcontractorId, "subcontractorId");
@@ -33,6 +37,42 @@ public record ShipmentParties(
         if (subcontractorId.equals(sourceSubcontractorId)) {
             throw new InvalidNewShipmentException("sourceSubcontractorId", "source and destination must differ");
         }
+        if (directTransferSupplier != null && directTransferSupplier.isBlank()) {
+            throw new InvalidNewShipmentException("directTransferSupplier", "supplier must not be blank");
+        }
+        if (directTransferSupplier != null && sourceSubcontractorId != null) {
+            throw new InvalidNewShipmentException(
+                    "directTransferSupplier", "direct transfer comes from the door, not from a subcontractor");
+        }
+        if (directTransferSupplier == null && directTransferWaybillNo != null) {
+            throw new InvalidNewShipmentException("directTransferWaybillNo", "waybill needs a supplier");
+        }
+    }
+
+    /** Fasoncudan fasoncuya sevkiyat; kapıdan aktarma yok. */
+    public ShipmentParties(
+            UUID subcontractorId,
+            String subcontractorTitle,
+            @Nullable UUID driverId,
+            @Nullable String driverName,
+            @Nullable String plateNo,
+            @Nullable UUID sourceSubcontractorId,
+            @Nullable String sourceSubcontractorTitle) {
+        this(
+                subcontractorId,
+                subcontractorTitle,
+                driverId,
+                driverName,
+                plateNo,
+                sourceSubcontractorId,
+                sourceSubcontractorTitle,
+                null,
+                null);
+    }
+
+    /** İplik depoya girmeden kapıdan aktarılıyor mu. */
+    public boolean directTransfer() {
+        return directTransferSupplier != null;
     }
 
     /** Merkezden çıkan sevkiyat: gönderen fasoncu yok. */

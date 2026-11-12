@@ -34,6 +34,12 @@ final class PartiesEmbeddable {
     @Column(name = "source_subcontractor_title", columnDefinition = TEXT)
     private @Nullable String sourceSubcontractorTitle;
 
+    @Column(name = "direct_transfer_supplier", columnDefinition = TEXT)
+    private @Nullable String directTransferSupplier;
+
+    @Column(name = "direct_transfer_waybill_no", columnDefinition = TEXT)
+    private @Nullable String directTransferWaybillNo;
+
     ShipmentParties toDomain() {
         return new ShipmentParties(
                 subcontractorId,
@@ -42,6 +48,8 @@ final class PartiesEmbeddable {
                 driverName,
                 plateNo,
                 sourceSubcontractorId,
-                sourceSubcontractorTitle);
+                sourceSubcontractorTitle,
+                directTransferSupplier,
+                directTransferWaybillNo);
     }
 }

@@ -26,6 +26,10 @@ export type CreateDraft = {
   subcontractor: MasterOption | undefined;
   /** İplik başka bir fasoncudan gidiyorsa gönderen fasoncu; boşsa merkezden. */
   sourceSubcontractor: MasterOption | undefined;
+  /** Doluysa iplik depoya girmeden kapıdan aktarılır; gelen tedarikçi. Boş metin "merkez stoktan" demektir. */
+  directTransferSupplier: string;
+  /** Kapıdan aktarılan ipliğin geliş irsaliye numarası (isteğe bağlı). */
+  directTransferWaybillNo: string;
   driver: MasterOption | undefined;
   vehicle: MasterOption | undefined;
   lines: readonly RecipeLineDraft[];
@@ -55,6 +59,8 @@ export function newLine(): RecipeLineDraft {
 export const EMPTY_CREATE_DRAFT: CreateDraft = {
   subcontractor: undefined,
   sourceSubcontractor: undefined,
+  directTransferSupplier: '',
+  directTransferWaybillNo: '',
   driver: undefined,
   vehicle: undefined,
   lines: [newLine()],
@@ -65,6 +71,8 @@ export const EMPTY_CREATE_DRAFT: CreateDraft = {
 export type CreateError =
   | 'subcontractorRequired'
   | 'sourceSameAsReceiver'
+  | 'directTransferWithSource'
+  | 'waybillNeedsSupplier'
   | 'linesRequired'
   | 'lineYarnRequired'
   | 'lineKgInvalid'
@@ -72,7 +80,10 @@ export type CreateError =
   | 'fireRateInvalid';
 
 export type CreateFieldErrors = Partial<
-  Record<'subcontractor' | 'sourceSubcontractor' | 'lines' | 'fireRate', CreateError>
+  Record<
+    'subcontractor' | 'sourceSubcontractor' | 'directTransfer' | 'lines' | 'fireRate',
+    CreateError
+  >
 >;
 
 const POSITIVE_KG = /[1-9]/;
@@ -97,6 +108,18 @@ export function lineError(line: RecipeLineDraft): CreateError | undefined {
   return priceValid(line.unitPrice) ? undefined : 'linePriceInvalid';
 }
 
+/** Kapıdan aktarma gönderen fasoncu ile birlikte seçilemez; irsaliye tedarikçisiz olmaz. */
+function directTransferError(draft: CreateDraft): { directTransfer?: CreateError } {
+  const supplier = draft.directTransferSupplier.trim();
+  if (supplier !== '' && draft.sourceSubcontractor !== undefined) {
+    return { directTransfer: 'directTransferWithSource' };
+  }
+  if (supplier === '' && draft.directTransferWaybillNo.trim() !== '') {
+    return { directTransfer: 'waybillNeedsSupplier' };
+  }
+  return {};
+}
+
 /** Tüm eksik zorunlu alanlar birden döner; hata mesajı ilgili alanın altında gösterilir. */
 export function validateCreateFields(draft: CreateDraft, defaultFirePct = '4'): CreateFieldErrors {
   const firstLineError = draft.lines.map(lineError).find((error) => error !== undefined);
@@ -108,6 +131,7 @@ export function validateCreateFields(draft: CreateDraft, defaultFirePct = '4'): 
     draft.sourceSubcontractor.value === draft.subcontractor?.value
       ? { sourceSubcontractor: 'sourceSameAsReceiver' as const }
       : {}),
+    ...directTransferError(draft),
     ...(draft.lines.length === 0 ? { lines: 'linesRequired' as const } : {}),
     ...(firstLineError === undefined ? {} : { lines: firstLineError }),
     ...(parseFireRatePct(draft.fireRatePct ?? defaultFirePct) === undefined
@@ -119,7 +143,13 @@ export function validateCreateFields(draft: CreateDraft, defaultFirePct = '4'): 
 /** İlk hatayı döner; hata yoksa undefined. */
 export function validateCreate(draft: CreateDraft, defaultFirePct = '4'): CreateError | undefined {
   const errors = validateCreateFields(draft, defaultFirePct);
-  return errors.subcontractor ?? errors.sourceSubcontractor ?? errors.lines ?? errors.fireRate;
+  return (
+    errors.subcontractor ??
+    errors.sourceSubcontractor ??
+    errors.directTransfer ??
+    errors.lines ??
+    errors.fireRate
+  );
 }
 
 /** Fasoncu değişince önceki fasoncunun şoförü seçili kalmaz. */
@@ -168,6 +198,17 @@ function toRecipeLine(line: RecipeLineDraft): RecipeLineInput | undefined {
   };
 }
 
+/** Boş tedarikçi "merkez stoktan" demektir; istekte hiç yer almaz. */
+function directTransferFields(draft: CreateDraft): Partial<CreateShipmentRequest> {
+  const directTransferSupplier = draft.directTransferSupplier.trim();
+  const directTransferWaybillNo = draft.directTransferWaybillNo.trim();
+  if (directTransferSupplier === '') return {};
+  return {
+    directTransferSupplier,
+    ...(directTransferWaybillNo === '' ? {} : { directTransferWaybillNo }),
+  };
+}
+
 /** Lokasyon firmanın tek lokasyonudur, formda seçilmez. Boş bırakılan şoför ve araç istekte hiç yer almaz; fire oranı kesirdir (%4 → 0.04). */
 export function toCreateRequest(
   draft: CreateDraft,
@@ -189,6 +230,7 @@ export function toCreateRequest(
           sourceSubcontractorId: sourceSubcontractor.value,
           sourceSubcontractorTitle: sourceSubcontractor.label,
         }),
+    ...directTransferFields(draft),
     lines: lines.filter((line): line is RecipeLineInput => line !== undefined),
     fireRate,
     ...(driver === undefined ? {} : { driverId: driver.value, driverName: driver.label }),

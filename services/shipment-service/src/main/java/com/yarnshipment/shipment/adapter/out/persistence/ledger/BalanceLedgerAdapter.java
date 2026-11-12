@@ -75,6 +75,20 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
             WHERE bm.shipment_id = :shipmentId AND bm.kind = 'DISPATCH'
             ON CONFLICT (source_ref) DO NOTHING""";
 
+    /** Kapıdan aktarmada iplik depoya hiç girmez; çıkıştan önce aynı kilo giriş (+) olarak yazılır, stok eksiye düşmez. */
+    private static final String CENTRAL_STOCK_DIRECT_IN = """
+            INSERT INTO central_stock_movement (id, yarn_type, kind, net_kg, shipment_id, note, occurred_at, created_by,
+                                                source_ref)
+            SELECT gen_random_uuid(), coalesce(p.name, bm.yarn_type), 'YARN_RECEIPT', bm.net_kg, bm.shipment_id,
+                   'Kapıdan aktarma: ' || s.direct_transfer_supplier
+                       || coalesce(' / ' || s.direct_transfer_waybill_no, ''),
+                   bm.occurred_at, bm.created_by, 'DIRECT_IN:' || bm.source_ref
+            FROM balance_movement bm
+            JOIN shipment s ON s.id = bm.shipment_id AND s.direct_transfer_supplier IS NOT NULL
+            LEFT JOIN md_product p ON p.id::text = bm.yarn_type
+            WHERE bm.shipment_id = :shipmentId AND bm.kind = 'DISPATCH'
+            ON CONFLICT (source_ref) DO NOTHING""";
+
     private static final String LINE_COLUMNS = """
             SELECT column_name FROM information_schema.columns
             WHERE table_schema = current_schema() AND table_name = 'shipment_line'""";
@@ -161,6 +175,7 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
                 writer.append(BalanceMovement.transferOut(source, line, context));
             }
         }
+        jdbc.sql(CENTRAL_STOCK_DIRECT_IN).param("shipmentId", shipmentId).update();
         jdbc.sql(CENTRAL_STOCK_OUT).param("shipmentId", shipmentId).update();
         return weighed;
     }

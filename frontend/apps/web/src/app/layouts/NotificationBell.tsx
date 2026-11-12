@@ -27,7 +27,7 @@ export function NotificationBell() {
   return (
     <Menu position="bottom-end" width={MENU_WIDTH_PX} shadow="lg" radius="md">
       <Menu.Target>
-        <ActionIcon variant="subtle" color="white" size="lg" aria-label={t('notifications.label')}>
+        <ActionIcon variant="subtle" color="white" size={44} aria-label={t('notifications.label')}>
           <Indicator label={total} size={16} disabled={total === 0} color="red" offset={2}>
             <NavIcon name="bell" />
           </Indicator>

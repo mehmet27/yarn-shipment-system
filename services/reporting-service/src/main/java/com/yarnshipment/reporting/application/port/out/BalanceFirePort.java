@@ -17,6 +17,6 @@ public interface BalanceFirePort {
     /** Tamamlanma tarihi dönemde olan dosyalar; en yeni önce. */
     List<FireFile> findFireFiles(ReportPeriod period, ReportScope scope, @Nullable UUID subcontractorId);
 
-    /** Satır yazıldıysa true; (fasoncu, iplik) için OPENING varsa false. */
-    boolean insertOpeningIfAbsent(OpeningBalanceRow row, Instant occurredAt);
+    /** Satır defterine yazıldıysa true; (fasoncu, iplik) için OPENING varsa ya da kilo sıfırsa false. */
+    boolean insertOpeningIfAbsent(OpeningBalanceRow row, Instant occurredAt, UUID actorId);
 }

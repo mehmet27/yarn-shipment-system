@@ -1,7 +1,6 @@
 package com.yarnshipment.reporting.adapter.out.persistence;
 
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /** Sorgu testlerinin okuma modeli satırlarını doğrudan yazan yardımcısı. */
@@ -10,17 +9,25 @@ final class SeedRows {
     private static final UUID SUBCONTRACTOR = UUID.randomUUID();
 
     private static final String INSERT_DISCREPANCY = """
-            INSERT INTO discrepancy_view (discrepancy_id, discrepancy_no, shipment_id, site_id, type, severity,
-                                          due_at, resolved_at, created_at)
-            VALUES (gen_random_uuid(), ?, gen_random_uuid(), ?, 'QUALITY', ?, ?::timestamptz,
+            INSERT INTO discrepancy.discrepancy (id, discrepancy_no, site_id, shipment_id, discrepancy_type, severity,
+                                                 status, due_at, resolved_at, created_at)
+            VALUES (gen_random_uuid(), ?, ?, ?, 'QUALITY', ?, ?, ?::timestamptz,
                     CASE WHEN ? THEN '2026-11-02T00:00:00Z'::timestamptz END, '2026-10-30T00:00:00Z')""";
 
     private static final String INSERT_SHIPMENT = """
-            INSERT INTO shipment_view (shipment_id, site_id, shipment_no, subcontractor_id, status,
-                                       had_discrepancy, dispatch_net_kg, delivery_net_kg,
-                                       dispatched_at, created_at)
-            VALUES (gen_random_uuid(), ?, ?, ?, ?, ?, 100, 100, '2026-11-02T08:00:00Z',
+            INSERT INTO shipment.shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status,
+                                           locked_at, created_at)
+            VALUES (?, ?, ?, ?, 'Fason', ?, CASE WHEN ? = 'COMPLETED' THEN '2026-11-03T10:00:00Z'::timestamptz END,
                     '2026-11-02T09:00:00Z')""";
+
+    private static final String INSERT_WEIGHING = """
+            INSERT INTO shipment.weighing (id, shipment_id, side, net_kg, weighed_at)
+            VALUES (gen_random_uuid(), ?, 'DISPATCH', ?::numeric, '2026-11-02T08:00:00Z')""";
+
+    private static final String INSERT_OLD_SHIPMENT = """
+            INSERT INTO shipment.shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status,
+                                           created_at)
+            VALUES (gen_random_uuid(), ?, 'OLD', ?, 'Fason', 'COMPLETED', '2026-01-01T00:00:00Z')""";
 
     private final JdbcTemplate jdbc;
 
@@ -47,8 +54,19 @@ final class SeedRows {
      */
     record Discrepancy(String no, String severity, String dueAt, boolean resolved) {}
 
+    /** Sevkiyat, 100 kg çıkış tartımı ve (uyuşmazlıklıysa) çözülmüş bir uyuşmazlık yazar; görünüm bunlardan okur. */
     void shipment(UUID site, Shipment shipment) {
-        jdbc.update(INSERT_SHIPMENT, site, shipment.no(), SUBCONTRACTOR, shipment.status(), shipment.discrepant());
+        UUID id = insertShipment(site, shipment.no(), new Balance(SUBCONTRACTOR, shipment.status(), "100"));
+        if (shipment.discrepant()) {
+            discrepancy(site, id, new Discrepancy("UY-" + shipment.no(), "YELLOW", "2026-11-09T00:00:00Z", true));
+        }
+    }
+
+    private UUID insertShipment(UUID site, String no, Balance balance) {
+        UUID id = UUID.randomUUID();
+        jdbc.update(INSERT_SHIPMENT, id, site, no, balance.subcontractor(), balance.status(), balance.status());
+        jdbc.update(INSERT_WEIGHING, id, balance.dispatchKg());
+        return id;
     }
 
     /**
@@ -56,31 +74,35 @@ final class SeedRows {
      *
      * @param subcontractor fasoncu
      * @param status durum
-     * @param dispatchKg çıkış net kilo
-     * @param deliveryKg teslim net kilo; teslim edilmediyse boş
+     * @param dispatchKg çıkış net kilo; tamamlanan sevkiyatta teslim kilosu da budur
      */
-    record Balance(
-            UUID subcontractor,
-            String status,
-            String dispatchKg,
-            @Nullable String deliveryKg) {}
+    record Balance(UUID subcontractor, String status, String dispatchKg) {}
 
     void balanceShipment(UUID site, Balance balance) {
-        String sql = """
-                INSERT INTO shipment_view (shipment_id, site_id, shipment_no, subcontractor_id, status,
-                                           dispatch_net_kg, delivery_net_kg, created_at)
-                VALUES (gen_random_uuid(), ?, 'BAL', ?, ?, ?::numeric, ?::numeric, '2026-11-02T09:00:00Z')""";
-        jdbc.update(sql, site, balance.subcontractor(), balance.status(), balance.dispatchKg(), balance.deliveryKg());
+        insertShipment(site, "BAL-" + UUID.randomUUID(), balance);
     }
 
     void oldShipment(UUID site) {
-        jdbc.update("""
-                INSERT INTO shipment_view (shipment_id, site_id, shipment_no, subcontractor_id, status, created_at)
-                VALUES (gen_random_uuid(), ?, 'OLD', ?, 'COMPLETED', '2026-01-01T00:00:00Z')""", site, SUBCONTRACTOR);
+        jdbc.update(INSERT_OLD_SHIPMENT, site, SUBCONTRACTOR);
     }
 
     void discrepancy(UUID site, Discrepancy discrepancy) {
-        String sql = INSERT_DISCREPANCY;
-        jdbc.update(sql, discrepancy.no(), site, discrepancy.severity(), discrepancy.dueAt(), discrepancy.resolved());
+        discrepancy(site, UUID.randomUUID(), discrepancy);
+    }
+
+    private void discrepancy(UUID site, UUID shipmentId, Discrepancy discrepancy) {
+        jdbc.update(
+                INSERT_DISCREPANCY,
+                discrepancy.no(),
+                site,
+                shipmentId,
+                discrepancy.severity(),
+                discrepancy.resolved() ? "RESOLVED" : "OPEN",
+                discrepancy.dueAt(),
+                discrepancy.resolved());
+    }
+
+    void subcontractor(UUID id, String title) {
+        jdbc.update("INSERT INTO shipment.md_subcontractor (id, title) VALUES (?, ?)", id, title);
     }
 }

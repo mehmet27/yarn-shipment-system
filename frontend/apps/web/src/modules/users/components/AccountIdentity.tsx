@@ -1,12 +1,15 @@
 import type { LoginAccountView } from '@iplik/api-client';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Badge, Group, Stack, Text } from '@iplik/ui';
+import { Anchor, Badge, Group, Modal, Stack, Text, useDisclosure } from '@iplik/ui';
 import { useCurrentUser } from '@/modules/auth';
+import { hasChangeableRole } from '../staffRoles';
+import { ChangeNameForm } from './ChangeNameForm';
 
 /** Kimlik: ad soyad başta, giriş adı altında; kendi hesap "Siz" rozetiyle, açılış tarihi imleç üstünde görünür. */
 export function AccountIdentity({ account }: { account: LoginAccountView }) {
   const { t } = useTranslation();
   const { data: me } = useCurrentUser();
+  const [isAdding, adding] = useDisclosure(false);
   const title =
     account.createdAt === undefined
       ? undefined
@@ -24,9 +27,21 @@ export function AccountIdentity({ account }: { account: LoginAccountView }) {
         )}
       </Group>
       {account.fullName === undefined ? (
-        <Text size="xs" c="dimmed">
-          {t('users.noName')}
-        </Text>
+        <>
+          <Text size="xs" c="dimmed">
+            {t('users.noName')}
+          </Text>
+          {hasChangeableRole(account) && (
+            <>
+              <Anchor component="button" type="button" size="xs" onClick={adding.open}>
+                {t('users.addName')}
+              </Anchor>
+              <Modal opened={isAdding} onClose={adding.close} title={t('users.changeName.title')}>
+                <ChangeNameForm account={account} onClose={adding.close} />
+              </Modal>
+            </>
+          )}
+        </>
       ) : (
         <Text size="xs" c="dimmed" style={{ overflowWrap: 'anywhere' }}>
           {account.username}

@@ -5,6 +5,7 @@ import { Alert, Button, Modal, PasswordInput, Stack, Text } from '@iplik/ui';
 import { useState } from 'react';
 import { MIN_PASSWORD_LENGTH } from '../accountDraft';
 import { useSetAccountPassword } from '../hooks/useAccountMutations';
+import { PasswordTools } from './PasswordTools';
 
 const KNOWN_CODES = ['LOGIN_ACCOUNT_NOT_FOUND', 'WEAK_PASSWORD', 'LOGIN_ACCOUNT_UNAVAILABLE'];
 
@@ -54,6 +55,7 @@ export function SetPasswordModal({ account, opened, onClose }: SetPasswordModalP
               }}
               autoComplete="new-password"
             />
+            <PasswordTools password={password} onGenerate={setPassword} />
             {mutation.isError && <Alert color="red">{t(errorKey(mutation.error))}</Alert>}
             <Button
               loading={mutation.isPending}

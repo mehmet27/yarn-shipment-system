@@ -1,10 +1,12 @@
 import type { LoginAccountView } from '@iplik/api-client';
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Stack, useDisclosure } from '@iplik/ui';
+import { Button, Group, Stack, useDisclosure } from '@iplik/ui';
 import { useCurrentUser } from '@/modules/auth';
+import { useFlash } from '../hooks/useFlash';
 import { useSetAccountEnabled } from '../hooks/useAccountMutations';
 import { hasChangeableRole } from '../staffRoles';
+import { AccountFeedback } from './AccountFeedback';
 import { AccountMenu } from './AccountMenu';
 import { DisableAccountModal } from './DisableAccountModal';
 import { EditAccountModal } from './EditAccountModal';
@@ -23,6 +25,7 @@ export function AccountActions({ account }: { account: LoginAccountView }) {
   const [isEditing, edit] = useDisclosure(false);
   const [isSettingPassword, password] = useDisclosure(false);
   const [isConfirming, confirm] = useDisclosure(false);
+  const flash = useFlash();
   const errorCode = enabledMutation.isError ? toProblem(enabledMutation.error).code : undefined;
   return (
     <Stack gap={4}>
@@ -42,7 +45,7 @@ export function AccountActions({ account }: { account: LoginAccountView }) {
           onPassword={password.open}
           onDisable={confirm.open}
           onEnable={() => {
-            enabledMutation.mutate(true);
+            enabledMutation.mutate(true, { onSuccess: flash.show });
           }}
         />
       </Group>
@@ -50,6 +53,7 @@ export function AccountActions({ account }: { account: LoginAccountView }) {
         account={account}
         opened={isEditing}
         onClose={edit.close}
+        onSaved={flash.show}
         canChangeRole={!isOwn}
       />
       <SetPasswordModal account={account} opened={isSettingPassword} onClose={password.close} />
@@ -59,14 +63,13 @@ export function AccountActions({ account }: { account: LoginAccountView }) {
         loading={enabledMutation.isPending}
         onClose={confirm.close}
         onConfirm={() => {
-          enabledMutation.mutate(false, { onSettled: confirm.close });
+          enabledMutation.mutate(false, {
+            onSuccess: flash.show,
+            onSettled: confirm.close,
+          });
         }}
       />
-      {errorCode !== undefined && (
-        <Alert color="red">
-          {t(errorCode === 'LOGIN_ACCOUNT_NOT_FOUND' ? 'users.notFound' : 'users.disable.error')}
-        </Alert>
-      )}
+      <AccountFeedback isSaved={flash.isVisible} errorCode={errorCode} />
     </Stack>
   );
 }

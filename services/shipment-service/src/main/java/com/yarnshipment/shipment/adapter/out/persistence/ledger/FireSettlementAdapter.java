@@ -40,8 +40,8 @@ final class FireSettlementAdapter implements FireSettlementPort {
                       WHERE r.shipment_id = f.shipment_id AND r.direction = 'RETURN'), 0) AS returned_kg,
             greatest(0, coalesce((SELECT -sum(m.net_kg) FROM balance_movement m
                                   WHERE m.shipment_id = f.shipment_id AND m.kind = 'CLAIM_ADJUSTMENT'), 0)) AS claim_kg,
-            coalesce((SELECT sum(fr.net_kg) FROM fabric_receipt fr
-                      WHERE fr.shipment_id = f.shipment_id), 0) AS fabric_kg""";
+            coalesce((SELECT sum(fr.net_kg) FROM fabric_lot fr
+                      WHERE fr.shipment_id = f.shipment_id AND fr.source = 'SUBCONTRACTOR'), 0) AS fabric_kg""";
     private static final String INSERT_RATE_CHANGE = """
             INSERT INTO fire_rate_change (id, shipment_id, old_rate, new_rate, reason, changed_by, changed_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)""";

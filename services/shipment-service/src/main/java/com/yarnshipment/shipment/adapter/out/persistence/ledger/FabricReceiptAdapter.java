@@ -10,32 +10,32 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
 
 /** Kumaş girişinin JDBC uygulaması: kayıt, iplik dağılımı ve bakiyeden düşen hareketler tek transaction'da yazılır. */
 @Component
 final class FabricReceiptAdapter implements FabricReceiptPort {
 
     private static final String INSERT_RECEIPT = """
-            INSERT INTO fabric_receipt (id, shipment_id, fabric_type, net_kg, roll_count, waybill_no, received_at,
-                                        created_by)
-            VALUES (:id, :shipmentId, :fabricType, :netKg, :rollCount, :waybillNo, :receivedAt, :createdBy)""";
-    private static final String INSERT_YARN =
-            "INSERT INTO fabric_receipt_yarn (fabric_receipt_id, yarn_type, net_kg) VALUES (?, ?, ?)";
+            INSERT INTO fabric_lot (id, source, shipment_id, fabric_type, net_kg, roll_count, waybill_no, occurred_at,
+                                    created_by, yarns)
+            VALUES (:id, 'SUBCONTRACTOR', :shipmentId, :fabricType, :netKg, :rollCount, :waybillNo, :receivedAt,
+                    :createdBy, :yarns::jsonb)""";
     private static final String SELECT_RECEIPTS = """
             SELECT r.id, r.shipment_id, f.subcontractor_id, r.fabric_type, r.net_kg, r.roll_count, r.waybill_no,
-                   r.received_at, r.created_by
-            FROM fabric_receipt r JOIN fire_settlement f ON f.shipment_id = r.shipment_id
-            WHERE r.shipment_id = ? ORDER BY r.received_at, r.created_at, r.id""";
-    private static final String SELECT_YARNS = """
-            SELECT y.fabric_receipt_id, y.yarn_type, y.net_kg
-            FROM fabric_receipt_yarn y JOIN fabric_receipt r ON r.id = y.fabric_receipt_id
-            WHERE r.shipment_id = ? ORDER BY y.yarn_type""";
+                   r.occurred_at AS received_at, r.created_by, r.yarns
+            FROM fabric_lot r JOIN fire_settlement f ON f.shipment_id = r.shipment_id
+            WHERE r.shipment_id = ? AND r.source = 'SUBCONTRACTOR'
+            ORDER BY r.occurred_at, r.created_at, r.id""";
+    private static final JsonMapper JSON = JsonMapper.builder().build();
 
     private final JdbcClient jdbc;
     private final BalanceMovementWriter movements;
@@ -47,24 +47,15 @@ final class FabricReceiptAdapter implements FabricReceiptPort {
 
     @Override
     public List<FabricReceipt> findByShipment(UUID shipmentId) {
-        Map<UUID, List<YarnShare>> yarnsByReceipt = new LinkedHashMap<>();
-        jdbc.sql(SELECT_YARNS)
-                .param(shipmentId)
-                .query((rs, i) -> yarnsByReceipt
-                        .computeIfAbsent(rs.getObject("fabric_receipt_id", UUID.class), id -> new ArrayList<>())
-                        .add(new YarnShare(rs.getString("yarn_type"), rs.getBigDecimal("net_kg"))))
-                .list();
         return jdbc.sql(SELECT_RECEIPTS)
                 .param(shipmentId)
-                .query((rs, i) -> toReceipt(rs, yarnsByReceipt))
+                .query((rs, i) -> toReceipt(rs))
                 .list();
     }
 
-    private static FabricReceipt toReceipt(ResultSet rs, Map<UUID, List<YarnShare>> yarnsByReceipt)
-            throws SQLException {
-        UUID id = rs.getObject("id", UUID.class);
+    private static FabricReceipt toReceipt(ResultSet rs) throws SQLException {
         return new FabricReceipt(
-                id,
+                rs.getObject("id", UUID.class),
                 rs.getObject("shipment_id", UUID.class),
                 rs.getObject("subcontractor_id", UUID.class),
                 rs.getString("fabric_type"),
@@ -72,8 +63,30 @@ final class FabricReceiptAdapter implements FabricReceiptPort {
                 (Integer) rs.getObject("roll_count"),
                 rs.getString("waybill_no"),
                 rs.getTimestamp("received_at").toInstant(),
-                yarnsByReceipt.getOrDefault(id, List.of()),
+                readYarns(rs.getString("yarns")),
                 rs.getObject("created_by", UUID.class));
+    }
+
+    private static List<YarnShare> readYarns(String json) {
+        try {
+            List<YarnShare> shares = new ArrayList<>();
+            for (JsonNode node : JSON.readTree(json)) {
+                shares.add(new YarnShare(
+                        node.get("yarnType").asString(), node.get("netKg").decimalValue()));
+            }
+            shares.sort(Comparator.comparing(YarnShare::yarnType));
+            return shares;
+        } catch (JacksonException e) {
+            throw new IllegalStateException("fabric_lot.yarns is not valid JSON", e);
+        }
+    }
+
+    private static String writeYarns(List<YarnShare> yarns) {
+        ArrayNode array = JSON.createArrayNode();
+        for (YarnShare share : yarns) {
+            array.addObject().put("yarnType", share.yarnType()).put("netKg", share.netKg());
+        }
+        return array.toString();
     }
 
     @Override
@@ -87,11 +100,9 @@ final class FabricReceiptAdapter implements FabricReceiptPort {
                 .param("waybillNo", receipt.waybillNo())
                 .param("receivedAt", Timestamp.from(receipt.receivedAt()))
                 .param("createdBy", receipt.createdBy())
+                .param("yarns", writeYarns(receipt.yarns()))
                 .update();
         for (YarnShare share : receipt.yarns()) {
-            jdbc.sql(INSERT_YARN)
-                    .params(receipt.id(), share.yarnType(), share.netKg())
-                    .update();
             movements.append(BalanceMovement.consumption(new Consumption(
                     MovementKind.FABRIC_RECEIPT,
                     receipt.subcontractorId(),

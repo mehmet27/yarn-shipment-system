@@ -19,6 +19,13 @@ async function pickWorkArea(dialog: HTMLElement, optionName: string) {
   await userEvent.click(await screen.findByRole('option', { name: optionName }));
 }
 
+async function openMenu(row: HTMLElement, username: string, itemName: string) {
+  await userEvent.click(
+    within(row).getByRole('button', { name: `${username} için diğer işlemler` }),
+  );
+  await userEvent.click(await screen.findByRole('menuitem', { name: itemName }));
+}
+
 describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
   it('yönetici depo hesabı açar; ilk şifreyi yazar, hesap ilk giriş bekleyen olarak görünür', async () => {
     renderApp('/panel/kullanicilar');
@@ -104,15 +111,13 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     renderApp('/panel/kullanicilar');
     const table = await screen.findByRole('table');
     const depo = within(table).getByRole('row', { name: /Depo Sorumlusu/ });
-    await userEvent.click(within(depo).getByRole('button', { name: 'depo hesabını pasife al' }));
+    await openMenu(depo, 'depo', 'depo hesabını pasife al');
     const confirm = await screen.findByRole('dialog', { name: 'Hesabı pasife al' });
     await userEvent.click(within(confirm).getByRole('button', { name: 'Pasife al' }));
     const disabled = await within(await screen.findByRole('table')).findByRole('row', {
       name: /Depo Sorumlusu.*Devre dışı/,
     });
-    await userEvent.click(
-      within(disabled).getByRole('button', { name: 'depo hesabını yeniden aç' }),
-    );
+    await openMenu(disabled, 'depo', 'depo hesabını yeniden aç');
     expect(
       await within(await screen.findByRole('table')).findByRole('row', {
         name: /Depo Sorumlusu.*Etkin/,
@@ -124,7 +129,7 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     renderApp('/panel/kullanicilar');
     const table = await screen.findByRole('table');
     const depo = within(table).getByRole('row', { name: /Depo Sorumlusu/ });
-    await userEvent.click(within(depo).getByRole('button', { name: 'depo hesabını pasife al' }));
+    await openMenu(depo, 'depo', 'depo hesabını pasife al');
     const confirm = await screen.findByRole('dialog', { name: 'Hesabı pasife al' });
     await userEvent.click(within(confirm).getByRole('button', { name: 'Vazgeç' }));
     expect(
@@ -145,7 +150,7 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     renderApp('/panel/kullanicilar');
     const table = await screen.findByRole('table');
     const depo = within(table).getByRole('row', { name: /Depo Sorumlusu/ });
-    await userEvent.click(within(depo).getByRole('button', { name: 'depo için yeni şifre ver' }));
+    await openMenu(depo, 'depo', 'depo için yeni şifre ver');
     const dialog = await screen.findByRole('dialog');
     const submit = within(dialog).getByRole('button', { name: 'Şifreyi kaydet' });
     expect(submit).toBeDisabled();
@@ -167,7 +172,7 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     renderApp('/panel/kullanicilar');
     const table = await screen.findByRole('table');
     const depo = within(table).getByRole('row', { name: /Depo Sorumlusu/ });
-    await userEvent.click(within(depo).getByRole('button', { name: 'depo rolünü değiştir' }));
+    await userEvent.click(within(depo).getByRole('button', { name: 'depo hesabını düzenle' }));
     const dialog = await screen.findByRole('dialog');
     await pickRole(dialog, 'Kalite');
     expect(within(dialog).getByRole('button', { name: 'Rolü kaydet' })).toBeDisabled();
@@ -185,7 +190,7 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     const table = await screen.findByRole('table');
     const kalite = within(table).getByRole('row', { name: /Kalite Uzmanı/ });
     expect(within(kalite).getByText('Merkez fabrika')).toBeInTheDocument();
-    await userEvent.click(within(kalite).getByRole('button', { name: 'kalite rolünü değiştir' }));
+    await userEvent.click(within(kalite).getByRole('button', { name: 'kalite hesabını düzenle' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('combobox', { name: /Çalışma alanı/ })).toHaveValue(
       'Merkez fabrika',
@@ -212,7 +217,7 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     renderApp('/panel/kullanicilar');
     const table = await screen.findByRole('table');
     const depo = within(table).getByRole('row', { name: /Depo Sorumlusu/ });
-    await userEvent.click(within(depo).getByRole('button', { name: 'depo rolünü değiştir' }));
+    await userEvent.click(within(depo).getByRole('button', { name: 'depo hesabını düzenle' }));
     const dialog = await screen.findByRole('dialog');
     await pickRole(dialog, 'Müdür');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Rolü kaydet' }));

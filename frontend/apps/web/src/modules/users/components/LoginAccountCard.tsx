@@ -1,33 +1,28 @@
 import type { LoginAccountView } from '@iplik/api-client';
-import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Group, Paper, Stack, Text } from '@iplik/ui';
+import { Group, Paper, Stack } from '@iplik/ui';
 import { AccountActions } from './AccountActions';
+import { AccountIdentity } from './AccountIdentity';
 import { RoleBadges } from './RoleBadges';
 import { StatusBadges } from './StatusBadges';
 
 export type LoginAccountCardProps = { account: LoginAccountView };
 
-/** Dar ekranda tek kullanıcı: kullanıcı adı başta, ad, rol ve durum altında. */
+/** Dar ekranda tek kullanıcı: kimlik ve durum üstte, rol ve işlemler altında. */
 export function LoginAccountCard({ account }: LoginAccountCardProps) {
-  const { t } = useTranslation();
   return (
-    <Paper withBorder p="md" role="group" aria-label={account.username}>
+    <Paper
+      withBorder
+      p="md"
+      role="group"
+      aria-label={account.username}
+      {...(account.enabled ? {} : { style: { opacity: 0.65 } })}
+    >
       <Stack gap="xs">
         <Group justify="space-between" wrap="nowrap" align="flex-start">
-          <Text fw={600} style={{ overflowWrap: 'anywhere' }}>
-            {account.username}
-          </Text>
+          <AccountIdentity account={account} />
           <StatusBadges account={account} />
         </Group>
-        <Text size="sm" {...(account.fullName === undefined ? { c: 'dimmed' } : {})}>
-          {account.fullName ?? t('users.noName')}
-        </Text>
         <RoleBadges account={account} />
-        {account.createdAt !== undefined && (
-          <Text size="xs" c="dimmed">
-            {t('users.field.createdAt')}: {formatDateTime(account.createdAt)}
-          </Text>
-        )}
         <AccountActions account={account} />
       </Stack>
     </Paper>

@@ -813,7 +813,8 @@
       "fullName": "Ad soyad",
       "roles": "Rol",
       "status": "Durum",
-      "createdAt": "Açılış",
+      "user": "Kullanıcı",
+      "createdAt": "Hesap açılışı",
       "actions": "İşlem",
       "record": {
         "driver": "Şoför kaydı",
@@ -836,6 +837,23 @@
       "GENERAL_MANAGER": "Genel müdür"
     },
     "noName": "Ad girilmemiş",
+    "you": "Siz",
+    "edit": {
+      "action": "Düzenle",
+      "open": "{{username}} hesabını düzenle",
+      "title": "Kullanıcıyı düzenle"
+    },
+    "menu": {
+      "open": "{{username}} için diğer işlemler"
+    },
+    "filter": {
+      "status": "Durum",
+      "role": "Rol",
+      "allStatuses": "Tümü",
+      "allRoles": "Tüm roller",
+      "noMatch": "Filtreye uyan kullanıcı bu sayfada yok.",
+      "countOnPage": "Bu sayfada {{count}} kullanıcı"
+    },
     "errors": {
       "LOGIN_ACCOUNT_UNAVAILABLE": "Giriş sistemine şu an ulaşılamıyor; kullanıcı listesi alınamadı.",
       "unknown": "Kullanıcı listesi yüklenemedi."

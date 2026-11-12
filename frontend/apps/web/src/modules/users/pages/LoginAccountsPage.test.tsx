@@ -107,4 +107,13 @@ describe('Kullanıcılar ekranı', () => {
     });
     expect(screen.queryByRole('link', { name: 'Kullanıcılar' })).not.toBeInTheDocument();
   });
+
+  it('durum süzgeci yalnız devre dışı hesapları gösterir; Açılış sütunu yoktur', async () => {
+    renderApp('/panel/kullanicilar');
+    const table = await screen.findByRole('table');
+    expect(within(table).queryByText('Açılış')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('radio', { name: 'Devre dışı' }));
+    expect(await screen.findByText('Bu sayfada 1 kullanıcı')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText('eski.depo')).toBeInTheDocument();
+  });
 });

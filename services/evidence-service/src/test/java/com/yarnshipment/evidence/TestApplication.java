@@ -5,8 +5,8 @@ import com.yarnshipment.common.web.config.EnableYarnShipmentWeb;
 import com.yarnshipment.common.web.platform.PlatformSchemaMigration;
 import java.time.Clock;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 
 /** evidence modülünün dilim testleri için açılış sınıfı; üretimde tek uygulama (yarnshipment-app) açılır. */

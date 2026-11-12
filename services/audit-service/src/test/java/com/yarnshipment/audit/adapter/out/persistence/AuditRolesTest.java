@@ -51,12 +51,16 @@ class AuditRolesTest {
     @Test
     @DisplayName("audit_writer tabloyu okuyamaz ve doğrudan yazamaz")
     void shouldNotLetWriterTouchTables() {
-        assertThatThrownBy(() -> asRole("audit_writer", () -> jdbc.sql("SELECT count(*) FROM audit_log")
-                        .query(Long.class)
-                        .single()))
+        assertThatThrownBy(() -> asRole(
+                        "audit_writer",
+                        () -> jdbc.sql("SELECT count(*) FROM audit_log")
+                                .query(Long.class)
+                                .single()))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining(PERMISSION_DENIED);
-        assertThatThrownBy(() -> asRole("audit_writer", () -> jdbc.sql("DELETE FROM audit_chain_head").update()))
+        assertThatThrownBy(() -> asRole(
+                        "audit_writer",
+                        () -> jdbc.sql("DELETE FROM audit_chain_head").update()))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining(PERMISSION_DENIED);
     }
@@ -64,13 +68,17 @@ class AuditRolesTest {
     @Test
     @DisplayName("audit_reader okur ama audit_append çalıştıramaz")
     void shouldNotLetReaderAppend() {
-        assertThat(asRole("audit_reader", () -> jdbc.sql("SELECT count(*) FROM audit_log")
-                        .query(Long.class)
-                        .single()))
+        assertThat(asRole(
+                        "audit_reader",
+                        () -> jdbc.sql("SELECT count(*) FROM audit_log")
+                                .query(Long.class)
+                                .single()))
                 .isNotNegative();
-        assertThatThrownBy(() -> asRole("audit_reader", () -> jdbc.sql("SELECT audit_append('{}'::jsonb)")
-                        .query(Long.class)
-                        .single()))
+        assertThatThrownBy(() -> asRole(
+                        "audit_reader",
+                        () -> jdbc.sql("SELECT audit_append('{}'::jsonb)")
+                                .query(Long.class)
+                                .single()))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining(PERMISSION_DENIED);
     }
@@ -80,10 +88,7 @@ class AuditRolesTest {
     void shouldBeMemberWithoutInheriting() {
         assertThat(jdbc.sql("""
                         SELECT pg_has_role(current_user, 'audit_writer', 'SET')
-                           AND pg_has_role(current_user, 'audit_reader', 'SET')""")
-                        .query(Boolean.class)
-                        .single())
-                .isTrue();
+                           AND pg_has_role(current_user, 'audit_reader', 'SET')""").query(Boolean.class).single()).isTrue();
     }
 
     @Test

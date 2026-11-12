@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -71,18 +71,25 @@ final class AuditQueryAdapter implements AuditQueryPort {
 
     @Override
     public List<ChainCheck> findLatestChainChecks(int limit) {
-        return roles.runAs(AuditRoleScope.READER, () -> jdbc.sql("""
+        return roles.runAs(
+                AuditRoleScope.READER,
+                () -> jdbc.sql("""
                         SELECT id, checked_at, from_id, to_id, ok, broken_at_id
                           FROM audit_chain_check
                          ORDER BY id DESC
-                         LIMIT :limit""").param("limit", limit).query(AuditRows::mapCheck).list());
+                         LIMIT :limit""")
+                        .param("limit", limit)
+                        .query(AuditRows::mapCheck)
+                        .list());
     }
 
     @Override
     public long latestRecordId() {
-        return roles.runAs(AuditRoleScope.READER, () -> jdbc.sql("SELECT coalesce(max(id), 0) FROM audit_log")
-                .query(Long.class)
-                .single());
+        return roles.runAs(
+                AuditRoleScope.READER,
+                () -> jdbc.sql("SELECT coalesce(max(id), 0) FROM audit_log")
+                        .query(Long.class)
+                        .single());
     }
 
     @Override

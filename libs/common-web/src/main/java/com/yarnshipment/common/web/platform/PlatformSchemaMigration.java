@@ -40,6 +40,8 @@ public final class PlatformSchemaMigration {
      * göç ettirir. Üretimde yarnshipment-app platform göçünü modül göçlerinden önce kendisi çalıştırır.
      */
     public static void migrate(Flyway moduleFlyway) {
-        migrate(moduleFlyway.getConfiguration().getDataSource(), moduleFlyway.getConfiguration().getPlaceholders());
+        migrate(
+                moduleFlyway.getConfiguration().getDataSource(),
+                moduleFlyway.getConfiguration().getPlaceholders());
     }
 }

@@ -3,8 +3,8 @@ package com.yarnshipment.audit.adapter.out.persistence;
 import com.yarnshipment.audit.application.port.in.AppendAuditEntryCommand;
 import com.yarnshipment.audit.application.port.out.AuditAppendPort;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -28,10 +28,12 @@ final class AuditAppendAdapter implements AuditAppendPort {
     @Override
     public long append(AppendAuditEntryCommand command) {
         String entry = jsonMapper.writeValueAsString(toEntry(command));
-        return roles.runAs(AuditRoleScope.WRITER, () -> jdbc.sql("SELECT audit_append(CAST(:entry AS jsonb))")
-                .param("entry", entry)
-                .query(Long.class)
-                .single());
+        return roles.runAs(
+                AuditRoleScope.WRITER,
+                () -> jdbc.sql("SELECT audit_append(CAST(:entry AS jsonb))")
+                        .param("entry", entry)
+                        .query(Long.class)
+                        .single());
     }
 
     /** audit_log kolonlarının camelCase adlarını taşıyan nesne; boş alanlar hiç yazılmaz. */

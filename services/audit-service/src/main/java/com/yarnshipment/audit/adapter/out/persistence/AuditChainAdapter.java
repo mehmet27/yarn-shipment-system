@@ -4,8 +4,8 @@ import com.yarnshipment.audit.application.port.out.AuditChainPort;
 import java.util.Optional;
 import java.util.OptionalLong;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * {@link AuditChainPort}'un JDBC uygulaması; {@code audit_verify_chain()} sonucu kendisi kaydeder. Çağrı

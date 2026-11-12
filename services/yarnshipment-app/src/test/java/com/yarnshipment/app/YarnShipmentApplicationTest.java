@@ -149,10 +149,7 @@ class YarnShipmentApplicationTest {
 
         assertThat(jdbc.queryForObject("""
                         SELECT count(*) FROM platform.audit_local
-                         WHERE table_schema = 'shipment' AND table_name = 'app_setting' AND actor_id = ?""",
-                        Integer.class,
-                        actor))
-                .isEqualTo(1);
+                         WHERE table_schema = 'shipment' AND table_name = 'app_setting' AND actor_id = ?""", Integer.class, actor)).isEqualTo(1);
     }
 
     @Test
@@ -164,8 +161,7 @@ class YarnShipmentApplicationTest {
                 .containsExactly("audit_reader", "audit_writer");
         assertThat(jdbc.queryForObject("""
                         SELECT pg_has_role(current_user, 'audit_writer', 'SET')
-                           AND pg_has_role(current_user, 'audit_reader', 'SET')""", Boolean.class))
-                .isTrue();
+                           AND pg_has_role(current_user, 'audit_reader', 'SET')""", Boolean.class)).isTrue();
     }
 
     private static DomainEvent created(UUID shipment) {

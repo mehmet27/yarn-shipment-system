@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 
 class CatalogRulesTest {
 
+    private static final long LOT_COUNT = 3;
+
     @Test
     @DisplayName("Kod boşluklardan arındırılır ve büyük harfe çevrilir")
     void shouldNormalizeCode() {
@@ -59,10 +61,10 @@ class CatalogRulesTest {
         UUID id = UUID.randomUUID();
 
         Product product = new Product(id, "PES-30-1", new ProductDetails("Polyester", null), true);
-        QualityGrade grade = new QualityGrade(id, "A", new QualityGradeDetails("Birinci", 1), false, 3);
+        QualityGrade grade = new QualityGrade(id, "A", new QualityGradeDetails("Birinci", 1), false, LOT_COUNT);
 
         assertThat(product.details().yarnCount()).isNull();
-        assertThat(grade.lotCount()).isEqualTo(3);
+        assertThat(grade.lotCount()).isEqualTo(LOT_COUNT);
         assertThat(grade.active()).isFalse();
         assertThat(new DuplicateCodeException("lotNo", "P-1").field()).isEqualTo("lotNo");
     }

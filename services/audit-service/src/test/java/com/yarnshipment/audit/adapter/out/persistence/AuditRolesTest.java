@@ -57,11 +57,13 @@ class AuditRolesTest {
                                 .query(Long.class)
                                 .single()))
                 .isInstanceOf(DataAccessException.class)
+                .rootCause()
                 .hasMessageContaining(PERMISSION_DENIED);
         assertThatThrownBy(() -> asRole(
                         "audit_writer",
                         () -> jdbc.sql("DELETE FROM audit_chain_head").update()))
                 .isInstanceOf(DataAccessException.class)
+                .rootCause()
                 .hasMessageContaining(PERMISSION_DENIED);
     }
 
@@ -80,6 +82,7 @@ class AuditRolesTest {
                                 .query(Long.class)
                                 .single()))
                 .isInstanceOf(DataAccessException.class)
+                .rootCause()
                 .hasMessageContaining(PERMISSION_DENIED);
     }
 

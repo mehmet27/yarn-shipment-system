@@ -125,6 +125,7 @@ class CentralStockAdapterTest {
         // then
         assertThat(stockOf(YARN)).isEqualByComparingTo("18958.333");
         assertThat(stock.findRecent(RECENT_LIMIT)).hasSize(2);
+        assertThat(stock.findProducedFabricKg()).isEqualByComparingTo("1000");
     }
 
     @Test

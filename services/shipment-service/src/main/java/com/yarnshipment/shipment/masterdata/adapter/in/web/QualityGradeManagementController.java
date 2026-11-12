@@ -42,7 +42,7 @@ public class QualityGradeManagementController implements QualityGradeManagementA
         var created = create.createQualityGrade(
                 currentActorProvider.getCurrentActor(),
                 request.getCode(),
-                new QualityGradeDetails(request.getName(), request.getLabelColor()));
+                new QualityGradeDetails(request.getName(), sortOrder(request.getSortOrder())));
         return ResponseEntity.status(HttpStatus.CREATED).body(CatalogPages.view(created));
     }
 
@@ -52,7 +52,7 @@ public class QualityGradeManagementController implements QualityGradeManagementA
         var updated = update.updateQualityGrade(
                 currentActorProvider.getCurrentActor(),
                 qualityGradeId,
-                new QualityGradeDetails(request.getName(), request.getLabelColor()));
+                new QualityGradeDetails(request.getName(), sortOrder(request.getSortOrder())));
         return ResponseEntity.ok(CatalogPages.view(updated));
     }
 
@@ -70,5 +70,9 @@ public class QualityGradeManagementController implements QualityGradeManagementA
         status.changeQualityGradeStatus(
                 currentActorProvider.getCurrentActor(), qualityGradeId, MasterDataStatus.ACTIVE);
         return ResponseEntity.noContent().build();
+    }
+
+    private static int sortOrder(Integer value) {
+        return value == null ? 0 : value;
     }
 }

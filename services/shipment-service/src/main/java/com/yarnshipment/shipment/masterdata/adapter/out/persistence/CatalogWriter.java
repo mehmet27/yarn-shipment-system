@@ -64,7 +64,7 @@ final class CatalogWriter {
      *
      * @param code kod; güncellemede kullanılmaz
      * @param name ad
-     * @param extra türe özgü isteğe bağlı alan (iplik numarası ya da etiket rengi)
+     * @param extra türe özgü isteğe bağlı alan (iplik numarası ya da kalite sınıfı sırası)
      */
-    record Row(String code, String name, @Nullable String extra) {}
+    record Row(String code, String name, @Nullable Object extra) {}
 }

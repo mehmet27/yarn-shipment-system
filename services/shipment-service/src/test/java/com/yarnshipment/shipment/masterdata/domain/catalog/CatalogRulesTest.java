@@ -31,14 +31,17 @@ class CatalogRulesTest {
     }
 
     @Test
-    @DisplayName("Etiket rengi büyük harfli #RRGGBB olur; boş renk yok sayılır, biçimsiz renk reddedilir")
-    void shouldValidateLabelColor() {
-        assertThat(new QualityGradeDetails("Birinci", "#2e7d32").labelColor()).isEqualTo("#2E7D32");
-        assertThat(new QualityGradeDetails("Birinci", " ").labelColor()).isNull();
-        assertThatThrownBy(() -> new QualityGradeDetails("Birinci", "red"))
+    @DisplayName("Sıra 0-9999 aralığında olur; aralık dışı reddedilir")
+    void shouldValidateSortOrder() {
+        assertThat(new QualityGradeDetails("Birinci", 0).sortOrder()).isZero();
+        assertThat(new QualityGradeDetails("Birinci", QualityGradeDetails.MAX_SORT_ORDER).sortOrder())
+                .isEqualTo(QualityGradeDetails.MAX_SORT_ORDER);
+        assertThatThrownBy(() -> new QualityGradeDetails("Birinci", -1))
                 .isInstanceOf(InvalidMasterDataException.class)
                 .extracting(e -> ((InvalidMasterDataException) e).field())
-                .isEqualTo("labelColor");
+                .isEqualTo("sortOrder");
+        assertThatThrownBy(() -> new QualityGradeDetails("Birinci", QualityGradeDetails.MAX_SORT_ORDER + 1))
+                .isInstanceOf(InvalidMasterDataException.class);
     }
 
     @Test
@@ -56,10 +59,10 @@ class CatalogRulesTest {
         UUID id = UUID.randomUUID();
 
         Product product = new Product(id, "PES-30-1", new ProductDetails("Polyester", null), true);
-        QualityGrade grade = new QualityGrade(id, "A", new QualityGradeDetails("Birinci", null), false);
+        QualityGrade grade = new QualityGrade(id, "A", new QualityGradeDetails("Birinci", 1), false, 3);
 
         assertThat(product.details().yarnCount()).isNull();
-        assertThat(grade.details().labelColor()).isNull();
+        assertThat(grade.lotCount()).isEqualTo(3);
         assertThat(grade.active()).isFalse();
         assertThat(new DuplicateCodeException("lotNo", "P-1").field()).isEqualTo("lotNo");
     }

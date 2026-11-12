@@ -51,7 +51,14 @@ function toView(kind: MasterKind, record: MockRecord) {
     case 'yarnSupplier':
       return { id, name: label, active: isActive };
     case 'qualityGrade':
-      return { id, code: record.code, name: label, active: isActive, labelColor: record.extra };
+      return {
+        id,
+        code: record.code,
+        name: label,
+        active: isActive,
+        sortOrder: Number(record.extra ?? '0'),
+        lotCount: 0,
+      };
   }
 }
 
@@ -65,14 +72,15 @@ const LABEL_FIELD: Readonly<Record<MasterKind, string>> = {
   yarnSupplier: 'name',
 };
 
-/** İplik numarası ya da etiket rengi alanının sözleşmedeki adı. */
+/** İplik numarası ya da kalite sınıfı sırası alanının sözleşmedeki adı. */
 const EXTRA_FIELD: Partial<Record<MasterKind, string>> = {
   product: 'yarnCount',
-  qualityGrade: 'labelColor',
+  qualityGrade: 'sortOrder',
 };
 
 function textField(body: Record<string, unknown>, field: string | undefined) {
   const value = field === undefined ? undefined : body[field];
+  if (typeof value === 'number') return String(value);
   return typeof value === 'string' ? value : undefined;
 }
 

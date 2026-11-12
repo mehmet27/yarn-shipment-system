@@ -74,6 +74,7 @@ public class CentralStockService
     public CentralStockOverview getCentralStock(Actor actor) {
         List<CentralStockRow> rows = stock.findStock();
         BigDecimal total = rows.stream().map(CentralStockRow::stockKg).reduce(Kilograms.ZERO, BigDecimal::add);
-        return new CentralStockOverview(rows, total, stock.findRecent(RECENT_LIMIT));
+        return new CentralStockOverview(
+                rows, total, stock.findProducedFabricKg(), stock.findRecent(RECENT_LIMIT));
     }
 }

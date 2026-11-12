@@ -5,6 +5,7 @@ import com.yarnshipment.shipment.application.port.out.ledger.CentralStockPort;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockKind;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -29,6 +30,7 @@ final class CentralStockAdapter implements CentralStockPort {
     private static final String STOCK = """
             SELECT yarn_type, sum(net_kg) AS stock_kg FROM central_stock_movement
             GROUP BY yarn_type ORDER BY yarn_type""";
+    private static final String PRODUCED = "SELECT coalesce(sum(net_kg), 0) FROM central_production";
     private static final String RECENT = """
             SELECT id, yarn_type, kind, net_kg, production_id, fabric_kg, note, occurred_at, created_by
             FROM central_stock_movement ORDER BY occurred_at DESC, id DESC LIMIT ?""";
@@ -64,6 +66,11 @@ final class CentralStockAdapter implements CentralStockPort {
         return jdbc.sql(STOCK)
                 .query((rs, i) -> new CentralStockRow(rs.getString("yarn_type"), rs.getBigDecimal("stock_kg")))
                 .list();
+    }
+
+    @Override
+    public BigDecimal findProducedFabricKg() {
+        return jdbc.sql(PRODUCED).query(BigDecimal.class).single();
     }
 
     @Override

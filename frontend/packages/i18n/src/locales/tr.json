@@ -421,7 +421,7 @@
       "codeRequired": "Kod boş olamaz.",
       "invalidCode": "Kod harf veya rakamla başlamalı; yalnızca harf, rakam ve + . _ / - içerebilir (en çok 40 karakter).",
       "extraTooLong": "En çok 50 karakter girin.",
-      "invalidColor": "Rengi #RRGGBB biçiminde girin (ör. #2E7D32)."
+      "invalidSortOrder": "Sırayı 0 ile 9999 arasında bir sayı olarak girin."
     },
     "kinds": {
       "subcontractor": {
@@ -444,7 +444,9 @@
       "qualityGrade": {
         "tab": "Kalite sınıfları",
         "field": "Kalite adı",
-        "extra": "Etiket rengi"
+        "extra": "Sıra",
+        "lotCount_one": "{{count}} partide kullanılıyor",
+        "lotCount_other": "{{count}} partide kullanılıyor"
       },
       "yarnSupplier": {
         "tab": "İplik tedarikçileri",
@@ -462,7 +464,7 @@
     },
     "code": "Kod",
     "codeHint": "Ör. PES-30/1. Harf, rakam ve + . _ / - kullanılır; eklendikten sonra değişmez.",
-    "codeFixed": "Kod çuvala ve etikete yazıldığı için değiştirilemez."
+    "codeFixed": "Kod partilere ve sevkiyat kayıtlarına yazıldığı için değiştirilemez."
   },
   "audit": {
     "title": "Denetim kaydı",
@@ -906,6 +908,15 @@
     },
     "dashboard": {
       "title": "Özet",
+      "stock": "Stok durumu",
+      "centralYarn": "Merkez depoda iplik",
+      "negativeStock": "Eksi: iplik girişi henüz işlenmemiş olabilir",
+      "subcontractorYarn": "Fasoncularda iplik",
+      "inTransit": "Yolda: {{kg}}",
+      "fabricReceived": "Fasoncudan gelen kumaş",
+      "selectedPeriod": "Seçilen dönem",
+      "centralFabric": "Merkezde üretilen kumaş",
+      "allTime": "Bugüne kadar toplam",
       "shipments": "Sevkiyatlar",
       "total": "Toplam",
       "inProgress": "Süren",

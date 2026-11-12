@@ -21,15 +21,17 @@ import org.springframework.stereotype.Component;
 @Component
 final class QualityGradeAdapter implements QualityGradePort {
 
-    private static final String COLUMNS = "id, code, name, label_color, active";
+    private static final String COUNT_LOTS =
+            "(SELECT count(*) FROM md_production_lot l WHERE l.quality_grade_id = md_quality_grade.id) AS lot_count";
+    private static final String COLUMNS = "id, code, name, sort_order, active, " + COUNT_LOTS;
     private static final String LIST = "FROM md_quality_grade WHERE (active OR :includeInactive)"
             + " AND (CAST(:pattern AS text) IS NULL OR code ILIKE :pattern ESCAPE '\\'"
             + " OR name ILIKE :pattern ESCAPE '\\')";
     private static final String INSERT = """
-            INSERT INTO md_quality_grade (id, code, name, label_color, created_at, created_by)
+            INSERT INTO md_quality_grade (id, code, name, sort_order, created_at, created_by)
             VALUES (:id, :code, :name, :extra, :at, :actor)""";
     private static final String UPDATE =
-            "UPDATE md_quality_grade SET name = :name, label_color = :extra WHERE id = :id RETURNING " + COLUMNS;
+            "UPDATE md_quality_grade SET name = :name, sort_order = :extra WHERE id = :id RETURNING " + COLUMNS;
     private static final String STATUS = "UPDATE md_quality_grade SET active = :active WHERE id = :id";
 
     private final PagedQuery paged;
@@ -43,7 +45,7 @@ final class QualityGradeAdapter implements QualityGradePort {
     @Override
     public MasterDataPage<QualityGrade> findQualityGrades(MasterDataQuery query) {
         return paged.page(
-                new PagedQuery.Select(LIST, "code", COLUMNS),
+                new PagedQuery.Select(LIST, "sort_order, code", COLUMNS),
                 query,
                 new PagedQuery.Filters(null, true, PagedQuery.NO_SITES),
                 QualityGradeAdapter::qualityGrade);
@@ -52,7 +54,7 @@ final class QualityGradeAdapter implements QualityGradePort {
     @Override
     public QualityGrade insertQualityGrade(UUID actorId, String code, QualityGradeDetails details) {
         UUID id = writer.insert(INSERT, actorId, row(code, details));
-        return new QualityGrade(id, code, details, true);
+        return new QualityGrade(id, code, details, true, 0);
     }
 
     @Override
@@ -68,14 +70,15 @@ final class QualityGradeAdapter implements QualityGradePort {
     }
 
     private static CatalogWriter.Row row(String code, QualityGradeDetails details) {
-        return new CatalogWriter.Row(code, details.name(), details.labelColor());
+        return new CatalogWriter.Row(code, details.name(), details.sortOrder());
     }
 
     private static QualityGrade qualityGrade(ResultSet rs) throws SQLException {
         return new QualityGrade(
                 rs.getObject("id", UUID.class),
                 rs.getString("code"),
-                new QualityGradeDetails(rs.getString("name"), rs.getString("label_color")),
-                rs.getBoolean("active"));
+                new QualityGradeDetails(rs.getString("name"), rs.getInt("sort_order")),
+                rs.getBoolean("active"),
+                rs.getLong("lot_count"));
     }
 }

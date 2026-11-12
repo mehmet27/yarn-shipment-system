@@ -48,7 +48,7 @@ function validate(kind: ManagedKind, texts: Texts, isNew: boolean): Validation {
 }
 
 function toValues(kind: ManagedKind, texts: Texts, owner: string | undefined): RecordValues {
-  const extra = normalizeExtra(kind, texts.extra);
+  const extra = normalizeExtra(texts.extra);
   return {
     label: normalizeLabel(kind, texts.label),
     ...(isCodedKind(kind) ? { code: normalizeCode(texts.code) } : {}),

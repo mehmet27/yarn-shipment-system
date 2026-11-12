@@ -9,6 +9,11 @@ import java.util.List;
  *
  * @param rows iplik cinsi başına eldeki kilo
  * @param totalKg eldeki toplam kilo
+ * @param producedFabricKg merkez fabrikada bugüne kadar üretilen toplam kumaş (kg)
  * @param recent son hareketler, yeniden eskiye
  */
-public record CentralStockOverview(List<CentralStockRow> rows, BigDecimal totalKg, List<CentralStockMovement> recent) {}
+public record CentralStockOverview(
+        List<CentralStockRow> rows,
+        BigDecimal totalKg,
+        BigDecimal producedFabricKg,
+        List<CentralStockMovement> recent) {}

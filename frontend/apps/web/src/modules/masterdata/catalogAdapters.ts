@@ -69,13 +69,14 @@ export const qualityGrade: Adapter = {
         code: row.code,
         label: row.name,
         isActive: row.active ?? true,
-        ...(row.labelColor === undefined ? {} : { extra: row.labelColor }),
+        ...(row.sortOrder === undefined ? {} : { extra: String(row.sortOrder) }),
+        ...(row.lotCount === undefined ? {} : { lotCount: row.lotCount }),
       })),
       totalPages: page.page.totalPages,
     };
   },
   save(id, { code, label, extra }) {
-    const body = { name: label, ...(extra === undefined ? {} : { labelColor: extra }) };
+    const body = { name: label, ...(extra === undefined ? {} : { sortOrder: Number(extra) }) };
     return discard(
       id === undefined
         ? createQualityGrade({ code: code ?? '', ...body })

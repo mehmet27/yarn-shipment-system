@@ -26,7 +26,8 @@ final class CatalogPages {
 
     static QualityGradeView view(QualityGrade item) {
         return new QualityGradeView(item.id(), item.code(), item.details().name())
-                .labelColor(item.details().labelColor())
+                .sortOrder(item.details().sortOrder())
+                .lotCount(item.lotCount())
                 .active(item.active());
     }
 

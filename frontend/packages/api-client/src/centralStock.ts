@@ -16,6 +16,8 @@ export type CentralStockMovement = {
 export type CentralStock = {
   rows: CentralStockRow[];
   totalKg: string;
+  /** Merkez fabrikada bugüne kadar üretilen toplam kumaş. */
+  producedFabricKg: string;
   movements: CentralStockMovement[];
 };
 

@@ -3,8 +3,8 @@ package com.yarnshipment.discrepancy.adapter.out.evidence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.yarnshipment.discrepancy.application.port.out.EvidenceLookupPort.EvidenceRef;
-import com.yarnshipment.discrepancy.domain.claim.EvidenceServiceUnavailableException;
+import com.yarnshipment.moduleapi.ModuleUnavailableException;
+import com.yarnshipment.moduleapi.evidence.EvidenceQueryApi.EvidenceSummary;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,13 +32,14 @@ class EvidenceServiceClientTest {
         server.expect(MockRestRequestMatchers.requestTo(URL))
                 .andRespond(MockRestResponseCreators.withSuccess(
                         "{\"id\":\"" + EVIDENCE + "\",\"shipmentId\":\"" + SHIPMENT
-                                + "\",\"evidenceType\":\"QUALITY_CLAIM\",\"sizeBytes\":10}",
+                                + "\",\"evidenceType\":\"QUALITY_CLAIM\",\"status\":\"VALID\",\"sizeBytes\":10}",
                         MediaType.APPLICATION_JSON));
         server.expect(MockRestRequestMatchers.requestTo(URL))
                 .andRespond(MockRestResponseCreators.withStatus(HttpStatus.NOT_FOUND));
 
-        assertThat(client.findEvidence(EVIDENCE)).contains(new EvidenceRef(EVIDENCE, SHIPMENT, "QUALITY_CLAIM"));
-        assertThat(client.findEvidence(EVIDENCE)).isEmpty();
+        assertThat(client.findVisibleEvidence(EVIDENCE))
+                .contains(new EvidenceSummary(EVIDENCE, SHIPMENT, "QUALITY_CLAIM", "VALID"));
+        assertThat(client.findVisibleEvidence(EVIDENCE)).isEmpty();
     }
 
     @Test
@@ -47,6 +48,6 @@ class EvidenceServiceClientTest {
         server.expect(MockRestRequestMatchers.requestTo(URL))
                 .andRespond(MockRestResponseCreators.withStatus(HttpStatus.BAD_GATEWAY));
 
-        assertThatThrownBy(() -> client.findEvidence(EVIDENCE)).isInstanceOf(EvidenceServiceUnavailableException.class);
+        assertThatThrownBy(() -> client.findVisibleEvidence(EVIDENCE)).isInstanceOf(ModuleUnavailableException.class);
     }
 }

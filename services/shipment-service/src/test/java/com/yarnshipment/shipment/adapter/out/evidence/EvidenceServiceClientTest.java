@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.sun.net.httpserver.HttpServer;
-import com.yarnshipment.shipment.domain.evidence.EvidenceReference;
-import com.yarnshipment.shipment.domain.evidence.EvidenceServiceUnavailableException;
+import com.yarnshipment.moduleapi.ModuleUnavailableException;
+import com.yarnshipment.moduleapi.evidence.EvidenceQueryApi.EvidenceSummary;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -44,25 +44,25 @@ class EvidenceServiceClientTest {
                 "{\"id\":\"" + EVIDENCE + "\",\"shipmentId\":\"" + SHIPMENT
                         + "\",\"evidenceType\":\"WAYBILL\",\"status\":\"VALID\",\"sha256\":\"x\"}");
 
-        assertThat(client.findEvidence(EVIDENCE))
-                .contains(
-                        new EvidenceReference(EVIDENCE, SHIPMENT, EvidenceReference.WAYBILL, EvidenceReference.VALID));
+        assertThat(client.findVisibleEvidence(EVIDENCE))
+                .contains(new EvidenceSummary(EVIDENCE, SHIPMENT, "WAYBILL", "VALID"));
     }
 
     @Test
     @DisplayName("404 ve 403 kanıt yok demektir; diğer hatalar ve ulaşılamama servis hatasıdır")
     void shouldTranslateFailures() throws Exception {
-        assertThat(clientAnswering(NOT_FOUND, "{}").findEvidence(EVIDENCE)).isEmpty();
+        assertThat(clientAnswering(NOT_FOUND, "{}").findVisibleEvidence(EVIDENCE))
+                .isEmpty();
         stopServer();
-        assertThat(clientAnswering(FORBIDDEN, "{}").findEvidence(EVIDENCE)).isEmpty();
+        assertThat(clientAnswering(FORBIDDEN, "{}").findVisibleEvidence(EVIDENCE))
+                .isEmpty();
         stopServer();
         EvidenceServiceClient failing = clientAnswering(SERVER_ERROR, "{}");
-        assertThatThrownBy(() -> failing.findEvidence(EVIDENCE))
-                .isInstanceOf(EvidenceServiceUnavailableException.class);
+        assertThatThrownBy(() -> failing.findVisibleEvidence(EVIDENCE)).isInstanceOf(ModuleUnavailableException.class);
         stopServer();
         EvidenceServiceClient down = clientAnswering(OK, "{}");
         stopServer();
-        assertThatThrownBy(() -> down.findEvidence(EVIDENCE)).isInstanceOf(EvidenceServiceUnavailableException.class);
+        assertThatThrownBy(() -> down.findVisibleEvidence(EVIDENCE)).isInstanceOf(ModuleUnavailableException.class);
     }
 
     private EvidenceServiceClient clientAnswering(int status, String body) throws IOException {

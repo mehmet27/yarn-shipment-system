@@ -1,8 +1,8 @@
 package com.yarnshipment.discrepancy.adapter.out.evidence;
 
 import com.yarnshipment.common.security.web.TokenRelayInterceptor;
-import com.yarnshipment.discrepancy.application.port.out.EvidenceLookupPort;
-import com.yarnshipment.discrepancy.domain.claim.EvidenceServiceUnavailableException;
+import com.yarnshipment.moduleapi.ModuleUnavailableException;
+import com.yarnshipment.moduleapi.evidence.EvidenceQueryApi;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.Optional;
@@ -18,11 +18,12 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 /**
- * {@link EvidenceLookupPort}'un evidence-service REST istemcisi. İsteyenin token'ı olduğu gibi iletilir; kanıt
- * isteyene görünmüyorsa evidence-service 403/404 döner ve kanıt yok sayılır (SEC-01).
+ * {@link EvidenceQueryApi}'nin evidence-service REST istemcisi (tek süreçe geçişe kadar geçici).
+ * İsteyenin token'ı olduğu gibi iletilir; kanıt isteyene görünmüyorsa evidence-service 403/404 döner ve kanıt yok
+ * sayılır (SEC-01).
  */
 @Component
-final class EvidenceServiceClient implements EvidenceLookupPort {
+final class EvidenceServiceClient implements EvidenceQueryApi {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
 
@@ -39,23 +40,23 @@ final class EvidenceServiceClient implements EvidenceLookupPort {
     }
 
     @Override
-    public Optional<EvidenceRef> findEvidence(UUID evidenceId) {
+    public Optional<EvidenceSummary> findVisibleEvidence(UUID evidenceId) {
         try {
             EvidenceView view = client.get()
                     .uri("/api/v1/evidence/{id}", evidenceId)
                     .retrieve()
                     .body(EvidenceView.class);
             if (view == null) {
-                throw new EvidenceServiceUnavailableException("Empty evidence response");
+                throw new ModuleUnavailableException("Empty evidence response");
             }
-            return Optional.of(new EvidenceRef(view.id(), view.shipmentId(), view.evidenceType()));
+            return Optional.of(new EvidenceSummary(view.id(), view.shipmentId(), view.evidenceType(), view.status()));
         } catch (RestClientResponseException exception) {
             if (isNotVisible(exception.getStatusCode())) {
                 return Optional.empty();
             }
-            throw new EvidenceServiceUnavailableException("Evidence service answered " + exception.getStatusCode());
+            throw new ModuleUnavailableException("Evidence service answered " + exception.getStatusCode());
         } catch (RestClientException exception) {
-            throw new EvidenceServiceUnavailableException("Evidence service call failed", exception);
+            throw new ModuleUnavailableException("Evidence service call failed", exception);
         }
     }
 
@@ -70,5 +71,5 @@ final class EvidenceServiceClient implements EvidenceLookupPort {
         return status.isSameCodeAs(HttpStatus.FORBIDDEN) || status.isSameCodeAs(HttpStatus.NOT_FOUND);
     }
 
-    private record EvidenceView(UUID id, UUID shipmentId, String evidenceType) {}
+    private record EvidenceView(UUID id, UUID shipmentId, String evidenceType, String status) {}
 }

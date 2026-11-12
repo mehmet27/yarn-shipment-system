@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @EnableConfigurationProperties(GatewayProperties.class)
 public final class GatewayApplication {
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
         SpringApplication.run(GatewayApplication.class, args);
     }
 }

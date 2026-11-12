@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "25"
+          java-version: "21"
           cache: maven
       # BUILD-08: biçim → derleme (Error Prone, NullAway) → Checkstyle → birim + ArchUnit → PMD → JaCoCo
       - name: Biçim denetimi (Spotless)

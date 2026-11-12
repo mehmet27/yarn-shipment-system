@@ -57,11 +57,11 @@ public final class IdempotencyFilter extends OncePerRequestFilter {
 
     private void handle(Call call, Slot slot, String fingerprint) throws ServletException, IOException {
         switch (store.claim(slot.actor(), slot.key(), fingerprint)) {
-            case Claim.Acquired _ -> execute(call, slot);
+            case Claim.Acquired() -> execute(call, slot);
             case Claim.Completed completed -> responses.replay(call.response(), completed.response());
-            case Claim.InProgress _ ->
+            case Claim.InProgress() ->
                 responses.problem(call.request(), call.response(), HttpStatus.CONFLICT, "IDEMPOTENCY_IN_PROGRESS");
-            case Claim.Mismatch _ ->
+            case Claim.Mismatch() ->
                 responses.problem(
                         call.request(), call.response(), HttpStatus.UNPROCESSABLE_CONTENT, "IDEMPOTENCY_KEY_REUSED");
         }

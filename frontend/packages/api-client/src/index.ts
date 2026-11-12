@@ -173,8 +173,11 @@ export type {
 } from './discrepancies';
 export {
   confirmEvidenceUpload,
+  EvidenceStatus,
   EvidenceType,
+  getEvidence,
   getEvidenceDownloadUrl,
+  listEvidence,
   requestEvidenceUpload,
   StorageUploadError,
   uploadToStorage,

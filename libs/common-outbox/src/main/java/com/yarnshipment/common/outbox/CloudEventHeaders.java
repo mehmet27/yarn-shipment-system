@@ -3,6 +3,7 @@ package com.yarnshipment.common.outbox;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -25,6 +26,8 @@ public final class CloudEventHeaders {
     public static final String SUBJECT = "ce_subject";
     public static final String TIME = "ce_time";
     public static final String SPEC_VERSION = "ce_specversion";
+    public static final String ACTOR_ROLES = "actorRoles";
+    public static final String CORRELATION_ID = "correlationId";
     public static final String CONTENT_TYPE = "content-type";
 
     private static final String SPEC_VERSION_VALUE = "1.0";
@@ -57,7 +60,21 @@ public final class CloudEventHeaders {
                 UUID.fromString(required(headers, SUBJECT)),
                 Instant.parse(required(headers, TIME)),
                 optional(headers, "actorId"),
-                record.value());
+                record.value(),
+                record.topic(),
+                optional(headers, SOURCE),
+                extras(headers));
+    }
+
+    private static Map<String, String> extras(Headers headers) {
+        Map<String, String> extras = new HashMap<>();
+        for (String key : List.of(ACTOR_ROLES, CORRELATION_ID)) {
+            String value = optional(headers, key);
+            if (value != null) {
+                extras.put(key, value);
+            }
+        }
+        return extras;
     }
 
     private static Header header(String key, String value) {

@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
 import com.yarnshipment.shipment.domain.completion.Completion;
 import com.yarnshipment.shipment.domain.completion.ShipmentCompleted;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
@@ -26,7 +27,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Tamamlama gerçek durum ve kilit tetikleyicileri ile uygulama rolünün yetkileriyle yazılır. */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({CompletionAdapter.class, ShipmentTransitionWriter.class, UuidV7Generator.class})
+@Import({
+    OutboxDomainEventPublisher.class,
+    CompletionAdapter.class,
+    ShipmentTransitionWriter.class,
+    UuidV7Generator.class
+})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class CompletionAdapterTest {
 

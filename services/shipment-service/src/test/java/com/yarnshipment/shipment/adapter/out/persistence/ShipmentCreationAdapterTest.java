@@ -2,6 +2,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
 import com.yarnshipment.shipment.application.port.in.CreatedShipment;
 import com.yarnshipment.shipment.domain.model.NewShipment;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
@@ -27,7 +28,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Taslak, durum geçmişi ve outbox olayı gerçek tetikleyiciler ve uygulama rolüyle yazılır. */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({ShipmentCreationAdapter.class, ShipmentTransitionWriter.class, UuidV7Generator.class})
+@Import({
+    OutboxDomainEventPublisher.class,
+    ShipmentCreationAdapter.class,
+    ShipmentTransitionWriter.class,
+    UuidV7Generator.class
+})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class ShipmentCreationAdapterTest {
 

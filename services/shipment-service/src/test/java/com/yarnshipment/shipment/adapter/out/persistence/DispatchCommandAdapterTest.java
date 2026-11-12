@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
 import com.yarnshipment.shipment.domain.model.DispatchRecording;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.Weighing;
@@ -27,7 +28,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Çıkış kaydı gerçek tetikleyiciler, mühür tekliği kısıtı ve uygulama rolünün yetkileriyle yazılır. */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({DispatchCommandAdapter.class, ShipmentTransitionWriter.class, UuidV7Generator.class})
+@Import({
+    OutboxDomainEventPublisher.class,
+    DispatchCommandAdapter.class,
+    ShipmentTransitionWriter.class,
+    UuidV7Generator.class
+})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class DispatchCommandAdapterTest {
 

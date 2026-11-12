@@ -6,16 +6,16 @@ import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyStatus;
 import com.yarnshipment.discrepancy.domain.model.Resolution;
 import com.yarnshipment.events.discrepancy.DiscrepancyResolved;
+import com.yarnshipment.moduleapi.event.DomainEvent;
+import com.yarnshipment.moduleapi.event.DomainEventPublisher;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.json.JsonMapper;
 
 /**
  * {@link DiscrepancyDecisionPort}'un JDBC uygulaması. Güncelleme yalnızca hâlâ çözülmemiş satırı etkiler; böylece iki
@@ -44,18 +44,14 @@ final class DiscrepancyDecisionAdapter implements DiscrepancyDecisionPort {
     private static final String INSERT_ACTIVITY = """
             INSERT INTO discrepancy_activity (id, created_at, discrepancy_id, action_type, note, actor_id, occurred_at)
             VALUES (:id, :at, :discrepancyId, :action, :note, :actor, :at)""";
-    private static final String INSERT_OUTBOX = """
-            INSERT INTO outbox_event (id, created_at, aggregate_type, aggregate_id, event_type, payload, headers,
-                                      occurred_at)
-            VALUES (:id, :at, :aggregateType, :shipmentId, :type, :payload::jsonb, :headers::jsonb, :at)""";
 
     private final JdbcClient jdbc;
-    private final JsonMapper jsonMapper;
+    private final DomainEventPublisher events;
     private final UuidV7Generator ids;
 
-    DiscrepancyDecisionAdapter(JdbcClient jdbc, JsonMapper jsonMapper, UuidV7Generator ids) {
+    DiscrepancyDecisionAdapter(JdbcClient jdbc, DomainEventPublisher events, UuidV7Generator ids) {
         this.jdbc = jdbc;
-        this.jsonMapper = jsonMapper;
+        this.events = events;
         this.ids = ids;
     }
 
@@ -134,18 +130,13 @@ final class DiscrepancyDecisionAdapter implements DiscrepancyDecisionPort {
                 decision.resolvedAt(),
                 remaining,
                 justifiedClaimKg(resolved.id(), decision));
-        jdbc.sql(INSERT_OUTBOX)
-                .param("id", ids.next())
-                .param("at", stamp.at())
-                .param("aggregateType", AGGREGATE_TYPE)
-                .param("shipmentId", resolved.shipmentId())
-                .param("type", DiscrepancyResolved.TYPE)
-                .param("payload", jsonMapper.writeValueAsString(event))
-                .param(
-                        "headers",
-                        jsonMapper.writeValueAsString(
-                                Map.of("actorId", stamp.actorId().toString())))
-                .update();
+        events.publish(new DomainEvent(
+                AGGREGATE_TYPE,
+                resolved.shipmentId(),
+                DiscrepancyResolved.TYPE,
+                event,
+                stamp.at().toInstant(),
+                stamp.actorId()));
     }
 
     /** Haklı bulunan kalite itirazının kilosu; başka karar ya da kilosuz (eski çuval bazlı) itirazda boş. */

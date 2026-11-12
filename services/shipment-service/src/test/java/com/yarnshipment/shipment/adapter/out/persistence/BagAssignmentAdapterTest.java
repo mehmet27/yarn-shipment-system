@@ -2,6 +2,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
 import com.yarnshipment.shipment.domain.bag.BagAssignment;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
 import java.math.BigDecimal;
@@ -25,7 +26,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Çuval atama yazması, örnek taslak sevkiyat üzerinde gerçek PostgreSQL'e karşı. */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({BagAssignmentAdapter.class, ShipmentBagsAdapter.class, ShipmentTransitionWriter.class, UuidV7Generator.class})
+@Import({
+    OutboxDomainEventPublisher.class,
+    BagAssignmentAdapter.class,
+    ShipmentBagsAdapter.class,
+    ShipmentTransitionWriter.class,
+    UuidV7Generator.class
+})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class BagAssignmentAdapterTest {
 

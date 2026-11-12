@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
 import com.yarnshipment.shipment.domain.correction.CorrectedValue.Weight;
 import com.yarnshipment.shipment.domain.correction.Correction;
 import com.yarnshipment.shipment.domain.correction.CorrectionConflictException;
@@ -28,7 +29,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Düzeltme kilitli sevkiyatta gerçek kilit tetikleyicileri ve uygulama rolünün yetkileriyle yazılır. */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({CorrectionAdapter.class, ShipmentTransitionWriter.class, UuidV7Generator.class})
+@Import({
+    OutboxDomainEventPublisher.class,
+    CorrectionAdapter.class,
+    ShipmentTransitionWriter.class,
+    UuidV7Generator.class
+})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class CorrectionAdapterTest {
 

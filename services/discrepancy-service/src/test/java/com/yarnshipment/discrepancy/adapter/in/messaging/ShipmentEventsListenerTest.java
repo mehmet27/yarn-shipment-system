@@ -35,7 +35,8 @@ class ShipmentEventsListenerTest {
 
     private final RegisterShipmentUseCase register = mock(RegisterShipmentUseCase.class);
     private final TrackShipmentUseCase track = mock(TrackShipmentUseCase.class);
-    private final ShipmentEventsListener listener = new ShipmentEventsListener(register, track);
+    private final ShipmentEventsListener listener =
+            new ShipmentEventsListener(new ShipmentEventsConsumer(register, track));
 
     @Test
     @DisplayName("Oluşturma olayı sevkiyatı numarası, lokasyonu ve fasoncusuyla izlemeye alır")

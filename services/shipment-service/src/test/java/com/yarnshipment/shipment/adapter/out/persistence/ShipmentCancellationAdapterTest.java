@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
 import com.yarnshipment.shipment.domain.cancellation.Cancellation;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
@@ -25,7 +26,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** İptal yazımı gerçek tetikleyiciler ve uygulama rolünün yetkileriyle çalışır. */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({ShipmentCancellationAdapter.class, ShipmentTransitionWriter.class, UuidV7Generator.class})
+@Import({
+    OutboxDomainEventPublisher.class,
+    ShipmentCancellationAdapter.class,
+    ShipmentTransitionWriter.class,
+    UuidV7Generator.class
+})
 @org.springframework.boot.autoconfigure.ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class ShipmentCancellationAdapterTest {
 

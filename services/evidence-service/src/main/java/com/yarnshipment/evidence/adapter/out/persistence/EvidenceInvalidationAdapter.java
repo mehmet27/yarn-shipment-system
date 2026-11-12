@@ -4,6 +4,8 @@ import com.yarnshipment.events.evidence.EvidenceInvalidated;
 import com.yarnshipment.evidence.application.port.out.EvidenceInvalidationPort;
 import com.yarnshipment.evidence.domain.model.EvidenceAlreadyInvalidatedException;
 import com.yarnshipment.evidence.domain.model.EvidenceFile;
+import com.yarnshipment.moduleapi.event.DomainEvent;
+import com.yarnshipment.moduleapi.event.DomainEventPublisher;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Objects;
@@ -24,12 +26,14 @@ final class EvidenceInvalidationAdapter implements EvidenceInvalidationPort {
                    updated_by = :actor, version = version + 1
              WHERE id = :id AND status = 'VALID'""";
 
-    private final JdbcClient jdbc;
-    private final EvidenceOutbox outbox;
+    private static final String AGGREGATE_TYPE = "Shipment";
 
-    EvidenceInvalidationAdapter(JdbcClient jdbc, EvidenceOutbox outbox) {
+    private final JdbcClient jdbc;
+    private final DomainEventPublisher events;
+
+    EvidenceInvalidationAdapter(JdbcClient jdbc, DomainEventPublisher events) {
         this.jdbc = jdbc;
-        this.outbox = outbox;
+        this.events = events;
     }
 
     @Override
@@ -44,14 +48,17 @@ final class EvidenceInvalidationAdapter implements EvidenceInvalidationPort {
         if (updated == 0) {
             throw new EvidenceAlreadyInvalidatedException(evidence.id());
         }
-        outbox.publish(
-                new EvidenceOutbox.Origin(evidence.shipmentId(), invalidatedBy, at),
+        events.publish(new DomainEvent(
+                AGGREGATE_TYPE,
+                evidence.shipmentId(),
                 EvidenceInvalidated.TYPE,
                 new EvidenceInvalidated(
                         evidence.id(),
                         evidence.shipmentId(),
                         evidence.declared().type().name(),
                         Objects.requireNonNullElse(evidence.invalidatedReason(), ""),
-                        at));
+                        at),
+                at,
+                invalidatedBy));
     }
 }

@@ -8,6 +8,8 @@ import com.yarnshipment.evidence.domain.model.EvidenceStatus;
 import com.yarnshipment.evidence.domain.model.EvidenceType;
 import com.yarnshipment.evidence.domain.model.StoredObject;
 import com.yarnshipment.evidence.domain.model.UploadIntent;
+import com.yarnshipment.moduleapi.event.DomainEvent;
+import com.yarnshipment.moduleapi.event.DomainEventPublisher;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Component;
 @Component
 final class EvidenceStoreAdapter implements EvidenceStorePort {
 
+    private static final String AGGREGATE_TYPE = "Shipment";
     private static final String SET_ACTOR = "SELECT set_config('app.actor_id', :actor, true)";
     private static final String SELECT = """
             SELECT id, shipment_id, evidence_type, storage_key, mime_type, size_bytes, sha256, captured_at,
@@ -52,12 +55,12 @@ final class EvidenceStoreAdapter implements EvidenceStorePort {
             VALUES (:id, :evidenceId, :duplicateOfId, :at, :at, :actor)""";
 
     private final JdbcClient jdbc;
-    private final EvidenceOutbox outbox;
+    private final DomainEventPublisher events;
     private final UuidV7Generator ids;
 
-    EvidenceStoreAdapter(JdbcClient jdbc, EvidenceOutbox outbox, UuidV7Generator ids) {
+    EvidenceStoreAdapter(JdbcClient jdbc, DomainEventPublisher events, UuidV7Generator ids) {
         this.jdbc = jdbc;
-        this.outbox = outbox;
+        this.events = events;
         this.ids = ids;
     }
 
@@ -146,10 +149,8 @@ final class EvidenceStoreAdapter implements EvidenceStorePort {
     }
 
     private void publish(EvidenceFile evidence, String type, Object event) {
-        outbox.publish(
-                new EvidenceOutbox.Origin(evidence.shipmentId(), evidence.uploadedBy(), evidence.uploadedAt()),
-                type,
-                event);
+        events.publish(new DomainEvent(
+                AGGREGATE_TYPE, evidence.shipmentId(), type, event, evidence.uploadedAt(), evidence.uploadedBy()));
     }
 
     static EvidenceFile map(ResultSet rs, int rowNumber) throws SQLException {

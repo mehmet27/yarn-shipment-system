@@ -140,9 +140,7 @@ class KeycloakStaffAccountAdapterTest {
         assertThat(calls)
                 .containsExactly(
                         "POST /realms/yarnshipment/protocol/openid-connect/token", "PUT " + USERS + "/" + USER_ID);
-        assertThat(bodies.get(1))
-                .contains("\"firstName\":\"Ayşe Nur\"")
-                .contains("\"lastName\":\"Yılmaz\"");
+        assertThat(bodies.get(1)).contains("\"firstName\":\"Ayşe Nur\"").contains("\"lastName\":\"Yılmaz\"");
     }
 
     @Test

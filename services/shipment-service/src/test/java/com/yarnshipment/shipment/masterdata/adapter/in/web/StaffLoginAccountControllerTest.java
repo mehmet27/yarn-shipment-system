@@ -133,7 +133,7 @@ class StaffLoginAccountControllerTest {
     }
 
     @Test
-    @DisplayName("Ad soyad değiştirme: 204 ve use case'e kırpılmamış ad gider; kısa ad 400, bulunamayan 404, admin dışı 403")
+    @DisplayName("Ad soyad değiştirme: 204; kısa ad 400, bulunamayan 404, admin dışı 403")
     void shouldChangeName() {
         Jwt admin = TestTokens.token("admin").build();
         String uri = URI + "/" + USER + "/name";

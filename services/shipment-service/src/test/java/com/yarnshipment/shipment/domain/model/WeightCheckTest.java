@@ -38,7 +38,7 @@ class WeightCheckTest {
     @DisplayName("Tolerans 0 iken en küçük fark bile sevkiyatı uyuşmazlığa düşürür")
     void shouldFlagAnyDifferenceAtZeroTolerance() {
         DispatchRecording recording = TestShipments.shipment(ShipmentStatus.DRAFT)
-                .recordDispatch(measurement("2000.501", "18.000"), NOW, null, BigDecimal.ZERO);
+                .recordDispatch(measurement("2000.501", "18.000"), NOW, BigDecimal.ZERO);
 
         assertThat(recording.toStatus()).isEqualTo(ShipmentStatus.WEIGHT_MISMATCH);
         assertThat(Objects.requireNonNull(recording.mismatch()).diffKg()).isEqualByComparingTo("0.001");
@@ -48,7 +48,7 @@ class WeightCheckTest {
     @DisplayName("Tam eşleşen tartı yola çıkar")
     void shouldDispatchOnExactMatch() {
         DispatchRecording recording = TestShipments.shipment(ShipmentStatus.DRAFT)
-                .recordDispatch(measurement("2000.500", "18.000"), NOW, null, BigDecimal.ZERO);
+                .recordDispatch(measurement("2000.500", "18.000"), NOW, BigDecimal.ZERO);
 
         assertThat(recording.toStatus()).isEqualTo(ShipmentStatus.AWAITING_DELIVERY);
     }
@@ -69,7 +69,7 @@ class WeightCheckTest {
                 Shipment.RecipeState.LEGACY);
 
         assertThat(unplanned
-                        .recordDispatch(measurement("500.000", "18.000"), NOW, null, BigDecimal.ZERO)
+                        .recordDispatch(measurement("500.000", "18.000"), NOW, BigDecimal.ZERO)
                         .mismatch())
                 .isNull();
     }
@@ -78,7 +78,7 @@ class WeightCheckTest {
     @DisplayName("Uyuşmazlıktaki sevkiyat yeniden tartılamaz; önce müdür karar vermelidir")
     void shouldRejectDispatchWhileMismatched() {
         assertThatThrownBy(() -> TestShipments.shipment(ShipmentStatus.WEIGHT_MISMATCH)
-                        .recordDispatch(measurement("2000.500", "18.000"), NOW, null, BigDecimal.ZERO))
+                        .recordDispatch(measurement("2000.500", "18.000"), NOW, BigDecimal.ZERO))
                 .isInstanceOf(InvalidShipmentStatusException.class);
     }
 }

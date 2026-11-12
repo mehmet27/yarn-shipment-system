@@ -173,23 +173,12 @@ export const Audience = {
   WAREHOUSE: 'WAREHOUSE',
 } as const;
 
-/**
- * İki ondalıklı yüzde, dize olarak (API-03); sapmada işaretli olabilir
- * @pattern ^-?\d{1,3}\.\d{2}$
- */
-export type Pct = string;
-
 export interface WeighingView {
   grossKg: Kg;
   tareKg: Kg;
   netKg: Kg;
   bagCount: number;
   weighedAt: string;
-  expectedTareKg?: Kg;
-  tareTolerancePct?: Pct;
-  tareDeviationPct?: Pct;
-  /** Dara, kayıt anındaki standarttan izin verilenden fazla saptı. Standart tanımsızsa false ve sapma alanları yok */
-  tareAlert?: boolean;
 }
 
 /**
@@ -680,20 +669,6 @@ export interface ProductPageResponse {
   page: PageMetadata;
 }
 
-export type PackagingType = typeof PackagingType[keyof typeof PackagingType];
-
-
-export const PackagingType = {
-  BAG: 'BAG',
-} as const;
-
-export interface TareStandardSaveRequest {
-  siteId: string;
-  packagingType: PackagingType;
-  standardTareKg: Kg;
-  maxDeviationPct: Pct;
-}
-
 export interface BrandingView {
   companyName?: string;
   /** @pattern ^#[0-9a-f]{6}$ */
@@ -708,19 +683,6 @@ export interface BrandingSaveRequest {
   primaryColor: string;
   /** @maxLength 200000 */
   logoDataUrl?: string;
-}
-
-export interface TareStandardView {
-  id: string;
-  siteId: string;
-  siteName: string;
-  packagingType: PackagingType;
-  standardTareKg: Kg;
-  maxDeviationPct: Pct;
-}
-
-export interface TareStandardListResponse {
-  items: TareStandardView[];
 }
 
 export interface QualityGradeCreateRequest {
@@ -1202,10 +1164,6 @@ q?: SearchTextParameter;
  * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
  */
 status?: StatusFilterParameter;
-};
-
-export type ListTareStandardsParams = {
-siteId?: string;
 };
 
 export type ListQualityGradesParams = {
@@ -1858,35 +1816,6 @@ export const activateProduct = (
     }
 
 /**
- * Lokasyon ve ambalaj tipi başına standart dara ve izin verilen sapma. `siteId` verilirse yalnızca o lokasyonunkiler gelir. Lokasyon adına, sonra ambalaj tipine göre sıralıdır; sayfalanmaz.
- * @summary Standart dara listesi
- */
-export const listTareStandards = (
-    params?: ListTareStandardsParams,
- ) => {
-      return customInstance<TareStandardListResponse>(
-      {url: `/api/v1/master-data/tare-standards`, method: 'GET',
-        params
-    },
-      );
-    }
-
-/**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Lokasyon ve ambalaj tipi için tek tanım vardır; varsa değerleri güncellenir (aynı istek tekrarlanırsa sonuç değişmez). Standart ambalaj başınadır; çıkış tartımında beklenen dara = standart × çuval sayısı. Şimdilik yalnızca `BAG` tartımda kullanılır. Standart sıfırsa karşılaştırma yapılmaz. Sonradan değişen standart, kaydedilmiş tartımların sapmasını etkilemez. Bilinmeyen lokasyon `INVALID_MASTER_DATA`.
- * @summary Standart dara tanımlar
- */
-export const saveTareStandard = (
-    tareStandardSaveRequest: TareStandardSaveRequest,
- ) => {
-      return customInstance<TareStandardView>(
-      {url: `/api/v1/master-data/tare-standards`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: tareStandardSaveRequest
-    },
-      );
-    }
-
-/**
  * Kalite sınıfı (A, B ...) seçimi için; koda göre sıralı. Arama `q` ile kod ve adda yapılır.
  * @summary Kalite sınıfı listesi
  */
@@ -2317,8 +2246,6 @@ export type CreateProductResult = NonNullable<Awaited<ReturnType<typeof createPr
 export type UpdateProductResult = NonNullable<Awaited<ReturnType<typeof updateProduct>>>
 export type DeactivateProductResult = NonNullable<Awaited<ReturnType<typeof deactivateProduct>>>
 export type ActivateProductResult = NonNullable<Awaited<ReturnType<typeof activateProduct>>>
-export type ListTareStandardsResult = NonNullable<Awaited<ReturnType<typeof listTareStandards>>>
-export type SaveTareStandardResult = NonNullable<Awaited<ReturnType<typeof saveTareStandard>>>
 export type ListQualityGradesResult = NonNullable<Awaited<ReturnType<typeof listQualityGrades>>>
 export type CreateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof createQualityGrade>>>
 export type UpdateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof updateQualityGrade>>>

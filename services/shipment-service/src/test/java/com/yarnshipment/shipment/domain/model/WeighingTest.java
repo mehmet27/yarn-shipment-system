@@ -3,7 +3,6 @@ package com.yarnshipment.shipment.domain.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -52,31 +51,5 @@ class WeighingTest {
 
         // when / then
         assertThat(parties.toString()).doesNotContain("Ali");
-    }
-
-    @Test
-    @DisplayName("Standart varsa tartım sapmayı ve uyarıyı taşır")
-    void shouldCarryTareDeviation() {
-        TareBasis basis = new TareBasis(new BigDecimal("20.000"), new BigDecimal("5.00"));
-
-        Weighing within =
-                new Weighing(new BigDecimal("2000.500"), new BigDecimal("20.500"), BAG_COUNT, WEIGHED_AT, basis);
-        Weighing beyond =
-                new Weighing(new BigDecimal("2000.500"), new BigDecimal("18.000"), BAG_COUNT, WEIGHED_AT, basis);
-
-        assertThat(within.tareDeviationPct()).isEqualByComparingTo("2.50");
-        assertThat(within.tareAlert()).isFalse();
-        assertThat(beyond.tareDeviationPct()).isEqualByComparingTo("-10.00");
-        assertThat(beyond.tareAlert()).isTrue();
-    }
-
-    @Test
-    @DisplayName("Standart yoksa sapma boştur ve uyarı çıkmaz")
-    void shouldHaveNoDeviationWithoutBasis() {
-        Weighing weighing = new Weighing(new BigDecimal("2000.500"), new BigDecimal("18.000"), BAG_COUNT, WEIGHED_AT);
-
-        assertThat(weighing.tareDeviationPct()).isNull();
-        assertThat(weighing.expectedTareKg()).isNull();
-        assertThat(weighing.tareAlert()).isFalse();
     }
 }

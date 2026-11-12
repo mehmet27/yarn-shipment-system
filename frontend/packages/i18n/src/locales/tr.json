@@ -130,9 +130,6 @@
       "gross": "Brüt",
       "tare": "Dara",
       "net": "Net",
-      "tareDeviation": "Dara sapması",
-      "tareExpected": "beklenen {{expected}}, sınır %{{tolerance}}",
-      "tareAlert": "Standart dışı",
       "recordDispatch": "Çıkış tartısını gir",
       "dispatchNotRecorded": "Çıkış tartısı henüz girilmedi",
       "bagCount": "Çuval",
@@ -396,22 +393,6 @@
       "yarnSupplier": {
         "tab": "İplik tedarikçileri",
         "field": "Tedarikçi adı"
-      }
-    },
-    "tareStandard": {
-      "tab": "Standart dara",
-      "intro": "Çıkış tartısında girilen dara, çuval başına standart × çuval sayısıyla karşılaştırılır; sınır aşılırsa sevkiyat dosyasında uyarı görünür. Kayıt engellenmez.",
-      "packagingType": "Ambalaj",
-      "standardTareKg": "Standart dara (kg, ambalaj başına)",
-      "maxDeviationPct": "İzin verilen sapma (%)",
-      "save": "Kaydet",
-      "saved": "Standart kaydedildi.",
-      "empty": "Henüz standart dara tanımlanmadı; tanımlanana kadar sapma uyarısı çıkmaz.",
-      "invalidKg": "Dara 0 ile 999999 arasında, en çok üç ondalıklı olmalı (ör. 0,450).",
-      "invalidPct": "Sapma 0 ile 100 arasında, en çok iki ondalıklı olmalı.",
-      "failed": "Standart kaydedilemedi. Bilgileri kontrol edip tekrar deneyin.",
-      "types": {
-        "BAG": "Çuval"
       }
     },
     "created": "Kayıt eklendi.",

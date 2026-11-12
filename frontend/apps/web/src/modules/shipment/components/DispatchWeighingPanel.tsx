@@ -2,7 +2,6 @@ import type { Weighing } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Paper, SimpleGrid, Stack, Table, Text } from '@iplik/ui';
 import { formatKg } from '@iplik/units';
-import { TareDeviationRow } from './TareDeviationRow';
 
 export type DispatchWeighingPanelProps = {
   weighing: Weighing | undefined;
@@ -51,7 +50,6 @@ export function DispatchWeighingPanel({ weighing }: DispatchWeighingPanelProps) 
               <Table.Td ta="right">{formatKg(weighing[field])}</Table.Td>
             </Table.Tr>
           ))}
-          <TareDeviationRow weighing={weighing} />
         </Table.Tbody>
       </Table>
     </Stack>

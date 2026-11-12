@@ -31,7 +31,7 @@ Mikroservis mimarisi dokümanındaki (java\_mikroservis\_mimarisi\_v1) 8 servisi
 
 | Veritabanı | Sahip servis | Tuttuğu veri |
 | --- | --- | --- |
-| `masterdata_db` | master-data-service | Fasoncu, şoför, araç, iplik, kalite, parti ve kalite kilidi, şahit numune, standart dara, kullanıcı profili (kullanıcı–fasoncu/şoför bağı) |
+| `masterdata_db` | master-data-service | Fasoncu, şoför, araç, iplik, kalite, parti ve kalite kilidi, şahit numune, kullanıcı profili (kullanıcı–fasoncu/şoför bağı) |
 | `bag_db` | bag-service | Çuval (Unique Key), etiket baskısı, çuval rezervasyonu ve tek kullanım garantisi |
 | `shipment_db` | shipment-service | Sevkiyat, çuval listesi kopyası, tartım, mühür, şoför beyanı, kör teslim girişi, durum geçmişi, düzeltme kayıtları |
 | `evidence_db` + MinIO | evidence-service | Fotoğraf/belge üst verisi, SHA-256, zaman damgaları; dosyanın kendisi MinIO'da |
@@ -51,7 +51,7 @@ Servisler arası kurallar:
 4. **Transactional outbox:** her servis değişikliği ve yayınlanacak olayı (örn. `DeliveryReceived`) aynı transaction içinde kendi `outbox_event` tablosuna yazar. Bir aktarıcı bunları mesaj kuyruğuna (Kafka veya RabbitMQ, mikroservis thread'inin kararı) iletir. Audit, uyuşmazlık ve bildirim servisleri bu olaylarla beslenir.
 5. **İdempotent tüketim:** olay tüketen her servis `processed_event(event_id)` tablosu tutar; aynı olay iki kez işlenmez.
 
-**Lokasyon (SiteId).** Java kod standartlarının GEN-07 kuralı gereği lokasyona bağlı her kayıt baştan `site_id uuid NOT NULL` taşır: `production_lot`, `tare_standard`, `bag`, `shipment`; ayrıca filtre ve yetki için `discrepancy` ve `shipment_view`. Faz 1'de `site` tablosunda tek kayıt bulunur. Yeni fabrika veya depo eklemek yalnız yeni bir satırdır, tablo değişikliği ve geçmiş veri doldurma gerekmez. Listeleme indeksleri `site_id` ile başlar.
+**Lokasyon (SiteId).** Java kod standartlarının GEN-07 kuralı gereği lokasyona bağlı her kayıt baştan `site_id uuid NOT NULL` taşır: `production_lot`, `bag`, `shipment`; ayrıca filtre ve yetki için `discrepancy` ve `shipment_view`. Faz 1'de `site` tablosunda tek kayıt bulunur. Yeni fabrika veya depo eklemek yalnız yeni bir satırdır, tablo değişikliği ve geçmiş veri doldurma gerekmez. Listeleme indeksleri `site_id` ile başlar.
 
 **Olay adları.** Kodda, Kafka'da ve `outbox_event.event_type` kolonunda olay adları İngilizcedir (`ShipmentCancelled`, `DeliveryReceived` gibi). Mimari dokümandaki Türkçe adlarla eşleme Java kod standartları Ek B'dedir.
 
@@ -81,7 +81,6 @@ Tüm servislerdeki `created_by`, `assignee_id` gibi kullanıcı alanları Keyclo
 | `yarn_supplier` (`md_yarn_supplier`, iplik tedarikçisi) | name, active, created\_at, created\_by | lower(name) unique; silinmez, pasife alınır; guard + audit trigger (V202611102210) |
 | `production_lot` (parti) | site\_id, lot\_no, product\_id, quality\_grade\_id, production\_date, quality\_locked\_at, quality\_locked\_by, status | (site\_id, lot\_no) unique; kilitlendikten sonra quality\_grade\_id ve yarn\_supplier\_id değişemez (trigger) |
 | `witness_sample` (şahit numune) | lot\_id, sample\_code, storage\_location, taken\_at, disposed\_at | sample\_code unique |
-| `tare_standard` (standart dara) | site\_id, packaging\_type, standard\_tare\_kg, max\_deviation\_pct | (site\_id, packaging\_type) unique |
 | `user_profile` | yukarıdaki Kimlik tablosu | — |
 | `user_site` | user\_id, site\_id | PK (user\_id, site\_id); depo ve kalite kullanıcısının hangi lokasyonlarda yetkili olduğu |
 | `evidence_requirement` | stage (DISPATCH, DELIVERY, CLAIM), evidence\_type, min\_count, mandatory | Rapor Bölüm 11.1 ayarları |

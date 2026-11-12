@@ -39,9 +39,8 @@ final class CorrectionAdapter implements CorrectionPort {
             WHERE id = :oldId""";
     private static final String INSERT_WEIGHING = """
             INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, weighed_at,
-                                  entered_by, created_at, created_by, expected_tare_kg, tare_tolerance_pct)
-            SELECT :newId, shipment_id, side, :gross, :tare, bag_count, weighed_at, entered_by, :at,
-                   :actor, expected_tare_kg, tare_tolerance_pct
+                                  entered_by, created_at, created_by)
+            SELECT :newId, shipment_id, side, :gross, :tare, bag_count, weighed_at, entered_by, :at, :actor
             FROM weighing WHERE id = :oldId""";
 
     private final JdbcClient jdbc;

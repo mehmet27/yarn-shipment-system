@@ -26,11 +26,6 @@ final class WebMappings {
 
     private WebMappings() {}
 
-    /** Kilo dize olarak, üç ondalıkla: {@code "1982.500"}. */
-    static @Nullable String pct(@Nullable BigDecimal value) {
-        return value == null ? null : value.setScale(2, RoundingMode.HALF_UP).toPlainString();
-    }
-
     /** Fire oranı dize olarak, dört ondalıkla: {@code "0.0400"}. */
     static String fireRate(BigDecimal value) {
         return value.setScale(FIRE_SCALE, RoundingMode.HALF_UP).toPlainString();
@@ -102,10 +97,6 @@ final class WebMappings {
                 .tareKg(kg(weighing.tareKg()))
                 .netKg(kg(weighing.netKg()))
                 .bagCount(weighing.bagCount())
-                .weighedAt(utc(weighing.weighedAt()))
-                .expectedTareKg(weighing.expectedTareKg() == null ? null : kg(weighing.expectedTareKg()))
-                .tareTolerancePct(pct(weighing.tareTolerancePct()))
-                .tareDeviationPct(pct(weighing.tareDeviationPct()))
-                .tareAlert(weighing.tareAlert());
+                .weighedAt(utc(weighing.weighedAt()));
     }
 }

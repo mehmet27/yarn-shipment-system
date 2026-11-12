@@ -1,6 +1,5 @@
 package com.yarnshipment.shipment.domain.model;
 
-import com.yarnshipment.shipment.domain.model.Weighing.TareBasis;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -91,15 +90,9 @@ public record Shipment(
         }
     }
 
-    /** Depo çıkış tartımını kaydetti (DRAFT → AWAITING_DELIVERY). */
+    /** Depo çıkış tartımını kaydetti (DRAFT → AWAITING_DELIVERY). Kantar farkı denetlenmez. */
     public DispatchRecording recordDispatch(DispatchMeasurement measurement, Instant recordedAt) {
         return recordDispatch(measurement, recordedAt, null);
-    }
-
-    /** Aynı kayıt; çıkış tartımına kayıt anındaki standart dara eklenir. Kantar farkı denetlenmez. */
-    public DispatchRecording recordDispatch(
-            DispatchMeasurement measurement, Instant recordedAt, @Nullable TareBasis tareBasis) {
-        return recordDispatch(measurement, recordedAt, tareBasis, null);
     }
 
     /**
@@ -107,15 +100,12 @@ public record Shipment(
      * (süreç analizi 5.4). {@code toleranceKg} boşsa karşılaştırma yapılmaz.
      */
     public DispatchRecording recordDispatch(
-            DispatchMeasurement measurement,
-            Instant recordedAt,
-            @Nullable TareBasis tareBasis,
-            @Nullable BigDecimal toleranceKg) {
+            DispatchMeasurement measurement, Instant recordedAt, @Nullable BigDecimal toleranceKg) {
         if (status != ShipmentStatus.DRAFT) {
             throw new InvalidShipmentStatusException(id, status, ShipmentStatus.AWAITING_DELIVERY);
         }
-        Weighing weighing = new Weighing(
-                measurement.grossKg(), measurement.tareKg(), measurement.bagCount(), recordedAt, tareBasis);
+        Weighing weighing =
+                new Weighing(measurement.grossKg(), measurement.tareKg(), measurement.bagCount(), recordedAt);
         WeightCheck check = null;
         BigDecimal expected = planned.netKg();
         if (toleranceKg != null && expected != null) {

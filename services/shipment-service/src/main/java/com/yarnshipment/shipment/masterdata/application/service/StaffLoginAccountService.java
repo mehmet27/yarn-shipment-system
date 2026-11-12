@@ -23,11 +23,11 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 /**
- * Fabrika içi hesap açar, rolünü ve ad soyadını değiştirir, pasife alır, yeniden açar ve şifresini belirler. İlk şifreyi yönetici
- * yazar (geçici; kişi ilk girişte değiştirir); SMS ya da e-posta doğrulaması yoktur. Fabrikada tek merkez lokasyon
- * olduğu için yeni hesap etkin tüm lokasyonları görür. Kişi kendi rolünü değiştiremez ve kendi hesabını kapatamaz
- * (kilitlenmeyi önler). Kalite rolünde çalışma alanı (merkez / fasoncu) zorunludur, başka rolde verilemez. Asıl
- * yazım kimlik sağlayıcıda olduğu için transaction açılmaz.
+ * Fabrika içi hesap açar, rolünü ve ad soyadını değiştirir, pasife alır, yeniden açar ve şifresini belirler. İlk
+ * şifreyi yönetici yazar (geçici; kişi ilk girişte değiştirir); SMS ya da e-posta doğrulaması yoktur. Fabrikada tek
+ * merkez lokasyon olduğu için yeni hesap etkin tüm lokasyonları görür. Kişi kendi rolünü değiştiremez ve kendi
+ * hesabını kapatamaz (kilitlenmeyi önler). Kalite rolünde çalışma alanı (merkez / fasoncu) zorunludur, başka rolde
+ * verilemez. Asıl yazım kimlik sağlayıcıda olduğu için transaction açılmaz.
  */
 @Service
 public final class StaffLoginAccountService

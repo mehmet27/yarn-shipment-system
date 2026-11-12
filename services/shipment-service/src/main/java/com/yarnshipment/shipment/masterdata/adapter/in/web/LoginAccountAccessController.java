@@ -3,7 +3,9 @@ package com.yarnshipment.shipment.masterdata.adapter.in.web;
 import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.shipment.adapter.in.web.api.LoginAccountAccessApi;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ChangeLoginAccountEnabledRequest;
+import com.yarnshipment.shipment.adapter.in.web.api.model.ChangeLoginAccountNameRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.SetLoginAccountPasswordRequest;
+import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLoginAccountNameUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.DisableLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.EnableLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.SetLoginAccountPasswordUseCase;
@@ -14,9 +16,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Giriş hesabının erişimi: pasife alma, yeniden açma ve yöneticinin yeni geçici şifre belirlemesi; yalnızca
- * USER_MANAGE yetkisi olan yönetici. Kişi bir sonraki girişte şifresini kendisi değiştirir. Method security proxy'si
- * gerektirdiği için final değildir (SEC-02).
+ * Giriş hesabının erişimi ve profili: pasife alma, yeniden açma, ad soyad değiştirme ve yöneticinin yeni geçici şifre
+ * belirlemesi; yalnızca USER_MANAGE yetkisi olan yönetici. Kişi bir sonraki girişte şifresini kendisi değiştirir.
+ * Method security proxy'si gerektirdiği için final değildir (SEC-02).
  */
 @RestController
 public class LoginAccountAccessController implements LoginAccountAccessApi {
@@ -24,16 +26,19 @@ public class LoginAccountAccessController implements LoginAccountAccessApi {
     private final EnableLoginAccountUseCase enableAccount;
     private final DisableLoginAccountUseCase disableAccount;
     private final SetLoginAccountPasswordUseCase setPassword;
+    private final ChangeLoginAccountNameUseCase changeName;
     private final CurrentActorProvider currentActorProvider;
 
     public LoginAccountAccessController(
             EnableLoginAccountUseCase enableAccount,
             DisableLoginAccountUseCase disableAccount,
             SetLoginAccountPasswordUseCase setPassword,
+            ChangeLoginAccountNameUseCase changeName,
             CurrentActorProvider currentActorProvider) {
         this.enableAccount = enableAccount;
         this.disableAccount = disableAccount;
         this.setPassword = setPassword;
+        this.changeName = changeName;
         this.currentActorProvider = currentActorProvider;
     }
 
@@ -45,6 +50,13 @@ public class LoginAccountAccessController implements LoginAccountAccessApi {
         } else {
             disableAccount.disableLoginAccount(currentActorProvider.getCurrentActor(), userId);
         }
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('USER_MANAGE')")
+    public ResponseEntity<Void> changeLoginAccountName(UUID userId, ChangeLoginAccountNameRequest request) {
+        changeName.changeLoginAccountName(currentActorProvider.getCurrentActor(), userId, request.getFullName());
         return ResponseEntity.noContent().build();
     }
 

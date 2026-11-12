@@ -1,5 +1,7 @@
 # İplik Sevkiyat Sistemi – Java Mikroservis Mimarisi
 
+> **Güncel durum (tek uygulamaya geçiş):** Beş servis tek Spring Boot uygulamasında (`services/yarnshipment-app`) birleşti; gateway ayrı süreçtir. Kafka ve `outbox_event` tabloları kaldırıldı, modüller arası olaylar süreç içi taşınır (`libs/common-events`). Bu belgedeki Kafka/outbox ve servisler arası REST anlatımları, kapsamlı doküman güncellemesi (iş E) gelene kadar tarihsel kabul edilmelidir.
+
 > Sürüm 1.0 · 20.10.2026 · Kaynak: Ön analiz raporu v1.1 · Canlı doküman: [Claude Docs](https://claude.ai/code/artifact/b3dbda92-562a-4125-a8e8-5d4812fd2607)
 
 ## Özet ve temel kararlar

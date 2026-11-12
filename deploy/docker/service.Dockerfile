@@ -1,4 +1,4 @@
-# Java servisleri için ortak imaj tanımı. Kullanım: --build-arg MODULE=shipment-service (bkz. deploy/prod/docker-compose.yml)
+# Java servisleri için ortak imaj tanımı. Kullanım: --build-arg MODULE=yarnshipment-app (bkz. deploy/prod/docker-compose.yml)
 # Derleme bağlamı depo kökündür. Testler ve kod denetimleri (Checkstyle, PMD, Spotless, JaCoCo) CI'da çalışır; imaj derlemesinde atlanır.
 FROM eclipse-temurin:21-jdk AS build
 ARG MODULE

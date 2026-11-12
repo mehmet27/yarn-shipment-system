@@ -2,6 +2,7 @@ package com.yarnshipment.discrepancy.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.yarnshipment.common.events.testing.RecordingDomainEventPublisher;
 import com.yarnshipment.common.security.scope.AccessScope;
 import com.yarnshipment.discrepancy.application.port.in.DiscrepancyPage;
 import com.yarnshipment.discrepancy.application.port.in.ListDiscrepanciesQuery.Filter;
@@ -25,7 +26,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /** Uyuşmazlık listesi, migration'larla kurulan gerçek şemada ve uygulama rolüyle. */
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({ComparisonSeeder.class, DiscrepancyWriter.class, DiscrepancyQueryAdapter.class, UuidV7Generator.class})
+@Import({
+    RecordingDomainEventPublisher.class,
+    ComparisonSeeder.class,
+    DiscrepancyWriter.class,
+    DiscrepancyQueryAdapter.class,
+    UuidV7Generator.class
+})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 class DiscrepancyQueryAdapterTest {
 

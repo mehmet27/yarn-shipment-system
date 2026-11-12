@@ -2,7 +2,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
+import com.yarnshipment.common.events.testing.RecordingDomainEventPublisher;
 import com.yarnshipment.shipment.domain.bag.BagAssignment;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
 import java.math.BigDecimal;
@@ -27,7 +27,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-    OutboxDomainEventPublisher.class,
+    RecordingDomainEventPublisher.class,
     BagAssignmentAdapter.class,
     ShipmentBagsAdapter.class,
     ShipmentTransitionWriter.class,

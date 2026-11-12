@@ -1,4 +1,4 @@
-/** Kafka dinleyicileri: diğer servislerin olaylarını use case'lere çevirir. */
+/** Olay tüketicileri: diğer modüllerin olaylarını use case'lere çevirir. */
 @NullMarked
 package com.yarnshipment.shipment.adapter.in.messaging;
 

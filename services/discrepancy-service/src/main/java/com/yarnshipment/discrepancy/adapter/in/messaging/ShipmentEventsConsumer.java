@@ -1,7 +1,7 @@
 package com.yarnshipment.discrepancy.adapter.in.messaging;
 
-import com.yarnshipment.common.outbox.DomainEventConsumer;
-import com.yarnshipment.common.outbox.IncomingEvent;
+import com.yarnshipment.common.events.DomainEventConsumer;
+import com.yarnshipment.common.events.IncomingEvent;
 import com.yarnshipment.discrepancy.application.port.in.RegisterShipmentCommand;
 import com.yarnshipment.discrepancy.application.port.in.RegisterShipmentUseCase;
 import com.yarnshipment.discrepancy.application.port.in.TrackShipmentCommand;

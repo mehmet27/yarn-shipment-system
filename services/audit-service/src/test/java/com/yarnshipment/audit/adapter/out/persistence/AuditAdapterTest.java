@@ -14,15 +14,15 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Audit adaptörlerini gerçek şemada sınar. Yazan ve okuyan roller ayrı bağlantılardır; bu yüzden testler transaction
- * dışında çalışır ve kayıtları gerçekten commit eder (her test sınıfı kendi veritabanını açar).
+ * Audit adaptörlerini gerçek şemada sınar. Testler transaction dışında çalışır ve kayıtları gerçekten commit eder
+ * (her test sınıfı kendi veritabanını açar).
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({AuditJdbcConfiguration.class, AuditAppendAdapter.class, AuditChainAdapter.class, AuditQueryAdapter.class})
+@Import({AuditAppendAdapter.class, AuditChainAdapter.class, AuditQueryAdapter.class})
 @ImportAutoConfiguration(JacksonAutoConfiguration.class)
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 @interface AuditAdapterTest {}

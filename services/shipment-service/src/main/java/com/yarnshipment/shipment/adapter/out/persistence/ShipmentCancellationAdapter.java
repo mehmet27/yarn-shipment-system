@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * {@link ShipmentCancellationPort}'un JDBC uygulaması. Gerekçe önce yazılır (durum CANCELLED olunca zorunlu), sonra
- * durum geçer; sevkiyattaki çuvallar çıkarılmış işaretlenir ve outbox olayı yazılır.
+ * durum geçer; sevkiyattaki çuvallar çıkarılmış işaretlenir ve olay yayınlanır.
  */
 @Component
 final class ShipmentCancellationAdapter implements ShipmentCancellationPort {

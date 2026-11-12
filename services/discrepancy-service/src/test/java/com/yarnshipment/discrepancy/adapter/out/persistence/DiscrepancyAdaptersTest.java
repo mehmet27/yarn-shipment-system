@@ -3,7 +3,7 @@ package com.yarnshipment.discrepancy.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
+import com.yarnshipment.common.events.testing.RecordingDomainEventPublisher;
 import com.yarnshipment.discrepancy.domain.model.Discrepancy;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyStatus;
@@ -12,7 +12,6 @@ import com.yarnshipment.events.discrepancy.DiscrepancyResolved;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,6 @@ import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -32,7 +30,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-    OutboxDomainEventPublisher.class,
+    RecordingDomainEventPublisher.class,
     ComparisonSeeder.class,
     DiscrepancyWriter.class,
     DiscrepancyQueryAdapter.class,
@@ -58,7 +56,7 @@ class DiscrepancyAdaptersTest {
     private DiscrepancyDecisionAdapter decisions;
 
     @Autowired
-    private JdbcTemplate jdbc;
+    private RecordingDomainEventPublisher events;
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
@@ -67,6 +65,7 @@ class DiscrepancyAdaptersTest {
 
     @BeforeEach
     void openTwoDiscrepancies() {
+        events.clear();
         SeededDiscrepancies.seed(comparisons);
     }
 
@@ -101,11 +100,10 @@ class DiscrepancyAdaptersTest {
                 .isInstanceOf(DiscrepancyNotOpenException.class);
     }
 
-    private List<@Nullable Integer> remainingOpenFromEvents() {
-        return jdbc.queryForList(
-                "SELECT (payload ->> 'remainingOpen')::int FROM outbox_event WHERE event_type = ?"
-                        + " ORDER BY created_at, id",
-                Integer.class,
-                DiscrepancyResolved.TYPE);
+    private List<Integer> remainingOpenFromEvents() {
+        return events.published().stream()
+                .filter(event -> DiscrepancyResolved.TYPE.equals(event.type()))
+                .map(event -> ((DiscrepancyResolved) event.payload()).remainingOpen())
+                .toList();
     }
 }

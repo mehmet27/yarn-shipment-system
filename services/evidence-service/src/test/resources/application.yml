@@ -1,0 +1,44 @@
+# evidence modülünün dilim testleri için ayarlar; üretim ayarı yarnshipment-app içindedir.
+# Her modül yalnız kendi şemasına bağlanır (search_path tek şema), tablolar şemasız adlarla erişilir.
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/yarnshipment}
+    username: ${DB_USER:yarnshipment}
+    password: ${DB_PASSWORD}
+    hikari:
+      schema: evidence
+  flyway:
+    user: ${DB_USER:yarnshipment}
+    password: ${DB_PASSWORD}
+    default-schema: evidence
+    schemas: evidence
+    create-schemas: true
+    placeholders:
+      app_role: ${DB_USER:yarnshipment}
+      readonly_role: ${DB_USER:yarnshipment}
+  messages:
+    basename: evidence-messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+  jackson:
+    default-property-inclusion: non_null
+  mvc:
+    problemdetails:
+      enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/yarnshipment}
+          audiences: yarnshipment-api
+yarnshipment:
+  evidence:
+    storage:
+      endpoint: ${EVIDENCE_STORAGE_ENDPOINT:http://localhost:9000}
+      region: ${EVIDENCE_STORAGE_REGION:us-east-1}
+      bucket: ${EVIDENCE_STORAGE_BUCKET:evidence}
+      access-key: ${EVIDENCE_STORAGE_ACCESS_KEY}
+      secret-key: ${EVIDENCE_STORAGE_SECRET_KEY}
+      path-style: true
+      upload-url-ttl: 10m
+      download-url-ttl: 5m

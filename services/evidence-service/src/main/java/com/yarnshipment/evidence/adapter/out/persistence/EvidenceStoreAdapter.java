@@ -22,7 +22,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /**
- * {@link EvidenceStorePort}'un JDBC uygulaması: kanıt kaydı, tekrar kullanım kayıtları ve outbox olayları aynı
+ * {@link EvidenceStorePort}'un JDBC uygulaması: kanıt kaydı, tekrar kullanım kayıtları ve olaylar aynı
  * transaction'da yazılır (EVT-03). Aynı hash başka bir sevkiyatta daha önce görüldüyse, o sevkiyattaki ilk kopya
  * için tekrar kaydı da yazılır.
  */

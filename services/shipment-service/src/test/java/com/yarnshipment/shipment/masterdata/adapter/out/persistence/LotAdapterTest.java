@@ -3,7 +3,9 @@ package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
+import com.yarnshipment.common.events.testing.RecordingDomainEventPublisher;
+import com.yarnshipment.events.masterdata.LotQualityLocked;
+import com.yarnshipment.moduleapi.event.DomainEvent;
 import com.yarnshipment.shipment.adapter.out.persistence.PostgresTestDatabase;
 import com.yarnshipment.shipment.masterdata.domain.catalog.DuplicateCodeException;
 import java.util.UUID;
@@ -11,9 +13,7 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -25,11 +25,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/** Parti yazmaları gerçek PostgreSQL'de: tek kilit, kilitten sonra düzenleme yok, tekil numara ve outbox olayı. */
+/** Parti yazmaları gerçek PostgreSQL'de: tek kilit, kilitten sonra düzenleme yok, tekil numara ve parti olayı. */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({OutboxDomainEventPublisher.class, LotAdapter.class, LotOutboxAdapter.class})
-@ImportAutoConfiguration(JacksonAutoConfiguration.class)
+@Import({RecordingDomainEventPublisher.class, LotAdapter.class, LotEventAdapter.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class LotAdapterTest {
 
@@ -42,7 +41,10 @@ class LotAdapterTest {
     private LotAdapter lots;
 
     @Autowired
-    private LotOutboxAdapter events;
+    private LotEventAdapter lotEvents;
+
+    @Autowired
+    private RecordingDomainEventPublisher events;
 
     @Autowired
     private PlatformTransactionManager transactionManager;
@@ -53,8 +55,7 @@ class LotAdapterTest {
     }
 
     @Test
-    @DisplayName(
-            "Parti bir kez kilitlenir; kilitten sonra düzenlenmez, numara lokasyonda tektir ve olay outbox'a girer")
+    @DisplayName("Parti bir kez kilitlenir; kilitten sonra düzenlenmez, numara lokasyonda tektir ve olay yayınlanır")
     void shouldLockLotOnceAndPublishEvent() {
         // given
         LotFixtures.givenReferences(DATABASE.migratorJdbc());
@@ -66,7 +67,7 @@ class LotAdapterTest {
         boolean edited = inTx(() -> lots.updateLot(LotFixtures.ACTOR, lotId, LotFixtures.DETAILS));
         var locked = lots.findLot(lotId).orElseThrow();
         inTx(() -> {
-            events.publishQualityLocked(LotFixtures.ACTOR, locked);
+            lotEvents.publishQualityLocked(LotFixtures.ACTOR, locked);
             return true;
         });
 
@@ -78,14 +79,13 @@ class LotAdapterTest {
         assertThat(locked.labels().qualityGradeCode()).isEqualTo("LOT-A");
         assertThatThrownBy(() -> inTx(() -> lots.insertLot(LotFixtures.ACTOR, LotFixtures.SITE, LotFixtures.DETAILS)))
                 .isInstanceOf(DuplicateCodeException.class);
-        assertThat(DATABASE.migratorJdbc()
-                        .queryForObject(
-                                "SELECT payload ->> 'lotNo' || '/' || (payload ->> 'qualityGradeCode')"
-                                        + " FROM outbox_event WHERE aggregate_id = ?"
-                                        + " AND event_type = 'com.yarnshipment.masterdata.lot-quality-locked.v1'",
-                                String.class,
-                                lotId))
-                .isEqualTo("T-1/LOT-A");
+        assertThat(events.published())
+                .extracting(DomainEvent::payload)
+                .singleElement()
+                .isInstanceOfSatisfying(
+                        LotQualityLocked.class,
+                        event -> assertThat(event.lotNo() + "/" + event.qualityGradeCode())
+                                .isEqualTo("T-1/LOT-A"));
     }
 
     private <T> T inTx(Supplier<T> action) {

@@ -2,7 +2,7 @@ package com.yarnshipment.discrepancy.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
+import com.yarnshipment.common.events.testing.RecordingDomainEventPublisher;
 import com.yarnshipment.discrepancy.TestComparisons;
 import com.yarnshipment.discrepancy.domain.claim.ClaimTarget;
 import com.yarnshipment.discrepancy.domain.claim.QualityClaim;
@@ -19,7 +19,6 @@ import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -29,7 +28,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-    OutboxDomainEventPublisher.class,
+    RecordingDomainEventPublisher.class,
     ShipmentWatchAdapter.class,
     DiscrepancyWriter.class,
     QualityClaimAdapter.class,
@@ -53,7 +52,7 @@ class QualityClaimAdapterTest {
     private DiscrepancyQueryAdapter discrepancies;
 
     @Autowired
-    private JdbcTemplate jdbc;
+    private RecordingDomainEventPublisher events;
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
@@ -62,6 +61,7 @@ class QualityClaimAdapterTest {
 
     @BeforeEach
     void cleanDelivery() {
+        events.clear();
         SeededClaims.complete(watch);
     }
 
@@ -96,8 +96,6 @@ class QualityClaimAdapterTest {
         assertThat(discrepancies.findActivity(saved.discrepancyId()))
                 .extracting(activity -> activity.actionType())
                 .containsExactly("OPENED", "CLAIM_EVIDENCE");
-        assertThat(jdbc.queryForObject(
-                        "SELECT count(*) FROM outbox_event WHERE event_type = ?", Long.class, DiscrepancyOpened.TYPE))
-                .isEqualTo(1L);
+        assertThat(events.count(DiscrepancyOpened.TYPE)).isEqualTo(1L);
     }
 }

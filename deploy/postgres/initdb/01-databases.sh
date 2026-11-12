@@ -21,7 +21,7 @@ WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'yarnshipment')
 REVOKE ALL ON DATABASE yarnshipment FROM PUBLIC;
 ALTER DATABASE yarnshipment SET timezone TO 'UTC';
 -- Veritabanına bağlanan herkes tüm servis şemalarını şema adı yazmadan görebilsin (psql, DBeaver vb.).
--- Aynı ada sahip tablolar (outbox_event vb.) için ilk şema kazanır; kesin erişim için shipment.outbox_event gibi yazın.
+-- Aynı ada sahip tablolar (idempotency_record vb.) için ilk şema kazanır; kesin erişim için shipment.idempotency_record gibi yazın.
 ALTER ROLE yarnshipment IN DATABASE yarnshipment
   SET search_path TO masterdata, shipment, evidence, discrepancy, reporting, audit, public;
 SQL

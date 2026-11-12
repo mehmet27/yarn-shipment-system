@@ -28,7 +28,7 @@ public final class NamingRules {
             .haveSimpleNameEndingWith("ErrorHandler")
             .orShould()
             .haveSimpleNameEndingWith("ExceptionHandler")
-            .because("NAME-13: Handler soneki yalnızca Spring ve Kafka hata işleyicilerinde");
+            .because("NAME-13: Handler soneki yalnızca Spring hata işleyicilerinde");
 
     @ArchTest
     public static final ArchRule EXCEPTIONS_END_WITH_EXCEPTION = classes()

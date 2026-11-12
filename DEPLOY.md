@@ -1,7 +1,7 @@
 # Sunucuya kurulum rehberi (Ubuntu, tek sunucu)
 
 Bu rehber, kiralanmış bir Ubuntu 22.04/24.04 sunucuya sistemi Docker ile kurar. Dışarıya yalnızca 80 ve 443 açılır;
-veritabanı, Redis, Kafka, MinIO ve servisler iç ağda kalır. HTTPS sertifikasını Caddy kendiliğinden alır.
+veritabanı, Redis, MinIO ve uygulama iç ağda kalır. HTTPS sertifikasını Caddy kendiliğinden alır.
 
 ## 0. Hazırlık
 
@@ -52,5 +52,10 @@ dosyasını güvenli bir yere yedekleyin (içindeki sırlar kaybolursa veriye er
 - Veritabanı şifresi yalnızca ilk açılışta yazılır; sonradan `.env` içinde değiştirmek veritabanına yansımaz.
 - SMS ve e-posta doğrulaması yoktur: yönetici kullanıcı açarken geçici şifreyi kendisi yazar ve unutulan şifreyi
   Kullanıcılar ekranından yeni geçici şifre vererek sıfırlar; kişi ilk girişte şifresini değiştirir.
-- Tek düğümlü Kafka ve tek veritabanı: pilot ölçeği için uygundur, yüksek erişilebilirlik sağlamaz.
+- Tek uygulama süreci ve tek veritabanı: pilot ölçeği için uygundur, yüksek erişilebilirlik sağlamaz.
+- Kafka kaldırıldı. Eski (çok servisli) kurulumdan geçerken: önce eski servisleri durdurmadan `outbox_event` tablolarında
+  `published_at IS NULL` satır kalmadığını ve tüketici gecikmesinin sıfır olduğunu doğrulayın, veritabanı yedeği alın,
+  sonra yeni imajla `docker compose up -d --build` çalıştırın. Açılışta şema başına Flyway migration'ları çalışır;
+  `outbox_event` ve `reporting.processed_event` tabloları düşürülür. `kafka-data` birimi artık kullanılmaz
+  (`docker volume rm yarn-shipment-prod_kafka-data` ile silinebilir).
 - Keycloak yönetim konsolu internetten erişilebilir; güçlü şifre kullanın, gerekirse Caddyfile'da IP ile kısıtlayın.

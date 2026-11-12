@@ -3,9 +3,11 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.yarnshipment.common.outbox.OutboxDomainEventPublisher;
+import com.yarnshipment.common.events.testing.RecordingDomainEventPublisher;
+import com.yarnshipment.moduleapi.event.DomainEvent;
 import com.yarnshipment.shipment.domain.model.DispatchRecording;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
+import com.yarnshipment.shipment.domain.model.ShipmentDispatched;
 import com.yarnshipment.shipment.domain.model.Weighing;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -29,7 +31,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-    OutboxDomainEventPublisher.class,
+    RecordingDomainEventPublisher.class,
     DispatchCommandAdapter.class,
     ShipmentTransitionWriter.class,
     UuidV7Generator.class
@@ -52,6 +54,9 @@ class DispatchCommandAdapterTest {
     private JwtDecoder jwtDecoder;
 
     @Autowired
+    private RecordingDomainEventPublisher events;
+
+    @Autowired
     private DispatchCommandAdapter adapter;
 
     @Autowired
@@ -64,6 +69,7 @@ class DispatchCommandAdapterTest {
 
     @BeforeEach
     void insertDraftShipment() {
+        events.clear();
         jdbc.update(INSERT_SHIPMENT, SHIPMENT, SITE, "SV-D1", SUBCONTRACTOR, USER);
     }
 
@@ -81,11 +87,12 @@ class DispatchCommandAdapterTest {
         assertThat(jdbc.queryForObject(
                         "SELECT to_status FROM shipment_status_history WHERE shipment_id = ?", String.class, SHIPMENT))
                 .isEqualTo("AWAITING_DELIVERY");
-        assertThat(jdbc.queryForObject(
-                        "SELECT payload ->> 'bagCount' FROM outbox_event WHERE aggregate_id = ?",
-                        String.class,
-                        SHIPMENT))
-                .isEqualTo(String.valueOf(BAGS));
+        assertThat(events.published())
+                .extracting(DomainEvent::payload)
+                .singleElement()
+                .isInstanceOfSatisfying(
+                        ShipmentDispatched.class,
+                        dispatched -> assertThat(dispatched.bagCount()).isEqualTo(BAGS));
     }
 
     @Test

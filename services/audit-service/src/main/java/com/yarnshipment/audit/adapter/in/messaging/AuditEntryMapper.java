@@ -1,7 +1,7 @@
 package com.yarnshipment.audit.adapter.in.messaging;
 
 import com.yarnshipment.audit.application.port.in.AppendAuditEntryCommand;
-import com.yarnshipment.common.outbox.IncomingEvent;
+import com.yarnshipment.common.events.IncomingEvent;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;

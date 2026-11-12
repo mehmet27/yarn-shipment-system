@@ -114,24 +114,10 @@ Fasoncu ve şoför yönetimi yalnızca yöneticidedir (`MASTER_DATA_MANAGE`): `P
 | `DB_USER` / `DB_PASSWORD` (tüm servisler) | `yarnshipment` / (zorunlu) |
 | `KEYCLOAK_ISSUER_URI` | `http://localhost:8180/realms/yarnshipment` |
 | `SERVER_PORT` | `8083` |
-| `YARNSHIPMENT_BAG_SERVICE_URL` | `http://localhost:8084` (çuval atama için bag-service; istek sahibinin token'ı iletilir, bu yüzden bag-service de çalışıyor olmalı) |
 | `YARNSHIPMENT_KEYCLOAK_ADMIN_URL` / `YARNSHIPMENT_KEYCLOAK_ADMIN_REALM` / `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_ID` | `http://localhost:8180` / `yarnshipment` / `yarnshipment-admin` (fabrika içi giriş hesabı açan servis hesabı) |
 | `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET` | boş (boşsa hesap açma uçları 502 `LOGIN_ACCOUNT_UNAVAILABLE` döner); yerel değer `deploy/.env` içindeki `KEYCLOAK_ADMIN_CLIENT_SECRET` (varsayılan `local-admin-client-secret`) |
 
 Persistence testleri Testcontainers ile gerçek PostgreSQL'e karşı çalışır; `./mvnw verify` için Docker açık olmalıdır.
-
-## bag-service'i çalıştırma
-
-Çuval kaydı, tek kullanım garantisi ve sevkiyat rezervasyonu `bag` şemasındadır (`yarnshipment` veritabanı); `local` profilinde yerel örnek çuvallar (`BAG-0001`…`BAG-0005`) yüklenir.
-
-```bash
-export DB_PASSWORD=<LOCAL_DB_PASSWORD>
-./mvnw -pl services/bag-service spring-boot:run -Dspring-boot.run.profiles=local
-```
-
-Uçlar (port `8084`, gateway üzerinden `/api/v1/bags/**`): `GET /api/v1/bags/{uniqueKey}`, `POST /api/v1/bags/reservations`
-(çuvalları sevkiyata ayırır; hepsi ya da hiçbiri) ve `POST /api/v1/bags/reservations/release` (sevkiyat iptalinde bırakır).
-Çuval oluşturma ve etiket baskısı sonraki adımlardır.
 
 ## Gateway (BFF)'i çalıştırma
 
@@ -159,7 +145,6 @@ export REDIS_PASSWORD=<deploy/.env içindeki REDIS_PASSWORD>
 | `GATEWAY_PUBLIC_URL` | `http://localhost:8080` (Keycloak'taki yönlendirme adresi; realm dosyasındakiyle aynı olmalı) |
 | `GATEWAY_POST_LOGIN_URL` / `GATEWAY_POST_LOGOUT_URL` | `http://localhost:5173/` |
 | `SHIPMENT_SERVICE_URL` | `http://localhost:8083` |
-| `BAG_SERVICE_URL` | `http://localhost:8084` |
 | `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` | `localhost` / `6379` / boş (oturumlar Redis'te tutulur; gateway yeniden başlasa da oturum düşmez) |
 
 ## common-outbox (olay yayını)

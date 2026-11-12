@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useCancelShipment } from '../hooks/useCancelShipment';
 
 const MAX_REASON_LENGTH = 500;
-const KNOWN_CODES = ['INVALID_SHIPMENT_STATUS', 'BAG_SERVICE_UNAVAILABLE'] as const;
+const KNOWN_CODES = ['INVALID_SHIPMENT_STATUS'] as const;
 
 function cancelErrorKey(code: string): string {
   const known = KNOWN_CODES.find((candidate) => candidate === code);

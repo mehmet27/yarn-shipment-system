@@ -1,6 +1,5 @@
 export type NavIconName =
   | 'shipments'
-  | 'bags'
   | 'reports'
   | 'discrepancies'
   | 'masterData'
@@ -18,7 +17,6 @@ export type NavIconName =
 /** Her ikon 24x24 çizgi (stroke) yolu; renk metinden (currentColor) gelir. */
 const PATHS: Record<NavIconName, string> = {
   shipments: 'M1 6h13v10H1zM14 10h5l3 3v3h-8M6 18.5a1.5 1.5 0 100 .01M17 18.5a1.5 1.5 0 100 .01',
-  bags: 'M5 8h14l-1 12H6zM9 8V6a3 3 0 016 0v2',
   reports: 'M4 20V10M10 20V4M16 20v-8M22 20H2',
   discrepancies: 'M12 3l10 18H2zM12 10v5M12 18v.5',
   masterData:

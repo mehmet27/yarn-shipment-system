@@ -39,7 +39,11 @@ class TokenRelayInterceptorTest {
                 .andRespond(MockRestResponseCreators.withSuccess());
 
         // when
-        builder.build().get().uri("http://bag-service/api/v1/bags").retrieve().toBodilessEntity();
+        builder.build()
+                .get()
+                .uri("http://shipment-service/api/v1/shipments")
+                .retrieve()
+                .toBodilessEntity();
 
         // then
         server.verify();
@@ -55,7 +59,11 @@ class TokenRelayInterceptorTest {
                 .andRespond(MockRestResponseCreators.withSuccess());
 
         // when
-        builder.build().get().uri("http://bag-service/api/v1/bags").retrieve().toBodilessEntity();
+        builder.build()
+                .get()
+                .uri("http://shipment-service/api/v1/shipments")
+                .retrieve()
+                .toBodilessEntity();
 
         // then
         server.verify();

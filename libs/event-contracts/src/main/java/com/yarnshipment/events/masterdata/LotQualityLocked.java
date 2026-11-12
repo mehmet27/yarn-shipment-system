@@ -4,8 +4,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * PartiKalitesiKilitlendi: partinin kalitesi kilitlendi, artık değişmez (rapor Bölüm 10). bag-service bu olayla
- * çuvalın bağlanabileceği partileri ve kalitelerini öğrenir.
+ * PartiKalitesiKilitlendi: partinin kalitesi kilitlendi, artık değişmez (rapor Bölüm 10). Olay outbox'tan
+ * yayınlanır; şu an dinleyen servis yoktur.
  *
  * @param lotId parti
  * @param siteId partinin lokasyonu

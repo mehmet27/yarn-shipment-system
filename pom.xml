@@ -29,7 +29,6 @@
         <module>libs/common-outbox</module>
         <module>libs/event-contracts</module>
         <module>services/shipment-service</module>
-        <module>services/bag-service</module>
         <module>services/gateway</module>
         <module>services/discrepancy-service</module>
         <module>services/evidence-service</module>

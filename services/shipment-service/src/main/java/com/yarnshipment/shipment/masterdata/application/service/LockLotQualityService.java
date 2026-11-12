@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Partinin kalitesini kilitler (rapor Bölüm 10: kalite parti bazında belirlenir ve sevkiyattan önce kilitlenir). Kilit
- * ve {@code LotQualityLocked} olayı aynı transaction'da yazılır; bag-service olayla partiyi çuval bağlanabilir yapar.
+ * ve {@code LotQualityLocked} olayı aynı transaction'da yazılır.
  * Kilit geri alınmaz; ikinci kilit isteği {@link LotQualityLockedException} verir.
  */
 @Service

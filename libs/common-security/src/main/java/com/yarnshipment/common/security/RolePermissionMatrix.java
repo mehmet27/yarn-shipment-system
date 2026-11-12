@@ -41,7 +41,6 @@ public final class RolePermissionMatrix {
                 Permission.USER_MANAGE,
                 Permission.SETTINGS_MANAGE,
                 Permission.LOT_QUALITY_LOCK,
-                Permission.BAG_CREATE,
                 Permission.SHIPMENT_VIEW,
                 Permission.SHIPMENT_CREATE,
                 Permission.SHIPMENT_CANCEL,
@@ -65,7 +64,6 @@ public final class RolePermissionMatrix {
     private static Set<Permission> permissionsForWarehouse() {
         return EnumSet.of(
                 Permission.MASTER_DATA_VIEW,
-                Permission.BAG_CREATE,
                 Permission.SHIPMENT_VIEW,
                 Permission.DISPATCH_RECORD,
                 Permission.DISPATCH_VIEW,

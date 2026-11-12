@@ -49,7 +49,6 @@ migrate() {
   fi
 }
 
-migrate bag-service bag
 migrate shipment-service shipment
 migrate evidence-service evidence
 migrate discrepancy-service discrepancy

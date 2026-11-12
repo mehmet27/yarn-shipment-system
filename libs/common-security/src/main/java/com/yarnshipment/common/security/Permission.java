@@ -13,9 +13,6 @@ public enum Permission implements GrantedAuthority {
     USER_MANAGE(AccessType.WRITE),
     SETTINGS_MANAGE(AccessType.WRITE),
     LOT_QUALITY_LOCK(AccessType.WRITE),
-    /** Çuval (Unique Key) oluşturma ve etiket basımı. */
-    BAG_CREATE(AccessType.WRITE),
-
     SHIPMENT_VIEW(AccessType.READ),
     SHIPMENT_CREATE(AccessType.WRITE),
     SHIPMENT_CANCEL(AccessType.WRITE),

@@ -40,6 +40,9 @@ export type CreateDraft = {
   lines: readonly RecipeLineDraft[];
   /** Yüzde metni; `undefined` ayardaki varsayılanı kullanır. */
   fireRatePct: string | undefined;
+  /** Yalnız sipariş formu PDF'inde basılır; sevkiyatla kaydedilmez. */
+  orderNo: string;
+  contactPerson: string;
 };
 
 let lineCounter = 0;
@@ -71,6 +74,8 @@ export const EMPTY_CREATE_DRAFT: CreateDraft = {
   vehicle: undefined,
   lines: [newLine()],
   fireRatePct: undefined,
+  orderNo: '',
+  contactPerson: '',
 };
 
 /** i18n anahtarı (`create.errors.*`). */

@@ -281,14 +281,20 @@
     "title": "Yeni sevkiyat",
     "selectPlaceholder": "Seçin",
     "hint": "Alıcı fasoncuyu, ipliğin nereden çıktığını ve reçeteyi girin. Şoför ve araç sonradan da atanabilir.",
-    "sections": { "parties": "Taraflar", "summary": "Özet" },
+    "sections": {
+      "parties": "Taraflar",
+      "summary": "Özet"
+    },
     "source": {
       "title": "İplik nereden çıkıyor?",
       "CENTRAL": "Merkez stok",
       "SUBCONTRACTOR": "Başka fasoncu",
       "DIRECT": "Kapıdan aktarma"
     },
-    "summary": { "total": "Toplam net", "expectedFabric": "Beklenen kumaş" },
+    "summary": {
+      "total": "Toplam net",
+      "expectedFabric": "Beklenen kumaş"
+    },
     "siteMissing": "Lokasyonunuz belirlenemedi; sevkiyat oluşturulamıyor. Yöneticinize başvurun.",
     "subcontractor": "Alıcı fasoncu",
     "driver": "Şoför (isteğe bağlı)",
@@ -338,7 +344,47 @@
     "sourceSubcontractor": "Gönderen fasoncu",
     "directTransferSupplier": "Tedarikçi",
     "directTransferHint": "İplik depoya girmeden kamyondan kamyona aktarılır; merkez stok eksiye düşmez.",
-    "directTransferWaybillNo": "Geliş irsaliye no (isteğe bağlı)"
+    "directTransferWaybillNo": "Geliş irsaliye no (isteğe bağlı)",
+    "pdf": {
+      "button": "Sipariş formu PDF",
+      "fileName": "siparis-formu.pdf",
+      "company": "GENCER",
+      "companyLine": "TEKSTİL GIDA SAN.VE TİC.LTD.ŞTİ",
+      "address": "İstasyon Mahallesi Yeniyol 571. Sokak No:18/A Türkoğlu/Kahramanmaraş",
+      "firm": "FİRMA",
+      "orderNo": "SİPARİŞ NO",
+      "contact": "YETKİLİ KİŞİ",
+      "date": "TARİHİ",
+      "columns": [
+        "KUMAŞ CİNSİ",
+        "LYC",
+        "TÜP / MAY/A.EN",
+        "İPLİK UZUN. / LYC.",
+        "PUSS-FİNE",
+        "SİPARİŞ / KG",
+        "FİYAT / TL"
+      ],
+      "total": "TOPLAM",
+      "notesTitle": "AÇIKLAMALAR :",
+      "orderApproval": "SİPARİŞ ONAYI",
+      "producer": "ÜRETİCİ FİRMA",
+      "approver": "FATİH AYTÜRK",
+      "notes": [
+        "1 - Sipariş Teyit Edilip Kaşe-İmza Onayı İle Tarafımıza Mail Gönderilmelidir.Onaylamadan İşleme Alınan Siparişlerde Sözleşmede Bulunan 11 Madde Kabul Edilmiş Sayılır.",
+        "2 - TOP BAŞLARINA,BOYUNA İĞNE,PLATİN YAĞ İZLERİNE,GRAMAJ - İPLİK BOYLARINA V İPLİK ABRAJLARINA DİKKAT.",
+        "3 - Sipariş Termininden Doğacak Tüm Sorumluluk Üretici Firmaya Fatura Edilir.",
+        "4 - İplik Kaynaklı Hatalar Mutlaka Tarafımıza Bildirilecektir. (Bant,Abraj,Jüt,İnce-Kalın,Neps,Delik v.b)",
+        "5 - Örgüden Kaynaklanan Tüm Hatalar (İğne İzi, Platin İzi, Yağ İzi, Delik, Patlak,Uşuntu,lıkra Kaşığı vb.) Üretici Firmaya Fatura Edilir.",
+        "6 - Örgü İçin Kabul Edilebilir Fire Max. %5'dir. Fazlası Üretici Firmaya Fatura Edilir.",
+        "7 - İplik Uzunluğu ve Makine Üzeri Ham Kumaş Gramaj Değerlerine Mutlaka Uyulmalıdır.",
+        "8 -ÖDEME FATURA + 60 GÜN",
+        "9 -Sipariş %100 Kontrol Edilecektir Ve Her Top Kalite Kontrol Makinasında Bakıldıp Depoya Sevk Edilecektir.",
+        "10-Siparişte Belirtilen iplik,likra Ve Polyester Uzunluklarına Kesinlikle Uyulmalıdır. Fire Hesaplanırken Kumaşın Sarfiyatları Göz Önüne Alınacaktır.",
+        "11 - Tüm Gelişmeler Karşılıklı Olarak Zamanında Paylaşılmalıdır."
+      ]
+    },
+    "orderNo": "Sipariş no",
+    "contactPerson": "Yetkili kişi"
   },
   "masterData": {
     "title": "Tanımlar",

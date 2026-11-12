@@ -48,6 +48,7 @@ SELECT id, site_id, shipment_no, subcontractor_id, subcontractor_title, driver_i
 FROM seed_shipment
 ON CONFLICT (id) DO NOTHING;
 
+-- Kilitli (tamamlanmış) sevkiyatın alt kayıtları tekrar eklenmez: kilit tetikleyicisi ON CONFLICT'ten önce çalışır.
 -- Çuvallar: atanmış (DRAFT dışı) sevkiyatlara beşer çuval; sıra no 1-5, her biri 50 kg (net 250 kg).
 INSERT INTO shipment_bag (id, shipment_id, bag_id, unique_key, seq_no, weight_kg, scan_method,
                           assigned_at, assigned_by, created_at, created_by)
@@ -58,6 +59,7 @@ SELECT ('0192f0a0-0000-7000-8000-0000000b' || lpad(s.n::text, 2, '0') || lpad(b:
        s.created_at, '0192f0a0-0000-7000-8000-00000000d001', s.created_at, '0192f0a0-0000-7000-8000-00000000d001'
 FROM seed_shipment s CROSS JOIN generate_series(1, 5) AS b
 WHERE s.status <> 'DRAFT'
+  AND NOT EXISTS (SELECT 1 FROM shipment k WHERE k.id = s.id AND k.locked_at IS NOT NULL)
 ON CONFLICT (id) DO NOTHING;
 
 -- Çıkış tartımı: DRAFT dışındaki her sevkiyat. Brüt 253.500, dara 3.500, net 250.000, beş çuval.
@@ -68,6 +70,7 @@ SELECT ('0192f0a0-0000-7000-8000-0000000d' || lpad(n::text, 4, '0'))::uuid, id, 
        created_at + interval '2 hours', '0192f0a0-0000-7000-8000-00000000d001'
 FROM seed_shipment
 WHERE status <> 'DRAFT'
+  AND NOT EXISTS (SELECT 1 FROM shipment k WHERE k.id = seed_shipment.id AND k.locked_at IS NOT NULL)
 ON CONFLICT (id) DO NOTHING;
 
 -- Tamamlanan örnek: müdür irsaliye numarasını girdi, sevkiyat kilitlendi. Kilit en son konur; aksi halde bağlı

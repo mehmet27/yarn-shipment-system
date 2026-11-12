@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tek veritabanı (yarnshipment) ve tek kullanıcı (yarnshipment). Servis tabloları servis başına şemada durur
-# (şemaları Flyway açar: masterdata, shipment, evidence, discrepancy, reporting, audit); Keycloak da aynı veritabanında "keycloak" şemasını kullanır.
+# (şemaları Flyway açar: platform, shipment, evidence, discrepancy, reporting, audit); Keycloak da aynı veritabanında "keycloak" şemasını kullanır.
 # Tabloları bu script kurmaz; her servis açılışta Flyway ile kurar. Bkz. docs/veritabani-tasarimi.md.
 set -euo pipefail
 
@@ -19,11 +19,20 @@ SELECT 'CREATE DATABASE yarnshipment OWNER yarnshipment ENCODING ''UTF8'' TEMPLA
 WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'yarnshipment')
 \gexec
 REVOKE ALL ON DATABASE yarnshipment FROM PUBLIC;
+-- Denetim kaydı rolleri (audit şemasındaki V202611181000 migration'ı yetkileri verir). İkisi de giriş yapamaz; uygulama
+-- kullanıcısı üyedir ama yetkilerini miras almaz, denetim adaptörleri SET LOCAL ROLE ile o rolün altında çalışır.
+SELECT 'CREATE ROLE audit_writer NOLOGIN'
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'audit_writer')
+\gexec
+SELECT 'CREATE ROLE audit_reader NOLOGIN'
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'audit_reader')
+\gexec
+GRANT audit_writer, audit_reader TO yarnshipment WITH INHERIT FALSE, SET TRUE;
 ALTER DATABASE yarnshipment SET timezone TO 'UTC';
 -- Veritabanına bağlanan herkes tüm servis şemalarını şema adı yazmadan görebilsin (psql, DBeaver vb.).
--- Aynı ada sahip tablolar (idempotency_record vb.) için ilk şema kazanır; kesin erişim için shipment.idempotency_record gibi yazın.
+-- Ortak tablolar (idempotency_record, audit_local) platform şemasındadır; platform.idempotency_record diye yazın.
 ALTER ROLE yarnshipment IN DATABASE yarnshipment
-  SET search_path TO masterdata, shipment, evidence, discrepancy, reporting, audit, public;
+  SET search_path TO platform, shipment, evidence, discrepancy, reporting, audit, public;
 SQL
 
 # Keycloak şemasını Keycloak kendi tablolarıyla doldurur (KC_DB_SCHEMA=keycloak).

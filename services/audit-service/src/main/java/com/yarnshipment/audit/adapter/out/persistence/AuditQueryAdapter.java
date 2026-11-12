@@ -14,10 +14,14 @@ import java.util.List;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
 
-/** {@link AuditQueryPort}'un JDBC uygulaması. Okuma modeli denetim zincirinin tablolarından okur. */
+/**
+ * {@link AuditQueryPort}'un JDBC uygulaması. Okuma modeli denetim zincirinin tablolarından okur; her sorgu
+ * {@code audit_reader} rolü (yalnız SELECT) altında çalışır.
+ */
 @Component
 final class AuditQueryAdapter implements AuditQueryPort {
 
@@ -29,14 +33,20 @@ final class AuditQueryAdapter implements AuditQueryPort {
 
     private final JdbcClient jdbc;
     private final JsonMapper jsonMapper;
+    private final AuditRoleScope roles;
 
-    AuditQueryAdapter(JdbcClient jdbc, JsonMapper jsonMapper) {
+    AuditQueryAdapter(JdbcClient jdbc, JsonMapper jsonMapper, PlatformTransactionManager transactionManager) {
         this.jdbc = jdbc;
         this.jsonMapper = jsonMapper;
+        this.roles = new AuditRoleScope(jdbc, transactionManager);
     }
 
     @Override
     public AuditRecordPage findRecords(ListAuditRecordsQuery query) {
+        return roles.runAs(AuditRoleScope.READER, () -> selectRecords(query));
+    }
+
+    private AuditRecordPage selectRecords(ListAuditRecordsQuery query) {
         Filter filter = query.filter();
         Where where = new Where();
         where.add("entity_type = :entityType", "entityType", filter.entityType());
@@ -61,25 +71,27 @@ final class AuditQueryAdapter implements AuditQueryPort {
 
     @Override
     public List<ChainCheck> findLatestChainChecks(int limit) {
-        return jdbc.sql("""
+        return roles.runAs(AuditRoleScope.READER, () -> jdbc.sql("""
                         SELECT id, checked_at, from_id, to_id, ok, broken_at_id
                           FROM audit_chain_check
                          ORDER BY id DESC
-                         LIMIT :limit""").param("limit", limit).query(AuditRows::mapCheck).list();
+                         LIMIT :limit""").param("limit", limit).query(AuditRows::mapCheck).list());
     }
 
     @Override
     public long latestRecordId() {
-        return jdbc.sql("SELECT coalesce(max(id), 0) FROM audit_log")
+        return roles.runAs(AuditRoleScope.READER, () -> jdbc.sql("SELECT coalesce(max(id), 0) FROM audit_log")
                 .query(Long.class)
-                .single();
+                .single());
     }
 
     @Override
     public long lastVerifiedId() {
-        return jdbc.sql("SELECT coalesce(max(to_id), 0) FROM audit_chain_check")
-                .query(Long.class)
-                .single();
+        return roles.runAs(
+                AuditRoleScope.READER,
+                () -> jdbc.sql("SELECT coalesce(max(to_id), 0) FROM audit_chain_check")
+                        .query(Long.class)
+                        .single());
     }
 
     private static @Nullable Timestamp timestamp(@Nullable Instant value) {

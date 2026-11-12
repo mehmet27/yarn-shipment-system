@@ -8,8 +8,9 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 /**
- * Servisin kendi veritabanındaki {@code idempotency_record} tablosunu kullanır. Anahtar, tek bir {@code INSERT ...
- * ON CONFLICT DO NOTHING} ile sahiplenilir; aynı anahtarlı iki eşzamanlı istekten yalnızca biri çalışır.
+ * Ortak {@code platform.idempotency_record} tablosunu kullanır (tüm modüller aynı kayıt defterini paylaşır). Anahtar,
+ * tek bir {@code INSERT ... ON CONFLICT DO NOTHING} ile sahiplenilir; aynı anahtarlı iki eşzamanlı istekten yalnızca
+ * biri çalışır.
  */
 public final class JdbcIdempotencyStore implements IdempotencyStore {
 
@@ -31,7 +32,7 @@ public final class JdbcIdempotencyStore implements IdempotencyStore {
         Instant now = clock.instant();
         deleteStale(actor, key, now);
         int inserted = jdbc.sql("""
-                        INSERT INTO idempotency_record (actor, idempotency_key, fingerprint, state, created_at)
+                        INSERT INTO platform.idempotency_record (actor, idempotency_key, fingerprint, state, created_at)
                         VALUES (:actor, :key, :fingerprint, 'IN_PROGRESS', :now)
                         ON CONFLICT DO NOTHING
                         """)
@@ -49,7 +50,7 @@ public final class JdbcIdempotencyStore implements IdempotencyStore {
     @Override
     public void complete(String actor, String key, StoredResponse response) {
         jdbc.sql("""
-                        UPDATE idempotency_record
+                        UPDATE platform.idempotency_record
                            SET state = 'COMPLETED', response_status = :status, response_content_type = :contentType,
                                response_location = :location, response_body = :body
                          WHERE actor = :actor AND idempotency_key = :key
@@ -65,7 +66,7 @@ public final class JdbcIdempotencyStore implements IdempotencyStore {
 
     @Override
     public void release(String actor, String key) {
-        jdbc.sql("DELETE FROM idempotency_record WHERE actor = :actor AND idempotency_key = :key")
+        jdbc.sql("DELETE FROM platform.idempotency_record WHERE actor = :actor AND idempotency_key = :key")
                 .param("actor", actor)
                 .param("key", key)
                 .update();
@@ -73,7 +74,7 @@ public final class JdbcIdempotencyStore implements IdempotencyStore {
 
     private void deleteStale(String actor, String key, Instant now) {
         jdbc.sql("""
-                        DELETE FROM idempotency_record
+                        DELETE FROM platform.idempotency_record
                          WHERE actor = :actor AND idempotency_key = :key
                            AND ((state = 'COMPLETED' AND created_at < :completedCutoff)
                              OR (state = 'IN_PROGRESS' AND created_at < :inProgressCutoff))
@@ -89,7 +90,7 @@ public final class JdbcIdempotencyStore implements IdempotencyStore {
         Optional<StoredRow> row = jdbc.sql("""
                         SELECT fingerprint, state, response_status, response_content_type, response_location,
                                response_body
-                          FROM idempotency_record
+                          FROM platform.idempotency_record
                          WHERE actor = :actor AND idempotency_key = :key
                         """)
                 .param("actor", actor)

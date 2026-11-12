@@ -30,11 +30,13 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 
+# $3 (isteğe bağlı): migration klasörü, depo köküne göre; verilmezse servisin db/migration/<şema> klasörüdür.
 migrate() {
   local service="$1" schema="$2"
+  local dir="${3:-services/$service/src/main/resources/db/migration/$schema}"
   echo "==> $service (şema $schema)"
   docker run --rm --network "container:$CONTAINER" \
-    -v "$ROOT/services/$service/src/main/resources/db/migration/$schema:/flyway/sql:ro" \
+    -v "$ROOT/$dir:/flyway/sql:ro" \
     "$FLYWAY_IMAGE" -q \
     -url="jdbc:postgresql://127.0.0.1:5432/yarnshipment" -user=yarnshipment -password="$PASSWORD" \
     -defaultSchema="$schema" -schemas="$schema" -createSchemas=true \
@@ -49,6 +51,8 @@ migrate() {
   fi
 }
 
+# Ortak platform şeması modül şemalarından önce göç eder (modül migration'ları trigger'larını ona bağlar).
+migrate common-web platform libs/common-web/src/main/resources/db/platform
 migrate shipment-service shipment
 migrate evidence-service evidence
 migrate discrepancy-service discrepancy

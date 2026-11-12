@@ -12,7 +12,8 @@ yükleyip numarasını yazar ve sevkiyatı tamamlar (`COMPLETED`). Ayrıntılı 
 
 - [Java 21 kod standartları](docs/standartlar/java-kod-standartlari.md): projedeki tüm Java kodu için bağlayıcı kurallar.
 - [React ve TypeScript kod standartları](docs/standartlar/react-typescript-kod-standartlari.md): frontend kodu için bağlayıcı kurallar.
-- [Veritabanı tasarımı](docs/veritabani-tasarimi.md): servis başına PostgreSQL 17 veritabanları ve tablolar.
+- [Modüler monolit mimarisi](docs/architecture/moduler-monolit-mimarisi.md): modüller, olaylar, veri, audit ve güvenlik (güncel mimari).
+- [Veritabanı tasarımı](docs/veritabani-tasarimi.md): PostgreSQL 17 şemaları, tablolar, `platform` şeması ve audit rolleri.
 - [Süreç analizi v2](docs/analiz/surec-analizi-v2.md): Kasım 2026 saha incelemesinden sonraki iş akışı, roller, kurallar ve yol haritası.
 
 ## Derleme
@@ -71,10 +72,12 @@ Yerel Keycloak'ta ikinci faktör kurulu değildir; `admin` ve `kalite` rolleri M
 MFA şartını kapatır; üretim ayarı değişmez). Profilsiz açılan serviste bu iki rol 403 `ACCESS_DENIED` alır.
 
 Compose, tek bir PostgreSQL 17 konteynerinde tek veritabanı (`yarnshipment`) ve tek kullanıcı (`yarnshipment`, şifre
-`LOCAL_DB_PASSWORD`) açar. Her servis tablolarını kendi şemasında tutar (`masterdata`, `shipment`, `bag`, `evidence`,
-`discrepancy`, `reporting`, `audit`; Keycloak için `keycloak`). Kullanıcının `search_path`'i hepsini
-kapsar: `psql -h localhost -U yarnshipment yarnshipment` ile tek bağlantıdan her tabloya erişilir (`SELECT * FROM bag.bag`).
-Tabloları servisler açılışta Flyway ile kurar; migration'lar `services/<servis>/src/main/resources/db/migration` altındadır.
+`LOCAL_DB_PASSWORD`) açar. Her modül tablolarını kendi şemasında tutar (`shipment`, `discrepancy`, `evidence`, `reporting`, `audit`; Keycloak için
+`keycloak`); ortak iki tablo (`idempotency_record`, `audit_local`) `platform` şemasındadır. Compose ayrıca giriş yapamayan
+`audit_writer` ve `audit_reader` rollerini açar. Kullanıcının `search_path`'i hepsini kapsar:
+`psql -h localhost -U yarnshipment yarnshipment` ile tek bağlantıdan her tabloya erişilir (`SELECT * FROM shipment.shipment`).
+Tabloları uygulama açılışta Flyway ile kurar (önce `platform`, sonra modül şemaları); migration'lar
+`services/<servis>/src/main/resources/db/migration/<şema>` ve `libs/common-web/src/main/resources/db/platform` altındadır.
 
 Migration'ları ve veritabanı kısıt testlerini servisler olmadan doğrulamak için:
 
@@ -232,7 +235,7 @@ Servis ana sınıfına `@EnableYarnShipmentWeb` eklenir; şunları verir:
 
 - **Hata yanıtı (ERR-06/07):** `ProblemFactory` ve ortak advice (`MISSING_HEADER`, `VALIDATION_FAILED`, `MALFORMED_REQUEST`). Servise özgü hatalar kendi advice'ında aynı fabrikayı kullanır.
 - **İstek kimliği:** her isteğe `X-Request-Id` (istemcinin güvenli değeri korunur, yoksa üretilir); log bağlamında `requestId`, hata gövdesinde `requestId` alanı.
-- **Idempotency-Key (API-04):** servis `JdbcClient` kullanıyorsa kendiliğinden devreye girer. `POST/PUT/PATCH` isteğinde `Idempotency-Key` varsa: aynı anahtar ve aynı gövde ilk başarılı (2xx) yanıtı tekrar döner (`Idempotency-Replayed: true`), aynı anahtar farklı gövde `422 IDEMPOTENCY_KEY_REUSED`, hâlâ işlenen istek `409 IDEMPOTENCY_IN_PROGRESS`. Başarısız istek anahtarı bırakır. Anahtar kullanıcıya özeldir; kayıtlar 24 saat tutulur (`yarnshipment.idempotency.*`). Servisin migration'ında `idempotency_record` tablosu gerekir (referans şema: `libs/common-web/src/main/resources/idempotency/idempotency_record.sql`).
+- **Idempotency-Key (API-04):** servis `JdbcClient` kullanıyorsa kendiliğinden devreye girer. `POST/PUT/PATCH` isteğinde `Idempotency-Key` varsa: aynı anahtar ve aynı gövde ilk başarılı (2xx) yanıtı tekrar döner (`Idempotency-Replayed: true`), aynı anahtar farklı gövde `422 IDEMPOTENCY_KEY_REUSED`, hâlâ işlenen istek `409 IDEMPOTENCY_IN_PROGRESS`. Başarısız istek anahtarı bırakır. Anahtar kullanıcıya özeldir; kayıtlar 24 saat tutulur (`yarnshipment.idempotency.*`). Kayıtlar tüm modüller için ortak `platform.idempotency_record` tablosundadır (`libs/common-web/src/main/resources/db/platform`); modül dilim testlerinde `PlatformSchemaMigration.migrate(flyway)` modül göçünden önce çalıştırılır (bkz. `TestApplication`).
 
 ## audit-service (denetim izi)
 

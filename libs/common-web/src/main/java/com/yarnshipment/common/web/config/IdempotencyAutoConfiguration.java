@@ -19,8 +19,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 /**
  * API-04: servis veritabanı kullanıyorsa Idempotency-Key filtresi kendiliğinden eklenir. Otomatik yapılandırma
- * olduğu için dilimli web testlerine ({@code @WebMvcTest}) girmez; servis {@code idempotency_record} tablosunu
- * migration'ıyla oluşturur. Filtre, Spring Security zincirinden sonra çalışır.
+ * olduğu için dilimli web testlerine ({@code @WebMvcTest}) girmez; {@code platform.idempotency_record} tablosunu
+ * {@code PlatformSchemaMigration} oluşturur. Filtre, Spring Security zincirinden sonra çalışır.
  */
 @AutoConfiguration(after = JdbcClientAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)

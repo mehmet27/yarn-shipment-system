@@ -8,7 +8,7 @@
 | Dayandığı dokümanlar | Ön analiz raporu v1.1, Java mikroservis mimarisi v1, Veritabanı tasarımı |
 | Bağlayıcılık | **Projede yazılan her Java satırı bu dokümana uyar.** Kurala aykırı kod birleştirilmez. |
 
-Bu doküman yalnızca **kod yazım standartlarını** içerir. Repo ve modül yapısı, katman düzeni, olay sözleşmesi, servisler arası iletişim, çalışma zamanı ve mimari kararlar [Java mikroservis mimarisi](../architecture/java-mikroservis-mimarisi.md) dokümanındadır; oradaki kural kimlikleri (STR, ARCH, EVT-02…06/09 vb.) code review'da aynı şekilde kullanılır.
+Bu doküman yalnızca **kod yazım standartlarını** içerir. Repo ve modül yapısı, katman düzeni, olay sözleşmesi, servisler arası iletişim, çalışma zamanı ve mimari kararlar [modüler monolit mimarisi](../architecture/moduler-monolit-mimarisi.md) dokümanındadır; kural kimlikleri ise tarihsel [mikroservis mimarisi](../architecture/java-mikroservis-mimarisi.md) belgesinde durur ve (STR, ARCH, EVT-02…06/09 vb.) code review'da aynı şekilde kullanılır.
 
 Bu doküman projenin temel taşıdır. Kod yazmaya başlamadan önce okunur, code review'da kural kimlikleriyle (ör. `DOM-04`) atıf yapılır. Kurallar iki seviyededir:
 

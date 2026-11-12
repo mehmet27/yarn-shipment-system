@@ -30,7 +30,7 @@ class JdbcIdempotencyStoreTest {
 
     @BeforeEach
     void clean() {
-        PostgresTestDatabase.jdbc().sql("DELETE FROM idempotency_record").update();
+        PostgresTestDatabase.jdbc().sql("DELETE FROM platform.idempotency_record").update();
     }
 
     private static StoredResponse created() {

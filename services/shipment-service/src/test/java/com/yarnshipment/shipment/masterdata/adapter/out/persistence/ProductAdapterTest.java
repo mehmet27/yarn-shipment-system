@@ -67,8 +67,8 @@ class ProductAdapterTest {
                 .isEmpty();
         assertThat(DATABASE.migratorJdbc()
                         .queryForObject(
-                                "SELECT count(*) FROM audit_local WHERE table_name = 'md_product' AND row_id = ?"
-                                        + " AND actor_id = ?",
+                                "SELECT count(*) FROM platform.audit_local"
+                                        + " WHERE table_name = 'md_product' AND row_id = ? AND actor_id = ?",
                                 Long.class,
                                 product.id(),
                                 actor.toString()))

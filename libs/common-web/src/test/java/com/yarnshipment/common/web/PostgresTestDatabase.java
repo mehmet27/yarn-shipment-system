@@ -1,13 +1,13 @@
 package com.yarnshipment.common.web;
 
-import org.springframework.core.io.ClassPathResource;
+import com.yarnshipment.common.web.platform.PlatformSchemaMigration;
+import java.util.Map;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-/** Testler boyunca bir kez başlatılan PostgreSQL; {@code idempotency_record} referans şemasıyla hazırdır. */
+/** Testler boyunca bir kez başlatılan PostgreSQL; {@code platform} şemasıyla hazırdır. */
 final class PostgresTestDatabase {
 
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(
@@ -18,7 +18,7 @@ final class PostgresTestDatabase {
         POSTGRES.start();
         DriverManagerDataSource dataSource =
                 new DriverManagerDataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
-        new ResourceDatabasePopulator(new ClassPathResource("idempotency/idempotency_record.sql")).execute(dataSource);
+        PlatformSchemaMigration.migrate(dataSource, Map.of("app_role", POSTGRES.getUsername()));
         JDBC = JdbcClient.create(dataSource);
     }
 

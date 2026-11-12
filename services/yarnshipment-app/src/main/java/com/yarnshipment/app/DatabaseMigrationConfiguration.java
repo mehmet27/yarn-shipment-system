@@ -1,9 +1,11 @@
 package com.yarnshipment.app;
 
+import com.yarnshipment.common.web.platform.PlatformSchemaMigration;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.flyway.autoconfigure.FlywayMigrationInitializer;
@@ -16,9 +18,11 @@ import org.springframework.context.annotation.DependsOn;
  * veritabanlarında geçmiş, checksum ve sürümler değişmez. Modüllerin migration dosyaları
  * {@code db/migration/<şema>} altındadır.
  *
- * <p>Sıra önemlidir: reporting görünümleri shipment ve discrepancy tablolarını okur, bu yüzden reporting en sona
- * kalır. Spring Boot'un tek Flyway'i bu yapılandırma yüzünden devreye girmez; göç, JDBC ve JPA bean'leri başlamadan
- * biter ({@link FlywayMigrationInitializer} veritabanı başlatıcısı olarak tanınır).
+ * <p>Önce ortak {@code platform} şeması göç eder (Idempotency-Key kayıtları ve {@code audit_local}; kendi geçmişi
+ * var): modül migration'ları trigger'larını platform fonksiyonuna bağlar. Sıra önemlidir: reporting görünümleri
+ * shipment ve discrepancy tablolarını okur, bu yüzden reporting en sona kalır. Spring Boot'un tek Flyway'i bu
+ * yapılandırma yüzünden devreye girmez; göç, JDBC ve JPA bean'leri başlamadan biter
+ * ({@link FlywayMigrationInitializer} veritabanı başlatıcısı olarak tanınır).
  */
 @Configuration(proxyBeanMethods = false)
 class DatabaseMigrationConfiguration {
@@ -43,6 +47,11 @@ class DatabaseMigrationConfiguration {
         this.dataSource = dataSource;
         this.databaseUser = databaseUser;
         this.seedLocal = seedLocal;
+    }
+
+    @Bean
+    InitializingBean platformMigration() {
+        return () -> PlatformSchemaMigration.migrate(dataSource, Map.of("app_role", databaseUser));
     }
 
     @Bean
@@ -71,6 +80,7 @@ class DatabaseMigrationConfiguration {
     }
 
     @Bean
+    @DependsOn("platformMigration")
     FlywayMigrationInitializer shipmentMigration(@Qualifier("shipmentFlyway") Flyway flyway) {
         return new FlywayMigrationInitializer(flyway);
     }

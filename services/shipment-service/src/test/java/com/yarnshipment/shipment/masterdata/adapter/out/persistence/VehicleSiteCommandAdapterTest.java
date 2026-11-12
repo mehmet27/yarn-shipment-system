@@ -66,7 +66,7 @@ class VehicleSiteCommandAdapterTest {
                         "SELECT plate_no || '/' || active FROM md_vehicle WHERE id = ?", String.class, created.id()))
                 .isEqualTo("35TST002/false");
         assertThat(owner.queryForObject(
-                        "SELECT count(*) FROM audit_local WHERE table_name = 'md_vehicle' AND row_id = ?"
+                        "SELECT count(*) FROM platform.audit_local WHERE table_name = 'md_vehicle' AND row_id = ?"
                                 + " AND actor_id = ?",
                         Long.class,
                         created.id(),

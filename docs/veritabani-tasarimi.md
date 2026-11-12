@@ -1,8 +1,55 @@
 # İplik Sevkiyat Sistemi – Veritabanı Tasarımı
 
-> **Güncel durum (tek uygulamaya geçiş):** Beş servis tek Spring Boot uygulamasında (`services/yarnshipment-app`) birleşti; gateway ayrı süreçtir. Kafka ve `outbox_event` tabloları kaldırıldı, modüller arası olaylar süreç içi taşınır (`libs/common-events`). Bu belgedeki Kafka/outbox ve servisler arası REST anlatımları, kapsamlı doküman güncellemesi (iş E) gelene kadar tarihsel kabul edilmelidir.
+> **Güncel durum (modüler monolit):** Beş modül tek Spring Boot uygulamasında (`services/yarnshipment-app`) çalışır; gateway ayrı süreçtir.
+> Tek veritabanı `yarnshipment`, modül başına şema (`shipment`, `discrepancy`, `evidence`, `reporting`, `audit`) ve ortak nesneler için
+> `platform` şeması vardır. Kafka, `outbox_event` ve `processed_event` yoktur; olaylar süreç içi iletilir. **Güncel yapı için
+> [Güncel veritabanı yapısı](#güncel-veritabanı-yapısı) bölümüne bakın.** Aşağıdaki "Servis başına veritabanı" ve "Tablo yapıları"
+> bölümleri v1 tasarımının (20.10.2026) tarihsel kaydıdır; `bag`, `masterdata`, `notification` şemaları ve çoğu tablo adı değişti.
+> Mimari: [modüler monolit mimarisi](architecture/moduler-monolit-mimarisi.md).
 
 Sürüm: v1 · Tarih: 20.10.2026 · Kaynak: Ön analiz raporu v1.1, Java mikroservis mimarisi v1, Java kod standartları
+
+## Güncel veritabanı yapısı
+
+PostgreSQL 17, tek veritabanı `yarnshipment`, tek uygulama kullanıcısı `yarnshipment`. 36 tablo (Flyway geçmişi ve aylık bölümler hariç):
+
+| Şema | Tablolar |
+| --- | --- |
+| `shipment` (23) | `shipment`, `shipment_line`, `shipment_bag`, `shipment_status_history`, `weighing`, `weight_check`, `correction_record`, `md_site`, `md_subcontractor`, `md_driver`, `md_vehicle`, `md_product`, `md_quality_grade`, `md_production_lot`, `md_yarn_supplier`, `balance_movement`, `fire_settlement`, `fire_rate_change`, `fabric_lot`, `yarn_return`, `central_stock_movement`, `staff_work_area`, `app_setting` |
+| `discrepancy` (5) | `discrepancy`, `discrepancy_activity`, `inspection`, `quality_claim`, `shipment_watch` |
+| `evidence` (3) | `evidence_file`, `evidence_duplicate`, `upload_intent` |
+| `audit` (3) | `audit_log`, `audit_chain_head`, `audit_chain_check` |
+| `platform` (2) | `idempotency_record`, `audit_local` |
+| `reporting` (4 görünüm) | `shipment_view`, `discrepancy_view`, `balance_movement_view`, `fire_file_view`; tablo değil canlı SQL görünümüdür |
+
+**Platform şeması.** Her modülde ayrı bir kopyası olan iki ortak nesne `platform` şemasında tekilleşti
+(`V202611181000__create_platform_schema.sql`, `libs/common-web/src/main/resources/db/platform`; kendi
+`flyway_schema_history` tablosu vardır ve modül şemalarından önce göç eder):
+
+- `platform.idempotency_record`: `Idempotency-Key` kayıtları (PK `actor`, `idempotency_key`; `state` `IN_PROGRESS` ya da `COMPLETED`).
+  Shipment ve evidence kopyalarındaki kayıtlar taşındı; discrepancy kopyası hiç kullanılmadığı için yalnızca düştü.
+- `platform.audit_local`: kritik tablolardaki değişikliklerin trigger ile tutulan yerel izi. Kolonlar: `table_schema` (hangi modül
+  şeması), `table_name`, `operation`, `row_id`, `old_row`, `new_row`, `actor_id` (`app.actor_id` oturum ayarı), `db_user`,
+  `transaction_id`. Aylık bölümlü, yalnızca ekleme (UPDATE/DELETE `YS001`); uygulama rolü tabloya doğrudan erişemez,
+  `SECURITY DEFINER` `platform.audit_local_capture()` fonksiyonu ekler. Her modülün `V202611181000__use_platform_schema.sql`
+  migration'ı kendi trigger'larını bu fonksiyona bağlar, eski satırları `table_schema` ile kopyalar, eski tablo ve fonksiyonu düşürür.
+
+**Audit akışı.** Modüller olayı süreç içi yayınlar; audit tüketicisi iş transaction'ı commit'lenmeden önce, aynı transaction'da
+`audit.audit_append(jsonb)` çağırır. İşlem geri alınırsa audit de yazılmaz. Kritik tablolarda trigger ayrıca `platform.audit_local`'a yazar.
+
+**Audit yetkileri** (`audit/V202611181000__audit_roles.sql`): `audit_writer` tablolara hiçbir yetkisi olmayan, yalnızca `audit_append()`,
+`audit_verify_chain()` ve `create_monthly_partitions()` çalıştıran roldür; `audit_reader` yalnızca `audit_log` ve `audit_chain_check`
+üzerinde `SELECT` yapar. İkisi de `NOLOGIN`'dir. Uygulama kullanıcısı ikisinin üyesidir ama yetkilerini miras almaz (`INHERIT FALSE`,
+`SET TRUE`); audit adaptörleri işi `SET LOCAL ROLE audit_writer` / `audit_reader` altında çalıştırıp `RESET ROLE` yapar. Roller
+`deploy/postgres/initdb/01-databases.sh` ile gelir; yetkisiz kullanıcıyla mevcut veritabanı yükseltiliyorsa `DEPLOY.md`'deki tek seferlik
+komut gerekir (migration rol yoksa oluşturmaya çalışır, yetkisi yoksa açıklayıcı hatayla durur). Sınır: tablo sahibi uygulama kullanıcısıdır
+ve DDL yapabilir; korumalar `reject_modification` trigger'ı, rol disiplini ve hash zinciridir.
+
+**Flyway.** Her şema kendi `flyway_schema_history` tablosuyla göç eder; sıra `platform` → `shipment` → `discrepancy` → `evidence` →
+`audit` → `reporting`. Eski migration'lar değiştirilmez. Kısıt ve rol testleri: `tools/db/verify-migrations.sh` (`tools/db/tests`).
+
+**Kullanıcı `search_path`'i:** `platform, shipment, evidence, discrepancy, reporting, audit, public` (psql/DBeaver için; uygulama ortak
+tabloları `platform.` önekiyle yazar).
 
 ## Özet ve teknoloji seçimi
 
@@ -27,7 +74,7 @@ Gerekçe, ön analiz raporu v1.1'in istediklerinden geliyor:
 
 Genel kurallar: birincil anahtarlar `uuid` (UUIDv7, zaman sıralı), kilolar `numeric(12,3)`, zamanlar `timestamptz` (UTC saklanır, ekranda Europe/Istanbul). Tablo ve kolon adları Java entity'leriyle uyumlu olsun diye İngilizce `snake_case`; açıklamalar Türkçe.
 
-## Servis başına veritabanı
+## Servis başına veritabanı (tarihsel, v1 tasarımı)
 
 Mikroservis mimarisi dokümanındaki (java\_mikroservis\_mimarisi\_v1) 8 servisin her biri kendi veritabanına sahiptir; bir veritabanını yalnızca sahibi olan servis okur ve yazar. Keycloak da kendi veritabanını kullanır. Hepsi tek bir PostgreSQL sunucusunda ayrı veritabanları olarak çalışır.
 
@@ -56,7 +103,7 @@ Servisler arası kurallar:
 
 **Olay adları.** Kodda, Kafka'da ve `outbox_event.event_type` kolonunda olay adları İngilizcedir (`ShipmentCancelled`, `DeliveryReceived` gibi). Mimari dokümandaki Türkçe adlarla eşleme Java kod standartları Ek B'dedir.
 
-## Tablo yapıları
+## Tablo yapıları (tarihsel, v1 tasarımı)
 
 Her tabloda ayrıca `id uuid PK`, `created_at`, `created_by`, `updated_at`, `updated_by` ve iyimser kilit için `version int` vardır; tekrar edilmemiştir. Kritik ölçüm tabloları (tartım, mühür, beyan, teslim) **hiç güncellenmez**: düzeltme yeni satır ekler, eski satır `superseded_by` ile işaretlenir.
 
@@ -135,7 +182,7 @@ Tüm servislerdeki `created_by`, `assignee_id` gibi kullanıcı alanları Keyclo
 | `shipment_view` | shipment\_id, site\_id, shipment\_no, subcontractor\_id, driver\_id, status, dispatch\_net\_kg, delivery\_net\_kg, diff\_pct, band, open\_discrepancy\_count, completed\_at | Dashboard; olaylardan güncellenir |
 | `pair_daily_stats` | day, driver\_id, subcontractor\_id, shipment\_count, discrepancy\_count, total\_diff\_kg | PK (day, driver\_id, subcontractor\_id); şoför–fasoncu eşleşme raporu |
 
-**Audit yetkileri (tek kullanıcıya geçişten önceki tasarım; bugünkü durum için "Tek veritabanı" bölümüne bakın):** audit-service'in yazan kullanıcısı `audit_writer` tabloya yalnız INSERT yapabilir; UPDATE, DELETE ve TRUNCATE hiçbir uygulama kullanıcısında yoktur. Kayıt, `SECURITY DEFINER` bir `audit_append()` fonksiyonuyla eklenir: fonksiyon advisory lock alır, son satırın hash'ini okur ve yeni satırı zincire bağlar. Böylece yazan kullanıcının SELECT yetkisi bile gerekmez. Audit ekranı için ayrı `audit_reader` kullanıcısı yalnız SELECT yapar.
+**Audit yetkileri (v1 tasarımı; güncel rol düzeni "Güncel veritabanı yapısı" bölümündedir):** audit-service'in yazan kullanıcısı `audit_writer` tabloya yalnız INSERT yapabilir; UPDATE, DELETE ve TRUNCATE hiçbir uygulama kullanıcısında yoktur. Kayıt, `SECURITY DEFINER` bir `audit_append()` fonksiyonuyla eklenir: fonksiyon advisory lock alır, son satırın hash'ini okur ve yeni satırı zincire bağlar. Böylece yazan kullanıcının SELECT yetkisi bile gerekmez. Audit ekranı için ayrı `audit_reader` kullanıcısı yalnız SELECT yapar.
 
 ## İlişkiler ve ER diyagramı
 
@@ -183,15 +230,15 @@ Performans notları:
 
 **Silme yok.** Hiçbir iş tablosunda fiziksel DELETE yapılmaz. Tanımlar `status = PASSIVE`, kanıtlar `INVALIDATED`, çuval `VOID` olur. Uygulama veritabanı kullanıcısına kritik tablolarda DELETE yetkisi verilmez.
 
-**Audit Log akışı.** Her servis değişikliği `outbox_event` ile yayınlar, audit-service bunu `audit_log`'a yazar. Kritik tablolarda ayrıca veritabanı trigger'ı yerel bir `audit_local` tablosuna yazar; böylece kuyruk çalışmasa bile iz kaybolmaz.
+**Audit Log akışı.** Modüller olayı süreç içi yayınlar; audit tüketicisi `audit_log`'a iş transaction'ının içinde yazar (outbox ve Kafka yok). Kritik tablolarda ayrıca veritabanı trigger'ı `platform.audit_local` tablosuna yazar; böylece olay hattından bağımsız bir iz kalır.
 
-**Migration.** Her servis kendi Flyway script'lerini `src/main/resources/db/migration` altında tutar (`V1__init.sql` …). Başka servisin şemasına migration yazılmaz. Geliştirme ve testte Testcontainers ile gerçek PostgreSQL kullanılır.
+**Migration.** Her modül kendi Flyway script'lerini `src/main/resources/db/migration/<şema>` altında tutar; ortak `platform` şemasının script'leri `libs/common-web/src/main/resources/db/platform` altındadır. Başka modülün şemasına migration yazılmaz. Geliştirme ve testte Testcontainers ile gerçek PostgreSQL kullanılır.
 
 **Kullanıcılar ve yetkiler (veritabanı seviyesi).** Bugün tek veritabanı kullanıcısı (`yarnshipment`) vardır; Flyway ve uygulama aynı kullanıcıyla bağlanır. Ayrıntı ve sonuçları aşağıdaki "Tek veritabanı" bölümündedir.
 
 **Dosya saklama.** Fotoğraf ve belgeler MinIO'da `evidence/{yıl}/{ay}/{shipment_id}/{evidence_id}` anahtarıyla saklanır. Bucket'ta versiyonlama ve Object Lock (compliance modu) açıktır; saklama süresi dolmadan dosya silinemez. Varsayılan saklama süresi 10 yıldır ve \`system\_setting\` üzerinden değiştirilebilir; yeni değer yalnız bundan sonra yüklenen dosyalara uygulanır. Orijinal ve filigranlı kopya ayrı nesnelerdir, hash orijinalden alınır. Kapasite için kaba hesap: sevkiyat başına 15 fotoğraf × yaklaşık 1,5 MB (sıkıştırılmış) ≈ 23 MB.
 
-**Yerel geliştirme (şimdi).** `docker-compose.yml` içinde tek bir `postgres:17` konteyneri çalışır. `docker-entrypoint-initdb.d/01-databases.sh` script'i `yarnshipment` veritabanını ve kullanıcısını oluşturur; tabloları servisler açılışta Flyway ile kurar. MinIO, Kafka ve Keycloak aynı Compose dosyasındadır. Her geliştirici aynı kurulumu `docker compose up` ile alır.
+**Yerel geliştirme (şimdi).** `docker-compose.yml` içinde tek bir `postgres:17` konteyneri çalışır. `docker-entrypoint-initdb.d/01-databases.sh` script'i `yarnshipment` veritabanını, kullanıcısını ve `audit_writer` / `audit_reader` rollerini oluşturur; tabloları uygulama açılışta Flyway ile kurar. MinIO, Redis ve Keycloak aynı Compose dosyasındadır (Kafka yok). Her geliştirici aynı kurulumu `docker compose up` ile alır.
 
 **Kendi sunucularınız (sonra).** k3s üzerinde PostgreSQL için CloudNativePG operatörü öneriyorum: bir birincil ve bir yedek kopya, otomatik yük devri. Veritabanı adları ve kullanıcılar yerel kurulumla aynı kalır, servisler yalnızca bağlantı adresini değiştirir.
 
@@ -211,7 +258,7 @@ Proje büyümeye açık olacağı için açık sorular aşağıdaki gibi kapatı
 | Günlük sevkiyat hacmi | Bilinmiyor; yüksek hacme göre tasarlandı | Aylık partition, arşivleme ve okuma kopyası hazır (İndeksler ve performans) |
 | Ambalaj birimi | `bag` tablosunda `package_type` (BAG, BOX, PALLET, BOBBIN) ve palet için `parent_bag_id` | Koli/palet/bobin geldiğinde yeni tablo gerekmez; dara standardı zaten ambalaj tipine göre |
 | Saklama süresi | Varsayılan 10 yıl, Admin ayarından değiştirilebilir | Yasal süre netleşince yalnız ayar değişir |
-| Mesajlaşma | Kafka, transactional outbox ile | Mimari dokümanla aynı; olaylar tekrar oynatılabilir |
+| Mesajlaşma | ~~Kafka, transactional outbox~~ → süreç içi olay (modüler monolit, Kasım 2026) | Tek süreç; olay üreten işlemin içinde iletilir, outbox ve yoklama yok |
 | Kullanıcı–fasoncu bağı | Şimdilik `masterdata_db.user_profile` ve `user_site` | Ayrı user-service gerekirse tablolar olduğu gibi taşınır |
 | Tolerans bantları | Genel kural varsayılan, ürün bazında kural eklenebilir | Pilotta kalibre edilir; tablo iki durumu da destekliyor |
 
@@ -239,19 +286,20 @@ Uygulamanın eşlediği SQLSTATE kodları: `YS001` yalnızca ekleme yapılan tab
 Bekleyen: fasoncu kör girişi için Row Level Security (isteğe bağlı ek güvence) shipment-service iskeletiyle birlikte eklenecek.
 
 
-## Tek veritabanı, tek kullanıcı (güncel durum)
+## Tek veritabanı, tek kullanıcı (geçiş notları)
 
 Önceki tasarımdaki servis başına veritabanı (`masterdata_db`, `bag_db`, … `audit_db`, `keycloak_db`) ve rol seti
-(`_migrator`, `_app`, `_readonly`, `audit_writer`, `audit_reader`) kaldırıldı. Yerine:
+(`_migrator`, `_app`, `_readonly`) kaldırıldı; `audit_writer` / `audit_reader` ise modüler monolit geçişinde NOLOGIN rol olarak
+geri geldi (bkz. "Güncel veritabanı yapısı"). Yerine:
 
 - **Tek veritabanı `yarnshipment`, tek kullanıcı `yarnshipment`.** Flyway ve uygulama aynı kullanıcıyla bağlanır
   (`DB_URL`, `DB_USER`, `DB_PASSWORD`). Migration'lardaki `${app_role}` / `${readonly_role}` yer tutucuları bu kullanıcıya bağlanır.
-- **Servis başına şema, ortak `public` değil.** Servislerin ortak adlı nesneleri vardır (`outbox_event`, `audit_local`, `processed_event`,
-  `idempotency_record`, `reject_modification()`, `audit_local_capture()` …). Hepsini tek şemaya koymak çakışır ve her
-  servisin kendi `flyway_schema_history` tablosunu da ayırmak gerekir. Servis başına şema (`masterdata`, `shipment`, `bag`, `evidence`,
-  `discrepancy`, `notification`, `reporting`, `audit`, ayrıca `keycloak`) hem bu çakışmayı çözer hem servis sınırını korur.
+- **Modül başına şema, ortak `public` değil.** Modüllerin ortak adlı nesneleri vardır (`reject_modification()`, `guard_immutable_columns()`,
+  `create_monthly_partitions()` …) ve her şemanın kendi `flyway_schema_history` tablosu gerekir. Modül başına şema (`shipment`,
+  `discrepancy`, `evidence`, `reporting`, `audit`, ayrıca `keycloak`) hem bu çakışmayı çözer hem modül sınırını korur. Gerçekten tek
+  olması gereken iki tablo (`idempotency_record`, `audit_local`) `platform` şemasına taşındı.
 - **Tek bağlantıdan erişim.** Kullanıcının `search_path`'i tüm servis şemalarını kapsar; DBeaver/psql ile tek bağlantıyla her tabloya bakılır.
-  Aynı adlı tabloda (örn. `outbox_event`) ilk şema kazanır, kesin erişim için `bag.outbox_event` yazın.
+  Ortak tablolar `platform` şemasındadır; kesin erişim için `platform.idempotency_record` yazın.
 - **Keycloak** aynı veritabanında `keycloak` şemasındadır (`KC_DB_SCHEMA`). Eski `keycloak_db` taşınmaz; yerel ortamda realm
   açılışta içe aktarıldığı için `docker compose down -v` ile sıfırlamak yeterlidir.
 - **Migration'lar.** Eski scriptlerdeki sabit `public` (`SET search_path`, `GRANT USAGE ON SCHEMA`) `${flyway:defaultSchema}` oldu; bu,
@@ -259,10 +307,11 @@ Bekleyen: fasoncu kör girişi için Row Level Security (isteğe bağlı ek güv
   Her servis `spring.flyway.default-schema` ile kendi şemasında ve kendi `flyway_schema_history` tablosuyla çalışır.
 
 **Güvenlik sonucu (bilinçli ödün).** Rol ayrımı kalktığı için şu korumalar zayıfladı:
-- *Audit:* `audit_writer`'ın tabloya erişememesi ve ayrı salt okuma rolü yok; tablo sahibi `audit_log`'u UPDATE/DELETE edebilir veya
-  tetikleyiciyi kapatabilir. Kalan korumalar: `reject_modification` tetikleyicisi (kazara değişikliği reddeder) ve hash zinciri
-  (`audit_verify_chain`, günlük doğrulama; tetikleyici kapatılıp satır değiştirilirse bozulma yakalanır, ama zincir baştan yeniden
-  hesaplanırsa yakalanmaz). Üretimde bu güvence gerekiyorsa audit için ayrı rol/veritabanı geri getirilmelidir.
+- *Audit:* rol ayrımı geri geldi (`audit_writer` / `audit_reader`, adaptörler `SET LOCAL ROLE` ile çalışır), ama tablo sahibi hâlâ
+  uygulama kullanıcısıdır: sahip `audit_log`'u UPDATE/DELETE edebilir veya tetikleyiciyi kapatabilir. Kalan korumalar:
+  `reject_modification` tetikleyicisi (kazara değişikliği reddeder) ve hash zinciri (`audit_verify_chain`, günlük doğrulama;
+  tetikleyici kapatılıp satır değiştirilirse bozulma yakalanır, ama zincir baştan yeniden hesaplanırsa yakalanmaz). Daha güçlü
+  güvence gerekiyorsa Flyway için ayrı sahip rolü ve audit için ayrı veritabanı kullanıcısı geri getirilmelidir.
 - *Diğer servisler:* uygulama kullanıcısı artık DELETE/DDL yetkisine sahiptir; "silinmez" kuralları yalnızca kodda ve tetikleyicilerdedir.
 - *Servisler arası izolasyon:* herhangi bir servisin kimlik bilgisi tüm şemalara erişir.
 
@@ -287,5 +336,20 @@ Servisleri yeniden başlatın. (`reporting_db` Kafka olaylarından yeniden üret
 
 `V202611161000__drop_unused_common_tables.sql` ile şu tablolar düşürüldü (56 → 51 tablo): `reporting.audit_local` (hiçbir tetikleyici bağlı değildi),
 `reporting.outbox_event` (reporting olay yayınlamaz) ve `shipment`, `evidence`, `discrepancy` şemalarındaki `processed_event`
-(yalnız reporting-service okur ve yazar). `idempotency_record` her serviste kalır: frontend her durum değiştiren istekte
+(yalnız reporting-service okur ve yazar). `idempotency_record` o zaman her serviste kaldı (sonradan `platform` şemasında tekilleşti): frontend her durum değiştiren istekte
 `Idempotency-Key` gönderdiği ve filtre `common-web` içinde tüm servislerde açık olduğu için discrepancy-service de kullanır.
+
+## Modüler monolit geçişi: tablo değişiklikleri
+
+56 tablodan 36'ya inildi (ölü tablolar, outbox, okuma kopyaları ve ortak tabloların tekilleşmesi). Geçiş adımları ve migration'lar:
+
+| Değişiklik | Migration | Etki |
+| --- | --- | --- |
+| Kullanılmayan ortak tablolar düştü | `*/V202611161000__drop_unused_common_tables.sql` | `reporting.audit_local`, `reporting.outbox_event`, `shipment|evidence|discrepancy.processed_event` |
+| Okuma modelleri canlı görünüme döndü | `reporting/V202611161100__read_models_as_live_views.sql`, `V202611171000`, `V202611171010` | `shipment_view`, `discrepancy_view`, `balance_movement_view`, `fire_file_view` tablodan görünüme; `processed_event` düştü |
+| Marka ayarı birleşti, kumaş/üretim birleşti | `shipment/V202611161100`, `V202611161110`, `V202611161120` | `md_branding` → `app_setting`; `fabric_receipt_yarn` → jsonb; `central_production` → `fabric_lot` |
+| Outbox düştü | `*/V202611171000__drop_outbox_event.sql` | Yayımlanmamış satır varsa düşürme durur (eski sürümle boşaltılmalı) |
+| Ortak tablolar `platform` şemasına | `platform/V202611181000`, `shipment|discrepancy|evidence/V202611181000__use_platform_schema.sql` | `idempotency_record` 3 → 1, `audit_local` 3 → 1 |
+| Audit rolleri | `audit/V202611181000__audit_roles.sql` | `audit_writer`, `audit_reader` |
+
+Ertelendi: `fire_settlement` ve `fire_rate_change` birleştirmeleri (ayrı karar). `yarn_return` ile `balance_movement` bilinçli olarak ayrı kalır.

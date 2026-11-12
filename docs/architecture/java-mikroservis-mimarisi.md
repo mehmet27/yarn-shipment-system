@@ -1,6 +1,10 @@
 # İplik Sevkiyat Sistemi – Java Mikroservis Mimarisi
 
-> **Güncel durum (tek uygulamaya geçiş):** Beş servis tek Spring Boot uygulamasında (`services/yarnshipment-app`) birleşti; gateway ayrı süreçtir. Kafka ve `outbox_event` tabloları kaldırıldı, modüller arası olaylar süreç içi taşınır (`libs/common-events`). Bu belgedeki Kafka/outbox ve servisler arası REST anlatımları, kapsamlı doküman güncellemesi (iş E) gelene kadar tarihsel kabul edilmelidir.
+> **Tarihsel belge (v1, mikroservis tasarımı).** Güncel mimari [modüler monolit](moduler-monolit-mimarisi.md) belgesindedir:
+> beş modül tek Spring Boot uygulamasında (`services/yarnshipment-app`), gateway ayrı süreç, Kafka ve `outbox_event` yok, modüller
+> arası olay ve çağrılar süreç içi, ortak tablolar `platform` şemasında. Bu belge yalnızca kod standartlarının atıf yaptığı kural
+> kimlikleri (STR, ARCH, EVT, API, SEC …) ve karar geçmişi için saklanır; Kafka/outbox, servis başına veritabanı, Kubernetes ve
+> servisler arası REST anlatımları artık geçerli değildir. Çeliştiğinde güncel belge geçerlidir.
 
 > Sürüm 1.0 · 20.10.2026 · Kaynak: Ön analiz raporu v1.1 · Canlı doküman: [Claude Docs](https://claude.ai/code/artifact/b3dbda92-562a-4125-a8e8-5d4812fd2607)
 

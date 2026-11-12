@@ -70,7 +70,7 @@ class CompletionIdempotencyIntegrationTest {
 
     @BeforeEach
     void insertAwaitingShipment() {
-        jdbc.update("DELETE FROM idempotency_record");
+        jdbc.update("DELETE FROM platform.idempotency_record");
         jdbc.update(
                 INSERT_SHIPMENT,
                 shipment,
@@ -109,7 +109,7 @@ class CompletionIdempotencyIntegrationTest {
         assertThat(jdbc.queryForObject(
                         "SELECT count(*) FROM shipment_status_history WHERE shipment_id = ?", Integer.class, shipment))
                 .isEqualTo(1);
-        assertThat(jdbc.queryForObject("SELECT state FROM idempotency_record", String.class))
+        assertThat(jdbc.queryForObject("SELECT state FROM platform.idempotency_record", String.class))
                 .isEqualTo("COMPLETED");
     }
 }

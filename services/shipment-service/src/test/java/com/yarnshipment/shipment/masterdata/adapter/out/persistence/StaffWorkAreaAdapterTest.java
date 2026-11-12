@@ -48,4 +48,18 @@ class StaffWorkAreaAdapterTest {
         assertThat(jdbc.queryForObject("SELECT work_area FROM staff_work_area WHERE user_id = ?", String.class, USER))
                 .isEqualTo("SUBCONTRACTOR");
     }
+
+    @Test
+    @DisplayName("Alan silinir ve bütün alanlar kullanıcıya göre okunur")
+    void shouldDeleteAndListWorkAreas() {
+        UUID other = UUID.fromString("0192f0a0-0000-7000-8000-000000000902");
+        adapter.save(USER, StaffWorkArea.CENTRAL);
+        adapter.save(other, StaffWorkArea.SUBCONTRACTOR);
+
+        adapter.delete(USER);
+
+        assertThat(adapter.findAll())
+                .containsEntry(other, StaffWorkArea.SUBCONTRACTOR)
+                .doesNotContainKey(USER);
+    }
 }

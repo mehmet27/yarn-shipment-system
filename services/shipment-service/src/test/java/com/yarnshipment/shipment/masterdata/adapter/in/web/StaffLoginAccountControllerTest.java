@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.masterdata.adapter.in.web;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -107,12 +108,12 @@ class StaffLoginAccountControllerTest {
         MvcTestResult forbidden =
                 send(mvc.put().uri(uri), ROLE_BODY, TestTokens.token("quality").build());
         MvcTestResult badRole = send(mvc.put().uri(uri), "{\"role\":\"DRIVER\"}", admin);
-        verify(changeRole).changeLoginAccountRole(any(), eq(USER), eq(StaffRole.QUALITY));
+        verify(changeRole).changeLoginAccountRole(any(), eq(USER), eq(StaffRole.QUALITY), isNull());
         doThrow(new InvalidMasterDataException("userId", "own account"))
                 .doThrow(new LoginAccountNotFoundException())
                 .doThrow(new LoginAccountRoleLockedException())
                 .when(changeRole)
-                .changeLoginAccountRole(any(), any(), any());
+                .changeLoginAccountRole(any(), any(), any(), any());
         MvcTestResult own = send(mvc.put().uri(uri), ROLE_BODY, admin);
         MvcTestResult missing = send(mvc.put().uri(uri), ROLE_BODY, admin);
         MvcTestResult locked = send(mvc.put().uri(uri), ROLE_BODY, admin);

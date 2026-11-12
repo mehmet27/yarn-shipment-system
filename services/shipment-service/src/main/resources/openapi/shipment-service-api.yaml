@@ -2590,6 +2590,8 @@ components:
         createdAt:
           type: string
           format: date-time
+        workArea:
+          $ref: '#/components/schemas/WorkArea'
     StaffRole:
       type: string
       description: Yönetici tarafından açılabilen fabrika içi roller; şoför ve fasoncu kayıtlarından açılır
@@ -2637,10 +2639,13 @@ components:
           format: password
     ChangeLoginAccountRoleRequest:
       type: object
+      description: Rol kalite ise workArea zorunludur ve aynı çağrıda değişebilir; başka rolde verilmez, kayıtlı alan silinir.
       required: [role]
       properties:
         role:
           $ref: '#/components/schemas/StaffRole'
+        workArea:
+          $ref: '#/components/schemas/WorkArea'
     UserNameListResponse:
       type: object
       required: [items]

@@ -1,4 +1,4 @@
-import type { LoginAccountView, Role } from '@iplik/api-client';
+import type { LoginAccountView, Role, WorkArea } from '@iplik/api-client';
 
 /**
  * Keycloak'taki giriş hesaplarının sahte karşılığı; yerel realm'deki test kullanıcılarıyla aynı giriş adlarını taşır.
@@ -28,6 +28,7 @@ const SEED: readonly LoginAccountView[] = [
     username: 'kalite',
     fullName: 'Kalite Uzmanı',
     roles: ['QUALITY'],
+    workArea: 'CENTRAL',
     enabled: true,
     passwordChangeRequired: true,
     createdAt: '2026-01-05T08:10:00Z',
@@ -77,6 +78,7 @@ export function addMockLoginAccount(input: {
   username: string;
   fullName: string;
   role: Role;
+  workArea?: WorkArea | undefined;
 }): void {
   accounts = [
     ...accounts,
@@ -85,6 +87,7 @@ export function addMockLoginAccount(input: {
       username: input.username,
       fullName: input.fullName,
       roles: [input.role],
+      ...(input.workArea === undefined ? {} : { workArea: input.workArea }),
       enabled: true,
       passwordChangeRequired: true,
       createdAt: new Date().toISOString(),
@@ -111,12 +114,20 @@ export function setMockLoginAccountPassword(id: string): boolean {
 }
 
 /** Rolü değiştirir; bulunamazsa `not-found` döner. */
-export function changeMockLoginAccountRole(id: string, role: Role): 'ok' | 'not-found' {
+export function changeMockLoginAccountRole(
+  id: string,
+  role: Role,
+  workArea?: WorkArea,
+): 'ok' | 'not-found' {
   const account = accounts.find((candidate) => candidate.id === id);
   if (account === undefined) return 'not-found';
-  accounts = accounts.map((candidate) =>
-    candidate.id === id ? { ...candidate, roles: [role] } : candidate,
-  );
+  accounts = accounts.map((candidate) => {
+    if (candidate.id !== id) return candidate;
+    const changed: LoginAccountView = { ...candidate, roles: [role] };
+    if (workArea === undefined) delete changed.workArea;
+    else changed.workArea = workArea;
+    return changed;
+  });
   return 'ok';
 }
 

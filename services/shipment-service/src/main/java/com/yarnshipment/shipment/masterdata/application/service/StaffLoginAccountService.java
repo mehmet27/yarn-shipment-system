@@ -14,9 +14,11 @@ import com.yarnshipment.shipment.masterdata.application.port.out.StaffWorkAreaPo
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
+import com.yarnshipment.shipment.masterdata.domain.model.StaffWorkArea;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -56,10 +58,7 @@ public final class StaffLoginAccountService
         if (siteIds.isEmpty()) {
             throw new InvalidMasterDataException("siteIds", "no active site");
         }
-        boolean quality = request.role() == StaffRole.QUALITY;
-        if (quality != (request.workArea() != null)) {
-            throw new InvalidMasterDataException("workArea", quality ? "required for quality" : "only for quality");
-        }
+        requireWorkAreaOnlyForQuality(request.role(), request.workArea());
         UUID userId = accounts.createStaff(new StaffAccountSpec(
                 request.username(), request.fullName(), request.role(), request.password(), siteIds));
         if (request.workArea() != null) {
@@ -73,11 +72,24 @@ public final class StaffLoginAccountService
     }
 
     @Override
-    public void changeLoginAccountRole(Actor actor, UUID userId, StaffRole role) {
+    public void changeLoginAccountRole(Actor actor, UUID userId, StaffRole role, @Nullable StaffWorkArea workArea) {
         if (actor.userId().equals(userId)) {
             throw new InvalidMasterDataException("userId", "own account");
         }
+        requireWorkAreaOnlyForQuality(role, workArea);
         accounts.changeStaffRole(userId, role);
+        if (workArea == null) {
+            workAreas.delete(userId);
+        } else {
+            workAreas.save(userId, workArea);
+        }
+    }
+
+    private static void requireWorkAreaOnlyForQuality(StaffRole role, @Nullable StaffWorkArea workArea) {
+        boolean quality = role == StaffRole.QUALITY;
+        if (quality != (workArea != null)) {
+            throw new InvalidMasterDataException("workArea", quality ? "required for quality" : "only for quality");
+        }
     }
 
     @Override

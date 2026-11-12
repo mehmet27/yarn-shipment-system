@@ -761,11 +761,12 @@
       "title": "Rolü değiştir",
       "intro": "{{username}} için yeni rol seçin. Kişinin açık oturumları kapanır; yeni rolle yeniden giriş yapar.",
       "submit": "Rolü kaydet",
+      "reloginHint": "Değişiklik kişi yeniden giriş yapınca geçerli olur.",
       "errors": {
         "LOGIN_ACCOUNT_NOT_FOUND": "Kullanıcı bulunamadı; liste yenilenecek.",
         "LOGIN_ACCOUNT_ROLE_LOCKED": "Şoför ve fasoncu hesabının rolü değiştirilemez.",
         "LOGIN_ACCOUNT_UNAVAILABLE": "Giriş sistemine ulaşılamadı; rol değişmedi. Lütfen tekrar deneyin.",
-        "INVALID_MASTER_DATA": "Kendi rolünüzü değiştiremezsiniz.",
+        "INVALID_MASTER_DATA": "Kendi rolünüzü değiştiremezsiniz; kalite rolünde çalışma alanı da seçilmelidir.",
         "unknown": "Rol değiştirilemedi. Lütfen tekrar deneyin."
       }
     },

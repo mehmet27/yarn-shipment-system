@@ -170,12 +170,34 @@ describe('Kullanıcılar: hesap açma ve rol değiştirme', () => {
     await userEvent.click(within(depo).getByRole('button', { name: 'depo rolünü değiştir' }));
     const dialog = await screen.findByRole('dialog');
     await pickRole(dialog, 'Kalite');
+    expect(within(dialog).getByRole('button', { name: 'Rolü kaydet' })).toBeDisabled();
+    await pickWorkArea(dialog, 'Fasoncular');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Rolü kaydet' }));
 
     const updated = await within(await screen.findByRole('table')).findByRole('row', {
-      name: /Depo Sorumlusu.*Kalite/,
+      name: /Depo Sorumlusu.*Kalite.*Fasoncular/,
     });
     expect(within(updated).queryByText('Depo')).not.toBeInTheDocument();
+  });
+
+  it('kalite hesabında mevcut çalışma alanı seçili gelir ve değiştirilebilir', async () => {
+    renderApp('/panel/kullanicilar');
+    const table = await screen.findByRole('table');
+    const kalite = within(table).getByRole('row', { name: /Kalite Uzmanı/ });
+    expect(within(kalite).getByText('Merkez fabrika')).toBeInTheDocument();
+    await userEvent.click(within(kalite).getByRole('button', { name: 'kalite rolünü değiştir' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('combobox', { name: /Çalışma alanı/ })).toHaveValue(
+      'Merkez fabrika',
+    );
+    await pickWorkArea(dialog, 'Fasoncular');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Rolü kaydet' }));
+
+    expect(
+      await within(await screen.findByRole('table')).findByRole('row', {
+        name: /Kalite Uzmanı.*Fasoncular/,
+      }),
+    ).toBeInTheDocument();
   });
 
   it('rol değiştirilemezse sunucunun nedeni gösterilir ve pencere açık kalır', async () => {

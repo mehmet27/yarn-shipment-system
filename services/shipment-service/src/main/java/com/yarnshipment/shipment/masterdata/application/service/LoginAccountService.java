@@ -5,7 +5,9 @@ import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListUserNamesUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountPort;
+import com.yarnshipment.shipment.masterdata.application.port.out.StaffWorkAreaPort;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
+import com.yarnshipment.shipment.masterdata.domain.model.StaffWorkArea;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -22,10 +24,14 @@ import org.springframework.stereotype.Service;
 @Service
 public final class LoginAccountService implements ListLoginAccountsUseCase, ListUserNamesUseCase {
 
-    private final LoginAccountPort accounts;
+    private static final String QUALITY = "QUALITY";
 
-    public LoginAccountService(LoginAccountPort accounts) {
+    private final LoginAccountPort accounts;
+    private final StaffWorkAreaPort workAreas;
+
+    public LoginAccountService(LoginAccountPort accounts, StaffWorkAreaPort workAreas) {
         this.accounts = accounts;
+        this.workAreas = workAreas;
     }
 
     @Override
@@ -35,9 +41,24 @@ public final class LoginAccountService implements ListLoginAccountsUseCase, List
                 .filter(account -> text == null || text.isBlank() || account.matches(text))
                 .toList();
         long offset = (long) query.page() * query.size();
-        List<LoginAccountSummary> items =
-                matching.stream().skip(offset).limit(query.size()).toList();
+        Map<UUID, StaffWorkArea> areas = workAreas.findAll();
+        List<LoginAccountSummary> items = matching.stream()
+                .skip(offset)
+                .limit(query.size())
+                .map(account -> withWorkArea(account, areas))
+                .toList();
         return new MasterDataPage<>(items, query.page(), query.size(), matching.size());
+    }
+
+    private static LoginAccountSummary withWorkArea(LoginAccountSummary account, Map<UUID, StaffWorkArea> areas) {
+        if (!account.roles().contains(QUALITY)) {
+            return account;
+        }
+        try {
+            return account.withWorkArea(areas.get(UUID.fromString(account.id())));
+        } catch (IllegalArgumentException notUuid) {
+            return account;
+        }
     }
 
     @Override

@@ -115,10 +115,25 @@ if (!bayrak('--derleme-atla')) {
   if (derle.status !== 0) dur('Backend derlenemedi.');
 }
 function arkaplanda(ad, komut, args, cwd, ek) {
-  const fd = openSync(join(KAYIT, `${ad}.log`), 'w');
-  const cocuk = spawn(komut, args, { cwd, env: { ...process.env, ...ortam, ...ek }, detached: true, stdio: ['ignore', fd, fd], shell: WIN });
-  cocuk.unref();
-  closeSync(fd);
+  const gunluk = join(KAYIT, `${ad}.log`);
+  const env = { ...process.env, ...ortam, ...ek };
+  if (WIN) {
+    // `start` servisi ayrı, küçültülmüş bir pencerede başlatır: bu terminalde Ctrl+C ya da pencereyi kapatmak servisleri öldürmez.
+    // (Servisin kendi penceresini kapatırsanız o servis durur.)
+    const satir = `${komut} ${args.join(' ')} > "${gunluk}" 2>&1`;
+    spawn('cmd.exe', ['/d', '/s', '/c', `start "yerel-${ad}" /min cmd.exe /d /c "${satir}"`], {
+      cwd,
+      env,
+      detached: true,
+      stdio: 'ignore',
+      windowsHide: true,
+      windowsVerbatimArguments: true,
+    }).unref();
+  } else {
+    const fd = openSync(gunluk, 'w');
+    spawn(komut, args, { cwd, env, detached: true, stdio: ['ignore', fd, fd] }).unref();
+    closeSync(fd);
+  }
   console.log(`  ${ad} başlatıldı (günlük: .yerel/${ad}.log)`);
 }
 console.log('\nServisler başlatılıyor...');

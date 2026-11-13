@@ -13,8 +13,7 @@ import java.util.UUID;
  * @param netKg gelen kumaş net kg
  * @param receivedAt kumaşın geliş zamanı
  */
-public record FabricReceived(
-        UUID shipmentId, UUID receiptId, String fabricType, BigDecimal netKg, Instant receivedAt) {
+public record FabricReceived(UUID shipmentId, UUID receiptId, String fabricType, BigDecimal netKg, Instant receivedAt) {
 
     public static final String TYPE = "com.yarnshipment.shipment.fabric-received.v1";
 }

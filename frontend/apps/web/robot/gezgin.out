@@ -1,0 +1,331 @@
+
+Running 10 tests using 1 worker
+
+  ok  1 robot\senaryolar\01-gezinti.robot.ts:49:3 › Gezinti: admin tüm ekranları açar ve yetkisizlerde 403 görür (27.1s)
+  ok  2 robot\senaryolar\01-gezinti.robot.ts:49:3 › Gezinti: depo tüm ekranları açar ve yetkisizlerde 403 görür (25.3s)
+  ok  3 robot\senaryolar\01-gezinti.robot.ts:49:3 › Gezinti: kalite tüm ekranları açar ve yetkisizlerde 403 görür (27.5s)
+  ok  4 robot\senaryolar\01-gezinti.robot.ts:49:3 › Gezinti: mudur tüm ekranları açar ve yetkisizlerde 403 görür (28.3s)
+  ok  5 robot\senaryolar\01-gezinti.robot.ts:49:3 › Gezinti: genel-mudur tüm ekranları açar ve yetkisizlerde 403 görür (25.4s)
+  x   6 robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: admin her sekme, filtre ve güvenli düğmeye tıklar (2.9m)
+  x   7 robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: depo her sekme, filtre ve güvenli düğmeye tıklar (29.5s)
+  x   8 robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: kalite her sekme, filtre ve güvenli düğmeye tıklar (1.9m)
+  x   9 robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: mudur her sekme, filtre ve güvenli düğmeye tıklar (2.4m)
+  x  10 robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: genel-mudur her sekme, filtre ve güvenli düğmeye tıklar (48.1s)
+
+
+  1) robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: admin her sekme, filtre ve güvenli düğmeye tıklar 
+
+    Error: Robot sorun buldu (rapor/rapor.html)
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 84[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Yakalanmamış istisna: pdfMake.addVirtualFileSystem is not a function",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "sayfa",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ekran": "C:\\Mehmet Celek\\Projects\\yarn-shipment-system\\frontend\\apps\\web\\robot\\sonuclar\\05-tum-ekranlar.robot.ts-T-2af24-e-ve-güvenli-düğmeye-tıklar\\33--panel-sevkiyat-yeni-d-me-Sipari-formu-PDF-t-kla.png",[39m
+    [31m+     "ozet": "/panel/sevkiyat/yeni › düğme 'Sipariş formu PDF' tıkla: page.waitForEvent: Timeout 15000ms exceeded while waiting for event \"download\"",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ekran": "C:\\Mehmet Celek\\Projects\\yarn-shipment-system\\frontend\\apps\\web\\robot\\sonuclar\\05-tum-ekranlar.robot.ts-T-2af24-e-ve-güvenli-düğmeye-tıklar\\72--panel-raporlar-d-me-PDF-indir-t-kla.png",[39m
+    [31m+     "ozet": "/panel/raporlar › düğme 'PDF indir' tıkla: page.waitForEvent: Timeout 15000ms exceeded while waiting for event \"download\"",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/tanimlar düğme (Fasoncular sekmesi): Düzenle — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/tanimlar düğme (Fasoncular sekmesi): Pasife al — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/partiler düğme: Kaliteyi kilitle — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/partiler düğme: Düzenle — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/partiler düğme: Pasife al — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/raporlar düğme (Özet sekmesi): 0 satırı yükle — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/kullanicilar düğme: Hesabı düzenle — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/kullanicilar düğme: Diğer işlemler — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/gorunum düğme: Kaydet — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/sevkiyat/<id> düğme: Geçersiz kıl — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/sevkiyat/<id> düğme (Düzeltmeler sekmesi): Düzeltmeyi kaydet — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/sevkiyat/<id> düğme (Kalite itirazı sekmesi): Kalite itirazı aç — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: admin /panel/sevkiyat/<id> düğme (Kalite itirazı sekmesi): Kontrol iste — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "admin",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+ ][39m
+
+       at ..\support\robot.ts:158
+
+      156 |     });
+      157 |     for (const robot of robotlar) await robot.baglam.close();
+    > 158 |     expect(sorunlar, 'Robot sorun buldu (rapor/rapor.html)').toEqual([]);
+          |                                                              ^
+      159 |   },
+      160 | });
+      161 |
+        at Object.giris (C:\Mehmet Celek\Projects\yarn-shipment-system\frontend\apps\web\robot\support\robot.ts:158:62)
+
+  2) robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: depo her sekme, filtre ve güvenli düğmeye tıklar 
+
+    Error: Robot sorun buldu (rapor/rapor.html)
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 17[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: depo /panel/sevkiyat/<id> düğme (İplik dönüşü sekmesi): Hareketi kaydet — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "depo",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: depo /panel/sevkiyat/<id> düğme (Çuvallar sekmesi): Listeye ekle — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "depo",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: depo /panel/sevkiyat/<id> düğme (Çuvallar sekmesi): 0 çuvalı ekle — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "depo",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+ ][39m
+
+       at ..\support\robot.ts:158
+
+      156 |     });
+      157 |     for (const robot of robotlar) await robot.baglam.close();
+    > 158 |     expect(sorunlar, 'Robot sorun buldu (rapor/rapor.html)').toEqual([]);
+          |                                                              ^
+      159 |   },
+      160 | });
+      161 |
+        at Object.giris (C:\Mehmet Celek\Projects\yarn-shipment-system\frontend\apps\web\robot\support\robot.ts:158:62)
+
+  3) robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: kalite her sekme, filtre ve güvenli düğmeye tıklar 
+
+    Error: Robot sorun buldu (rapor/rapor.html)
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 33[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   Object {[39m
+    [31m+     "ekran": "C:\\Mehmet Celek\\Projects\\yarn-shipment-system\\frontend\\apps\\web\\robot\\sonuclar\\05-tum-ekranlar.robot.ts-T-2c253-e-ve-güvenli-düğmeye-tıklar\\35--panel-raporlar-d-me-PDF-indir-t-kla.png",[39m
+    [31m+     "ozet": "/panel/raporlar › düğme 'PDF indir' tıkla: page.waitForEvent: Timeout 15000ms exceeded while waiting for event \"download\"",[39m
+    [31m+     "rol": "kalite",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: kalite /panel/partiler düğme: Kaliteyi kilitle — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "kalite",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: kalite /panel/partiler düğme: Düzenle — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "kalite",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: kalite /panel/partiler düğme: Pasife al — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "kalite",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: kalite /panel/sevkiyat/<id> düğme (Kalite itirazı sekmesi): Kalite itirazı aç — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "kalite",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: kalite /panel/sevkiyat/<id> düğme (Kalite itirazı sekmesi): Kontrol iste — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "kalite",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+ ][39m
+
+       at ..\support\robot.ts:158
+
+      156 |     });
+      157 |     for (const robot of robotlar) await robot.baglam.close();
+    > 158 |     expect(sorunlar, 'Robot sorun buldu (rapor/rapor.html)').toEqual([]);
+          |                                                              ^
+      159 |   },
+      160 | });
+      161 |
+        at Object.giris (C:\Mehmet Celek\Projects\yarn-shipment-system\frontend\apps\web\robot\support\robot.ts:158:62)
+
+  4) robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: mudur her sekme, filtre ve güvenli düğmeye tıklar 
+
+    Error: Robot sorun buldu (rapor/rapor.html)
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 49[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Yakalanmamış istisna: pdfMake.addVirtualFileSystem is not a function",[39m
+    [31m+     "rol": "mudur",[39m
+    [31m+     "tur": "sayfa",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ekran": "C:\\Mehmet Celek\\Projects\\yarn-shipment-system\\frontend\\apps\\web\\robot\\sonuclar\\05-tum-ekranlar.robot.ts-T-ebb5f-e-ve-güvenli-düğmeye-tıklar\\33--panel-sevkiyat-yeni-d-me-Sipari-formu-PDF-t-kla.png",[39m
+    [31m+     "ozet": "/panel/sevkiyat/yeni › düğme 'Sipariş formu PDF' tıkla: page.waitForEvent: Timeout 15000ms exceeded while waiting for event \"download\"",[39m
+    [31m+     "rol": "mudur",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ekran": "C:\\Mehmet Celek\\Projects\\yarn-shipment-system\\frontend\\apps\\web\\robot\\sonuclar\\05-tum-ekranlar.robot.ts-T-ebb5f-e-ve-güvenli-düğmeye-tıklar\\52--panel-raporlar-d-me-PDF-indir-t-kla.png",[39m
+    [31m+     "ozet": "/panel/raporlar › düğme 'PDF indir' tıkla: page.waitForEvent: Timeout 15000ms exceeded while waiting for event \"download\"",[39m
+    [31m+     "rol": "mudur",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: mudur /panel/raporlar düğme (Özet sekmesi): 0 satırı yükle — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "mudur",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: mudur /panel/sevkiyat/<id> düğme (Kalite itirazı sekmesi): Kalite itirazı aç — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "mudur",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: mudur /panel/sevkiyat/<id> düğme (Kumaş girişi sekmesi): Kumaş girişini kaydet — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "mudur",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: mudur /panel/sevkiyat/<id> düğme (İplik dönüşü sekmesi): Hareketi kaydet — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "mudur",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: mudur /panel/sevkiyat/<id> düğme (Fire dosyası sekmesi): Oranı kaydet — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "mudur",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ozet": "Kapsam açığı: mudur /panel/sevkiyat/<id> düğme (Fire dosyası sekmesi): Fatura edildi — hiçbir senaryoda denenmiyor (support/kapsam.ts)",[39m
+    [31m+     "rol": "mudur",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+ ][39m
+
+       at ..\support\robot.ts:158
+
+      156 |     });
+      157 |     for (const robot of robotlar) await robot.baglam.close();
+    > 158 |     expect(sorunlar, 'Robot sorun buldu (rapor/rapor.html)').toEqual([]);
+          |                                                              ^
+      159 |   },
+      160 | });
+      161 |
+        at Object.giris (C:\Mehmet Celek\Projects\yarn-shipment-system\frontend\apps\web\robot\support\robot.ts:158:62)
+
+  5) robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: genel-mudur her sekme, filtre ve güvenli düğmeye tıklar 
+
+    Error: Robot sorun buldu (rapor/rapor.html)
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 14[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   Object {[39m
+    [31m+     "ekran": "C:\\Mehmet Celek\\Projects\\yarn-shipment-system\\frontend\\apps\\web\\robot\\sonuclar\\05-tum-ekranlar.robot.ts-T-f43ee-e-ve-güvenli-düğmeye-tıklar\\17--panel-raporlar-d-me-PDF-indir-t-kla.png",[39m
+    [31m+     "ozet": "/panel/raporlar › düğme 'PDF indir' tıkla: page.waitForEvent: Timeout 15000ms exceeded while waiting for event \"download\"",[39m
+    [31m+     "rol": "genel-mudur",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+   Object {[39m
+    [31m+     "ekran": "C:\\Mehmet Celek\\Projects\\yarn-shipment-system\\frontend\\apps\\web\\robot\\sonuclar\\05-tum-ekranlar.robot.ts-T-f43ee-e-ve-güvenli-düğmeye-tıklar\\35--panel-bakiye-liste-Fasoncu-t-kla.png",[39m
+    [31m+     "ozet": "'Fasoncu' listesinde seçenek olmalı",[39m
+    [31m+     "rol": "genel-mudur",[39m
+    [31m+     "tur": "beklenti",[39m
+    [31m+   },[39m
+    [31m+ ][39m
+
+       at ..\support\robot.ts:158
+
+      156 |     });
+      157 |     for (const robot of robotlar) await robot.baglam.close();
+    > 158 |     expect(sorunlar, 'Robot sorun buldu (rapor/rapor.html)').toEqual([]);
+          |                                                              ^
+      159 |   },
+      160 | });
+      161 |
+        at Object.giris (C:\Mehmet Celek\Projects\yarn-shipment-system\frontend\apps\web\robot\support\robot.ts:158:62)
+
+  5 failed
+    robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: admin her sekme, filtre ve güvenli düğmeye tıklar 
+    robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: depo her sekme, filtre ve güvenli düğmeye tıklar 
+    robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: kalite her sekme, filtre ve güvenli düğmeye tıklar 
+    robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: mudur her sekme, filtre ve güvenli düğmeye tıklar 
+    robot\senaryolar\05-tum-ekranlar.robot.ts:20:3 › Tüm ekranlar: genel-mudur her sekme, filtre ve güvenli düğmeye tıklar 
+  5 passed (10.8m)
+
+Robot raporu: C:\Mehmet Celek\Projects\yarn-shipment-system\frontend\apps\web\robot\rapor\rapor.html (36 sorun)

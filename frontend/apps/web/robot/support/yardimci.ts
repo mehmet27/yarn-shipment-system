@@ -39,3 +39,30 @@ export async function resim(sayfa: Page, tohum = 1): Promise<Buffer> {
 
 /** Her koşuda benzersiz, robotun ürettiğini belli eden ek. */
 export const damga = () => `ROBOT-${new Date().toISOString().slice(5, 16).replace(/\D/g, '')}`;
+
+/** Metni içeren, düğmesi olan en iç satır/kart kutusu (liste satırlarının ortak yapısı yok). */
+export function satir(sayfa: Page, metin: string, dugme: string | RegExp) {
+  return sayfa
+    .locator('main div')
+    .filter({ hasText: metin })
+    .filter({ has: sayfa.getByRole('button', { name: dugme }) })
+    .last();
+}
+
+/** Küçük, geçerli bir PNG (logo yükleme denemeleri). */
+export async function logoPng(sayfa: Page): Promise<Buffer> {
+  const veri = await sayfa.evaluate(() => {
+    const tuval = document.createElement('canvas');
+    tuval.width = 120;
+    tuval.height = 40;
+    const x = tuval.getContext('2d');
+    if (x === null) return '';
+    x.fillStyle = '#1c4e80';
+    x.fillRect(0, 0, 120, 40);
+    x.fillStyle = '#fff';
+    x.font = '20px sans-serif';
+    x.fillText('ROBOT', 20, 27);
+    return tuval.toDataURL('image/png');
+  });
+  return Buffer.from(veri.split(',')[1] ?? '', 'base64');
+}

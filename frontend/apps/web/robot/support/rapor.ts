@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import type { FullResult, Reporter, TestCase, TestResult } from '@playwright/test/reporter';
 
@@ -25,6 +25,10 @@ const kacis = (metin: string) =>
 /** Senaryo sonuçlarından Türkçe HTML ve Markdown rapor üretir; önceki koşuya göre yeni/çözülen sorunları ayırır. */
 export default class RaporReporter implements Reporter {
   private readonly senaryolar: Senaryo[] = [];
+
+  onBegin() {
+    rmSync(join(KLASOR, 'dosyalar'), { recursive: true, force: true });
+  }
 
   onTestEnd(test: TestCase, sonuc: TestResult) {
     const ek = sonuc.attachments.find((a) => a.name === 'robot-sonuc');

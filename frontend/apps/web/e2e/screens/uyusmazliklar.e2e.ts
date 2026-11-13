@@ -20,10 +20,10 @@ test.describe('Uyuşmazlıklar', { tag: '@panel' }, () => {
     async ({ page, openAs }) => {
       await openAs('ADMIN', '/panel/uyusmazliklar/disc-0');
       await page.getByRole('button', { name: 'Bana ata' }).click();
-      await pick(page, /^Karar/, 'Tolerans içinde');
-      await page.getByLabel(/^Not/).fill('Tolerans içinde kabul');
+      await pick(page, /^Karar/, 'Talep haksız');
+      await page.getByLabel(/^Not/).fill('Talep haksız kabul');
       await page.getByRole('button', { name: 'Karara bağla' }).click();
-      await expect(page.getByText('Tolerans içinde kabul')).toHaveCount(2);
+      await expect(page.getByText('Talep haksız kabul')).toHaveCount(2);
       await expect(page.getByRole('button', { name: 'Karara bağla' })).toHaveCount(0);
     },
   );

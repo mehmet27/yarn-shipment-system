@@ -61,6 +61,7 @@ describe('sumKg ve formatSignedKg', () => {
     expect(sumKg([])).toBe('0.000');
     expect(formatKgText('1982.500')).toBe('1.982,5 kg');
     expect(formatKgText('x')).toBe('x');
+    expect(formatKgText('-5058.347')).toBe('−5.058,347 kg');
   });
 
   it('işaretli farkı Türkçe biçimler', () => {

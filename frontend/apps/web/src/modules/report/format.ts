@@ -1,8 +1,8 @@
-import { formatKg, isKilogram } from '@iplik/units';
+import { formatKgText, isKilogram } from '@iplik/units';
 
 /** Sunucudan gelen ondalık kilo dizesi; tanınmazsa olduğu gibi gösterilir. */
 export function formatKilograms(value: string): string {
-  return isKilogram(value) ? formatKg(value) : `${value} kg`;
+  return isKilogram(value) || value.startsWith('-') ? formatKgText(value) : `${value} kg`;
 }
 
 /** Yüzde dizesi, ör. `"25.00"` → `%25,00`. */

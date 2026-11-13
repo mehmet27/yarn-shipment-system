@@ -1262,7 +1262,7 @@
       "yarnKg": "Kumaş kg",
       "addYarn": "İplik ekle",
       "removeYarn": "Sil",
-      "total": "Toplam kumaş: {{kg}} kg",
+      "total": "Toplam kumaş: {{kg}}",
       "firePct": "Fire (%)",
       "rollCount": "Top sayısı",
       "waybillNo": "Üretim / irsaliye no",

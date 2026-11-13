@@ -19,6 +19,11 @@ export function ActivityList({ discrepancyId }: { discrepancyId: string }) {
   const { t } = useTranslation();
   const query = useDiscrepancyActivity(discrepancyId);
   const actorLabel = useActorLabel();
+  /** Açılışta kural koduna, atamada atanan kişinin adına çevrilir; diğer notlar olduğu gibi gösterilir. */
+  const noteText = (actionType: string, note: string): string => {
+    if (actionType === 'OPENED') return ruleLabel(t, note);
+    return actionType === 'ASSIGNED' ? actorLabel(note) : note;
+  };
   return (
     <Stack gap="xs">
       <Title order={4}>{t('discrepancy.activity.title')}</Title>
@@ -32,9 +37,7 @@ export function ActivityList({ discrepancyId }: { discrepancyId: string }) {
                   : item.actionType}
               </Text>
               {item.note !== undefined && (
-                <Text size="sm">
-                  {item.actionType === 'OPENED' ? ruleLabel(t, item.note) : item.note}
-                </Text>
+                <Text size="sm">{noteText(item.actionType, item.note)}</Text>
               )}
               {item.evidenceId !== undefined && <EvidenceById evidenceId={item.evidenceId} />}
               <Text size="sm" c="dimmed">

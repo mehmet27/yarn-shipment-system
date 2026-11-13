@@ -37,10 +37,12 @@ describe('Uyuşmazlık ekranları', () => {
     renderApp('/panel/uyusmazliklar/disc-0');
     await userEvent.click(await screen.findByRole('button', { name: 'Bana ata' }));
     await userEvent.click(await screen.findByRole('combobox', { name: /^Karar/ }));
-    await userEvent.click(await screen.findByRole('option', { name: 'Tolerans içinde' }));
-    await userEvent.type(screen.getByLabelText(/^Not/), 'Tolerans içinde kabul');
+    expect(screen.queryByRole('option', { name: 'Tolerans içinde' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Veri hatası' })).not.toBeInTheDocument();
+    await userEvent.click(await screen.findByRole('option', { name: 'Talep haksız' }));
+    await userEvent.type(screen.getByLabelText(/^Not/), 'Talep haksız kabul');
     await userEvent.click(screen.getByRole('button', { name: 'Karara bağla' }));
-    expect(await screen.findAllByText('Tolerans içinde kabul')).toHaveLength(2);
+    expect(await screen.findAllByText('Talep haksız kabul')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: 'Karara bağla' })).not.toBeInTheDocument();
   });
 });

@@ -7,9 +7,11 @@ import { useResolveDiscrepancy } from '../hooks/useDecideDiscrepancy';
 const MAX_NOTE_LENGTH = 2000;
 const MAX_PARTY_LENGTH = 200;
 const RESOLUTIONS = Object.values(Resolution);
+/** Uyuşmazlıklar yalnızca kalite itirazıdır; "tolerans içinde" ve "veri hatası" kararları bu akışa uymaz. */
+const OFFERED = RESOLUTIONS.filter((value) => value !== 'TOLERANCE' && value !== 'DATA_ERROR');
 
 function resolutionOptions(t: (key: string) => string) {
-  return RESOLUTIONS.map((value) => ({ value, label: t(`discrepancy.resolution.${value}`) }));
+  return OFFERED.map((value) => ({ value, label: t(`discrepancy.resolution.${value}`) }));
 }
 
 function errorKey(error: unknown): string {

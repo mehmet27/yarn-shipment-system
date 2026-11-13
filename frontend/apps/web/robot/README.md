@@ -31,6 +31,24 @@ açın (git'e girmez): `{ "genel-mudur": "şifre" }`. Hesabı olmayan rolün sen
 **Dikkat:** robot yerel veritabanına kayıt yazar (iplik girişi, sevkiyat, itiraz; adları `ROBOT-…` ile başlar).
 Üretim ya da paylaşılan bir ortamda çalıştırmayın.
 
+## Chrome eklentisi (robotu tek tıkla başlat)
+
+Eklenti robotu doğrudan çalıştıramaz (tarayıcı kuralları); bu yüzden bu bilgisayarda küçük bir yardımcı sunucu çalışır
+(yalnızca `127.0.0.1`, yalnızca eklentiden gelen isteklere yanıt verir).
+
+1. Terminalde (açık kalsın):
+   `pnpm --filter @iplik/web robot:sunucu`
+2. Chrome'da `chrome://extensions` → **Geliştirici modu** açık → **Paketlenmemiş öğe yükle** → `frontend/apps/web/robot/eklenti` klasörünü seçin.
+3. Araç çubuğundaki **İplik Sevkiyat Robotu** simgesi: **Robotu başlat** (isteğe bağlı: pencerede izle, video, yalnızca şu senaryolar),
+   **Durdur**, **Raporu aç** (rapor.html yeni sekmede) ve **Sorun metnini kopyala** (YENİ sorunların listesi, yeniden üretme
+   komutlarıyla; Claude'a yapıştırın, nedenini bulup PR açsın).
+
+`ROBOT_SIFRE` sunucunun çalıştığı terminalde (ya da `robot/.env.local` içinde) tanımlı olmalı. Sunucunun portu
+`ROBOT_SUNUCU_PORT` ile değişir (varsayılan 7777; değişirse `eklenti/popup.js` ve `manifest.json` de güncellenir).
+
+Rapor ayrıca `rapor/sorun-ozeti.md` (yapıştırılacak sorun metni) ve `rapor/ozet.json` (son koşu özeti) üretir; HTML raporda
+"Yalnızca YENİ sorunlar" süzgeci vardır.
+
 ## Temiz kurulumdan başlama
 
 Yalnızca `admin` kullanıcısı olan temiz bir yerel ortam için (Docker verisi silinir, geri alınamaz):

@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "İplik Sevkiyat Robotu",
+  "description": "Yerel test robotunu başlatır, ilerlemeyi gösterir, raporu açar ve sorunları kopyalar.",
+  "version": "1.0.0",
+  "action": { "default_popup": "popup.html", "default_title": "Robot" },
+  "host_permissions": ["http://127.0.0.1:7777/*"]
+}

@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json && tsc -p e2e/tsconfig.json && tsc -p robot/tsconfig.json",
     "e2e": "playwright test -c e2e",
-    "robot": "node robot/run.mjs"
+    "robot": "node robot/run.mjs",
+    "robot:sunucu": "node robot/sunucu.mjs"
   },
   "dependencies": {
     "@iplik/api-client": "workspace:*",

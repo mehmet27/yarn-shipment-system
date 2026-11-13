@@ -262,6 +262,7 @@
     "back": "Sevkiyata dön",
     "submitFailed": "Çıkış tartısı kaydedilemedi. Lütfen tekrar deneyin.",
     "notDraft": "Bu sevkiyatın çıkış tartısı artık girilemez.",
+    "inconsistent": "Tartı değerleri tutarsız: çuval sayısı, sevkiyata eklenen çuval sayısıyla aynı olmalı. Çuvalları ekleyip tekrar deneyin.",
     "errors": {
       "invalidKg": "Kiloyu 1.982,5 biçiminde girin.",
       "tareExceedsGross": "Dara brütten büyük olamaz.",
@@ -705,6 +706,8 @@
       "QUALITY_CLAIM_WINDOW_CLOSED": "İtiraz süresi doldu; sevkiyatın tamamlanmasından sonra 3 iş günü içinde açılabilir.",
       "CLAIM_EXCEEDS_SHIPMENT_WEIGHT": "İtiraz edilen kilo sevkiyatın net ağırlığını aşıyor.",
       "QUALITY_CLAIM_EXCEEDS_SHIPMENT_WEIGHT": "İtiraz edilen kilo sevkiyatın net ağırlığını aşıyor.",
+      "QUALITY_CLAIM_CLAIM_EXCEEDS_SHIPMENT_WEIGHT": "İtiraz edilen kilo sevkiyatın net ağırlığını aşıyor.",
+      "QUALITY_CLAIM_CLAIMED_KG_INVALID": "Kilo sıfırdan büyük olmalı, en çok 3 ondalık içermeli.",
       "QUALITY_CLAIM_EVIDENCE_REQUIRED": "En az bir fotoğraf ekleyin.",
       "QUALITY_CLAIM_EVIDENCE_INVALID": "Eklenen dosya bu sevkiyata ait değil ya da türü uygun değil.",
       "QUALITY_CLAIM_INSPECTION_RECORDED": "Bu kontrolün sonucu zaten girilmiş.",
@@ -1103,6 +1106,7 @@
       "FIRE_INVOICE_NOT_APPLICABLE": "Bu dosyada faturalanacak hatalı kilo yok ya da dosya kapandı.",
       "FIRE_CLOSE_NOT_APPLICABLE": "Hatalı kilo olan dosya kapatılamaz; fatura bilgisi girin.",
       "ACCESS_DENIED": "Bu işlem için yetkiniz yok.",
+      "INVALID_LEDGER_INPUT": "Girilen kilo ya da değer geçersiz: kilo sıfırdan büyük olmalı, dönen iplik gönderilen ipliği aşmamalı.",
       "unknown": "İşlem tamamlanamadı. Lütfen tekrar deneyin."
     },
     "draftErrors": {
@@ -1150,6 +1154,7 @@
     },
     "fire": {
       "title": "Fire dosyası",
+      "notOpened": "Bu sevkiyat için henüz fire dosyası açılmadı; sevkiyat tamamlanınca açılır.",
       "statuses": {
         "AWAITING_FABRIC": "Kumaş bekleniyor",
         "TO_INVOICE": "Faturalanacak",

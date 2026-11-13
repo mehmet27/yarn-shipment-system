@@ -21,9 +21,10 @@ const FIELDS = [
 ] as const satisfies readonly { name: Exclude<keyof DispatchDraft, 'ticket'>; inputMode: string }[];
 
 function failureKey(error: unknown): string {
-  return toProblem(error).code === 'INVALID_SHIPMENT_STATUS'
-    ? 'dispatch.notDraft'
-    : 'dispatch.submitFailed';
+  const { code } = toProblem(error);
+  if (code === 'INVALID_SHIPMENT_STATUS') return 'dispatch.notDraft';
+  if (code === 'INVALID_DISPATCH') return 'dispatch.inconsistent';
+  return 'dispatch.submitFailed';
 }
 
 export type DispatchFormProps = { shipmentId: string; onSaved: () => void };

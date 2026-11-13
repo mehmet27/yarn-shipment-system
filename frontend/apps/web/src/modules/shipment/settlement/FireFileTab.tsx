@@ -1,5 +1,6 @@
+import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Badge, Group, Paper, Stack, Title } from '@iplik/ui';
+import { Badge, Group, Paper, Stack, Text, Title } from '@iplik/ui';
 import { QueryState } from '../components/QueryState';
 import { FireClosedNote } from './FireClosedNote';
 import { FireFigures } from './FireFigures';
@@ -10,6 +11,9 @@ import { useFireSettlement } from './hooks';
 export function FireFileTab({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
   const query = useFireSettlement(shipmentId);
+  if (query.isError && toProblem(query.error).code === 'FIRE_SETTLEMENT_NOT_FOUND') {
+    return <Text c="dimmed">{t('settlement.fire.notOpened')}</Text>;
+  }
   return (
     <QueryState query={query}>
       {(settlement) => (

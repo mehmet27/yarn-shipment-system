@@ -2,7 +2,7 @@
 import type { Content, TableCell, TDocumentDefinitions } from 'pdfmake/interfaces';
 import type { CreateDraft, RecipeLineDraft } from './createDraft';
 import { parsePositiveKg, totalNetKg } from './createDraft';
-import { loadPdfMake } from '../../report/export/pdfMakeLib';
+import { loadPdfMake } from './pdfMakeLib';
 
 /** PDF'teki sabit metinler (antet, açıklamalar, imza başlıkları); `create.pdf.*` çevirilerinden gelir. */
 export type OrderFormTexts = {

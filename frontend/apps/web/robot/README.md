@@ -11,7 +11,8 @@ gateway `8080`, Keycloak `8180`, `yarnshipment-app` `local` profiliyle.
 
 ```bash
 cd frontend
-export ROBOT_SIFRE=<yerel kullanıcıların ortak şifresi>   # yalnızca yerel ortam
+# Şifre: bash için  export ROBOT_SIFRE='...'   PowerShell için  $env:ROBOT_SIFRE = '...'
+# ya da robot/.env.local dosyasına  ROBOT_SIFRE=...  yazın (git'e girmez)
 pnpm --filter @iplik/web robot                  # sessiz kip; rapor üretir
 pnpm --filter @iplik/web robot -- --izle        # gerçek tarayıcı penceresinde, yavaşlatarak izlenir
 pnpm --filter @iplik/web robot -- --izle --yavas=600   # adımlar arası bekleme (ms)

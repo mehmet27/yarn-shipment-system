@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -p tsconfig.json && tsc -p e2e/tsconfig.json",
-    "e2e": "playwright test -c e2e"
+    "typecheck": "tsc -p tsconfig.json && tsc -p e2e/tsconfig.json && tsc -p robot/tsconfig.json",
+    "e2e": "playwright test -c e2e",
+    "robot": "node robot/run.mjs"
   },
   "dependencies": {
     "@iplik/api-client": "workspace:*",

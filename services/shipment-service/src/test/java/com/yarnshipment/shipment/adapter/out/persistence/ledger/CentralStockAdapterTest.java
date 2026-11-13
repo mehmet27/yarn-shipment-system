@@ -157,5 +157,10 @@ class CentralStockAdapterTest {
                         DIRECT_SHIPMENT))
                 .contains("Esha İplik")
                 .contains("IRS-77");
+        var flow = stock.findYarnFlow();
+        assertThat(flow.receivedKg()).isPositive();
+        assertThat(flow.directTransferKg()).isEqualByComparingTo(flow.receivedKg());
+        assertThat(flow.atSubcontractorsKg()).isEqualByComparingTo(flow.directTransferKg());
+        assertThat(flow.usedInCentralProductionKg()).isEqualByComparingTo("0");
     }
 }

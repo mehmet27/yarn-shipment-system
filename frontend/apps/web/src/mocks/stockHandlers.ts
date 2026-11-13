@@ -54,6 +54,18 @@ export function createStockHandlers(user: CurrentUser) {
         rows: current,
         totalKg: sumKg(current.map((r) => r.stockKg)),
         producedFabricKg: sumKg(producedKg),
+        flow: {
+          receivedKg: sumKg(movements.filter((m) => m.kind === 'YARN_RECEIPT').map((m) => m.netKg)),
+          directTransferKg: '0.000',
+          atSubcontractorsKg: sumKg(
+            movements
+              .filter((m) => m.kind === 'TO_SUBCONTRACTOR')
+              .map((m) => m.netKg.replace('-', '')),
+          ),
+          usedInCentralProductionKg: sumKg(
+            movements.filter((m) => m.kind === 'PRODUCTION').map((m) => m.netKg.replace('-', '')),
+          ),
+        },
         movements,
       });
     }),

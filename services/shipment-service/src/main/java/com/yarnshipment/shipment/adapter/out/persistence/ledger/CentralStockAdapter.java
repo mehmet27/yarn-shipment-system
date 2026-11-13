@@ -1,6 +1,7 @@
 package com.yarnshipment.shipment.adapter.out.persistence.ledger;
 
 import com.yarnshipment.shipment.application.port.in.stock.CentralStockRow;
+import com.yarnshipment.shipment.application.port.in.stock.YarnFlow;
 import com.yarnshipment.shipment.application.port.out.ledger.CentralStockPort;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockKind;
@@ -31,6 +32,15 @@ final class CentralStockAdapter implements CentralStockPort {
             SELECT yarn_type, sum(net_kg) AS stock_kg FROM central_stock_movement
             GROUP BY yarn_type ORDER BY yarn_type""";
     private static final String PRODUCED = "SELECT coalesce(sum(net_kg), 0) FROM fabric_lot WHERE source = 'CENTRAL'";
+    private static final String FLOW = """
+            SELECT
+                (SELECT coalesce(sum(net_kg), 0) FROM central_stock_movement
+                  WHERE kind = 'YARN_RECEIPT') AS received_kg,
+                (SELECT coalesce(sum(net_kg), 0) FROM central_stock_movement
+                  WHERE kind = 'YARN_RECEIPT' AND source_ref LIKE 'DIRECT_IN:%') AS direct_kg,
+                (SELECT coalesce(sum(net_kg), 0) FROM balance_movement) AS at_subcontractors_kg,
+                (SELECT coalesce(-sum(net_kg), 0) FROM central_stock_movement
+                  WHERE kind = 'PRODUCTION') AS used_kg""";
     private static final String RECENT = """
             SELECT id, yarn_type, kind, net_kg, production_id, fabric_kg, note, occurred_at, created_by
             FROM central_stock_movement ORDER BY occurred_at DESC, id DESC LIMIT ?""";
@@ -71,6 +81,17 @@ final class CentralStockAdapter implements CentralStockPort {
     @Override
     public BigDecimal findProducedFabricKg() {
         return jdbc.sql(PRODUCED).query(BigDecimal.class).single();
+    }
+
+    @Override
+    public YarnFlow findYarnFlow() {
+        return jdbc.sql(FLOW)
+                .query((rs, i) -> new YarnFlow(
+                        rs.getBigDecimal("received_kg"),
+                        rs.getBigDecimal("direct_kg"),
+                        rs.getBigDecimal("at_subcontractors_kg"),
+                        rs.getBigDecimal("used_kg")))
+                .single();
     }
 
     @Override

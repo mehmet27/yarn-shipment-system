@@ -2,6 +2,7 @@
 import type { Content, TableCell, TDocumentDefinitions } from 'pdfmake/interfaces';
 import type { CreateDraft, RecipeLineDraft } from './createDraft';
 import { parsePositiveKg, totalNetKg } from './createDraft';
+import { loadPdfMake } from './pdfMakeLib';
 
 /** PDF'teki sabit metinler (antet, açıklamalar, imza başlıkları); `create.pdf.*` çevirilerinden gelir. */
 export type OrderFormTexts = {
@@ -209,11 +210,7 @@ export async function downloadOrderForm(
   options: { texts: OrderFormTexts; date: string; fileName: string },
 ): Promise<void> {
   const { texts, date, fileName } = options;
-  const [pdfMake, fonts] = await Promise.all([
-    import('pdfmake/build/pdfmake'),
-    import('pdfmake/build/vfs_fonts'),
-  ]);
-  pdfMake.addVirtualFileSystem(fonts.default);
+  const pdfMake = await loadPdfMake();
   await pdfMake.createPdf(buildOrderFormDefinition(draft, texts, date)).download(fileName);
 }
 /* eslint-enable @typescript-eslint/no-magic-numbers -- ölçü sabitleri bölümü sonu */

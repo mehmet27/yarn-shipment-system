@@ -16,10 +16,8 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Sevkiyat dökümü ve fasoncu bakiyesi sorguları; gerçek şemada. Her test kendi lokasyonunu kullanır. */
 @JdbcTest
@@ -30,9 +28,6 @@ class ShipmentListReaderTest {
     private static final ReportPeriod PERIOD =
             new ReportPeriod(LocalDate.parse("2026-11-01"), LocalDate.parse("2026-11-03"));
     private static final int LIMIT = 10;
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private ShipmentListReader reader;

@@ -17,10 +17,8 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Yerel örnek veri gerçek tetikleyici ve kısıtlardan geçer ve servisin okuma yolu onu okuyabilir. */
 @DataJpaTest
@@ -33,9 +31,6 @@ class LocalSampleDataTest {
     private static final UUID SITE_B = UUID.fromString("0192f0a0-0000-7000-8000-000000000002");
     private static final PageRequest ALL = new PageRequest(0, 50);
     private static final int SAMPLE_COUNT = 7;
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private ShipmentPersistenceAdapter adapter;

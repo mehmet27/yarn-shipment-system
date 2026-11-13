@@ -20,10 +20,8 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * Analiz Bölüm 14 madde 17: açılış bakiyesi aktarıldıktan sonra bakiye matrisi 09.11.2026 tablosuyla (toplam 262.153
@@ -100,9 +98,6 @@ class BalanceMatrixAcceptanceTest {
                     "75 DENYE BEYAZ",
                     List.of(9600, 1700, 1140, 0, 0, 600, 660, 0, 300, 0, 780, 0, 810, 960, 500),
                     17050));
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private BalanceFireReader reader;

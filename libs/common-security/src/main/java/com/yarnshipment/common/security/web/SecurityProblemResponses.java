@@ -11,7 +11,6 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.MDC;
 import org.springframework.context.MessageSource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -42,7 +41,6 @@ public final class SecurityProblemResponses implements AuthenticationEntryPoint,
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
             throws IOException {
-        response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
         write(request, response, SecurityErrorCode.AUTHENTICATION_REQUIRED);
     }
 

@@ -34,14 +34,18 @@ spring:
   mvc:
     problemdetails:
       enabled: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/yarnshipment}
-          audiences: yarnshipment-api
 server:
   port: ${SERVER_PORT:8083}
+  servlet:
+    session:
+      # Boşta kalan oturum 30 dakika sonra düşer; çerez JavaScript'e kapalıdır.
+      timeout: 30m
+      cookie:
+        name: YARNSHIPMENT_SESSION
+        http-only: true
+        # Üretimde HTTPS arkasında true verilir (deploy/prod); yerelde http://localhost için kapalıdır.
+        secure: ${SESSION_COOKIE_SECURE:false}
+        same-site: lax
 yarnshipment:
   security:
     public-paths:
@@ -49,6 +53,7 @@ yarnshipment:
       - /actuator/info
       # Giriş sayfası da marka rengini okur; yazma ucu yöntem güvenliğiyle (SETTINGS_MANAGE) korunur.
       - /api/v1/branding
+      - /api/v1/auth/login
   events:
     # Modüller arası olaylar süreç içi iletilir (Kafka yok). Konu ve kaynak olay türünün önekinden gelir; denetim
     # kaydı bunlardan varlık türünü ve servis adını çıkarır (kaynak adları geçmiş kayıtlarla aynı kalır).

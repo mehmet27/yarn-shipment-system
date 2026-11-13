@@ -1,5 +1,20 @@
 export { httpClient } from './httpClient';
-export { changePasswordUrl, getCurrentUser, LOGIN_PATH, loginUrl, logout, ME_PATH } from './me';
+export {
+  CHANGE_PASSWORD_PATH,
+  changePasswordUrl,
+  getCurrentUser,
+  LOGIN_PATH,
+  loginUrl,
+  logout,
+  ME_PATH,
+  safeReturnTo,
+} from './me';
+export { changeOwnPassword, login } from './generated/shipmentService';
+export type {
+  ChangeOwnPasswordRequest,
+  LoginRequest,
+  LoginResponse,
+} from './generated/shipmentService';
 export type { CurrentUser, Permission, Role } from './me';
 export { classifyProblem, toProblem } from './problem';
 export type { FieldError, Problem, ProblemKind } from './problem';

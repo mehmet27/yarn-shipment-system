@@ -21,10 +21,8 @@ import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Uyuşmazlık okuma, atama ve karar yazımı; migration'larla kurulan gerçek şemada ve uygulama rolüyle. */
 @JdbcTest
@@ -42,9 +40,6 @@ class DiscrepancyAdaptersTest {
 
     private static final UUID ACTOR = SeededDiscrepancies.ACTOR;
     private static final Instant LATER = Instant.parse("2026-10-24T09:00:00Z");
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private ComparisonSeeder comparisons;

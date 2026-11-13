@@ -14,10 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Geçmiş ve çuval okuması, yerel örnek veri üzerinde gerçek PostgreSQL'e karşı. */
 @DataJpaTest
@@ -31,9 +29,6 @@ class ShipmentFileAdaptersTest {
 
     private static final UUID DRAFT = UUID.fromString("0192f0a0-0000-7000-8000-0000000a0001");
     private static final int BAGS_PER_SHIPMENT = 5;
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private ShipmentHistoryAdapter history;

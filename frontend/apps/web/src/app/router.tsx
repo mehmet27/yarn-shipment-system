@@ -1,4 +1,4 @@
-import { RequireAuth, RequirePermission } from '@/modules/auth';
+import { ChangePasswordPage, LoginPage, RequireAuth, RequirePermission } from '@/modules/auth';
 import { auditPanelRoutes } from '@/modules/audit';
 import { balancePanelRoutes } from '@/modules/balance';
 import { stockPanelRoutes } from '@/modules/stock';
@@ -47,6 +47,15 @@ const routes: RouteObject[] = [
       ...balancePanelRoutes,
       ...stockPanelRoutes,
     ],
+  },
+  { path: '/giris', element: <LoginPage /> },
+  {
+    path: '/sifre-degistir',
+    element: (
+      <RequireAuth errorFallback={<ErrorPage reason="unexpected" />} allowPasswordChangeRequired>
+        <ChangePasswordPage />
+      </RequireAuth>
+    ),
   },
   { path: '/403', element: <ErrorPage reason="forbidden" /> },
   { path: '*', element: <ErrorPage reason="notFound" /> },

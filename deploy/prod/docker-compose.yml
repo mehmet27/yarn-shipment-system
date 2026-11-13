@@ -1,13 +1,11 @@
 # Üretim kurulumu (tek sunucu). Kullanım: ./deploy/prod/install.sh  (ayrıntı: DEPLOY.md)
-# Dışarıya yalnızca Caddy'nin 80/443 portları açılır; veritabanı, Redis, MinIO ve uygulama iç ağda kalır.
+# Dışarıya yalnızca Caddy'nin 80/443 portları açılır; veritabanı, MinIO ve uygulama iç ağda kalır.
 name: yarn-shipment-prod
 
 x-service-env: &service-env
   DB_URL: jdbc:postgresql://postgres:5432/yarnshipment
   DB_USER: yarnshipment
   DB_PASSWORD: ${DB_PASSWORD:?.env içinde DB_PASSWORD tanımlayın}
-  # Token'daki "iss" tarayıcının gördüğü adresle aynı olmalıdır; servisler bu adrese iç ağda Caddy üzerinden ulaşır.
-  KEYCLOAK_ISSUER_URI: https://${AUTH_HOST:?.env içinde AUTH_HOST tanımlayın}/realms/yarnshipment
 
 x-service: &service
   restart: unless-stopped
@@ -24,7 +22,6 @@ services:
       - "443:443"
     environment:
       APP_HOST: ${APP_HOST}
-      AUTH_HOST: ${AUTH_HOST}
       FILES_HOST: ${FILES_HOST}
       ACME_EMAIL: ${ACME_EMAIL:?.env içinde ACME_EMAIL tanımlayın}
     volumes:
@@ -33,10 +30,9 @@ services:
       - caddy-config:/config
     networks:
       default:
-        # Konteynerler genel adresleri (token issuer, MinIO yükleme adresi) iç ağda Caddy'ye çözer; geçerli sertifika sayesinde TLS doğrulaması geçer.
+        # Konteynerler genel adresleri (MinIO yükleme adresi) iç ağda Caddy'ye çözer; geçerli sertifika sayesinde TLS doğrulaması geçer.
         aliases:
           - ${APP_HOST}
-          - ${AUTH_HOST}
           - ${FILES_HOST}
 
   web:
@@ -45,7 +41,7 @@ services:
       dockerfile: deploy/docker/web.Dockerfile
     restart: unless-stopped
     depends_on:
-      - gateway
+      - yarnshipment-app
 
   postgres:
     image: postgres:17
@@ -62,19 +58,6 @@ services:
       - ../postgres/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-  redis:
-    image: redis:7
-    restart: unless-stopped
-    # Gateway oturumları; veri kalıcı değildir (Redis yeniden başlayınca kullanıcılar yeniden giriş yapar).
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?.env içinde REDIS_PASSWORD tanımlayın}", "--save", ""]
-    environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -106,45 +89,6 @@ services:
       minio:
         condition: service_healthy
 
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.4
-    restart: unless-stopped
-    command: ["start", "--import-realm"]
-    environment:
-      KC_HOSTNAME: https://${AUTH_HOST}
-      KC_HTTP_ENABLED: "true"
-      KC_PROXY_HEADERS: xforwarded
-      KC_HEALTH_ENABLED: "true"
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres:5432/yarnshipment
-      KC_DB_SCHEMA: keycloak
-      KC_DB_USERNAME: yarnshipment
-      KC_DB_PASSWORD: ${DB_PASSWORD}
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?.env içinde KEYCLOAK_ADMIN_PASSWORD tanımlayın}
-      # Realm dosyasındaki ${...} yer tutucuları bu ortam değişkenlerinden doldurulur.
-      APP_URL: https://${APP_HOST}
-      GATEWAY_CLIENT_SECRET: ${GATEWAY_CLIENT_SECRET:?.env içinde GATEWAY_CLIENT_SECRET tanımlayın}
-      KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?.env içinde KEYCLOAK_ADMIN_CLIENT_SECRET tanımlayın}
-      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:?.env içinde INITIAL_ADMIN_EMAIL tanımlayın}
-      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?.env içinde INITIAL_ADMIN_PASSWORD tanımlayın}
-    volumes:
-      # Yalnızca realm yoksa içe aktarılır (test kullanıcısı içermeyen üretim realm'i).
-      - ../keycloak/yarnshipment-realm-prod.json:/opt/keycloak/data/import/yarnshipment-realm.json:ro
-      - ../keycloak/themes/yarnshipment:/opt/keycloak/themes/yarnshipment:ro
-      # Giriş sayfasının uygulama adresi (install.sh .env'den üretir).
-      - ./generated/frontend-config.js:/opt/keycloak/themes/yarnshipment/login/resources/js/frontend-config.js:ro
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      # İmajda curl yok; yönetim portundan (9000) hazır olma ucu bash ile sorgulanır.
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"status\": \"UP\"' <&3"]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-      start_period: 60s
-
   # Tek uygulama: shipment, discrepancy, evidence, reporting ve audit modülleri tek süreçte çalışır
   # (modüller arası olaylar süreç içinde taşınır; ayrı mesaj kuyruğu yoktur).
   yarnshipment-app:
@@ -155,9 +99,12 @@ services:
       args: { MODULE: yarnshipment-app }
     environment:
       <<: *service-env
-      # Giriş hesabı açma: Keycloak yönetim API'si (iç ağ).
-      YARNSHIPMENT_KEYCLOAK_ADMIN_URL: http://keycloak:8080
-      YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET}
+      # İlk kurulumda `admin` hesabının şifresi (yalnızca hesap yoksa ya da şifresi atanmamışsa kullanılır); ilk girişte
+      # değiştirmesi istenir.
+      YARNSHIPMENT_AUTH_BOOTSTRAP_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?.env içinde INITIAL_ADMIN_PASSWORD tanımlayın}
+      # Oturum çerezi yalnızca HTTPS üzerinden gönderilir; TLS'i Caddy sonlandırır, X-Forwarded-* başlıklarına güvenilir.
+      SESSION_COOKIE_SECURE: "true"
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
       # Yükleme/indirme adresleri tarayıcıya verildiği için genel adres kullanılır.
       EVIDENCE_STORAGE_ENDPOINT: https://${FILES_HOST}
       EVIDENCE_STORAGE_BUCKET: evidence
@@ -165,36 +112,7 @@ services:
       EVIDENCE_STORAGE_SECRET_KEY: ${EVIDENCE_STORAGE_SECRET_KEY}
     depends_on:
       postgres: { condition: service_healthy }
-      keycloak: { condition: service_healthy }
       minio-init: { condition: service_completed_successfully }
-
-  gateway:
-    build:
-      context: ../..
-      dockerfile: deploy/docker/service.Dockerfile
-      args: { MODULE: gateway }
-    restart: unless-stopped
-    environment:
-      KEYCLOAK_ISSUER_URI: https://${AUTH_HOST}/realms/yarnshipment
-      GATEWAY_CLIENT_SECRET: ${GATEWAY_CLIENT_SECRET}
-      GATEWAY_PUBLIC_URL: https://${APP_HOST}
-      GATEWAY_POST_LOGIN_URL: https://${APP_HOST}/
-      GATEWAY_POST_LOGOUT_URL: https://${APP_HOST}/
-      # TLS'i Caddy sonlandırır; X-Forwarded-* başlıklarına güven (Secure çerez, doğru yönlendirme adresi).
-      SERVER_FORWARD_HEADERS_STRATEGY: framework
-      REDIS_HOST: redis
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      APP_URL: http://yarnshipment-app:8083
-    depends_on:
-      redis: { condition: service_healthy }
-      keycloak: { condition: service_healthy }
-      yarnshipment-app: { condition: service_started }
-    healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && printf 'GET /actuator/health HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-      start_period: 40s
 
 volumes:
   postgres-data:

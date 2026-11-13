@@ -4,7 +4,7 @@ import { needsWorkArea } from './staffRoles';
 
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9._-]{2,63}$/;
 const MIN_NAME_LENGTH = 2;
-/** Parola politikası (Keycloak ve servis): en az 8 karakter. */
+/** Parola politikası (servis ile aynı): en az 8 karakter. */
 export const MIN_PASSWORD_LENGTH = 8;
 
 export type AccountDraft = {

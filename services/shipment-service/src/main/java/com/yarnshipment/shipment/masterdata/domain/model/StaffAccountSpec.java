@@ -10,16 +10,17 @@ import java.util.UUID;
  * @param username giriş adı
  * @param fullName ad soyad
  * @param role verilecek tek rol
- * @param password yöneticinin belirlediği geçici şifre; loglanmaz
+ * @param passwordHash yöneticinin belirlediği geçici şifrenin özeti
  * @param siteIds kullanıcının göreceği lokasyonlar (etkin tüm lokasyonlar)
  */
-public record StaffAccountSpec(String username, String fullName, StaffRole role, String password, List<UUID> siteIds) {
+public record StaffAccountSpec(
+        String username, String fullName, StaffRole role, String passwordHash, List<UUID> siteIds) {
 
     public StaffAccountSpec {
         Objects.requireNonNull(username, "username");
         Objects.requireNonNull(fullName, "fullName");
         Objects.requireNonNull(role, "role");
-        Objects.requireNonNull(password, "password");
+        Objects.requireNonNull(passwordHash, "passwordHash");
         siteIds = List.copyOf(siteIds);
     }
 

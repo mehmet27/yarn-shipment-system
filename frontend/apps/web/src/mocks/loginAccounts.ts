@@ -1,7 +1,7 @@
 import type { LoginAccountView, Role, WorkArea } from '@iplik/api-client';
 
 /**
- * Keycloak'taki giriş hesaplarının sahte karşılığı; yerel realm'deki test kullanıcılarıyla aynı giriş adlarını taşır.
+ * Giriş hesaplarının sahte karşılığı; yerel örnek kullanıcılarla aynı giriş adlarını taşır.
  * Şifre tutulmaz, gerçek uç da şifre döndürmez.
  */
 const SEED: readonly LoginAccountView[] = [

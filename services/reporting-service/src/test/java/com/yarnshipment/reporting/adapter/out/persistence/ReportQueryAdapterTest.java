@@ -17,10 +17,8 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Dashboard ve rapor sorguları; gerçek şemada, uygulama rolüyle. Her test kendi lokasyonunu kullanır. */
 @JdbcTest
@@ -38,9 +36,6 @@ class ReportQueryAdapterTest {
     private static final ReportPeriod PERIOD =
             new ReportPeriod(LocalDate.parse("2026-11-01"), LocalDate.parse("2026-11-03"));
     private static final int THREE = 3;
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private ReportQueryAdapter reports;

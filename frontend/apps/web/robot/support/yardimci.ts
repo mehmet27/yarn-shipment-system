@@ -69,3 +69,19 @@ export async function logoPng(sayfa: Page): Promise<Buffer> {
   });
   return Buffer.from(veri.split(',')[1] ?? '', 'base64');
 }
+
+/** Uygulamanın kendi giriş formunu (`/giris`) doldurup gönderir; sonucu beklemez. */
+export async function girisFormu(sayfa: Page, kullanici: string, sifre: string) {
+  await sayfa.goto('/giris');
+  await sayfa.getByLabel(/^Kullanıcı adı/).fill(kullanici);
+  await sayfa.getByLabel(/^Şifre/).fill(sifre);
+  await sayfa.getByRole('button', { name: 'Giriş yap' }).click();
+}
+
+/** Şifre değiştirme sayfasındaki (`/sifre-degistir`) formu doldurup gönderir. */
+export async function sifreDegistirFormu(sayfa: Page, mevcut: string, yeni: string) {
+  await sayfa.getByLabel(/^Mevcut şifre/).fill(mevcut);
+  await sayfa.getByLabel(/^Yeni şifre( \*)?$/).fill(yeni);
+  await sayfa.getByLabel(/^Yeni şifre \(tekrar\)/).fill(yeni);
+  await sayfa.getByRole('button', { name: 'Şifreyi değiştir' }).click();
+}

@@ -13,10 +13,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Okuma rolüyle süzme, sıralama ve sayfalama; kayıtlar yazan rolle commit edilir. */
 @AuditAdapterTest
@@ -28,9 +26,6 @@ class AuditQueryAdapterTest {
     private static final Instant SECOND_AT = FIRST_AT.plusSeconds(60);
     private static final Instant THIRD_AT = FIRST_AT.plusSeconds(120);
     private static final int PAGE_SIZE = 10;
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private AuditAppendAdapter appender;

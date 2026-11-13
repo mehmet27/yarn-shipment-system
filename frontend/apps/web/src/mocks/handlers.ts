@@ -320,8 +320,18 @@ const createShipmentHandler = http.post(SHIPMENTS_PATH, async ({ request }) => {
   );
 });
 
-/** Gateway çıkışı: gerçek yanıt Keycloak çıkış adresidir; sahte API ana sayfaya döner. */
-const logoutHandler = http.post('/logout', () => HttpResponse.json({ logoutUrl: '/' }));
+/** Oturum uçları: sahte API her girişi kabul eder; çıkış 204 döner. */
+const logoutHandler = http.post(
+  '/api/v1/auth/logout',
+  () => new HttpResponse(null, { status: 204 }),
+);
+const loginHandler = http.post('/api/v1/auth/login', () =>
+  HttpResponse.json({ passwordChangeRequired: false }),
+);
+const changeOwnPasswordHandler = http.put(
+  '/api/v1/auth/password',
+  () => new HttpResponse(null, { status: 204 }),
+);
 
 export function createHandlers(role: Role) {
   return [
@@ -348,5 +358,7 @@ export function createHandlers(role: Role) {
     ...createSettlementHandlers(createMockUser(role)),
     ...createStockHandlers(createMockUser(role)),
     logoutHandler,
+    loginHandler,
+    changeOwnPasswordHandler,
   ];
 }

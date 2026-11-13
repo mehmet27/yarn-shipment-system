@@ -35,7 +35,7 @@ public record AuditRecord(
     /**
      * İşlemi yapan.
      *
-     * @param userId Keycloak kullanıcı kimliği
+     * @param userId kullanıcı kimliği
      * @param role kullanıcının rolü ya da rolleri
      * @param clientId kullanıcısız işlerde çağıran servisin client kimliği
      */

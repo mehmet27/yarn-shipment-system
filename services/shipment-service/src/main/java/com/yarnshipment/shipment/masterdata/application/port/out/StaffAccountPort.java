@@ -4,26 +4,18 @@ import com.yarnshipment.shipment.masterdata.domain.model.StaffAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import java.util.UUID;
 
-/** Kimlik sağlayıcıda (Keycloak) fabrika içi kullanıcı açar ve rolünü değiştirir. */
+/** Fabrika içi kullanıcı açar, rolünü ve adını değiştirir. */
 public interface StaffAccountPort {
 
     /**
-     * Kullanıcıyı şifresiz açar, rolünü ve telefonunu yazar, kimliğini döner. Rol verilemezse kullanıcı silinir.
-     * Giriş adı ya da e-posta alınmışsa {@code LoginAccountExistsException}; sağlayıcı yanıt vermezse
-     * {@code LoginAccountUnavailableException} fırlatır.
+     * Kullanıcıyı geçici şifre özetiyle açar (ilk girişte şifresini değiştirmesi gerekir) ve kimliğini döner. Giriş adı
+     * alınmışsa {@code LoginAccountExistsException} fırlatır.
      */
     UUID createStaff(StaffAccountSpec spec);
 
-    /**
-     * Kullanıcının fabrika içi rolünü değiştirir ve açık oturumlarını kapatır. Kullanıcı yoksa
-     * {@code LoginAccountNotFoundException}; şoför/fasoncu hesabıysa {@code LoginAccountRoleLockedException}.
-     */
+    /** Rolü değiştirir ve açık oturumları kapatır. Kullanıcı yoksa {@code LoginAccountNotFoundException} fırlatır. */
     void changeStaffRole(UUID userId, StaffRole role);
 
-    /**
-     * Kullanıcının ad ve soyadını profilinde günceller; oturumlar, rol ve giriş adı değişmez. Kullanıcı yoksa
-     * {@code LoginAccountNotFoundException}; sağlayıcı yanıt vermezse {@code LoginAccountUnavailableException}
-     * fırlatır.
-     */
+    /** Kullanıcının ad soyadını günceller; oturumlar, rol ve giriş adı değişmez. Kullanıcı yoksa not-found fırlatır. */
     void changeStaffName(UUID userId, String fullName);
 }

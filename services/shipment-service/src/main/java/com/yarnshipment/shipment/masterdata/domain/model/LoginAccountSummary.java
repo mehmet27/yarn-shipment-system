@@ -7,15 +7,15 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Kimlik sağlayıcıdaki (Keycloak) giriş hesabının listede gösterilen özeti. Şifre ya da kimlik bilgisi taşımaz.
+ * Giriş hesabının listede gösterilen özeti. Şifre ya da kimlik bilgisi taşımaz.
  *
- * @param id Keycloak kullanıcı kimliği
+ * @param id kullanıcı kimliği
  * @param username giriş adı
  * @param fullName ad soyad ya da unvan; profilde yoksa boş
  * @param roles uygulama rolleri, büyük harfle (ör. {@code ADMIN}); sıralı ve tekrarsız
  * @param enabled hesap girişe açık mı
  * @param passwordChangeRequired kişi geçici şifreyle açıldı, henüz kendi şifresini belirlemedi
- * @param createdAt hesabın açıldığı an; sağlayıcı vermezse boş
+ * @param createdAt hesabın açıldığı an
  * @param workArea kalite rolündeki kullanıcının çalışma alanı; başka rolde ya da kayıt yoksa boş
  */
 public record LoginAccountSummary(

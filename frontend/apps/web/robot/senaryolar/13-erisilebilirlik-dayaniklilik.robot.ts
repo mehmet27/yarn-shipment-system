@@ -165,7 +165,7 @@ test('Dayanıklılık: oturum kapanınca (çerezler silinince) uygulama anlaşı
     await mudur.sayfa.waitForLoadState('networkidle');
     await mudur.sayfa.waitForTimeout(1500);
     const metin = await mudur.sayfa.innerText('body');
-    const girisSayfasi = mudur.sayfa.url().includes(':8180') || /Oturum aç|giriş yap/i.test(metin);
+    const girisSayfasi = /giris/.test(mudur.sayfa.url()) || /Giriş yap/i.test(metin);
     mudur.kontrol('oturum düşünce giriş sayfasına yönlenmeli', girisSayfasi, mudur.sayfa.url());
     mudur.kontrol(
       'boş ya da hata ekranı kalmamalı',

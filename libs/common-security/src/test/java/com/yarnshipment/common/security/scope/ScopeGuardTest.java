@@ -4,12 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.common.security.Actor;
-import com.yarnshipment.common.security.KeycloakJwtConverter;
 import com.yarnshipment.common.security.Role;
 import com.yarnshipment.common.security.RolePermissionMatrix;
-import com.yarnshipment.common.security.SecurityProperties;
 import com.yarnshipment.common.security.TestTokens;
-import com.yarnshipment.common.security.TokenClaims;
 import com.yarnshipment.common.security.audit.AuditDecision;
 import com.yarnshipment.common.security.audit.SecurityAuditEvent;
 import java.time.Clock;
@@ -28,8 +25,7 @@ class ScopeGuardTest {
 
     private final List<SecurityAuditEvent> published = new ArrayList<>();
     private final ScopeGuard scopeGuard = new ScopeGuard(published::add, Clock.fixed(NOW, ZoneOffset.UTC));
-    private final KeycloakJwtConverter converter =
-            new KeycloakJwtConverter(new SecurityProperties(Set.of(), Set.of("otp"), Set.of("2"), List.of()));
+    private final TestTokens.Converter converter = TestTokens.CONVERTER;
 
     @Test
     @DisplayName("İç kullanıcı yalnızca yetkili olduğu lokasyondaki kayda erişir")
@@ -47,9 +43,8 @@ class ScopeGuardTest {
     @DisplayName("site_ids claim'i boş iç kullanıcı hiçbir kayda erişemez, kapsamı kısıtsız sayılmaz")
     void shouldDenyInternalUserWithoutSites() {
         // given
-        Actor actor = converter.toActor(TestTokens.withRoles("warehouse")
-                .claim(TokenClaims.SITE_IDS, List.of())
-                .build());
+        Actor actor = converter.toActor(
+                TestTokens.withRoles("warehouse").claim("site_ids", List.of()).build());
 
         // when
         AccessScope scope = scopeGuard.scopeOf(actor);

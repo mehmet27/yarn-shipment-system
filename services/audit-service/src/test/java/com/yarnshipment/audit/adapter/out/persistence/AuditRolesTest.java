@@ -10,10 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -23,9 +21,6 @@ class AuditRolesTest {
 
     private static final PostgresTestDatabase DATABASE = PostgresTestDatabase.start();
     private static final String PERMISSION_DENIED = "permission denied";
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private JdbcClient jdbc;

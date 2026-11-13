@@ -1,7 +1,5 @@
 package com.yarnshipment.shipment.masterdata.domain.model;
 
-import java.util.Locale;
-
 /**
  * Fabrika içi (ek kapsam kimliği gerektirmeyen) giriş rolleri. Şoför ve fasoncu rolleri bir kayda bağlı olduğu için
  * buradan verilmez ve değiştirilmez; onlar kendi kayıtlarından açılır.
@@ -11,10 +9,5 @@ public enum StaffRole {
     WAREHOUSE,
     QUALITY,
     MANAGER,
-    GENERAL_MANAGER;
-
-    /** Keycloak realm rol adı, ör. {@code warehouse}. */
-    public String realmRole() {
-        return name().toLowerCase(Locale.ROOT);
-    }
+    GENERAL_MANAGER
 }

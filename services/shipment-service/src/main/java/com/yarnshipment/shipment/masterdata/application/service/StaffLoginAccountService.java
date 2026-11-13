@@ -24,10 +24,10 @@ import org.springframework.stereotype.Service;
 
 /**
  * Fabrika içi hesap açar, rolünü ve ad soyadını değiştirir, pasife alır, yeniden açar ve şifresini belirler. İlk
- * şifreyi yönetici yazar (geçici; kişi ilk girişte değiştirir); SMS ya da e-posta doğrulaması yoktur. Fabrikada tek
- * merkez lokasyon olduğu için yeni hesap etkin tüm lokasyonları görür. Kişi kendi rolünü değiştiremez ve kendi
- * hesabını kapatamaz (kilitlenmeyi önler). Kalite rolünde çalışma alanı (merkez / fasoncu) zorunludur, başka rolde
- * verilemez. Asıl yazım kimlik sağlayıcıda olduğu için transaction açılmaz.
+ * şifreyi yönetici yazar (geçici; kişi ilk girişte değiştirir); SMS ya da e-posta doğrulaması yoktur. Şifre kurala
+ * göre denetlenir ve yalnızca özeti yazılır. Fabrikada tek merkez lokasyon olduğu için yeni hesap etkin tüm
+ * lokasyonları görür. Kişi kendi rolünü değiştiremez ve kendi hesabını kapatamaz (kilitlenmeyi önler). Kalite rolünde
+ * çalışma alanı (merkez / fasoncu) zorunludur, başka rolde verilemez.
  */
 @Service
 public final class StaffLoginAccountService
@@ -44,16 +44,19 @@ public final class StaffLoginAccountService
     private final StaffAccountPort accounts;
     private final AccountCredentialPort credentials;
     private final StaffWorkAreaPort workAreas;
+    private final PasswordIssuer passwords;
 
     public StaffLoginAccountService(
             LoginAccountTargetPort targets,
             StaffAccountPort accounts,
             AccountCredentialPort credentials,
-            StaffWorkAreaPort workAreas) {
+            StaffWorkAreaPort workAreas,
+            PasswordIssuer passwords) {
         this.targets = targets;
         this.accounts = accounts;
         this.credentials = credentials;
         this.workAreas = workAreas;
+        this.passwords = passwords;
     }
 
     @Override
@@ -64,7 +67,11 @@ public final class StaffLoginAccountService
         }
         requireWorkAreaOnlyForQuality(request.role(), request.workArea());
         UUID userId = accounts.createStaff(new StaffAccountSpec(
-                request.username(), request.fullName(), request.role(), request.password(), siteIds));
+                request.username(),
+                request.fullName(),
+                request.role(),
+                passwords.hashForNewAccount(request.username(), request.password()),
+                siteIds));
         if (request.workArea() != null) {
             workAreas.save(userId, request.workArea());
         }
@@ -72,7 +79,7 @@ public final class StaffLoginAccountService
 
     @Override
     public void setLoginAccountPassword(Actor actor, UUID userId, String password) {
-        credentials.setTemporaryPassword(userId, password);
+        credentials.setTemporaryPasswordHash(userId, passwords.hashForAccount(userId, password));
     }
 
     @Override

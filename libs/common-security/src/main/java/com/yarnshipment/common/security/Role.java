@@ -4,7 +4,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Keycloak realm rolleri (ön analiz Bölüm 6.1, yetkilendirme analizi). Fasoncu giriş yapmaz (KR-17);
+ * Uygulama rolleri (ön analiz Bölüm 6.1, yetkilendirme analizi). Fasoncu giriş yapmaz (KR-17);
  * fasoncu yalnızca ana veridir.
  */
 public enum Role {
@@ -15,12 +15,12 @@ public enum Role {
     MANAGER,
     /** Genel müdür: yalnızca rapor ve bakiye görür; işlem yapmaz. */
     GENERAL_MANAGER,
-    /** Yalnızca servis hesaplarının (client credentials) token'larında bulunur. */
+    /** Sistem işlemleri için ayrılmıştır; giriş yapan kullanıcıya verilmez. */
     SYSTEM;
 
     private static final String AUTHORITY_PREFIX = "ROLE_";
 
-    /** Keycloak'tan gelen rol adını çevirir; tanınmayan roller ({@code offline_access} vb.) yok sayılır. */
+    /** Rol adını çevirir (büyük/küçük harf duyarsız); tanınmayan ad boş döner. */
     public static Optional<Role> fromClaim(String claimValue) {
         String normalized = claimValue.toUpperCase(Locale.ROOT);
         for (Role role : values()) {

@@ -1,4 +1,4 @@
-/** Keycloak JWT'inden çözülen aktör, rol ve izin modeli (yetkilendirme analizi, D-4). */
+/** Oturumdaki aktör, rol ve izin modeli (yetkilendirme analizi, D-4). */
 @NullMarked
 package com.yarnshipment.common.security;
 

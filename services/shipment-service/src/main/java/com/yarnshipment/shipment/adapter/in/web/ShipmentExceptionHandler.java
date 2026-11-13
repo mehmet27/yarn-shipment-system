@@ -15,7 +15,6 @@ import com.yarnshipment.shipment.masterdata.domain.model.InvalidPlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountRoleLockedException;
-import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -126,11 +125,6 @@ public final class ShipmentExceptionHandler {
                 ? "LOGIN_ACCOUNT_ROLE_LOCKED"
                 : "LOGIN_ACCOUNT_EXISTS";
         return problem(request, HttpStatus.CONFLICT, code);
-    }
-
-    @ExceptionHandler(LoginAccountUnavailableException.class)
-    public ProblemDetail handleLoginAccountUnavailable(HttpServletRequest request) {
-        return problem(request, HttpStatus.BAD_GATEWAY, "LOGIN_ACCOUNT_UNAVAILABLE");
     }
 
     private ProblemDetail problem(HttpServletRequest request, HttpStatus status, String code) {

@@ -43,7 +43,7 @@ public record AppendAuditEntryCommand(
     /**
      * İşlemi yapan.
      *
-     * @param userId Keycloak kullanıcı kimliği
+     * @param userId kullanıcı kimliği
      * @param role kullanıcının rolleri
      * @param clientId kullanıcısız işte servis hesabı
      */

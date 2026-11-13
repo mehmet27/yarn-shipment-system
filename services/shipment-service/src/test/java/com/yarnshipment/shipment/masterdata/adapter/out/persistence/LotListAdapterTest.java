@@ -13,10 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Parti listesi gerçek PostgreSQL'de: arama ve lokasyon kapsamı WHERE koşuluna çevrilir. */
 @DataJpaTest
@@ -26,9 +24,6 @@ class LotListAdapterTest {
 
     private static final PostgresTestDatabase DATABASE = PostgresTestDatabase.startIsolated();
     private static final int PAGE_SIZE = 20;
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private LotAdapter lots;

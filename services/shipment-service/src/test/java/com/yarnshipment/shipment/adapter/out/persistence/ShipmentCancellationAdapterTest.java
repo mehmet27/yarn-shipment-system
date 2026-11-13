@@ -18,10 +18,8 @@ import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** İptal yazımı gerçek tetikleyiciler ve uygulama rolünün yetkileriyle çalışır. */
 @DataJpaTest
@@ -48,9 +46,6 @@ class ShipmentCancellationAdapterTest {
             INSERT INTO shipment_bag (id, shipment_id, bag_id, unique_key, seq_no, weight_kg, scan_method,
                                       assigned_at, assigned_by, created_at, created_by)
             VALUES (?, ?, ?, ?, 1, 50, 'MANUAL', now(), ?, now(), ?)""";
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private RecordingDomainEventPublisher events;

@@ -95,6 +95,8 @@ export const WorkArea = {
 } as const;
 
 export interface CurrentUserResponse {
+  /** Kişi geçici şifreyle girdi; şifresini değiştirene kadar rolü ve izni yoktur. */
+  passwordChangeRequired?: boolean;
   userId: string;
   fullName: string;
   roles: Role[];
@@ -505,7 +507,7 @@ export interface DriverPageResponse {
  * Giriş hesabının özeti; şifre ya da kimlik bilgisi içermez.
  */
 export interface LoginAccountView {
-  /** Keycloak kullanıcı kimliği */
+  /** Kullanıcı kimliği */
   id: string;
   /** Giriş adı */
   username: string;
@@ -553,6 +555,37 @@ export interface StaffLoginAccountRequest {
      * @maxLength 128
      */
   password: string;
+}
+
+export interface LoginRequest {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  username: string;
+  /**
+     * @minLength 1
+     * @maxLength 128
+     */
+  password: string;
+}
+
+export interface LoginResponse {
+  /** Kişi geçici şifreyle girdi; önce şifresini değiştirmelidir. */
+  passwordChangeRequired: boolean;
+}
+
+export interface ChangeOwnPasswordRequest {
+  /**
+     * @minLength 1
+     * @maxLength 128
+     */
+  currentPassword: string;
+  /**
+     * @minLength 8
+     * @maxLength 128
+     */
+  newPassword: string;
 }
 
 export interface ChangeLoginAccountEnabledRequest {
@@ -986,6 +1019,11 @@ export interface SubcontractorShipmentView {
 }
 
 /**
+ * Çok fazla hatalı deneme; hesap kısa süre kilitli (code ACCOUNT_LOCKED)
+ */
+export type LockedResponse = Problem;
+
+/**
  * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE) ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da düzeltilecek kayıt bu arada değişti (CORRECTION_CONFLICT)
  */
 export type ConflictResponse = Problem;
@@ -996,7 +1034,7 @@ export type ConflictResponse = Problem;
 export type BadRequestResponse = Problem;
 
 /**
- * Oturum yok veya token geçersiz (code AUTHENTICATION_REQUIRED)
+ * Oturum yok veya süresi dolmuş (code AUTHENTICATION_REQUIRED); girişte kullanıcı adı ya da şifre yanlış (AUTHENTICATION_FAILED)
  */
 export type UnauthorizedResponse = Problem;
 
@@ -1006,7 +1044,7 @@ export type UnauthorizedResponse = Problem;
 export type ForbiddenResponse = Problem;
 
 /**
- * Kanıt servisine (EVIDENCE_SERVICE_UNAVAILABLE) ya da Keycloak'a (LOGIN_ACCOUNT_UNAVAILABLE) ulaşılamadı
+ * Kanıt servisine (EVIDENCE_SERVICE_UNAVAILABLE) ulaşılamadı
  */
 export type BadGatewayResponse = Problem;
 
@@ -1264,6 +1302,53 @@ export const getCurrentUser = (
     }
 
 /**
+ * Başarılı girişte HttpOnly oturum çerezi verilir; token tarayıcıya inmez. Kullanıcı adı ya da şifre yanlışsa,
+ * hesap kapalıysa 401 `AUTHENTICATION_FAILED` (hangisinin yanlış olduğu söylenmez). Art arda yanlış denemede hesap
+ * kısa süre kilitlenir: 423 `ACCOUNT_LOCKED`. Geçici şifreyle girenin `passwordChangeRequired` değeri doğrudur;
+ * şifresini değiştirene kadar başka işlem yapamaz.
+ * @summary Kullanıcı adı ve şifreyle oturum açar
+ */
+export const login = (
+    loginRequest: LoginRequest,
+ ) => {
+      return customInstance<LoginResponse>(
+      {url: `/api/v1/auth/login`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: loginRequest
+    },
+      );
+    }
+
+/**
+ * @summary Oturumu kapatır
+ */
+export const logout = (
+
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/auth/logout`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Mevcut şifre doğrulanır; yanlışsa 400 `INVALID_CURRENT_PASSWORD`. Yeni şifre kurala uymuyorsa ya da eskisiyle
+ * aynıysa 400 `WEAK_PASSWORD`. Başarılı değişimde kişinin diğer oturumları kapanır, bu oturum yeni şifreyle
+ * devam eder. Geçici şifreyle giren kişi bu ucu kullanır.
+ * @summary Oturumdaki kullanıcı kendi şifresini değiştirir
+ */
+export const changeOwnPassword = (
+    changeOwnPasswordRequest: ChangeOwnPasswordRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/auth/password`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: changeOwnPasswordRequest
+    },
+      );
+    }
+
+/**
  * Çıkış lokasyonu ve fasoncu ile taslak sevkiyat açar; numara sunucuda üretilir. Lokasyon kullanıcının
  * yetkili olduğu lokasyonlardan biri olmalıdır. Şoför ve araç henüz belli değilse hiç gönderilmez; şoför
  * kimliği ile adı, araç kimliği ile plakası birlikte gönderilir. Aynı `Idempotency-Key` ile tekrar gönderilen
@@ -1474,10 +1559,8 @@ export const deactivateDriver = (
     }
 
 /**
- * Yalnızca yönetici (USER_MANAGE). Keycloak'ta uygulama rollerinden en az birine sahip kullanıcılar giriş adına
- * göre sıralı gelir; servis hesapları listede yoktur. Arama `q` ile giriş adı ve adda yapılır
- * (büyük-küçük harf duyarsız). Şifre ya da başka kimlik bilgisi hiçbir zaman dönmez. Keycloak'a ulaşılamazsa ya
- * da yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE`.
+ * Yalnızca yönetici (USER_MANAGE). Giriş hesabı olan kullanıcılar giriş adına göre sıralı gelir. Arama `q` ile giriş adı ve adda yapılır
+ * (büyük-küçük harf duyarsız). Şifre ya da başka kimlik bilgisi hiçbir zaman dönmez.
  * @summary Giriş hesabı olan kullanıcıların listesi
  */
 export const listLoginAccounts = (
@@ -1491,11 +1574,10 @@ export const listLoginAccounts = (
     }
 
 /**
- * Yalnızca yönetici (USER_MANAGE). Depo, kalite, müdür ya da yönetici hesabını Keycloak'ta yöneticinin yazdığı
+ * Yalnızca yönetici (USER_MANAGE). Depo, kalite, müdür ya da yönetici hesabını yöneticinin yazdığı
  * geçici şifreyle açar ve rolü verir; kişi ilk girişte şifresini değiştirir. SMS ya da e-posta doğrulaması yoktur.
  * Fabrikada tek merkez lokasyon vardır; hesap etkin tüm lokasyonları görür. Şifre hiçbir yanıtta ya da logda yer
- * almaz. Giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; şifre kurala uymuyorsa 400 `WEAK_PASSWORD`; Keycloak
- * çalışmazsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
+ * almaz. Giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; şifre kurala uymuyorsa 400 `WEAK_PASSWORD`.
  * @summary Fabrika içi giriş hesabı açar
  */
 export const createStaffLoginAccount = (
@@ -1511,8 +1593,8 @@ export const createStaffLoginAccount = (
 
 /**
  * Denetim kaydı gibi ekranlarda kimliği ada çevirir. Yönetici (USER_MANAGE) ve denetim görüntüleyen roller
- * (AUDIT_VIEW) okur; yalnızca ad soyad (yoksa giriş adı) döner. Keycloak'ta
- * bulunmayan kimlik yanıtta olmaz. Keycloak'a ulaşılamazsa 502 `LOGIN_ACCOUNT_UNAVAILABLE`.
+ * (AUDIT_VIEW) okur; yalnızca ad soyad (yoksa giriş adı) döner. Hesabı
+ * bulunmayan kimlik yanıtta olmaz.
  * @summary Kullanıcı kimliklerinin okunur adları
  */
 export const listUserNames = (
@@ -2244,6 +2326,9 @@ type AwaitedInput<T> = PromiseLike<T> | T;
     type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 export type GetCurrentUserResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
+export type LoginResult = NonNullable<Awaited<ReturnType<typeof login>>>
+export type LogoutResult = NonNullable<Awaited<ReturnType<typeof logout>>>
+export type ChangeOwnPasswordResult = NonNullable<Awaited<ReturnType<typeof changeOwnPassword>>>
 export type CreateShipmentResult = NonNullable<Awaited<ReturnType<typeof createShipment>>>
 export type ListShipmentsResult = NonNullable<Awaited<ReturnType<typeof listShipments>>>
 export type GetShipmentResult = NonNullable<Awaited<ReturnType<typeof getShipment>>>

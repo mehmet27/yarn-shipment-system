@@ -15,10 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Marka ayarı {@code app_setting} anahtarlarına yazılır; uygulama rolünün yetkileriyle ve gerçek PostgreSQL'de. */
 @DataJpaTest
@@ -27,9 +25,6 @@ class BrandingAdapterTest {
 
     private static final UUID ACTOR = UUID.fromString("0192f0a0-0000-7000-8000-00000000d001");
     private static final String LOGO = "data:image/png;base64,iVBORw0KGgo=";
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private JdbcClient jdbc;

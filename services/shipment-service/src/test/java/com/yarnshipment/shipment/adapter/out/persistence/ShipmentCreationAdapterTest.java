@@ -18,10 +18,8 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Taslak, durum geçmişi ve yayınlanan olay gerçek tetikleyiciler ve uygulama rolüyle yazılır. */
 @DataJpaTest
@@ -42,9 +40,6 @@ class ShipmentCreationAdapterTest {
     private static final List<RecipeLine> LINES = List.of(
             new RecipeLine(1, null, "36/1 VİSKON", null, new BigDecimal("19488.000")),
             new RecipeLine(2, null, "70 DENYE POLY", null, new BigDecimal("13492.000")));
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private RecordingDomainEventPublisher events;

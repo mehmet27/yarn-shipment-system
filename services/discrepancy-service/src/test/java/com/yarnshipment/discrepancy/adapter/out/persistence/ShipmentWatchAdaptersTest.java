@@ -16,10 +16,8 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Sevkiyat izleme; gerçek şemada, uygulama rolüyle. */
 @JdbcTest
@@ -36,9 +34,6 @@ class ShipmentWatchAdaptersTest {
             TestComparisons.SITE,
             TestComparisons.SUBCONTRACTOR,
             null);
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private ShipmentWatchAdapter watch;

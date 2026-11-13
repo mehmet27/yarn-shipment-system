@@ -11,10 +11,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Zincire ekleme, tekrar eden olay ve zincir doğrulama. */
 @AuditAdapterTest
@@ -22,9 +20,6 @@ class AuditAppendAdapterTest {
 
     private static final PostgresTestDatabase DATABASE = PostgresTestDatabase.start();
     private static final Instant AT = Instant.parse("2026-11-03T08:00:00Z");
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private AuditAppendAdapter appender;

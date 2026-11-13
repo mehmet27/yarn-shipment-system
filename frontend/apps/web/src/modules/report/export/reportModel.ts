@@ -62,7 +62,7 @@ type PartyLike = {
   discrepancyRate: string;
 };
 
-/** "Yalnızca uyuşmazlıklılar" süzgeci; tüm rapor türlerinde aynı kural. */
+/** "Yalnızca uyuşmazlıklı olanlar" süzgeci; tüm rapor türlerinde aynı kural. */
 export function filterRows<T extends PartyLike>(rows: T[], onlyDiscrepant: boolean): T[] {
   return onlyDiscrepant ? rows.filter((row) => row.discrepantShipmentCount > 0) : rows;
 }

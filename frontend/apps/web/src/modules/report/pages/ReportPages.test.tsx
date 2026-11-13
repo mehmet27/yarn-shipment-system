@@ -83,7 +83,7 @@ describe('Panel ana sayfası ve raporlar', () => {
     renderApp('/panel/raporlar');
     await userEvent.click(await screen.findByRole('tab', { name: 'Fasoncular' }));
     await screen.findByText('b2c3d4e5');
-    await userEvent.click(screen.getByLabelText('Yalnızca uyuşmazlıklılar'));
+    await userEvent.click(screen.getByLabelText('Yalnızca uyuşmazlıklı olanlar'));
     expect(screen.queryByText('b2c3d4e5')).not.toBeInTheDocument();
     expect(screen.getByText('a1b2c3d4')).toBeInTheDocument();
   });
@@ -175,7 +175,7 @@ describe('Panel ana sayfası ve raporlar', () => {
       '/panel/sevkiyat/shp-0007',
     );
     expect(screen.getByText('SV-2026-0008')).toBeInTheDocument();
-    await userEvent.click(screen.getByLabelText('Yalnızca uyuşmazlıklılar'));
+    await userEvent.click(screen.getByLabelText('Yalnızca uyuşmazlıklı olanlar'));
     expect(screen.queryByText('SV-2026-0008')).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Fasoncu bakiye' }));
     expect(await screen.findByText('2.000 kg')).toBeInTheDocument();

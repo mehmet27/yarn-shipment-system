@@ -59,7 +59,8 @@ final class ShipmentListReader {
                        coalesce(sum(delivery_net_kg), 0) AS delivered,
                        coalesce(sum(dispatch_net_kg) FILTER (WHERE delivery_net_kg IS NULL), 0) AS in_transit
                   FROM shipment_view
-                 WHERE status <> 'CANCELLED'""" + ScopedSql.PERIOD_FILTER + ScopedSql.SITE_FILTER + """
+                 WHERE dispatched_at IS NOT NULL
+                   AND status <> 'CANCELLED'""" + ScopedSql.PERIOD_FILTER + ScopedSql.SITE_FILTER + """
 
                  GROUP BY subcontractor_id
                  ORDER BY in_transit DESC, subcontractor_id""";

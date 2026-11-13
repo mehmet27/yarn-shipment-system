@@ -11,6 +11,8 @@ describe('Sevkiyat dosyası sekmeleri', () => {
     renderApp('/panel/sevkiyat/shp-0003');
     await userEvent.click(await screen.findByRole('tab', { name: 'Geçmiş' }));
     expect(await screen.findByText('Taslak → Fasoncuya yolda')).toBeInTheDocument();
+    expect(screen.getAllByText(/· Deniz Depo$/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Başka bir kullanıcı/)).not.toBeInTheDocument();
   });
 
   it('depo çuval sekmesinde çıkış listesini görür', async () => {

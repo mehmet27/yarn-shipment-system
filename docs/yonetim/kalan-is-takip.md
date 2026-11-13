@@ -15,7 +15,7 @@ Güncelleme: 04.11.2026. Sonraki geliştirmeler bu listeden sürer; biten madde 
 | 8 | Eksik belge/foto, galeri oranı, düzeltilen kayıt raporu (8.5) | P2 | 3-4 | ⏳ Bekliyor |
 | 9 | KVKK aydınlatma/onay + e-İrsaliye no alanı (9.5, 9.6) | P2 | 2-3 | ⏳ Bekliyor |
 | 10 | Giriş için OTP (TOTP) (1.7) | P2 | 2-3 | ⏸ Ertelendi: Keycloak kaldırıldı; kendi giriş sistemimize ileride TOTP eklenecek |
-| 11 | Sevkiyat geçmişinde şoför/taşeron isimleri çözülmüyor (H-24) | — | 1-2 | ✅ Yapıldı: geçmiş yanıtına `changedByName` (giriş hesaplarından çözülür), ekran adı gösterir; çözülemezse "Başka bir kullanıcı" |
+| 11 | Sevkiyat geçmişinde şoför/taşeron isimleri çözülmüyor (H-24) | — | 1-2 | ✅ Yapıldı: geçmiş yanıtına `changedByName` (giriş hesaplarından çözülür), ekran adı gösterir; çözülemezse "Başka bir kullanıcı". Yerel örnek geçmişin işlemcisi hesabı olmayan `d001` idi, admin (`…0101`) yapıldı; uyuşmazlık geçmişi de `actorName`/`assigneeName` ile ad gösterir (module-api `ActorNameApi`) |
 | 12 | Seed sevkiyatlar olay (outbox/geçmiş) üretmiyor | — | 1-2 | ✅ Yapıldı: yerel seed her geçmiş adım için outbox olayı yazar (yayımlanmış sayılır; teslim alındı olayı hariç) |
 | 13 | Faz 2/3: nem toleransı, konum, risk skoru, entegrasyonlar | P3 | 15+ | ⏳ Kapsam dışı |
 

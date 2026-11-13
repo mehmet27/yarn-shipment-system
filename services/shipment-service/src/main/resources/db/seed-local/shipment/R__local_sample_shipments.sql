@@ -79,16 +79,23 @@ UPDATE shipment sh SET e_waybill_no = 'IRS-SEED-' || s.n, locked_at = s.created_
 FROM seed_shipment s
 WHERE sh.id = s.id AND s.status = 'COMPLETED' AND sh.status = 'COMPLETED' AND sh.locked_at IS NULL;
 
--- Durum geçmişi: DRAFT'tan bugünkü duruma kadar her adım.
+-- Durum geçmişi: DRAFT'tan bugünkü duruma kadar her adım. İşlemi yapan, realm'de bulunan yönetici hesabıdır
+-- (Keycloak'ta olmayan d001 sistem kimliği geçmişte "Başka bir kullanıcı" olarak görünürdü).
 INSERT INTO shipment_status_history (id, created_at, shipment_id, from_status, to_status, changed_by, changed_at)
 SELECT ('0192f0a0-0000-7000-8000-00000010' || lpad(s.n::text, 2, '0') || lpad(h.step::text, 2, '0'))::uuid,
        s.created_at + (h.step * interval '1 hour'), s.id, h.from_status, h.to_status,
-       '0192f0a0-0000-7000-8000-00000000d001', s.created_at + (h.step * interval '1 hour')
+       '0192f0a0-0000-7000-8000-000000000101', s.created_at + (h.step * interval '1 hour')
 FROM seed_shipment s
 JOIN (VALUES (0, NULL, 'DRAFT'), (1, 'DRAFT', 'AWAITING_DELIVERY'),
              (2, 'AWAITING_DELIVERY', 'COMPLETED')) AS h(step, from_status, to_status)
   ON h.step <= CASE s.status WHEN 'DRAFT' THEN 0 WHEN 'AWAITING_DELIVERY' THEN 1 ELSE 2 END
 ON CONFLICT (id, created_at) DO NOTHING;
+
+-- Daha önce d001 ile yazılmış örnek geçmiş satırlarını düzelt (geçmiş tablosu yalnızca ekleme kabul eder).
+ALTER TABLE shipment_status_history DISABLE TRIGGER shipment_status_history_append_only;
+UPDATE shipment_status_history SET changed_by = '0192f0a0-0000-7000-8000-000000000101'
+WHERE changed_by = '0192f0a0-0000-7000-8000-00000000d001';
+ALTER TABLE shipment_status_history ENABLE TRIGGER shipment_status_history_append_only;
 
 -- Ana veri: sevkiyat örneklerinin başvurduğu kayıtlar ve seçim kutularında liste dolsun diye birkaç ek kayıt.
 INSERT INTO md_site (id, name, created_at, created_by)

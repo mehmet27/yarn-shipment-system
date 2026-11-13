@@ -86,7 +86,9 @@ final class DiscrepancyViews {
         return new DiscrepancyActivityView(
                         activity.id(), activity.actionType(), activity.actorId(), requiredUtc(activity.occurredAt()))
                 .note(activity.note())
-                .evidenceId(activity.evidenceId());
+                .evidenceId(activity.evidenceId())
+                .actorName(activity.actorName())
+                .assigneeName(activity.assigneeName());
     }
 
     /** FE-SEC-03: butonlar yalnızca bu listeye göre gösterilir. */

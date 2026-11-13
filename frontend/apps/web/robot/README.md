@@ -54,8 +54,10 @@ Rapor ayrıca `rapor/sorun-ozeti.md` (yapıştırılacak sorun metni) ve `rapor/
 Yalnızca `admin` kullanıcısı olan temiz bir yerel ortam için (Docker verisi silinir, geri alınamaz):
 
 ```bash
-bash deploy/temiz-kurulum.sh    # hacimleri siler, yalnızca admin'li Keycloak ile yeniden kurar
+cd frontend && pnpm yerel:sifirla    # hacimleri siler, yalnızca admin'li Keycloak ile kurar, yığını yeniden başlatır
 ```
+
+(Ayrıntı ve seçenekler için kök `README.md`, "Yerel ortamı sıfırlama".)
 
 Ardından yığını başlatıp `ROBOT_SIFRE` olarak admin'in şifresini değil, **tüm robot kullanıcılarının alacağı** şifreyi verin
 (en az 8 karakter ve kolay tahmin edilmeyen bir şifre; Keycloak `12345678` gibilerini reddeder). `admin` için

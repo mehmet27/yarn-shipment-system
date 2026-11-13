@@ -66,7 +66,8 @@ public class CompleteShipmentService implements CompleteShipmentUseCase {
         BigDecimal sentKg = ledger.recordDispatch(
                 shipment.id(), shipment.subcontractorId(), completion.completedAt(), actor.userId());
         fireSettlements.open(
-                FireSettlement.open(shipment.id(), shipment.subcontractorId(), sentKg), completion.completedAt());
+                FireSettlement.open(shipment.id(), shipment.subcontractorId(), sentKg, shipment.fireRate()),
+                completion.completedAt());
     }
 
     private void requireWaybillDocument(UUID shipmentId, UUID evidenceId) {

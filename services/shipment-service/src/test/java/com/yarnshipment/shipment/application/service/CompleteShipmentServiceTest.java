@@ -95,6 +95,20 @@ class CompleteShipmentServiceTest {
     }
 
     @Test
+    @DisplayName("Fire dosyası sevkiyatta girilen fire oranıyla açılır, varsayılanla değil")
+    void shouldOpenFireSettlementWithShipmentFireRate() {
+        queryPort.add(TestShipments.withFireRate(ShipmentStatus.AWAITING_DELIVERY, "0.0300"));
+        givenEvidence(TestShipments.SHIPMENT_ID, EvidenceReference.WAYBILL);
+        ledger.givenSentKg("1982.500");
+
+        service.completeShipment(command(manager, "IRS-1"));
+
+        assertThat(fireSettlements.find(TestShipments.SHIPMENT_ID))
+                .get()
+                .satisfies(settlement -> assertThat(settlement.fireRate()).isEqualByComparingTo("0.0300"));
+    }
+
+    @Test
     @DisplayName("Geçersiz belgeyle tamamlama bakiye hareketi ve fire dosyası bırakmaz")
     void shouldNotWriteLedgerWhenEvidenceInvalid() {
         // given

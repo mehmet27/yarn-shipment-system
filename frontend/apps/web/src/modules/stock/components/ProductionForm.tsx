@@ -38,7 +38,9 @@ export function ProductionForm() {
           onAdd={addYarn}
           onRemove={removeYarn}
         />
-        <Text size="sm">{t('stock.production.total', { kg: formatKgText(productionTotalKg(draft)) })}</Text>
+        <Text size="sm">
+          {t('stock.production.total', { kg: formatKgText(productionTotalKg(draft)) })}
+        </Text>
         <Group grow align="flex-start">
           <TextInput
             label={t('stock.production.firePct')}

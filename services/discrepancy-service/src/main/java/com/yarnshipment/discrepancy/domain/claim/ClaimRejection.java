@@ -17,5 +17,6 @@ public enum ClaimRejection {
     /** Kontrol sonucu zaten girildi. */
     INSPECTION_RECORDED,
     /** Lab sonucu belgesiz girilemez. */
-    RESULT_EVIDENCE_REQUIRED
+    RESULT_EVIDENCE_REQUIRED,
+    INSPECTION_PENDING
 }

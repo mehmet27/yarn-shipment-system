@@ -572,6 +572,7 @@
       "liableParty": "Sorumlu taraf",
       "submit": "Karara bağla",
       "notOpen": "Uyuşmazlık artık çözülemez.",
+      "inspectionPending": "Sonucu girilmemiş numune ya da laboratuvar kontrolü var; önce sonucu girin.",
       "failed": "Karar kaydedilemedi. Lütfen tekrar deneyin."
     },
     "activity": {

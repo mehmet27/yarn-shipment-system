@@ -55,7 +55,8 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
   });
 
   await kalite.adim('kalite: stoktan fazla üretim reddedilmeli ve nedeni söylenmeli', async () => {
-    // Başarılı kayıttan sonra form boşalır; alanlar yeniden doldurulur.
+    // Önceki adım "Eldeki iplik" sekmesinde bitti; form sekmesine dönülür, başarılı kayıttan sonra form boşalmıştır.
+    await kalite.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
     await kalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
     await kalite.sayfa.getByLabel(/İplik cinsi 1/).fill(iplik);
     await kalite.sayfa.getByLabel(/Fire \(%\)/).fill('3');

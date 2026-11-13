@@ -31,6 +31,7 @@ export const KAPSANAN: Record<string, string> = {
   '/panel/sevkiyat/<id>|Kalite itirazı aç': '03-akis, 09',
   '/panel/sevkiyat/<id>|İtirazı gönder': '03-akis, 09',
   '/panel/sevkiyat/<id>|Kontrol iste': '03-akis, 09',
+  '/panel/sevkiyat/<id>|Sonucu kaydet': '09-sevkiyat-islemleri (lab sonucu)',
   '/panel/sevkiyat/<id>/cikis|Kaydet': '03-akis',
   '/panel/uyusmazliklar/<id>|Bana ata': '03-akis, 09',
   '/panel/uyusmazliklar/<id>|Kontrol iste': '03-akis, 09',

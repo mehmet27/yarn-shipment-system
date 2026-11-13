@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="tr">
+  <meta charset="utf-8" />
+  <title>Robot</title>
+  <style>
+    body {
+      font:
+        14px/1.4 system-ui,
+        sans-serif;
+      width: 360px;
+      margin: 12px;
+    }
+    h1 {
+      font-size: 16px;
+      margin: 0 0 8px;
+    }
+    button {
+      padding: 6px 10px;
+      margin: 2px 4px 2px 0;
+      cursor: pointer;
+    }
+    label {
+      display: block;
+      margin: 2px 0;
+    }
+    #durum {
+      margin: 8px 0;
+      padding: 8px;
+      border-radius: 6px;
+      background: #f1f3f5;
+    }
+    #durum.calisiyor {
+      background: #e7f1ff;
+    }
+    #durum.sorun {
+      background: #fdecea;
+    }
+    #durum.temiz {
+      background: #e7f6ec;
+    }
+    pre {
+      max-height: 140px;
+      overflow: auto;
+      background: #111;
+      color: #ddd;
+      padding: 6px;
+      font-size: 11px;
+      white-space: pre-wrap;
+    }
+    small {
+      color: #666;
+    }
+    input[type='text'] {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
+  <h1>İplik Sevkiyat Robotu</h1>
+  <div id="durum">Bağlanıyor…</div>
+  <label><input type="checkbox" id="izle" /> Pencerede izle (yavaşlatarak)</label>
+  <label><input type="checkbox" id="video" /> Video kaydı</label>
+  <label
+    >Yalnızca şu senaryolar (isteğe bağlı):
+    <input type="text" id="rol" placeholder="ör. Akış, depo, Raporlar"
+  /></label>
+  <div>
+    <button id="baslat">Robotu başlat</button>
+    <button id="durdur">Durdur</button>
+  </div>
+  <div>
+    <button id="rapor">Raporu aç</button>
+    <button id="kopyala">Sorun metnini kopyala</button>
+  </div>
+  <small id="not"></small>
+  <pre id="gunluk" hidden></pre>
+  <script src="popup.js"></script>
+</html>

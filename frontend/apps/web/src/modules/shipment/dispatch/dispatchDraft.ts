@@ -13,7 +13,8 @@ export type DispatchDraft = {
 };
 
 /** i18n anahtarı (`dispatch.errors.*`). */
-export type DispatchError = 'invalidKg' | 'tareExceedsGross' | 'invalidBagCount' | 'ticketRequired' | 'ticketNotSent';
+export type DispatchError =
+  'invalidKg' | 'tareExceedsGross' | 'invalidBagCount' | 'ticketRequired' | 'ticketNotSent';
 
 export const EMPTY_DISPATCH_DRAFT: DispatchDraft = {
   grossKg: '',

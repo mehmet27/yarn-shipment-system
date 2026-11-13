@@ -15,6 +15,11 @@ describe('dispatchDraft', () => {
     expect(validateDispatch({ ...VALID, ticket: undefined })).toBe('ticketRequired');
   });
 
+  it('fotoğraf seçilmiş ama gönderilmemişse ayrı hata verir ve isteği kurmaz', () => {
+    expect(validateDispatch({ ...VALID, ticket: undefined }, true)).toBe('ticketNotSent');
+    expect(toDispatchRequest(VALID, true)).toBeUndefined();
+  });
+
   it('geçerli taslağı API biçiminde isteğe çevirir', () => {
     expect(toDispatchRequest(VALID)).toEqual({
       grossKg: '2000.000',

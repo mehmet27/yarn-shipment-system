@@ -1,6 +1,7 @@
 import type { EvidenceType } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Paper, Stack, Text } from '@iplik/ui';
+import { useEffect } from 'react';
 import { useTicketPhoto } from '../hooks/useTicketPhoto';
 import type { TicketOutcome } from '../ticketTypes';
 import { uploadErrorKey } from '../uploadErrors';
@@ -13,6 +14,8 @@ export type TicketCaptureProps = {
   evidenceType: Extract<EvidenceType, 'DISPATCH_SCALE' | 'DELIVERY_SCALE'>;
   outcome: TicketOutcome | undefined;
   onOutcome: (outcome: TicketOutcome | undefined) => void;
+  /** Fotoğraf seçildi ama henüz gönderilmedi mi; form bunu kaydetmeden önce uyarmak için kullanır. */
+  onPendingChange?: (pending: boolean) => void;
 };
 
 /** Kantar fişi çekimi: kamera → önizleme → gönder. Fişin yalnızca fotoğrafı saklanır; sistem fişi okumaz. */
@@ -21,10 +24,15 @@ export function TicketCapture({
   evidenceType,
   outcome,
   onOutcome,
+  onPendingChange,
 }: TicketCaptureProps) {
   const { t } = useTranslation();
   const flow = useTicketPhoto(shipmentId, evidenceType, onOutcome);
   const { mutation, file } = flow;
+  const isPending = file !== undefined;
+  useEffect(() => {
+    onPendingChange?.(isPending);
+  }, [isPending, onPendingChange]);
   const isFirst = outcome === undefined && file === undefined;
   return (
     <Paper withBorder p="md" style={{ borderStyle: 'dashed' }}>

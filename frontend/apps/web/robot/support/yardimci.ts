@@ -13,6 +13,8 @@ export async function sec(
 
 /** Sunucuya yüklenebilecek, sahte ama gerçekçi bir JPEG (kantar fişi, irsaliye, itiraz fotoğrafı). */
 export async function resim(sayfa: Page, tohum = 1): Promise<Buffer> {
+  // Her fotoğraf benzersiz olmalı: aynı dosyanın yeniden yüklenmesi sistemde 'kanıt tekrar kullanımı' olayı üretir.
+  const benzersiz = tohum + Math.floor(Math.random() * 100_000);
   const veri = await sayfa.evaluate((t) => {
     const tuval = document.createElement('canvas');
     tuval.width = 1000;
@@ -33,7 +35,7 @@ export async function resim(sayfa: Page, tohum = 1): Promise<Buffer> {
       );
     }
     return tuval.toDataURL('image/jpeg', 0.9);
-  }, tohum);
+  }, benzersiz);
   return Buffer.from(veri.split(',')[1] ?? '', 'base64');
 }
 

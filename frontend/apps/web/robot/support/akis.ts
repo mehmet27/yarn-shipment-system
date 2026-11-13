@@ -5,11 +5,19 @@ import { resim, sec } from './yardimci';
 export type Yonetim = { depo: Robot; mudur: Robot };
 
 /** Müdür taslağı açar; sevkiyat kimliğini döner. */
-export async function taslakAc(mudur: Robot, iplik: string, kg: string, fire = '3'): Promise<string> {
+export async function taslakAc(
+  mudur: Robot,
+  iplik: string,
+  kg: string,
+  fire = '3',
+): Promise<string> {
   await mudur.sayfa.goto('/panel/sevkiyat/yeni');
   await sec(mudur.sayfa, /Alıcı fasoncu/, 'Başka Dokuma');
   await mudur.sayfa.getByLabel(/Fire oranı/).fill(fire);
-  await mudur.sayfa.getByLabel(/serbest metin/i).first().fill(iplik);
+  await mudur.sayfa
+    .getByLabel(/serbest metin/i)
+    .first()
+    .fill(iplik);
   await mudur.sayfa.getByLabel(/Net kg 1/).fill(kg);
   await mudur.sayfa.getByRole('button', { name: 'Taslak oluştur' }).click();
   await mudur.sayfa.waitForURL(/sevkiyat\/[0-9a-f-]{30,}$/);
@@ -39,7 +47,10 @@ export async function tartiGir(depo: Robot, id: string, brut: string, dara: stri
     .first()
     .setInputFiles({ name: 'fis.jpg', mimeType: 'image/jpeg', buffer: await resim(depo.sayfa, 3) });
   await depo.sayfa.getByRole('button', { name: 'Fotoğrafı gönder' }).click();
-  await depo.sayfa.getByText(/fotoğrafı kaydedildi/).first().waitFor();
+  await depo.sayfa
+    .getByText(/fotoğrafı kaydedildi/)
+    .first()
+    .waitFor();
   await depo.sayfa.getByRole('button', { name: 'Kaydet' }).click();
 }
 
@@ -49,7 +60,11 @@ export async function tamamla(mudur: Robot, id: string, irsaliyeNo: string) {
   await mudur.sayfa
     .locator('input[type=file]')
     .first()
-    .setInputFiles({ name: 'irs.jpg', mimeType: 'image/jpeg', buffer: await resim(mudur.sayfa, 5) });
+    .setInputFiles({
+      name: 'irs.jpg',
+      mimeType: 'image/jpeg',
+      buffer: await resim(mudur.sayfa, 5),
+    });
   await mudur.sayfa.getByText('İrsaliye yüklendi').waitFor();
   await mudur.sayfa.getByLabel(/İrsaliye no/).fill(irsaliyeNo);
   await mudur.sayfa.getByRole('button', { name: 'Sevkiyatı tamamla' }).click();
@@ -57,7 +72,12 @@ export async function tamamla(mudur: Robot, id: string, irsaliyeNo: string) {
 }
 
 /** Taslaktan tamamlanmışa tüm yol: `kg` kilo iplik, tek çuval grubu. Sevkiyat kimliğini döner. */
-export async function tamamlanmisSevkiyat(y: Yonetim, iplik: string, kg = '100', fire = '3'): Promise<string> {
+export async function tamamlanmisSevkiyat(
+  y: Yonetim,
+  iplik: string,
+  kg = '100',
+  fire = '3',
+): Promise<string> {
   const yarim = String(Number(kg) / 2);
   const id = await taslakAc(y.mudur, iplik, kg, fire);
   await cuvalEkle(y.depo, id, 2, yarim);

@@ -2,3 +2,5 @@ rapor/
 sonuclar/
 kullanicilar.local.json
 .env.local
+gezgin.out
+gezgin-rapor.md

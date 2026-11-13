@@ -14,11 +14,25 @@ test('Görünüm: yönetici firma adı ve logoyu kaydeder, varsayılana döner',
     await expect(admin.sayfa.getByText('Görünüm kaydedildi.').first()).toBeVisible();
   });
   await admin.adim('logo seç: büyük dosya reddedilir', async () => {
-    await admin.sayfa.locator('input[type=file]').first().setInputFiles({ name: 'buyuk.png', mimeType: 'image/png', buffer: Buffer.alloc(300 * 1024, 1) });
+    await admin.sayfa
+      .locator('input[type=file]')
+      .first()
+      .setInputFiles({
+        name: 'buyuk.png',
+        mimeType: 'image/png',
+        buffer: Buffer.alloc(300 * 1024, 1),
+      });
     await expect(admin.sayfa.getByText(/en çok 140 KB|en çok 200 KB/).first()).toBeVisible();
   });
   await admin.adim('logo seç: geçerli PNG kaydedilir', async () => {
-    await admin.sayfa.locator('input[type=file]').first().setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: await logoPng(admin.sayfa) });
+    await admin.sayfa
+      .locator('input[type=file]')
+      .first()
+      .setInputFiles({
+        name: 'logo.png',
+        mimeType: 'image/png',
+        buffer: await logoPng(admin.sayfa),
+      });
     await admin.sayfa.waitForTimeout(800);
     await admin.sayfa.getByRole('button', { name: 'Kaydet' }).click();
     await expect(admin.sayfa.getByText('Görünüm kaydedildi.').first()).toBeVisible();
@@ -31,7 +45,9 @@ test('Görünüm: yönetici firma adı ve logoyu kaydeder, varsayılana döner',
   });
 });
 
-test('Raporlar: müdür her sekmeyi, dönemi, tarihleri, logoyu ve açılış bakiyesini dener', async ({ giris }) => {
+test('Raporlar: müdür her sekmeyi, dönemi, tarihleri, logoyu ve açılış bakiyesini dener', async ({
+  giris,
+}) => {
   test.skip(!rolTanimli('mudur'), 'mudur için şifre tanımlı değil');
   const mudur = await giris('mudur');
   mudur.beklenen(/4\d\d (POST|PUT) /);
@@ -39,33 +55,64 @@ test('Raporlar: müdür her sekmeyi, dönemi, tarihleri, logoyu ve açılış ba
   await mudur.adim('dönem ve tarih aralığı', async () => {
     await mudur.sayfa.getByLabel(/Başlangıç tarihi/).fill('2026-11-10');
     await mudur.sayfa.getByLabel(/Bitiş tarihi/).fill('2026-11-01');
-    mudur.kontrol('başlangıç bitişten sonraysa uyarı çıkmalı', /Başlangıç, bitişten sonra olamaz/.test(await mudur.sayfa.innerText('main')));
+    mudur.kontrol(
+      'başlangıç bitişten sonraysa uyarı çıkmalı',
+      /Başlangıç, bitişten sonra olamaz/.test(await mudur.sayfa.innerText('main')),
+    );
     await mudur.sayfa.getByLabel(/Bitiş tarihi/).fill('2026-11-13');
     await mudur.sayfa.waitForTimeout(800);
   });
   await mudur.adim('rapor logosu ekle ve PDF indir', async () => {
-    await mudur.sayfa.locator('input[type=file]').first().setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: await logoPng(mudur.sayfa) });
+    await mudur.sayfa
+      .locator('input[type=file]')
+      .first()
+      .setInputFiles({
+        name: 'logo.png',
+        mimeType: 'image/png',
+        buffer: await logoPng(mudur.sayfa),
+      });
     await mudur.sayfa.waitForTimeout(800);
-    const [indirme] = await Promise.all([mudur.sayfa.waitForEvent('download', { timeout: 20_000 }), mudur.sayfa.getByRole('button', { name: 'PDF indir' }).click()]);
+    const [indirme] = await Promise.all([
+      mudur.sayfa.waitForEvent('download', { timeout: 20_000 }),
+      mudur.sayfa.getByRole('button', { name: 'PDF indir' }).click(),
+    ]);
     mudur.kontrol('logolu PDF inmeli', indirme.suggestedFilename().endsWith('.pdf'));
   });
-  for (const sekme of ['Özet', 'Fasoncular', 'Sevkiyat dökümü', 'Fasoncu bakiye', 'Bakiye matrisi', 'Fire raporu', 'Giden iplik ↔ gelen kumaş', 'Faturalanacaklar']) {
+  for (const sekme of [
+    'Özet',
+    'Fasoncular',
+    'Sevkiyat dökümü',
+    'Fasoncu bakiye',
+    'Bakiye matrisi',
+    'Fire raporu',
+    'Giden iplik ↔ gelen kumaş',
+    'Faturalanacaklar',
+  ]) {
     await mudur.adim(`sekme ${sekme}: Excel ve PDF`, async () => {
       await mudur.sayfa.getByRole('tab', { name: sekme, exact: true }).click();
       await mudur.sayfa.waitForTimeout(600);
       for (const tur of ['Excel indir (.xlsx)', 'PDF indir']) {
-        const [indirme] = await Promise.all([mudur.sayfa.waitForEvent('download', { timeout: 20_000 }), mudur.sayfa.getByRole('button', { name: tur }).first().click()]);
+        const [indirme] = await Promise.all([
+          mudur.sayfa.waitForEvent('download', { timeout: 20_000 }),
+          mudur.sayfa.getByRole('button', { name: tur }).first().click(),
+        ]);
         mudur.kontrol(`${sekme}: ${tur} dosya vermeli`, indirme.suggestedFilename() !== '');
       }
     });
   }
-  await mudur.adim('açılış bakiyesi: hatalı satır yüklemeyi kapatır, geçerli satır yüklenir', async () => {
-    await mudur.sayfa.getByRole('tab', { name: 'Bakiye matrisi', exact: true }).click();
-    const alan = mudur.sayfa.getByLabel(/Satırlar/);
-    await alan.fill('Olmayan Fason;Pamuk;10');
-    mudur.kontrol('bilinmeyen fasoncu için yükleme düğmesi pasif', await mudur.sayfa.getByRole('button', { name: /satırı yükle/ }).isDisabled());
-    await alan.fill('Örnek Tekstil A.Ş.;ROBOT-açılış;5');
-    await mudur.sayfa.getByRole('button', { name: /satırı yükle/ }).click();
-    await expect(mudur.sayfa.getByText(/satır yüklendi/).first()).toBeVisible();
-  });
+  await mudur.adim(
+    'açılış bakiyesi: hatalı satır yüklemeyi kapatır, geçerli satır yüklenir',
+    async () => {
+      await mudur.sayfa.getByRole('tab', { name: 'Bakiye matrisi', exact: true }).click();
+      const alan = mudur.sayfa.getByLabel(/Satırlar/);
+      await alan.fill('Olmayan Fason;Pamuk;10');
+      mudur.kontrol(
+        'bilinmeyen fasoncu için yükleme düğmesi pasif',
+        await mudur.sayfa.getByRole('button', { name: /satırı yükle/ }).isDisabled(),
+      );
+      await alan.fill('Örnek Tekstil A.Ş.;ROBOT-açılış;5');
+      await mudur.sayfa.getByRole('button', { name: /satırı yükle/ }).click();
+      await expect(mudur.sayfa.getByText(/satır yüklendi/).first()).toBeVisible();
+    },
+  );
 });

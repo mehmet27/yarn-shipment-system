@@ -1,7 +1,7 @@
 import type { AuditEntity } from '@iplik/api-client/audit';
 import { useTranslation } from '@iplik/i18n';
 
-const KNOWN_ENTITIES = ['Shipment', 'Evidence', 'Discrepancy'];
+const KNOWN_ENTITIES = ['Shipment', 'Evidence', 'Discrepancy', 'CentralStock'];
 
 /** Kayıt türü Türkçe ("Kanıt"); kimlik ham gösterilmez, ipucunda kalır. Bilinmeyen tür olduğu gibi yazılır. */
 export function useEntityLabel(): (entity: AuditEntity | undefined) => string {

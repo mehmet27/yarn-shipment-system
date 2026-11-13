@@ -8,11 +8,13 @@ import com.yarnshipment.shipment.application.port.in.fire.FireSettlementQuery;
 import com.yarnshipment.shipment.application.port.in.fire.MarkInvoicedCommand;
 import com.yarnshipment.shipment.application.port.in.fire.MarkInvoicedUseCase;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort;
+import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
 import com.yarnshipment.shipment.domain.fire.FireSettlement.Invoice;
 import com.yarnshipment.shipment.domain.fire.FireSettlementNotFoundException;
 import com.yarnshipment.shipment.domain.fire.FireSettlementStatus;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,16 +29,19 @@ public class FireInvoiceService implements MarkInvoicedUseCase, CloseFireSettlem
     private final ScopedShipmentLoader shipments;
     private final FireSettlementPort settlements;
     private final FireSettlementDetailsReader reader;
+    private final LedgerEventPort events;
     private final Clock clock;
 
     public FireInvoiceService(
             ScopedShipmentLoader shipments,
             FireSettlementPort settlements,
             FireSettlementDetailsReader reader,
+            LedgerEventPort events,
             Clock clock) {
         this.shipments = shipments;
         this.settlements = settlements;
         this.reader = reader;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -52,7 +57,9 @@ public class FireInvoiceService implements MarkInvoicedUseCase, CloseFireSettlem
                 reader.read(current).calculation(),
                 new Invoice(command.invoiceNo(), command.invoicedOn(), command.note()),
                 command.actor().userId());
-        settlements.save(invoiced, clock.instant());
+        Instant now = clock.instant();
+        settlements.save(invoiced, now);
+        events.fireInvoiced(invoiced, command.actor().userId(), now);
         return reader.read(invoiced);
     }
 
@@ -64,7 +71,9 @@ public class FireInvoiceService implements MarkInvoicedUseCase, CloseFireSettlem
             return reader.read(current);
         }
         FireSettlement closed = current.close(reader.read(current).calculation());
-        settlements.save(closed, clock.instant());
+        Instant now = clock.instant();
+        settlements.save(closed, now);
+        events.fireSettlementClosed(closed, query.actor().userId(), now);
         return reader.read(closed);
     }
 

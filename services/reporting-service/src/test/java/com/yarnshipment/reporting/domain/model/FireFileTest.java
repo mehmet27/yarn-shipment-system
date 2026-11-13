@@ -23,7 +23,8 @@ class FireFileTest {
                 new BigDecimal(rate),
                 "TO_INVOICE",
                 null,
-                null);
+                null,
+                BigDecimal.ZERO);
     }
 
     @Test
@@ -61,7 +62,8 @@ class FireFileTest {
                 new BigDecimal("0.04"),
                 "TO_INVOICE",
                 null,
-                null);
+                null,
+                BigDecimal.ZERO);
         FireFile withinLimit = new FireFile(
                 UUID.randomUUID(),
                 "B",
@@ -73,7 +75,8 @@ class FireFileTest {
                 new BigDecimal("0.04"),
                 "CLOSED",
                 null,
-                null);
+                null,
+                BigDecimal.ZERO);
 
         List<YarnVsFabricRow> rows = YarnVsFabricRow.aggregate(List.of(aboveLimit, withinLimit));
 
@@ -82,5 +85,28 @@ class FireFileTest {
         assertThat(rows.get(0).shortageKg()).isEqualByComparingTo("60");
         assertThat(rows.get(0).overLimitShipmentCount()).isEqualTo(1);
         assertThat(rows.get(0).overLimitFireKg()).isEqualByComparingTo("100");
+    }
+
+    @Test
+    @DisplayName("Haklı itiraz fire tabanından ve gelen kumaştan düşülür (sevkiyat ekranındaki fire dosyasıyla aynı)")
+    void shouldDeductClaimFromBaseAndFabric() {
+        FireFile file = new FireFile(
+                UUID.randomUUID(),
+                "SHP-2",
+                UUID.randomUUID(),
+                "Kırıkhan",
+                new BigDecimal("100"),
+                new BigDecimal("10"),
+                new BigDecimal("80"),
+                new BigDecimal("0.05"),
+                "TO_INVOICE",
+                null,
+                null,
+                new BigDecimal("10"));
+
+        assertThat(file.baseKg()).isEqualByComparingTo("80");
+        assertThat(file.expectedFabricKg()).isEqualByComparingTo("76");
+        assertThat(file.shortageKg()).isEqualByComparingTo("6");
+        assertThat(file.actualFireRate()).isEqualByComparingTo("0.125");
     }
 }

@@ -1,4 +1,4 @@
-import { GENEL_MESAJ, test } from '../support/robot';
+import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import { damga, resim, sec } from '../support/yardimci';
 
@@ -40,6 +40,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     await kalite.sayfa.getByLabel(/Fire \(%\)/).fill('3');
     await kalite.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();
     await kalite.sayfa.getByText('Merkez kumaş üretimi').first().waitFor();
+    await expect(kalite.sayfa.getByLabel(/Kumaş cinsi/)).toHaveValue('');
     const hareketler = await kalite.sayfa.innerText('main');
     kalite.kontrol(
       'yeterli stokla üretim "Son hareketler"de görünmeli',
@@ -48,6 +49,10 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
   });
 
   await kalite.adim('kalite: stoktan fazla üretim reddedilmeli ve nedeni söylenmeli', async () => {
+    // Başarılı kayıttan sonra form boşalır; alanlar yeniden doldurulur.
+    await kalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
+    await kalite.sayfa.getByLabel(/İplik cinsi 1/).fill(iplik);
+    await kalite.sayfa.getByLabel(/Fire \(%\)/).fill('3');
     await kalite.sayfa.getByLabel(/Kumaş kg 1/).fill('5000');
     await kalite.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();
     const mesajlar = await kalite.mesajlar();
@@ -138,7 +143,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     await mudur.sayfa.getByText('İrsaliye yüklendi').waitFor();
     await mudur.sayfa.getByLabel(/İrsaliye no/).fill(`${iplik}-IRS`);
     await mudur.sayfa.getByRole('button', { name: 'Sevkiyatı tamamla' }).click();
-    await mudur.sayfa.getByText('TAMAMLANDI').first().waitFor();
+    await expect(mudur.sayfa.locator('main')).toContainText(/tamamlandı/i);
   });
 
   await mudur.adim('sayı: fire dosyası sevkiyattaki fire oranıyla açılmış olmalı', async () => {
@@ -152,37 +157,34 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     mudur.kontrol('gönderilen iplik 100 kg', Number(fire.sentKg) === 100, fire.sentKg);
   });
 
-  await kalite.adim('kalite: gönderilen ipliği aşan kumaş girişi reddedilmeli', async () => {
-    await kalite.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
-    await sekme(kalite, 'Kumaş girişi');
-    await kalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
-    await kalite.sayfa.getByLabel(/Kumaş net kilosu/).fill('150');
-    await kalite.sayfa.getByLabel(/İrsaliye no/).fill(`${iplik}-K1`);
-    await kalite.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
-    const mesajlar = await kalite.mesajlar();
-    kalite.kontrol(
+  await mudur.adim('müdür: gönderilen ipliği aşan kumaş girişi reddedilmeli', async () => {
+    await mudur.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
+    await sekme(mudur, 'Kumaş girişi');
+    await mudur.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
+    await mudur.sayfa.getByLabel(/Kumaş net kilosu/).fill('150');
+    await mudur.sayfa.getByLabel(/İrsaliye no/).fill(`${iplik}-K1`);
+    await mudur.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
+    const mesajlar = await mudur.mesajlar();
+    mudur.kontrol(
       'iplikten fazla kumaş nedeniyle reddedilmeli',
       mesajlar.some((m) => /iplik/i.test(m) && !GENEL_MESAJ.test(m)),
       mesajlar.join(' | '),
     );
   });
 
-  await kalite.adim(
-    'kalite: makul kumaş girişi kaydolur, fire dosyası sayıları tutar',
-    async () => {
-      await kalite.sayfa.getByLabel(/Kumaş net kilosu/).fill('90');
-      await kalite.sayfa.getByLabel(/İrsaliye no/).fill(`${iplik}-K2`);
-      await kalite.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
-      await kalite.sayfa.waitForTimeout(1500);
-      const fire = await kalite.api<FireDosyasi>(`/api/v1/shipments/${sevkiyatId}/fire-settlement`);
-      kalite.kontrol('kumaş toplamı 90 kg', Number(fire.fabricKg) === 90, fire.fabricKg);
-      kalite.kontrol(
-        'kumaş girişi sonrası dosya faturalanmaya hazır',
-        fire.status === 'TO_INVOICE',
-        fire.status,
-      );
-    },
-  );
+  await mudur.adim('müdür: makul kumaş girişi kaydolur, fire dosyası sayıları tutar', async () => {
+    await mudur.sayfa.getByLabel(/Kumaş net kilosu/).fill('90');
+    await mudur.sayfa.getByLabel(/İrsaliye no/).fill(`${iplik}-K2`);
+    await mudur.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
+    await mudur.sayfa.waitForTimeout(1500);
+    const fire = await mudur.api<FireDosyasi>(`/api/v1/shipments/${sevkiyatId}/fire-settlement`);
+    mudur.kontrol('kumaş toplamı 90 kg', Number(fire.fabricKg) === 90, fire.fabricKg);
+    mudur.kontrol(
+      'kumaş girişi sonrası dosya faturalanmaya hazır',
+      fire.status === 'TO_INVOICE',
+      fire.status,
+    );
+  });
 
   await kalite.adim(
     'kalite: tamamlanmış sevkiyata kalite itirazı açar (sunucu hatası vermemeli)',
@@ -202,7 +204,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
         });
       await kalite.sayfa.getByText('1 fotoğraf eklendi.').waitFor();
       await kalite.sayfa.getByRole('button', { name: 'İtirazı gönder' }).click();
-      await kalite.sayfa.getByText(/AÇIK/).first().waitFor();
+      await expect(kalite.sayfa.locator('main')).toContainText(/UY-SV-/);
     },
   );
 

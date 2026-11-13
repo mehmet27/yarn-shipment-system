@@ -1,4 +1,4 @@
-import { expect, rolTanimli, test } from '../support/robot';
+import { rolTanimli, test } from '../support/robot';
 import { sec } from '../support/yardimci';
 
 /** Temiz kurulumda (yalnızca `admin` var) yönetici diğer kullanıcıları açar; her biri ilk girişte kendi şifresini seçer. */
@@ -30,6 +30,12 @@ test('Kurulum: yönetici eksik kullanıcıları açar, her biri ilk girişi yapa
       await admin.sayfa.getByRole('button', { name: 'Yeni kullanıcı' }).click();
       const pencere = admin.sayfa.getByRole('dialog');
       await sec(admin.sayfa, /^Rol/, k.rolAdi, pencere);
+      const alan = pencere.getByLabel(/Çalışma alanı/);
+      // Kalite rolü bir çalışma alanı ister (merkez fabrika ya da fasoncular); ilk seçenek yeter.
+      if ((await alan.count()) > 0) {
+        await alan.first().click();
+        await admin.sayfa.locator('[role=option]:visible').first().click();
+      }
       await pencere.getByLabel(/Giriş adı/).fill(k.giris);
       await pencere.getByLabel(/Ad soyad/).fill(k.ad);
       await pencere.getByLabel(/İlk şifre/).fill(`${sifre}-ilk`);
@@ -51,7 +57,7 @@ test('Kurulum: yönetici eksik kullanıcıları açar, her biri ilk girişi yapa
       await sayfa.fill('#password-confirm', sifre);
       await sayfa.locator('input[type=submit], button[type=submit]').first().click();
       await sayfa.waitForURL(/5173/, { timeout: 20_000 });
-      expect(sayfa.url()).toContain('/panel');
+      await sayfa.getByText(k.ad).first().waitFor({ timeout: 20_000 });
       await baglam.close();
     });
   }

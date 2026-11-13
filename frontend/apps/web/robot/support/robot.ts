@@ -65,6 +65,7 @@ export class Robot {
   /** Adımı çalıştırır; adımın içinde sorun çıkarsa ekran görüntüsü alınır ve adım "sorun" işaretlenir. */
   async adim<T>(ad: string, is: () => Promise<T>): Promise<T | undefined> {
     const once = this.sorunlar.length;
+    if (process.env.ROBOT_DETAY === '1') console.log(`  → ${this.rol}: ${ad}`);
     try {
       const sonuc = await is();
       await this.kaydet(ad, once);

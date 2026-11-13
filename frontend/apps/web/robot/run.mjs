@@ -10,6 +10,7 @@ const bayraklar = process.argv.slice(2);
 const env = { ...process.env };
 const arguman = [];
 for (const bayrak of bayraklar) {
+  if (bayrak === '--') continue;
   if (bayrak === '--izle') env.ROBOT_IZLE = '1';
   else if (bayrak === '--video') env.ROBOT_VIDEO = '1';
   else if (bayrak.startsWith('--yavas=')) env.ROBOT_YAVAS = bayrak.slice(8);

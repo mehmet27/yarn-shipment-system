@@ -106,8 +106,8 @@ class DiscrepancyDecisionServicesTest {
                 new Inspection.Request("numune alın", actor.userId(), NOW),
                 null);
         when(inspections.findInspections(TestDiscrepancies.ID)).thenReturn(List.of(pending));
-        ResolveDiscrepancyCommand command = new ResolveDiscrepancyCommand(
-                actor, TestDiscrepancies.ID, Resolution.CLAIM_JUSTIFIED, "haklı", null);
+        ResolveDiscrepancyCommand command =
+                new ResolveDiscrepancyCommand(actor, TestDiscrepancies.ID, Resolution.CLAIM_JUSTIFIED, "haklı", null);
 
         assertThatThrownBy(() -> resolve.resolveDiscrepancy(command))
                 .isInstanceOfSatisfying(

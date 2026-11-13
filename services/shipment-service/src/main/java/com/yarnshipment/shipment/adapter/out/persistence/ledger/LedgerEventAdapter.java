@@ -72,8 +72,8 @@ final class LedgerEventAdapter implements LedgerEventPort {
 
     @Override
     public void fireRateChanged(RateChange change) {
-        FireRateChanged event = new FireRateChanged(
-                change.shipmentId(), change.oldRate(), change.newRate(), change.changedAt());
+        FireRateChanged event =
+                new FireRateChanged(change.shipmentId(), change.oldRate(), change.newRate(), change.changedAt());
         events.publish(new DomainEvent(
                 SHIPMENT, change.shipmentId(), FireRateChanged.TYPE, event, change.changedAt(), change.changedBy()));
     }

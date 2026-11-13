@@ -69,7 +69,7 @@ describe('Kullanıcılar ekranı', () => {
         PATH,
         () =>
           HttpResponse.json(
-            { status: 502, code: 'LOGIN_ACCOUNT_UNAVAILABLE', title: 'Keycloak' },
+            { status: 502, code: 'LOGIN_ACCOUNT_UNAVAILABLE', title: 'Giriş sistemi' },
             { status: 502 },
           ),
         { once: true },

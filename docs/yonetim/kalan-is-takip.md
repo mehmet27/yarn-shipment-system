@@ -14,8 +14,8 @@ Güncelleme: 04.11.2026. Sonraki geliştirmeler bu listeden sürer; biten madde 
 | 7 | Kanıt ayrıntıları: galeri uyarısı, cihaz bilgisi, filigran, teslim çuval fotoğrafı | P2 | 4-5 | ⏳ Bekliyor |
 | 8 | Eksik belge/foto, galeri oranı, düzeltilen kayıt raporu (8.5) | P2 | 3-4 | ⏳ Bekliyor |
 | 9 | KVKK aydınlatma/onay + e-İrsaliye no alanı (9.5, 9.6) | P2 | 2-3 | ⏳ Bekliyor |
-| 10 | Üretim Keycloak'ında OTP akışı (1.7) | P2 | 1-2 | 🟡 Kısmen: rehber `docs/yonetim/uretim-keycloak-otp.md`; konsolda uygulanıp doğrulanması kalıyor (kod değişikliği yok) |
-| 11 | Sevkiyat geçmişinde şoför/taşeron isimleri çözülmüyor (H-24) | — | 1-2 | ✅ Yapıldı: geçmiş yanıtına `changedByName` (Keycloak hesaplarından çözülür), ekran adı gösterir; çözülemezse "Başka bir kullanıcı" |
+| 10 | Giriş için OTP (TOTP) (1.7) | P2 | 2-3 | ⏸ Ertelendi: Keycloak kaldırıldı; kendi giriş sistemimize ileride TOTP eklenecek |
+| 11 | Sevkiyat geçmişinde şoför/taşeron isimleri çözülmüyor (H-24) | — | 1-2 | ✅ Yapıldı: geçmiş yanıtına `changedByName` (giriş hesaplarından çözülür), ekran adı gösterir; çözülemezse "Başka bir kullanıcı" |
 | 12 | Seed sevkiyatlar olay (outbox/geçmiş) üretmiyor | — | 1-2 | ✅ Yapıldı: yerel seed her geçmiş adım için outbox olayı yazar (yayımlanmış sayılır; teslim alındı olayı hariç) |
 | 13 | Faz 2/3: nem toleransı, konum, risk skoru, entegrasyonlar | P3 | 15+ | ⏳ Kapsam dışı |
 

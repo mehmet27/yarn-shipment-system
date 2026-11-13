@@ -1,14 +1,13 @@
 # Sunucuya kurulum rehberi (Ubuntu, tek sunucu)
 
 Bu rehber, kiralanmış bir Ubuntu 22.04/24.04 sunucuya sistemi Docker ile kurar. Dışarıya yalnızca 80 ve 443 açılır;
-veritabanı, Redis, MinIO ve uygulama iç ağda kalır. HTTPS sertifikasını Caddy kendiliğinden alır.
+veritabanı, MinIO ve uygulama iç ağda kalır. HTTPS sertifikasını Caddy kendiliğinden alır.
 
 ## 0. Hazırlık
 
-- **Sunucu:** en az 4 vCPU, 8 GB RAM, 60 GB disk (Java servisleri ve Keycloak bellek yer). Docker'ı betik kurar.
-- **Üç adres (DNS A kaydı, hepsi sunucunun IP'sine):**
+- **Sunucu:** en az 4 vCPU, 8 GB RAM, 60 GB disk (Java uygulaması bellek yer). Docker'ı betik kurar.
+- **İki adres (DNS A kaydı, ikisi de sunucunun IP'sine):**
   - `APP_HOST` uygulama, örn. `iplik.firma.com.tr`
-  - `AUTH_HOST` giriş (Keycloak), örn. `giris.firma.com.tr`
   - `FILES_HOST` fotoğraf/belge yükleme, örn. `dosya.firma.com.tr`
 - Güvenlik duvarında 22, 80 ve 443 portlarını açın (başka port gerekmez).
 
@@ -18,7 +17,7 @@ veritabanı, Redis, MinIO ve uygulama iç ağda kalır. HTTPS sertifikasını Ca
 git clone https://github.com/mehmet27/yarn-shipment-system.git
 cd yarn-shipment-system
 ./deploy/prod/install.sh          # ilk çalışmada .env oluşturur ve durur
-nano deploy/prod/.env             # üç adresi, ACME_EMAIL ve INITIAL_ADMIN_EMAIL alanlarını doldurun
+nano deploy/prod/.env             # iki adresi ve ACME_EMAIL alanını doldurun
 ./deploy/prod/install.sh          # sırları üretir, imajları derler, her şeyi başlatır
 ```
 
@@ -26,13 +25,10 @@ nano deploy/prod/.env             # üç adresi, ACME_EMAIL ve INITIAL_ADMIN_EMA
 ile tüm servislerin `running`/`healthy` olduğunu görün. Betik sonunda yönetici bilgilerini yazar; `deploy/prod/.env`
 dosyasını güvenli bir yere yedekleyin (içindeki sırlar kaybolursa veriye erişilemez).
 
-## 2. İlk giriş ve OTP (zorunlu)
+## 2. İlk giriş
 
-1. `https://APP_HOST` adresini açın, `admin` ve `INITIAL_ADMIN_PASSWORD` ile girin. Keycloak yeni şifre ve OTP
-   (Google Authenticator vb.) kurulumu ister.
-2. ADMIN ve KALİTE rolleri, token'da OTP kanıtı (`acr=2`) yoksa **hiçbir yetki almaz**. Bu yüzden
-   `docs/yonetim/uretim-keycloak-otp.md` adımlarını Keycloak konsolunda (`https://AUTH_HOST/admin`, kullanıcı `admin`,
-   şifre `.env` içindeki `KEYCLOAK_ADMIN_PASSWORD`) bir kez uygulayın. Bu adım bitmeden uygulamada yönetici ekranları açılmaz.
+1. `https://APP_HOST` adresini açın, `admin` ve `INITIAL_ADMIN_PASSWORD` ile girin. İlk girişte uygulama yeni şifre ister.
+2. İkinci faktör (OTP) şimdilik yoktur; ileride eklenebilir. Bu yüzden `admin` şifresini uzun ve tahmin edilmesi zor seçin.
 3. Uygulamada lokasyonları ve temel tanımları girin, ardından Kullanıcılar ekranından depo, kalite, şoför, fasoncu hesaplarını açın.
    Üretimde test kullanıcısı yoktur; `local` profili hiçbir yerde açılmaz.
 
@@ -41,7 +37,7 @@ dosyasını güvenli bir yere yedekleyin (içindeki sırlar kaybolursa veriye er
 | İş | Komut (depo kökünde) |
 |---|---|
 | Güncelleme | `git pull && ./deploy/prod/install.sh` |
-| Durum / günlük | `docker compose -f deploy/prod/docker-compose.yml --env-file deploy/prod/.env ps` · `... logs -f gateway` |
+| Durum / günlük | `docker compose -f deploy/prod/docker-compose.yml --env-file deploy/prod/.env ps` · `... logs -f yarnshipment-app` |
 | Durdurma | `... down` (veriler korunur; `down -v` **tüm veriyi siler**) |
 | Yedek | `... exec postgres pg_dump -U postgres yarnshipment > yedek.sql`; ayrıca `minio-data` ve `deploy/prod/.env` |
 
@@ -53,6 +49,7 @@ dosyasını güvenli bir yere yedekleyin (içindeki sırlar kaybolursa veriye er
 - SMS ve e-posta doğrulaması yoktur: yönetici kullanıcı açarken geçici şifreyi kendisi yazar ve unutulan şifreyi
   Kullanıcılar ekranından yeni geçici şifre vererek sıfırlar; kişi ilk girişte şifresini değiştirir.
 - Tek uygulama süreci ve tek veritabanı: pilot ölçeği için uygundur, yüksek erişilebilirlik sağlamaz.
+- Oturumlar uygulama belleğindedir: uygulama yeniden başlayınca (güncelleme dahil) herkes yeniden giriş yapar.
 - Kafka kaldırıldı. Eski (çok servisli) kurulumdan geçerken: önce eski servisleri durdurmadan `outbox_event` tablolarında
   `published_at IS NULL` satır kalmadığını ve tüketici gecikmesinin sıfır olduğunu doğrulayın, veritabanı yedeği alın,
   sonra yeni imajla `docker compose up -d --build` çalıştırın. Açılışta şema başına Flyway migration'ları çalışır;
@@ -68,4 +65,7 @@ dosyasını güvenli bir yere yedekleyin (içindeki sırlar kaybolursa veriye er
   ```
   Yerel Compose'ta hacmi sıfırlamak (`down -v`) da yeterlidir. Aynı açılışta `platform` şeması kurulur, her modülün `audit_local` ve
   `idempotency_record` verisi oraya taşınır ve eski tablolar düşer; yükseltmeden önce yedek alın.
-- Keycloak yönetim konsolu internetten erişilebilir; güçlü şifre kullanın, gerekirse Caddyfile'da IP ile kısıtlayın.
+- **Keycloak'tan geçiş.** Eski kurulumda Keycloak, Redis ve gateway konteynerleri artık yoktur; `up -d --remove-orphans` ile
+  temizlenir. Kullanıcılar Keycloak'ta kalmıştır ve yeni `shipment.app_user` tablosuna **otomatik taşınmaz**: açılışta yalnızca
+  `admin` hesabı (`INITIAL_ADMIN_PASSWORD` ile) oluşur; diğer kullanıcıları yönetici Kullanıcılar ekranından yeniden açar.
+  Eski `keycloak` şeması gerekmiyorsa yedek aldıktan sonra `DROP SCHEMA keycloak CASCADE;` ile silinebilir.

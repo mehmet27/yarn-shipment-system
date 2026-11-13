@@ -2,11 +2,13 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { test as base, expect } from '@playwright/test';
 import type { BrowserContext, Page, TestInfo } from '@playwright/test';
+import { girisFormu, sifreDegistirFormu } from './yardimci';
 
 export type Sorun = { tur: 'konsol' | 'ag' | 'sayfa' | 'beklenti'; ozet: string; ekran?: string };
 export type Adim = { ad: string; sonuc: 'ok' | 'sorun' };
 
-const GATEWAY = process.env.ROBOT_GATEWAY ?? 'http://localhost:8080';
+/** API çağrıları arayüzün adresinden gider; `/api` isteklerini arayüz sunucusu uygulamaya iletir. */
+const UYGULAMA = process.env.ROBOT_URL ?? 'http://localhost:5173';
 const KULLANICILAR = JSON.parse(
   readFileSync(join(import.meta.dirname, '..', 'kullanicilar.json'), 'utf8'),
 ) as Record<string, string>;
@@ -111,9 +113,9 @@ export class Robot {
       .filter((metin) => metin !== '');
   }
 
-  /** GET isteği; oturumdaki çerezlerle gateway üzerinden. */
+  /** GET isteği; oturumdaki çerezlerle. */
   async api<T>(yol: string): Promise<T> {
-    const yanit = await this.baglam.request.get(`${GATEWAY}${yol}`);
+    const yanit = await this.baglam.request.get(`${UYGULAMA}${yol}`);
     if (!yanit.ok()) throw new Error(`${String(yanit.status())} GET ${yol}`);
     return (await yanit.json()) as T;
   }
@@ -141,18 +143,15 @@ export const test = base.extend<{
         hasTouch: gorunum?.hasTouch ?? false,
       });
       const sayfa = await baglam.newPage();
-      await sayfa.goto(`${GATEWAY}/oauth2/authorization/keycloak`);
-      await sayfa.fill('#username', kullanici);
-      await sayfa.fill('#password', ilkSifre ?? sifre);
-      await sayfa.click('#kc-login');
+      await girisFormu(sayfa, kullanici, ilkSifre ?? sifre);
       if (ilkSifre !== undefined) {
-        // Yöneticinin verdiği geçici şifreyle ilk giriş: Keycloak yeni şifre ister.
-        await sayfa.locator('#password-new').waitFor({ timeout: 20_000 });
-        await sayfa.fill('#password-new', sifre);
-        await sayfa.fill('#password-confirm', sifre);
-        await sayfa.locator('input[type=submit], button[type=submit]').first().click();
+        // Yöneticinin verdiği geçici şifreyle ilk giriş: uygulama yeni şifre ister.
+        await sayfa.waitForURL(/sifre-degistir/, { timeout: 20_000 });
+        await sifreDegistirFormu(sayfa, ilkSifre, sifre);
       }
-      await sayfa.waitForURL(/5173/, { timeout: 20_000 });
+      await sayfa.waitForURL((adres) => !/giris|sifre-degistir/.test(adres.pathname), {
+        timeout: 20_000,
+      });
       await sayfa.waitForLoadState('networkidle');
       const robot = new Robot(sayfa, baglam, info, rol);
       robotlar.push(robot);

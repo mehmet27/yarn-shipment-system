@@ -7,7 +7,7 @@ React + TypeScript pnpm workspace. Mimari: [`docs/frontend/react-frontend-mimari
 | `apps/web`            | Yönetim Paneli (`/panel`) ve Saha PWA (`/saha`)                      |
 | `packages/config`     | Ortak ESLint ve TypeScript ayarları (kod standartlarındaki sınırlar) |
 | `packages/ui`         | Mantine'i saran tasarım sistemi                                      |
-| `packages/api-client` | Gateway istemcisi (oturum çerezi, CSRF, Problem Details)             |
+| `packages/api-client` | API istemcisi (oturum çerezi, CSRF, Problem Details)                |
 | `packages/i18n`       | Türkçe metinler ve tarih biçimlendirme                               |
 | `packages/units`      | Kilo ve yüzde hesabı (`number` aritmetiği yerine)                    |
 
@@ -21,7 +21,7 @@ pnpm install
 pnpm dev            # http://localhost:5173, sahte API (MSW) açık
 ```
 
-Sahte API'de rol, sayfa ilk açılırken adres çubuğundan seçilir: `/?mockRole=QUALITY` (`ADMIN`, `WAREHOUSE`, `QUALITY`, `MANAGER`, `GENERAL_MANAGER`). Gerçek gateway ile çalışmak için `VITE_USE_MOCK_API=false pnpm dev`; istekler `localhost:8080`'e yönlenir. Önce kökteki README'deki yerel ortamı (Postgres, Keycloak, gateway) başlatın; `deploy/.env` dosyanız eskiyse `deploy/.env.example` içindeki yeni değişkenleri (`KEYCLOAK_TEST_USER_PASSWORD`, `GATEWAY_CLIENT_SECRET`) ekleyin, yoksa compose başlamaz. Oturum yoksa uygulama `/oauth2/authorization/keycloak` adresine gider (gateway girişi yönetir); oturum sonradan düşerse ilk 401'de kullanıcı sorgusu yenilenir ve yine girişe yönlenir. Tarayıcıda token tutulmaz.
+Sahte API'de rol, sayfa ilk açılırken adres çubuğundan seçilir: `/?mockRole=QUALITY` (`ADMIN`, `WAREHOUSE`, `QUALITY`, `MANAGER`, `GENERAL_MANAGER`). Gerçek backend ile çalışmak için `VITE_USE_MOCK_API=false pnpm dev`; `/api` istekleri `localhost:8083`'e (`yarnshipment-app`) yönlenir. Önce kökteki README'deki yerel ortamı (Postgres, uygulama) başlatın; `deploy/.env` dosyanız eskiyse `deploy/.env.example` içindeki yeni değişkeni (`LOCAL_TEST_USER_PASSWORD`) ekleyin. Oturum yoksa uygulama `/giris` sayfasına gider (kullanıcı adı ve şifre formu); geçici şifreyle girenler `/sifre-degistir` sayfasında önce kendi şifresini seçer; oturum sonradan düşerse ilk 401'de kullanıcı sorgusu yenilenir ve yine girişe yönlenir. Tarayıcıda token tutulmaz.
 
 ## Duyarlılık denetimi (FE-UI-07)
 

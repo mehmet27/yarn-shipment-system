@@ -1,5 +1,5 @@
 -- Yalnızca yerel geliştirme (local profili): ekranlar veri göstersin diye farklı durum ve lokasyonlarda
--- örnek sevkiyatlar. Kimlikler yerel Keycloak realm'indeki kullanıcılarla eşleşir (deploy/keycloak). Tekrarlanabilir
+-- örnek sevkiyatlar. Kimlikler yerel örnek kullanıcılarla eşleşir (AccountBootstrap). Tekrarlanabilir
 -- migration: dosya değişirse yeniden çalışır, kayıtlar ON CONFLICT ile tekrarlanmaz.
 SELECT set_config('app.actor_id', '0192f0a0-0000-7000-8000-00000000d001', false);
 

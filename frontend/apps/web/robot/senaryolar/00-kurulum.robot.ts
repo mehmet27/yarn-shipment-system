@@ -1,5 +1,5 @@
 import { rolTanimli, test } from '../support/robot';
-import { sec } from '../support/yardimci';
+import { girisFormu, sec, sifreDegistirFormu } from '../support/yardimci';
 
 /** Temiz kurulumda (yalnızca `admin` var) yönetici diğer kullanıcıları açar; her biri ilk girişte kendi şifresini seçer. */
 const KULLANICILAR = [
@@ -46,17 +46,9 @@ test('Kurulum: yönetici eksik kullanıcıları açar, her biri ilk girişi yapa
     await admin.adim(`${k.giris} ilk girişi yapar ve kendi şifresini seçer`, async () => {
       const baglam = await browser.newContext({ locale: 'tr-TR' });
       const sayfa = await baglam.newPage();
-      await sayfa.goto(
-        `${process.env.ROBOT_GATEWAY ?? 'http://localhost:8080'}/oauth2/authorization/keycloak`,
-      );
-      await sayfa.fill('#username', k.giris);
-      await sayfa.fill('#password', `${sifre}-ilk`);
-      await sayfa.click('#kc-login');
-      await sayfa.locator('#password-new').waitFor({ timeout: 20_000 });
-      await sayfa.fill('#password-new', sifre);
-      await sayfa.fill('#password-confirm', sifre);
-      await sayfa.locator('input[type=submit], button[type=submit]').first().click();
-      await sayfa.waitForURL(/5173/, { timeout: 20_000 });
+      await girisFormu(sayfa, k.giris, `${sifre}-ilk`);
+      await sayfa.waitForURL(/sifre-degistir/, { timeout: 20_000 });
+      await sifreDegistirFormu(sayfa, `${sifre}-ilk`, sifre);
       await sayfa.getByText(k.ad).first().waitFor({ timeout: 20_000 });
       await baglam.close();
     });

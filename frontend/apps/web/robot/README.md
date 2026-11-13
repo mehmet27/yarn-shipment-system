@@ -1,13 +1,13 @@
 # Robot testleri
 
 Gerçek arayüze ve gerçek backend'e karşı çalışan, kullanıcı gibi davranan test robotu. `e2e/` testlerinden farkı:
-sahte API yerine çalışan yığını (Keycloak girişi, gateway, servisler, veritabanı) kullanır; bu yüzden rol yetkileri,
+sahte API yerine çalışan yığını (uygulamanın kendi giriş sayfası, servisler, veritabanı) kullanır; bu yüzden rol yetkileri,
 sunucu doğrulamaları ve sayıların tutarlılığı gerçek koşullarda sınanır. Bulduğu sorunları Türkçe bir raporda toplar.
 
 ## Çalıştırma
 
 Önce yığın ayakta olmalı (`README.md` "Uygulamayı çalıştırma"): arayüz `http://localhost:5173` (`VITE_USE_MOCK_API=false`),
-gateway `8080`, Keycloak `8180`, `yarnshipment-app` `local` profiliyle.
+`yarnshipment-app` `8083` üzerinde `local` profiliyle (arayüz `/api` isteklerini ona iletir). Giriş formu `/giris` sayfasıdır; ilk girişte geçici şifre `/sifre-degistir` sayfasında değiştirilir.
 
 ```bash
 cd frontend
@@ -23,8 +23,7 @@ pnpm --filter @iplik/web robot -- --rol=depo    # adında "depo" geçen senaryol
 Rapor: `robot/rapor/rapor.html` (ekran görüntüleri, adım listesi, YENİ/çözüldü ayrımı) ve `rapor.md`.
 Önceki koşuya göre yeni çıkan sorunlar "YENİ" işaretlenir; düzelenler özet satırında sayılır.
 
-Ortam değişkenleri: `ROBOT_SIFRE` (ortak şifre), `ROBOT_URL` (varsayılan `http://localhost:5173`), `ROBOT_GATEWAY`
-(`http://localhost:8080`), `ROBOT_TARAYICI` (`msedge`, `chrome` ya da `chromium`; Windows'ta varsayılan `msedge`).
+Ortam değişkenleri: `ROBOT_SIFRE` (ortak şifre), `ROBOT_URL` (varsayılan `http://localhost:5173`), `ROBOT_TARAYICI` (`msedge`, `chrome` ya da `chromium`; Windows'ta varsayılan `msedge`).
 Kullanıcılar `robot/kullanicilar.json` içindedir (rol → giriş adı). Şifresi farklı bir hesap için `robot/kullanicilar.local.json`
 açın (git'e girmez): `{ "genel-mudur": "şifre" }`. Hesabı olmayan rolün senaryoları atlanır.
 
@@ -54,13 +53,13 @@ Rapor ayrıca `rapor/sorun-ozeti.md` (yapıştırılacak sorun metni) ve `rapor/
 Yalnızca `admin` kullanıcısı olan temiz bir yerel ortam için (Docker verisi silinir, geri alınamaz):
 
 ```bash
-cd frontend && pnpm yerel:sifirla    # hacimleri siler, yalnızca admin'li Keycloak ile kurar, yığını yeniden başlatır
+cd frontend && pnpm yerel:sifirla    # hacimleri siler, yalnızca admin'li kurar (`LOCAL_SAMPLE_USERS=false`), yığını yeniden başlatır
 ```
 
 (Ayrıntı ve seçenekler için kök `README.md`, "Yerel ortamı sıfırlama".)
 
 Ardından yığını başlatıp `ROBOT_SIFRE` olarak admin'in şifresini değil, **tüm robot kullanıcılarının alacağı** şifreyi verin
-(en az 8 karakter ve kolay tahmin edilmeyen bir şifre; Keycloak `12345678` gibilerini reddeder). `admin` için
+(en az 8 karakter ve kolay tahmin edilmeyen bir şifre; `12345678` gibileri reddedilir). `admin` için
 `robot/kullanicilar.local.json` içine kendi şifresini yazın: `{ "admin": "<admin şifresi>" }`. `00-kurulum` senaryosu
 eksik kullanıcıları (depo, kalite, müdür, genel müdür) yönetici ekranından açar, her biriyle ilk girişi yapıp
 `ROBOT_SIFRE` şifresini belirler; sonraki senaryolar bu hesaplarla koşar.
@@ -76,7 +75,7 @@ eksik kullanıcıları (depo, kalite, müdür, genel müdür) yönetici ekranın
 | `04-tutarlilik`                   | Özet, bakiye ve fire dosyası sayılarını API'den çekip birbiriyle karşılaştırır                                                                                                                                                                                                            |
 | `05-tum-ekranlar`                 | **Gezgin:** her rol her ekranda her sekme, filtre, anahtar, liste, sayfalama ve indirme düğmesine tıklar; sevkiyat dosyasının her durumunu ve uyuşmazlık detayını da gezer. Veri değiştiren düğmeleri tıklamaz ama `support/kapsam.ts` kaydında senaryosu yoksa **kapsam açığı** raporlar |
 | `06-tanimlar-partiler`            | Tanımlar (6 tür) ve partilerde ekle, düzenle, kilitle, pasife al                                                                                                                                                                                                                          |
-| `07-kullanicilar`                 | Hesap aç, düzenle, süzgeçler, şifre ver, pasife al ve pasif hesabın girişinin kapandığını doğrula                                                                                                                                                                                         |
+| `07-kullanicilar`                 | Hesap aç, düzenle, süzgeçler, şifre ver, pasife al ve pasif hesabın girişinin kapandığını doğrula; ayrıca giriş sayfası: yönlendirme, hatalı şifre mesajı, geçici şifreyle zorunlu şifre değişikliği, çıkış ve 5 hatalı denemeden sonra hesap kilidi                                                                                                                                                                                         |
 | `08-gorunum-raporlar`             | Görünüm (ad, logo, varsayılan), rapor sekmeleri, tarih aralığı, Excel/PDF indirme, rapor logosu, açılış bakiyesi, merkez iplik stoku ekranı (arama, sıralama, indirme)                                                                                                                    |
 | `09-sevkiyat-islemleri`           | Çuval çıkarma, taslak iptali, fire oranı / fatura / kapatma, faturalanacaklar, iplik dönüşü, düzeltme, kanıt geçersiz kılma, lab sonucu ve karar                                                                                                                                          |
 | `10-surec-dogrulama`              | Bilinen sayılarla (200 kg iplik, 50 kg kumaş, 100 kg sevkiyat, 90 kg kumaş) süreci yürütür; stok, bakiye, özet, tartı, ambar fişi, fire hesabı, rapor ve denetim kaydını API ve ekrandan **sonuç doğrulamalı** denetler                                                                   |

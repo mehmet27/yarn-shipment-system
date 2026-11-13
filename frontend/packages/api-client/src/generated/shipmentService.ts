@@ -507,7 +507,7 @@ export interface DriverPageResponse {
  * Giriş hesabının özeti; şifre ya da kimlik bilgisi içermez.
  */
 export interface LoginAccountView {
-  /** Keycloak kullanıcı kimliği */
+  /** Kullanıcı kimliği */
   id: string;
   /** Giriş adı */
   username: string;
@@ -1044,7 +1044,7 @@ export type UnauthorizedResponse = Problem;
 export type ForbiddenResponse = Problem;
 
 /**
- * Kanıt servisine (EVIDENCE_SERVICE_UNAVAILABLE) ya da Keycloak'a (LOGIN_ACCOUNT_UNAVAILABLE) ulaşılamadı
+ * Kanıt servisine (EVIDENCE_SERVICE_UNAVAILABLE) ulaşılamadı
  */
 export type BadGatewayResponse = Problem;
 
@@ -1559,10 +1559,8 @@ export const deactivateDriver = (
     }
 
 /**
- * Yalnızca yönetici (USER_MANAGE). Keycloak'ta uygulama rollerinden en az birine sahip kullanıcılar giriş adına
- * göre sıralı gelir; servis hesapları listede yoktur. Arama `q` ile giriş adı ve adda yapılır
- * (büyük-küçük harf duyarsız). Şifre ya da başka kimlik bilgisi hiçbir zaman dönmez. Keycloak'a ulaşılamazsa ya
- * da yapılandırılmamışsa 502 `LOGIN_ACCOUNT_UNAVAILABLE`.
+ * Yalnızca yönetici (USER_MANAGE). Giriş hesabı olan kullanıcılar giriş adına göre sıralı gelir. Arama `q` ile giriş adı ve adda yapılır
+ * (büyük-küçük harf duyarsız). Şifre ya da başka kimlik bilgisi hiçbir zaman dönmez.
  * @summary Giriş hesabı olan kullanıcıların listesi
  */
 export const listLoginAccounts = (
@@ -1576,11 +1574,10 @@ export const listLoginAccounts = (
     }
 
 /**
- * Yalnızca yönetici (USER_MANAGE). Depo, kalite, müdür ya da yönetici hesabını Keycloak'ta yöneticinin yazdığı
+ * Yalnızca yönetici (USER_MANAGE). Depo, kalite, müdür ya da yönetici hesabını yöneticinin yazdığı
  * geçici şifreyle açar ve rolü verir; kişi ilk girişte şifresini değiştirir. SMS ya da e-posta doğrulaması yoktur.
  * Fabrikada tek merkez lokasyon vardır; hesap etkin tüm lokasyonları görür. Şifre hiçbir yanıtta ya da logda yer
- * almaz. Giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; şifre kurala uymuyorsa 400 `WEAK_PASSWORD`; Keycloak
- * çalışmazsa 502 `LOGIN_ACCOUNT_UNAVAILABLE` (yarım hesap bırakılmaz).
+ * almaz. Giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; şifre kurala uymuyorsa 400 `WEAK_PASSWORD`.
  * @summary Fabrika içi giriş hesabı açar
  */
 export const createStaffLoginAccount = (
@@ -1596,8 +1593,8 @@ export const createStaffLoginAccount = (
 
 /**
  * Denetim kaydı gibi ekranlarda kimliği ada çevirir. Yönetici (USER_MANAGE) ve denetim görüntüleyen roller
- * (AUDIT_VIEW) okur; yalnızca ad soyad (yoksa giriş adı) döner. Keycloak'ta
- * bulunmayan kimlik yanıtta olmaz. Keycloak'a ulaşılamazsa 502 `LOGIN_ACCOUNT_UNAVAILABLE`.
+ * (AUDIT_VIEW) okur; yalnızca ad soyad (yoksa giriş adı) döner. Hesabı
+ * bulunmayan kimlik yanıtta olmaz.
  * @summary Kullanıcı kimliklerinin okunur adları
  */
 export const listUserNames = (

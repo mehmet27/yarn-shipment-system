@@ -45,14 +45,11 @@ cp deploy/.env.example deploy/.env      # şifreleri değiştirin; dosya git'e g
 docker compose -f deploy/docker-compose.yml up -d
 ```
 
-Ayrıca Keycloak `http://localhost:8180` adresinde açılır (yönetici: `admin` / `KEYCLOAK_ADMIN_PASSWORD`).
-`yarnshipment` realm'i (roller, claim mapper'ları, test kullanıcıları) ilk açılışta
-`deploy/keycloak/yarnshipment-realm-local.json` dosyasından kendiliğinden içe aktarılır. Realm zaten varsa
-yeniden aktarılmaz; sıfırlamak için `docker compose -f deploy/docker-compose.yml down -v` çalıştırın.
+`deploy/.env` içinde `LOCAL_TEST_USER_PASSWORD` yerel kullanıcıların ortak şifresidir (en az 8 karakter; `12345678` gibi yaygın şifreler reddedilir).
+Giriş uygulamanın kendi hesap tablosuyla (`app_user`) yapılır; ayrı bir kimlik sunucusu, gateway ya da Redis yoktur.
 
-`deploy/.env` içinde üç değer zorunludur (örnekleri `deploy/.env.example` içinde): `KEYCLOAK_TEST_USER_PASSWORD` test kullanıcılarının ortak şifresidir, `GATEWAY_CLIENT_SECRET` gateway'in Keycloak'taki istemci sırrıdır, `REDIS_PASSWORD` gateway oturumlarını tutan Redis'in şifresidir (ikisi de gateway'i başlatırken aynı değerle verilir). Giriş sayfası Türkçe açılır.
-
-Test kullanıcıları (hepsinin şifresi `KEYCLOAK_TEST_USER_PASSWORD`):
+`local` profilinde `yarnshipment-app` açılışta şu kullanıcıları (yoksa) açar; hepsinin şifresi `LOCAL_TEST_USER_PASSWORD`'dür
+(`LOCAL_SAMPLE_USERS=false` verilirse yalnızca `admin` açılır):
 
 | Kullanıcı | Rol | Kapsam |
 |---|---|---|
@@ -61,19 +58,10 @@ Test kullanıcıları (hepsinin şifresi `KEYCLOAK_TEST_USER_PASSWORD`):
 | `kalite` | quality | iki lokasyon |
 | `mudur` | manager | iki lokasyon |
 
-Token'ların servislerin beklediği claim'leri taşıdığını doğrulamak için (Node 22):
-
-```bash
-KEYCLOAK_TEST_USER_PASSWORD=<deploy/.env değeri> node tools/keycloak/verify-realm.mjs
-```
-
-Yerel Keycloak'ta ikinci faktör kurulu değildir; `admin` ve `kalite` rolleri MFA'sız oturumda düşürüldüğü için
-`yarnshipment-app`'i `--spring.profiles.active=local` ile başlatın (yalnızca yerelde
-MFA şartını kapatır; üretim ayarı değişmez). Profilsiz açılan serviste bu iki rol 403 `ACCESS_DENIED` alır.
+İkinci faktör (OTP) şimdilik yoktur; ileride eklenebilir. Yetkiler yalnızca role bağlıdır.
 
 Compose, tek bir PostgreSQL 17 konteynerinde tek veritabanı (`yarnshipment`) ve tek kullanıcı (`yarnshipment`, şifre
-`LOCAL_DB_PASSWORD`) açar. Her modül tablolarını kendi şemasında tutar (`shipment`, `discrepancy`, `evidence`, `reporting`, `audit`; Keycloak için
-`keycloak`); ortak iki tablo (`idempotency_record`, `audit_local`) `platform` şemasındadır. Compose ayrıca giriş yapamayan
+`LOCAL_DB_PASSWORD`) açar. Her modül tablolarını kendi şemasında tutar (`shipment`, `discrepancy`, `evidence`, `reporting`, `audit`); ortak iki tablo (`idempotency_record`, `audit_local`) `platform` şemasındadır. Compose ayrıca giriş yapamayan
 `audit_writer` ve `audit_reader` rollerini açar. Kullanıcının `search_path`'i hepsini kapsar:
 `psql -h localhost -U yarnshipment yarnshipment` ile tek bağlantıdan her tabloya erişilir (`SELECT * FROM shipment.shipment`).
 Tabloları uygulama açılışta Flyway ile kurar (önce `platform`, sonra modül şemaları); migration'lar
@@ -93,34 +81,31 @@ Yerel veriyi silip yalnızca `admin` kullanıcısıyla temiz bir ortam kurmak i�
 cd frontend
 pnpm yerel:sifirla              # "SIL" yazarak onaylarsınız; sıfırlar, backend'i derler, yığını yeniden başlatır
 pnpm yerel:sifirla -- --evet    # onay sormadan
-pnpm yerel:sifirla -- --sadece-veri      # yalnızca Docker verisini sıfırlar (uygulama, gateway, arayüze dokunmaz)
+pnpm yerel:sifirla -- --sadece-veri      # yalnızca Docker verisini sıfırlar (uygulama ve arayüze dokunmaz)
 pnpm yerel:sifirla -- --derleme-atla     # backend'i yeniden derlemeden (kod değişmediyse daha hızlı)
 pnpm yerel:baslat               # veriye dokunmadan servisleri yeniden başlatır (onay sormaz)
 pnpm yerel:durdur               # servisleri durdurur (Docker'a dokunmaz)
 ```
 
-Betik (`tools/yerel-sifirla.mjs`): 8083, 8080 ve 5173 portlarını dinleyen yerel servisleri durdurur; `deploy/docker-compose.yml` +
-`deploy/docker-compose.temiz.yml` ile Docker hacimlerini siler ve yalnızca `admin`'li Keycloak ile yeniden kurar; backend'i derleyip
-uygulama, gateway ve arayüzü **gizli, pencere açmadan** ve terminalden bağımsız başlatır (terminal kapansa da çalışır; günlükler ve süreç numaraları `.yerel/` altında, durdurmak için `pnpm yerel:durdur`). Betik robotu **kendiliğinden başlatmaz**. Korumalar: `SPRING_PROFILES_ACTIVE`/`YARNSHIPMENT_ENV` canlı ya da
+Betik (`tools/yerel-sifirla.mjs`): 8083 ve 5173 portlarını dinleyen yerel servisleri durdurur; `deploy/docker-compose.yml` ile Docker
+hacimlerini siler ve yeniden kurar; backend'i derleyip uygulamayı (`LOCAL_SAMPLE_USERS=false`: yalnızca `admin`, şifresi
+`LOCAL_TEST_USER_PASSWORD`) ve arayüzü **gizli, pencere açmadan** ve terminalden bağımsız başlatır (terminal kapansa da çalışır; günlükler ve süreç numaraları `.yerel/` altında, durdurmak için `pnpm yerel:durdur`). Betik robotu **kendiliğinden başlatmaz**. Korumalar: `SPRING_PROFILES_ACTIVE`/`YARNSHIPMENT_ENV` canlı ya da
 CI gibiyse, `DOCKER_HOST` uzak sunucuysa ya da Docker bağlamı yerel değilse durur; `deploy/.env` yoksa çalışmaz.
 Sıfırlamadan sonra diğer kullanıcıları, siz isterseniz robot açar: `pnpm robot -- --rol=Kurulum` (`frontend/apps/web/robot/README.md`).
 
 ## Uygulamayı çalıştırma (yarnshipment-app)
 
-shipment, discrepancy, evidence, reporting ve audit modülleri `services/yarnshipment-app` içinde tek Spring Boot uygulaması olarak çalışır (port `8083`); gateway ayrı süreçtir. Tek `application.yml` ve tek bağlantı havuzu vardır; her şema kendi Flyway'iyle (kendi `flyway_schema_history` tablosu) açılışta kurulur, migration'lar `services/<modül>-service/src/main/resources/db/migration/<şema>/` altındadır. PostgreSQL'i ayrıca kurmanız gerekmez; yukarıdaki Compose yeterlidir.
+shipment, discrepancy, evidence, reporting ve audit modülleri `services/yarnshipment-app` içinde tek Spring Boot uygulaması olarak çalışır (port `8083`); önünde ayrı bir geçit yoktur, giriş de bu uygulamadadır. Tek `application.yml` ve tek bağlantı havuzu vardır; her şema kendi Flyway'iyle (kendi `flyway_schema_history` tablosu) açılışta kurulur, migration'lar `services/<modül>-service/src/main/resources/db/migration/<şema>/` altındadır. PostgreSQL'i ayrıca kurmanız gerekmez; yukarıdaki Compose yeterlidir.
 
 ```bash
 export DB_PASSWORD=<LOCAL_DB_PASSWORD>
-export YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET=<deploy/.env içindeki KEYCLOAK_ADMIN_CLIENT_SECRET>
+export LOCAL_TEST_USER_PASSWORD=<deploy/.env değeri>
 export EVIDENCE_STORAGE_ACCESS_KEY=<deploy/.env değeri> EVIDENCE_STORAGE_SECRET_KEY=<deploy/.env değeri>
 ./mvnw -pl services/yarnshipment-app -am install -DskipTests
 ./mvnw -pl services/yarnshipment-app spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-`YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET` verilmezse servis yine açılır, ama Tanımlar ekranındaki "Giriş hesabı aç"
-502 `LOGIN_ACCOUNT_UNAVAILABLE` ("Giriş sistemine ulaşılamadı") döner.
-
-`local` profilinde ayrıca yerel örnek veri yüklenir (`db/seed-local/R__local_sample_shipments.sql`): iki lokasyonda, taslak, fasoncuya yolda, tamamlandı ve iptal durumlarında örnek sevkiyatlar; kimlikler yerel Keycloak kullanıcılarıyla eşleşir (fasoncu kendi sevkiyatlarını görür). Dosya tekrarlanabilir migration'dır, kayıtlar iki kez eklenmez. Üretim profilinde bu konum yoktur.
+`local` profilinde ayrıca yerel örnek veri yüklenir (`db/seed-local/R__local_sample_shipments.sql`): iki lokasyonda, taslak, fasoncuya yolda, tamamlandı ve iptal durumlarında örnek sevkiyatlar; kimlikler yerel örnek kullanıcılarla eşleşir (fasoncu kendi sevkiyatlarını görür). Dosya tekrarlanabilir migration'dır, kayıtlar iki kez eklenmez. Üretim profilinde bu konum yoktur.
 
 Sevkiyat iptali (`POST /api/v1/shipments/{id}/cancel`, `Idempotency-Key` ve `reason` ister) yalnızca yöneticidedir (`SHIPMENT_CANCEL`) ve yalnızca taslak ya da fasoncuya yoldaki (`AWAITING_DELIVERY`) sevkiyatta çalışır. Kantar beklenen yükü tutmazsa müdür sevkiyatı iptal edip yenisini açar ya da tartıdan önce çuval ekleyip çıkarır. İptal, sevkiyattaki çuvalları bag-service'te serbest bırakır; çuval servisi yanıt vermezse iptal de yapılmaz (502 `BAG_SERVICE_UNAVAILABLE`) ve istek güvenle tekrarlanır.
 
@@ -130,46 +115,37 @@ Taslak sevkiyata yanlış okutulan çuval `DELETE /api/v1/shipments/{id}/bags/{u
 
 Ana veri listeleri (`GET /api/v1/master-data/{sites,subcontractors,drivers,vehicles}`, `q` ile arama, sayfalı) `md_*` tablolarından okunur; yerel örnek veri iki lokasyon, üç fasoncu, üç şoför ve üç araç içerir (şoför ve araç yalnızca kayıt bilgisidir; şoför sisteme girmez). Lokasyon listesi isteyenin kapsamıyla süzülür. 
 
-Fasoncu ve şoför yönetimi yalnızca yöneticidedir (`MASTER_DATA_MANAGE`): `POST /api/v1/master-data/{subcontractors,drivers}` (`Idempotency-Key` ister), `PUT .../{id}`, `POST .../{id}/deactivate` ve `.../activate`. Kayıt silinmez, pasife alınır; pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez. Pasife alınmış kayıtları yönetici `?status=ALL` ile listeler (diğer roller 403 alır); yanıttaki `active` alanı durumu gösterir. Her değişiklik `audit_local`'e değiştiren kullanıcıyla düşer. Şoförün fasoncusu verilirse etkin olmalıdır. Araç ve lokasyon için aynı uçlar vardır (`/api/v1/master-data/{vehicles,sites}`); plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`), kullanılmış plaka 409 `DUPLICATE_PLATE` verir. Fasoncu ünvanı tektir (büyük/küçük harf ve baş/son boşluk yok sayılır); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Fasoncunun giriş hesabı (geçiş dönemi; yeni süreçte fasoncu sisteme girmeyecek) Keycloak'ta ayrıca açılır: [adımlar](docs/yonetim/giris-hesabi-acma.md). Otomatik hesap açma sonraki iştir.
+Fasoncu ve şoför yönetimi yalnızca yöneticidedir (`MASTER_DATA_MANAGE`): `POST /api/v1/master-data/{subcontractors,drivers}` (`Idempotency-Key` ister), `PUT .../{id}`, `POST .../{id}/deactivate` ve `.../activate`. Kayıt silinmez, pasife alınır; pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez. Pasife alınmış kayıtları yönetici `?status=ALL` ile listeler (diğer roller 403 alır); yanıttaki `active` alanı durumu gösterir. Her değişiklik `audit_local`'e değiştiren kullanıcıyla düşer. Şoförün fasoncusu verilirse etkin olmalıdır. Araç ve lokasyon için aynı uçlar vardır (`/api/v1/master-data/{vehicles,sites}`); plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`), kullanılmış plaka 409 `DUPLICATE_PLATE` verir. Fasoncu ünvanı tektir (büyük/küçük harf ve baş/son boşluk yok sayılır); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Giriş hesapları Kullanıcılar ekranından açılır: [adımlar](docs/yonetim/giris-hesabi-acma.md).
 
 | Değişken | Varsayılan |
 |---|---|
 | `DB_URL` (tüm servisler) | `jdbc:postgresql://localhost:5432/yarnshipment` |
 | `DB_USER` / `DB_PASSWORD` (tüm servisler) | `yarnshipment` / (zorunlu) |
-| `KEYCLOAK_ISSUER_URI` | `http://localhost:8180/realms/yarnshipment` |
 | `SERVER_PORT` | `8083` |
-| `YARNSHIPMENT_KEYCLOAK_ADMIN_URL` / `YARNSHIPMENT_KEYCLOAK_ADMIN_REALM` / `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_ID` | `http://localhost:8180` / `yarnshipment` / `yarnshipment-admin` (fabrika içi giriş hesabı açan servis hesabı) |
-| `YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET` | boş (boşsa hesap açma uçları 502 `LOGIN_ACCOUNT_UNAVAILABLE` döner); yerel değer `deploy/.env` içindeki `KEYCLOAK_ADMIN_CLIENT_SECRET` (varsayılan `local-admin-client-secret`) |
+| `SESSION_COOKIE_SECURE` | `false` (HTTPS arkasında `true`; üretim compose'u verir) |
+| `YARNSHIPMENT_AUTH_BOOTSTRAP_ADMIN_PASSWORD` | boş; doluysa `admin` hesabı yoksa bu şifreyle açılır (ilk girişte değiştirilir) |
+| `LOCAL_TEST_USER_PASSWORD` / `LOCAL_SAMPLE_USERS` | yalnızca `local` profili: örnek kullanıcıların şifresi / açılıp açılmayacağı (`true`) |
 
 Persistence testleri Testcontainers ile gerçek PostgreSQL'e karşı çalışır; `./mvnw verify` için Docker açık olmalıdır.
 
-## Gateway (BFF)'i çalıştırma
+## Giriş ve oturum
 
-Tarayıcı yalnızca gateway ile konuşur (`http://localhost:8080`). Giriş Keycloak'ta yapılır, token tarayıcıya inmez;
-gateway oturum çerezini tutar ve `/api/v1/shipments/**` ile `/api/v1/me` isteklerini access token'ı `Authorization:
-Bearer` olarak ekleyip tek uygulamaya (`APP_URL`, varsayılan `http://localhost:8083`) iletir. Keycloak açık olmalıdır; gateway açılışta Keycloak'tan
-yapılandırmayı okur.
-
-```bash
-export GATEWAY_CLIENT_SECRET=<deploy/.env içindeki GATEWAY_CLIENT_SECRET>
-export REDIS_PASSWORD=<deploy/.env içindeki REDIS_PASSWORD>
-./mvnw -pl services/gateway spring-boot:run
-```
+Kullanıcılar `shipment.app_user` tablosundadır; şifreler BCrypt ile özetlenir. Giriş `POST /api/v1/auth/login` ile yapılır
+(`{username, password}`); başarılıysa `YARNSHIPMENT_SESSION` çerezi (HttpOnly, SameSite=Lax; HTTPS'te Secure) verilir, token
+tarayıcıya inmez. Oturum sunucu belleğindedir ve 30 dakika boşta kalınca düşer; uygulama yeniden başlarsa herkes yeniden giriş yapar.
 
 | Uç | Davranış |
 |---|---|
-| `GET /oauth2/authorization/keycloak?returnTo=<adres>` | Keycloak girişini başlatır; giriş bitince tarayıcı `returnTo` adresine (yalnızca SPA ile aynı kökene ya da köke göreli yola izin verilir), yoksa `http://localhost:5173/` adresine döner |
+| `POST /api/v1/auth/login` | Kullanıcı adı/şifre doğruysa oturum açar: `200 {passwordChangeRequired}`. Yanlışsa ya da hesap kapalıysa `401 AUTHENTICATION_FAILED` (hangisinin yanlış olduğu söylenmez). 5 hatalı denemede hesap 15 dakika kilitlenir: `423 ACCOUNT_LOCKED` |
+| `POST /api/v1/auth/logout` | Oturumu kapatır (`204`) |
+| `PUT /api/v1/auth/password` | Kişi kendi şifresini değiştirir (`currentPassword`, `newPassword`); yanlış mevcut şifre `400 INVALID_CURRENT_PASSWORD`, kurala uymayan yeni şifre `400 WEAK_PASSWORD`. Diğer oturumları kapanır |
 | `GET /api/**` oturumsuz | `401` Problem Details, `code: AUTHENTICATION_REQUIRED` (yönlendirme yok) |
-| `POST /logout` (`X-XSRF-TOKEN` ile) | Gateway oturumunu kapatır, `200 {"logoutUrl": "..."}` döner; tarayıcı bu adrese giderek Keycloak oturumunu da kapatır |
-| `XSRF-TOKEN` çerezi | JS tarafından okunur; durum değiştiren her istekte `X-XSRF-TOKEN` başlığı olarak geri gönderilir |
+| `XSRF-TOKEN` çerezi | JS tarafından okunur; durum değiştiren her istekte `X-XSRF-TOKEN` başlığı olarak geri gönderilir (giriş ucu hariç) |
 
-| Değişken | Varsayılan |
-|---|---|
-| `KEYCLOAK_ISSUER_URI` | `http://localhost:8180/realms/yarnshipment` |
-| `GATEWAY_PUBLIC_URL` | `http://localhost:8080` (Keycloak'taki yönlendirme adresi; realm dosyasındakiyle aynı olmalı) |
-| `GATEWAY_POST_LOGIN_URL` / `GATEWAY_POST_LOGOUT_URL` | `http://localhost:5173/` |
-| `SHIPMENT_SERVICE_URL` | `http://localhost:8083` |
-| `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` | `localhost` / `6379` / boş (oturumlar Redis'te tutulur; gateway yeniden başlasa da oturum düşmez) |
+Şifre kuralı: en az 8, en çok 128 karakter; tek karakterden oluşamaz, kullanıcı adı olamaz, yaygın şifre listesinde olamaz.
+Yöneticinin verdiği geçici şifreyle giren kişi şifresini değiştirmeden hiçbir izin alamaz. Rol değişince, hesap kapanınca ya da
+yönetici yeni şifre verince kişinin açık oturumları kapanır. Tarayıcı yalnızca uygulamayla (`8083`; geliştirmede `5173`
+arayüz sunucusu `/api` isteklerini ona iletir) konuşur.
 
 ## common-events (süreç içi olay yolu)
 
@@ -195,7 +171,7 @@ Fabrika personeli (kalite, müdür, admin; fasoncu sisteme giriş yapmaz, KR-17)
 | `QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED` | 400 | Lab sonucunda belge yok |
 | `EVIDENCE_SERVICE_UNAVAILABLE` | 503 | Kanıtlar doğrulanamadı |
 
-Gateway `/api/v1/discrepancies/**` ve `/api/v1/quality-claims/**` yollarını bu servise yönlendirir. Çalıştırmak için `DB_PASSWORD`, verilir:
+Çalıştırmak için `DB_PASSWORD`, verilir:
 
 ```bash
 DB_PASSWORD=... \
@@ -204,7 +180,7 @@ DB_PASSWORD=... \
 
 ## reporting-service (dashboard ve raporlar)
 
-Rapor servisidir; kendi veri kopyası tutmaz. `shipment_view`, `discrepancy_view`, `balance_movement_view` ve `fire_file_view` `reporting` şemasında, `shipment` ve `discrepancy` şemalarındaki kayıt tablolarını okuyan canlı SQL görünümleridir (olay dinleyicisi, `processed_event` ve yeniden oynatma yoktur). Bu yüzden servisin migration'ı, shipment-service ve discrepancy-service migration'larından sonra çalışmalıdır. Açılış bakiyesi aktarımı tek yazma yoludur ve doğrudan `shipment.balance_movement` defterine `OPENING` satırı ekler. Sözleşme `services/reporting-service/src/main/resources/openapi/reporting-service-api.yaml`, gateway `/api/v1/reports/**` yolunu bu servise (`8087`) yönlendirir. Uçlar `REPORT_VIEW` izni ister (Admin, Kalite, Yönetici); fasoncu rapor görmez, diğerleri yalnızca `site_ids` lokasyonlarını görür.
+Rapor servisidir; kendi veri kopyası tutmaz. `shipment_view`, `discrepancy_view`, `balance_movement_view` ve `fire_file_view` `reporting` şemasında, `shipment` ve `discrepancy` şemalarındaki kayıt tablolarını okuyan canlı SQL görünümleridir (olay dinleyicisi, `processed_event` ve yeniden oynatma yoktur). Bu yüzden servisin migration'ı, shipment-service ve discrepancy-service migration'larından sonra çalışmalıdır. Açılış bakiyesi aktarımı tek yazma yoludur ve doğrudan `shipment.balance_movement` defterine `OPENING` satırı ekler. Sözleşme `services/reporting-service/src/main/resources/openapi/reporting-service-api.yaml`. Uçlar `REPORT_VIEW` izni ister (Admin, Kalite, Yönetici); fasoncu rapor görmez, diğerleri yalnızca `site_ids` lokasyonlarını görür.
 
 | Uç | İçerik |
 |---|---|
@@ -263,7 +239,7 @@ Servis ana sınıfına `@EnableYarnShipmentWeb` eklenir; şunları verir:
 
 Tek veritabanı kullanıcısına geçildiği için okuma/yazma rol ayrımı kalktı: audit tablolarını sahibi olan kullanıcı doğrudan değiştirebilir. Değişmezlik artık yalnızca `reject_modification` tetikleyicisi ve hash zinciriyle (bozulmayı günlük doğrulama yakalar) sağlanır; ayrıntı için `docs/veritabani-tasarimi.md`. Her gün 03:00 UTC'de (`AUDIT_CHAIN_VERIFICATION_CRON`) son doğrulamadan sonraki kayıtlar `audit_verify_chain()` ile doğrulanır; bozulma `ERROR` olarak loglanır.
 
-`AUDIT_VIEW` izni olanlar (Admin, Kalite, Depo, Yönetici) gateway üzerinden `GET /api/v1/audit-log` (süzgeçler: `entityType`, `entityId`, `actorUserId`, `action`, `sourceService`, `from`, `to`; sayfalı, en yeni önce) ve `GET /api/v1/audit-log/chain-checks` uçlarını okur. IP, cihaz ve user-agent yanıtta yer almaz. Çalıştırmak için `AUDIT_DB_WRITER_PASSWORD`, `AUDIT_DB_READER_PASSWORD`, `AUDIT_DB_MIGRATOR_PASSWORD` verilir; servis 8088 portunda çalışır:
+`AUDIT_VIEW` izni olanlar (Admin, Kalite, Depo, Yönetici) `GET /api/v1/audit-log` (süzgeçler: `entityType`, `entityId`, `actorUserId`, `action`, `sourceService`, `from`, `to`; sayfalı, en yeni önce) ve `GET /api/v1/audit-log/chain-checks` uçlarını okur. IP, cihaz ve user-agent yanıtta yer almaz. Çalıştırmak için `AUDIT_DB_WRITER_PASSWORD`, `AUDIT_DB_READER_PASSWORD`, `AUDIT_DB_MIGRATOR_PASSWORD` verilir; servis 8088 portunda çalışır:
 
 ```bash
 ./mvnw -pl services/audit-service spring-boot:run -Dspring-boot.run.profiles=local

@@ -59,7 +59,7 @@ final class BalanceFireReader implements BalanceFirePort {
     public List<FireFile> findFireFiles(ReportPeriod period, ReportScope scope, @Nullable UUID subcontractorId) {
         String sql = """
                 SELECT shipment_id, shipment_no, subcontractor_id, subcontractor_name, sent_kg, returned_yarn_kg,
-                       fabric_kg, fire_rate, status, invoice_no, invoiced_at
+                       fabric_kg, fire_rate, status, invoice_no, invoiced_at, claim_kg
                   FROM fire_file_view
                  WHERE (CAST(:subcontractor AS uuid) IS NULL OR subcontractor_id = CAST(:subcontractor AS uuid))
                 """ + FIRE_PERIOD_FILTER + ScopedSql.SITE_FILTER + " ORDER BY completed_at DESC, shipment_no";
@@ -109,6 +109,7 @@ final class BalanceFireReader implements BalanceFirePort {
                 rs.getBigDecimal("fire_rate"),
                 rs.getString("status"),
                 rs.getString("invoice_no"),
-                instant(rs.getTimestamp("invoiced_at")));
+                instant(rs.getTimestamp("invoiced_at")),
+                rs.getBigDecimal("claim_kg"));
     }
 }

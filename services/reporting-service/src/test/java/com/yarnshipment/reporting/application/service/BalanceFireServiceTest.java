@@ -86,7 +86,8 @@ class BalanceFireServiceTest {
                 new BigDecimal("0.04"),
                 status,
                 null,
-                null);
+                null,
+                BigDecimal.ZERO);
     }
 
     private static ReportQuery query(com.yarnshipment.common.security.Actor actor) {

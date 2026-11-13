@@ -53,7 +53,7 @@ tabloları `platform.` önekiyle yazar).
 
 ## Özet ve teknoloji seçimi
 
-Öneri: ilişkisel veriler için **PostgreSQL 17**, fotoğraf ve belgeler için **S3 uyumlu nesne depolama (MinIO, Object Lock açık)**, şema yönetimi için **Flyway**. Her mikroservis kendi veritabanına sahip olur; Faz 1'de hepsi tek bir PostgreSQL kümesinde ayrı veritabanları olarak çalışır.
+Öneri: ilişkisel veriler için **PostgreSQL 17**, fotoğraf ve belgeler için **sunucu diskinde klasör (uygulama imzalı adresleri, gece yedeği)**, şema yönetimi için **Flyway**. Her mikroservis kendi veritabanına sahip olur; Faz 1'de hepsi tek bir PostgreSQL kümesinde ayrı veritabanları olarak çalışır.
 
 Gerekçe, ön analiz raporu v1.1'in istediklerinden geliyor:
 
@@ -69,7 +69,7 @@ Gerekçe, ön analiz raporu v1.1'in istediklerinden geliyor:
 | MySQL 8 | Alternatif | Yeterli olur, ancak kısmi indeks ve RLS yok |
 | MS SQL / Oracle | Önerilmez | Lisans maliyeti, bu ölçekte gereksiz |
 | MongoDB | Önerilmez | Çok tablolu tutarlılık ve ilişkisel raporlar zorlaşır |
-| MinIO / S3 | Seçildi (dosyalar) | Fotoğraflar veritabanında tutulmaz; Object Lock ile silinemez saklama |
+| Sunucu diski (klasör) | Seçildi (dosyalar) | Fotoğraflar veritabanında tutulmaz; günde birkaç düzine dosya için ayrı depolama sunucusu gereksiz (bkz. `analiz/dosya-saklama-analizi-v1.0.md`); silinmezlik uygulama kuralı ve yedekle sağlanır. MinIO kaldırıldı |
 | Redis | İsteğe bağlı | Oturum/önbellek gerekirse; kayıt kaynağı değil |
 
 Genel kurallar: birincil anahtarlar `uuid` (UUIDv7, zaman sıralı), kilolar `numeric(12,3)`, zamanlar `timestamptz` (UTC saklanır, ekranda Europe/Istanbul). Tablo ve kolon adları Java entity'leriyle uyumlu olsun diye İngilizce `snake_case`; açıklamalar Türkçe.
@@ -82,7 +82,7 @@ Mikroservis mimarisi dokümanındaki (java\_mikroservis\_mimarisi\_v1) 8 servisi
 | --- | --- | --- |
 | `masterdata_db` | master-data-service | Fasoncu, şoför, araç, iplik, kalite, parti ve kalite kilidi, şahit numune, kullanıcı profili (kullanıcı–fasoncu/şoför bağı) |
 | `shipment_db` | shipment-service | Sevkiyat, çuval listesi kopyası, tartım, mühür, şoför beyanı, kör teslim girişi, durum geçmişi, düzeltme kayıtları |
-| `evidence_db` + MinIO | evidence-service | Fotoğraf/belge üst verisi, SHA-256, zaman damgaları; dosyanın kendisi MinIO'da |
+| `evidence_db` + dosya klasörü | evidence-service | Fotoğraf/belge üst verisi, SHA-256, zaman damgaları; dosyanın kendisi sunucu diskinde |
 | `discrepancy_db` | discrepancy-service | Tolerans kuralları, uyuşmazlık, kalite itirazı, karar, fiziki kontrol/numune/lab |
 | `audit_db` | audit-service | Değiştirilemez Audit Log (yalnızca ekleme, hash zinciri) |
 | `notification_db` | notification-service | Bildirim ve bildirim tercihi |
@@ -221,7 +221,7 @@ Performans notları:
 - **Arşivleme:** 2 yıldan eski partition'lar ana tablodan ayırılır (`DETACH PARTITION`) ve aynı veritabanında `archive` şemasına taşınır; okunabilir kalır ama günlük sorguları yavaşlatmaz. Saklama süresi (varsayılan 10 yıl) dolan partition'lar dışa aktarılıp MinIO'da saklı tutulur, kişisel veriler anonimleştirilir. Audit ve kanıt kayıtları saklama süresi dolmadan arşivden de silinmez.
 - **Okuma yükü:** raporlar canlı tablolara değil `reporting_db`'ye gider. Yük artarsa PostgreSQL okuma kopyası (read replica) eklenir; servis kodu değişmez.
 - **Sonraki adım gerekirse:** tek sunucu yetmezse en büyük veritabanı (örn. `audit_db` veya `evidence_db`) kendi PostgreSQL kümesine taşınır. Servis başına veritabanı ayrımı bu taşımayı yalnız bağlantı adresi değişikliği haline getirir.
-- Sevkiyat dosyasının "birkaç saniyede" açılması (rapor Bölüm 14) için fotoğraflar MinIO'dan kısa ömürlü imzalı URL ile doğrudan tarayıcıya gelir, küçük önizleme (thumbnail) ayrıca saklanır.
+- Sevkiyat dosyasının "birkaç saniyede" açılması (rapor Bölüm 14) için fotoğraflar uygulamanın imzaladığı kısa ömürlü URL ile tarayıcıya gelir, küçük önizleme (thumbnail) ayrıca saklanır.
 - Bağlantı havuzu: HikariCP, servis başına 10–20 bağlantı; PostgreSQL önünde PgBouncer.
 
 ## Ortak konular
@@ -236,13 +236,13 @@ Performans notları:
 
 **Kullanıcılar ve yetkiler (veritabanı seviyesi).** Bugün tek veritabanı kullanıcısı (`yarnshipment`) vardır; Flyway ve uygulama aynı kullanıcıyla bağlanır. Ayrıntı ve sonuçları aşağıdaki "Tek veritabanı" bölümündedir.
 
-**Dosya saklama.** Fotoğraf ve belgeler MinIO'da `evidence/{yıl}/{ay}/{shipment_id}/{evidence_id}` anahtarıyla saklanır. Bucket'ta versiyonlama ve Object Lock (compliance modu) açıktır; saklama süresi dolmadan dosya silinemez. Varsayılan saklama süresi 10 yıldır ve \`system\_setting\` üzerinden değiştirilebilir; yeni değer yalnız bundan sonra yüklenen dosyalara uygulanır. Orijinal ve filigranlı kopya ayrı nesnelerdir, hash orijinalden alınır. Kapasite için kaba hesap: sevkiyat başına 15 fotoğraf × yaklaşık 1,5 MB (sıkıştırılmış) ≈ 23 MB.
+**Dosya saklama.** Fotoğraf ve belgeler sunucu diskinde `{kök}/evidence/{yıl}/{ay}/{shipment_id}/{evidence_id}` yoluna yazılır (üretimde `evidence-data` Docker birimi). Yükleme ve indirme adresleri kısa ömürlüdür ve uygulama tarafından HMAC ile imzalanır; adres tek bir dosya, tür ve boyuta bağlıdır. Uygulama dosya silmez (kayıt silinmez, yanlış yükleme `INVALIDATED` olur); yazılan dosya salt okunur yapılır, üzerine yazılmaz, yedekte de silinenler korunur. Varsayılan saklama süresi 10 yıldır ve `system_setting` üzerinden değiştirilebilir. Hash dosyadan sunucuda hesaplanır; bozulma sonradan doğrulanabilir. Kapasite: sevkiyat başına 2 zorunlu dosya (kantar fişi, irsaliye) ve itirazlarda ek fotoğraf; günde en çok 5 sevkiyatla yılda yaklaşık 6-22 GB (ayrıntı: `analiz/dosya-saklama-analizi-v1.0.md`).
 
 **Yerel geliştirme (şimdi).** `docker-compose.yml` içinde tek bir `postgres:17` konteyneri çalışır. `docker-entrypoint-initdb.d/01-databases.sh` script'i `yarnshipment` veritabanını, kullanıcısını ve `audit_writer` / `audit_reader` rollerini oluşturur; tabloları uygulama açılışta Flyway ile kurar. MinIO, Redis ve Keycloak aynı Compose dosyasındadır (Kafka yok). Her geliştirici aynı kurulumu `docker compose up` ile alır.
 
 **Kendi sunucularınız (sonra).** k3s üzerinde PostgreSQL için CloudNativePG operatörü öneriyorum: bir birincil ve bir yedek kopya, otomatik yük devri. Veritabanı adları ve kullanıcılar yerel kurulumla aynı kalır, servisler yalnızca bağlantı adresini değiştirir.
 
-**Yedekleme.** Sunucuya geçince günlük tam yedek ve sürekli WAL arşivi (anına dönüş, PITR) MinIO'daki ayrı bir bucket'a alınır (CloudNativePG bunu yerleşik yapar). MinIO verisi ikinci bir sunucuya kopyalanır. Ayda bir geri yükleme testi yapılır. Yerelde yedek gerekmez; örnek veri seed script'iyle yüklenir.
+**Yedekleme.** Sunucuya geçince günlük tam yedek ve sürekli WAL arşivi (anına dönüş, PITR) ayrı bir yedek hedefine alınır (CloudNativePG bunu yerleşik yapar). Kanıt klasörü `deploy/prod/yedekle.sh` ile her gece ikinci bir diske ya da sunucuya kopyalanır. Ayda bir geri yükleme testi yapılır. Yerelde yedek gerekmez; örnek veri seed script'iyle yüklenir.
 
 **KVKK.** TCKN ve telefon gibi alanlar pgcrypto ile şifrelenir; konum yalnızca `geo_consent = true` ise yazılır. Saklama süresi dolan kişisel veriler anonimleştirilir, sevkiyat kaydı korunur.
 

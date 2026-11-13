@@ -22,7 +22,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /** Beş modül tek bağlamda açılır, her şema göç eder ve modüller arası olaylar süreç içi iletilir. */
 @SpringBootTest(
-        properties = {"yarnshipment.evidence.storage.access-key=test", "yarnshipment.evidence.storage.secret-key=test"})
+        properties = {
+            "yarnshipment.evidence.storage.signing-key=test-signing-key-test-signing-key-0123",
+            "yarnshipment.evidence.storage.root=target/evidence-test"
+        })
 class YarnShipmentApplicationTest {
 
     private static final UUID ACTOR = UUID.fromString("0192f0a0-0000-7000-8000-00000000d001");

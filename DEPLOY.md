@@ -1,14 +1,15 @@
 # Sunucuya kurulum rehberi (Ubuntu, tek sunucu)
 
 Bu rehber, kiralanmış bir Ubuntu 22.04/24.04 sunucuya sistemi Docker ile kurar. Dışarıya yalnızca 80 ve 443 açılır;
-veritabanı, MinIO ve uygulama iç ağda kalır. HTTPS sertifikasını Caddy kendiliğinden alır.
+veritabanı ve uygulama iç ağda kalır. HTTPS sertifikasını Caddy kendiliğinden alır.
 
 ## 0. Hazırlık
 
 - **Sunucu:** en az 4 vCPU, 8 GB RAM, 60 GB disk (Java uygulaması bellek yer). Docker'ı betik kurar.
-- **İki adres (DNS A kaydı, ikisi de sunucunun IP'sine):**
-  - `APP_HOST` uygulama, örn. `iplik.firma.com.tr`
-  - `FILES_HOST` fotoğraf/belge yükleme, örn. `dosya.firma.com.tr`
+- **Bir adres (DNS A kaydı, sunucunun IP'sine):** `APP_HOST` uygulama, örn. `iplik.firma.com.tr`. Fotoğraf ve belgeler
+  de bu adresten yüklenir/indirilir; ayrı bir dosya adresi yoktur.
+- **Disk:** kanıt dosyaları `evidence-data` Docker biriminde tutulur (tahminen yılda 6-22 GB; 10 yılda en çok yaklaşık
+  220 GB). Yedek için ayrı bir disk ya da bağlı NAS önerilir.
 - Güvenlik duvarında 22, 80 ve 443 portlarını açın (başka port gerekmez).
 
 ## 1. Kurulum
@@ -17,7 +18,7 @@ veritabanı, MinIO ve uygulama iç ağda kalır. HTTPS sertifikasını Caddy ken
 git clone https://github.com/mehmet27/yarn-shipment-system.git
 cd yarn-shipment-system
 ./deploy/prod/install.sh          # ilk çalışmada .env oluşturur ve durur
-nano deploy/prod/.env             # iki adresi ve ACME_EMAIL alanını doldurun
+nano deploy/prod/.env             # APP_HOST ve ACME_EMAIL alanlarını doldurun
 ./deploy/prod/install.sh          # sırları üretir, imajları derler, her şeyi başlatır
 ```
 
@@ -39,12 +40,42 @@ dosyasını güvenli bir yere yedekleyin (içindeki sırlar kaybolursa veriye er
 | Güncelleme | `git pull && ./deploy/prod/install.sh` |
 | Durum / günlük | `docker compose -f deploy/prod/docker-compose.yml --env-file deploy/prod/.env ps` · `... logs -f yarnshipment-app` |
 | Durdurma | `... down` (veriler korunur; `down -v` **tüm veriyi siler**) |
-| Yedek | `... exec postgres pg_dump -U postgres yarnshipment > yedek.sql`; ayrıca `minio-data` ve `deploy/prod/.env` |
+| Yedek | `./deploy/prod/yedekle.sh` (veritabanı dökümü + kanıt dosyaları; aşağıya bakın) ve `deploy/prod/.env` |
+
+## 4. Yedekleme ve geri yükleme
+
+Kanıt dosyaları (kantar fişi, irsaliye, itiraz belgeleri) sunucu diskindeki `evidence-data` biriminde durur; dosyaların
+SHA-256 değeri veritabanındadır, bu yüzden bozulma sonradan doğrulanabilir. Disk kaybına karşı **gece yedeği şarttır**.
+
+```bash
+# Elle bir kez: yedek diski /mnt/yedek, şehir dışı kopya (isteğe bağlı) başka bir sunucuda
+sudo YEDEK_DIZINI=/mnt/yedek YEDEK_UZAK=yedek@baska-sunucu:/yedekler/iplik ./deploy/prod/yedekle.sh
+
+# Her gece 02:30 (root crontab -e):
+30 2 * * * cd /opt/yarn-shipment-system && YEDEK_DIZINI=/mnt/yedek ./deploy/prod/yedekle.sh >> /var/log/yedekle.log 2>&1
+```
+
+Betik veritabanını `pg_dump` ile alır (son 30 gün saklanır) ve kanıt klasörünü `rsync` ile **silmeden** kopyalar
+(uygulama dosya silmez; yedekte de silinmez). `rsync` kurulu olmalıdır (`apt install rsync`).
+
+Geri yükleme: boş kurulumda servisleri durdurun, `docker compose ... exec -T postgres pg_restore -U postgres -d yarnshipment --clean --if-exists < yarnshipment-<tarih>.dump`
+ile veritabanını, `rsync -a /mnt/yedek/evidence/ $(docker volume inspect -f '{{ .Mountpoint }}' yarn-shipment-prod_evidence-data)/`
+ile dosyaları yerine koyup `chown -R 10001 <aynı klasör>` çalıştırın ve servisleri başlatın. Ayda bir geri yükleme denemesi yapın.
 
 ## Bilinen sınırlar
 
 - Derleme ve imajlar bu ortamda Docker olmadığı için çalıştırılarak denenmedi; ilk kurulumda bir adım hata verirse
   `docker compose ... logs <servis>` çıktısını paylaşın.
+- **MinIO'dan geçiş:** eski kurulumda dosyalar MinIO'daydı (`evidence` kovası; MinIO'nun disk düzeni düz dosya değildir,
+  `minio-data` klasörü kopyalanarak taşınamaz). Güncellemeden **önce**, eski yığın çalışırken dosyaları düz klasöre alın
+  (anahtarlar aynı kalır, veritabanına dokunulmaz):
+  `docker run --rm --network yarn-shipment-prod_default -v "$PWD/minio-yedek":/out --entrypoint sh chainguard/minio-client:latest-dev -c 'mc alias set l http://minio:9000 <EVIDENCE_STORAGE_ACCESS_KEY> <EVIDENCE_STORAGE_SECRET_KEY> && mc mirror l/evidence /out'`
+  (anahtar değerleri eski `deploy/prod/.env` içindedir). Yeni sürümü kurduktan sonra `minio-yedek/` içeriğini
+  `$(docker volume inspect -f '{{ .Mountpoint }}' yarn-shipment-prod_evidence-data)/` altına kopyalayın
+  (sonuç: `.../evidence/2026/11/<sevkiyat>/<kanıt>`), `chown -R 10001` yapın ve bir kanıtı arayüzden açarak doğrulayın.
+  Doğrulanana kadar `minio-data` birimini silmeyin.
+- Dosyalar uygulamanın kendi imzaladığı kısa ömürlü adreslerle yüklenir/indirilir; `EVIDENCE_STORAGE_SIGNING_KEY` değiştirilirse
+  açık adresler (en çok 10 dakika) geçersiz olur, kayıtlı dosyalar etkilenmez.
 - Veritabanı şifresi yalnızca ilk açılışta yazılır; sonradan `.env` içinde değiştirmek veritabanına yansımaz.
 - SMS ve e-posta doğrulaması yoktur: yönetici kullanıcı açarken geçici şifreyi kendisi yazar ve unutulan şifreyi
   Kullanıcılar ekranından yeni geçici şifre vererek sıfırlar; kişi ilk girişte şifresini değiştirir.

@@ -27,6 +27,8 @@ Ortam değişkenleri: `ROBOT_SIFRE` (ortak şifre), `ROBOT_URL` (varsayılan `ht
 Kullanıcılar `robot/kullanicilar.json` içindedir (rol → giriş adı). Şifresi farklı bir hesap için `robot/kullanicilar.local.json`
 açın (git'e girmez): `{ "genel-mudur": "şifre" }`. Hesabı olmayan rolün senaryoları atlanır.
 
+**Dosyalar:** kantar fişi, irsaliye ve itiraz fotoğrafları ayrı bir depolama servisine (MinIO) değil, uygulamanın kendi klasörüne yazılır (`yerel-sifirla` ile açılan yığında `.yerel/evidence`). Robotun yüklediği dosyalar da orada birikir; `pnpm yerel:sifirla` veritabanıyla birlikte onları da siler. Yükleme adresi uygulamanın kendi adresidir (`/api/v1/evidence/files/...`, arayüz vekili üzerinden), bu yüzden robot senaryoları değişmemiştir: sahte ama gerçekçi JPEG'ler (`support/yardimci.ts`) dosyanın ilk baytlarındaki imzayla da denetlenir, geçersiz bir dosya `UPLOAD_MISMATCH` ile reddedilir.
+
 **Dikkat:** robot yerel veritabanına kayıt yazar (iplik girişi, sevkiyat, itiraz; adları `ROBOT-…` ile başlar).
 Üretim ya da paylaşılan bir ortamda çalıştırmayın.
 

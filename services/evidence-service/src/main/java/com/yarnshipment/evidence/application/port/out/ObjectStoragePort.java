@@ -1,17 +1,20 @@
 package com.yarnshipment.evidence.application.port.out;
 
+import com.yarnshipment.evidence.domain.model.FileContent;
 import com.yarnshipment.evidence.domain.model.StoredObject;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
-/** S3 uyumlu nesne deposu. */
+/** Kanıt dosyalarının deposu (sunucu diskinde klasör); yükleme ve indirme adreslerini uygulama imzalar. */
 public interface ObjectStoragePort {
 
     /**
      * İmzalı yükleme adresi.
      *
-     * @param url PUT adresi
+     * @param url PUT adresi (uygulamanın kendi adresi)
      * @param headers yüklemede aynen gönderilecek başlıklar
      * @param expiresAt adresin sona erdiği zaman
      */
@@ -50,4 +53,15 @@ public interface ObjectStoragePort {
 
     /** Nesnenin baytlarını indirir; nesne yoksa boş döner. Boyut yüklemede 20 MB ile sınırlıdır. */
     Optional<byte[]> download(String storageKey);
+
+    /**
+     * İmzalı yükleme adresine gelen baytları kaydeder. İmza, süre, boyut ve tür doğrulanır; dosya türü ilk
+     * baytlardan da denetlenir. Var olan dosyanın üzerine yazılmaz; aynı adrese tekrar gönderim sessizce kabul edilir.
+     *
+     * @param contentLength istemcinin bildirdiği boyut; bildirmediyse negatif
+     */
+    void receiveUpload(String token, @Nullable String contentType, long contentLength, InputStream body);
+
+    /** İmzalı indirme adresindeki dosyayı açar; akışı çağıran kapatır. */
+    FileContent openDownload(String token);
 }

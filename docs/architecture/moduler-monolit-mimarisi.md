@@ -21,9 +21,9 @@ sekiz servis, Kafka ve Kubernetes işletme yükü bu ihtiyaca göre fazlaydı. M
 | Audit | `audit_append()` iş transaction'ının içinde; `audit_writer` / `audit_reader` rolleri | Olay kaybı yok; işlem geri alınırsa audit de yazılmaz |
 | Gateway | Spring Cloud Gateway (MVC), ayrı süreç, BFF oturumu (Redis) | Token tarayıcıya inmez; oturum katmanı uygulamadan ayrı kalır |
 | Kimlik | Keycloak (OIDC/JWT); Admin ve Kalite için OTP | Uygulama JWT'yi yine doğrular |
-| Dosyalar | MinIO (S3 uyumlu), önceden imzalı adresle doğrudan yükleme | Fotoğraflar gateway'den ve veritabanından geçmez |
+| Dosyalar | Sunucu diskinde klasör; uygulamanın imzaladığı kısa ömürlü yükleme/indirme adresi | Fotoğraflar gateway'den ve veritabanından geçmez |
 | Raporlama | Canlı SQL görünümleri (`reporting` şeması) | Okuma kopyası ve olayla besleme yok |
-| Dağıtım | Docker Compose (tek sunucu): postgres, redis, minio, keycloak, yarnshipment-app, gateway, web, caddy | Bkz. `DEPLOY.md` |
+| Dağıtım | Docker Compose (tek sunucu): postgres, redis, keycloak, yarnshipment-app, gateway, web, caddy | Bkz. `DEPLOY.md` |
 
 ## Süreç ve modül görünümü
 
@@ -34,7 +34,7 @@ tarayıcı ──► caddy ──► gateway (BFF, ayrı süreç, Redis oturumu)
                  yarnshipment-app (tek Spring Boot, port 8083)
                  ├─ modül shipment      ─ şema shipment
                  ├─ modül discrepancy   ─ şema discrepancy
-                 ├─ modül evidence      ─ şema evidence ──► MinIO
+                 ├─ modül evidence      ─ şema evidence ──► disk klasörü
                  ├─ modül reporting     ─ şema reporting (görünümler)
                  ├─ modül audit         ─ şema audit
                  └─ ortak nesneler      ─ şema platform
@@ -153,8 +153,9 @@ hata ya iş işlemini geri alır (`BEFORE_COMMIT`) ya da loglanır (`AFTER_COMMI
 - **Uygulama token'ı yine doğrular** (Resource Server, `audiences: yarnshipment-api`); gateway ele geçirilse bile
   yetki kontrolü uygulamada kalır. İzinler `common-security` içindedir; Admin ve Kalite rolleri OTP kanıtı (`acr=2`)
   olmadan yetki almaz.
-- **Dosyalar** gateway'den geçmez: evidence modülü kısa ömürlü imzalı yükleme adresi verir, tarayıcı MinIO'ya doğrudan
-  yükler, modül hash'i yeniden hesaplayıp kaydı onaylar. Bucket'ta versiyonlama ve Object Lock açıktır.
+- **Dosyalar** sunucu diskindeki klasörde tutulur: evidence modülü kısa ömürlü, kendi imzaladığı yükleme adresini verir,
+  tarayıcı dosyayı o adrese yükler, modül hash'i yeniden hesaplayıp kaydı onaylar. Dosya silinmez, üzerine yazılmaz;
+  gece yedeği `deploy/prod/yedekle.sh` ile alınır.
 - **Idempotency-Key.** `POST/PUT/PATCH` isteklerinde `Idempotency-Key` ile aynı istek ikinci kez işlenmez
   (`platform.idempotency_record`, kullanıcı başına).
 - **Değiştirilemezlik.** Tamamlanan sevkiyat kilitlenir; kilitli kayda değişiklik trigger'la reddedilir (`YS003`).
@@ -170,7 +171,7 @@ hata ya iş işlemini geri alır (`BEFORE_COMMIT`) ya da loglanır (`AFTER_COMMI
 | yarnshipment-app | Tek JAR/imaj, port 8083; ayar `services/yarnshipment-app/src/main/resources/application.yml`; ortam değişkenleri README'de |
 | gateway | Ayrı imaj, port 8080; Redis oturumu; `APP_URL` ile uygulamaya yönlenir |
 | PostgreSQL 17 | Tek veritabanı; `deploy/postgres/initdb` veritabanı, kullanıcı ve audit rollerini açar |
-| Keycloak, MinIO, Redis | Aynı Compose dosyasında; Keycloak aynı veritabanında `keycloak` şemasını kullanır |
+| Keycloak, Redis | Aynı Compose dosyasında; Keycloak aynı veritabanında `keycloak` şemasını kullanır |
 | Bellek | 2 JVM (uygulama + gateway); eski düzende 6 JVM ve Kafka vardı |
 
 - Yerel: `docker compose -f deploy/docker-compose.yml up -d`; üretim: `deploy/prod` (bkz. `DEPLOY.md`).

@@ -30,8 +30,8 @@ function settableHeaders(headers: Record<string, string>): Record<string, string
 }
 
 /**
- * Dosyayı imzalı adrese doğrudan yükler: gateway'den geçmez, bu yüzden oturum çerezi ve CSRF başlığı
- * gönderilmez (ortak istemci yerine çıplak axios). Bilet cevabındaki başlıklar, tarayıcının kendi
+ * Dosyayı uygulamanın imzaladığı adrese yükler: yetki imzalı adrestir (oturum ve CSRF belirteci istenmez), bu
+ * yüzden CSRF başlığı eklenmez (ortak istemci yerine çıplak axios). Bilet cevabındaki başlıklar, tarayıcının kendi
  * koyduğu Content-Length gibileri dışında aynen verilir.
  */
 export async function uploadToStorage(

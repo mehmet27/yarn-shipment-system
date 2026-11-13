@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Import;
 @SpringBootConfiguration(proxyBeanMethods = false)
 @EnableAutoConfiguration
 @EnableYarnShipmentSecurity
-@Import(SecuredTestController.class)
+@Import({SecuredTestController.class, SignedUrlTestController.class})
 class SecurityTestApplication {
 
     @Bean

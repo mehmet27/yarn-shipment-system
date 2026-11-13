@@ -5,6 +5,7 @@ import com.yarnshipment.common.security.SecurityProperties;
 import com.yarnshipment.common.security.web.SecurityProblemResponses;
 import jakarta.servlet.DispatcherType;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -64,12 +65,17 @@ public final class YarnShipmentSecurityConfiguration {
             CookieCsrfTokenRepository csrfTokens = CookieCsrfTokenRepository.withHttpOnlyFalse();
             http.csrf(csrf -> csrf.csrfTokenRepository(csrfTokens)
                             .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                            .ignoringRequestMatchers(LOGIN_PATH))
+                            .ignoringRequestMatchers(csrfIgnoredPaths(properties)))
                     .addFilterAfter(new CsrfCookieFilter(csrfTokens), CsrfFilter.class);
         } else {
             http.csrf(AbstractHttpConfigurer::disable);
         }
         return http.build();
+    }
+
+    private static String[] csrfIgnoredPaths(SecurityProperties properties) {
+        return Stream.concat(Stream.of(LOGIN_PATH), properties.csrfIgnoredPaths().stream())
+                .toArray(String[]::new);
     }
 
     @Bean

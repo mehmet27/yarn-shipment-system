@@ -29,13 +29,11 @@ yarnshipment:
   security:
     # Testler oturum çerezi yerine doğrudan kimlik verir; CSRF yalnızca common-security testlerinde denenir.
     csrf-enabled: false
+    public-paths:
+      - /api/v1/evidence/files/**
   evidence:
     storage:
-      endpoint: ${EVIDENCE_STORAGE_ENDPOINT:http://localhost:9000}
-      region: ${EVIDENCE_STORAGE_REGION:us-east-1}
-      bucket: ${EVIDENCE_STORAGE_BUCKET:evidence}
-      access-key: ${EVIDENCE_STORAGE_ACCESS_KEY}
-      secret-key: ${EVIDENCE_STORAGE_SECRET_KEY}
-      path-style: true
+      root: ${java.io.tmpdir}/yarnshipment-evidence-test
+      signing-key: test-signing-key-test-signing-key-0123
       upload-url-ttl: 10m
       download-url-ttl: 5m

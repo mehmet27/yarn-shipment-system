@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
  * {@code yarnshipment.security.*} ayarları (CONF-01, CONF-02).
  *
  * @param publicPaths oturum istemeyen yollar
+ * @param csrfIgnoredPaths çerezsiz çağrılan, imzalı adresle korunan yollar; CSRF belirteci aranmaz
  * @param csrfEnabled durum değiştiren isteklerde {@code X-XSRF-TOKEN} başlığı istensin mi; yalnızca testlerde kapatılır
  */
 @ConfigurationProperties("yarnshipment.security")
@@ -18,9 +19,11 @@ public record SecurityProperties(
         @NotNull @DefaultValue({"/actuator/health/**", "/actuator/info", "/api/v1/auth/login"})
         List<String> publicPaths,
 
+        @NotNull @DefaultValue List<String> csrfIgnoredPaths,
         @DefaultValue("true") boolean csrfEnabled) {
 
     public SecurityProperties {
         publicPaths = List.copyOf(publicPaths);
+        csrfIgnoredPaths = List.copyOf(csrfIgnoredPaths);
     }
 }

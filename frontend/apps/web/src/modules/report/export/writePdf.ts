@@ -1,6 +1,7 @@
 import type { Content, TableCell, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { formatCell } from './formatCell';
 import type { ReportCell, ReportTable } from './reportModel';
+import { loadPdfMake } from './pdfMakeLib';
 
 /** PDF'in sabit metinleri; ekran dili çağıran tarafta çözülür. */
 export type PdfOptions = {
@@ -116,10 +117,6 @@ export async function downloadPdf(
   options: PdfOptions,
   fileName: string,
 ): Promise<void> {
-  const [pdfMake, fonts] = await Promise.all([
-    import('pdfmake/build/pdfmake'),
-    import('pdfmake/build/vfs_fonts'),
-  ]);
-  pdfMake.addVirtualFileSystem(fonts.default);
+  const pdfMake = await loadPdfMake();
   await pdfMake.createPdf(buildPdfDefinition(tables, options)).download(fileName);
 }

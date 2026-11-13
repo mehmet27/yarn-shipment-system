@@ -59,6 +59,9 @@ yarnshipment:
       - type-prefix: com.yarnshipment.masterdata.
         topic: shipment.events.v1
         source: /yarn-shipment/shipment-service
+      - type-prefix: com.yarnshipment.stock.
+        topic: stock.events.v1
+        source: /yarn-shipment/shipment-service
       - type-prefix: com.yarnshipment.evidence.
         topic: evidence.events.v1
         source: /yarn-shipment/evidence-service

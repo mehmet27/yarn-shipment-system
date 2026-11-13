@@ -476,6 +476,12 @@
     "actorUser": "Kullanıcı",
     "actionName": {
       "comparison-completed": "Karşılaştırma tamamlandı",
+      "central-production-recorded": "Merkezde kumaş üretildi",
+      "yarn-receipt-recorded": "Merkez stok girişi yapıldı",
+      "fabric-received": "Kumaş girişi yapıldı",
+      "fire-rate-changed": "Fire oranı değiştirildi",
+      "fire-invoiced": "Fire faturalandı",
+      "fire-settlement-closed": "Fire dosyası kapatıldı",
       "discrepancy-opened": "Uyuşmazlık açıldı",
       "discrepancy-resolved": "Uyuşmazlık çözüldü",
       "evidence-invalidated": "Kanıt geçersiz sayıldı",
@@ -494,7 +500,8 @@
     "entity": {
       "Shipment": "Sevkiyat",
       "Evidence": "Kanıt",
-      "Discrepancy": "Uyuşmazlık"
+      "Discrepancy": "Uyuşmazlık",
+      "CentralStock": "Merkez stok"
     },
     "service": {
       "shipment-service": "Sevkiyat",

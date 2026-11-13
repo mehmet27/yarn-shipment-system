@@ -18,7 +18,8 @@ final class AuditEntryMapper {
     private static final Map<String, String> ENTITY_TYPES = Map.of(
             "shipment.events.v1", "Shipment",
             "evidence.events.v1", "Evidence",
-            "discrepancy.events.v1", "Discrepancy");
+            "discrepancy.events.v1", "Discrepancy",
+            "stock.events.v1", "CentralStock");
 
     private AuditEntryMapper() {}
 

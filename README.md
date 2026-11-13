@@ -95,13 +95,15 @@ pnpm yerel:sifirla              # "SIL" yazarak onaylarsınız; sıfırlar, back
 pnpm yerel:sifirla -- --evet    # onay sormadan
 pnpm yerel:sifirla -- --sadece-veri      # yalnızca Docker verisini sıfırlar (uygulama, gateway, arayüze dokunmaz)
 pnpm yerel:sifirla -- --derleme-atla     # backend'i yeniden derlemeden (kod değişmediyse daha hızlı)
+pnpm yerel:baslat               # veriye dokunmadan servisleri yeniden başlatır (onay sormaz)
+pnpm yerel:durdur               # servisleri durdurur (Docker'a dokunmaz)
 ```
 
 Betik (`tools/yerel-sifirla.mjs`): 8083, 8080 ve 5173 portlarını dinleyen yerel servisleri durdurur; `deploy/docker-compose.yml` +
 `deploy/docker-compose.temiz.yml` ile Docker hacimlerini siler ve yalnızca `admin`'li Keycloak ile yeniden kurar; backend'i derleyip
-uygulama, gateway ve arayüzü başlatır (günlükler `.yerel/` altında). Korumalar: `SPRING_PROFILES_ACTIVE`/`YARNSHIPMENT_ENV` canlı ya da
+uygulama, gateway ve arayüzü **gizli, pencere açmadan** ve terminalden bağımsız başlatır (terminal kapansa da çalışır; günlükler ve süreç numaraları `.yerel/` altında, durdurmak için `pnpm yerel:durdur`). Betik robotu **kendiliğinden başlatmaz**. Korumalar: `SPRING_PROFILES_ACTIVE`/`YARNSHIPMENT_ENV` canlı ya da
 CI gibiyse, `DOCKER_HOST` uzak sunucuysa ya da Docker bağlamı yerel değilse durur; `deploy/.env` yoksa çalışmaz.
-Sıfırlamadan sonra diğer kullanıcıları robot açar: `pnpm robot -- --rol=Kurulum` (`frontend/apps/web/robot/README.md`).
+Sıfırlamadan sonra diğer kullanıcıları, siz isterseniz robot açar: `pnpm robot -- --rol=Kurulum` (`frontend/apps/web/robot/README.md`).
 
 ## Uygulamayı çalıştırma (yarnshipment-app)
 

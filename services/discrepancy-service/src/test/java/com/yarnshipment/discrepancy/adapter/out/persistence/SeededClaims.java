@@ -18,6 +18,7 @@ final class SeededClaims {
     static final Instant OPENED_AT = Instant.parse("2026-10-26T09:00:00Z");
     private static final long DAY = 86_400L;
     private static final long HALF_DAY = 43_200L;
+    private static final long LATE_BY = 30 * DAY;
     private static final Instant DUE = Instant.parse("2026-11-02T09:00:00Z");
 
     private SeededClaims() {}
@@ -37,5 +38,16 @@ final class SeededClaims {
                 ACTOR,
                 OPENED_AT,
                 DUE));
+    }
+
+    /** Hedef tarihten 30 gün sonra açılan itiraz; süre sınırı olmadığı için yazılabilmelidir. */
+    static QualityClaim openAfterTarget(QualityClaimAdapter claims) {
+        ClaimTarget target = claims.findTarget(TestComparisons.SHIPMENT).orElseThrow();
+        return claims.saveClaim(new NewQualityClaim(
+                target,
+                new ClaimRequest("Geç açıldı", new BigDecimal("10"), null, List.of(PHOTO)),
+                ACTOR,
+                target.deadline().plusSeconds(LATE_BY),
+                target.deadline()));
     }
 }

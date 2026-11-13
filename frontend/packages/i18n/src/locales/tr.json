@@ -1054,6 +1054,7 @@
       "inTransit": "Yolda kalan"
     },
     "logo": {
+      "file": "Logo dosyası",
       "add": "Rapor logosu ekle",
       "change": "Logoyu değiştir",
       "remove": "Logoyu kaldır",
@@ -1075,6 +1076,7 @@
     "companyNameHint": "Üst barda ve giriş sayfasında görünür. Boş bırakırsanız ürün adı kullanılır.",
     "primaryColor": "Ana renk",
     "primaryColorHint": "Menü, başlık ve düğme tonları bu renkten üretilir. Metin okunabilirliği için gerekirse otomatik koyulaştırılır.",
+    "eyeDropper": "Ekrandan renk seç",
     "logo": {
       "label": "Logo",
       "none": "Logo seçilmedi.",

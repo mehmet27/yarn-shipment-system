@@ -17,6 +17,8 @@
     "test:e2e:rapor": "pnpm --filter @iplik/web exec playwright show-report e2e/rapor",
     "test:e2e:yeni-ekran": "node tools/e2e-yeni-ekran.mjs",
     "yerel:sifirla": "node ../tools/yerel-sifirla.mjs",
+    "yerel:baslat": "node ../tools/yerel-sifirla.mjs --sadece-baslat",
+    "yerel:durdur": "node ../tools/yerel-sifirla.mjs --durdur",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:responsive": "node tools/responsive-check.mjs"

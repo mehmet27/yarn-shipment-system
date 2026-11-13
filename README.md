@@ -51,12 +51,12 @@ Giriş uygulamanın kendi hesap tablosuyla (`app_user`) yapılır; ayrı bir kim
 `local` profilinde `yarnshipment-app` açılışta şu kullanıcıları (yoksa) açar; hepsinin şifresi `LOCAL_TEST_USER_PASSWORD`'dür
 (`LOCAL_SAMPLE_USERS=false` verilirse yalnızca `admin` açılır):
 
-| Kullanıcı | Rol | Kapsam |
-|---|---|---|
-| `admin` | admin | iki lokasyon |
-| `depo` | warehouse | A lokasyonu |
-| `kalite` | quality | iki lokasyon |
-| `mudur` | manager | iki lokasyon |
+| Kullanıcı | Rol       | Kapsam       |
+| --------- | --------- | ------------ |
+| `admin`   | admin     | iki lokasyon |
+| `depo`    | warehouse | A lokasyonu  |
+| `kalite`  | quality   | iki lokasyon |
+| `mudur`   | manager   | iki lokasyon |
 
 İkinci faktör (OTP) şimdilik yoktur; ileride eklenebilir. Yetkiler yalnızca role bağlıdır.
 
@@ -113,17 +113,17 @@ Sevkiyat fasoncuya ulaşınca müdür irsaliyeyi `WAYBILL` türünde kanıt olar
 
 Taslak sevkiyata yanlış okutulan çuval `DELETE /api/v1/shipments/{id}/bags/{uniqueKey}` ile çıkarılır (`DISPATCH_RECORD`; yalnızca çıkış tartımından önce). Satır silinmez, `removed_at` ile işaretlenir; bag-service'te rezervasyon bırakılır (`POST /api/v1/bags/reservations/release` içinde `uniqueKeys`) ve çuval başka sevkiyata atanabilir olur. Çuval listede yoksa da 204 döner. Sevkiyatın tamamını bırakmak (`uniqueKeys` olmadan) yine yalnızca `SHIPMENT_CANCEL` ile yapılır.
 
-Ana veri listeleri (`GET /api/v1/master-data/{sites,subcontractors,drivers,vehicles}`, `q` ile arama, sayfalı) `md_*` tablolarından okunur; yerel örnek veri iki lokasyon, üç fasoncu, üç şoför ve üç araç içerir (şoför ve araç yalnızca kayıt bilgisidir; şoför sisteme girmez). Lokasyon listesi isteyenin kapsamıyla süzülür. 
+Ana veri listeleri (`GET /api/v1/master-data/{sites,subcontractors,drivers,vehicles}`, `q` ile arama, sayfalı) `md_*` tablolarından okunur; yerel örnek veri iki lokasyon, üç fasoncu, üç şoför ve üç araç içerir (şoför ve araç yalnızca kayıt bilgisidir; şoför sisteme girmez). Lokasyon listesi isteyenin kapsamıyla süzülür.
 
 Fasoncu ve şoför yönetimi yalnızca yöneticidedir (`MASTER_DATA_MANAGE`): `POST /api/v1/master-data/{subcontractors,drivers}` (`Idempotency-Key` ister), `PUT .../{id}`, `POST .../{id}/deactivate` ve `.../activate`. Kayıt silinmez, pasife alınır; pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez. Pasife alınmış kayıtları yönetici `?status=ALL` ile listeler (diğer roller 403 alır); yanıttaki `active` alanı durumu gösterir. Her değişiklik `audit_local`'e değiştiren kullanıcıyla düşer. Şoförün fasoncusu verilirse etkin olmalıdır. Araç ve lokasyon için aynı uçlar vardır (`/api/v1/master-data/{vehicles,sites}`); plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`), kullanılmış plaka 409 `DUPLICATE_PLATE` verir. Fasoncu ünvanı tektir (büyük/küçük harf ve baş/son boşluk yok sayılır); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Giriş hesapları Kullanıcılar ekranından açılır: [adımlar](docs/yonetim/giris-hesabi-acma.md).
 
-| Değişken | Varsayılan |
-|---|---|
-| `DB_URL` (tüm servisler) | `jdbc:postgresql://localhost:5432/yarnshipment` |
-| `DB_USER` / `DB_PASSWORD` (tüm servisler) | `yarnshipment` / (zorunlu) |
-| `SERVER_PORT` | `8083` |
-| `SESSION_COOKIE_SECURE` | `false` (HTTPS arkasında `true`; üretim compose'u verir) |
-| `YARNSHIPMENT_AUTH_BOOTSTRAP_ADMIN_PASSWORD` | boş; doluysa `admin` hesabı yoksa bu şifreyle açılır (ilk girişte değiştirilir) |
+| Değişken                                          | Varsayılan                                                                            |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `DB_URL` (tüm servisler)                          | `jdbc:postgresql://localhost:5432/yarnshipment`                                       |
+| `DB_USER` / `DB_PASSWORD` (tüm servisler)         | `yarnshipment` / (zorunlu)                                                            |
+| `SERVER_PORT`                                     | `8083`                                                                                |
+| `SESSION_COOKIE_SECURE`                           | `false` (HTTPS arkasında `true`; üretim compose'u verir)                              |
+| `YARNSHIPMENT_AUTH_BOOTSTRAP_ADMIN_PASSWORD`      | boş; doluysa `admin` hesabı yoksa bu şifreyle açılır (ilk girişte değiştirilir)       |
 | `LOCAL_TEST_USER_PASSWORD` / `LOCAL_SAMPLE_USERS` | yalnızca `local` profili: örnek kullanıcıların şifresi / açılıp açılmayacağı (`true`) |
 
 Persistence testleri Testcontainers ile gerçek PostgreSQL'e karşı çalışır; `./mvnw verify` için Docker açık olmalıdır.
@@ -134,13 +134,13 @@ Kullanıcılar `shipment.app_user` tablosundadır; şifreler BCrypt ile özetlen
 (`{username, password}`); başarılıysa `YARNSHIPMENT_SESSION` çerezi (HttpOnly, SameSite=Lax; HTTPS'te Secure) verilir, token
 tarayıcıya inmez. Oturum sunucu belleğindedir ve 30 dakika boşta kalınca düşer; uygulama yeniden başlarsa herkes yeniden giriş yapar.
 
-| Uç | Davranış |
-|---|---|
-| `POST /api/v1/auth/login` | Kullanıcı adı/şifre doğruysa oturum açar: `200 {passwordChangeRequired}`. Yanlışsa ya da hesap kapalıysa `401 AUTHENTICATION_FAILED` (hangisinin yanlış olduğu söylenmez). 5 hatalı denemede hesap 15 dakika kilitlenir: `423 ACCOUNT_LOCKED` |
-| `POST /api/v1/auth/logout` | Oturumu kapatır (`204`) |
-| `PUT /api/v1/auth/password` | Kişi kendi şifresini değiştirir (`currentPassword`, `newPassword`); yanlış mevcut şifre `400 INVALID_CURRENT_PASSWORD`, kurala uymayan yeni şifre `400 WEAK_PASSWORD`. Diğer oturumları kapanır |
-| `GET /api/**` oturumsuz | `401` Problem Details, `code: AUTHENTICATION_REQUIRED` (yönlendirme yok) |
-| `XSRF-TOKEN` çerezi | JS tarafından okunur; durum değiştiren her istekte `X-XSRF-TOKEN` başlığı olarak geri gönderilir (giriş ucu hariç) |
+| Uç                          | Davranış                                                                                                                                                                                                                                      |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/v1/auth/login`   | Kullanıcı adı/şifre doğruysa oturum açar: `200 {passwordChangeRequired}`. Yanlışsa ya da hesap kapalıysa `401 AUTHENTICATION_FAILED` (hangisinin yanlış olduğu söylenmez). 5 hatalı denemede hesap 15 dakika kilitlenir: `423 ACCOUNT_LOCKED` |
+| `POST /api/v1/auth/logout`  | Oturumu kapatır (`204`)                                                                                                                                                                                                                       |
+| `PUT /api/v1/auth/password` | Kişi kendi şifresini değiştirir (`currentPassword`, `newPassword`); yanlış mevcut şifre `400 INVALID_CURRENT_PASSWORD`, kurala uymayan yeni şifre `400 WEAK_PASSWORD`. Diğer oturumları kapanır                                               |
+| `GET /api/**` oturumsuz     | `401` Problem Details, `code: AUTHENTICATION_REQUIRED` (yönlendirme yok)                                                                                                                                                                      |
+| `XSRF-TOKEN` çerezi         | JS tarafından okunur; durum değiştiren her istekte `X-XSRF-TOKEN` başlığı olarak geri gönderilir (giriş ucu hariç)                                                                                                                            |
 
 Şifre kuralı: en az 8, en çok 128 karakter; tek karakterden oluşamaz, kullanıcı adı olamaz, yaygın şifre listesinde olamaz.
 Yöneticinin verdiği geçici şifreyle giren kişi şifresini değiştirmeden hiçbir izin alamaz. Rol değişince, hesap kapanınca ya da
@@ -161,15 +161,15 @@ Teslim tartısı kaldırıldığı için çıkış–teslim otomatik karşılaş
 
 Fabrika personeli (kalite, müdür, admin; fasoncu sisteme giriş yapmaz, KR-17) tamamlanmış sevkiyat için **kilogram bazlı** kalite itirazı açar (`POST /api/v1/quality-claims`, `QUALITY_CLAIM_OPEN`). Hedef sevkiyat `shipment_watch` izinden okunur (`comparison_input` artık okunmaz). Pencere tamamlanmadan itibaren 3 iş günüdür (Europe/Istanbul); itirazda `claimedKg` (sıfırdan büyük, en çok 3 ondalık, sevkiyatın çıkış net kilosunu aşamaz), açıklama ve en az bir `QUALITY_CLAIM` fotoğrafı zorunludur; `fabricReceiptId` isteğe bağlıdır (kumaş girişi henüz yok). Fotoğrafların bu sevkiyata ait olduğu evidence-service'e isteyenin token'ıyla sorulur. Her itiraz `QUALITY` türünde Kırmızı bir uyuşmazlık (`QUALITY_CLAIM` kuralı, son tarih 5 iş günü) açar. Kalite (`DISCREPANCY_RESOLVE`) itiraz üzerinden numune (`SAMPLE`) ya da laboratuvar (`LAB`) kontrolü ister ve sonucu bir kez girer; lab sonucunda `LAB_RESULT` belgesi zorunludur. Karar mevcut uyuşmazlık akışıyla (`CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED`) verilir; `CLAIM_JUSTIFIED` kararı kiloyu `DiscrepancyResolved` olayıyla taşır; shipment-service dinleyicisi itiraz kilosunu sevkiyatın iplik cinslerine gönderim oranıyla dağıtıp fasoncunun bakiyesinden `CLAIM_ADJUSTMENT` olarak düşer (KR-15, aynı uyuşmazlık bir kez) ve fire tabanından düşülür.
 
-| Kod | HTTP | Anlamı |
-|---|---|---|
-| `QUALITY_CLAIM_NOT_AVAILABLE` | 409 | Sevkiyat tamamlanmamış ya da çıkış kilosu bilinmiyor |
-| `QUALITY_CLAIM_WINDOW_CLOSED` | 409 | 3 iş günlük süre doldu |
-| `QUALITY_CLAIM_BAG_NOT_DELIVERED` / `_BAG_ALREADY_CLAIMED` | 400 / 409 | Çuval sevkiyatta yok / zaten itiraz edilmiş |
-| `QUALITY_CLAIM_EVIDENCE_REQUIRED` / `_EVIDENCE_INVALID` | 400 | Fotoğraf yok / başka sevkiyata ait ya da türü yanlış |
-| `QUALITY_CLAIM_INSPECTION_RECORDED` | 409 | Kontrol sonucu zaten girilmiş |
-| `QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED` | 400 | Lab sonucunda belge yok |
-| `EVIDENCE_SERVICE_UNAVAILABLE` | 503 | Kanıtlar doğrulanamadı |
+| Kod                                                        | HTTP      | Anlamı                                               |
+| ---------------------------------------------------------- | --------- | ---------------------------------------------------- |
+| `QUALITY_CLAIM_NOT_AVAILABLE`                              | 409       | Sevkiyat tamamlanmamış ya da çıkış kilosu bilinmiyor |
+| `QUALITY_CLAIM_WINDOW_CLOSED`                              | 409       | 3 iş günlük süre doldu                               |
+| `QUALITY_CLAIM_BAG_NOT_DELIVERED` / `_BAG_ALREADY_CLAIMED` | 400 / 409 | Çuval sevkiyatta yok / zaten itiraz edilmiş          |
+| `QUALITY_CLAIM_EVIDENCE_REQUIRED` / `_EVIDENCE_INVALID`    | 400       | Fotoğraf yok / başka sevkiyata ait ya da türü yanlış |
+| `QUALITY_CLAIM_INSPECTION_RECORDED`                        | 409       | Kontrol sonucu zaten girilmiş                        |
+| `QUALITY_CLAIM_RESULT_EVIDENCE_REQUIRED`                   | 400       | Lab sonucunda belge yok                              |
+| `EVIDENCE_SERVICE_UNAVAILABLE`                             | 503       | Kanıtlar doğrulanamadı                               |
 
 Çalıştırmak için `DB_PASSWORD`, verilir:
 
@@ -182,11 +182,11 @@ DB_PASSWORD=... \
 
 Rapor servisidir; kendi veri kopyası tutmaz. `shipment_view`, `discrepancy_view`, `balance_movement_view` ve `fire_file_view` `reporting` şemasında, `shipment` ve `discrepancy` şemalarındaki kayıt tablolarını okuyan canlı SQL görünümleridir (olay dinleyicisi, `processed_event` ve yeniden oynatma yoktur). Bu yüzden servisin migration'ı, shipment-service ve discrepancy-service migration'larından sonra çalışmalıdır. Açılış bakiyesi aktarımı tek yazma yoludur ve doğrudan `shipment.balance_movement` defterine `OPENING` satırı ekler. Sözleşme `services/reporting-service/src/main/resources/openapi/reporting-service-api.yaml`. Uçlar `REPORT_VIEW` izni ister (Admin, Kalite, Yönetici); fasoncu rapor görmez, diğerleri yalnızca `site_ids` lokasyonlarını görür.
 
-| Uç | İçerik |
-|---|---|
-| `GET /api/v1/reports/dashboard` | Sevkiyat durum dağılımı, karşılaştırılan kilo toplamları, Yeşil/Sarı/Kırmızı sayıları, açık ve süresi geçen uyuşmazlıklar, kilo farkı en büyük 5 sevkiyat |
-| `GET /api/v1/reports/subcontractors` | Fasoncu bazında sevkiyat sayısı, uyuşmazlıklı sevkiyat oranı, ortalama mutlak kilo farkı |
-| `GET /api/v1/reports/shipments`, `/balance` | Sevkiyat dökümü ve fasoncu bazında gönderilen / yolda / tamamlanan kilo |
+| Uç                                          | İçerik                                                                                                                                                    |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/reports/dashboard`             | Sevkiyat durum dağılımı, karşılaştırılan kilo toplamları, Yeşil/Sarı/Kırmızı sayıları, açık ve süresi geçen uyuşmazlıklar, kilo farkı en büyük 5 sevkiyat |
+| `GET /api/v1/reports/subcontractors`        | Fasoncu bazında sevkiyat sayısı, uyuşmazlıklı sevkiyat oranı, ortalama mutlak kilo farkı                                                                  |
+| `GET /api/v1/reports/shipments`, `/balance` | Sevkiyat dökümü ve fasoncu bazında gönderilen / yolda / tamamlanan kilo                                                                                   |
 
 `from`/`to` (tarih, iki uç dahil) verilmezse son 30 gün alınır; en çok 366 gün (`REPORT_PERIOD_INVALID`). `siteId` kapsamı daraltır, yetkisiz lokasyon 403 döner. Henüz kapsam dışı: parti bazlı kalite itirazı raporu (olaylarda parti bilgisi yok), eksik belge/galeri oranı (8.5), fire ve kumaş/iplik dönüşlü fasoncu bakiyesi (süreç analizi v2'de tanımlı). Çalıştırmak için `REPORTING_DB_APP_PASSWORD`, `REPORTING_DB_MIGRATOR_PASSWORD` ve gerekirse `KAFKA_BOOTSTRAP_SERVERS` verilir:
 
@@ -235,7 +235,7 @@ Servis ana sınıfına `@EnableYarnShipmentWeb` eklenir; şunları verir:
 
 ## audit-service (denetim izi)
 
-`shipment.events.v1`, `evidence.events.v1` ve `discrepancy.events.v1` konularına yayınlanan her olay, `audit` şemasındaki değiştirilemez hash zincirine `audit_append()` ile yazılır. Aktör (`actorId`, `actorRoles`) ve korelasyon (`correlationId`) CloudEvents başlıklarından gelir; aktörsüz sistem olayı, olayı üreten servisin adıyla `client_id` taşır. Aynı olayın tekrar teslimi ikinci satır üretmez (tekillik veritabanı fonksiyonundadır), bu yüzden işlenmiş olay tablosu yoktur. 
+`shipment.events.v1`, `evidence.events.v1` ve `discrepancy.events.v1` konularına yayınlanan her olay, `audit` şemasındaki değiştirilemez hash zincirine `audit_append()` ile yazılır. Aktör (`actorId`, `actorRoles`) ve korelasyon (`correlationId`) CloudEvents başlıklarından gelir; aktörsüz sistem olayı, olayı üreten servisin adıyla `client_id` taşır. Aynı olayın tekrar teslimi ikinci satır üretmez (tekillik veritabanı fonksiyonundadır), bu yüzden işlenmiş olay tablosu yoktur.
 
 Tek veritabanı kullanıcısına geçildiği için okuma/yazma rol ayrımı kalktı: audit tablolarını sahibi olan kullanıcı doğrudan değiştirebilir. Değişmezlik artık yalnızca `reject_modification` tetikleyicisi ve hash zinciriyle (bozulmayı günlük doğrulama yakalar) sağlanır; ayrıntı için `docs/veritabani-tasarimi.md`. Her gün 03:00 UTC'de (`AUDIT_CHAIN_VERIFICATION_CRON`) son doğrulamadan sonraki kayıtlar `audit_verify_chain()` ile doğrulanır; bozulma `ERROR` olarak loglanır.
 

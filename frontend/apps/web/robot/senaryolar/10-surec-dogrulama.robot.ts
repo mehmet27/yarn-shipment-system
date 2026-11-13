@@ -25,11 +25,18 @@ type Fire = {
   fireRate: string;
   status: string;
 };
+type DenetimSayfasi = { page: { totalElements: number } };
 type Liste = { items: { shipmentId: string; shipmentNo: string; status: string }[] };
 
 const kg = (n: number) =>
   `${new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 3 }).format(n)} kg`;
 const yakin = (a: number, b: number) => Math.abs(a - b) < 0.002;
+/** Bu süreçte denetim kaydına düşmesi gereken, daha önce yazılmayan işlemler (olay türü → ekrandaki ad). */
+const DENETIM_ISLEMLERI = {
+  'com.yarnshipment.stock.yarn-receipt-recorded.v1': 'Merkez stok girişi yapıldı',
+  'com.yarnshipment.stock.central-production-recorded.v1': 'Merkezde kumaş üretildi',
+  'com.yarnshipment.shipment.fabric-received.v1': 'Kumaş girişi yapıldı',
+} as const;
 
 /**
  * Bilinen sayılarla süreci baştan sona yürütür ve her adımın sonucunu hem API'den hem ekrandan doğrular:
@@ -46,6 +53,16 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
   const iplik = damga();
   const satirBul = (b: Bakiye) =>
     b.items.find((i) => i.yarnType === iplik && i.subcontractorTitle === 'Başka Dokuma Ltd.');
+
+  const denetimSayisi = async (islem: string) =>
+    (
+      await admin.api<DenetimSayfasi>(
+        `/api/v1/audit-log?action=${encodeURIComponent(islem)}&size=1`,
+      )
+    ).page.totalElements;
+  const denetimOnce: Record<string, number> = {};
+  for (const islem of Object.keys(DENETIM_ISLEMLERI))
+    denetimOnce[islem] = await denetimSayisi(islem);
 
   const once = {
     ozet: await mudur.api<Dashboard>('/api/v1/reports/dashboard'),
@@ -279,6 +296,23 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
     admin.kontrol(
       'Denetim kaydında sevkiyat oluşturma ve kanıt yükleme görünür',
       /Sevkiyat oluşturuldu/.test(metin) && /Kanıt yüklendi/.test(metin),
+    );
+    for (const [islem, ad] of Object.entries(DENETIM_ISLEMLERI)) {
+      const sonra = await denetimSayisi(islem);
+      admin.kontrol(
+        `Denetim kaydına "${ad}" işlemi yazıldı`,
+        sonra === (denetimOnce[islem] ?? 0) + 1,
+        `${denetimOnce[islem]} → ${sonra}`,
+      );
+    }
+    await admin.sayfa.goto('/panel/denetim?varlik=CentralStock');
+    await admin.sayfa.waitForLoadState('networkidle');
+    const stokMetni = await admin.sayfa.innerText('main');
+    admin.kontrol(
+      'Denetim sayfası "Merkez stok" kayıtlarını ve Türkçe işlem adlarını gösterir',
+      stokMetni.includes('Merkezde kumaş üretildi') &&
+        stokMetni.includes('Merkez stok girişi yapıldı'),
+      stokMetni.slice(0, 200),
     );
   });
 });

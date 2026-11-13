@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router';
 
 export const AUDIT_PAGE_SIZE = 20;
-export const ENTITY_TYPES = ['Shipment', 'Evidence', 'Discrepancy'] as const;
+export const ENTITY_TYPES = ['Shipment', 'Evidence', 'Discrepancy', 'CentralStock'] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
 
 export type AuditFilter = {

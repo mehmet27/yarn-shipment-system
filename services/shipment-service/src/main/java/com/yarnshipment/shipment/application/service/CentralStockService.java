@@ -7,6 +7,7 @@ import com.yarnshipment.shipment.application.port.in.stock.GetCentralStockUseCas
 import com.yarnshipment.shipment.application.port.in.stock.RecordCentralProductionUseCase;
 import com.yarnshipment.shipment.application.port.in.stock.RecordYarnReceiptUseCase;
 import com.yarnshipment.shipment.application.port.out.ledger.CentralStockPort;
+import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.balance.Kilograms;
 import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
@@ -35,10 +36,12 @@ public class CentralStockService
     private static final int RECENT_LIMIT = 50;
 
     private final CentralStockPort stock;
+    private final LedgerEventPort events;
     private final Clock clock;
 
-    public CentralStockService(CentralStockPort stock, Clock clock) {
+    public CentralStockService(CentralStockPort stock, LedgerEventPort events, Clock clock) {
         this.stock = stock;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -50,6 +53,7 @@ public class CentralStockService
                 clock.instant(),
                 command.actor().userId());
         stock.saveReceipt(receipt);
+        events.yarnReceiptRecorded(receipt);
         return receipt;
     }
 
@@ -71,6 +75,7 @@ public class CentralStockService
         List<CentralStockMovement> consumptions = production.consumptions();
         requireStockFor(consumptions);
         stock.saveProduction(production, consumptions);
+        events.centralProductionRecorded(production);
         return production;
     }
 

@@ -31,7 +31,11 @@ export function LogoField({ value, onChange }: LogoFieldProps) {
         />
       )}
       <Group gap="xs">
-        <FileButton onChange={(file) => void pick(file)} accept={LOGO_TYPES.join(',')}>
+        <FileButton
+          onChange={(file) => void pick(file)}
+          accept={LOGO_TYPES.join(',')}
+          inputProps={{ 'aria-label': t('branding.logo.file') }}
+        >
           {(props) => (
             <Button variant="default" {...props}>
               {t(value === '' ? 'branding.logo.choose' : 'branding.logo.change')}

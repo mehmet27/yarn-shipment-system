@@ -4,7 +4,6 @@ import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -17,7 +16,7 @@ public interface LedgerEventPort {
 
     void fabricReceived(FabricReceipt receipt);
 
-    void fireRateChanged(UUID shipmentId, BigDecimal oldRate, BigDecimal newRate, UUID actorId, Instant at);
+    void fireRateChanged(FireSettlementPort.RateChange change);
 
     void fireInvoiced(FireSettlement settlement, UUID actorId, Instant at);
 

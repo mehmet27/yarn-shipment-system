@@ -10,6 +10,7 @@ import com.yarnshipment.shipment.application.port.in.balance.ListMovementsQuery;
 import com.yarnshipment.shipment.application.port.in.balance.MovementPage;
 import com.yarnshipment.shipment.application.port.in.fire.ListFireSettlementsQuery;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort.FireTotals;
+import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
 import com.yarnshipment.shipment.domain.fabric.ReturnDirection;
 import com.yarnshipment.shipment.domain.fabric.YarnReturn;
@@ -77,6 +78,9 @@ class LedgerAdaptersTest {
 
     @Autowired
     private FabricReceiptAdapter fabricReceipts;
+
+    @MockitoBean
+    private LedgerEventPort ledgerEvents;
 
     @Autowired
     private YarnReturnAdapter yarnReturns;

@@ -1,6 +1,7 @@
 package com.yarnshipment.shipment.adapter.out.persistence.ledger;
 
 import com.yarnshipment.shipment.application.port.out.ledger.FabricReceiptPort;
+import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement.Consumption;
 import com.yarnshipment.shipment.domain.balance.MovementKind;
@@ -39,10 +40,12 @@ final class FabricReceiptAdapter implements FabricReceiptPort {
 
     private final JdbcClient jdbc;
     private final BalanceMovementWriter movements;
+    private final LedgerEventPort events;
 
-    FabricReceiptAdapter(JdbcClient jdbc, BalanceMovementWriter movements) {
+    FabricReceiptAdapter(JdbcClient jdbc, BalanceMovementWriter movements, LedgerEventPort events) {
         this.jdbc = jdbc;
         this.movements = movements;
+        this.events = events;
     }
 
     @Override
@@ -114,5 +117,6 @@ final class FabricReceiptAdapter implements FabricReceiptPort {
                     receipt.createdBy(),
                     "FABRIC:" + receipt.id() + ":" + share.yarnType())));
         }
+        events.fabricReceived(receipt);
     }
 }

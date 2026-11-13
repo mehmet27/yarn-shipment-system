@@ -55,19 +55,10 @@ public class FireRateService implements ChangeFireRateUseCase {
         FireSettlement changed = current.withFireRate(command.fireRate());
         Instant now = clock.instant();
         settlements.save(changed, now);
-        settlements.recordRateChange(new RateChange(
-                current.shipmentId(),
-                current.fireRate(),
-                changed.fireRate(),
-                reason,
-                command.actor().userId(),
-                now));
-        events.fireRateChanged(
-                current.shipmentId(),
-                current.fireRate(),
-                changed.fireRate(),
-                command.actor().userId(),
-                now);
+        RateChange change = new RateChange(
+                current.shipmentId(), current.fireRate(), changed.fireRate(), reason, command.actor().userId(), now);
+        settlements.recordRateChange(change);
+        events.fireRateChanged(change);
         return reader.read(changed);
     }
 }

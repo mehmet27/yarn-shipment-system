@@ -1,11 +1,11 @@
 package com.yarnshipment.shipment.application.service;
 
+import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort;
 import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ final class RecordingLedgerEvents implements LedgerEventPort {
     }
 
     @Override
-    public void fireRateChanged(UUID shipmentId, BigDecimal oldRate, BigDecimal newRate, UUID actorId, Instant at) {
+    public void fireRateChanged(FireSettlementPort.RateChange change) {
         names.add("fireRateChanged");
     }
 

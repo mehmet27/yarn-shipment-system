@@ -8,12 +8,12 @@ import com.yarnshipment.events.stock.CentralProductionRecorded;
 import com.yarnshipment.events.stock.YarnReceiptRecorded;
 import com.yarnshipment.moduleapi.event.DomainEvent;
 import com.yarnshipment.moduleapi.event.DomainEventPublisher;
+import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort.RateChange;
 import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -71,9 +71,11 @@ final class LedgerEventAdapter implements LedgerEventPort {
     }
 
     @Override
-    public void fireRateChanged(UUID shipmentId, BigDecimal oldRate, BigDecimal newRate, UUID actorId, Instant at) {
-        FireRateChanged event = new FireRateChanged(shipmentId, oldRate, newRate, at);
-        events.publish(new DomainEvent(SHIPMENT, shipmentId, FireRateChanged.TYPE, event, at, actorId));
+    public void fireRateChanged(RateChange change) {
+        FireRateChanged event = new FireRateChanged(
+                change.shipmentId(), change.oldRate(), change.newRate(), change.changedAt());
+        events.publish(new DomainEvent(
+                SHIPMENT, change.shipmentId(), FireRateChanged.TYPE, event, change.changedAt(), change.changedBy()));
     }
 
     @Override

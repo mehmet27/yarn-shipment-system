@@ -8,7 +8,6 @@ import com.yarnshipment.shipment.application.port.in.fabric.ShipmentRecordsQuery
 import com.yarnshipment.shipment.application.port.out.ledger.BalanceQueryPort;
 import com.yarnshipment.shipment.application.port.out.ledger.FabricReceiptPort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort;
-import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.balance.Kilograms;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
 import com.yarnshipment.shipment.domain.fabric.YarnDistribution;
@@ -40,7 +39,6 @@ public class FabricReceiptService implements RecordFabricReceiptUseCase, ListFab
     private final FabricReceiptPort receipts;
     private final FireSettlementPort settlements;
     private final BalanceQueryPort balances;
-    private final LedgerEventPort events;
     private final Clock clock;
 
     public FabricReceiptService(
@@ -48,13 +46,11 @@ public class FabricReceiptService implements RecordFabricReceiptUseCase, ListFab
             FabricReceiptPort receipts,
             FireSettlementPort settlements,
             BalanceQueryPort balances,
-            LedgerEventPort events,
             Clock clock) {
         this.shipments = shipments;
         this.receipts = receipts;
         this.settlements = settlements;
         this.balances = balances;
-        this.events = events;
         this.clock = clock;
     }
 
@@ -84,7 +80,6 @@ public class FabricReceiptService implements RecordFabricReceiptUseCase, ListFab
                 command.actor().userId());
         receipts.save(receipt);
         settlements.save(settlement.afterFabricReceipt(), now);
-        events.fabricReceived(receipt);
         return receipt;
     }
 

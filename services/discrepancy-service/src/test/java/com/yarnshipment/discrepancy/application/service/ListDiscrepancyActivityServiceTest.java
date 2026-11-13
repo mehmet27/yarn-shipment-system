@@ -53,8 +53,8 @@ class ListDiscrepancyActivityServiceTest {
     @DisplayName("Ad çözülemezse kayıtlar adsız döner, okuma bozulmaz")
     void shouldReturnActivityWithoutNamesWhenUnresolved() {
         Instant at = Instant.parse("2026-10-20T11:00:00Z");
-        stubFindActivity(List.of(
-                new DiscrepancyActivity(UUID.randomUUID(), "ASSIGNED", "bozuk-not", null, QUALITY, at)));
+        stubFindActivity(
+                List.of(new DiscrepancyActivity(UUID.randomUUID(), "ASSIGNED", "bozuk-not", null, QUALITY, at)));
         ActorNamePort names = (Collection<UUID> ids) -> Map.of();
 
         List<DiscrepancyActivity> result = service(names).listActivity(query());

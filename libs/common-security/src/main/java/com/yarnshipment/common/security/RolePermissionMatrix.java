@@ -29,7 +29,10 @@ public final class RolePermissionMatrix {
         matrix.put(Role.WAREHOUSE, permissionsForWarehouse());
         matrix.put(Role.QUALITY, permissionsForQuality());
         matrix.put(Role.MANAGER, permissionsForManager());
-        matrix.put(Role.GENERAL_MANAGER, EnumSet.of(Permission.REPORT_VIEW, Permission.BALANCE_VIEW));
+        // Rapor ve bakiye ekranları fasoncu/iplik adlarını ana veri listesinden çözer; yalnız okuma izni yeter.
+        matrix.put(
+                Role.GENERAL_MANAGER,
+                EnumSet.of(Permission.REPORT_VIEW, Permission.BALANCE_VIEW, Permission.MASTER_DATA_VIEW));
         matrix.put(Role.SYSTEM, permissionsForSystem());
         return Map.copyOf(matrix);
     }

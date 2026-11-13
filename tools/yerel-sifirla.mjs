@@ -3,7 +3,7 @@
 //   cd frontend
 //   pnpm yerel:sifirla              # Docker verisini SİLER (onay sorar), yalnızca admin'li ortam kurar, servisleri başlatır
 //   pnpm yerel:sifirla -- --evet    # onay sormaz
-//   pnpm yerel:baslat               # veriye dokunmadan servisleri (uygulama, gateway, arayüz) yeniden başlatır
+//   pnpm yerel:baslat               # veriye dokunmadan servisleri (uygulama, arayüz) yeniden başlatır
 //   pnpm yerel:durdur               # servisleri durdurur (Docker'a dokunmaz)
 //
 //   --sadece-veri     yalnızca Docker verisini sıfırlar; servislere dokunmaz
@@ -36,7 +36,7 @@ const DEPLOY = join(KOK, "deploy");
 const WIN = process.platform === "win32";
 const KAYIT = join(KOK, ".yerel");
 const PID_DOSYASI = join(KAYIT, "surecler.json");
-const PORTLAR = { 8083: "uygulama", 8080: "gateway", 5173: "arayüz" };
+const PORTLAR = { 8083: "uygulama", 5173: "arayüz" };
 
 const dur = (mesaj) => {
   console.error(`\nDURDU: ${mesaj}`);
@@ -46,7 +46,7 @@ const dur = (mesaj) => {
 const calistir = (komut, args, secenek = {}) =>
   spawnSync(komut, args, { encoding: "utf8", ...secenek });
 
-// ---- Yerel servisleri durdur (kayıtlı süreçler ve 8083/8080/5173'ü dinleyenler) --------------------------------------
+// ---- Yerel servisleri durdur (kayıtlı süreçler ve 8083/5173'ü dinleyenler) --------------------------------------
 function portuDinleyen(port) {
   if (WIN) {
     const cikti = calistir("netstat", ["-ano", "-p", "tcp"]).stdout ?? "";
@@ -96,13 +96,8 @@ if (bayrak("--durdur")) {
 
 // ---- Korumalar: yalnızca bu bilgisayardaki yerel ortam ---------------------------------------------------------------
 const ortamDosyasi = join(DEPLOY, ".env");
-if (
-  !existsSync(join(DEPLOY, "docker-compose.yml")) ||
-  !existsSync(join(DEPLOY, "docker-compose.temiz.yml"))
-) {
-  dur(
-    `${DEPLOY} içinde docker-compose.yml/docker-compose.temiz.yml yok; doğru proje klasöründe misiniz?`,
-  );
+if (!existsSync(join(DEPLOY, "docker-compose.yml"))) {
+  dur(`${DEPLOY} içinde docker-compose.yml yok; doğru proje klasöründe misiniz?`);
 }
 if (!existsSync(ortamDosyasi))
   dur("deploy/.env yok (yerel kurulum yapılmamış).");
@@ -138,13 +133,7 @@ if (
     `Docker bağlamı "${baglam}" yerel görünmüyor. Yalnızca varsayılan/Docker Desktop bağlamıyla çalışır.`,
   );
 }
-const compose = [
-  "compose",
-  "-f",
-  join(DEPLOY, "docker-compose.yml"),
-  "-f",
-  join(DEPLOY, "docker-compose.temiz.yml"),
-];
+const compose = ["compose", "-f", join(DEPLOY, "docker-compose.yml")];
 const sadeceBaslat = bayrak("--sadece-baslat");
 
 async function bekle(ad, adres, kabul, sureSn) {
@@ -169,7 +158,7 @@ async function bekle(ad, adres, kabul, sureSn) {
 if (!sadeceBaslat) {
   // ---- Onay ve veri sıfırlama --------------------------------------------------------------------------------------
   console.log(`Sıfırlanacak proje: ${KOK}
-Silinecekler: yerel PostgreSQL, Keycloak ve MinIO verisi (admin dışındaki tüm kullanıcılar, sevkiyatlar, stoklar, kanıtlar).`);
+Silinecekler: yerel PostgreSQL ve MinIO verisi (admin dışındaki tüm kullanıcılar, sevkiyatlar, stoklar, kanıtlar).`);
   if (!bayrak("--evet")) {
     const okuyucu = createInterface({
       input: process.stdin,
@@ -183,7 +172,7 @@ Silinecekler: yerel PostgreSQL, Keycloak ve MinIO verisi (admin dışındaki tü
   }
   if (!bayrak("--sadece-veri")) servisleriDurdur();
   console.log(
-    "\nDocker verisi siliniyor ve yalnızca admin kullanıcılı Keycloak ile yeniden kuruluyor...",
+    "\nDocker verisi siliniyor ve yeniden kuruluyor...",
   );
   if (
     calistir("docker", [...compose, "down", "-v"], { stdio: "inherit" })
@@ -195,13 +184,6 @@ Silinecekler: yerel PostgreSQL, Keycloak ve MinIO verisi (admin dışındaki tü
       .status !== 0
   )
     dur("docker compose up başarısız.");
-  await bekle(
-    "Keycloak",
-    "http://localhost:8180/realms/yarnshipment",
-    [200],
-    240,
-  );
-  console.log("Keycloak hazır.");
   if (bayrak("--sadece-veri")) {
     console.log(
       "\nVeri sıfırlandı. Servislere dokunulmadı; gerekiyorsa `pnpm yerel:baslat` ile başlatın.",
@@ -212,7 +194,7 @@ Silinecekler: yerel PostgreSQL, Keycloak ve MinIO verisi (admin dışındaki tü
   servisleriDurdur();
 }
 
-// ---- Backend, gateway ve arayüzü (yeniden) derle ve başlat ----------------------------------------------------------
+// ---- Backend ve arayüzü (yeniden) derle ve başlat ----------------------------------------------------------
 mkdirSync(KAYIT, { recursive: true });
 const mvnw = WIN ? ".\\mvnw.cmd" : "./mvnw";
 if (!bayrak("--derleme-atla")) {
@@ -224,7 +206,7 @@ if (!bayrak("--derleme-atla")) {
       "-DskipTests",
       "-Djacoco.skip=true",
       "-pl",
-      "services/yarnshipment-app,services/gateway",
+      "services/yarnshipment-app",
       "-am",
       "install",
     ],
@@ -284,16 +266,9 @@ arkaplanda(
   KOK,
   {
     DB_PASSWORD: ortam.LOCAL_DB_PASSWORD ?? "",
-    YARNSHIPMENT_KEYCLOAK_ADMIN_CLIENT_SECRET:
-      ortam.KEYCLOAK_ADMIN_CLIENT_SECRET ?? "",
+    // Yalnızca admin'li temiz ortam: örnek kullanıcılar açılmaz; admin şifresi LOCAL_TEST_USER_PASSWORD'dür.
+    LOCAL_SAMPLE_USERS: "false",
   },
-);
-arkaplanda(
-  "gateway",
-  mvnw,
-  ["-q", "-pl", "services/gateway", "spring-boot:run"],
-  KOK,
-  {},
 );
 arkaplanda(
   "arayuz",
@@ -307,9 +282,8 @@ arkaplanda(
 writeFileSync(PID_DOSYASI, JSON.stringify(surecler));
 
 await bekle("Uygulama", "http://localhost:8083/api/v1/me", [401], 300);
-await bekle("Gateway", "http://localhost:8080/", [200, 302], 300);
 await bekle("Arayüz", "http://localhost:5173/", [200], 120);
 console.log(`
-Hazır. ${sadeceBaslat ? "" : 'Yalnızca "admin" kullanıcısı var (şifre: deploy/.env içindeki KEYCLOAK_TEST_USER_PASSWORD).\n  '}Arayüz: http://localhost:5173
+Hazır. ${sadeceBaslat ? "" : 'Yalnızca "admin" kullanıcısı var (şifre: deploy/.env içindeki LOCAL_TEST_USER_PASSWORD).\n  '}Arayüz: http://localhost:5173
 Servisleri durdurmak: cd frontend && pnpm yerel:durdur
 Diğer kullanıcıları robot açabilir (siz isterseniz): cd frontend && pnpm robot -- --rol=Kurulum`);

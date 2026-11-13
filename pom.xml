@@ -30,7 +30,6 @@
         <module>libs/event-contracts</module>
         <module>libs/module-api</module>
         <module>services/shipment-service</module>
-        <module>services/gateway</module>
         <module>services/discrepancy-service</module>
         <module>services/evidence-service</module>
         <module>services/reporting-service</module>

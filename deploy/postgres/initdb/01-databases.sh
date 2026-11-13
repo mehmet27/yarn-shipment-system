@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tek veritabanı (yarnshipment) ve tek kullanıcı (yarnshipment). Servis tabloları servis başına şemada durur
-# (şemaları Flyway açar: platform, shipment, evidence, discrepancy, reporting, audit); Keycloak da aynı veritabanında "keycloak" şemasını kullanır.
+# (şemaları Flyway açar: platform, shipment, evidence, discrepancy, reporting, audit).
 # Tabloları bu script kurmaz; her servis açılışta Flyway ile kurar. Bkz. docs/veritabani-tasarimi.md.
 set -euo pipefail
 
@@ -33,9 +33,4 @@ ALTER DATABASE yarnshipment SET timezone TO 'UTC';
 -- Ortak tablolar (idempotency_record, audit_local) platform şemasındadır; platform.idempotency_record diye yazın.
 ALTER ROLE yarnshipment IN DATABASE yarnshipment
   SET search_path TO platform, shipment, evidence, discrepancy, reporting, audit, public;
-SQL
-
-# Keycloak şemasını Keycloak kendi tablolarıyla doldurur (KC_DB_SCHEMA=keycloak).
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname yarnshipment <<'SQL'
-CREATE SCHEMA IF NOT EXISTS keycloak AUTHORIZATION yarnshipment;
 SQL

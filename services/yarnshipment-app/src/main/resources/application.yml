@@ -38,7 +38,7 @@ server:
   port: ${SERVER_PORT:8083}
   servlet:
     session:
-      # Boşta kalan oturum 30 dakika sonra düşer (eski Keycloak ayarıyla aynı); çerez JavaScript'e kapalıdır.
+      # Boşta kalan oturum 30 dakika sonra düşer; çerez JavaScript'e kapalıdır.
       timeout: 30m
       cookie:
         name: YARNSHIPMENT_SESSION

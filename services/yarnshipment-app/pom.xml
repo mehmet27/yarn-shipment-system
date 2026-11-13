@@ -2,7 +2,7 @@
 <!--
   Tek Spring Boot uygulaması (modüler monolit): shipment, discrepancy, evidence, reporting ve audit modülleri tek
   süreçte, tek veritabanı bağlantı havuzuyla çalışır. Modüller yalnızca module-api ve event-contracts üzerinden
-  konuşur; olaylar süreç içi iletilir (common-events). Gateway ayrı süreç olarak kalır.
+  konuşur; olaylar süreç içi iletilir (common-events). Kimlik doğrulama (çerez oturumu) da bu süreçtedir; önünde ayrı bir geçit yoktur.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>

@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
-const GATEWAY_URL = 'http://localhost:8080';
+const BACKEND_URL = 'http://localhost:8083';
 
 export default defineConfig({
   plugins: [react()],
@@ -10,11 +10,9 @@ export default defineConfig({
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   server: {
-    // Gerçek backend ile çalışırken /api, /oauth2 ve /logout gateway'e gider.
+    // Gerçek backend ile çalışırken /api (giriş ve çıkış dahil) uygulamaya gider.
     proxy: {
-      '/api': GATEWAY_URL,
-      '/oauth2': GATEWAY_URL,
-      '/logout': GATEWAY_URL,
+      '/api': BACKEND_URL,
     },
   },
 });

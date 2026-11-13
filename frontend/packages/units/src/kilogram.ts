@@ -53,7 +53,9 @@ export function sumKg(values: readonly string[]): string {
 
 /** API'den gelen kilo dizesini biçimler; sözleşme dışı bir değer olduğu gibi gösterilir. */
 export function formatKgText(value: string): string {
-  return isKilogram(value) ? formatKg(value) : value;
+  if (isKilogram(value)) return formatKg(value);
+  const magnitude = value.startsWith('-') ? value.slice(1) : undefined;
+  return magnitude !== undefined && isKilogram(magnitude) ? `−${formatKg(magnitude)}` : value;
 }
 
 const SIGNED_KG_FORMAT = new Intl.NumberFormat('tr-TR', {

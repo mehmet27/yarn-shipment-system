@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Group, Paper, Stack, Text, TextInput, Title } from '@iplik/ui';
+import { formatKgText } from '@iplik/units';
 import { useState } from 'react';
 import { useFireRateDefault } from '@/modules/shipment';
 import { ProductionYarnRows } from './ProductionYarnRows';
@@ -37,7 +38,7 @@ export function ProductionForm() {
           onAdd={addYarn}
           onRemove={removeYarn}
         />
-        <Text size="sm">{t('stock.production.total', { kg: productionTotalKg(draft) })}</Text>
+        <Text size="sm">{t('stock.production.total', { kg: formatKgText(productionTotalKg(draft)) })}</Text>
         <Group grow align="flex-start">
           <TextInput
             label={t('stock.production.firePct')}

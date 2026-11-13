@@ -8,6 +8,7 @@ const KNOWN_CODES = [
   'FIRE_INVOICE_NOT_APPLICABLE',
   'FIRE_CLOSE_NOT_APPLICABLE',
   'ACCESS_DENIED',
+  'INVALID_LEDGER_INPUT',
 ];
 
 /** Bilinen hata kodları Türkçe mesaja (`settlement.errors.*`); bilinmeyenler genel mesaja düşer. */

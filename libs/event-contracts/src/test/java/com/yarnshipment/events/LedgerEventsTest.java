@@ -33,7 +33,8 @@ class LedgerEventsTest {
                 new FireInvoiced(SHIPMENT, "F-1", LocalDate.parse("2026-11-13"), AT),
                 new FireSettlementClosed(SHIPMENT, AT),
                 new YarnReceiptRecorded(RECORD, "Pamuk 20/1", new BigDecimal("200.000"), AT),
-                new CentralProductionRecorded(RECORD, "Süprem", new BigDecimal("50.000"), new BigDecimal("0.0500"), AT));
+                new CentralProductionRecorded(
+                        RECORD, "Süprem", new BigDecimal("50.000"), new BigDecimal("0.0500"), AT));
 
         for (Object event : events) {
             assertThat(JSON.readValue(JSON.writeValueAsString(event), event.getClass()))

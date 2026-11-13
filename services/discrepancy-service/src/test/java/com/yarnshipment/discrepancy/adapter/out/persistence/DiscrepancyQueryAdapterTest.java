@@ -18,10 +18,8 @@ import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Uyuşmazlık listesi, migration'larla kurulan gerçek şemada ve uygulama rolüyle. */
 @JdbcTest
@@ -38,9 +36,6 @@ class DiscrepancyQueryAdapterTest {
 
     private static final int PAGE_SIZE = 20;
     private static final Filter NO_FILTER = new Filter(null, null, null, null, null);
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private ComparisonSeeder comparisons;

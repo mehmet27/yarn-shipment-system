@@ -14,10 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,9 +30,6 @@ class VehicleSiteCommandAdapterTest {
 
     private static final long AUDIT_ROWS = 3L;
     private static final PostgresTestDatabase DATABASE = PostgresTestDatabase.startIsolated();
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private VehicleSiteCommandAdapter adapter;

@@ -10,9 +10,11 @@ import com.yarnshipment.shipment.masterdata.application.port.out.LoginAccountTar
 import com.yarnshipment.shipment.masterdata.application.port.out.StaffAccountPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.StaffWorkAreaPort;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
+import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountNotFoundException;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffAccountSpec;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import com.yarnshipment.shipment.masterdata.domain.model.StaffWorkArea;
+import com.yarnshipment.shipment.masterdata.domain.model.WeakPasswordException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -80,8 +82,9 @@ class StaffLoginAccountServiceTest {
             return Map.of();
         }
     };
+    private final FakeAuthUsers users = new FakeAuthUsers();
     private final StaffLoginAccountService service =
-            new StaffLoginAccountService(targets, accounts, credentials, workAreas);
+            new StaffLoginAccountService(targets, accounts, credentials, workAreas, users.issuer());
 
     @Test
     @DisplayName("Kalite hesabı çalışma alanıyla açılır ve alan yeni kullanıcıya yazılır")
@@ -118,7 +121,7 @@ class StaffLoginAccountServiceTest {
         assertThat(openedStaff).singleElement().satisfies(spec -> {
             assertThat(spec.username()).isEqualTo("depo2");
             assertThat(spec.role()).isEqualTo(StaffRole.WAREHOUSE);
-            assertThat(spec.password()).isEqualTo("Gecici-Sifre-1");
+            assertThat(spec.passwordHash()).isEqualTo("hash:Gecici-Sifre-1");
             assertThat(spec.siteIds()).containsExactly(SITE);
         });
     }
@@ -140,11 +143,35 @@ class StaffLoginAccountServiceTest {
     @Test
     @DisplayName("Yönetici bir hesaba yeni geçici şifre belirler")
     void shouldSetTemporaryPassword() {
-        UUID other = UUID.randomUUID();
+        UUID other = users.add("depo2");
 
         service.setLoginAccountPassword(admin, other, "Yeni-Sifre-2");
 
-        assertThat(credentials.passwords()).containsExactly(other + ":Yeni-Sifre-2");
+        assertThat(credentials.passwords()).containsExactly(other + ":hash:Yeni-Sifre-2");
+    }
+
+    @Test
+    @DisplayName("Kolay şifre ve olmayan hesap geçici şifre belirlemede reddedilir, hiçbir şey yazılmaz")
+    void shouldRejectWeakPasswordOrUnknownAccount() {
+        UUID other = users.add("depo2");
+
+        assertThatThrownBy(() -> service.setLoginAccountPassword(admin, other, "12345678"))
+                .isInstanceOf(WeakPasswordException.class);
+        assertThatThrownBy(() -> service.setLoginAccountPassword(admin, other, "depo2"))
+                .isInstanceOf(WeakPasswordException.class);
+        assertThatThrownBy(() -> service.setLoginAccountPassword(admin, UUID.randomUUID(), "Yeni-Sifre-2"))
+                .isInstanceOf(LoginAccountNotFoundException.class);
+        assertThat(credentials.passwords()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Kolay şifreyle hesap açılmaz")
+    void shouldRejectWeakPasswordOnCreate() {
+        StaffAccountRequest weak = new StaffAccountRequest("depo3", "Ayşe Depo", StaffRole.WAREHOUSE, "password");
+
+        assertThatThrownBy(() -> service.createStaffLoginAccount(admin, weak))
+                .isInstanceOf(WeakPasswordException.class);
+        assertThat(openedStaff).isEmpty();
     }
 
     @Test

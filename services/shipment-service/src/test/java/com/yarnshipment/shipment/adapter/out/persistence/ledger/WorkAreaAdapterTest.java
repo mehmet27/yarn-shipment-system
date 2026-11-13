@@ -12,10 +12,8 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Çalışma alanı gerçek PostgreSQL'den kullanıcıya göre okunur. */
 @DataJpaTest
@@ -24,9 +22,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 class WorkAreaAdapterTest {
 
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-000000000902");
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private WorkAreaAdapter adapter;

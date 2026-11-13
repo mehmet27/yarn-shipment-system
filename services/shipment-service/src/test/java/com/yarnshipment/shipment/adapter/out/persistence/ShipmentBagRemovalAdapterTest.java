@@ -17,10 +17,8 @@ import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Çuval çıkarma ve yeniden atama, gerçek tetikleyiciler ve kısmi unique indeksle. */
 @DataJpaTest
@@ -46,9 +44,6 @@ class ShipmentBagRemovalAdapterTest {
             VALUES (?, ?, 'SV-3', ?, 'Örnek Tekstil', 'DRAFT', now(), ?)""";
     private static final String ACTIVE_COUNT =
             "SELECT count(*) FROM shipment_bag WHERE shipment_id = ? AND removed_at IS NULL";
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private ShipmentBagRemovalAdapter removal;

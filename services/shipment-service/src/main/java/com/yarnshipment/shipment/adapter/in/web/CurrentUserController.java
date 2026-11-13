@@ -2,7 +2,7 @@ package com.yarnshipment.shipment.adapter.in.web;
 
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.common.security.CurrentActorProvider;
-import com.yarnshipment.common.security.TokenClaims;
+import com.yarnshipment.common.security.ActorAuthenticationToken;
 import com.yarnshipment.shipment.adapter.in.web.api.CurrentUserApi;
 import com.yarnshipment.shipment.adapter.in.web.api.model.CurrentUserResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.Permission;
@@ -16,13 +16,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Oturumdaki kullanıcı (yetkilendirme analizi, {@code /api/v1/me}). Frontend menü ve butonları buna göre gizler; asıl
- * kontrol uçlardadır. Faz 1'de yalnızca token'dan üretildiği için herhangi bir servis sunabilir; gateway bu uca
- * shipment-service'e yönlendirir.
+ * kontrol uçlardadır. Kimlik oturumdan okunur. Şifresini değiştirmesi gereken kullanıcının rolü ve izni boştur.
  */
 @RestController
 public class CurrentUserController implements CurrentUserApi {
@@ -53,6 +51,7 @@ public class CurrentUserController implements CurrentUserApi {
                 .permissions(permissions(actor, area))
                 .siteIds(List.copyOf(actor.siteIds()))
                 .mfaVerified(actor.mfaVerified())
+                .passwordChangeRequired(passwordChangeRequired())
                 .workArea(area.orElse(null));
         return ResponseEntity.ok(response);
     }
@@ -73,9 +72,11 @@ public class CurrentUserController implements CurrentUserApi {
 
     private static String fullName(Actor actor) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String name = authentication instanceof JwtAuthenticationToken token
-                ? token.getToken().getClaimAsString(TokenClaims.NAME)
-                : null;
-        return name == null ? actor.username() : name;
+        return authentication instanceof ActorAuthenticationToken token ? token.fullName() : actor.username();
+    }
+
+    private static boolean passwordChangeRequired() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication instanceof ActorAuthenticationToken token && token.passwordChangeRequired();
     }
 }

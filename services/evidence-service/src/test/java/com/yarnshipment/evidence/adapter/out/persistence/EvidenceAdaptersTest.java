@@ -20,10 +20,8 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Yükleme isteği ve kanıt kaydı; migration'larla kurulan gerçek şemada ve uygulama rolüyle. */
 @JdbcTest
@@ -39,9 +37,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 class EvidenceAdaptersTest {
 
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-0000000000a1");
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private EvidenceStoreAdapter evidence;

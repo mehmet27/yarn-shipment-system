@@ -18,10 +18,8 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Çuval atama yazması, örnek taslak sevkiyat üzerinde gerçek PostgreSQL'e karşı. */
 @DataJpaTest
@@ -41,9 +39,6 @@ class BagAssignmentAdapterTest {
     private static final UUID ACTOR = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
     private static final int TOTAL_BAGS = 3;
     private static final Instant NOW = Instant.parse("2026-10-22T10:00:00Z");
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private BagAssignmentAdapter assignments;

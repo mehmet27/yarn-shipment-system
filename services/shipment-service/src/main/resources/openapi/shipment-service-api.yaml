@@ -17,6 +17,7 @@ info:
 servers:
   - url: /
 tags:
+  - name: Authentication
   - name: Shipments
   - name: ShipmentCreation
   - name: ShipmentFile
@@ -40,7 +41,7 @@ tags:
   - name: Branding
   - name: CurrentUser
 security:
-  - bearerAuth: []
+  - sessionCookie: []
 paths:
   /api/v1/me:
     get:
@@ -54,6 +55,68 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CurrentUserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/v1/auth/login:
+    post:
+      tags: [Authentication]
+      operationId: login
+      summary: Kullanıcı adı ve şifreyle oturum açar
+      description: |
+        Başarılı girişte HttpOnly oturum çerezi verilir; token tarayıcıya inmez. Kullanıcı adı ya da şifre yanlışsa,
+        hesap kapalıysa 401 `AUTHENTICATION_FAILED` (hangisinin yanlış olduğu söylenmez). Art arda yanlış denemede hesap
+        kısa süre kilitlenir: 423 `ACCOUNT_LOCKED`. Geçici şifreyle girenin `passwordChangeRequired` değeri doğrudur;
+        şifresini değiştirene kadar başka işlem yapamaz.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Oturum açıldı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '423':
+          $ref: '#/components/responses/Locked'
+  /api/v1/auth/logout:
+    post:
+      tags: [Authentication]
+      operationId: logout
+      summary: Oturumu kapatır
+      responses:
+        '204':
+          description: Oturum kapandı
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/v1/auth/password:
+    put:
+      tags: [Authentication]
+      operationId: changeOwnPassword
+      summary: Oturumdaki kullanıcı kendi şifresini değiştirir
+      description: |
+        Mevcut şifre doğrulanır; yanlışsa 400 `INVALID_CURRENT_PASSWORD`. Yeni şifre kurala uymuyorsa ya da eskisiyle
+        aynıysa 400 `WEAK_PASSWORD`. Başarılı değişimde kişinin diğer oturumları kapanır, bu oturum yeni şifreyle
+        devam eder. Geçici şifreyle giren kişi bu ucu kullanır.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeOwnPasswordRequest'
+      responses:
+        '204':
+          description: Şifre değişti
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /api/v1/shipments:
@@ -1952,10 +2015,10 @@ paths:
           $ref: '#/components/responses/BadGateway'
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
   parameters:
     Page:
       name: page
@@ -2001,6 +2064,12 @@ components:
         type: string
         format: uuid
   responses:
+    Locked:
+      description: Çok fazla hatalı deneme; hesap kısa süre kilitli (code ACCOUNT_LOCKED)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
     Conflict:
       description: >-
         Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor
@@ -2019,7 +2088,7 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
     Unauthorized:
-      description: Oturum yok veya token geçersiz (code AUTHENTICATION_REQUIRED)
+      description: Oturum yok veya süresi dolmuş (code AUTHENTICATION_REQUIRED); girişte kullanıcı adı ya da şifre yanlış (AUTHENTICATION_FAILED)
       content:
         application/problem+json:
           schema:
@@ -2114,6 +2183,9 @@ components:
       type: object
       required: [userId, fullName, roles, permissions, siteIds, mfaVerified]
       properties:
+        passwordChangeRequired:
+          type: boolean
+          description: Kişi geçici şifreyle girdi; şifresini değiştirene kadar rolü ve izni yoktur.
         userId:
           type: string
           format: uuid
@@ -2657,6 +2729,40 @@ components:
           maxLength: 128
           format: password
           description: Yöneticinin belirlediği geçici şifre; kişi ilk girişte değiştirir. SMS ya da e-posta doğrulaması yoktur.
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 100
+        password:
+          type: string
+          minLength: 1
+          maxLength: 128
+          format: password
+    LoginResponse:
+      type: object
+      required: [passwordChangeRequired]
+      properties:
+        passwordChangeRequired:
+          type: boolean
+          description: Kişi geçici şifreyle girdi; önce şifresini değiştirmelidir.
+    ChangeOwnPasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+          minLength: 1
+          maxLength: 128
+          format: password
+        newPassword:
+          type: string
+          minLength: 8
+          maxLength: 128
+          format: password
     ChangeLoginAccountEnabledRequest:
       type: object
       required: [enabled]

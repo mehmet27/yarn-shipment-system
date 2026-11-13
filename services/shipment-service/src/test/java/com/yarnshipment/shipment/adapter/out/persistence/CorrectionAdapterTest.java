@@ -21,10 +21,8 @@ import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Düzeltme kilitli sevkiyatta gerçek kilit tetikleyicileri ve uygulama rolünün yetkileriyle yazılır. */
 @DataJpaTest
@@ -58,9 +56,6 @@ class CorrectionAdapterTest {
     private static final String CURRENT_WEIGHING = """
             SELECT gross_kg FROM weighing
             WHERE shipment_id = ? AND side = 'DISPATCH' AND superseded_by IS NULL""";
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private CorrectionAdapter adapter;

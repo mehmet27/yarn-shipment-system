@@ -14,7 +14,6 @@ import com.yarnshipment.shipment.masterdata.application.port.in.account.ChangeLo
 import com.yarnshipment.shipment.masterdata.application.port.in.account.CreateStaffLoginAccountUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.account.ListLoginAccountsUseCase;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
-import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountUnavailableException;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
@@ -52,9 +50,6 @@ class LoginAccountControllerTest {
 
     @MockitoBean
     private ChangeLoginAccountNameUseCase changeName;
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     LoginAccountControllerTest(MockMvcTester mvc) {
@@ -101,17 +96,13 @@ class LoginAccountControllerTest {
     }
 
     @Test
-    @DisplayName("Sayfa boyu sınır dışındaysa 400, Keycloak'a ulaşılamazsa 502 LOGIN_ACCOUNT_UNAVAILABLE")
-    void shouldMapErrors() {
+    @DisplayName("Sayfa boyu sınır dışındaysa 400")
+    void shouldRejectTooLargePage() {
         Jwt admin = TestTokens.token("admin").build();
-        when(listLoginAccounts.listLoginAccounts(any())).thenThrow(new LoginAccountUnavailableException("down"));
 
         MvcTestResult tooLarge = get(URI + "?size=500", admin);
-        MvcTestResult unavailable = get(URI, admin);
 
         assertThat(tooLarge).hasStatus(HttpStatus.BAD_REQUEST);
-        assertThat(unavailable).hasStatus(HttpStatus.BAD_GATEWAY);
-        assertThat(unavailable).bodyJson().extractingPath("$.code").isEqualTo("LOGIN_ACCOUNT_UNAVAILABLE");
     }
 
     private MvcTestResult get(String uri, Jwt jwt) {

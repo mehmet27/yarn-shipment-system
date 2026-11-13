@@ -3,12 +3,9 @@ package com.yarnshipment.shipment.masterdata.application.port.out;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountSummary;
 import java.util.List;
 
-/** Kimlik sağlayıcıda (Keycloak) uygulama rolü olan kullanıcıları listeler. */
+/** Giriş hesabı olan kullanıcıları (app_user) listeler. */
 public interface LoginAccountPort {
 
-    /**
-     * Uygulama rollerinden en az birine sahip kullanıcılar, giriş adına göre sıralı. Servis hesapları gelmez.
-     * Sağlayıcı yanıt vermezse ya da yapılandırılmamışsa {@code LoginAccountUnavailableException} fırlatır.
-     */
+    /** Tüm hesaplar, giriş adına göre sıralı. */
     List<LoginAccountSummary> findAll();
 }

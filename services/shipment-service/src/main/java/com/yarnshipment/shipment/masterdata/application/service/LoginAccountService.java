@@ -17,9 +17,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
- * Giriş hesaplarını listeler (KR-17: fasoncuya giriş hesabı açılmaz). Yerel veritabanına yazılmadığı için
- * transaction açılmaz. Kullanıcı sayısı küçük olduğundan liste Keycloak'tan
- * bütün olarak alınır, arama ve sayfalama burada yapılır.
+ * Giriş hesaplarını listeler (KR-17: fasoncuya giriş hesabı açılmaz). Okuma yapıldığı için transaction açılmaz.
+ * Kullanıcı sayısı küçük olduğundan liste bütün olarak alınır, arama ve sayfalama burada yapılır.
  */
 @Service
 public final class LoginAccountService implements ListLoginAccountsUseCase, ListUserNamesUseCase {

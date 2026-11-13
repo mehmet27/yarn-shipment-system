@@ -19,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -50,9 +49,6 @@ class CompletionIdempotencyIntegrationTest {
     private final JdbcTemplate jdbc;
     private final Authentication manager =
             TestTokens.CONVERTER.convert(TestTokens.token("manager").build());
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @MockitoBean
     private EvidenceLookupPort evidence;

@@ -12,10 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Hesap açma hedeflerinin okunması gerçek PostgreSQL'de, yerel örnek veri üzerinde. */
 @DataJpaTest
@@ -25,9 +23,6 @@ class LoginAccountTargetAdapterTest {
 
     private static final PostgresTestDatabase DATABASE = PostgresTestDatabase.startIsolated();
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000001");
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private LoginAccountTargetAdapter adapter;

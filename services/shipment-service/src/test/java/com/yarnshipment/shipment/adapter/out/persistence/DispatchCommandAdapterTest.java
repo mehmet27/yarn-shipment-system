@@ -22,10 +22,8 @@ import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Çıkış kaydı gerçek tetikleyiciler, mühür tekliği kısıtı ve uygulama rolünün yetkileriyle yazılır. */
 @DataJpaTest
@@ -49,9 +47,6 @@ class DispatchCommandAdapterTest {
             INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status,
                                   created_at, created_by)
             VALUES (?, ?, ?, ?, 'Örnek Tekstil', 'DRAFT', now(), ?)""";
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private RecordingDomainEventPublisher events;

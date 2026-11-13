@@ -19,10 +19,8 @@ import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Tamamlama gerçek durum ve kilit tetikleyicileri ile uygulama rolünün yetkileriyle yazılır. */
 @DataJpaTest
@@ -46,9 +44,6 @@ class CompletionAdapterTest {
             INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status,
                                   created_at, created_by)
             VALUES (?, ?, 'SV-4', ?, 'Örnek Tekstil', 'AWAITING_DELIVERY', now(), ?)""";
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private RecordingDomainEventPublisher events;

@@ -18,10 +18,8 @@ import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Numune/lab kontrolü yazımı; migration'larla kurulan gerçek şemada ve uygulama rolüyle. */
 @JdbcTest
@@ -40,9 +38,6 @@ class InspectionAdapterTest {
 
     private static final UUID LAB_DOCUMENT = UUID.fromString("0192f0a0-0000-7000-8000-0000000c0004");
     private static final long ONE_MINUTE = 60;
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private ShipmentWatchAdapter watch;

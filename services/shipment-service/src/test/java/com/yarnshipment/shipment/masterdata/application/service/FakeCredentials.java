@@ -1,21 +1,15 @@
 package com.yarnshipment.shipment.masterdata.application.service;
 
 import com.yarnshipment.shipment.masterdata.application.port.out.AccountCredentialPort;
-import com.yarnshipment.shipment.masterdata.domain.model.WeakPasswordException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/** Testlerde {@link AccountCredentialPort} yerine geçen sahte kimlik sağlayıcı; yapılan işlemleri kaydeder. */
+/** Testlerde {@link AccountCredentialPort} yerine geçen sahte uygulama; yapılan işlemleri kaydeder. */
 final class FakeCredentials implements AccountCredentialPort {
 
     private final List<String> passwords = new ArrayList<>();
     private final List<String> enabledChanges = new ArrayList<>();
-    private boolean rejectPasswords;
-
-    void rejectPasswords(boolean value) {
-        this.rejectPasswords = value;
-    }
 
     List<String> passwords() {
         return passwords;
@@ -26,11 +20,8 @@ final class FakeCredentials implements AccountCredentialPort {
     }
 
     @Override
-    public void setTemporaryPassword(UUID userId, String password) {
-        if (rejectPasswords) {
-            throw new WeakPasswordException();
-        }
-        passwords.add(userId + ":" + password);
+    public void setTemporaryPasswordHash(UUID userId, String passwordHash) {
+        passwords.add(userId + ":" + passwordHash);
     }
 
     @Override

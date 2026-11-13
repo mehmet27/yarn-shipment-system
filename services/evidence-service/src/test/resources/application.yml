@@ -25,13 +25,10 @@ spring:
   mvc:
     problemdetails:
       enabled: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/yarnshipment}
-          audiences: yarnshipment-api
 yarnshipment:
+  security:
+    # Testler oturum çerezi yerine doğrudan kimlik verir; CSRF yalnızca common-security testlerinde denenir.
+    csrf-enabled: false
   evidence:
     storage:
       endpoint: ${EVIDENCE_STORAGE_ENDPOINT:http://localhost:9000}

@@ -20,10 +20,8 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /** Merkez iplik stoku gerçek PostgreSQL ve uygulama rolünün yetkileriyle yazılır. */
 @DataJpaTest
@@ -48,9 +46,6 @@ class CentralStockAdapterTest {
             INSERT INTO weighing (id, shipment_id, side, gross_kg, tare_kg, bag_count, weighed_at, entered_by,
                                   created_at, created_by)
             VALUES (?, ?, 'DISPATCH', 34050, 18, 40, now(), ?, now(), ?)""";
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Autowired
     private BalanceLedgerAdapter ledger;

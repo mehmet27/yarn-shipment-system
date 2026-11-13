@@ -3,6 +3,10 @@ yarnshipment:
   database:
     # Yerel örnek veri (R__ tekrarlanabilir migration); üretim ayarlarında bu konumlar yoktur.
     seed-local: true
-  security:
-    # Yerel Keycloak'ta ikinci faktör kurulumu yok; bu yüzden ADMIN ve QUALITY rolleri MFA'sız da geçerli sayılır.
-    mfa-required-roles: []
+  auth:
+    bootstrap:
+      # Örnek sevkiyat verisiyle eşleşen admin, depo, kalite, mudur kullanıcıları (şifre: LOCAL_TEST_USER_PASSWORD).
+      # `pnpm yerel:sifirla` yalnızca admin ister; o betik LOCAL_SAMPLE_USERS=false verir.
+      sample-users: ${LOCAL_SAMPLE_USERS:true}
+      sample-password: ${LOCAL_TEST_USER_PASSWORD:}
+      admin-password: ${LOCAL_TEST_USER_PASSWORD:}

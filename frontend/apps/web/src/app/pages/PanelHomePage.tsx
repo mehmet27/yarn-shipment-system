@@ -13,7 +13,9 @@ export function PanelHomePage() {
       <Title order={1} size="h2">
         {t('home.welcome', { name: user?.fullName ?? '' })}
       </Title>
-      <PendingWeightDecisions />
+      <Can permission="SHIPMENT_VIEW">
+        <PendingWeightDecisions />
+      </Can>
       <Can
         permission="REPORT_VIEW"
         fallback={

@@ -79,6 +79,11 @@ eksik kullanıcıları (depo, kalite, müdür, genel müdür) yönetici ekranın
 | `09-sevkiyat-islemleri` | Çuval çıkarma, taslak iptali, fire oranı / fatura / kapatma, faturalanacaklar, iplik dönüşü, düzeltme, kanıt geçersiz kılma, lab sonucu ve karar                                                                                                                                             |
 | `10-surec-dogrulama`    | Bilinen sayılarla (200 kg iplik, 50 kg kumaş, 100 kg sevkiyat, 90 kg kumaş) süreci yürütür; stok, bakiye, özet, tartı, ambar fişi, fire hesabı, rapor ve denetim kaydını (merkez stok girişi, merkez üretimi ve kumaş girişi işlemleri dahil) API ve ekrandan **sonuç doğrulamalı** denetler |
 
+## Kural tablosu (`robot/kurallar`)
+
+Robotun iş kuralı bilgisi senaryolardan ayrıdır: `kurallar/yetki.ts` (hangi rol hangi ekranı açar) ve `kurallar/hesap.ts` (fire formülü, stok düşümü,
+kilo ve irsaliye sınırları). Kural değişince (yeni rol, yeni formül, yeni sınır) yalnızca bu dosyalar güncellenir.
+
 ## Kapsam kaydı (kimse unutulmasın)
 
 Gezgin (`05`) veri değiştirmeyen her şeye kendisi tıklar. **Veri değiştiren bir düğme** (kaydet, sil, iptal, pasife al,

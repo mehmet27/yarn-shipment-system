@@ -1,58 +1,18 @@
+import { IZINLI } from '../kurallar/yetki';
 import { KAPSANAN } from '../support/kapsam';
 import { sayfayiGez } from '../support/gezgin';
 import type { Kapsam } from '../support/gezgin';
 import { rolTanimli, test } from '../support/robot';
 
-/** Rol → gezilecek sabit rotalar (yetki matrisiyle aynı; 01-gezinti). Sevkiyat dosyaları duruma göre eklenir. */
-const ROTALAR: Record<string, string[]> = {
-  admin: [
-    '/panel',
-    '/panel/sevkiyat',
-    '/panel/sevkiyat/yeni',
-    '/panel/uyusmazliklar',
-    '/panel/tanimlar',
-    '/panel/partiler',
-    '/panel/raporlar',
-    '/panel/bakiye',
-    '/panel/merkez-stok',
-    '/panel/kullanicilar',
-    '/panel/denetim',
-    '/panel/gorunum',
-  ],
-  depo: ['/panel', '/panel/sevkiyat', '/panel/merkez-stok'],
-  kalite: [
-    '/panel',
-    '/panel/sevkiyat',
-    '/panel/uyusmazliklar',
-    '/panel/partiler',
-    '/panel/raporlar',
-    '/panel/bakiye',
-    '/panel/merkez-stok',
-    '/panel/denetim',
-  ],
-  mudur: [
-    '/panel',
-    '/panel/sevkiyat',
-    '/panel/sevkiyat/yeni',
-    '/panel/uyusmazliklar',
-    '/panel/raporlar',
-    '/panel/bakiye',
-    '/panel/faturalanacaklar',
-    '/panel/merkez-stok',
-    '/panel/denetim',
-  ],
-  'genel-mudur': ['/panel', '/panel/raporlar', '/panel/bakiye'],
-};
-
 type Liste = { items: { shipmentId: string; status: string }[] };
 
 const tumKapsam: (Kapsam & { rol: string })[] = [];
 
-for (const [rol, rotalar] of Object.entries(ROTALAR)) {
+for (const [rol, rotalar] of Object.entries(IZINLI)) {
   test(`Tüm ekranlar: ${rol} her sekme, filtre ve güvenli düğmeye tıklar`, async ({ giris }) => {
     test.skip(!rolTanimli(rol), `${rol} için kullanıcı/şifre tanımlı değil`);
     const robot = await giris(rol);
-    const yollar = [...rotalar];
+    const yollar = rotalar.filter((r) => r !== '/panel/gorunum' || rol === 'admin');
     if (rol !== 'genel-mudur') {
       const liste = await robot.api<Liste>('/api/v1/shipments?size=100');
       const durumlar = new Map<string, string>();

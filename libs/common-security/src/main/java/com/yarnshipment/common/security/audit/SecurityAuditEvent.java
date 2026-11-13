@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * (SEC-12); aktör yalnızca kimliğiyle yer alır.
  *
  * @param occurredAt sunucu zamanı
- * @param actorUserId Keycloak {@code sub}
+ * @param actorUserId kullanıcı kimliği
  * @param actorRoles aktörün rolleri
  * @param action yapılmak istenen işlem, ör. izin adı veya {@code GET /api/v1/shipments/{id}}
  * @param resource kaynak tipi ve kimliği, ör. {@code Shipment:0192...}

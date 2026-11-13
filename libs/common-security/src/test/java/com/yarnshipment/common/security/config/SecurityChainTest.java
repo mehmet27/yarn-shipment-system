@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.yarnshipment.common.security.TestTokens;
 import com.yarnshipment.common.security.audit.SecurityAuditEvent;
 import com.yarnshipment.common.security.config.SecurityTestApplication.RecordingAuditPublisher;
-import com.yarnshipment.common.security.config.SecurityTestApplication.StubJwtDecoder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,21 +14,21 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 @SpringBootTest(classes = SecurityTestApplication.class)
 @AutoConfigureMockMvc
 class SecurityChainTest {
 
     private final MockMvcTester mvc;
-    private final StubJwtDecoder jwtDecoder;
     private final RecordingAuditPublisher auditPublisher;
 
     @Autowired
-    SecurityChainTest(MockMvcTester mvc, StubJwtDecoder jwtDecoder, RecordingAuditPublisher auditPublisher) {
+    SecurityChainTest(MockMvcTester mvc, RecordingAuditPublisher auditPublisher) {
         this.mvc = mvc;
-        this.jwtDecoder = jwtDecoder;
         this.auditPublisher = auditPublisher;
     }
 
@@ -39,8 +38,8 @@ class SecurityChainTest {
     }
 
     @Test
-    @DisplayName("Token'sız istek 401 ve Türkçe problem cevabı alır")
-    void shouldReturnProblemForMissingToken() {
+    @DisplayName("Oturumsuz istek 401 ve Türkçe problem cevabı alır")
+    void shouldReturnProblemForMissingSession() {
         // when
         MvcTestResult result =
                 mvc.get().uri("/test/shipments").header("X-Request-Id", "req-1").exchange();
@@ -48,8 +47,8 @@ class SecurityChainTest {
         // then
         assertThat(result)
                 .hasStatus(HttpStatus.UNAUTHORIZED)
-                .hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
-                .hasHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
+                .hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(result.getResponse().getHeader(HttpHeaders.WWW_AUTHENTICATE)).isNull();
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("AUTHENTICATION_REQUIRED");
         assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Oturum gerekli");
         assertThat(result).bodyJson().extractingPath("$.requestId").isEqualTo("req-1");
@@ -60,8 +59,8 @@ class SecurityChainTest {
     }
 
     @Test
-    @DisplayName("Geçersiz token 401 alır")
-    void shouldRejectUnknownToken() {
+    @DisplayName("Bearer başlığı artık kimlik sayılmaz")
+    void shouldIgnoreBearerHeader() {
         // when
         MvcTestResult result = mvc.get()
                 .uri("/test/shipments")
@@ -76,23 +75,18 @@ class SecurityChainTest {
     @Test
     @DisplayName("İzni olan rol uca erişir")
     void shouldAllowPermittedRole() {
-        // given
-        String token = jwtDecoder.register(TestTokens.withRoles("warehouse").build());
-
         // when / then
-        assertThat(get("/test/shipments", token)).hasStatusOk().hasBodyTextEqualTo("[WAREHOUSE]");
+        assertThat(get("/test/shipments", "warehouse")).hasStatusOk().hasBodyTextEqualTo("[WAREHOUSE]");
     }
 
     @Test
     @DisplayName("İzni olmayan rol 403 alır ve ret audit'e yazılır")
     void shouldDenyAndAuditMissingPermission() {
-        // given
-        String token = jwtDecoder.register(TestTokens.withRoles("quality").build());
-
         // when
         MvcTestResult result = mvc.post()
                 .uri("/test/shipments")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .with(sessionOf("quality"))
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .exchange();
 
         // then
@@ -104,13 +98,23 @@ class SecurityChainTest {
     }
 
     @Test
+    @DisplayName("Durum değiştiren istek CSRF başlığı olmadan 403 alır")
+    void shouldRejectStateChangeWithoutCsrfToken() {
+        // when
+        MvcTestResult result = mvc.post()
+                .uri("/test/shipments")
+                .with(sessionOf("warehouse"))
+                .exchange();
+
+        // then
+        assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
     @DisplayName("Başka lokasyonun kaydı 404 değil 403 OUT_OF_SCOPE döner")
     void shouldReturnForbiddenForOutOfScopeRecord() {
-        // given
-        String token = jwtDecoder.register(TestTokens.withRoles("warehouse").build());
-
         // when
-        MvcTestResult result = get("/test/shipments/in-site/" + TestTokens.OTHER_SITE_ID, token);
+        MvcTestResult result = get("/test/shipments/in-site/" + TestTokens.OTHER_SITE_ID, "warehouse");
 
         // then
         assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
@@ -123,25 +127,28 @@ class SecurityChainTest {
     @Test
     @DisplayName("Kullanıcı kendi lokasyonunun kaydına erişir")
     void shouldAllowOwnRecord() {
-        // given
-        String token = jwtDecoder.register(TestTokens.withRoles("warehouse").build());
-
         // when / then
-        assertThat(get("/test/shipments/in-site/" + TestTokens.SITE_ID, token)).hasStatusOk();
+        assertThat(get("/test/shipments/in-site/" + TestTokens.SITE_ID, "warehouse"))
+                .hasStatusOk();
     }
 
     @Test
-    @DisplayName("Sağlık ucu token istemez")
+    @DisplayName("Sağlık ucu oturum istemez")
     void shouldPermitPublicPaths() {
         // when / then
         assertThat(mvc.get().uri("/actuator/info").exchange().getResponse().getStatus())
                 .isNotEqualTo(HttpStatus.UNAUTHORIZED.value());
     }
 
-    private MvcTestResult get(String uri, String token) {
+    private MvcTestResult get(String uri, String role) {
         return mvc.get()
                 .uri(uri)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .with(sessionOf(role))
                 .exchange();
+    }
+
+    private static RequestPostProcessor sessionOf(String role) {
+        return SecurityMockMvcRequestPostProcessors.authentication(
+                TestTokens.CONVERTER.convert(TestTokens.withRoles(role).build()));
     }
 }

@@ -1,4 +1,4 @@
-/** 401/403 problem cevapları ve servisler arası token aktarımı. */
+/** 401/403 problem cevapları. */
 @NullMarked
 package com.yarnshipment.common.security.web;
 

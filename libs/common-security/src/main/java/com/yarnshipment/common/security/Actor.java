@@ -7,14 +7,14 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * İsteği yapan kullanıcının token'dan çözülmüş hali (D-4). İşlemi yapan kişi her zaman buradan alınır, istek
+ * İsteği yapan kullanıcının oturumdaki hali (D-4). İşlemi yapan kişi her zaman buradan alınır, istek
  * gövdesinden değil (SEC-04).
  *
- * @param userId Keycloak {@code sub}
- * @param username {@code preferred_username}; kişisel veridir, loglanmaz
- * @param roles MFA kuralı uygulandıktan sonra geçerli roller
+ * @param userId kullanıcı kimliği (app_user.id)
+ * @param username giriş adı; kişisel veridir, loglanmaz
+ * @param roles geçerli roller
  * @param permissions rollerin {@link RolePermissionMatrix} ile açılmış izinleri
- * @param siteIds kullanıcının yetkili olduğu lokasyonlar ({@code site_ids} claim, GEN-07)
+ * @param siteIds kullanıcının yetkili olduğu lokasyonlar (GEN-07)
  * @param mfaVerified oturum iki adımlı doğrulamayla açıldı mı
  */
 public record Actor(

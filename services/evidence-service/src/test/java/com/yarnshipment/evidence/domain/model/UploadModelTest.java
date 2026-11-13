@@ -49,10 +49,10 @@ class UploadModelTest {
     }
 
     @Test
-    @DisplayName("İrsaliye tamamlama aşamasında, çuval fotoğrafı çıkışta, lab belgesi itirazda yüklenir")
+    @DisplayName("İrsaliye tamamlama aşamasında, kantar fişi çıkışta, lab belgesi itirazda yüklenir")
     void shouldMapTypesToStages() {
         assertThat(EvidenceType.WAYBILL.stages()).containsExactly(UploadStage.COMPLETION);
         assertThat(EvidenceType.LAB_RESULT.stages()).containsExactly(UploadStage.CLAIM);
-        assertThat(EvidenceType.BAG_LABEL.stages()).containsExactly(UploadStage.DISPATCH);
+        assertThat(EvidenceType.DISPATCH_SCALE.stages()).containsExactly(UploadStage.DISPATCH);
     }
 }

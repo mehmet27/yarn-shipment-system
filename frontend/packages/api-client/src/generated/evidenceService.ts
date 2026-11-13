@@ -42,8 +42,6 @@ export type EvidenceType = typeof EvidenceType[keyof typeof EvidenceType];
 
 export const EvidenceType = {
   DISPATCH_SCALE: 'DISPATCH_SCALE',
-  BAG_OVERVIEW: 'BAG_OVERVIEW',
-  BAG_LABEL: 'BAG_LABEL',
   WAYBILL: 'WAYBILL',
   QUALITY_CLAIM: 'QUALITY_CLAIM',
   LAB_RESULT: 'LAB_RESULT',

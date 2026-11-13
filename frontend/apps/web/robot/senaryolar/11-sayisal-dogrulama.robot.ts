@@ -8,7 +8,10 @@ type Bakiye = {
   items: { subcontractorTitle: string; yarnType: string; balanceKg: string }[];
   totalKg: string;
 };
-type Stok = { rows: { yarnType: string; stockKg: string }[] };
+type Stok = {
+  rows: { yarnType: string; stockKg: string }[];
+  flow: { receivedKg: string; directTransferKg: string; atSubcontractorsKg: string };
+};
 type Ozet = { shipments: Record<string, number> };
 type Fire = {
   sentKg: string;
@@ -109,6 +112,18 @@ test('Sayısal doğrulama: başka fasoncudan ve kapıdan aktarma sevkiyatı baki
         'merkez stokta bu iplik net 0 kg',
         kiloEsit(stokOf(sonra.stok, `${iplik}-K`), 0),
         `${stokOf(sonra.stok, `${iplik}-K`)}`,
+      );
+      const fark = (alan: keyof Stok['flow']) =>
+        Number(sonra.stok.flow[alan]) - Number(once.stok.flow[alan]);
+      mudur.kontrol(
+        'gelen iplik ve kapıdan aktarılan 100 kg arttı',
+        kiloEsit(fark('receivedKg'), 100) && kiloEsit(fark('directTransferKg'), 100),
+        `${fark('receivedKg')} / ${fark('directTransferKg')}`,
+      );
+      mudur.kontrol(
+        'fasoncularda duran iplik 100 kg arttı',
+        kiloEsit(fark('atSubcontractorsKg'), 100),
+        `${fark('atSubcontractorsKg')}`,
       );
     },
   );

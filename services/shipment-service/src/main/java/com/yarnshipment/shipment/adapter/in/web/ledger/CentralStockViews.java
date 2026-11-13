@@ -23,10 +23,14 @@ final class CentralStockViews {
             @Nullable String note,
             Instant occurredAt) {}
 
+    record YarnFlowView(
+            String receivedKg, String directTransferKg, String atSubcontractorsKg, String usedInCentralProductionKg) {}
+
     record CentralStockView(
             List<CentralStockRowView> rows,
             String totalKg,
             String producedFabricKg,
+            YarnFlowView flow,
             List<CentralStockMovementView> movements) {}
 
     record CentralProductionView(
@@ -39,6 +43,11 @@ final class CentralStockViews {
                         .toList(),
                 BalanceViews.kg(overview.totalKg()),
                 BalanceViews.kg(overview.producedFabricKg()),
+                new YarnFlowView(
+                        BalanceViews.kg(overview.flow().receivedKg()),
+                        BalanceViews.kg(overview.flow().directTransferKg()),
+                        BalanceViews.kg(overview.flow().atSubcontractorsKg()),
+                        BalanceViews.kg(overview.flow().usedInCentralProductionKg())),
                 overview.recent().stream().map(CentralStockViews::movement).toList());
     }
 

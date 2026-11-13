@@ -123,7 +123,16 @@ test('Merkez iplik stoku: özet kartları, arama, sıralama, tür süzgeci ve Ex
   const depo = await giris('depo');
   await depo.sayfa.goto('/panel/merkez-stok');
   await depo.adim('özet kartları görünür', async () => {
-    for (const ad of ['Toplam iplik stoku', 'Üretilen kumaş', 'Eksiye düşen iplik']) {
+    for (const ad of [
+      'Toplam iplik stoku',
+      'Üretilen kumaş',
+      'Eksiye düşen iplik',
+      'Gelen ipliğin dağılımı',
+      'Toplam gelen iplik',
+      'Merkez depoda',
+      'Fasoncularda',
+      'Kapıdan aktarılan',
+    ]) {
       await expect(depo.sayfa.getByText(ad).first()).toBeVisible();
     }
   });

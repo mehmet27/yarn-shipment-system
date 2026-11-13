@@ -23,6 +23,10 @@ describe('Merkez iplik stoku', () => {
     await user.click(screen.getByRole('tab', { name: 'Eldeki iplik' }));
     const table = await screen.findByRole('table', { name: 'Merkez iplik stoku' });
     expect(within(table).getByText('30/1 Penye')).toBeInTheDocument();
+    expect(screen.getByText('Gelen ipliğin dağılımı')).toBeInTheDocument();
+    for (const ad of ['Toplam gelen iplik', 'Fasoncularda', 'Kapıdan aktarılan']) {
+      expect(screen.getByText(ad)).toBeInTheDocument();
+    }
   });
 
   it('kalite kumaş girer; iplik fire ile stoktan düşer', async () => {

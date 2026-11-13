@@ -11,7 +11,7 @@ Güncelleme: 04.11.2026. Sonraki geliştirmeler bu listeden sürer; biten madde 
 | 4 | Süresi geçen uyuşmazlık filtresi (7.6) | P2 | 1-2 | ✅ Yapıldı: liste filtresi + `due=OVERDUE` sorgu parametresi |
 | 5 | Zayıf bağlantıda fotoğraf kuyruğu (9.3) | P2 | 4-5 | ⏳ Bekliyor (şoför kararına bağlı) |
 | 6 | Şahit numune kaydı (2.5) | P2 | 3-4 | ⏳ Bekliyor |
-| 7 | Kanıt ayrıntıları: galeri uyarısı, cihaz bilgisi, filigran, teslim çuval fotoğrafı | P2 | 4-5 | ⏳ Bekliyor |
+| 7 | Kanıt ayrıntıları: galeri uyarısı, cihaz bilgisi, filigran | P2 | 4-5 | ⏳ Bekliyor |
 | 8 | Eksik belge/foto, galeri oranı, düzeltilen kayıt raporu (8.5) | P2 | 3-4 | ⏳ Bekliyor |
 | 9 | KVKK aydınlatma/onay + e-İrsaliye no alanı (9.5, 9.6) | P2 | 2-3 | ⏳ Bekliyor |
 | 10 | Giriş için OTP (TOTP) (1.7) | P2 | 2-3 | ⏸ Ertelendi: Keycloak kaldırıldı; kendi giriş sistemimize ileride TOTP eklenecek |

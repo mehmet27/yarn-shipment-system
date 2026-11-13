@@ -122,7 +122,7 @@ Endpoint'ler rol değil izin ister; matrisin tek kaynağı `libs/common-security
 | `SHIPMENT_COMPLETE` (irsaliyeyle tamamlama, irsaliye yükleme) | ✓ | | | ✓ | |
 | `DISPATCH_RECORD` (çuval atama/çıkarma, çıkış tartısı) | | ✓ | | | |
 | `DISPATCH_VIEW` | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `EVIDENCE_UPLOAD_DISPATCH` (kantar fişi, çuval fotoğrafı) | | ✓ | | | |
+| `EVIDENCE_UPLOAD_DISPATCH` (kantar fişi) | | ✓ | | | |
 | `EVIDENCE_UPLOAD_CLAIM` (itiraz fotoğrafı, lab belgesi) | | | ✓ | | ✓ |
 | `EVIDENCE_VIEW` | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `EVIDENCE_INVALIDATE` | ✓ | | | | |

@@ -13,11 +13,23 @@ export type CentralStockMovement = {
   note?: string;
   occurredAt: string;
 };
+export type YarnFlow = {
+  /** Merkeze girenler ve kapıdan aktarılanlar. */
+  receivedKg: string;
+  /** Merkez depoya girmeden kapıdan fasoncuya aktarılan kısım. */
+  directTransferKg: string;
+  /** Fasoncuların elindeki iplik (bakiye toplamı). */
+  atSubcontractorsKg: string;
+  /** Merkez fabrikada kumaş üretimine verilen iplik. */
+  usedInCentralProductionKg: string;
+};
 export type CentralStock = {
   rows: CentralStockRow[];
   totalKg: string;
   /** Merkez fabrikada bugüne kadar üretilen toplam kumaş. */
   producedFabricKg: string;
+  /** Gelen ipliğin merkez / fasoncu / merkez üretimi dağılımı. */
+  flow: YarnFlow;
   movements: CentralStockMovement[];
 };
 

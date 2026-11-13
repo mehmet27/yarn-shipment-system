@@ -7,7 +7,19 @@ type Translate = (key: string) => string;
 
 /** Ekrandaki merkez stok ve hareketleri Excel/PDF indirmesi için tablo modeline çevirir. */
 export function stockReportTables(stock: CentralStock, t: Translate): ReportTable[] {
+  const { flow } = stock;
   return [
+    {
+      title: t('stock.summary.flowTitle'),
+      headers: [t('stock.kind'), t('stock.kg')],
+      rows: [
+        [text(t('stock.summary.received')), kg(flow.receivedKg)],
+        [text(t('stock.summary.atCentral')), kg(stock.totalKg)],
+        [text(t('stock.summary.atSubcontractors')), kg(flow.atSubcontractorsKg)],
+        [text(t('stock.summary.inProduction')), kg(flow.usedInCentralProductionKg)],
+        [text(t('stock.summary.direct')), kg(flow.directTransferKg)],
+      ],
+    },
     {
       title: t('stock.title'),
       headers: [t('stock.yarnType'), t('stock.stockKg')],

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.adapter.out.persistence.PostgresTestDatabase;
 import com.yarnshipment.shipment.application.port.in.stock.CentralStockRow;
+import com.yarnshipment.shipment.application.port.in.stock.YarnFlow;
 import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
@@ -157,5 +158,10 @@ class CentralStockAdapterTest {
                         DIRECT_SHIPMENT))
                 .contains("Esha İplik")
                 .contains("IRS-77");
+        YarnFlow flow = stock.findYarnFlow();
+        assertThat(flow.receivedKg()).isPositive();
+        assertThat(flow.directTransferKg()).isEqualByComparingTo(flow.receivedKg());
+        assertThat(flow.atSubcontractorsKg()).isEqualByComparingTo(flow.directTransferKg());
+        assertThat(flow.usedInCentralProductionKg()).isEqualByComparingTo("0");
     }
 }

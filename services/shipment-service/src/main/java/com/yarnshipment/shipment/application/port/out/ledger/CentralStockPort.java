@@ -1,6 +1,7 @@
 package com.yarnshipment.shipment.application.port.out.ledger;
 
 import com.yarnshipment.shipment.application.port.in.stock.CentralStockRow;
+import com.yarnshipment.shipment.application.port.in.stock.YarnFlow;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
 import java.math.BigDecimal;
@@ -16,6 +17,9 @@ public interface CentralStockPort {
     void saveProduction(CentralProduction production, List<CentralStockMovement> consumptions);
 
     List<CentralStockRow> findStock();
+
+    /** Gelen ipliğin merkezde / fasoncularda / üretimde dağılımı. */
+    YarnFlow findYarnFlow();
 
     List<CentralStockMovement> findRecent(int limit);
 

@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.stock.CentralStockRow;
+import com.yarnshipment.shipment.application.port.in.stock.YarnFlow;
 import com.yarnshipment.shipment.application.port.in.stock.RecordCentralProductionUseCase;
 import com.yarnshipment.shipment.application.port.in.stock.RecordYarnReceiptUseCase;
 import com.yarnshipment.shipment.application.port.out.ledger.CentralStockPort;
@@ -100,6 +101,11 @@ class CentralStockServiceTest {
             return kg.entrySet().stream()
                     .map(entry -> new CentralStockRow(entry.getKey(), entry.getValue()))
                     .toList();
+        }
+
+        @Override
+        public YarnFlow findYarnFlow() {
+            return new YarnFlow(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
         }
 
         @Override

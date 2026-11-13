@@ -5,7 +5,7 @@ import { PanelExportBar } from '@/modules/report';
 import { stockReportTables } from '../stockReport';
 import { MovementRows } from './MovementRows';
 import { StockRows } from './StockRows';
-import { StockSummary } from './StockSummary';
+import { StockSummary, YarnFlowSummary } from './StockSummary';
 
 /** Merkezde iplik cinsi başına eldeki kilo ve son hareketler; ekrandaki veri Excel/PDF olarak indirilir. */
 export function StockTable({ stock }: { stock: CentralStock }) {
@@ -16,6 +16,7 @@ export function StockTable({ stock }: { stock: CentralStock }) {
   return (
     <Stack>
       <StockSummary stock={stock} />
+      <YarnFlowSummary stock={stock} />
       {negative.length > 0 && (
         <Alert color="yellow">{`${t('stock.negativeWarning')} (${negative.join(', ')})`}</Alert>
       )}

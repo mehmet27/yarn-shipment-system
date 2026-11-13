@@ -122,10 +122,14 @@ export class Robot {
 /** Genel ("tekrar deneyin" gibi) hata metni neden söylemediği için yetersiz sayılır. */
 export const GENEL_MESAJ = /lütfen tekrar deneyin|işlem yapılamadı|beklenmeyen bir hata|problem\./i;
 
-export const test = base.extend<{ giris: (rol: string, ilkSifre?: string) => Promise<Robot> }>({
+export type Gorunum = { width: number; height: number; hasTouch?: boolean };
+
+export const test = base.extend<{
+  giris: (rol: string, ilkSifre?: string, gorunum?: Gorunum) => Promise<Robot>;
+}>({
   giris: async ({ browser }, use, info) => {
     const robotlar: Robot[] = [];
-    await use(async (rol, ilkSifre) => {
+    await use(async (rol, ilkSifre, gorunum) => {
       const kullanici = KULLANICILAR[rol];
       const sifre = OZEL_SIFRE[rol] ?? process.env.ROBOT_SIFRE;
       if (kullanici === undefined || sifre === undefined) {
@@ -133,7 +137,8 @@ export const test = base.extend<{ giris: (rol: string, ilkSifre?: string) => Pro
       }
       const baglam = await browser.newContext({
         locale: 'tr-TR',
-        viewport: { width: 1280, height: 900 },
+        viewport: gorunum ?? { width: 1280, height: 900 },
+        hasTouch: gorunum?.hasTouch ?? false,
       });
       const sayfa = await baglam.newPage();
       await sayfa.goto(`${GATEWAY}/oauth2/authorization/keycloak`);

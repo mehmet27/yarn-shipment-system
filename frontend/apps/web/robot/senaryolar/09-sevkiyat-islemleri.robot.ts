@@ -111,7 +111,8 @@ test('İplik dönüşü, düzeltme ve kanıt geçersiz kılma', async ({ giris }
   const kalite = await giris('kalite');
   const admin = await giris('admin');
   for (const r of [depo, mudur, kalite, admin]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
-  const id = await tamamlanmisSevkiyat({ depo, mudur }, damga(), '100', '3');
+  const iplik = damga();
+  const id = await tamamlanmisSevkiyat({ depo, mudur }, iplik, '100', '3');
 
   await mudur.adim(
     'iplik dönüşü: gönderilenden fazlası reddedilir, makul değer kaydolur',
@@ -121,7 +122,7 @@ test('İplik dönüşü, düzeltme ve kanıt geçersiz kılma', async ({ giris }
       await mudur.sayfa
         .getByLabel(/İplik cinsi/)
         .first()
-        .fill('ROBOT-dönüş');
+        .fill(iplik);
       await mudur.sayfa.getByLabel(/Net kilo/).fill('5000');
       await mudur.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
       const mesajlar = await mudur.mesajlar();

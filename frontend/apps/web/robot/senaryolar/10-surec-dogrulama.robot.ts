@@ -1,3 +1,9 @@
+import {
+  fireHesapla,
+  kiloEsit as yakin,
+  kiloMetni as kg,
+  uretimIplikDusumu,
+} from '../kurallar/hesap';
 import { tamamlanmisSevkiyat } from '../support/akis';
 import { expect, test } from '../support/robot';
 import { damga } from '../support/yardimci';
@@ -26,10 +32,6 @@ type Fire = {
   status: string;
 };
 type Liste = { items: { shipmentId: string; shipmentNo: string; status: string }[] };
-
-const kg = (n: number) =>
-  `${new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 3 }).format(n)} kg`;
-const yakin = (a: number, b: number) => Math.abs(a - b) < 0.002;
 
 /**
  * Bilinen sayılarla süreci baştan sona yürütür ve her adımın sonucunu hem API'den hem ekrandan doğrular:
@@ -89,7 +91,7 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
       await kalite.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();
       await expect(kalite.sayfa.getByLabel(/Kumaş cinsi/)).toHaveValue('');
       const stok = await kalite.api<Stok>('/api/v1/central-stock');
-      const beklenen = 200 - 50 / 0.97;
+      const beklenen = 200 - uretimIplikDusumu(50, 0.03);
       kalite.kontrol(
         'iplik stoğu 148,454 kg olmalı',
         yakin(Number(stok.rows.find((r) => r.yarnType === iplik)?.stockKg ?? 0), beklenen),
@@ -147,7 +149,7 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
       'merkez stoktan 100 kg daha düşer (148,454 → 48,454)',
       yakin(
         Number(stok.rows.find((r) => r.yarnType === iplik)?.stockKg ?? 0),
-        200 - 50 / 0.97 - 100,
+        200 - uretimIplikDusumu(50, 0.03) - 100,
       ),
       String(stok.rows.find((r) => r.yarnType === iplik)?.stockKg),
     );
@@ -203,18 +205,19 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
       await mudur.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
       await mudur.sayfa.waitForTimeout(1500);
       const fire = await mudur.api<Fire>(`/api/v1/shipments/${id}/fire-settlement`);
+      const h = fireHesapla({ gonderilen: 100, donen: 0, itiraz: 0, kumas: 90, oran: 0.03 });
       mudur.kontrol(
-        'API: G=100, K=90, T=100, B=97, hatalı=7',
+        'API: G=100, K=90 için taban, beklenen ve hatalı kilo kural formülüyle aynı',
         Number(fire.sentKg) === 100 &&
           Number(fire.fabricKg) === 90 &&
-          Number(fire.baseKg) === 100 &&
-          yakin(Number(fire.expectedFabricKg), 97) &&
-          yakin(Number(fire.faultyKg), 7),
+          yakin(Number(fire.baseKg), h.taban) &&
+          yakin(Number(fire.expectedFabricKg), h.beklenen) &&
+          yakin(Number(fire.faultyKg), h.hatali),
         JSON.stringify(fire),
       );
       mudur.kontrol(
         'API: gerçekleşen fire %10, durum faturalanacak',
-        yakin(Number(fire.actualFirePercent), 10) && fire.status === 'TO_INVOICE',
+        yakin(Number(fire.actualFirePercent), h.gerceklesenYuzde) && fire.status === 'TO_INVOICE',
         `${fire.actualFirePercent} ${fire.status}`,
       );
       await mudur.sayfa.getByRole('tab', { name: 'Fire dosyası', exact: true }).click();

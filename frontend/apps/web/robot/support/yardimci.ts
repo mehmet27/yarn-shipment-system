@@ -40,7 +40,8 @@ export async function resim(sayfa: Page, tohum = 1): Promise<Buffer> {
 }
 
 /** Her koşuda benzersiz, robotun ürettiğini belli eden ek. */
-export const damga = () => `ROBOT-${new Date().toISOString().slice(5, 16).replace(/\D/g, '')}`;
+export const damga = () =>
+  `ROBOT-${new Date().toISOString().slice(5, 19).replace(/\D/g, '')}${String(Math.floor(Math.random() * 100)).padStart(2, '0')}`;
 
 /** Metni içeren, düğmesi olan en iç satır/kart kutusu (liste satırlarının ortak yapısı yok). */
 export function satir(sayfa: Page, metin: string, dugme: string | RegExp) {

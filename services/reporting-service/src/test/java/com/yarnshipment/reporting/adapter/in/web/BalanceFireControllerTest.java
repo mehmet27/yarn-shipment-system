@@ -89,7 +89,8 @@ class BalanceFireControllerTest {
                 new BigDecimal("0.04"),
                 "TO_INVOICE",
                 null,
-                null);
+                null,
+                BigDecimal.ZERO);
         when(listFire.listFire(any(), any())).thenReturn(List.of(file));
         when(listToInvoice.listToInvoice(any())).thenReturn(List.of(file));
         when(listYarnVsFabric.listYarnVsFabric(any())).thenReturn(YarnVsFabricRow.aggregate(List.of(file)));

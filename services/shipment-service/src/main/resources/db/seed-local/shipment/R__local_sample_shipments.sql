@@ -153,14 +153,20 @@ VALUES ('0192f0a0-0000-7000-8000-000000000301', 'Şireci', '2026-10-01T08:00:00Z
        ('0192f0a0-0000-7000-8000-000000000305', 'Creora', '2026-10-01T08:00:00Z', '0192f0a0-0000-7000-8000-00000000d001')
 ON CONFLICT (id) DO NOTHING;
 
--- Bakiye defteri: çıkış yapılmış (fasoncuya yolda ya da tamamlanmış) her örnek sevkiyat için çıkış hareketi.
--- Gerçek akışta çıkış tartısı kaydedilince yazılır; örnek veride de yazılmazsa fasoncu bakiyesi 0 kalır ve
--- raporlardaki "fasoncuya ulaşan" kilolarla uyuşmaz.
+-- Tamamlanmış örnek sevkiyatlar için, gerçek akıştaki (CompleteShipmentService) gibi çıkış defter hareketi ve fire dosyası.
+-- Çıkış hareketi yazılmazsa fasoncu bakiyesi 0 kalır; fire dosyası yazılmazsa tamamlanan sevkiyatın fire sekmesi boş çıkar.
+-- Yolda olan (AWAITING_DELIVERY) sevkiyatın kilosu bakiyeye girmez, "yolda" olarak ayrı hesaplanır.
 INSERT INTO balance_movement (id, subcontractor_id, yarn_type, shipment_id, kind, net_kg, occurred_at, created_by,
                               source_ref)
 SELECT ('0192f0a0-0000-7000-8000-0000000e' || lpad(s.n::text, 4, '0'))::uuid, s.subcontractor_id, '(reçetesiz)',
-       s.id, 'DISPATCH', 250.000, s.created_at + interval '2 hours', '0192f0a0-0000-7000-8000-00000000d001',
+       s.id, 'DISPATCH', 250.000, s.created_at + interval '2 days', '0192f0a0-0000-7000-8000-00000000d001',
        'DISPATCH:' || s.id || ':1'
 FROM seed_shipment s
-WHERE s.status IN ('AWAITING_DELIVERY', 'COMPLETED')
+WHERE s.status = 'COMPLETED'
 ON CONFLICT (source_ref) DO NOTHING;
+
+INSERT INTO fire_settlement (shipment_id, subcontractor_id, status, fire_rate, sent_kg, created_at)
+SELECT s.id, s.subcontractor_id, 'AWAITING_FABRIC', 0.0400, 250.000, s.created_at + interval '2 days'
+FROM seed_shipment s
+WHERE s.status = 'COMPLETED'
+ON CONFLICT (shipment_id) DO NOTHING;

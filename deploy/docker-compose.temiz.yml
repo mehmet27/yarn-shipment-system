@@ -1,0 +1,6 @@
+# Temiz yerel kurulum: Keycloak'a yalnızca `admin` kullanıcısı olan realm yüklenir; diğer kullanıcıları (depo, kalite,
+# müdür…) robot ya da yönetici Kullanıcılar ekranından açar. Kullanım: deploy/temiz-kurulum.sh
+services:
+  keycloak:
+    volumes:
+      - ./keycloak/yarnshipment-realm-local-temiz.json:/opt/keycloak/data/import/yarnshipment-realm.json:ro

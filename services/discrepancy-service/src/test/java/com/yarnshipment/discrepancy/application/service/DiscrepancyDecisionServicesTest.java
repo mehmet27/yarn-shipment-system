@@ -17,12 +17,18 @@ import com.yarnshipment.discrepancy.application.port.in.AssignDiscrepancyCommand
 import com.yarnshipment.discrepancy.application.port.in.ResolveDiscrepancyCommand;
 import com.yarnshipment.discrepancy.application.port.out.DiscrepancyDecisionPort;
 import com.yarnshipment.discrepancy.application.port.out.DiscrepancyQueryPort;
+import com.yarnshipment.discrepancy.application.port.out.InspectionPort;
+import com.yarnshipment.discrepancy.domain.claim.ClaimRejectedException;
+import com.yarnshipment.discrepancy.domain.claim.ClaimRejection;
+import com.yarnshipment.discrepancy.domain.claim.Inspection;
+import com.yarnshipment.discrepancy.domain.claim.InspectionKind;
 import com.yarnshipment.discrepancy.domain.model.Discrepancy;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyStatus;
 import com.yarnshipment.discrepancy.domain.model.Resolution;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,10 +43,11 @@ class DiscrepancyDecisionServicesTest {
 
     private final DiscrepancyQueryPort queries = mock(DiscrepancyQueryPort.class);
     private final DiscrepancyDecisionPort decisions = mock(DiscrepancyDecisionPort.class);
+    private final InspectionPort inspections = mock(InspectionPort.class);
     private final ScopeGuard scopeGuard = new ScopeGuard(event -> {}, CLOCK);
     private final AssignDiscrepancyService assign = new AssignDiscrepancyService(queries, decisions, scopeGuard, CLOCK);
     private final ResolveDiscrepancyService resolve =
-            new ResolveDiscrepancyService(queries, decisions, scopeGuard, CLOCK);
+            new ResolveDiscrepancyService(queries, decisions, inspections, scopeGuard, CLOCK);
 
     @Test
     @DisplayName("Yetkili olunmayan lokasyondaki uyuşmazlık kapsam dışıdır ve karar yazılmaz")
@@ -83,6 +90,30 @@ class DiscrepancyDecisionServicesTest {
         assertThat(decision.note()).isEqualTo("tartı hatası");
         assertThat(decision.resolvedBy()).isEqualTo(actor.userId());
         verify(decisions).saveResolution(resolved, actor.userId(), NOW);
+    }
+
+    @Test
+    @DisplayName("Sonucu girilmemiş numune ya da lab kontrolü varken karar verilemez")
+    void shouldRejectResolveWhilePendingInspection() {
+        Actor actor = quality();
+        when(queries.findDiscrepancy(TestDiscrepancies.ID))
+                .thenReturn(Optional.of(TestDiscrepancies.open(TestTokens.SITE_ID)));
+        Inspection pending = new Inspection(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                TestDiscrepancies.ID,
+                InspectionKind.LAB,
+                new Inspection.Request("numune alın", actor.userId(), NOW),
+                null);
+        when(inspections.findInspections(TestDiscrepancies.ID)).thenReturn(List.of(pending));
+        ResolveDiscrepancyCommand command = new ResolveDiscrepancyCommand(
+                actor, TestDiscrepancies.ID, Resolution.CLAIM_JUSTIFIED, "haklı", null);
+
+        assertThatThrownBy(() -> resolve.resolveDiscrepancy(command))
+                .isInstanceOfSatisfying(
+                        ClaimRejectedException.class,
+                        e -> assertThat(e.rejection()).isEqualTo(ClaimRejection.INSPECTION_PENDING));
+        verify(decisions, never()).saveResolution(any(), any(), any());
     }
 
     private static Actor quality() {

@@ -13,8 +13,10 @@ function resolutionOptions(t: (key: string) => string) {
 }
 
 function errorKey(error: unknown): string {
-  return toProblem(error).code === 'DISCREPANCY_NOT_OPEN'
-    ? 'discrepancy.resolve.notOpen'
+  const { code } = toProblem(error);
+  if (code === 'DISCREPANCY_NOT_OPEN') return 'discrepancy.resolve.notOpen';
+  return code === 'QUALITY_CLAIM_INSPECTION_PENDING'
+    ? 'discrepancy.resolve.inspectionPending'
     : 'discrepancy.resolve.failed';
 }
 

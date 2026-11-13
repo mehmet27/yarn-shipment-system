@@ -4,6 +4,7 @@
 //   pnpm robot -- --video       her senaryonun videosunu rapora ekler
 //   pnpm robot -- --rol=depo    yalnızca adında "depo" geçen senaryolar
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -36,10 +37,11 @@ for (const bayrak of bayraklar) {
   else if (bayrak.startsWith('--rol=')) arguman.push('-g', bayrak.slice(6));
   else arguman.push(bayrak);
 }
-const sonuc = spawnSync('pnpm', ['exec', 'playwright', 'test', '-c', 'robot', ...arguman], {
+// Playwright'ı doğrudan node ile çalıştırırız: kabuk üzerinden geçince Windows'ta `|` ve boşluk bozulur.
+const playwright = createRequire(import.meta.url).resolve('@playwright/test/cli');
+const sonuc = spawnSync(process.execPath, [playwright, 'test', '-c', 'robot', ...arguman], {
   stdio: 'inherit',
   env,
-  shell: process.platform === 'win32',
   cwd: join(import.meta.dirname, '..'),
 });
 process.exit(sonuc.status ?? 1);

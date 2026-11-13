@@ -1,0 +1,40 @@
+/**
+ * Veri değiştiren düğmeler ve bunları deneyen senaryolar. Gezgin (05-tum-ekranlar) bu düğmeleri tıklamaz; burada
+ * yazılı değilse "kapsam açığı" raporlar. Yeni bir düğme eklendiğinde ilgili senaryoyu yazıp buraya ekleyin.
+ * Anahtar: `rota|düğme adı` (rota kimlikleri `<id>` olarak kısaltılır) ya da `*|düğme adı` (her sayfa).
+ */
+export const KAPSANAN: Record<string, string> = {
+  '/panel/merkez-stok|İplik girişini kaydet': '02-formlar, 03-akis',
+  '/panel/merkez-stok|Kumaşı kaydet': '02-formlar, 03-akis',
+  '/panel/sevkiyat/yeni|Taslak oluştur': '02-formlar, 03-akis',
+  '/panel/gorunum|Kaydet': '08-gorunum-raporlar',
+  '/panel/kullanicilar|Hesabı düzenle': '07-kullanicilar',
+  '/panel/kullanicilar|Diğer işlemler': '07-kullanicilar (Şifre ver, Pasife al)',
+  '/panel/partiler|Düzenle': '06-tanimlar-partiler',
+  '/panel/partiler|Kaliteyi kilitle': '06-tanimlar-partiler',
+  '/panel/partiler|Pasife al': '06-tanimlar-partiler',
+  '/panel/tanimlar|Düzenle': '06-tanimlar-partiler',
+  '/panel/tanimlar|Pasife al': '06-tanimlar-partiler',
+  '/panel/raporlar|Satırları yükle': '08-gorunum-raporlar',
+  '/panel/sevkiyat/<id>|Sevkiyatı tamamla': '03-akis, 09',
+  '/panel/sevkiyat/<id>|İptal et': '09-sevkiyat-islemleri',
+  '/panel/sevkiyat/<id>|Listeye ekle': '03-akis, 09',
+  '/panel/sevkiyat/<id>|Çuvalları ekle': '03-akis, 09',
+  '/panel/sevkiyat/<id>|Sevkiyattan çıkar': '09-sevkiyat-islemleri',
+  '/panel/sevkiyat/<id>|Kumaş girişini kaydet': '03-akis, 09',
+  '/panel/sevkiyat/<id>|Hareketi kaydet': '09-sevkiyat-islemleri',
+  '/panel/sevkiyat/<id>|Oranı kaydet': '09-sevkiyat-islemleri',
+  '/panel/sevkiyat/<id>|Fatura edildi': '09-sevkiyat-islemleri',
+  '/panel/sevkiyat/<id>|Kapat': '09-sevkiyat-islemleri',
+  '/panel/sevkiyat/<id>|Düzeltmeyi kaydet': '09-sevkiyat-islemleri',
+  '/panel/sevkiyat/<id>|Geçersiz kıl': '09-sevkiyat-islemleri',
+  '/panel/sevkiyat/<id>|Kalite itirazı aç': '03-akis, 09',
+  '/panel/sevkiyat/<id>|İtirazı gönder': '03-akis, 09',
+  '/panel/sevkiyat/<id>|Kontrol iste': '03-akis, 09',
+  '/panel/sevkiyat/<id>/cikis|Kaydet': '03-akis',
+  '/panel/uyusmazliklar/<id>|Bana ata': '03-akis, 09',
+  '/panel/uyusmazliklar/<id>|Kontrol iste': '03-akis, 09',
+  '/panel/uyusmazliklar/<id>|Sonucu kaydet': '09-sevkiyat-islemleri',
+  '/panel/uyusmazliklar/<id>|Karara bağla': '03-akis, 09',
+  '/panel/uyusmazliklar/<id>|Geçersiz kıl': '09-sevkiyat-islemleri',
+};

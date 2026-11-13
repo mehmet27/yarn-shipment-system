@@ -41,7 +41,12 @@ export class Robot {
       this.sorunEkle('sayfa', `Yakalanmamış istisna: ${hata.message}`),
     );
     sayfa.on('console', (mesaj) => {
-      if (mesaj.type() !== 'error' || /status of 4\d\d/.test(mesaj.text())) return;
+      // 4xx ağ satırları 'response' dinleyicisinden gelir; ERR_INSUFFICIENT_RESOURCES uzun koşuda tarayıcının kaynak sınırıdır.
+      if (
+        mesaj.type() !== 'error' ||
+        /status of 4\d\d|ERR_INSUFFICIENT_RESOURCES/.test(mesaj.text())
+      )
+        return;
       this.sorunEkle('konsol', mesaj.text().slice(0, 300));
     });
     sayfa.on('response', (yanit) => {

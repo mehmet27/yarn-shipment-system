@@ -47,23 +47,37 @@ eksik kullanıcıları (depo, kalite, müdür, genel müdür) yönetici ekranın
 
 ## Senaryolar (`robot/senaryolar`)
 
-| Dosya           | Ne yapar                                                                                                                 |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `01-gezinti`    | Her rolle tüm ekranları açar; yetkili ekranda hata/konsol/ağ hatası, yetkisizde 403 arar                                 |
-| `02-formlar`    | Formlara eksik/hatalı değer girer; ekranın nedeni söyleyen bir mesaj gösterdiğini ve 5xx olmadığını denetler             |
-| `03-akis`       | İplik girişi → kumaş üretimi → sevkiyat → çuval → çıkış tartısı → tamamlama → kumaş girişi → kalite itirazı → uyuşmazlık |
-| `04-tutarlilik` | Özet, bakiye ve fire dosyası sayılarını API'den çekip birbiriyle karşılaştırır                                           |
+| Dosya                   | Ne yapar                                                                                                                                                                                                                                                                                  |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `00-kurulum`            | Temiz kurulumda eksik kullanıcıları yönetici ekranından açar ve ilk girişlerini yapar                                                                                                                                                                                                     |
+| `01-gezinti`            | Her rolle tüm ekranları açar; yetkili ekranda hata/konsol/ağ hatası, yetkisizde 403 arar                                                                                                                                                                                                  |
+| `02-formlar`            | Formlara eksik/hatalı değer girer; ekranın nedeni söyleyen bir mesaj gösterdiğini ve 5xx olmadığını denetler                                                                                                                                                                              |
+| `03-akis`               | İplik girişi → kumaş üretimi → sevkiyat → çuval → çıkış tartısı → tamamlama → kumaş girişi → kalite itirazı → uyuşmazlık                                                                                                                                                                  |
+| `04-tutarlilik`         | Özet, bakiye ve fire dosyası sayılarını API'den çekip birbiriyle karşılaştırır                                                                                                                                                                                                            |
+| `05-tum-ekranlar`       | **Gezgin:** her rol her ekranda her sekme, filtre, anahtar, liste, sayfalama ve indirme düğmesine tıklar; sevkiyat dosyasının her durumunu ve uyuşmazlık detayını da gezer. Veri değiştiren düğmeleri tıklamaz ama `support/kapsam.ts` kaydında senaryosu yoksa **kapsam açığı** raporlar |
+| `06-tanimlar-partiler`  | Tanımlar (6 tür) ve partilerde ekle, düzenle, kilitle, pasife al                                                                                                                                                                                                                          |
+| `07-kullanicilar`       | Hesap aç, düzenle, süzgeçler, şifre ver, pasife al ve pasif hesabın girişinin kapandığını doğrula                                                                                                                                                                                         |
+| `08-gorunum-raporlar`   | Görünüm (ad, logo, varsayılan), rapor sekmeleri, tarih aralığı, Excel/PDF indirme, rapor logosu, açılış bakiyesi                                                                                                                                                                          |
+| `09-sevkiyat-islemleri` | Çuval çıkarma, taslak iptali, fire oranı / fatura / kapatma, faturalanacaklar, iplik dönüşü, düzeltme, kanıt geçersiz kılma, lab sonucu ve karar                                                                                                                                          |
+| `10-surec-dogrulama`    | Bilinen sayılarla (200 kg iplik, 50 kg kumaş, 100 kg sevkiyat, 90 kg kumaş) süreci yürütür; stok, bakiye, özet, tartı, ambar fişi, fire hesabı, rapor ve denetim kaydını API ve ekrandan **sonuç doğrulamalı** denetler                                                                   |
+
+## Kapsam kaydı (kimse unutulmasın)
+
+Gezgin (`05`) veri değiştirmeyen her şeye kendisi tıklar. **Veri değiştiren bir düğme** (kaydet, sil, iptal, pasife al,
+kilitle…) için `support/kapsam.ts` içine `rota|düğme adı` → senaryo kaydı eklenmelidir; yoksa rapor
+"Kapsam açığı: …" yazar ve robot kırmızı olur. Yani yeni bir düğme eklenince robota senaryo yazmadan yeşil çıkmaz.
 
 ## Yeni özellik eklerken robotu güncelleme kuralı
 
 Her geliştirmede (yeni ekran, rota, alan, düğme, doğrulama ya da hesap kuralı) aynı PR'da robota gereken bilgi verilir:
 
-1. **Yeni ekran/rota**: `01-gezinti` içindeki `EKRANLAR` listesine ekleyin ve `IZINLI` tablosunda hangi rollerin açabileceğini yazın.
+1. **Yeni ekran/rota**: `01-gezinti` içindeki `EKRANLAR` listesine ve `IZINLI` tablosuna ekleyin; `05-tum-ekranlar` içindeki `ROTALAR` listesine de ekleyin (gezgin her sekmesine tıklasın).
 2. **Yeni form ya da alan**: `02-formlar` içine eksik/hatalı giriş senaryosu ekleyin. Beklenen: ekran nedeni söyleyen bir mesaj gösterir.
 3. **Yeni iş akışı adımı**: `03-akis` içine adımı ekleyin; tamamlandığını ekrandan ve gerekirse API'den doğrulayın.
 4. **Yeni hesaplama, toplam ya da rapor**: `04-tutarlilik` içine "A = B + C" türünden bir çapraz kontrol ekleyin.
 5. **Yeni rol ya da kullanıcı**: `kullanicilar.json` ve `IZINLI` tablosunu güncelleyin.
-6. **Bilinçli hata yanıtı** (ör. 409): ilgili senaryoda `robot.beklenen(/409 POST \/api\/v1\/.../)` ile beklenen olarak işaretleyin;
+6. **Veri değiştiren yeni düğme**: davranışını deneyen senaryoyu yazın ve `support/kapsam.ts` kaydına ekleyin.
+7. **Bilinçli hata yanıtı** (ör. 409): ilgili senaryoda `robot.beklenen(/409 POST \/api\/v1\/.../)` ile beklenen olarak işaretleyin;
    işaretlenmeyen 4xx/5xx yanıtlar, konsol hataları ve yakalanmamış istisnalar sorun sayılır.
 
 Senaryo yazarken `robot.adim('ad', async () => {...})` bir adımı kaydeder ve içinde sorun çıkarsa ekran görüntüsü alır;

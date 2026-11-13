@@ -119,6 +119,23 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     return { ad, mesajlar };
   };
 
+  await depo.adim('depo: fotoğrafı seçip göndermeden kaydederse nedenini söylemeli', async () => {
+    await depo.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}/cikis`);
+    await depo.sayfa.getByLabel(/Dolu araç tartısı/).fill('103,5');
+    await depo.sayfa.getByLabel(/Boş araç tartısı/).fill('3,5');
+    await depo.sayfa.getByLabel(/Çuval sayısı/).fill('2');
+    await depo.sayfa
+      .locator('input[type=file]')
+      .first()
+      .setInputFiles({
+        name: 'fis.jpg',
+        mimeType: 'image/jpeg',
+        buffer: await resim(depo.sayfa, 4),
+      });
+    await depo.sayfa.getByRole('button', { name: 'Kaydet' }).click();
+    await depo.sayfa.getByText(/henüz göndermediniz/).waitFor();
+  });
+
   await depo.adim('depo: çuval sayısı tutmayan tartı nedenini söylemeli', async () => {
     const { mesajlar } = await tarteGir('103,5', '3,5', '3', 'çuval 3');
     depo.kontrol(

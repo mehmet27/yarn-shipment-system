@@ -13,7 +13,7 @@ export type DispatchDraft = {
 };
 
 /** i18n anahtarı (`dispatch.errors.*`). */
-export type DispatchError = 'invalidKg' | 'tareExceedsGross' | 'invalidBagCount' | 'ticketRequired';
+export type DispatchError = 'invalidKg' | 'tareExceedsGross' | 'invalidBagCount' | 'ticketRequired' | 'ticketNotSent';
 
 export const EMPTY_DISPATCH_DRAFT: DispatchDraft = {
   grossKg: '',
@@ -39,19 +39,26 @@ function parseBagCount(input: string): number | undefined {
 }
 
 /** İlk hatayı döner; hata yoksa undefined. */
-export function validateDispatch(draft: DispatchDraft): DispatchError | undefined {
+export function validateDispatch(
+  draft: DispatchDraft,
+  ticketPending = false,
+): DispatchError | undefined {
   const weighing = parseDispatchWeighing(draft);
   if (typeof weighing === 'string') return weighing;
   if (parseBagCount(draft.bagCount) === undefined) return 'invalidBagCount';
+  if (ticketPending) return 'ticketNotSent';
   return draft.ticket === undefined ? 'ticketRequired' : undefined;
 }
 
 /** Tüm alanlar geçerliyse sözleşmedeki isteği kurar; boş kantar fişi isteğe girmez. */
-export function toDispatchRequest(draft: DispatchDraft): DispatchWeighingRequest | undefined {
+export function toDispatchRequest(
+  draft: DispatchDraft,
+  ticketPending = false,
+): DispatchWeighingRequest | undefined {
   const weighing = parseDispatchWeighing(draft);
   const bagCount = parseBagCount(draft.bagCount);
   if (typeof weighing === 'string' || bagCount === undefined) return undefined;
-  if (draft.ticket === undefined) return undefined;
+  if (draft.ticket === undefined || ticketPending) return undefined;
   const shortfallReason = draft.shortfallReason.trim();
   return {
     grossKg: weighing.grossKg,

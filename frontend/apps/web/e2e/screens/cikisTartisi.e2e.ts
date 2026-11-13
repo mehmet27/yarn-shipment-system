@@ -35,6 +35,18 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
     ).toBeVisible();
   });
 
+  test('fotoğraf seçilip gönderilmeden kaydetmez ve nedenini söyler', async ({ page, openAs }) => {
+    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis');
+    await fillFields(page, WEIGHING);
+    await page.getByTestId('ticket-input').setInputFiles({
+      name: 'fis.jpg',
+      mimeType: 'image/jpeg',
+      buffer: Buffer.alloc(2000),
+    });
+    await page.getByRole('button', { name: 'Kaydet' }).click();
+    await expect(page.getByText(/henüz göndermediniz/)).toBeVisible();
+  });
+
   test('çıkış yetkisi olmayan rol yetki sayfasına düşer', async ({ page, openAs }) => {
     await openAs('MANAGER', '/panel/sevkiyat/shp-0001/cikis');
     await expect(page.getByText('Bu sayfayı görme yetkiniz yok.')).toBeVisible();

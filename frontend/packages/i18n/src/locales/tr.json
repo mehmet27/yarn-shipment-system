@@ -267,7 +267,8 @@
       "invalidKg": "Kiloyu 1.982,5 biçiminde girin.",
       "tareExceedsGross": "Dara brütten büyük olamaz.",
       "invalidBagCount": "Çuval sayısı 1 veya daha büyük bir tam sayı olmalı.",
-      "ticketRequired": "Devam etmek için kantar fişinin fotoğrafı gerekli."
+      "ticketRequired": "Devam etmek için kantar fişinin fotoğrafı gerekli.",
+      "ticketNotSent": "Fotoğrafı seçtiniz ama henüz göndermediniz. Önce \"Fotoğrafı gönder\" düğmesine basın."
     },
     "grossKg": "Dolu araç tartısı (brüt)",
     "tareKg": "Boş araç tartısı (dara)",

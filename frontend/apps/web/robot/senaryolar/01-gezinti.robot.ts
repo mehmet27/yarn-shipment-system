@@ -31,15 +31,6 @@ const IZINLI: Record<string, readonly string[]> = {
     '/panel/merkez-stok',
     '/panel/denetim',
   ],
-  'fason-kalite': [
-    '/panel',
-    '/panel/sevkiyat',
-    '/panel/uyusmazliklar',
-    '/panel/partiler',
-    '/panel/raporlar',
-    '/panel/bakiye',
-    '/panel/denetim',
-  ],
   mudur: [
     '/panel',
     '/panel/sevkiyat',

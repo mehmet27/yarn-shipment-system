@@ -116,10 +116,10 @@ export class Robot {
 /** Genel ("tekrar deneyin" gibi) hata metni neden söylemediği için yetersiz sayılır. */
 export const GENEL_MESAJ = /lütfen tekrar deneyin|işlem yapılamadı|beklenmeyen bir hata|problem\./i;
 
-export const test = base.extend<{ giris: (rol: string) => Promise<Robot> }>({
+export const test = base.extend<{ giris: (rol: string, ilkSifre?: string) => Promise<Robot> }>({
   giris: async ({ browser }, use, info) => {
     const robotlar: Robot[] = [];
-    await use(async (rol) => {
+    await use(async (rol, ilkSifre) => {
       const kullanici = KULLANICILAR[rol];
       const sifre = OZEL_SIFRE[rol] ?? process.env.ROBOT_SIFRE;
       if (kullanici === undefined || sifre === undefined) {
@@ -132,8 +132,15 @@ export const test = base.extend<{ giris: (rol: string) => Promise<Robot> }>({
       const sayfa = await baglam.newPage();
       await sayfa.goto(`${GATEWAY}/oauth2/authorization/keycloak`);
       await sayfa.fill('#username', kullanici);
-      await sayfa.fill('#password', sifre);
+      await sayfa.fill('#password', ilkSifre ?? sifre);
       await sayfa.click('#kc-login');
+      if (ilkSifre !== undefined) {
+        // Yöneticinin verdiği geçici şifreyle ilk giriş: Keycloak yeni şifre ister.
+        await sayfa.locator('#password-new').waitFor({ timeout: 20_000 });
+        await sayfa.fill('#password-new', sifre);
+        await sayfa.fill('#password-confirm', sifre);
+        await sayfa.locator('input[type=submit], button[type=submit]').first().click();
+      }
       await sayfa.waitForURL(/5173/, { timeout: 20_000 });
       await sayfa.waitForLoadState('networkidle');
       const robot = new Robot(sayfa, baglam, info, rol);

@@ -30,6 +30,20 @@ açın (git'e girmez): `{ "genel-mudur": "şifre" }`. Hesabı olmayan rolün sen
 **Dikkat:** robot yerel veritabanına kayıt yazar (iplik girişi, sevkiyat, itiraz; adları `ROBOT-…` ile başlar).
 Üretim ya da paylaşılan bir ortamda çalıştırmayın.
 
+## Temiz kurulumdan başlama
+
+Yalnızca `admin` kullanıcısı olan temiz bir yerel ortam için (Docker verisi silinir, geri alınamaz):
+
+```bash
+bash deploy/temiz-kurulum.sh    # hacimleri siler, yalnızca admin'li Keycloak ile yeniden kurar
+```
+
+Ardından yığını başlatıp `ROBOT_SIFRE` olarak admin'in şifresini değil, **tüm robot kullanıcılarının alacağı** şifreyi verin
+(en az 8 karakter ve kolay tahmin edilmeyen bir şifre; Keycloak `12345678` gibilerini reddeder). `admin` için
+`robot/kullanicilar.local.json` içine kendi şifresini yazın: `{ "admin": "<admin şifresi>" }`. `00-kurulum` senaryosu
+eksik kullanıcıları (depo, kalite, müdür, genel müdür) yönetici ekranından açar, her biriyle ilk girişi yapıp
+`ROBOT_SIFRE` şifresini belirler; sonraki senaryolar bu hesaplarla koşar.
+
 ## Senaryolar (`robot/senaryolar`)
 
 | Dosya           | Ne yapar                                                                                                                 |

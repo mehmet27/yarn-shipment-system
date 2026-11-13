@@ -5,4 +5,6 @@ coverage
 apps/web/public/mockServiceWorker.js
 dist-e2e
 apps/web/e2e/rapor
+apps/web/robot/rapor
+apps/web/robot/sonuclar
 apps/web/e2e/sonuclar

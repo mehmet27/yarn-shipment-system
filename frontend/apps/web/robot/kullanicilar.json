@@ -1,0 +1,9 @@
+{
+  "_aciklama": "Robotun giriş yapacağı yerel kullanıcılar (rol → giriş adı). Şifre ROBOT_SIFRE ortam değişkeninden okunur; kullanıcıya özel şifre için kullanicilar.local.json (git'e girmez) açın: { \"genel.mudur\": \"şifre\" }. Hesabı olmayan rol atlanır.",
+  "admin": "admin",
+  "depo": "depo",
+  "kalite": "kalite",
+  "fason-kalite": "fason-kalite",
+  "mudur": "mudur",
+  "genel-mudur": "genel.mudur"
+}

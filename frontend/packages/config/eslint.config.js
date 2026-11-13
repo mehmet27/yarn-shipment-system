@@ -197,7 +197,16 @@ const boundaryPolicies = [
 
 export function createConfig({ tsconfigRootDir }) {
   return tseslint.config(
-    { ignores: ['**/dist/**', '**/coverage/**', '**/generated/**', '**/tools/**', '**/*.js'] },
+    {
+      ignores: [
+        '**/dist/**',
+        '**/coverage/**',
+        '**/generated/**',
+        '**/tools/**',
+        '**/*.js',
+        '**/robot/**',
+      ],
+    },
     js.configs.recommended,
     ...tseslint.configs.strictTypeChecked,
     ...tseslint.configs.stylisticTypeChecked,

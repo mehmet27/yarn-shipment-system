@@ -14,12 +14,7 @@ import java.util.UUID;
  * @param passwordChangeRequired kişi şifresini değiştirene kadar başka işlem yapamaz
  */
 public record SessionUser(
-        UUID id,
-        String username,
-        String fullName,
-        StaffRole role,
-        Set<UUID> siteIds,
-        boolean passwordChangeRequired) {
+        UUID id, String username, String fullName, StaffRole role, Set<UUID> siteIds, boolean passwordChangeRequired) {
 
     public SessionUser {
         siteIds = Set.copyOf(siteIds);

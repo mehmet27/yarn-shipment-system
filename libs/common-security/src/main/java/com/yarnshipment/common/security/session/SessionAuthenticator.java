@@ -44,6 +44,7 @@ public final class SessionAuthenticator {
 
     /** Oturumu kapatır ve bağlamı temizler. */
     public void clear(HttpServletRequest request, HttpServletResponse response) {
-        logoutHandler.logout(request, response, SecurityContextHolder.getContext().getAuthentication());
+        logoutHandler.logout(
+                request, response, SecurityContextHolder.getContext().getAuthentication());
     }
 }

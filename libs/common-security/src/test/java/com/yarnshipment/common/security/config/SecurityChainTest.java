@@ -101,10 +101,8 @@ class SecurityChainTest {
     @DisplayName("Durum değiştiren istek CSRF başlığı olmadan 403 alır")
     void shouldRejectStateChangeWithoutCsrfToken() {
         // when
-        MvcTestResult result = mvc.post()
-                .uri("/test/shipments")
-                .with(sessionOf("warehouse"))
-                .exchange();
+        MvcTestResult result =
+                mvc.post().uri("/test/shipments").with(sessionOf("warehouse")).exchange();
 
         // then
         assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
@@ -141,10 +139,7 @@ class SecurityChainTest {
     }
 
     private MvcTestResult get(String uri, String role) {
-        return mvc.get()
-                .uri(uri)
-                .with(sessionOf(role))
-                .exchange();
+        return mvc.get().uri(uri).with(sessionOf(role)).exchange();
     }
 
     private static RequestPostProcessor sessionOf(String role) {

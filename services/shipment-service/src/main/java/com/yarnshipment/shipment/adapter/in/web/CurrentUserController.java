@@ -1,8 +1,8 @@
 package com.yarnshipment.shipment.adapter.in.web;
 
 import com.yarnshipment.common.security.Actor;
-import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.common.security.ActorAuthenticationToken;
+import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.shipment.adapter.in.web.api.CurrentUserApi;
 import com.yarnshipment.shipment.adapter.in.web.api.model.CurrentUserResponse;
 import com.yarnshipment.shipment.adapter.in.web.api.model.Permission;

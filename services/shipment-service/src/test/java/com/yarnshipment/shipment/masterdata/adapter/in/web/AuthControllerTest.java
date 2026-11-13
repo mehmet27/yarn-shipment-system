@@ -129,8 +129,10 @@ class AuthControllerTest {
     @DisplayName("Çıkış oturum ister; oturumlu istek 204 alır")
     void shouldLogoutOnlyWithSession() {
         MvcTestResult anonymous = mvc.post().uri("/api/v1/auth/logout").exchange();
-        MvcTestResult signedIn =
-                mvc.post().uri("/api/v1/auth/logout").with(sessionOf("warehouse")).exchange();
+        MvcTestResult signedIn = mvc.post()
+                .uri("/api/v1/auth/logout")
+                .with(sessionOf("warehouse"))
+                .exchange();
 
         assertThat(anonymous).hasStatus(HttpStatus.UNAUTHORIZED);
         assertThat(signedIn).hasStatus(HttpStatus.NO_CONTENT);
@@ -139,8 +141,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("Şifre değiştirme oturum ister; oturumlu kullanıcı kendi kimliğiyle değiştirir")
     void shouldChangeOwnPassword() {
-        when(changePassword.changeOwnPassword(eq(USER_ID), any(), any()))
-                .thenReturn(sessionUser(false));
+        when(changePassword.changeOwnPassword(eq(USER_ID), any(), any())).thenReturn(sessionUser(false));
         String body = "{\"currentPassword\":\"Sifre-12345\",\"newPassword\":\"Yeni-Sifre-678\"}";
 
         MvcTestResult anonymous = mvc.put()
@@ -205,8 +206,7 @@ class AuthControllerTest {
     }
 
     private static RequestPostProcessor sessionOf(String role) {
-        return SecurityMockMvcRequestPostProcessors.authentication(
-                TestTokens.CONVERTER.convert(
-                        TestTokens.token(role).subject(USER_ID.toString()).build()));
+        return SecurityMockMvcRequestPostProcessors.authentication(TestTokens.CONVERTER.convert(
+                TestTokens.token(role).subject(USER_ID.toString()).build()));
     }
 }

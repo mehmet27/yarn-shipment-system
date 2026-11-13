@@ -22,7 +22,9 @@ final class SessionActors {
     private SessionActors() {}
 
     static ActorAuthenticationToken tokenOf(SessionUser user) {
-        Set<Role> roles = user.passwordChangeRequired() ? Set.of() : EnumSet.of(Role.valueOf(user.role().name()));
+        Set<Role> roles = user.passwordChangeRequired()
+                ? Set.of()
+                : EnumSet.of(Role.valueOf(user.role().name()));
         Set<Permission> permissions = RolePermissionMatrix.permissionsOf(roles);
         Actor actor = new Actor(user.id(), user.username(), roles, permissions, user.siteIds(), false);
         List<GrantedAuthority> authorities = new ArrayList<>(permissions);

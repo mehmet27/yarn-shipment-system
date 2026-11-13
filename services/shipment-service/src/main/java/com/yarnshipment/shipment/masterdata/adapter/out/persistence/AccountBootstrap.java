@@ -93,9 +93,7 @@ final class AccountBootstrap implements ApplicationRunner {
         } else if (UNUSABLE.equals(existing)) {
             jdbc.sql("""
                             UPDATE app_user SET password_hash = :hash, password_change_required = true, enabled = true
-                             WHERE lower(username) = 'admin'""")
-                    .param("hash", hasher.hash(adminPassword))
-                    .update();
+                             WHERE lower(username) = 'admin'""").param("hash", hasher.hash(adminPassword)).update();
             log.info("Initial admin password set");
         }
     }

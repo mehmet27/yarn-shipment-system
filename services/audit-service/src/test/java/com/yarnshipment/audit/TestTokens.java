@@ -65,7 +65,9 @@ public final class TestTokens {
                     username == null ? jwt.getSubject() : username,
                     roles,
                     RolePermissionMatrix.permissionsOf(roles),
-                    sites == null ? Set.of() : Set.copyOf(sites.stream().map(UUID::fromString).toList()),
+                    sites == null
+                            ? Set.of()
+                            : Set.copyOf(sites.stream().map(UUID::fromString).toList()),
                     amr != null && amr.contains("otp"));
         }
     }

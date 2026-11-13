@@ -92,7 +92,8 @@ class AuthenticationServiceTest {
 
         assertThat(changed.passwordChangeRequired()).isFalse();
         assertThat(users.user(id).passwordChangeRequired()).isFalse();
-        assertThat(service.authenticate("depo", "Yeni-Sifre-678").passwordChangeRequired()).isFalse();
+        assertThat(service.authenticate("depo", "Yeni-Sifre-678").passwordChangeRequired())
+                .isFalse();
         assertThatThrownBy(() -> service.authenticate("depo", PASSWORD))
                 .isInstanceOf(AuthenticationFailedException.class);
     }

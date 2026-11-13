@@ -46,7 +46,9 @@ public final class PasswordPolicy {
         }
         String lower = password.toLowerCase(Locale.ROOT);
         boolean oneCharacter = password.chars().distinct().count() == 1;
-        if (oneCharacter || COMMON.contains(lower) || lower.equals(username.strip().toLowerCase(Locale.ROOT))) {
+        if (oneCharacter
+                || COMMON.contains(lower)
+                || lower.equals(username.strip().toLowerCase(Locale.ROOT))) {
             throw new WeakPasswordException();
         }
     }

@@ -43,9 +43,8 @@ class ScopeGuardTest {
     @DisplayName("site_ids claim'i boş iç kullanıcı hiçbir kayda erişemez, kapsamı kısıtsız sayılmaz")
     void shouldDenyInternalUserWithoutSites() {
         // given
-        Actor actor = converter.toActor(TestTokens.withRoles("warehouse")
-                .claim("site_ids", List.of())
-                .build());
+        Actor actor = converter.toActor(
+                TestTokens.withRoles("warehouse").claim("site_ids", List.of()).build());
 
         // when
         AccessScope scope = scopeGuard.scopeOf(actor);

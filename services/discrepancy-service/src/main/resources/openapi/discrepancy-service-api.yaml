@@ -552,6 +552,12 @@ components:
         actorId:
           type: string
           format: uuid
+        actorName:
+          type: string
+          description: İşlemi yapanın ad soyadı; çözülemediyse yanıtta olmaz.
+        assigneeName:
+          type: string
+          description: ASSIGNED kaydında atanan kişinin ad soyadı (not kimliğinin adı); çözülemediyse yanıtta olmaz.
         occurredAt:
           type: string
           format: date-time

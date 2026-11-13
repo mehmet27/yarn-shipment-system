@@ -1,5 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { DISCREPANCIES_PATH } from '@iplik/api-client';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
@@ -44,5 +46,28 @@ describe('Uyuşmazlık ekranları', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Karara bağla' }));
     expect(await screen.findAllByText('Talep haksız kabul')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: 'Karara bağla' })).not.toBeInTheDocument();
+  });
+
+  it('geçmişte işlemi yapanın ve atananın ad soyadını gösterir', async () => {
+    server.use(
+      http.get(`${DISCREPANCIES_PATH}/disc-0/activity`, () =>
+        HttpResponse.json([
+          {
+            id: 'a1',
+            actionType: 'ASSIGNED',
+            actorId: 'user-quality',
+            actorName: 'Kerem Kalite',
+            assigneeName: 'Melek Müdür',
+            note: 'user-manager',
+            occurredAt: '2026-10-20T11:00:00Z',
+          },
+        ]),
+      ),
+      ...createHandlers('ADMIN'),
+    );
+    renderApp('/panel/uyusmazliklar/disc-0');
+    expect(await screen.findByText(/· Kerem Kalite$/)).toBeInTheDocument();
+    expect(screen.getByText('Melek Müdür')).toBeInTheDocument();
+    expect(screen.queryByText(/Başka bir kullanıcı/)).not.toBeInTheDocument();
   });
 });

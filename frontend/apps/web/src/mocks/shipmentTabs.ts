@@ -29,6 +29,7 @@ export function toHistory(shipment: InternalShipmentView): StatusChangeView[] {
     toStatus,
     changedAt: new Date(start + index * HOUR_MS).toISOString(),
     changedBy: toStatus === 'COMPLETED' ? 'user-manager' : 'user-warehouse',
+    changedByName: toStatus === 'COMPLETED' ? 'Melek Müdür' : 'Davut Depocu',
   }));
 }
 

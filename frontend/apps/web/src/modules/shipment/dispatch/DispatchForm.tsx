@@ -33,14 +33,14 @@ export type DispatchFormProps = { shipmentId: string; onSaved: () => void };
 export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<DispatchDraft>(EMPTY_DISPATCH_DRAFT);
-  const [ticketPending, setTicketPending] = useState(false);
+  const [isTicketPending, setIsTicketPending] = useState(false);
   const [error, setError] = useState<DispatchError>();
   const mutation = useRecordDispatch(shipmentId);
   const weighing = parseDispatchWeighing(draft);
   const submit = () => {
-    const validation = validateDispatch(draft, ticketPending);
+    const validation = validateDispatch(draft, isTicketPending);
     setError(validation);
-    const request = toDispatchRequest(draft, ticketPending);
+    const request = toDispatchRequest(draft, isTicketPending);
     if (request !== undefined) mutation.mutate(request, { onSuccess: onSaved });
   };
   return (
@@ -71,7 +71,7 @@ export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
           shipmentId={shipmentId}
           evidenceType="DISPATCH_SCALE"
           outcome={draft.ticket}
-          onPendingChange={setTicketPending}
+          onPendingChange={setIsTicketPending}
           onOutcome={(ticket) => {
             setDraft({ ...draft, ticket });
           }}

@@ -29,10 +29,10 @@ export function TicketCapture({
   const { t } = useTranslation();
   const flow = useTicketPhoto(shipmentId, evidenceType, onOutcome);
   const { mutation, file } = flow;
-  const pending = file !== undefined;
+  const isPending = file !== undefined;
   useEffect(() => {
-    onPendingChange?.(pending);
-  }, [pending, onPendingChange]);
+    onPendingChange?.(isPending);
+  }, [isPending, onPendingChange]);
   const isFirst = outcome === undefined && file === undefined;
   return (
     <Paper withBorder p="md" style={{ borderStyle: 'dashed' }}>

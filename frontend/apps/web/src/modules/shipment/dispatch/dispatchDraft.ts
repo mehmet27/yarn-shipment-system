@@ -42,24 +42,24 @@ function parseBagCount(input: string): number | undefined {
 /** İlk hatayı döner; hata yoksa undefined. */
 export function validateDispatch(
   draft: DispatchDraft,
-  ticketPending = false,
+  isTicketPending = false,
 ): DispatchError | undefined {
   const weighing = parseDispatchWeighing(draft);
   if (typeof weighing === 'string') return weighing;
   if (parseBagCount(draft.bagCount) === undefined) return 'invalidBagCount';
-  if (ticketPending) return 'ticketNotSent';
+  if (isTicketPending) return 'ticketNotSent';
   return draft.ticket === undefined ? 'ticketRequired' : undefined;
 }
 
 /** Tüm alanlar geçerliyse sözleşmedeki isteği kurar; boş kantar fişi isteğe girmez. */
 export function toDispatchRequest(
   draft: DispatchDraft,
-  ticketPending = false,
+  isTicketPending = false,
 ): DispatchWeighingRequest | undefined {
   const weighing = parseDispatchWeighing(draft);
   const bagCount = parseBagCount(draft.bagCount);
   if (typeof weighing === 'string' || bagCount === undefined) return undefined;
-  if (draft.ticket === undefined || ticketPending) return undefined;
+  if (draft.ticket === undefined || isTicketPending) return undefined;
   const shortfallReason = draft.shortfallReason.trim();
   return {
     grossKg: weighing.grossKg,

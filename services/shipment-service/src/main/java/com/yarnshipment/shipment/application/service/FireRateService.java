@@ -63,7 +63,11 @@ public class FireRateService implements ChangeFireRateUseCase {
                 command.actor().userId(),
                 now));
         events.fireRateChanged(
-                current.shipmentId(), current.fireRate(), changed.fireRate(), command.actor().userId(), now);
+                current.shipmentId(),
+                current.fireRate(),
+                changed.fireRate(),
+                command.actor().userId(),
+                now);
         return reader.read(changed);
     }
 }

@@ -40,7 +40,8 @@ class FireSettlementServicesTest {
     private final ScopedShipmentLoader loader = new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock));
     private final FireSettlementDetailsReader reader = new FireSettlementDetailsReader(settlements);
     private final FireRateService rateService = new FireRateService(loader, settlements, reader, events, clock);
-    private final FireInvoiceService invoiceService = new FireInvoiceService(loader, settlements, reader, events, clock);
+    private final FireInvoiceService invoiceService =
+            new FireInvoiceService(loader, settlements, reader, events, clock);
     private final FireSettlementQueryService queryService = new FireSettlementQueryService(loader, settlements, reader);
 
     @BeforeEach

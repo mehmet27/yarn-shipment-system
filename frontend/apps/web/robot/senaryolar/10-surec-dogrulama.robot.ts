@@ -75,12 +75,14 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
 
   await depo.adim('doğrula: iplik girişi stoğu tam 200 kg artırır', async () => {
     await depo.sayfa.goto('/panel/merkez-stok');
+    await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
     await depo.sayfa
       .getByLabel(/İplik cinsi/)
       .first()
       .fill(iplik);
     await depo.sayfa.getByLabel(/Gelen net kg/).fill('200');
     await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+    await depo.sayfa.getByRole('tab', { name: 'Eldeki iplik' }).click();
     await expect(depo.sayfa.locator('main')).toContainText(`${iplik}`);
     const stok = await depo.api<Stok>('/api/v1/central-stock');
     depo.kontrol(
@@ -102,6 +104,7 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
     'doğrula: 50 kg kumaş (fire %3) iplikten 50/0,97 = 51,546 kg düşer',
     async () => {
       await kalite.sayfa.goto('/panel/merkez-stok');
+      await kalite.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
       await kalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
       await kalite.sayfa.getByLabel(/İplik cinsi 1/).fill(iplik);
       await kalite.sayfa.getByLabel(/Kumaş kg 1/).fill('50');

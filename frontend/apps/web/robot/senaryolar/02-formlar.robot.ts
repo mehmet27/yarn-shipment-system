@@ -17,6 +17,7 @@ test('Formlar: depo iplik girişi geçersiz değerleri reddeder', async ({ giris
   const robot = await giris('depo');
   robot.beklenen(/400 POST \/api\/v1\/central-stock/);
   await robot.sayfa.goto('/panel/merkez-stok');
+  await robot.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
   for (const [ad, iplik, kg] of [
     ['boş', '', ''],
     ['kilo 0', 'ROBOT-test', '0'],
@@ -41,6 +42,7 @@ test('Formlar: kalite kumaş girişi stokta olmayan iplikle üretimi reddeder', 
   const robot = await giris('kalite');
   robot.beklenen(/40\d POST \/api\/v1\/central-stock/);
   await robot.sayfa.goto('/panel/merkez-stok');
+  await robot.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
   for (const [ad, k] of [
     ['boş', { kumas: '', iplik: '', kg: '', fire: '' }],
     ['fire 150', { kumas: 'Süprem', iplik: 'ROBOT-yok', kg: '5', fire: '150' }],

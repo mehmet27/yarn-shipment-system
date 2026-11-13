@@ -3,6 +3,7 @@ import { Alert, Button, Group, Paper, Stack, Text, TextInput, Title } from '@ipl
 import { formatKgText } from '@iplik/units';
 import { useState } from 'react';
 import { useFireRateDefault } from '@/modules/shipment';
+import { YarnTypeList } from './YarnTypeList';
 import { ProductionYarnRows } from './ProductionYarnRows';
 import { useRecordCentralProduction } from '../hooks/useCentralStock';
 import type { StockDraftError } from '../stockDraft';
@@ -11,13 +12,14 @@ import { stockErrorKey } from '../stockErrors';
 import { useProductionDraft } from '../useProductionDraft';
 
 /** Merkez fabrikanın ürettiği kumaş: hangi iplikten kaç kg kumaş çıktığı girilir, iplik fire ile stoktan düşer. */
-export function ProductionForm() {
+export function ProductionForm({ yarnTypes }: { yarnTypes: string[] }) {
   const { t } = useTranslation();
   const defaultFirePct = useFireRateDefault();
   const { draft, field, setYarn, addYarn, removeYarn, reset } = useProductionDraft(defaultFirePct);
   const [error, setError] = useState<StockDraftError>();
   const mutation = useRecordCentralProduction();
   const submit = () => {
+    mutation.reset();
     const request = toProductionRequest(draft);
     setError(typeof request === 'string' ? request : undefined);
     if (typeof request !== 'string') mutation.mutate(request, { onSuccess: reset });
@@ -38,6 +40,7 @@ export function ProductionForm() {
           onAdd={addYarn}
           onRemove={removeYarn}
         />
+        <YarnTypeList yarnTypes={yarnTypes} />
         <Text size="sm">
           {t('stock.production.total', { kg: formatKgText(productionTotalKg(draft)) })}
         </Text>
@@ -56,6 +59,9 @@ export function ProductionForm() {
           <TextInput label={t('stock.production.waybillNo')} {...field('waybillNo')} />
         </Group>
         {error !== undefined && <Alert color="red">{t(`stock.draftErrors.${error}`)}</Alert>}
+        {mutation.isSuccess && error === undefined && (
+          <Alert color="green">{t('stock.production.saved')}</Alert>
+        )}
         {mutation.isError && <Alert color="red">{t(stockErrorKey(mutation.error))}</Alert>}
         <Button w="fit-content" loading={mutation.isPending} onClick={submit}>
           {t('stock.production.submit')}

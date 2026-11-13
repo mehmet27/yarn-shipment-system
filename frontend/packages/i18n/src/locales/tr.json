@@ -1262,7 +1262,8 @@
       "yarnType": "İplik cinsi",
       "netKg": "Gelen net kg",
       "note": "Not (irsaliye vb.)",
-      "submit": "İplik girişini kaydet"
+      "submit": "İplik girişini kaydet",
+      "saved": "İplik girişi kaydedildi."
     },
     "production": {
       "title": "Merkez kumaş girişi",
@@ -1277,7 +1278,8 @@
       "firePct": "Fire (%)",
       "rollCount": "Top sayısı",
       "waybillNo": "Üretim / irsaliye no",
-      "submit": "Kumaşı kaydet"
+      "submit": "Kumaşı kaydet",
+      "saved": "Kumaş girişi kaydedildi."
     },
     "draftErrors": {
       "required": "Zorunlu alanları doldurun.",
@@ -1290,6 +1292,30 @@
       "insufficient": "Merkez stokta bu iplikten yeterli kilo yok. Önce 'Merkeze iplik girişi' ile ipliği girin; iplik cinsi girişteki yazımla aynı olmalı.",
       "unknown": "Kayıt yapılamadı, tekrar deneyin."
     },
-    "negativeWarning": "Bazı iplik cinslerinde stok eksiye düştü; doğrudan fasoncuya giden ipliğin girişi eksik olabilir."
+    "negativeWarning": "Bazı iplik cinslerinde stok eksiye düştü; doğrudan fasoncuya giden ipliğin girişi eksik olabilir.",
+    "refresh": "Yenile",
+    "updatedAt": "Son güncelleme: {{at}}",
+    "tabs": {
+      "stock": "Eldeki iplik",
+      "receipt": "İplik girişi",
+      "production": "Kumaş girişi"
+    },
+    "summary": {
+      "total": "Toplam iplik stoku",
+      "produced": "Üretilen kumaş",
+      "negative": "Eksiye düşen iplik",
+      "negativeHint": "Kontrol edin"
+    },
+    "search": "İplik cinsi ara",
+    "searchPlaceholder": "Cinse göre süz",
+    "noMatch": "Aramaya uyan iplik yok.",
+    "sort": {
+      "label": "Sıralama",
+      "name": "Ada göre",
+      "kg": "Kiloya göre"
+    },
+    "negativeBadge": "Eksi stok",
+    "kindFilter": "Hareket türü",
+    "allKinds": "Tüm hareketler"
   }
 }

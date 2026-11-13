@@ -116,3 +116,37 @@ test('Raporlar: müdür her sekmeyi, dönemi, tarihleri, logoyu ve açılış ba
     },
   );
 });
+
+test('Merkez iplik stoku: özet kartları, arama, sıralama, tür süzgeci ve Excel/PDF indirme', async ({
+  giris,
+}) => {
+  const depo = await giris('depo');
+  await depo.sayfa.goto('/panel/merkez-stok');
+  await depo.adim('özet kartları görünür', async () => {
+    for (const ad of ['Toplam iplik stoku', 'Üretilen kumaş', 'Eksiye düşen iplik']) {
+      await expect(depo.sayfa.getByText(ad).first()).toBeVisible();
+    }
+  });
+  await depo.adim('iplik cinsi ara ve kiloya göre sırala', async () => {
+    const ara = depo.sayfa.getByLabel('İplik cinsi ara');
+    if (await ara.isVisible()) {
+      await ara.fill('ROBOT-olmayan-iplik');
+      await expect(depo.sayfa.getByText('Aramaya uyan iplik yok.')).toBeVisible();
+      await ara.fill('');
+      await depo.sayfa.getByText('Kiloya göre', { exact: true }).click();
+    }
+  });
+  await depo.adim('Excel ve PDF indir', async () => {
+    for (const tur of ['Excel indir (.xlsx)', 'PDF indir']) {
+      const [indirme] = await Promise.all([
+        depo.sayfa.waitForEvent('download', { timeout: 20_000 }),
+        depo.sayfa.getByRole('button', { name: tur }).click(),
+      ]);
+      depo.kontrol(`stok: ${tur} dosya vermeli`, indirme.suggestedFilename() !== '');
+    }
+  });
+  await depo.adim('Yenile düğmesi stoğu yeniden yükler', async () => {
+    await depo.sayfa.getByRole('button', { name: 'Yenile' }).click();
+    await expect(depo.sayfa.getByText(/Son güncelleme:/)).toBeVisible();
+  });
+});

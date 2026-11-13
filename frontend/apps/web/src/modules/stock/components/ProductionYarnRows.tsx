@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Button, Group, Stack, Text, TextInput } from '@iplik/ui';
+import { YARN_LIST_ID } from './YarnTypeList';
 import type { YarnLineDraft } from '../stockDraft';
 
 export type ProductionYarnRowsProps = {
@@ -21,6 +22,7 @@ export function ProductionYarnRows({ rows, onChange, onAdd, onRemove }: Producti
         <Group key={index} grow align="flex-end">
           <TextInput
             label={`${t('stock.production.yarnType')} ${String(index + 1)}`}
+            list={YARN_LIST_ID}
             value={row.yarnType}
             onChange={(event) => {
               onChange(index, { yarnType: event.currentTarget.value });

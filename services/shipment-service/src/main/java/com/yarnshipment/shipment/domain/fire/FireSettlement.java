@@ -51,8 +51,7 @@ public record FireSettlement(
     }
 
     /** Sevkiyat tamamlanınca açılır: sevkiyatta girilen fire oranıyla kumaş bekler. */
-    public static FireSettlement open(
-            UUID shipmentId, UUID subcontractorId, BigDecimal sentKg, BigDecimal fireRate) {
+    public static FireSettlement open(UUID shipmentId, UUID subcontractorId, BigDecimal sentKg, BigDecimal fireRate) {
         return new FireSettlement(
                 shipmentId,
                 subcontractorId,

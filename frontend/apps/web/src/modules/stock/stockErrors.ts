@@ -4,5 +4,7 @@ import { toProblem } from '@iplik/api-client';
 export function stockErrorKey(error: unknown): string {
   const { code } = toProblem(error);
   if (code === 'INVALID_LEDGER_INPUT') return 'stock.errors.invalid';
-  return code === 'INSUFFICIENT_CENTRAL_STOCK' ? 'stock.errors.insufficient' : 'stock.errors.unknown';
+  return code === 'INSUFFICIENT_CENTRAL_STOCK'
+    ? 'stock.errors.insufficient'
+    : 'stock.errors.unknown';
 }

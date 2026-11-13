@@ -132,6 +132,10 @@ export interface DiscrepancyActivityView {
   note?: string;
   evidenceId?: string;
   actorId: string;
+  /** İşlemi yapanın ad soyadı; çözülemediyse yanıtta olmaz. */
+  actorName?: string;
+  /** ASSIGNED kaydında atanan kişinin ad soyadı (not kimliğinin adı); çözülemediyse yanıtta olmaz. */
+  assigneeName?: string;
   occurredAt: string;
 }
 

@@ -2,6 +2,7 @@ import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Paper, Stack, Text, Title } from '@iplik/ui';
 import { EvidenceById } from '@/modules/evidence';
 import { QueryState, useActorLabel } from '@/modules/shipment';
+import type { DiscrepancyActivityView } from '@iplik/api-client';
 import { useDiscrepancyActivity } from '../hooks/useDiscrepancy';
 import { ruleLabel } from './discrepancyText';
 
@@ -20,9 +21,9 @@ export function ActivityList({ discrepancyId }: { discrepancyId: string }) {
   const query = useDiscrepancyActivity(discrepancyId);
   const actorLabel = useActorLabel();
   /** Açılışta kural koduna, atamada atanan kişinin adına çevrilir; diğer notlar olduğu gibi gösterilir. */
-  const noteText = (actionType: string, note: string): string => {
-    if (actionType === 'OPENED') return ruleLabel(t, note);
-    return actionType === 'ASSIGNED' ? actorLabel(note) : note;
+  const noteText = (item: DiscrepancyActivityView, note: string): string => {
+    if (item.actionType === 'OPENED') return ruleLabel(t, note);
+    return item.actionType === 'ASSIGNED' ? actorLabel(note, item.assigneeName) : note;
   };
   return (
     <Stack gap="xs">
@@ -36,12 +37,10 @@ export function ActivityList({ discrepancyId }: { discrepancyId: string }) {
                   ? t(`discrepancy.activity.${item.actionType}`)
                   : item.actionType}
               </Text>
-              {item.note !== undefined && (
-                <Text size="sm">{noteText(item.actionType, item.note)}</Text>
-              )}
+              {item.note !== undefined && <Text size="sm">{noteText(item, item.note)}</Text>}
               {item.evidenceId !== undefined && <EvidenceById evidenceId={item.evidenceId} />}
               <Text size="sm" c="dimmed">
-                {formatDateTime(item.occurredAt)} · {actorLabel(item.actorId)}
+                {formatDateTime(item.occurredAt)} · {actorLabel(item.actorId, item.actorName)}
               </Text>
             </Paper>
           ))

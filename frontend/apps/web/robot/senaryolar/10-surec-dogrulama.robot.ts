@@ -164,6 +164,28 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
     );
   });
 
+  await mudur.adim('doğrula: Geçmiş sekmesi işlemi yapanların ad soyadını gösterir', async () => {
+    const gecmis = await mudur.api<{
+      items: { toStatus: string; changedByName?: string }[];
+    }>(`/api/v1/shipments/${id}/history`);
+    const adli = gecmis.items.filter((c) => c.changedByName);
+    mudur.kontrol(
+      'API: geçmişin her adımında işlemi yapanın adı çözülmüş (Taslak, Fasoncuya yolda, Tamamlandı)',
+      gecmis.items.length >= 3 && adli.length === gecmis.items.length,
+      JSON.stringify(gecmis.items),
+    );
+    await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
+    await mudur.sayfa.getByRole('tab', { name: 'Geçmiş', exact: true }).click();
+    await mudur.sayfa.waitForTimeout(600);
+    const metin = await mudur.sayfa.innerText('main');
+    mudur.kontrol(
+      'Ekran: Geçmiş "Başka bir kullanıcı" yazmaz, her adımda kişinin ad soyadı görünür',
+      !metin.includes('Başka bir kullanıcı') &&
+        adli.every((c) => metin.includes(c.changedByName ?? '')),
+      metin.slice(0, 300),
+    );
+  });
+
   await mudur.adim('doğrula: stok, bakiye ve özet sayıları bu sevkiyatla tam değişir', async () => {
     const stok = await mudur.api<Stok>('/api/v1/central-stock');
     mudur.kontrol(

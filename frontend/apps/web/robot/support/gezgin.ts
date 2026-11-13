@@ -3,11 +3,11 @@ import type { Robot } from './robot';
 
 /** Veri değiştirmeyen, bu yüzden gezginin kendi tıkladığı düğmeler (sayfalama, indirme, büyütme, satır ekle/sil…). */
 const GUVENLI_DUGME =
-  /^(\d+|Önceki sayfa|Sonraki sayfa|PDF indir|Excel indir \(\.xlsx\)|Sipariş formu PDF|.*fotoğrafını büyüt|Satır ekle|İplik ekle|İplik satırı ekle|Sil|\d+\. satırı sil|Varsayılana dön|Yeni kullanıcı|Ekle|Bildirimler|Yan menü)$/;
+  /^(\d+|Önceki sayfa|Sonraki sayfa|PDF indir|Excel indir \(\.xlsx\)|Sipariş formu PDF|.*fotoğrafını büyüt|Satır ekle|İplik ekle|İplik satırı ekle|Sil|\d+\. satırı sil|Varsayılana dön|Yeni kullanıcı|Ekle|Bildirimler|Yan menü|Yenile)$/;
 
 /** Dosya seçtirdiği ya da kamera açtığı için gezginin dokunmadığı düğmeler; dosya yükleme senaryolarında denenir. */
 const DOSYA_DUGME =
-  /^(Fotoğraf çek|Dosya seç|Logo seç|Rapor logosu ekle|Yazdır|Yeniden çek|Fotoğrafı gönder)$/;
+  /^(Fotoğraf çek|Dosya seç|Logo seç|Rapor logosu ekle|Yazdır|Yeniden çek|Fotoğrafı gönder|Ekrandan renk seç)$/;
 
 /** Kişiye özgü düğme adlarını ortak ada çevirir (ör. 'depo hesabını düzenle' → 'Hesabı düzenle'). */
 const genelAd = (ad: string) =>

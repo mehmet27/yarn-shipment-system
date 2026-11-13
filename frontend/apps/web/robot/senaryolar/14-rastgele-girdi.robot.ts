@@ -84,6 +84,7 @@ test('Rastgele girdi: depo iplik girişi alanları', async ({ giris }) => {
     },
     async () => {
       await depo.sayfa.goto('/panel/merkez-stok');
+      await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
       await depo.sayfa
         .getByLabel(/İplik cinsi/)
         .first()

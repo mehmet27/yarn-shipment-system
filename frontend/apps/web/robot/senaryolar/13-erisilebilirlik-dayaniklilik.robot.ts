@@ -104,6 +104,7 @@ test('Dayanıklılık: yenileme, geri/ileri ve çift tıklama veri tekrarlamaz',
   await depo.adim('iplik girişi: çift tıklama tek kayıt oluşturur', async () => {
     const once = await depo.api<Stok>('/api/v1/central-stock');
     await depo.sayfa.goto('/panel/merkez-stok');
+    await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
     await depo.sayfa
       .getByLabel(/İplik cinsi/)
       .first()

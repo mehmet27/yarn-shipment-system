@@ -41,6 +41,12 @@ export function fireHesapla(g: FireGirdi) {
 /** Merkez kumaş üretiminde stoktan düşen iplik: kumaş / (1 − fire). */
 export const uretimIplikDusumu = (kumasKg: number, fireOrani: number) => kumasKg / (1 - fireOrani);
 
+/** Sayfa açılış süresi (ms) ve tek bir API yanıtının süresi için uyarı eşikleri (yerel ortam). */
+export const SAYFA_SURESI_MS = 5000;
+export const API_SURESI_MS = 3000;
+/** Dokunmatik ekranda bir düğme ya da bağlantının en az kenar uzunluğu (px). */
+export const DOKUNMA_HEDEFI_PX = 40;
+
 /** Binde bir kilo toleransıyla eşitlik (sunucu 3 ondalık yuvarlar). */
 export const kiloEsit = (a: number, b: number) => Math.abs(a - b) < 0.002;
 

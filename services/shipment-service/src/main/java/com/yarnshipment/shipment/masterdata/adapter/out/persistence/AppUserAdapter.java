@@ -128,6 +128,7 @@ final class AppUserAdapter implements AuthUserPort, LoginAccountPort, ActorNameP
         return names;
     }
 
+    @SuppressWarnings("PMD.UnusedFormalParameter") // RowMapper imzası
     private static AuthUser authUser(ResultSet rs, int row) throws SQLException {
         return new AuthUser(
                 rs.getObject("id", UUID.class),
@@ -141,6 +142,7 @@ final class AppUserAdapter implements AuthUserPort, LoginAccountPort, ActorNameP
                 siteIds(rs.getString("site_ids")));
     }
 
+    @SuppressWarnings("PMD.UnusedFormalParameter") // RowMapper imzası
     private static LoginAccountSummary summary(ResultSet rs, int row) throws SQLException {
         return new LoginAccountSummary(
                 rs.getObject("id", UUID.class).toString(),

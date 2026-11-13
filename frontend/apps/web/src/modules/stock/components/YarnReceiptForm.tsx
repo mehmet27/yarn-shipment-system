@@ -1,13 +1,14 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Paper, Stack, TextInput, Title } from '@iplik/ui';
 import { useState } from 'react';
+import { YARN_LIST_ID, YarnTypeList } from './YarnTypeList';
 import { useRecordYarnReceipt } from '../hooks/useCentralStock';
 import type { ReceiptDraft, StockDraftError } from '../stockDraft';
 import { EMPTY_RECEIPT_DRAFT, toReceiptRequest } from '../stockDraft';
 import { stockErrorKey } from '../stockErrors';
 
 /** Merkeze gelen ipliği stoğa yazar. */
-export function YarnReceiptForm() {
+export function YarnReceiptForm({ yarnTypes }: { yarnTypes: string[] }) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<ReceiptDraft>(EMPTY_RECEIPT_DRAFT);
   const [error, setError] = useState<StockDraftError>();
@@ -20,6 +21,7 @@ export function YarnReceiptForm() {
     },
   });
   const submit = () => {
+    mutation.reset();
     const request = toReceiptRequest(draft);
     setError(typeof request === 'string' ? request : undefined);
     if (typeof request !== 'string') {
@@ -36,7 +38,13 @@ export function YarnReceiptForm() {
         <Title order={3} size="h4">
           {t('stock.receipt.title')}
         </Title>
-        <TextInput label={t('stock.receipt.yarnType')} withAsterisk {...field('yarnType')} />
+        <TextInput
+          label={t('stock.receipt.yarnType')}
+          withAsterisk
+          list={YARN_LIST_ID}
+          {...field('yarnType')}
+        />
+        <YarnTypeList yarnTypes={yarnTypes} />
         <TextInput
           label={t('stock.receipt.netKg')}
           inputMode="decimal"
@@ -45,6 +53,9 @@ export function YarnReceiptForm() {
         />
         <TextInput label={t('stock.receipt.note')} {...field('note')} />
         {error !== undefined && <Alert color="red">{t(`stock.draftErrors.${error}`)}</Alert>}
+        {mutation.isSuccess && error === undefined && (
+          <Alert color="green">{t('stock.receipt.saved')}</Alert>
+        )}
         {mutation.isError && <Alert color="red">{t(stockErrorKey(mutation.error))}</Alert>}
         <Button w="fit-content" loading={mutation.isPending} onClick={submit}>
           {t('stock.receipt.submit')}

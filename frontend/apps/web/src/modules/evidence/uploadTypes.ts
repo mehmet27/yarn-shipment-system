@@ -3,8 +3,6 @@ import type { EvidenceType, Permission } from '@iplik/api-client';
 /** Kanıt türü → yükleme izni (backend ile aynı eşleme; asıl kontrol backend'dedir). */
 export const UPLOAD_PERMISSION_BY_TYPE: Readonly<Record<EvidenceType, Permission>> = {
   DISPATCH_SCALE: 'EVIDENCE_UPLOAD_DISPATCH',
-  BAG_OVERVIEW: 'EVIDENCE_UPLOAD_DISPATCH',
-  BAG_LABEL: 'EVIDENCE_UPLOAD_DISPATCH',
   WAYBILL: 'SHIPMENT_COMPLETE',
   QUALITY_CLAIM: 'EVIDENCE_UPLOAD_CLAIM',
   LAB_RESULT: 'EVIDENCE_UPLOAD_CLAIM',

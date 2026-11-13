@@ -627,8 +627,6 @@
     },
     "types": {
       "DISPATCH_SCALE": "Çıkış tartısı",
-      "BAG_OVERVIEW": "Çuvallara genel bakış",
-      "BAG_LABEL": "Çuval etiketi",
       "WAYBILL": "İrsaliye",
       "QUALITY_CLAIM": "Kalite şikâyeti",
       "LAB_RESULT": "Laboratuvar sonucu"

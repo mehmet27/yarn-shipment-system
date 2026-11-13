@@ -34,11 +34,13 @@ final class CentralStockAdapter implements CentralStockPort {
     private static final String PRODUCED = "SELECT coalesce(sum(net_kg), 0) FROM fabric_lot WHERE source = 'CENTRAL'";
     private static final String FLOW = """
             SELECT
-                (SELECT coalesce(sum(net_kg), 0) FROM central_stock_movement WHERE kind = 'YARN_RECEIPT'),
                 (SELECT coalesce(sum(net_kg), 0) FROM central_stock_movement
-                  WHERE kind = 'YARN_RECEIPT' AND source_ref LIKE 'DIRECT_IN:%'),
-                (SELECT coalesce(sum(net_kg), 0) FROM balance_movement),
-                (SELECT coalesce(-sum(net_kg), 0) FROM central_stock_movement WHERE kind = 'PRODUCTION')""";
+                  WHERE kind = 'YARN_RECEIPT') AS received_kg,
+                (SELECT coalesce(sum(net_kg), 0) FROM central_stock_movement
+                  WHERE kind = 'YARN_RECEIPT' AND source_ref LIKE 'DIRECT_IN:%') AS direct_kg,
+                (SELECT coalesce(sum(net_kg), 0) FROM balance_movement) AS at_subcontractors_kg,
+                (SELECT coalesce(-sum(net_kg), 0) FROM central_stock_movement
+                  WHERE kind = 'PRODUCTION') AS used_kg""";
     private static final String RECENT = """
             SELECT id, yarn_type, kind, net_kg, production_id, fabric_kg, note, occurred_at, created_by
             FROM central_stock_movement ORDER BY occurred_at DESC, id DESC LIMIT ?""";
@@ -85,7 +87,10 @@ final class CentralStockAdapter implements CentralStockPort {
     public YarnFlow findYarnFlow() {
         return jdbc.sql(FLOW)
                 .query((rs, i) -> new YarnFlow(
-                        rs.getBigDecimal(1), rs.getBigDecimal(2), rs.getBigDecimal(3), rs.getBigDecimal(4)))
+                        rs.getBigDecimal("received_kg"),
+                        rs.getBigDecimal("direct_kg"),
+                        rs.getBigDecimal("at_subcontractors_kg"),
+                        rs.getBigDecimal("used_kg")))
                 .single();
     }
 

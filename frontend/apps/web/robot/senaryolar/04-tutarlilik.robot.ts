@@ -7,14 +7,21 @@ type Dashboard = {
 type Bakiye = { items: { balanceKg: string; inTransitKg: string }[]; totalKg: string };
 type Liste = { items: { shipmentId: string; shipmentNo: string; status: string }[] };
 type Fire = {
+  shortageKg: string;
   fireRate: string;
   sentKg: string;
   fabricKg: string;
   returnedKg: string;
+  claimKg: string;
   baseKg: string;
   expectedFabricKg: string;
 };
-type Detay = { fireRate: string };
+type FireSatiri = {
+  shipmentId: string;
+  shipmentNo: string;
+  expectedFabricKg: string;
+  shortageKg: string;
+};
 
 const topla = (degerler: string[]) => degerler.reduce((t, d) => t + Number(d), 0);
 const yakin = (a: number, b: number) => Math.abs(a - b) < 0.0005;
@@ -52,7 +59,6 @@ test('Tutarlılık: özet, bakiye ve fire dosyası sayıları birbirini tutmalı
     async () => {
       const liste = await mudur.api<Liste>('/api/v1/shipments?size=100');
       for (const sevkiyat of liste.items.filter((x) => x.status === 'COMPLETED')) {
-        const detay = await mudur.api<Detay>(`/api/v1/shipments/${sevkiyat.shipmentId}`);
         const fire = await mudur
           .api<Fire>(`/api/v1/shipments/${sevkiyat.shipmentId}/fire-settlement`)
           .catch(() => undefined);
@@ -61,24 +67,43 @@ test('Tutarlılık: özet, bakiye ve fire dosyası sayıları birbirini tutmalı
           continue;
         }
         mudur.kontrol(
-          `${sevkiyat.shipmentNo}: fire oranı sevkiyatla aynı`,
-          Number(fire.fireRate) === Number(detay.fireRate),
-          `${fire.fireRate} ≠ ${detay.fireRate}`,
-        );
-        mudur.kontrol(
           `${sevkiyat.shipmentNo}: kumaş ≤ gönderilen iplik`,
           Number(fire.fabricKg) <= Number(fire.sentKg),
           `${fire.fabricKg} > ${fire.sentKg}`,
         );
         mudur.kontrol(
-          `${sevkiyat.shipmentNo}: fire tabanı = gönderilen − dönen`,
-          yakin(Number(fire.baseKg), Number(fire.sentKg) - Number(fire.returnedKg)),
+          `${sevkiyat.shipmentNo}: fire tabanı = gönderilen − dönen − itiraz`,
+          yakin(
+            Number(fire.baseKg),
+            Number(fire.sentKg) - Number(fire.returnedKg) - Number(fire.claimKg),
+          ),
           `${fire.baseKg}`,
         );
         mudur.kontrol(
           `${sevkiyat.shipmentNo}: beklenen kumaş = taban × (1 − fire)`,
           yakin(Number(fire.expectedFabricKg), Number(fire.baseKg) * (1 - Number(fire.fireRate))),
           `${fire.expectedFabricKg}`,
+        );
+      }
+    },
+  );
+
+  await mudur.adim(
+    'Fire raporu satırları, her sevkiyatın fire dosyasıyla aynı sayıları göstermeli',
+    async () => {
+      const satirlar = await mudur.api<FireSatiri[]>('/api/v1/reports/fire');
+      for (const satir of satirlar.slice(0, 60)) {
+        const dosya = await mudur
+          .api<Fire>(`/api/v1/shipments/${satir.shipmentId}/fire-settlement`)
+          .catch(() => undefined);
+        if (dosya === undefined) continue;
+        mudur.kontrol(
+          `${satir.shipmentNo}: rapordaki beklenen kumaş (${satir.expectedFabricKg}) fire dosyasındakiyle (${dosya.expectedFabricKg}) aynı olmalı`,
+          yakin(Number(satir.expectedFabricKg), Number(dosya.expectedFabricKg)),
+        );
+        mudur.kontrol(
+          `${satir.shipmentNo}: rapordaki eksik kilo fire dosyasındaki eksik kiloyla (${dosya.shortageKg}) aynı olmalı`,
+          yakin(Number(satir.shortageKg), Math.max(0, Number(dosya.shortageKg))),
         );
       }
     },

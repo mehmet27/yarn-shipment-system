@@ -5,14 +5,26 @@ import { resim, sec } from './yardimci';
 export type Yonetim = { depo: Robot; mudur: Robot };
 
 /** Müdür taslağı açar; sevkiyat kimliğini döner. */
+export type Kaynak =
+  { tur: 'merkez' } | { tur: 'fason'; gonderen: string } | { tur: 'kapi'; tedarikci: string };
+
 export async function taslakAc(
   mudur: Robot,
   iplik: string,
   kg: string,
   fire = '3',
+  kaynak: Kaynak = { tur: 'merkez' },
+  alici = 'Başka Dokuma',
 ): Promise<string> {
   await mudur.sayfa.goto('/panel/sevkiyat/yeni');
-  await sec(mudur.sayfa, /Alıcı fasoncu/, 'Başka Dokuma');
+  await sec(mudur.sayfa, /Alıcı fasoncu/, alici);
+  if (kaynak.tur === 'fason') {
+    await mudur.sayfa.locator('label').filter({ hasText: 'Başka fasoncu' }).first().click();
+    await sec(mudur.sayfa, /Gönderen fasoncu/, kaynak.gonderen);
+  } else if (kaynak.tur === 'kapi') {
+    await mudur.sayfa.locator('label').filter({ hasText: 'Kapıdan aktarma' }).first().click();
+    await mudur.sayfa.getByLabel(/^Tedarikçi/).fill(kaynak.tedarikci);
+  }
   await mudur.sayfa.getByLabel(/Fire oranı/).fill(fire);
   await mudur.sayfa
     .getByLabel(/serbest metin/i)
@@ -77,9 +89,11 @@ export async function tamamlanmisSevkiyat(
   iplik: string,
   kg = '100',
   fire = '3',
+  kaynak: Kaynak = { tur: 'merkez' },
+  alici = 'Başka Dokuma',
 ): Promise<string> {
   const yarim = String(Number(kg) / 2);
-  const id = await taslakAc(y.mudur, iplik, kg, fire);
+  const id = await taslakAc(y.mudur, iplik, kg, fire, kaynak, alici);
   await cuvalEkle(y.depo, id, 2, yarim);
   await tartiGir(y.depo, id, String(Number(kg) + 3.5).replace('.', ','), '3,5', '2');
   await y.depo.sayfa.waitForURL(new RegExp(`${id}$`), { timeout: 15_000 });

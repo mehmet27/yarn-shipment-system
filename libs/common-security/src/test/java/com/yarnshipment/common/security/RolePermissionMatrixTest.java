@@ -34,10 +34,11 @@ class RolePermissionMatrixTest {
     }
 
     @Test
-    @DisplayName("Genel müdür yalnızca rapor ve bakiye görür")
+    @DisplayName("Genel müdür yalnızca rapor, bakiye ve ad çözmek için ana veri listesini görür")
     void shouldLimitGeneralManagerToReadOnly() {
         assertThat(RolePermissionMatrix.permissionsOf(List.of(Role.GENERAL_MANAGER)))
-                .containsExactlyInAnyOrder(Permission.REPORT_VIEW, Permission.BALANCE_VIEW);
+                .containsExactlyInAnyOrder(
+                        Permission.REPORT_VIEW, Permission.BALANCE_VIEW, Permission.MASTER_DATA_VIEW);
     }
 
     @Test

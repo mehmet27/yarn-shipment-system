@@ -240,7 +240,7 @@ if (!bayrak("--derleme-atla")) {
 const surecler = {};
 function arkaplanda(ad, komut, args, cwd, ek) {
   const gunluk = join(KAYIT, `${ad}.log`);
-  const env = { ...process.env, ...ek };
+  const env = { ...process.env, ...ortam, ...ek };
   if (WIN) {
     // Start-Process -WindowStyle Hidden: pencere açmaz, bu terminalden bağımsızdır (terminal kapansa ya da Ctrl+C yapılsa da ölmez).
     const tek = (d) => `'${d.replaceAll("'", "''")}'`;

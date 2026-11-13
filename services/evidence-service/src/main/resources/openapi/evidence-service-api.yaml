@@ -314,8 +314,6 @@ components:
       type: string
       enum:
         - DISPATCH_SCALE
-        - BAG_OVERVIEW
-        - BAG_LABEL
         - WAYBILL
         - QUALITY_CLAIM
         - LAB_RESULT

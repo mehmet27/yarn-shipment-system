@@ -47,7 +47,7 @@ class EvidenceInvalidationControllerTest {
     @DisplayName("Admin geçersiz kılar; cevap INVALIDATED durumu ve gerekçeyi taşır")
     void shouldInvalidate() {
         when(invalidateEvidence.invalidateEvidence(any()))
-                .thenReturn(TestUploads.file(EvidenceType.BAG_LABEL).invalidate("yanlış sevkiyat"));
+                .thenReturn(TestUploads.file(EvidenceType.DISPATCH_SCALE).invalidate("yanlış sevkiyat"));
 
         MvcTestResult result = post("admin", BODY);
 

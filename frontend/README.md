@@ -7,7 +7,7 @@ React + TypeScript pnpm workspace. Mimari: [`docs/frontend/react-frontend-mimari
 | `apps/web`            | Yönetim Paneli (`/panel`) ve Saha PWA (`/saha`)                      |
 | `packages/config`     | Ortak ESLint ve TypeScript ayarları (kod standartlarındaki sınırlar) |
 | `packages/ui`         | Mantine'i saran tasarım sistemi                                      |
-| `packages/api-client` | API istemcisi (oturum çerezi, CSRF, Problem Details)                |
+| `packages/api-client` | API istemcisi (oturum çerezi, CSRF, Problem Details)                 |
 | `packages/i18n`       | Türkçe metinler ve tarih biçimlendirme                               |
 | `packages/units`      | Kilo ve yüzde hesabı (`number` aritmetiği yerine)                    |
 

@@ -8,7 +8,14 @@ import { ShipmentListPage } from './pages/ShipmentListPage';
 
 /** /panel altındaki sevkiyat route'ları. */
 export const shipmentPanelRoutes: RouteObject[] = [
-  { path: 'sevkiyat', element: <ShipmentListPage /> },
+  {
+    path: 'sevkiyat',
+    element: (
+      <RequirePermission permission="SHIPMENT_VIEW">
+        <ShipmentListPage />
+      </RequirePermission>
+    ),
+  },
   {
     path: 'sevkiyat/yeni',
     element: (
@@ -17,8 +24,22 @@ export const shipmentPanelRoutes: RouteObject[] = [
       </RequirePermission>
     ),
   },
-  { path: 'sevkiyat/:shipmentId', element: <ShipmentFilePage /> },
-  { path: 'sevkiyat/:shipmentId/ambar-cikis-fisi', element: <ExitSlipPage /> },
+  {
+    path: 'sevkiyat/:shipmentId',
+    element: (
+      <RequirePermission permission="SHIPMENT_VIEW">
+        <ShipmentFilePage />
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'sevkiyat/:shipmentId/ambar-cikis-fisi',
+    element: (
+      <RequirePermission permission="SHIPMENT_VIEW">
+        <ExitSlipPage />
+      </RequirePermission>
+    ),
+  },
   {
     path: 'sevkiyat/:shipmentId/cikis',
     element: (

@@ -26,6 +26,7 @@ export function RecordToolbar({
       <TextInput
         maw={{ base: '100%', sm: 420 }}
         placeholder={t('masterData.search')}
+        aria-label={t('masterData.search')}
         value={search}
         onChange={(event) => {
           onSearch(event.currentTarget.value);

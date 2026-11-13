@@ -38,6 +38,7 @@ export function BrandingForm({ branding }: BrandingFormProps) {
             label={t('branding.primaryColor')}
             description={t('branding.primaryColorHint')}
             format="hex"
+            eyeDropperButtonProps={{ 'aria-label': t('branding.eyeDropper') }}
             value={draft.primaryColor}
             error={error === 'color' ? t('branding.errors.color') : undefined}
             onChange={(primaryColor) => {

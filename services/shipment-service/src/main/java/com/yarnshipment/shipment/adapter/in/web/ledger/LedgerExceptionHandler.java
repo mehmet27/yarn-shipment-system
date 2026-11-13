@@ -2,9 +2,11 @@ package com.yarnshipment.shipment.adapter.in.web.ledger;
 
 import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
+import com.yarnshipment.shipment.domain.fabric.FabricExceedsSentYarnException;
 import com.yarnshipment.shipment.domain.fire.FireSettlementClosedException;
 import com.yarnshipment.shipment.domain.fire.FireSettlementNotFoundException;
 import com.yarnshipment.shipment.domain.fire.InvalidFireSettlementActionException;
+import com.yarnshipment.shipment.domain.stock.InsufficientCentralStockException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,19 @@ public final class LedgerExceptionHandler {
         ProblemDetail problem = problems.create(request, HttpStatus.BAD_REQUEST, "INVALID_LEDGER_INPUT");
         problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
         return problem;
+    }
+
+    @ExceptionHandler(InsufficientCentralStockException.class)
+    public ProblemDetail handleInsufficientStock(
+            InsufficientCentralStockException exception, HttpServletRequest request) {
+        ProblemDetail problem = problems.create(request, HttpStatus.CONFLICT, "INSUFFICIENT_CENTRAL_STOCK");
+        problem.setProperty("yarnType", exception.yarnType());
+        return problem;
+    }
+
+    @ExceptionHandler(FabricExceedsSentYarnException.class)
+    public ProblemDetail handleFabricExceedsYarn(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.CONFLICT, "FABRIC_EXCEEDS_SENT_YARN");
     }
 
     @ExceptionHandler(FireSettlementNotFoundException.class)

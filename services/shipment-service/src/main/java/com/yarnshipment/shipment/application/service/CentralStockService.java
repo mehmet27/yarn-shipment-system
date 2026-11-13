@@ -11,10 +11,14 @@ import com.yarnshipment.shipment.domain.balance.Kilograms;
 import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
+import com.yarnshipment.shipment.domain.stock.InsufficientCentralStockException;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,8 +69,25 @@ public class CentralStockService
                 command.yarns(),
                 command.actor().userId());
         List<CentralStockMovement> consumptions = production.consumptions();
+        requireStockFor(consumptions);
         stock.saveProduction(production, consumptions);
         return production;
+    }
+
+    /** Üretim yalnızca stokta girişi olan ve yetecek kadar bulunan iplikten yapılır. */
+    private void requireStockFor(List<CentralStockMovement> consumptions) {
+        Map<String, BigDecimal> available = new HashMap<>();
+        stock.findStock().forEach(row -> available.merge(row.yarnType(), row.stockKg(), BigDecimal::add));
+        Map<String, BigDecimal> needed = new LinkedHashMap<>();
+        for (CentralStockMovement consumption : consumptions) {
+            needed.merge(consumption.yarnType(), consumption.netKg().negate(), BigDecimal::add);
+        }
+        needed.forEach((key, kg) -> {
+            BigDecimal have = available.getOrDefault(key, Kilograms.ZERO);
+            if (have.compareTo(kg) < 0) {
+                throw new InsufficientCentralStockException(key, have);
+            }
+        });
     }
 
     @Override

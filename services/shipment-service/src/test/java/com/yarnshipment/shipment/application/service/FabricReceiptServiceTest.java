@@ -9,6 +9,7 @@ import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.fabric.RecordFabricReceiptCommand;
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
+import com.yarnshipment.shipment.domain.fabric.FabricExceedsSentYarnException;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
 import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.fire.FireCalculation;
@@ -93,6 +94,17 @@ class FabricReceiptServiceTest {
         assertThatThrownBy(() ->
                         service.recordFabricReceipt(command("100", List.of(new YarnShare("A", new BigDecimal("90"))))))
                 .isInstanceOf(InvalidLedgerInputException.class);
+        assertThat(ledger.receipts()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("Gelen kumaşın toplamı gönderilen iplikten fazla olamaz")
+    void shouldRejectFabricExceedingSentYarn() {
+        assertThatThrownBy(() -> service.recordFabricReceipt(command("1000.001", null)))
+                .isInstanceOf(FabricExceedsSentYarnException.class);
+        service.recordFabricReceipt(command("600", null));
+        assertThatThrownBy(() -> service.recordFabricReceipt(command("500", null)))
+                .isInstanceOf(FabricExceedsSentYarnException.class);
         assertThat(ledger.receipts()).hasSize(1);
     }
 

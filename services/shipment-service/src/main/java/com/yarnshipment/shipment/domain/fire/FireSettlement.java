@@ -1,6 +1,7 @@
 package com.yarnshipment.shipment.domain.fire;
 
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
+import com.yarnshipment.shipment.domain.fabric.FabricExceedsSentYarnException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -62,6 +63,13 @@ public record FireSettlement(
                 null,
                 null,
                 null);
+    }
+
+    /** Gelen kumaşın toplamı gönderilen iplik kilosunu aşamaz; aşarsa {@link FabricExceedsSentYarnException}. */
+    public void requireFabricWithinSent(BigDecimal alreadyReceivedKg, BigDecimal newKg) {
+        if (alreadyReceivedKg.add(newKg).compareTo(sentKg) > 0) {
+            throw new FabricExceedsSentYarnException(shipmentId);
+        }
     }
 
     /** Kapanmış dosyada {@link FireSettlementClosedException}. */

@@ -19,11 +19,12 @@ describe('parseKg', () => {
     ['1982,5', '1982.500'],
     ['  12 ', '12.000'],
     ['0,125', '0.125'],
+    ['100.000', '100000.000'],
   ])('Türkçe girişi "%s" API biçimine "%s" çevirir', (input, expected) => {
     expect(parseKg(input)).toBe(expected);
   });
 
-  it.each(['', 'abc', '1,2345', '1982.5', '-5', '19.82'])(
+  it.each(['', 'abc', '1,2345', '1982.5', '-5', '19.82', '100.001', '99.999.999'])(
     'geçersiz girişte "%s" boş döner',
     (input) => {
       expect(parseKg(input)).toBeUndefined();

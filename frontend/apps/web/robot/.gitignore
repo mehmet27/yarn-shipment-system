@@ -1,3 +1,4 @@
 rapor/
 sonuclar/
 kullanicilar.local.json
+.env.local

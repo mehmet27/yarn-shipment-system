@@ -4,10 +4,29 @@
 //   pnpm robot -- --video       her senaryonun videosunu rapora ekler
 //   pnpm robot -- --rol=depo    yalnızca adında "depo" geçen senaryolar
 import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const bayraklar = process.argv.slice(2);
 const env = { ...process.env };
+
+// robot/.env.local (git'e girmez): her satır ANAHTAR=değer, ör. ROBOT_SIFRE=Robot!2026x
+const yerel = join(import.meta.dirname, '.env.local');
+if (existsSync(yerel)) {
+  for (const satir of readFileSync(yerel, 'utf8').split('\n')) {
+    const eslesme = /^\s*([A-Z_]+)\s*=\s*(.*?)\s*$/.exec(satir);
+    if (eslesme?.[1] !== undefined && env[eslesme[1]] === undefined)
+      env[eslesme[1]] = eslesme[2] ?? '';
+  }
+}
+if (env.ROBOT_SIFRE === undefined || env.ROBOT_SIFRE === '') {
+  console.error(`ROBOT_SIFRE tanımlı değil; robot kullanıcıların şifresini bilmeden giriş yapamaz.
+  PowerShell : $env:ROBOT_SIFRE = 'Robot!2026x'
+  Git Bash   : export ROBOT_SIFRE='Robot!2026x'
+  Kalıcı     : robot/.env.local dosyasına  ROBOT_SIFRE=Robot!2026x  yazın`);
+  process.exit(2);
+}
+
 const arguman = [];
 for (const bayrak of bayraklar) {
   if (bayrak === '--') continue;

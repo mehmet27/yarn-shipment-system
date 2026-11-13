@@ -8,6 +8,7 @@ import com.yarnshipment.shipment.domain.model.Weighing;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /** Testlerde kullanılan sevkiyat örnekleri. */
@@ -54,5 +55,21 @@ public final class TestShipments {
                 null,
                 shipment.createdAt(),
                 Shipment.RecipeState.LEGACY);
+    }
+
+    /** Sevkiyatta girilen fire oranı varsayılandan farklı olan örnek. */
+    public static Shipment withFireRate(ShipmentStatus status, String fireRate) {
+        Shipment shipment = shipment(status);
+        return new Shipment(
+                shipment.id(),
+                shipment.shipmentNo(),
+                shipment.siteId(),
+                status,
+                shipment.parties(),
+                shipment.planned(),
+                shipment.dispatchWeighing(),
+                shipment.waybillNo(),
+                shipment.createdAt(),
+                new Shipment.RecipeState(List.of(), new BigDecimal(fireRate), null));
     }
 }

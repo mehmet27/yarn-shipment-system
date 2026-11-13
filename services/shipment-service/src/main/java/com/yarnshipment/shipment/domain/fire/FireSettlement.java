@@ -47,11 +47,17 @@ public record FireSettlement(
 
     /** Sevkiyat tamamlanınca açılır: varsayılan %4 oranla kumaş bekler. */
     public static FireSettlement open(UUID shipmentId, UUID subcontractorId, BigDecimal sentKg) {
+        return open(shipmentId, subcontractorId, sentKg, DEFAULT_FIRE_RATE);
+    }
+
+    /** Sevkiyat tamamlanınca açılır: sevkiyatta girilen fire oranıyla kumaş bekler. */
+    public static FireSettlement open(
+            UUID shipmentId, UUID subcontractorId, BigDecimal sentKg, BigDecimal fireRate) {
         return new FireSettlement(
                 shipmentId,
                 subcontractorId,
                 FireSettlementStatus.AWAITING_FABRIC,
-                DEFAULT_FIRE_RATE,
+                fireRate,
                 sentKg,
                 null,
                 null,

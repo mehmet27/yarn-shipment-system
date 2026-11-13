@@ -85,6 +85,24 @@ Migration'ları ve veritabanı kısıt testlerini servisler olmadan doğrulamak 
 tools/db/verify-migrations.sh
 ```
 
+## Yerel ortamı sıfırlama (tek komut)
+
+Yerel veriyi silip yalnızca `admin` kullanıcısıyla temiz bir ortam kurmak için (geri alınamaz; **yalnızca yerel geliştirme**):
+
+```bash
+cd frontend
+pnpm yerel:sifirla              # "SIL" yazarak onaylarsınız; sıfırlar, backend'i derler, yığını yeniden başlatır
+pnpm yerel:sifirla -- --evet    # onay sormadan
+pnpm yerel:sifirla -- --sadece-veri      # yalnızca Docker verisini sıfırlar (uygulama, gateway, arayüze dokunmaz)
+pnpm yerel:sifirla -- --derleme-atla     # backend'i yeniden derlemeden (kod değişmediyse daha hızlı)
+```
+
+Betik (`tools/yerel-sifirla.mjs`): 8083, 8080 ve 5173 portlarını dinleyen yerel servisleri durdurur; `deploy/docker-compose.yml` +
+`deploy/docker-compose.temiz.yml` ile Docker hacimlerini siler ve yalnızca `admin`'li Keycloak ile yeniden kurar; backend'i derleyip
+uygulama, gateway ve arayüzü başlatır (günlükler `.yerel/` altında). Korumalar: `SPRING_PROFILES_ACTIVE`/`YARNSHIPMENT_ENV` canlı ya da
+CI gibiyse, `DOCKER_HOST` uzak sunucuysa ya da Docker bağlamı yerel değilse durur; `deploy/.env` yoksa çalışmaz.
+Sıfırlamadan sonra diğer kullanıcıları robot açar: `pnpm robot -- --rol=Kurulum` (`frontend/apps/web/robot/README.md`).
+
 ## Uygulamayı çalıştırma (yarnshipment-app)
 
 shipment, discrepancy, evidence, reporting ve audit modülleri `services/yarnshipment-app` içinde tek Spring Boot uygulaması olarak çalışır (port `8083`); gateway ayrı süreçtir. Tek `application.yml` ve tek bağlantı havuzu vardır; her şema kendi Flyway'iyle (kendi `flyway_schema_history` tablosu) açılışta kurulur, migration'lar `services/<modül>-service/src/main/resources/db/migration/<şema>/` altındadır. PostgreSQL'i ayrıca kurmanız gerekmez; yukarıdaki Compose yeterlidir.

@@ -16,6 +16,7 @@
     "test:e2e:smoke": "pnpm --filter @iplik/web e2e --grep @smoke",
     "test:e2e:rapor": "pnpm --filter @iplik/web exec playwright show-report e2e/rapor",
     "test:e2e:yeni-ekran": "node tools/e2e-yeni-ekran.mjs",
+    "yerel:sifirla": "node ../tools/yerel-sifirla.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:responsive": "node tools/responsive-check.mjs"

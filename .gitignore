@@ -15,3 +15,6 @@ deploy/prod/.env
 # İşletim sistemi
 .DS_Store
 deploy/prod/generated/
+
+# Yerel sıfırlama betiğinin servis günlükleri
+.yerel/

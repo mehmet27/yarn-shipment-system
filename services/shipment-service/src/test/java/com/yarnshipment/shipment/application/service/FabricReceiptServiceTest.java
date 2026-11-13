@@ -39,6 +39,7 @@ class FabricReceiptServiceTest {
     private final InMemoryShipmentQueryPort queryPort = new InMemoryShipmentQueryPort();
     private final InMemoryFireSettlementPort settlements = new InMemoryFireSettlementPort();
     private final RecordingLedgerPorts ledger = new RecordingLedgerPorts();
+    private final RecordingLedgerEvents events = new RecordingLedgerEvents();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final Actor quality = TestTokens.actor("quality");
     private final FabricReceiptService service = new FabricReceiptService(
@@ -46,6 +47,7 @@ class FabricReceiptServiceTest {
             ledger,
             settlements,
             ledger,
+            events,
             clock);
 
     @BeforeEach
@@ -74,6 +76,7 @@ class FabricReceiptServiceTest {
         assertThat(receipt.yarns().get(1).netKg()).isEqualByComparingTo("384");
         assertThat(receipt.receivedAt()).isEqualTo(NOW);
         assertThat(ledger.receipts()).containsExactly(receipt);
+        assertThat(events.names).containsExactly("fabricReceived");
         assertThat(settlements.find(TestShipments.SHIPMENT_ID))
                 .get()
                 .extracting(FireSettlement::status)
@@ -119,6 +122,7 @@ class FabricReceiptServiceTest {
                 ledger,
                 settlements,
                 ledger,
+                events,
                 clock);
 
         // when / then
@@ -151,6 +155,7 @@ class FabricReceiptServiceTest {
                 ledger,
                 new InMemoryFireSettlementPort(),
                 ledger,
+                events,
                 clock);
 
         // when / then

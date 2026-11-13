@@ -30,7 +30,9 @@ class CentralStockServiceTest {
 
     private final InMemoryStock stock = new InMemoryStock();
     private final Actor quality = TestTokens.actor("quality");
-    private final CentralStockService service = new CentralStockService(stock, Clock.fixed(NOW, ZoneOffset.UTC));
+    private final RecordingLedgerEvents events = new RecordingLedgerEvents();
+    private final CentralStockService service =
+            new CentralStockService(stock, events, Clock.fixed(NOW, ZoneOffset.UTC));
 
     private RecordCentralProductionUseCase.Command production(String yarnType, String fabricKg) {
         List<YarnShare> yarns = List.of(new YarnShare(yarnType, new BigDecimal(fabricKg)));
@@ -50,6 +52,7 @@ class CentralStockServiceTest {
         service.recordCentralProduction(production("Pamuk 20/1", "95"));
 
         assertThat(stock.stockOf("Pamuk 20/1")).isEqualByComparingTo("0");
+        assertThat(events.names).containsExactly("yarnReceipt", "centralProduction");
     }
 
     @Test
@@ -58,6 +61,7 @@ class CentralStockServiceTest {
         assertThatThrownBy(() -> service.recordCentralProduction(production("YOKİPLİK", "5")))
                 .isInstanceOf(InsufficientCentralStockException.class);
         assertThat(stock.productions).isEmpty();
+        assertThat(events.names).isEmpty();
     }
 
     @Test

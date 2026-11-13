@@ -6,6 +6,7 @@ import com.yarnshipment.shipment.application.port.in.fire.ChangeFireRateUseCase;
 import com.yarnshipment.shipment.application.port.in.fire.FireSettlementDetails;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort.RateChange;
+import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
 import com.yarnshipment.shipment.domain.fire.FireSettlementNotFoundException;
@@ -24,16 +25,19 @@ public class FireRateService implements ChangeFireRateUseCase {
     private final ScopedShipmentLoader shipments;
     private final FireSettlementPort settlements;
     private final FireSettlementDetailsReader reader;
+    private final LedgerEventPort events;
     private final Clock clock;
 
     public FireRateService(
             ScopedShipmentLoader shipments,
             FireSettlementPort settlements,
             FireSettlementDetailsReader reader,
+            LedgerEventPort events,
             Clock clock) {
         this.shipments = shipments;
         this.settlements = settlements;
         this.reader = reader;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -58,6 +62,8 @@ public class FireRateService implements ChangeFireRateUseCase {
                 reason,
                 command.actor().userId(),
                 now));
+        events.fireRateChanged(
+                current.shipmentId(), current.fireRate(), changed.fireRate(), command.actor().userId(), now);
         return reader.read(changed);
     }
 }

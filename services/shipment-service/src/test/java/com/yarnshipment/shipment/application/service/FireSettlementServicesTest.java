@@ -34,12 +34,13 @@ class FireSettlementServicesTest {
 
     private final InMemoryShipmentQueryPort queryPort = new InMemoryShipmentQueryPort();
     private final InMemoryFireSettlementPort settlements = new InMemoryFireSettlementPort();
+    private final RecordingLedgerEvents events = new RecordingLedgerEvents();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final Actor manager = TestTokens.actor("manager");
     private final ScopedShipmentLoader loader = new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock));
     private final FireSettlementDetailsReader reader = new FireSettlementDetailsReader(settlements);
-    private final FireRateService rateService = new FireRateService(loader, settlements, reader, clock);
-    private final FireInvoiceService invoiceService = new FireInvoiceService(loader, settlements, reader, clock);
+    private final FireRateService rateService = new FireRateService(loader, settlements, reader, events, clock);
+    private final FireInvoiceService invoiceService = new FireInvoiceService(loader, settlements, reader, events, clock);
     private final FireSettlementQueryService queryService = new FireSettlementQueryService(loader, settlements, reader);
 
     @BeforeEach
@@ -87,6 +88,7 @@ class FireSettlementServicesTest {
             assertThat(change.reason()).isEqualTo("Sözleşme");
             assertThat(change.changedBy()).isEqualTo(manager.userId());
         });
+        assertThat(events.names).containsExactly("fireRateChanged");
     }
 
     @Test
@@ -113,6 +115,7 @@ class FireSettlementServicesTest {
         assertThat(first.settlement().status()).isEqualTo(FireSettlementStatus.INVOICED);
         assertThat(first.settlement().invoicedBy()).isEqualTo(manager.userId());
         assertThat(repeat.settlement().invoiceNo()).isEqualTo("F-1");
+        assertThat(events.names).containsExactly("fireInvoiced");
         assertThatThrownBy(() -> invoiceService.markInvoiced(invoice("F-2")))
                 .isInstanceOf(FireSettlementClosedException.class);
     }
@@ -140,6 +143,7 @@ class FireSettlementServicesTest {
                 .isEqualTo(FireSettlementStatus.CLOSED);
         assertThat(invoiceService.closeFireSettlement(query()).settlement().status())
                 .isEqualTo(FireSettlementStatus.CLOSED);
+        assertThat(events.names).containsExactly("fireSettlementClosed");
     }
 
     @Test

@@ -98,4 +98,12 @@ class QualityClaimAdapterTest {
                 .containsExactly("OPENED", "CLAIM_EVIDENCE");
         assertThat(events.count(DiscrepancyOpened.TYPE)).isEqualTo(1L);
     }
+
+    @Test
+    @DisplayName("Hedef tarihten sonra açılan itiraz da yazılır; süre sınırı yoktur")
+    void shouldSaveClaimAfterTargetDate() {
+        QualityClaim saved = SeededClaims.openAfterTarget(claims);
+
+        assertThat(claims.findClaim(saved.id())).contains(saved);
+    }
 }

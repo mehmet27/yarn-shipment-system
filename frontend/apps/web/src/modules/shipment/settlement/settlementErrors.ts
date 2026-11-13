@@ -9,6 +9,7 @@ const KNOWN_CODES = [
   'FIRE_CLOSE_NOT_APPLICABLE',
   'ACCESS_DENIED',
   'INVALID_LEDGER_INPUT',
+  'FABRIC_EXCEEDS_SENT_YARN',
 ];
 
 /** Bilinen hata kodları Türkçe mesaja (`settlement.errors.*`); bilinmeyenler genel mesaja düşer. */

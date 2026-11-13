@@ -4,6 +4,8 @@ import Big from 'big.js';
 export type Kilogram = `${number}` & { readonly __brand: 'Kilogram' };
 
 const KG_SCALE = 3;
+/** Tek kayıtta girilebilecek en büyük kilo (backend `Kilograms.MAX_ENTRY_KG` ile aynı). */
+const MAX_ENTRY_KG = 100_000;
 const API_PATTERN = /^\d+(\.\d{1,3})?$/;
 const TURKISH_INPUT_PATTERN = /^\d{1,3}(\.\d{3})*(,\d{1,3})?$|^\d+(,\d{1,3})?$/;
 const KG_FORMAT = new Intl.NumberFormat('tr-TR', {
@@ -27,7 +29,8 @@ export function parseKg(input: string): Kilogram | undefined {
   if (!TURKISH_INPUT_PATTERN.test(trimmed)) {
     return undefined;
   }
-  return toKilogram(new Big(trimmed.replaceAll('.', '').replace(',', '.')));
+  const value = new Big(trimmed.replaceAll('.', '').replace(',', '.'));
+  return value.gt(MAX_ENTRY_KG) ? undefined : toKilogram(value);
 }
 
 export function formatKg(value: Kilogram): string {

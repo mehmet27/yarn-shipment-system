@@ -66,6 +66,7 @@ public class FabricReceiptService implements RecordFabricReceiptUseCase, ListFab
         settlement.requireOpen();
         Instant now = clock.instant();
         BigDecimal netKg = Kilograms.round(command.netKg());
+        requireWithinSentYarn(settlement, shipment.id(), netKg);
         FabricReceipt receipt = new FabricReceipt(
                 UUID.randomUUID(),
                 shipment.id(),
@@ -80,6 +81,14 @@ public class FabricReceiptService implements RecordFabricReceiptUseCase, ListFab
         receipts.save(receipt);
         settlements.save(settlement.afterFabricReceipt(), now);
         return receipt;
+    }
+
+    /** Gelen kumaşın toplamı fasoncuya giden iplik kilosunu aşamaz. */
+    private void requireWithinSentYarn(FireSettlement settlement, UUID shipmentId, BigDecimal netKg) {
+        BigDecimal received = receipts.findByShipment(shipmentId).stream()
+                .map(FabricReceipt::netKg)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        settlement.requireFabricWithinSent(received, netKg);
     }
 
     @Override

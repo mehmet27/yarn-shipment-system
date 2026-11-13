@@ -8,6 +8,8 @@ public final class Kilograms {
 
     public static final int SCALE = 3;
     private static final int MAX_INTEGER_DIGITS = 9;
+    /** Tek kayıtta girilebilecek en büyük kilo; bir tır yükünün çok üzerindeki değerler yazım hatasıdır. */
+    public static final BigDecimal MAX_ENTRY_KG = new BigDecimal("100000");
     public static final BigDecimal ZERO = BigDecimal.ZERO.setScale(SCALE);
 
     private Kilograms() {}
@@ -22,6 +24,7 @@ public final class Kilograms {
         try {
             BigDecimal value = new BigDecimal(text.strip());
             if (value.signum() <= 0
+                    || value.compareTo(MAX_ENTRY_KG) > 0
                     || value.scale() > SCALE
                     || value.precision() - value.scale() > MAX_INTEGER_DIGITS) {
                 throw new InvalidLedgerInputException(field);

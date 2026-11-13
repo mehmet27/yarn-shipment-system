@@ -1106,6 +1106,7 @@
       "FIRE_INVOICE_NOT_APPLICABLE": "Bu dosyada faturalanacak hatalı kilo yok ya da dosya kapandı.",
       "FIRE_CLOSE_NOT_APPLICABLE": "Hatalı kilo olan dosya kapatılamaz; fatura bilgisi girin.",
       "ACCESS_DENIED": "Bu işlem için yetkiniz yok.",
+      "FABRIC_EXCEEDS_SENT_YARN": "Gelen kumaşın toplamı fasoncuya gönderilen iplikten fazla olamaz.",
       "INVALID_LEDGER_INPUT": "Girilen kilo ya da değer geçersiz: kilo sıfırdan büyük olmalı, dönen iplik gönderilen ipliği aşmamalı.",
       "unknown": "İşlem tamamlanamadı. Lütfen tekrar deneyin."
     },
@@ -1270,12 +1271,13 @@
     },
     "draftErrors": {
       "required": "Zorunlu alanları doldurun.",
-      "invalidKg": "Kilo sıfırdan büyük, en çok 3 ondalıklı olmalı.",
+      "invalidKg": "Kilo sıfırdan büyük, en çok 3 ondalıklı ve en çok 100.000 olmalı.",
       "invalidRate": "Fire yüzdesi 0 ile 20 arasında olmalı.",
       "invalidRollCount": "Top sayısı pozitif tam sayı olmalı."
     },
     "errors": {
-      "invalid": "Girilen değerler geçersiz.",
+      "invalid": "Girilen değerler geçersiz: kilo sıfırdan büyük ve en çok 100.000 olmalı.",
+      "insufficient": "Merkez stokta bu iplikten yeterli kilo yok. Önce 'Merkeze iplik girişi' ile ipliği girin; iplik cinsi girişteki yazımla aynı olmalı.",
       "unknown": "Kayıt yapılamadı, tekrar deneyin."
     },
     "negativeWarning": "Bazı iplik cinslerinde stok eksiye düştü; doğrudan fasoncuya giden ipliğin girişi eksik olabilir."

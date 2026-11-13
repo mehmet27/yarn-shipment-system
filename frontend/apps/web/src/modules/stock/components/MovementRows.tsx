@@ -1,35 +1,8 @@
-import { formatDateTime, useTranslation } from '@iplik/i18n';
+import { useTranslation } from '@iplik/i18n';
 import type { CentralStock } from '@iplik/api-client/central-stock';
-import { Badge, Select, Table, Text } from '@iplik/ui';
+import { Select, Table, Text } from '@iplik/ui';
 import { useState } from 'react';
-import { formatSignedKg } from '@/modules/shipment';
-
-const KIND_COLOR: Record<string, string> = {
-  YARN_RECEIPT: 'green',
-  PRODUCTION: 'orange',
-  TO_SUBCONTRACTOR: 'blue',
-};
-
-function MovementRow({ move }: { move: CentralStock['movements'][number] }) {
-  const { t } = useTranslation();
-  return (
-    <Table.Tr>
-      <Table.Td>{formatDateTime(move.occurredAt)}</Table.Td>
-      <Table.Td>
-        <Badge variant="light" color={KIND_COLOR[move.kind] ?? 'gray'}>
-          {t(`stock.kinds.${move.kind}`)}
-        </Badge>
-      </Table.Td>
-      <Table.Td>{move.yarnType}</Table.Td>
-      <Table.Td>
-        <Text span c={move.netKg.startsWith('-') ? 'red.7' : 'green.8'} fw={600}>
-          {formatSignedKg(move.netKg)}
-        </Text>
-      </Table.Td>
-      <Table.Td>{move.note ?? ''}</Table.Td>
-    </Table.Tr>
-  );
-}
+import { MovementRow } from './MovementRow';
 
 /** Merkez stoğun son hareketleri; türe göre süzülür, giriş yeşil, çıkış kırmızı gösterilir. */
 export function MovementRows({ movements }: { movements: CentralStock['movements'] }) {

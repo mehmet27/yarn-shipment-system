@@ -153,8 +153,8 @@ VALUES ('0192f0a0-0000-7000-8000-000000000301', 'Şireci', '2026-10-01T08:00:00Z
        ('0192f0a0-0000-7000-8000-000000000305', 'Creora', '2026-10-01T08:00:00Z', '0192f0a0-0000-7000-8000-00000000d001')
 ON CONFLICT (id) DO NOTHING;
 
--- Bakiye defteri: çıkış yapılmış (fasoncuya yolda ya da tamamlanmış) her örnek sevkiyat için çıkış hareketi.
--- Gerçek akışta çıkış tartısı kaydedilince yazılır; örnek veride de yazılmazsa fasoncu bakiyesi 0 kalır ve
+-- Bakiye defteri: tamamlanmış her örnek sevkiyat için çıkış hareketi.
+-- Gerçek akışta sevkiyat tamamlanınca (CompleteShipmentService) yazılır; örnek veride de yazılmazsa bakiye 0 kalır ve
 -- raporlardaki "fasoncuya ulaşan" kilolarla uyuşmaz.
 INSERT INTO balance_movement (id, subcontractor_id, yarn_type, shipment_id, kind, net_kg, occurred_at, created_by,
                               source_ref)
@@ -162,5 +162,5 @@ SELECT ('0192f0a0-0000-7000-8000-0000000e' || lpad(s.n::text, 4, '0'))::uuid, s.
        s.id, 'DISPATCH', 250.000, s.created_at + interval '2 hours', '0192f0a0-0000-7000-8000-00000000d001',
        'DISPATCH:' || s.id || ':1'
 FROM seed_shipment s
-WHERE s.status IN ('AWAITING_DELIVERY', 'COMPLETED')
+WHERE s.status = 'COMPLETED'
 ON CONFLICT (source_ref) DO NOTHING;

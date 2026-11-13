@@ -4,7 +4,7 @@ import type { InternalAxiosRequestConfig } from 'axios';
 const MUTATING_METHODS = new Set(['post', 'put', 'patch', 'delete']);
 
 /**
- * Gateway BFF oturumu: token tarayıcıya inmez (FE-SEC-01). Oturum çerezi
+ * Çerez oturumu: token tarayıcıya inmez (FE-SEC-01). Oturum çerezi
  * `withCredentials` ile, CSRF değeri XSRF-TOKEN çerezinden X-XSRF-TOKEN başlığıyla gider.
  */
 export const httpClient = axios.create({

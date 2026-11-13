@@ -95,6 +95,8 @@ export const WorkArea = {
 } as const;
 
 export interface CurrentUserResponse {
+  /** Kişi geçici şifreyle girdi; şifresini değiştirene kadar rolü ve izni yoktur. */
+  passwordChangeRequired?: boolean;
   userId: string;
   fullName: string;
   roles: Role[];
@@ -555,6 +557,37 @@ export interface StaffLoginAccountRequest {
   password: string;
 }
 
+export interface LoginRequest {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  username: string;
+  /**
+     * @minLength 1
+     * @maxLength 128
+     */
+  password: string;
+}
+
+export interface LoginResponse {
+  /** Kişi geçici şifreyle girdi; önce şifresini değiştirmelidir. */
+  passwordChangeRequired: boolean;
+}
+
+export interface ChangeOwnPasswordRequest {
+  /**
+     * @minLength 1
+     * @maxLength 128
+     */
+  currentPassword: string;
+  /**
+     * @minLength 8
+     * @maxLength 128
+     */
+  newPassword: string;
+}
+
 export interface ChangeLoginAccountEnabledRequest {
   enabled: boolean;
 }
@@ -986,6 +1019,11 @@ export interface SubcontractorShipmentView {
 }
 
 /**
+ * Çok fazla hatalı deneme; hesap kısa süre kilitli (code ACCOUNT_LOCKED)
+ */
+export type LockedResponse = Problem;
+
+/**
  * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE) ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da düzeltilecek kayıt bu arada değişti (CORRECTION_CONFLICT)
  */
 export type ConflictResponse = Problem;
@@ -996,7 +1034,7 @@ export type ConflictResponse = Problem;
 export type BadRequestResponse = Problem;
 
 /**
- * Oturum yok veya token geçersiz (code AUTHENTICATION_REQUIRED)
+ * Oturum yok veya süresi dolmuş (code AUTHENTICATION_REQUIRED); girişte kullanıcı adı ya da şifre yanlış (AUTHENTICATION_FAILED)
  */
 export type UnauthorizedResponse = Problem;
 
@@ -1259,6 +1297,53 @@ export const getCurrentUser = (
  ) => {
       return customInstance<CurrentUserResponse>(
       {url: `/api/v1/me`, method: 'GET'
+    },
+      );
+    }
+
+/**
+ * Başarılı girişte HttpOnly oturum çerezi verilir; token tarayıcıya inmez. Kullanıcı adı ya da şifre yanlışsa,
+ * hesap kapalıysa 401 `AUTHENTICATION_FAILED` (hangisinin yanlış olduğu söylenmez). Art arda yanlış denemede hesap
+ * kısa süre kilitlenir: 423 `ACCOUNT_LOCKED`. Geçici şifreyle girenin `passwordChangeRequired` değeri doğrudur;
+ * şifresini değiştirene kadar başka işlem yapamaz.
+ * @summary Kullanıcı adı ve şifreyle oturum açar
+ */
+export const login = (
+    loginRequest: LoginRequest,
+ ) => {
+      return customInstance<LoginResponse>(
+      {url: `/api/v1/auth/login`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: loginRequest
+    },
+      );
+    }
+
+/**
+ * @summary Oturumu kapatır
+ */
+export const logout = (
+
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/auth/logout`, method: 'POST'
+    },
+      );
+    }
+
+/**
+ * Mevcut şifre doğrulanır; yanlışsa 400 `INVALID_CURRENT_PASSWORD`. Yeni şifre kurala uymuyorsa ya da eskisiyle
+ * aynıysa 400 `WEAK_PASSWORD`. Başarılı değişimde kişinin diğer oturumları kapanır, bu oturum yeni şifreyle
+ * devam eder. Geçici şifreyle giren kişi bu ucu kullanır.
+ * @summary Oturumdaki kullanıcı kendi şifresini değiştirir
+ */
+export const changeOwnPassword = (
+    changeOwnPasswordRequest: ChangeOwnPasswordRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/auth/password`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: changeOwnPasswordRequest
     },
       );
     }
@@ -2244,6 +2329,9 @@ type AwaitedInput<T> = PromiseLike<T> | T;
     type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 export type GetCurrentUserResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
+export type LoginResult = NonNullable<Awaited<ReturnType<typeof login>>>
+export type LogoutResult = NonNullable<Awaited<ReturnType<typeof logout>>>
+export type ChangeOwnPasswordResult = NonNullable<Awaited<ReturnType<typeof changeOwnPassword>>>
 export type CreateShipmentResult = NonNullable<Awaited<ReturnType<typeof createShipment>>>
 export type ListShipmentsResult = NonNullable<Awaited<ReturnType<typeof listShipments>>>
 export type GetShipmentResult = NonNullable<Awaited<ReturnType<typeof getShipment>>>

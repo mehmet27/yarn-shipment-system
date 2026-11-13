@@ -6,6 +6,35 @@
     "changePassword": "Şifremi değiştir",
     "mfaOn": "✓ İki adımlı doğrulama açık"
   },
+  "auth": {
+    "login": {
+      "title": "Giriş yap",
+      "username": "Kullanıcı adı",
+      "password": "Şifre",
+      "submit": "Giriş yap",
+      "errors": {
+        "AUTHENTICATION_FAILED": "Kullanıcı adı ya da şifre hatalı.",
+        "ACCOUNT_LOCKED": "Çok fazla hatalı deneme yapıldı; hesap kısa süre kilitlendi. Biraz sonra tekrar deneyin.",
+        "unknown": "Giriş yapılamadı. Lütfen tekrar deneyin."
+      }
+    },
+    "changePassword": {
+      "title": "Şifrenizi değiştirin",
+      "intro": "Devam etmek için kendinize yeni bir şifre belirleyin.",
+      "current": "Mevcut şifre",
+      "new": "Yeni şifre",
+      "repeat": "Yeni şifre (tekrar)",
+      "hint": "En az 8 karakter; kullanıcı adınız ya da yaygın bir şifre olmasın.",
+      "mismatch": "Yeni şifreler aynı değil.",
+      "submit": "Şifreyi değiştir",
+      "cancel": "Vazgeç",
+      "errors": {
+        "INVALID_CURRENT_PASSWORD": "Mevcut şifre hatalı.",
+        "WEAK_PASSWORD": "Yeni şifre kurallara uymuyor; daha uzun ve tahmin edilmesi zor bir şifre yazın.",
+        "unknown": "Şifre değiştirilemedi. Lütfen tekrar deneyin."
+      }
+    }
+  },
   "error": {
     "forbidden": "Bu sayfayı görme yetkiniz yok.",
     "notFound": "Aradığınız sayfa bulunamadı.",

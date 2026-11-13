@@ -37,7 +37,7 @@ describe('UserMenu', () => {
     expect(screen.getByText('✓ İki adımlı doğrulama açık')).toBeInTheDocument();
   });
 
-  it('şifre değiştirme Keycloak eylemine gider; şifre bu uygulamada sorulmaz', async () => {
+  it('şifre değiştirme kendi sayfasına gider', async () => {
     const user = createMockUser('ADMIN');
     server.use(http.get(ME_PATH, () => HttpResponse.json(user)));
     renderMenu();

@@ -8,6 +8,7 @@ const AVATAR_SIZE_PX = 44;
 const MENU_WIDTH_PX = 280;
 
 async function logoutAndRedirect(): Promise<void> {
+  // Tam sayfa yönlendirmesi: önbellekteki kullanıcı verisi ve izinler bellekten de silinir.
   window.location.assign(await logout());
 }
 

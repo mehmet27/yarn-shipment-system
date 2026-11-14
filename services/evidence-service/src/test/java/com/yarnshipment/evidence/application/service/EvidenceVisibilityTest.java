@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class EvidenceVisibilityTest {
 
     @ParameterizedTest
-    @ValueSource(strings = {"warehouse", "manager", "quality", "admin"})
+    @ValueSource(strings = {"warehouse", "manager", "quality"})
     @DisplayName("Kanıt görme izni olan rol kanıtı görür")
     void shouldLetEveryViewerSeeEvidence(String role) {
         // when / then

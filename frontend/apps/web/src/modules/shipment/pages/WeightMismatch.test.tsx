@@ -103,6 +103,7 @@ describe('Kantar uyuşmazlığı', () => {
   });
 
   it('liste süzgecinde Kantar uyuşmazlığı seçeneği vardır', async () => {
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat?durum=WEIGHT_MISMATCH');
     expect(await screen.findByRole('link', { name: 'SVK-2026-0045' })).toBeInTheDocument();
   });

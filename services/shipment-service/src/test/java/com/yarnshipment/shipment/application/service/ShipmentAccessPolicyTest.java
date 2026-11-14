@@ -33,18 +33,22 @@ class ShipmentAccessPolicyTest {
     }
 
     @Test
-    @DisplayName("Müdür taslağı iptal eder, uyuşmazlığa karar verir; teslim bekleyeni tamamlar ya da iptal eder")
+    @DisplayName("Müdür taslağı iptal eder, tartı uyuşmazlığına karar verir, teslim bekleyeni tamamlar, düzeltme açar")
     void shouldAllowManagerLifecycleActions() {
         // given
         Actor manager = TestTokens.actor("manager");
 
         // when / then
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.DRAFT), manager))
-                .containsExactlyInAnyOrder(ShipmentAction.CANCEL);
+                .containsExactlyInAnyOrder(ShipmentAction.CANCEL, ShipmentAction.CREATE_CORRECTION);
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.WEIGHT_MISMATCH), manager))
-                .containsExactlyInAnyOrder(ShipmentAction.CANCEL, ShipmentAction.RESOLVE_WEIGHT_MISMATCH);
+                .containsExactlyInAnyOrder(
+                        ShipmentAction.CANCEL,
+                        ShipmentAction.RESOLVE_WEIGHT_MISMATCH,
+                        ShipmentAction.CREATE_CORRECTION);
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY), manager))
-                .containsExactlyInAnyOrder(ShipmentAction.COMPLETE, ShipmentAction.CANCEL);
+                .containsExactlyInAnyOrder(
+                        ShipmentAction.COMPLETE, ShipmentAction.CANCEL, ShipmentAction.CREATE_CORRECTION);
     }
 
     @Test
@@ -52,16 +56,16 @@ class ShipmentAccessPolicyTest {
     void shouldAllowNoActionsForCancelledShipment() {
         // when / then
         assertThat(policy.allowedActions(
-                        TestShipments.shipment(ShipmentStatus.CANCELLED), TestTokens.mfaActor("admin")))
+                        TestShipments.shipment(ShipmentStatus.CANCELLED), TestTokens.mfaActor("manager")))
                 .isEmpty();
     }
 
     @Test
-    @DisplayName("Admin tamamlanmış sevkiyatta itiraz açar ve düzeltme kaydı oluşturur")
-    void shouldAllowAdminClaimAndCorrectionWhenCompleted() {
+    @DisplayName("Müdür tamamlanmış sevkiyatta itiraz açar ve düzeltme kaydı oluşturur")
+    void shouldAllowManagerClaimAndCorrectionWhenCompleted() {
         // when / then
         assertThat(policy.allowedActions(
-                        TestShipments.shipment(ShipmentStatus.COMPLETED), TestTokens.mfaActor("admin")))
+                        TestShipments.shipment(ShipmentStatus.COMPLETED), TestTokens.mfaActor("manager")))
                 .containsExactlyInAnyOrder(ShipmentAction.OPEN_QUALITY_CLAIM, ShipmentAction.CREATE_CORRECTION);
     }
 }

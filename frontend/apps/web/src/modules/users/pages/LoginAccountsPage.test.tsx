@@ -32,10 +32,9 @@ describe('Kullanıcılar ekranı', () => {
 
   it('menüde Kullanıcılar bağlantısı yöneticide görünür', async () => {
     renderApp('/panel');
-    expect(await screen.findByRole('link', { name: 'Kullanıcılar' })).toHaveAttribute(
-      'href',
-      '/panel/kullanicilar',
-    );
+    const links = await screen.findAllByRole('link', { name: 'Kullanıcılar' });
+    expect(links.length).toBeGreaterThan(0);
+    for (const link of links) expect(link).toHaveAttribute('href', '/panel/kullanicilar');
   });
 
   it('arama kullanıcı adı ve adda yapılır; sonuç yoksa bilgi verir', async () => {

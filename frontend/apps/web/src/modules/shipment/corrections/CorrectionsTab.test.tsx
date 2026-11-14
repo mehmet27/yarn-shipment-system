@@ -9,8 +9,8 @@ import { renderApp } from '@/test/renderApp';
 const COMPLETED_FILE = '/panel/sevkiyat/shp-0007';
 
 describe('Gerekçeli düzeltme', () => {
-  it('Admin tamamlanmış sevkiyatın çıkış tartısını gerekçeyle düzeltir; eski değer listede kalır', async () => {
-    server.use(...createHandlers('ADMIN'));
+  it('Müdür tamamlanmış sevkiyatın çıkış tartısını gerekçeyle düzeltir; eski değer listede kalır', async () => {
+    server.use(...createHandlers('MANAGER'));
     renderApp(COMPLETED_FILE);
     await userEvent.click(await screen.findByRole('tab', { name: 'Düzeltmeler' }));
     expect(await screen.findByText('Bu sevkiyatta düzeltme yok.')).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe('Gerekçeli düzeltme', () => {
   });
 
   it('gerekçesiz düzeltme gönderilmez', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp(COMPLETED_FILE);
     await userEvent.click(await screen.findByRole('tab', { name: 'Düzeltmeler' }));
     await userEvent.click(await screen.findByRole('combobox', { name: /^Ne düzeltilecek/ }));
@@ -45,8 +45,8 @@ describe('Gerekçeli düzeltme', () => {
     expect(screen.getByText('Bu sevkiyatta düzeltme yok.')).toBeInTheDocument();
   });
 
-  it('yönetici düzeltmeleri görür ama formu görmez', async () => {
-    server.use(...createHandlers('MANAGER'));
+  it('kalite düzeltmeleri görür ama formu görmez', async () => {
+    server.use(...createHandlers('QUALITY'));
     renderApp(COMPLETED_FILE);
     await userEvent.click(await screen.findByRole('tab', { name: 'Düzeltmeler' }));
     expect(await screen.findByText('Bu sevkiyatta düzeltme yok.')).toBeInTheDocument();

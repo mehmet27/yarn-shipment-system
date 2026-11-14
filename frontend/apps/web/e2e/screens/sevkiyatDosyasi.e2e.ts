@@ -44,8 +44,8 @@ test.describe('Sevkiyat dosyası', { tag: '@panel' }, () => {
     },
   );
 
-  test('admin taslak sevkiyatı gerekçeyle iptal eder', async ({ page, openAs }) => {
-    await openAs('ADMIN', '/panel/sevkiyat/shp-0001');
+  test('müdür taslak sevkiyatı gerekçeyle iptal eder', async ({ page, openAs }) => {
+    await openAs('MANAGER', '/panel/sevkiyat/shp-0001');
     await page.getByRole('button', { name: 'İptal et' }).click();
     await page.getByLabel('İptal gerekçesi').fill('Müşteri siparişi geri çekti');
     await page.getByRole('button', { name: 'Sevkiyatı iptal et' }).click();

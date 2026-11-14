@@ -51,15 +51,14 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
   const depo = await giris('depo');
   const kalite = await giris('kalite');
   const mudur = await giris('mudur');
-  const admin = await giris('admin');
-  for (const r of [depo, kalite, mudur, admin]) r.beklenen(/4\d\d (POST|PUT) /);
+  for (const r of [depo, kalite, mudur]) r.beklenen(/4\d\d (POST|PUT) /);
   const iplik = damga();
   const satirBul = (b: Bakiye) =>
     b.items.find((i) => i.yarnType === iplik && i.subcontractorTitle === 'Başka Dokuma Ltd.');
 
   const denetimSayisi = async (islem: string) =>
     (
-      await admin.api<DenetimSayfasi>(
+      await mudur.api<DenetimSayfasi>(
         `/api/v1/audit-log?action=${encodeURIComponent(islem)}&size=1`,
       )
     ).page.totalElements;
@@ -310,31 +309,31 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
     );
   });
 
-  await admin.adim('doğrula: denetim kaydı bu işlemleri yapan kişilerle yazılmış', async () => {
-    await admin.sayfa.goto('/panel/denetim');
-    await admin.sayfa.waitForLoadState('networkidle');
-    const metin = await admin.sayfa.innerText('main');
-    admin.kontrol(
+  await mudur.adim('doğrula: denetim kaydı bu işlemleri yapan kişilerle yazılmış', async () => {
+    await mudur.sayfa.goto('/panel/denetim');
+    await mudur.sayfa.waitForLoadState('networkidle');
+    const metin = await mudur.sayfa.innerText('main');
+    mudur.kontrol(
       'Denetim kaydında "Sevkiyat tamamlandı" ve müdür adı görünür',
       /tamamlandı/i.test(metin) && metin.includes('Melek Müdür'),
       metin.slice(0, 200),
     );
-    admin.kontrol(
+    mudur.kontrol(
       'Denetim kaydında sevkiyat oluşturma ve kanıt yükleme görünür',
       /Sevkiyat oluşturuldu/.test(metin) && /Kanıt yüklendi/.test(metin),
     );
     for (const [islem, ad] of Object.entries(DENETIM_ISLEMLERI)) {
       const sonra = await denetimSayisi(islem);
-      admin.kontrol(
+      mudur.kontrol(
         `Denetim kaydına "${ad}" işlemi yazıldı`,
         sonra === (denetimOnce[islem] ?? 0) + 1,
         `${denetimOnce[islem]} → ${sonra}`,
       );
     }
-    await admin.sayfa.goto('/panel/denetim?varlik=CentralStock');
-    await admin.sayfa.waitForLoadState('networkidle');
-    const stokMetni = await admin.sayfa.innerText('main');
-    admin.kontrol(
+    await mudur.sayfa.goto('/panel/denetim?varlik=CentralStock');
+    await mudur.sayfa.waitForLoadState('networkidle');
+    const stokMetni = await mudur.sayfa.innerText('main');
+    mudur.kontrol(
       'Denetim sayfası "Merkez stok" kayıtlarını ve Türkçe işlem adlarını gösterir',
       stokMetni.includes('Merkezde kumaş üretildi') &&
         stokMetni.includes('Merkez stok girişi yapıldı'),

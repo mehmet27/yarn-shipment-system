@@ -46,10 +46,10 @@ export const SCREENS: readonly Screen[] = [
     ready: 'SVK-2026-0002',
   },
   { name: 'Tanımlar', role: 'ADMIN', path: '/panel/tanimlar', ready: 'Tanımlar' },
-  { name: 'Uyuşmazlıklar', role: 'ADMIN', path: '/panel/uyusmazliklar', ready: 'Uyuşmazlıklar' },
+  { name: 'Uyuşmazlıklar', role: 'QUALITY', path: '/panel/uyusmazliklar', ready: 'Uyuşmazlıklar' },
   {
     name: 'Uyuşmazlık detayı',
-    role: 'ADMIN',
+    role: 'QUALITY',
     path: '/panel/uyusmazliklar/disc-0',
     ready: 'UY-2026-0001',
   },

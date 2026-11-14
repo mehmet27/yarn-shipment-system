@@ -30,7 +30,7 @@ const routes: RouteObject[] = [
     path: '/panel',
     element: (
       <RequireAuth errorFallback={<ErrorPage reason="unexpected" />}>
-        <RequirePermission permission={['SHIPMENT_VIEW', 'REPORT_VIEW']}>
+        <RequirePermission permission={['SHIPMENT_VIEW', 'REPORT_VIEW', 'USER_MANAGE']}>
           <PanelLayout />
         </RequirePermission>
       </RequireAuth>

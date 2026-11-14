@@ -40,12 +40,12 @@ class EvidenceInvalidationControllerTest {
     }
 
     @Test
-    @DisplayName("Admin geçersiz kılar; cevap INVALIDATED durumu ve gerekçeyi taşır")
+    @DisplayName("Müdür geçersiz kılar; cevap INVALIDATED durumu ve gerekçeyi taşır")
     void shouldInvalidate() {
         when(invalidateEvidence.invalidateEvidence(any()))
                 .thenReturn(TestUploads.file(EvidenceType.DISPATCH_SCALE).invalidate("yanlış sevkiyat"));
 
-        MvcTestResult result = post("admin", BODY);
+        MvcTestResult result = post("manager", BODY);
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.status").isEqualTo("INVALIDATED");
@@ -53,23 +53,23 @@ class EvidenceInvalidationControllerTest {
     }
 
     @Test
-    @DisplayName("Tekrar 409, gerekçesiz 400, admin olmayan 403 alır")
+    @DisplayName("Tekrar 409, gerekçesiz 400, yetkisiz rol 403 alır")
     void shouldMapFailures() {
         when(invalidateEvidence.invalidateEvidence(any()))
                 .thenThrow(new EvidenceAlreadyInvalidatedException(TestUploads.EVIDENCE_ID));
-        MvcTestResult repeat = post("admin", BODY);
+        MvcTestResult repeat = post("manager", BODY);
         assertThat(repeat).hasStatus(HttpStatus.CONFLICT);
         assertThat(repeat).bodyJson().extractingPath("$.code").isEqualTo("EVIDENCE_ALREADY_INVALIDATED");
 
         doThrow(new InvalidationReasonRequiredException())
                 .when(invalidateEvidence)
                 .invalidateEvidence(any());
-        MvcTestResult blank = post("admin", "{\"reason\":\" \"}");
+        MvcTestResult blank = post("manager", "{\"reason\":\" \"}");
         assertThat(blank).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(blank).bodyJson().extractingPath("$.code").isEqualTo("INVALIDATION_REASON_REQUIRED");
 
         assertThat(post("warehouse", BODY)).hasStatus(HttpStatus.FORBIDDEN);
-        assertThat(post("admin", "{}")).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post("manager", "{}")).hasStatus(HttpStatus.BAD_REQUEST);
     }
 
     private MvcTestResult post(String role, String body) {

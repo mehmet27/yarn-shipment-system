@@ -1,9 +1,15 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createHandlers } from '@/mocks/handlers';
+import { server } from '@/mocks/server';
 import { renderApp } from '@/test/renderApp';
 
 describe('ShipmentListPage dar ekran', () => {
+  beforeEach(() => {
+    server.use(...createHandlers('MANAGER'));
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
   });
@@ -27,6 +33,10 @@ describe('ShipmentListPage dar ekran', () => {
 });
 
 describe('ShipmentListPage', () => {
+  beforeEach(() => {
+    server.use(...createHandlers('MANAGER'));
+  });
+
   it('ilk sayfada en yeni 20 sevkiyatı listeler', async () => {
     renderApp('/panel/sevkiyat');
     const table = await screen.findByRole('table');

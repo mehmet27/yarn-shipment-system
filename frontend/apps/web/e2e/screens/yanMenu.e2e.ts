@@ -10,7 +10,7 @@ test('yan menü masaüstünde kapanıp açılır, mobilde bağlantıya tıklayı
   page,
   openAs,
 }) => {
-  await openAs('ADMIN', '/panel/sevkiyat');
+  await openAs('ADMIN', '/panel');
   const link = page.getByRole('link', { name: 'Tanımlar' });
   const toggle = page
     .getByRole('button', { name: 'Yan menü', exact: true })

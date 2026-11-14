@@ -11,7 +11,7 @@ const photo = () => new File(['x'.repeat(2000)], 'leke.jpg', { type: 'image/jpeg
 const report = () => new File(['%PDF'], 'rapor.pdf', { type: 'application/pdf' });
 
 describe('Kalite itirazı', () => {
-  async function openForm(role: 'QUALITY' | 'MANAGER' | 'ADMIN', ...extra: RequestHandler[]) {
+  async function openForm(role: 'QUALITY' | 'MANAGER', ...extra: RequestHandler[]) {
     server.use(...extra, ...createHandlers(role));
     renderApp('/panel/sevkiyat/shp-0019');
     await userEvent.click(await screen.findByRole('tab', { name: 'Kalite itirazı' }));
@@ -19,7 +19,7 @@ describe('Kalite itirazı', () => {
     return screen.getByRole('region', { name: 'Yeni kalite itirazı' });
   }
 
-  it.each(['QUALITY', 'MANAGER', 'ADMIN'] as const)(
+  it.each(['QUALITY', 'MANAGER'] as const)(
     '%s tamamlanmış sevkiyata kg ile fotoğraflı itiraz açar',
     async (role) => {
       const form = await openForm(role);
@@ -108,7 +108,7 @@ describe('Kalite itirazı', () => {
   });
 
   it('kalite uyuşmazlığının detayında itiraz dosyasını gösterir', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/uyusmazliklar/disc-3');
     expect(await screen.findByText('İtiraz dosyası')).toBeInTheDocument();
     expect(screen.getByText('Kumaşta leke ve nem var.')).toBeInTheDocument();

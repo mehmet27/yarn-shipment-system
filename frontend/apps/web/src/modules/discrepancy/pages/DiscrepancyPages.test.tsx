@@ -9,7 +9,7 @@ import { renderApp } from '@/test/renderApp';
 
 describe('Uyuşmazlık ekranları', () => {
   it('listeyi önem rozetiyle gösterir ve kartı detaya bağlar', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/uyusmazliklar');
     // İlk test sayfayı soğuk yükler; CI'da 1 sn'lik varsayılan bekleme yetmeyebilir.
     const card = await screen.findByRole('link', { name: 'UY-2026-0001' }, { timeout: 5000 });
@@ -18,7 +18,7 @@ describe('Uyuşmazlık ekranları', () => {
   });
 
   it('durum filtresini adrese yazar', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     const { router } = renderApp('/panel/uyusmazliklar');
     await userEvent.click(await screen.findByRole('combobox', { name: 'Durum' }));
     await userEvent.click(await screen.findByRole('option', { name: 'Çözüldü' }));
@@ -26,7 +26,7 @@ describe('Uyuşmazlık ekranları', () => {
   });
 
   it('süresi geçenler filtresini adrese yazar ve listeyi daraltır', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     const { router } = renderApp('/panel/uyusmazliklar');
     await screen.findByRole('link', { name: 'UY-2026-0001' });
     await userEvent.click(screen.getByRole('checkbox', { name: 'Yalnızca süresi geçenler' }));
@@ -35,7 +35,7 @@ describe('Uyuşmazlık ekranları', () => {
   });
 
   it('açık uyuşmazlığı bana atar, sonra notla karara bağlar', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('QUALITY'));
     renderApp('/panel/uyusmazliklar/disc-0');
     await userEvent.click(await screen.findByRole('button', { name: 'Bana ata' }));
     await userEvent.click(await screen.findByRole('combobox', { name: /^Karar/ }));
@@ -63,7 +63,7 @@ describe('Uyuşmazlık ekranları', () => {
           },
         ]),
       ),
-      ...createHandlers('ADMIN'),
+      ...createHandlers('MANAGER'),
     );
     renderApp('/panel/uyusmazliklar/disc-0');
     expect(await screen.findByText(/· Kerem Kalite$/)).toBeInTheDocument();

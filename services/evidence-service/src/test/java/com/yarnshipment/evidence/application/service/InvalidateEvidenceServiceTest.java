@@ -38,30 +38,30 @@ class InvalidateEvidenceServiceTest {
     private final InvalidateEvidenceService service =
             new InvalidateEvidenceService(store, invalidations, shipments, new ScopeGuard(event -> {}, CLOCK), CLOCK);
     private final EvidenceFile file = TestUploads.file(EvidenceType.DISPATCH_SCALE);
-    private final Actor admin = TestTokens.actor("admin");
+    private final Actor manager = TestTokens.actor("manager");
 
     @Test
-    @DisplayName("Admin kanıtı gerekçeyle geçersiz kılar ve kayıt yazılır")
+    @DisplayName("Müdür kanıtı gerekçeyle geçersiz kılar ve kayıt yazılır")
     void shouldInvalidate() {
         when(store.findEvidence(file.id())).thenReturn(Optional.of(file));
         when(shipments.findAccessible(file.shipmentId()))
                 .thenReturn(new ShipmentSnapshot(file.shipmentId(), TestTokens.SITE_ID, false, false));
 
-        EvidenceFile result = service.invalidateEvidence(new InvalidateEvidenceCommand(admin, file.id(), "yanlış"));
+        EvidenceFile result = service.invalidateEvidence(new InvalidateEvidenceCommand(manager, file.id(), "yanlış"));
 
         assertThat(result.status()).isEqualTo(EvidenceStatus.INVALIDATED);
-        verify(invalidations).saveInvalidation(result, admin.userId(), TestUploads.NOW);
+        verify(invalidations).saveInvalidation(result, manager.userId(), TestUploads.NOW);
     }
 
     @Test
-    @DisplayName("Admin olmayan için kanıt yoktur; gerekçesiz istek yazılmaz")
+    @DisplayName("Müdür olmayan için kanıt yoktur; gerekçesiz istek yazılmaz")
     void shouldHideFromOthersAndRequireReason() {
         when(store.findEvidence(file.id())).thenReturn(Optional.of(file));
         when(shipments.findAccessible(file.shipmentId()))
                 .thenReturn(new ShipmentSnapshot(file.shipmentId(), TestTokens.SITE_ID, false, false));
         InvalidateEvidenceCommand byWarehouse =
                 new InvalidateEvidenceCommand(TestTokens.actor("warehouse"), file.id(), "x");
-        InvalidateEvidenceCommand blank = new InvalidateEvidenceCommand(admin, file.id(), " ");
+        InvalidateEvidenceCommand blank = new InvalidateEvidenceCommand(manager, file.id(), " ");
 
         assertThatThrownBy(() -> service.invalidateEvidence(byWarehouse)).isInstanceOf(EvidenceNotFoundException.class);
         assertThatThrownBy(() -> service.invalidateEvidence(blank))

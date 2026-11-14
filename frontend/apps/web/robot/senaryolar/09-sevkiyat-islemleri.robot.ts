@@ -109,8 +109,7 @@ test('İplik dönüşü, düzeltme ve kanıt geçersiz kılma', async ({ giris }
   const depo = await giris('depo');
   const mudur = await giris('mudur');
   const kalite = await giris('kalite');
-  const admin = await giris('admin');
-  for (const r of [depo, mudur, kalite, admin]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
+  for (const r of [depo, mudur, kalite]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
   const iplik = damga();
   const id = await tamamlanmisSevkiyat({ depo, mudur }, iplik, '100', '3');
 
@@ -137,27 +136,27 @@ test('İplik dönüşü, düzeltme ve kanıt geçersiz kılma', async ({ giris }
     },
   );
 
-  await admin.adim('düzeltme: yönetici gerekçeyle çıkış tartısını düzeltir', async () => {
-    await admin.sayfa.goto(`/panel/sevkiyat/${id}`);
-    await sekme(admin, 'Düzeltmeler');
-    await admin.sayfa.getByRole('button', { name: 'Düzeltmeyi kaydet' }).click();
-    const bos = await admin.mesajlar();
-    admin.kontrol('boş düzeltme uyarı vermeli', bos.length > 0);
-    await sec(admin.sayfa, /Ne düzeltilecek/, '');
-    await admin.sayfa.getByLabel(/Gerekçe/).fill('Robot: yanlış girildi');
-    await admin.sayfa.getByRole('button', { name: 'Düzeltmeyi kaydet' }).click();
-    await admin.sayfa.waitForTimeout(1200);
+  await mudur.adim('düzeltme: müdür gerekçeyle çıkış tartısını düzeltir', async () => {
+    await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
+    await sekme(mudur, 'Düzeltmeler');
+    await mudur.sayfa.getByRole('button', { name: 'Düzeltmeyi kaydet' }).click();
+    const bos = await mudur.mesajlar();
+    mudur.kontrol('boş düzeltme uyarı vermeli', bos.length > 0);
+    await sec(mudur.sayfa, /Ne düzeltilecek/, '');
+    await mudur.sayfa.getByLabel(/Gerekçe/).fill('Robot: yanlış girildi');
+    await mudur.sayfa.getByRole('button', { name: 'Düzeltmeyi kaydet' }).click();
+    await mudur.sayfa.waitForTimeout(1200);
   });
 
-  await admin.adim('kanıt geçersiz kıl', async () => {
-    await admin.sayfa.goto(`/panel/sevkiyat/${id}`);
-    await sekme(admin, 'Kanıtlar');
-    await admin.sayfa.getByRole('button', { name: 'Geçersiz kıl' }).first().click();
-    const onay = admin.sayfa
+  await mudur.adim('kanıt geçersiz kıl', async () => {
+    await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
+    await sekme(mudur, 'Kanıtlar');
+    await mudur.sayfa.getByRole('button', { name: 'Geçersiz kıl' }).first().click();
+    const onay = mudur.sayfa
       .getByRole('dialog')
       .getByRole('button', { name: /Geçersiz kıl|Onayla|Evet/ });
     if ((await onay.count()) > 0) {
-      await admin.sayfa
+      await mudur.sayfa
         .getByRole('dialog')
         .getByRole('textbox')
         .first()
@@ -165,11 +164,11 @@ test('İplik dönüşü, düzeltme ve kanıt geçersiz kılma', async ({ giris }
         .catch(() => undefined);
       await onay.last().click();
     }
-    await admin.sayfa.waitForTimeout(1200);
+    await mudur.sayfa.waitForTimeout(1200);
   });
 });
 
-test('Uyuşmazlık: itiraz, lab sonucu, karar ve yönetici geçersiz kılma', async ({ giris }) => {
+test('Uyuşmazlık: itiraz, lab sonucu ve karar', async ({ giris }) => {
   const depo = await giris('depo');
   const mudur = await giris('mudur');
   const kalite = await giris('kalite');

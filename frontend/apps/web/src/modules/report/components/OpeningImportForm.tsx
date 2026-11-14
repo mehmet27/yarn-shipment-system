@@ -19,9 +19,8 @@ export function OpeningImportForm() {
   const mutation = useOpeningImport();
   const [input, setInput] = useState('');
   const [asOf, setAsOf] = useState(today);
-  // Açılış yükleme izni backend'de Admin/Müdür rolüne bağlıdır; bunun için ayrı bir izin anahtarı yok.
-  // eslint-disable-next-line no-restricted-syntax -- Admin/Müdür rol kuralı backend sözleşmesindendir
-  const isAllowed = me?.roles.some((role) => role === 'ADMIN' || role === 'MANAGER') ?? false;
+  // Açılış yükleme izni backend'de Müdür rolüne bağlıdır; bunun için ayrı bir izin anahtarı yok.
+  const isAllowed = me?.roles.includes('MANAGER') ?? false;
   if (!isAllowed) return null;
   const lines = parseOpeningLines(input, idOf);
   const valid = lines.flatMap((line) => (line.row === undefined ? [] : [line.row]));

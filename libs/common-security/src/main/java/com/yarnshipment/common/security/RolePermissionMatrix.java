@@ -37,6 +37,10 @@ public final class RolePermissionMatrix {
         return Map.copyOf(matrix);
     }
 
+    /**
+     * Yönetici yalnızca sistemi yönetir: tanımlar, partiler, kullanıcılar, görünüm ayarları ve denetim kaydı. Sevkiyat,
+     * kanıt, uyuşmazlık, rapor ve stok gibi iş ekranlarını görmez; bu işler müdür, kalite ve depo rollerindedir.
+     */
     private static Set<Permission> permissionsForAdmin() {
         return EnumSet.of(
                 Permission.MASTER_DATA_VIEW,
@@ -44,24 +48,7 @@ public final class RolePermissionMatrix {
                 Permission.USER_MANAGE,
                 Permission.SETTINGS_MANAGE,
                 Permission.LOT_QUALITY_LOCK,
-                Permission.SHIPMENT_VIEW,
-                Permission.SHIPMENT_CREATE,
-                Permission.SHIPMENT_CANCEL,
-                Permission.SHIPMENT_COMPLETE,
-                Permission.DISPATCH_VIEW,
-                Permission.EVIDENCE_UPLOAD_CLAIM,
-                Permission.EVIDENCE_VIEW,
-                Permission.EVIDENCE_INVALIDATE,
-                Permission.CORRECTION_CREATE,
-                Permission.QUALITY_CLAIM_OPEN,
-                Permission.DISCREPANCY_VIEW,
-                Permission.DISCREPANCY_RESOLVE,
-                Permission.AUDIT_VIEW,
-                Permission.REPORT_VIEW,
-                Permission.BALANCE_VIEW,
-                Permission.CENTRAL_STOCK_VIEW,
-                Permission.CENTRAL_STOCK_RECORD,
-                Permission.CENTRAL_PRODUCTION_RECORD);
+                Permission.AUDIT_VIEW);
     }
 
     private static Set<Permission> permissionsForWarehouse() {
@@ -96,7 +83,10 @@ public final class RolePermissionMatrix {
                 Permission.CENTRAL_PRODUCTION_RECORD);
     }
 
-    /** Müdür sevkiyatı açar, iptal eder ve irsaliye gelince tamamlar (saha analizi, 10.11.2026). */
+    /**
+     * Müdür sevkiyatı açar, iptal eder ve irsaliye gelince tamamlar (saha analizi, 10.11.2026); çıkış tartısını
+     * düzeltir ve kanıtı geçersiz kılar (yöneticiden devralındı).
+     */
     private static Set<Permission> permissionsForManager() {
         return EnumSet.of(
                 Permission.MASTER_DATA_VIEW,
@@ -107,6 +97,8 @@ public final class RolePermissionMatrix {
                 Permission.DISPATCH_VIEW,
                 Permission.EVIDENCE_UPLOAD_CLAIM,
                 Permission.EVIDENCE_VIEW,
+                Permission.EVIDENCE_INVALIDATE,
+                Permission.CORRECTION_CREATE,
                 Permission.QUALITY_CLAIM_OPEN,
                 Permission.DISCREPANCY_VIEW,
                 Permission.AUDIT_VIEW,

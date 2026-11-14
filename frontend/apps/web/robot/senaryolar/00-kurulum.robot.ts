@@ -1,7 +1,17 @@
-import { rolTanimli, test } from '../support/robot';
-import { girisFormu, sec, sifreDegistirFormu } from '../support/yardimci';
+import { rolSifresi, rolTanimli, test } from '../support/robot';
+import {
+  adminSifreVer,
+  girisDeneSonuc,
+  girisFormu,
+  sec,
+  sifreDegistirFormu,
+} from '../support/yardimci';
 
-/** Temiz kurulumda (yalnızca `admin` var) yönetici diğer kullanıcıları açar; her biri ilk girişte kendi şifresini seçer. */
+/**
+ * Robotun koşusunu bağımsız kılar: yönetici eksik kullanıcıları açar; hesap zaten varsa ama robotun bildiği şifre
+ * tutmuyorsa (ör. elle açılmış hesap) yönetici "Şifre ver" ile geçici şifre atar. Her iki durumda kullanıcı ilk girişte
+ * robotun bildiği şifreyi seçer; böylece sonraki senaryolar elle belirlenmiş şifrelere takılmaz.
+ */
 const KULLANICILAR = [
   { rol: 'depo', giris: 'depo', ad: 'Davut Depocu', rolAdi: 'Depo' },
   { rol: 'kalite', giris: 'kalite', ad: 'Kerem Kalite', rolAdi: 'Kalite' },
@@ -23,7 +33,25 @@ test('Kurulum: yönetici eksik kullanıcıları açar, her biri ilk girişi yapa
 
   for (const k of KULLANICILAR) {
     if (liste.includes(k.giris)) {
-      admin.kontrol(`${k.giris} zaten var`, true);
+      const hedef = rolSifresi(k.rol) ?? sifre;
+      await admin.adim(`${k.giris} zaten var: robotun şifresiyle girebiliyor mu`, async () => {
+        const baglam = await browser.newContext({ locale: 'tr-TR' });
+        const sayfa = await baglam.newPage();
+        const girdi = await girisDeneSonuc(sayfa, k.giris, hedef);
+        await baglam.close();
+        if (girdi) return;
+        // Şifre tutmuyor: yönetici geçici şifre verir, kullanıcı ilk girişte robotun şifresini seçer.
+        await adminSifreVer(admin.sayfa, k.giris, `${hedef}-ilk`);
+        const yeniBaglam = await browser.newContext({ locale: 'tr-TR' });
+        const yeniSayfa = await yeniBaglam.newPage();
+        await girisFormu(yeniSayfa, k.giris, `${hedef}-ilk`);
+        await yeniSayfa.waitForURL(/sifre-degistir/, { timeout: 20_000 });
+        await sifreDegistirFormu(yeniSayfa, `${hedef}-ilk`, hedef);
+        await yeniSayfa.waitForURL((adres) => !/giris|sifre-degistir/.test(adres.pathname), {
+          timeout: 20_000,
+        });
+        await yeniBaglam.close();
+      });
       continue;
     }
     await admin.adim(`${k.giris} hesabını aç (${k.rolAdi})`, async () => {

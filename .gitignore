@@ -18,3 +18,7 @@ deploy/prod/generated/
 
 # Yerel sıfırlama betiğinin servis günlükleri
 .yerel/
+
+# Yerel kanıt dosyaları (EVIDENCE_STORAGE_ROOT varsayılanı)
+/data/
+**/data/evidence/

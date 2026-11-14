@@ -54,6 +54,11 @@ yarnshipment:
       # Giriş sayfası da marka rengini okur; yazma ucu yöntem güvenliğiyle (SETTINGS_MANAGE) korunur.
       - /api/v1/branding
       - /api/v1/auth/login
+      # Yetki imzalı adresin kendisidir (kanıt dosyası yükleme/indirme).
+      - /api/v1/evidence/files/**
+    # Tarayıcı bu yollara çerezsiz ve CSRF belirteci olmadan PUT eder.
+    csrf-ignored-paths:
+      - /api/v1/evidence/files/**
   events:
     # Modüller arası olaylar süreç içi iletilir (Kafka yok). Konu ve kaynak olay türünün önekinden gelir; denetim
     # kaydı bunlardan varlık türünü ve servis adını çıkarır (kaynak adları geçmiş kayıtlarla aynı kalır).
@@ -78,13 +83,10 @@ yarnshipment:
     seed-local: false
   evidence:
     storage:
-      # S3 uyumlu nesne deposu (yerelde MinIO). Yükleme adresi telefonun erişebildiği adrestir.
-      endpoint: ${EVIDENCE_STORAGE_ENDPOINT:http://localhost:9000}
-      region: ${EVIDENCE_STORAGE_REGION:us-east-1}
-      bucket: ${EVIDENCE_STORAGE_BUCKET:evidence}
-      access-key: ${EVIDENCE_STORAGE_ACCESS_KEY}
-      secret-key: ${EVIDENCE_STORAGE_SECRET_KEY}
-      path-style: true
+      # Kanıt dosyaları sunucu diskinde bu klasöre yazılır (yedeklenecek yer; üretimde Docker birimi). Yükleme ve indirme
+      # adreslerini uygulama bu anahtarla imzalar; en az 32 karakter olmalı ve sızdırılmamalıdır.
+      root: ${EVIDENCE_STORAGE_ROOT:./data/evidence}
+      signing-key: ${EVIDENCE_STORAGE_SIGNING_KEY}
       upload-url-ttl: 10m
       download-url-ttl: 5m
   audit:

@@ -1,6 +1,6 @@
 # Yerel geliştirme ortamı (veritabanı tasarımı, "Yerel geliştirme").
 # Kullanım: cp deploy/.env.example deploy/.env && docker compose -f deploy/docker-compose.yml up -d
-# MinIO (S3 uyumlu kanıt deposu) 9000'de, konsolu 9001'de çalışır.
+# Kanıt dosyaları Docker'da değil, uygulamanın EVIDENCE_STORAGE_ROOT klasöründe tutulur (varsayılan ./data/evidence).
 name: yarn-shipment
 
 services:
@@ -23,39 +23,5 @@ services:
       timeout: 3s
       retries: 20
 
-  minio:
-    # minio/minio ve minio/mc imajları Docker Hub'dan kaldırıldı; Chainguard'ın derlemesi kullanılır. `-dev` etiketi
-    # sağlık kontrolü ve kova açma betiği için kabuk ve mc içerir. Sürüm özetle sabitlenir.
-    image: chainguard/minio:latest-dev@sha256:d217f9474062b905846b25f59763a408b1bed15a2c5f931e7b0d099b38334698
-    command: ["server", "/data", "--console-address", ":9001"]
-    environment:
-      MINIO_ROOT_USER: ${EVIDENCE_STORAGE_ACCESS_KEY:?deploy/.env içinde EVIDENCE_STORAGE_ACCESS_KEY tanımlayın}
-      MINIO_ROOT_PASSWORD: ${EVIDENCE_STORAGE_SECRET_KEY:?deploy/.env içinde EVIDENCE_STORAGE_SECRET_KEY tanımlayın}
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio-data:/data
-    healthcheck:
-      test: ["CMD-SHELL", "mc ready local"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-  minio-init:
-    image: chainguard/minio-client:latest-dev@sha256:78e1d95a22be2ce6704d3d00605b907f4c65a59dd8e0f70669371570e2167570
-    # Kanıt kovasını bir kez açar; kova zaten varsa dokunmaz.
-    entrypoint: >
-      /bin/sh -c "mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
-      mc mb --ignore-existing local/$${EVIDENCE_STORAGE_BUCKET:-evidence}"
-    environment:
-      MINIO_ROOT_USER: ${EVIDENCE_STORAGE_ACCESS_KEY}
-      MINIO_ROOT_PASSWORD: ${EVIDENCE_STORAGE_SECRET_KEY}
-      EVIDENCE_STORAGE_BUCKET: ${EVIDENCE_STORAGE_BUCKET:-evidence}
-    depends_on:
-      minio:
-        condition: service_healthy
-
 volumes:
   postgres-data:
-  minio-data:

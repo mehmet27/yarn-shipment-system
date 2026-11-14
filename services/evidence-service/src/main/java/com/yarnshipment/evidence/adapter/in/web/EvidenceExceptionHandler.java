@@ -7,6 +7,7 @@ import com.yarnshipment.evidence.domain.model.InvalidationReasonRequiredExceptio
 import com.yarnshipment.evidence.domain.model.ShipmentLockedException;
 import com.yarnshipment.evidence.domain.model.ShipmentNotAccessibleException;
 import com.yarnshipment.evidence.domain.model.ShipmentServiceUnavailableException;
+import com.yarnshipment.evidence.domain.model.SignedFileException;
 import com.yarnshipment.evidence.domain.model.UploadIntentNotFoundException;
 import com.yarnshipment.evidence.domain.model.UploadMismatchException;
 import com.yarnshipment.evidence.domain.model.UploadNotAllowedException;
@@ -79,5 +80,16 @@ public final class EvidenceExceptionHandler {
     @ExceptionHandler(ShipmentServiceUnavailableException.class)
     public ProblemDetail handleShipmentUnavailable(HttpServletRequest request) {
         return problems.create(request, HttpStatus.SERVICE_UNAVAILABLE, "SHIPMENT_SERVICE_UNAVAILABLE");
+    }
+
+    @ExceptionHandler(SignedFileException.class)
+    public ProblemDetail handleSignedFile(SignedFileException exception, HttpServletRequest request) {
+        return switch (exception.reason()) {
+            case INVALID_LINK -> problems.create(request, HttpStatus.FORBIDDEN, "FILE_LINK_INVALID");
+            case EXPIRED_LINK -> problems.create(request, HttpStatus.GONE, "FILE_LINK_EXPIRED");
+            case FILE_NOT_FOUND -> problems.create(request, HttpStatus.NOT_FOUND, "FILE_NOT_FOUND");
+            case SIZE_MISMATCH, TYPE_MISMATCH ->
+                problems.create(request, HttpStatus.UNPROCESSABLE_CONTENT, "UPLOAD_MISMATCH");
+        };
     }
 }

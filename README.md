@@ -100,7 +100,7 @@ shipment, discrepancy, evidence, reporting ve audit modülleri `services/yarnshi
 ```bash
 export DB_PASSWORD=<LOCAL_DB_PASSWORD>
 export LOCAL_TEST_USER_PASSWORD=<deploy/.env değeri>
-export EVIDENCE_STORAGE_ACCESS_KEY=<deploy/.env değeri> EVIDENCE_STORAGE_SECRET_KEY=<deploy/.env değeri>
+export EVIDENCE_STORAGE_SIGNING_KEY=<deploy/.env değeri>
 ./mvnw -pl services/yarnshipment-app -am install -DskipTests
 ./mvnw -pl services/yarnshipment-app spring-boot:run -Dspring-boot.run.profiles=local
 ```
@@ -199,10 +199,10 @@ Panelde ana sayfa (`/panel`) dönem seçimli dashboard'u, `/panel/raporlar` öze
 
 ## evidence-service (fotoğraf ve belge yükleme)
 
-Dosya servisten geçmez; iki adımda doğrudan nesne deposuna (S3 uyumlu, yerelde MinIO) yüklenir. Uçlar `/api/v1/evidence/**` altındadır, sözleşme `services/evidence-service/src/main/resources/openapi/evidence-service-api.yaml`.
+Dosyalar sunucu diskindeki bir klasörde tutulur (`yarnshipment.evidence.storage.root`, varsayılan `./data/evidence`; üretimde `evidence-data` Docker birimi). Yükleme iki adımdır ve adresleri uygulamanın kendisi imzalar. Uçlar `/api/v1/evidence/**` altındadır, sözleşme `services/evidence-service/src/main/resources/openapi/evidence-service-api.yaml`.
 
-1. `POST /api/v1/evidence/uploads` (`Idempotency-Key` zorunlu): sevkiyat, kanıt türü, dosya türü, boyut ve kaynak (kamera/galeri) bildirilir. Servis izni, 20 MB sınırını ve izinli türleri (`image/jpeg`, `image/png`, `image/heic`, `application/pdf`) denetler, sevkiyatı shipment-service'e isteyenin token'ıyla sorar (görünmeyen sevkiyat `404 SHIPMENT_NOT_FOUND`; tamamlanmış/iptal `409 SHIPMENT_LOCKED`; kalite itirazı fotoğrafı ve lab belgesi tamamlanmış sevkiyata da yüklenebilir) ve yaklaşık 10 dakika geçerli imzalı bir `PUT` adresi döner.
-2. İstemci dosyayı o adrese, cevaptaki başlıklarla aynen `PUT` eder.
+1. `POST /api/v1/evidence/uploads` (`Idempotency-Key` zorunlu): sevkiyat, kanıt türü, dosya türü, boyut ve kaynak (kamera/galeri) bildirilir. Servis izni, 20 MB sınırını ve izinli türleri (`image/jpeg`, `image/png`, `image/heic`, `application/pdf`) denetler, sevkiyatı shipment-service'e isteyenin token'ıyla sorar (görünmeyen sevkiyat `404 SHIPMENT_NOT_FOUND`; tamamlanmış/iptal `409 SHIPMENT_LOCKED`; kalite itirazı fotoğrafı ve lab belgesi tamamlanmış sevkiyata da yüklenebilir) ve yaklaşık 10 dakika geçerli imzalı bir `PUT` adresi döner (`/api/v1/evidence/files/{belirteç}`; belirteç HMAC-SHA256 ile imzalıdır ve tek bir dosya, tür ve boyuta bağlıdır).
+2. İstemci dosyayı o adrese, cevaptaki başlıklarla aynen `PUT` eder. Bu uç oturum ve CSRF belirteci istemez (yetki imzalı adrestir). Uygulama boyutu, türü (başlık ve dosyanın ilk baytları) ve süreyi denetler; hata `403 FILE_LINK_INVALID`, `410 FILE_LINK_EXPIRED` ya da `422 UPLOAD_MISMATCH` döner. Dosya önce geçici dosyaya yazılır, doğrulanınca yerine taşınır; var olan dosyanın üzerine yazılmaz.
 3. `POST /api/v1/evidence/uploads/{evidenceId}/confirm`: sunucu dosyayı depodan okuyup gerçek boyut, tür ve SHA-256'yı kendisi hesaplar (SEC-09); bildirilenle uyuşmazsa `422 UPLOAD_MISMATCH`, dosya henüz yoksa `409 UPLOAD_NOT_COMPLETED`. Onay tekrarlanabilir.
 
 Yükleme izni kanıt türüne bağlıdır: sevk fotoğrafları ve kantar fişi (`EVIDENCE_UPLOAD_DISPATCH`), irsaliye (`WAYBILL`, `SHIPMENT_COMPLETE`), şikâyet ve lab belgesi (`EVIDENCE_UPLOAD_CLAIM`). Aynı dosya (aynı hash) başka sevkiyatta daha önce yüklenmişse kayıt yine alınır ama `evidence_duplicate` satırı ve `evidence-reuse-detected.v1` olayı yazılır. Kanıt kaydı ile `evidence-uploaded.v1` olayı (`evidence.events.v1`) aynı transaction'da yazılır.
@@ -211,15 +211,15 @@ Yükleme izni kanıt türüne bağlıdır: sevk fotoğrafları ve kantar fişi (
 
 Fiş okumasının elle girilen çıkış tartısıyla (±1 kg), plakayla ve başka sevkiyatların fişleriyle karşılaştırılması eskiden teslim karşılaştırmasına bağlıydı; yeni akışta kantar uyuşmazlığı kuralının parçası olarak yeniden kurulacaktır (süreç analizi v2).
 
-Yerelde MinIO `docker compose` ile açılır (`deploy/.env` içinde `EVIDENCE_STORAGE_ACCESS_KEY` ve `EVIDENCE_STORAGE_SECRET_KEY`; `evidence` kovası kendiliğinden oluşur). Servis aynı anahtarlarla, `EVIDENCE_DB_APP_PASSWORD` ve `EVIDENCE_DB_MIGRATOR_PASSWORD` ile çalıştırılır:
+Yerelde ayrı bir depolama servisi yoktur; dosyalar `EVIDENCE_STORAGE_ROOT` klasörüne yazılır (`yerel-sifirla` kullanıyorsanız `.yerel/evidence`). Servis, adresleri imzalayan anahtarı `EVIDENCE_STORAGE_SIGNING_KEY` (en az 32 karakter; `deploy/.env.example`) ile alır:
 
 ```bash
 DB_PASSWORD=... \
-EVIDENCE_STORAGE_ACCESS_KEY=... EVIDENCE_STORAGE_SECRET_KEY=... \
+EVIDENCE_STORAGE_SIGNING_KEY=... \
 ./mvnw -pl services/evidence-service spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-İmzalı adres, `EVIDENCE_STORAGE_ENDPOINT` adresiyle üretilir; telefon ya da tarayıcının eriştiği adres olmalıdır.
+İmzalı adresler göreli yoldur (`/api/v1/evidence/files/...`); tarayıcı bunları uygulamanın kendi adresine (yerelde Vite vekili üzerinden) gönderir, ayrı bir dosya adresi gerekmez. Yedek: `deploy/prod/yedekle.sh` (bkz. `DEPLOY.md`).
 
 `GET /api/v1/evidence/{evidenceId}` kanıt üst verisini (dosyayı değil), `GET /api/v1/evidence?shipmentId=` sevkiyatın kanıtlarını, `GET /api/v1/evidence/{evidenceId}/download-url` dosya için yaklaşık 5 dakika geçerli imzalı indirme adresini verir. Üçü de sevkiyat kapsamına uyar: kullanıcı yalnızca görebildiği sevkiyatların kanıtlarını görür; görünmeyen kanıt listede yer almaz ve tek tek istenirse `404 EVIDENCE_NOT_FOUND` döner.
 

@@ -10,7 +10,8 @@ RUN --mount=type=cache,target=/root/.m2 \
  && cp services/${MODULE}/target/${MODULE}-*.jar /app.jar
 
 FROM eclipse-temurin:21-jre
-RUN useradd --system --uid 10001 --create-home app
+RUN useradd --system --uid 10001 --create-home app \
+ && mkdir -p /data/evidence && chown app /data/evidence
 USER app
 WORKDIR /home/app
 COPY --from=build /app.jar app.jar

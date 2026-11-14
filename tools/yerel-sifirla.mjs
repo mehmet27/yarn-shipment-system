@@ -19,6 +19,7 @@ import {
   mkdirSync,
   openSync,
   readFileSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { createInterface } from "node:readline/promises";
@@ -158,7 +159,7 @@ async function bekle(ad, adres, kabul, sureSn) {
 if (!sadeceBaslat) {
   // ---- Onay ve veri sıfırlama --------------------------------------------------------------------------------------
   console.log(`Sıfırlanacak proje: ${KOK}
-Silinecekler: yerel PostgreSQL ve MinIO verisi (admin dışındaki tüm kullanıcılar, sevkiyatlar, stoklar, kanıtlar).`);
+Silinecekler: yerel PostgreSQL verisi ve kanıt dosyaları (.yerel/evidence) (admin dışındaki tüm kullanıcılar, sevkiyatlar, stoklar, kanıtlar).`);
   if (!bayrak("--evet")) {
     const okuyucu = createInterface({
       input: process.stdin,
@@ -179,6 +180,7 @@ Silinecekler: yerel PostgreSQL ve MinIO verisi (admin dışındaki tüm kullanı
       .status !== 0
   )
     dur("docker compose down başarısız.");
+  rmSync(join(KAYIT, "evidence"), { recursive: true, force: true });
   if (
     calistir("docker", [...compose, "up", "-d"], { stdio: "inherit" })
       .status !== 0
@@ -268,6 +270,11 @@ arkaplanda(
     DB_PASSWORD: ortam.LOCAL_DB_PASSWORD ?? "",
     // Yalnızca admin'li temiz ortam: örnek kullanıcılar açılmaz; admin şifresi LOCAL_TEST_USER_PASSWORD'dür.
     LOCAL_SAMPLE_USERS: "false",
+    // Kanıt dosyaları sunucu diskinde tutulur; yerelde .yerel/evidence altına yazılır ve sıfırlamada silinir.
+    EVIDENCE_STORAGE_ROOT: join(KAYIT, "evidence"),
+    EVIDENCE_STORAGE_SIGNING_KEY:
+      ortam.EVIDENCE_STORAGE_SIGNING_KEY ??
+      "yerel-gelistirme-imza-anahtari-yalnizca-yerel-0123456789",
   },
 );
 arkaplanda(

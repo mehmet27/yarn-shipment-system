@@ -29,7 +29,7 @@ set_var() { sed -i "s|^$1=.*|$1=$2|" "$ENV_FILE"; }
 
 # Boş sırları üret (dolu olanlara dokunulmaz).
 for v in POSTGRES_PASSWORD DB_PASSWORD \
-         EVIDENCE_STORAGE_ACCESS_KEY EVIDENCE_STORAGE_SECRET_KEY; do
+         EVIDENCE_STORAGE_SIGNING_KEY; do
   [ -n "$(get "$v")" ] || set_var "$v" "$(rand 32)"
 done
 GENERATED_ADMIN_PASSWORD=""
@@ -39,8 +39,8 @@ if [ -z "$(get INITIAL_ADMIN_PASSWORD)" ]; then
 fi
 
 # Örnek alan adları değiştirilmeden kurulum yapılmaz.
-if grep -Eq '^(APP_HOST|FILES_HOST)=.*ornek\.com\.tr' "$ENV_FILE"; then
-  echo "HATA: $PWD/$ENV_FILE içindeki APP_HOST, FILES_HOST ve e-posta alanlarını kendi alan adınızla doldurup betiği yeniden çalıştırın." >&2
+if grep -Eq '^(APP_HOST)=.*ornek\.com\.tr' "$ENV_FILE"; then
+  echo "HATA: $PWD/$ENV_FILE içindeki APP_HOST ve e-posta alanlarını kendi alan adınızla doldurup betiği yeniden çalıştırın." >&2
   exit 1
 fi
 

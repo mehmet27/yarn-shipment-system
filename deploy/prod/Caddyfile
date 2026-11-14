@@ -7,8 +7,3 @@
 	encode zstd gzip
 	reverse_proxy web:80
 }
-
-# Kanıt dosyaları (fotoğraf, belge): tarayıcı önceden imzalı adreslerle doğrudan buraya yükler/indirir.
-{$FILES_HOST} {
-	reverse_proxy minio:9000
-}

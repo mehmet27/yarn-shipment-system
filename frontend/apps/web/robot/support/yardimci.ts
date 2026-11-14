@@ -85,3 +85,43 @@ export async function sifreDegistirFormu(sayfa: Page, mevcut: string, yeni: stri
   await sayfa.getByLabel(/^Yeni şifre \(tekrar\)/).fill(yeni);
   await sayfa.getByRole('button', { name: 'Şifreyi değiştir' }).click();
 }
+
+/**
+ * Giriş formunu doldurur ve sonucu bekler: giriş sayfasından ayrıldıysa `true`, hata mesajı çıktıysa `false`.
+ * (Hatalı denemeler hesabı kilitlediği için yalnızca tek deneme yapın.)
+ */
+export async function girisDeneSonuc(
+  sayfa: Page,
+  kullanici: string,
+  sifre: string,
+): Promise<boolean> {
+  await girisFormu(sayfa, kullanici, sifre);
+  const basarili = sayfa
+    .waitForURL((adres) => !/giris/.test(adres.pathname), { timeout: 15_000 })
+    .then(() => true);
+  const hata = sayfa
+    .getByText(/hatalı|kilitlendi/)
+    .first()
+    .waitFor({ timeout: 15_000 })
+    .then(() => false);
+  return Promise.race([basarili, hata]);
+}
+
+/**
+ * Yönetici ekranında (`/panel/kullanicilar`) var olan bir hesaba "Şifre ver" ile geçici şifre atar; kullanıcı bu şifreyle
+ * girince yeni şifre belirlemek zorundadır. Sunucunun yanıtını bekler.
+ */
+export async function adminSifreVer(admin: Page, girisAdi: string, gecici: string) {
+  await admin.goto('/panel/kullanicilar');
+  await admin.getByRole('button', { name: `${girisAdi} için diğer işlemler` }).click();
+  await admin.getByRole('menuitem', { name: 'Şifre ver' }).click();
+  const pencere = admin.getByRole('dialog');
+  await pencere.getByLabel(/İlk şifre/).fill(gecici);
+  const yanit = admin.waitForResponse(
+    (y) => y.request().method() !== 'GET' && /login-accounts/.test(y.url()),
+  );
+  await pencere.getByRole('button', { name: 'Şifreyi kaydet' }).click();
+  const sonuc = await yanit;
+  if (!sonuc.ok()) throw new Error(`Şifre verme ${String(sonuc.status())} döndü (${girisAdi})`);
+  await admin.keyboard.press('Escape');
+}

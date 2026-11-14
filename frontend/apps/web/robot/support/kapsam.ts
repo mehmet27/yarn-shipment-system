@@ -9,6 +9,8 @@ export const KAPSANAN: Record<string, string> = {
   '/panel/sevkiyat/yeni|Taslak oluştur': '02-formlar, 03-akis',
   '/panel/gorunum|Kaydet': '08-gorunum-raporlar',
   '/panel/kullanicilar|Hesabı düzenle': '07-kullanicilar',
+  '*|Şifremi değiştir': '07-kullanicilar (Şifre değiştirme)',
+  '/sifre-degistir|Şifreyi değiştir': '00-kurulum, 07-kullanicilar',
   '/panel/kullanicilar|Diğer işlemler': '07-kullanicilar (Şifre ver, Pasife al)',
   '/panel/partiler|Düzenle': '06-tanimlar-partiler',
   '/panel/partiler|Kaliteyi kilitle': '06-tanimlar-partiler',

@@ -17,6 +17,11 @@ const OZEL_SIFRE: Record<string, string> = existsSync(YEREL)
   ? (JSON.parse(readFileSync(YEREL, 'utf8')) as Record<string, string>)
   : {};
 
+/** Robotun bu rol için bildiği şifre (`kullanicilar.local.json` önceliklidir, yoksa `ROBOT_SIFRE`). */
+export function rolSifresi(rol: string): string | undefined {
+  return OZEL_SIFRE[rol] ?? process.env.ROBOT_SIFRE;
+}
+
 /** Bu rol için hesap ve şifre tanımlı mı? Değilse senaryo atlanır. */
 export function rolTanimli(rol: string): boolean {
   return (

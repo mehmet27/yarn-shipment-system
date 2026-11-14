@@ -131,6 +131,17 @@ export async function sayfayiGez(
       const ilk = hedef.first();
       // Başka bir sekmenin arkasında kalan alanlar o sekme açılınca tıklanır.
       if (oge.tur === 'liste' && !(await ilk.isVisible())) return;
+      // Radyo ve anahtar başka bir sekmenin arkasında kalmış olabilir (ör. Merkez iplik stoku "Ada göre"):
+      // görünene kadar sekmeleri açarak alanı ortaya çıkarır; hiçbir sekmede görünmüyorsa tıklamayı atlar.
+      if ((oge.tur === 'radyo' || oge.tur === 'anahtar') && !(await ilk.isVisible())) {
+        const sekmeler = sayfa.getByRole('tab');
+        for (let i = 0; i < (await sekmeler.count()); i++) {
+          await sekmeler.nth(i).click();
+          await sayfa.waitForTimeout(250);
+          if (await ilk.isVisible()) break;
+        }
+        if (!(await ilk.isVisible())) return;
+      }
       if (/PDF indir|Excel indir|Sipariş formu PDF/.test(oge.ad)) {
         const [indirme] = await Promise.all([
           sayfa.waitForEvent('download', { timeout: 15_000 }),

@@ -8,7 +8,6 @@ import com.yarnshipment.shipment.application.port.in.fabric.RecordYarnReturnComm
 import com.yarnshipment.shipment.application.port.in.fabric.RecordYarnReturnUseCase;
 import com.yarnshipment.shipment.application.port.in.fabric.ShipmentRecordsQuery;
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
-import com.yarnshipment.shipment.domain.fabric.ReturnDirection;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -22,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Dönen iplik ve fasoncudan gelen iplik (analiz 5.9). Method security proxy'si gerektirdiği için final değildir. */
+/** Fasoncudan depoya dönen iplik (analiz 5.9). Method security proxy'si gerektirdiği için final değildir. */
 @RestController
 @RequestMapping("/api/v1/shipments/{shipmentId}/yarn-returns")
 public class YarnReturnController {
@@ -53,10 +52,10 @@ public class YarnReturnController {
     @PreAuthorize("hasAuthority('YARN_RETURN_RECORD')")
     public ResponseEntity<YarnReturnView> recordYarnReturn(
             @PathVariable UUID shipmentId, @RequestBody YarnReturnRequest request) {
+        requireReturnDirection(request.direction());
         RecordYarnReturnCommand command = new RecordYarnReturnCommand(
                 currentActorProvider.getCurrentActor(),
                 shipmentId,
-                direction(request.direction()),
                 LedgerRequests.required(request.yarnType(), "yarnType"),
                 request.lotId(),
                 LedgerRequests.kg(request.netKg(), "netKg"),
@@ -65,12 +64,13 @@ public class YarnReturnController {
                 .body(FabricViews.yarnReturn(recordYarnReturnUseCase.recordYarnReturn(command)));
     }
 
-    private static ReturnDirection direction(@Nullable String value) {
-        try {
-            return ReturnDirection.valueOf(
-                    LedgerRequests.required(value, "direction").strip());
-        } catch (IllegalArgumentException e) {
-            throw new InvalidLedgerInputException("direction", e);
+    /**
+     * Yön alanı kaldırıldı; yalnızca fasoncudan depoya dönüş vardır. Eski bir istemci "fasoncudan gelen iplik"
+     * gönderirse bakiyeyi sessizce yanlış yazmamak için reddedilir.
+     */
+    private static void requireReturnDirection(@Nullable String value) {
+        if (value != null && !"RETURN".equals(value.strip())) {
+            throw new InvalidLedgerInputException("direction");
         }
     }
 }

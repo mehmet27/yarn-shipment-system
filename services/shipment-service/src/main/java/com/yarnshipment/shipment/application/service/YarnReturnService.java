@@ -55,16 +55,14 @@ public class YarnReturnService implements RecordYarnReturnUseCase, ListYarnRetur
                 UUID.randomUUID(),
                 shipment.id(),
                 shipment.subcontractorId(),
-                command.direction(),
+                ReturnDirection.RETURN,
                 command.yarnType(),
                 command.lotId(),
                 command.netKg(),
                 command.waybillNo(),
                 clock.instant(),
                 command.actor().userId());
-        if (record.direction() == ReturnDirection.RETURN) {
-            requireWithinSentKg(settlement, record);
-        }
+        requireWithinSentKg(settlement, record);
         yarnReturns.save(record);
         return record;
     }

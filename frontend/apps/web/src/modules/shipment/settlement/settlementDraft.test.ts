@@ -56,13 +56,11 @@ describe('toFabricRequest', () => {
 describe('toReturnRequest', () => {
   it('isteğe bağlı alanları boşsa göndermez', () => {
     expect(toReturnRequest({ ...EMPTY_RETURN_DRAFT, yarnType: '30/1', netKg: '100' })).toEqual({
-      direction: 'RETURN',
       yarnType: '30/1',
       netKg: '100.000',
     });
     expect(
       toReturnRequest({
-        direction: 'FROM_SUBCONTRACTOR',
         yarnType: '30/1',
         netKg: '5,5',
         lotId: ' L1 ',

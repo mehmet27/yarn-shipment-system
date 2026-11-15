@@ -6,7 +6,7 @@ import { formatKgText } from './format';
 import { useYarnReturns } from './hooks';
 import { YarnReturnForm } from './YarnReturnForm';
 
-/** İplik dönüşü ve fasoncudan gelen iplik; kayıt depo/müdür/admin (YARN_RETURN_RECORD). */
+/** Fasoncudan depoya iplik dönüşü; kaydı yalnızca depo girer (YARN_RETURN_RECORD). Eski "gelen iplik" kayıtları listede görünür. */
 export function YarnReturnsTab({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
   const canRecord = usePermission('YARN_RETURN_RECORD');

@@ -1206,23 +1206,18 @@
       "rolls": "{{count}} top"
     },
     "yarn": {
-      "title": "İplik dönüşü / gelen iplik",
-      "empty": "Henüz iplik hareketi yok.",
-      "direction": "Yön",
-      "directions": {
-        "RETURN": "İplik dönüşü (fasoncudan depoya)",
-        "FROM_SUBCONTRACTOR": "Gelen iplik (fasoncudan)"
-      },
+      "title": "İplik dönüşü (fasoncudan depoya)",
+      "empty": "Henüz iplik dönüşü yok.",
       "directionShort": {
         "RETURN": "Dönüş",
-        "FROM_SUBCONTRACTOR": "Gelen iplik"
+        "FROM_SUBCONTRACTOR": "Eski kayıt: fasoncudan gelen iplik"
       },
       "yarnType": "İplik cinsi",
       "lotId": "Parti no (isteğe bağlı)",
       "netKg": "Net kilo",
       "waybillNo": "İrsaliye no (isteğe bağlı)",
       "submit": "Hareketi kaydet",
-      "returnNote": "İplik dönüşü fire tabanından düşer."
+      "returnNote": "Fasoncunun kullanmadığı ve depoya geri getirdiği iplik buraya yazılır. Kayıt fasoncunun bakiyesinden ve fire tabanından düşer."
     },
     "fire": {
       "title": "Fire dosyası",
@@ -1433,7 +1428,7 @@
       "DISCREPANCY_VIEW": "Uyuşmazlıklar ekranını görür",
       "DISCREPANCY_RESOLVE": "Uyuşmazlığı karara bağlar",
       "FABRIC_RECEIPT_RECORD": "Fasoncudan gelen kumaşı girer",
-      "YARN_RETURN_RECORD": "İplik dönüşünü ve gelen ipliği kaydeder",
+      "YARN_RETURN_RECORD": "Fasoncudan depoya iplik dönüşünü kaydeder",
       "BALANCE_VIEW": "Fasoncu bakiyesini görür",
       "CENTRAL_STOCK_VIEW": "Merkez iplik stokunu görür",
       "CENTRAL_STOCK_RECORD": "Merkeze gelen ipliği stoğa yazar",

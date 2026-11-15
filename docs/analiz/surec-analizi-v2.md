@@ -283,8 +283,8 @@ elle "bakiye düzeltme" yoktur, hata düzeltme hareketiyle giderilir.
 |---|:-:|---|---|
 | `DISPATCH` | + | İrsaliyeyle tamamlanan sevkiyat | Reçete satırı başına bir hareket |
 | `FABRIC_RECEIPT` | − | Kumaş girişi | Tüketilen iplik kilosu kadar |
-| `YARN_RETURN` | − | Fasoncudan merkeze dönen iplik (S6, S9) | Fire tabanından da düşer |
-| `YARN_FROM_SUBCONTRACTOR` | − | Fasoncudan gelen (onun stoğundan alınan) iplik (S6) | Excel'deki eksi satırlar |
+| `YARN_RETURN` | − | Fasoncudan depoya dönen iplik (S6, S9); kaydı yalnızca depo girer | Fire tabanından da düşer |
+| `YARN_FROM_SUBCONTRACTOR` | − | Fasoncudan gelen (onun stoğundan alınan) iplik (S6) | 15.11.2026'dan beri yeni kayıt açılmaz (depo fasoncu stoğundan iplik girmez); yalnızca eski kayıtlar geçmişte kalır |
 | `CLAIM_ADJUSTMENT` | ± | Kalite itirazının karara bağlanması | Bölüm 5.12 |
 | `OPENING` | + | Excel'den açılış bakiyesi | Bir kez, geçişte |
 | `CORRECTION` | ± | Gerekçeli düzeltme | Eski hareket silinmez, ters hareket yazılır |

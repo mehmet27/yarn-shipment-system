@@ -30,7 +30,6 @@ class RolePermissionMatrixTest {
                         Permission.EVIDENCE_INVALIDATE,
                         Permission.CORRECTION_CREATE,
                         Permission.QUALITY_CLAIM_OPEN,
-                        Permission.YARN_RETURN_RECORD,
                         Permission.FIRE_RATE_EDIT,
                         Permission.INVOICE_MARK,
                         Permission.WEIGHT_MISMATCH_RESOLVE);
@@ -56,6 +55,12 @@ class RolePermissionMatrixTest {
     @DisplayName("Fasoncudan gelen kumaşın girişini yalnızca kalite yapar; müdür giremez")
     void shouldLetOnlyQualityRecordFabricReceipts() {
         assertThat(rolesHaving(Permission.FABRIC_RECEIPT_RECORD)).containsExactly(Role.QUALITY);
+    }
+
+    @Test
+    @DisplayName("Fasoncudan depoya iplik dönüşünü yalnızca depo kaydeder; müdür ve admin kaydedemez")
+    void shouldLetOnlyWarehouseRecordYarnReturns() {
+        assertThat(rolesHaving(Permission.YARN_RETURN_RECORD)).containsExactly(Role.WAREHOUSE);
     }
 
     @Test

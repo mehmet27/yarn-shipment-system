@@ -104,25 +104,42 @@ test('İplik dönüşü, düzeltme ve kanıt geçersiz kılma', async ({ giris }
   const iplik = damga();
   const id = await tamamlanmisSevkiyat({ depo, mudur }, iplik, '100', '3');
 
-  await mudur.adim(
-    'iplik dönüşü: gönderilenden fazlası reddedilir, makul değer kaydolur',
+  await depo.adim(
+    'iplik dönüşü (fasoncudan depoya): Yön alanı yok, gönderilenden fazlası reddedilir, makul değer kaydolur',
     async () => {
-      await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
-      await sekme(mudur, 'İplik dönüşü');
-      await mudur.sayfa
+      await depo.sayfa.goto(`/panel/sevkiyat/${id}`);
+      await sekme(depo, 'İplik dönüşü');
+      depo.kontrol(
+        'iplik dönüşü formunda Yön seçimi olmamalı',
+        (await depo.sayfa.getByLabel('Yön', { exact: true }).count()) === 0,
+      );
+      await depo.sayfa
         .getByLabel(/İplik cinsi/)
         .first()
         .fill(iplik);
-      await mudur.sayfa.getByLabel(/Net kilo/).fill('5000');
-      await mudur.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
-      const mesajlar = await mudur.mesajlar();
-      mudur.kontrol(
+      await depo.sayfa.getByLabel(/Net kilo/).fill('5000');
+      await depo.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
+      const mesajlar = await depo.mesajlar();
+      depo.kontrol(
         'fazla dönüş nedenini söylemeli',
         mesajlar.length > 0 && !mesajlar.some((m) => GENEL_MESAJ.test(m)),
         mesajlar.join(' | '),
       );
-      await mudur.sayfa.getByLabel(/Net kilo/).fill('5');
-      await mudur.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
+      await depo.sayfa.getByLabel(/Net kilo/).fill('5');
+      await depo.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
+      await expect(depo.sayfa.locator('main')).toContainText(/Dönüş/);
+    },
+  );
+
+  await mudur.adim(
+    'iplik dönüşünü müdür kaydedemez: sekmede form ve kaydet düğmesi yok',
+    async () => {
+      await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
+      await sekme(mudur, 'İplik dönüşü');
+      mudur.kontrol(
+        'müdürde iplik dönüşü kaydet düğmesi olmamalı',
+        (await mudur.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).count()) === 0,
+      );
       await expect(mudur.sayfa.locator('main')).toContainText(/Dönüş/);
     },
   );

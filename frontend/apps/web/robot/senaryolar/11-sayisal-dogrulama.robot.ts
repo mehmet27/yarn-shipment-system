@@ -188,16 +188,16 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
     );
   };
 
-  await mudur.adim('iplik dönüşü 10 kg: bakiye 90, fire tabanı 90', async () => {
-    await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
-    await mudur.sayfa.getByRole('tab', { name: 'İplik dönüşü', exact: true }).click();
-    await mudur.sayfa
+  await depo.adim('iplik dönüşü 10 kg: bakiye 90, fire tabanı 90', async () => {
+    await depo.sayfa.goto(`/panel/sevkiyat/${id}`);
+    await depo.sayfa.getByRole('tab', { name: 'İplik dönüşü', exact: true }).click();
+    await depo.sayfa
       .getByLabel(/İplik cinsi/)
       .first()
       .fill(iplik);
-    await mudur.sayfa.getByLabel(/Net kilo/).fill('10');
-    await mudur.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
-    await mudur.sayfa.waitForTimeout(1500);
+    await depo.sayfa.getByLabel(/Net kilo/).fill('10');
+    await depo.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
+    await depo.sayfa.waitForTimeout(1500);
     mudur.kontrol(
       'Başka Dokuma bakiyesi 90 kg',
       kiloEsit(bakiyeOf((await anlik(mudur)).bakiye, BASKA, iplik), 90),

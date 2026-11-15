@@ -45,6 +45,17 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     expect(await within(form).findByText(/toplamı kumaş kilosuna eşit/)).toBeInTheDocument();
   });
 
+  it('müdür iplik dönüşü kaydedemez; sekmede form görünmez ve Yön seçimi yoktur', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp(COMPLETED);
+    await openTab('İplik dönüşü');
+    expect(
+      screen.queryByRole('region', { name: 'İplik dönüşü (fasoncudan depoya)' }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Hareketi kaydet' })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Yön')).not.toBeInTheDocument();
+  });
+
   it('müdür kumaş girişi yapamaz; kumaş sekmesinde form görünmez', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp(COMPLETED);
@@ -89,7 +100,7 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp(COMPLETED);
     await openTab('İplik dönüşü');
-    const form = await screen.findByRole('region', { name: 'İplik dönüşü / gelen iplik' });
+    const form = await screen.findByRole('region', { name: 'İplik dönüşü (fasoncudan depoya)' });
     await userEvent.type(within(form).getByLabelText(/İplik cinsi/), '30/1 Penye');
     await userEvent.type(within(form).getByLabelText(/Net kilo/), '25');
     await userEvent.click(within(form).getByRole('button', { name: 'Hareketi kaydet' }));

@@ -685,6 +685,7 @@
       "UPLOAD_NOT_ALLOWED": "Bu dosya türü, boyutu ya da yükleme izni geçerli değil.",
       "SHIPMENT_NOT_FOUND": "Sevkiyat bulunamadı.",
       "SHIPMENT_LOCKED": "Sevkiyat kilitli; artık dosya eklenemiyor.",
+      "SHIPMENT_NOT_DUE": "Sevkiyat tarihi gelmeden çıkış fotoğrafı eklenemez.",
       "UPLOAD_NOT_COMPLETED": "Dosya henüz yüklenmedi. Lütfen tekrar deneyin.",
       "UPLOAD_MISMATCH": "Yüklenen dosya bildirilenle uyuşmuyor. Lütfen yeniden seçin.",
       "SHIPMENT_SERVICE_UNAVAILABLE": "Sevkiyat doğrulanamadı. Lütfen biraz sonra tekrar deneyin.",

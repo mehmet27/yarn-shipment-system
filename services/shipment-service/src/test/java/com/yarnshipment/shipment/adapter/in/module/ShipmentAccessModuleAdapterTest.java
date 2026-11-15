@@ -40,7 +40,11 @@ class ShipmentAccessModuleAdapterTest {
         ShipmentSummary summary = adapter.findVisibleShipment(TestShipments.SHIPMENT_ID);
 
         assertThat(summary)
-                .isEqualTo(new ShipmentSummary(TestShipments.SHIPMENT_ID, TestShipments.SITE_ID, "COMPLETED"));
+                .isEqualTo(new ShipmentSummary(
+                        TestShipments.SHIPMENT_ID,
+                        TestShipments.SITE_ID,
+                        "COMPLETED",
+                        TestShipments.shipment(ShipmentStatus.COMPLETED).shipmentDate()));
     }
 
     @Test

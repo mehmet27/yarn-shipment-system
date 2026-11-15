@@ -60,6 +60,9 @@ public class RequestUploadService implements RequestUploadUseCase {
         if (isClosedFor(file.type(), shipment)) {
             throw new ShipmentLockedException(shipment.shipmentId());
         }
+        if (file.type().stages().contains(UploadStage.DISPATCH)) {
+            shipment.requireDueAt(clock.instant());
+        }
         Instant now = clock.instant();
         UUID evidenceId = UUID.randomUUID();
         String storageKey = UploadIntent.storageKeyOf(now, shipment.shipmentId(), evidenceId);

@@ -12,11 +12,14 @@ import com.yarnshipment.moduleapi.ModuleUnavailableException;
 import com.yarnshipment.moduleapi.shipment.ShipmentAccessApi;
 import com.yarnshipment.moduleapi.shipment.ShipmentAccessApi.ShipmentSummary;
 import com.yarnshipment.moduleapi.shipment.ShipmentNotVisibleException;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class ShipmentModuleAdapterTest {
+
+    private static final LocalDate DAY = LocalDate.parse("2026-10-22");
 
     private static final UUID SHIPMENT = UUID.fromString("0192f0a0-0000-7000-8000-000000000301");
     private static final UUID SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000101");
@@ -28,13 +31,13 @@ class ShipmentModuleAdapterTest {
     @DisplayName("Durum, kilit ve tamamlanma bilgisine çevrilir")
     void shouldDeriveLockedAndCompleted() {
         when(api.findVisibleShipment(SHIPMENT))
-                .thenReturn(new ShipmentSummary(SHIPMENT, SITE, "COMPLETED"))
-                .thenReturn(new ShipmentSummary(SHIPMENT, SITE, "CANCELLED"))
-                .thenReturn(new ShipmentSummary(SHIPMENT, SITE, "IN_TRANSIT"));
+                .thenReturn(new ShipmentSummary(SHIPMENT, SITE, "COMPLETED", DAY))
+                .thenReturn(new ShipmentSummary(SHIPMENT, SITE, "CANCELLED", DAY))
+                .thenReturn(new ShipmentSummary(SHIPMENT, SITE, "IN_TRANSIT", DAY));
 
-        assertThat(adapter.findAccessible(SHIPMENT)).isEqualTo(new ShipmentSnapshot(SHIPMENT, SITE, true, true));
-        assertThat(adapter.findAccessible(SHIPMENT)).isEqualTo(new ShipmentSnapshot(SHIPMENT, SITE, true, false));
-        assertThat(adapter.findAccessible(SHIPMENT)).isEqualTo(new ShipmentSnapshot(SHIPMENT, SITE, false, false));
+        assertThat(adapter.findAccessible(SHIPMENT)).isEqualTo(new ShipmentSnapshot(SHIPMENT, SITE, true, true, DAY));
+        assertThat(adapter.findAccessible(SHIPMENT)).isEqualTo(new ShipmentSnapshot(SHIPMENT, SITE, true, false, DAY));
+        assertThat(adapter.findAccessible(SHIPMENT)).isEqualTo(new ShipmentSnapshot(SHIPMENT, SITE, false, false, DAY));
     }
 
     @Test

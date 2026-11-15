@@ -55,26 +55,40 @@ test('Sevkiyat tarihi: müdür tarih girer, depo tarih gelmeden işlem yapamaz',
   });
 
   await depo.adim(
-    'tarih gelmeden: sunucu çuval atamayı ve çıkış tartısını da reddeder',
+    'tarih gelmeden: sunucu çuval atamayı, çıkış tartısını ve çıkış fotoğrafını da reddeder',
     async () => {
-      for (const yol of ['bags', 'dispatch-weighing']) {
-        const kod = await depo.sayfa.evaluate(async (adres) => {
-          const cerez = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='));
-          const yanit = await fetch(adres, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Idempotency-Key': crypto.randomUUID(),
-              'X-XSRF-TOKEN': decodeURIComponent(cerez?.split('=')[1] ?? ''),
-            },
-            body: JSON.stringify(
-              adres.endsWith('/bags')
-                ? { weightsKg: ['25.000'] }
-                : { grossKg: '2000.000', tareKg: '1000.000', bagCount: 1 },
-            ),
-          });
-          return `${String(yanit.status)} ${((await yanit.json()) as { code?: string }).code ?? ''}`;
-        }, `/api/v1/shipments/${id}/${yol}`);
+      for (const yol of ['bags', 'dispatch-weighing', 'evidence']) {
+        const kod = await depo.sayfa.evaluate(
+          async ({ adres, kimlik }) => {
+            const cerez = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='));
+            const yanit = await fetch(adres, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Idempotency-Key': crypto.randomUUID(),
+                'X-XSRF-TOKEN': decodeURIComponent(cerez?.split('=')[1] ?? ''),
+              },
+              body: JSON.stringify(
+                adres.endsWith('/bags')
+                  ? { weightsKg: ['25.000'] }
+                  : adres.endsWith('/uploads')
+                    ? {
+                        shipmentId: kimlik,
+                        evidenceType: 'DISPATCH_SCALE',
+                        mimeType: 'image/jpeg',
+                        sizeBytes: 2000,
+                      }
+                    : { grossKg: '2000.000', tareKg: '1000.000', bagCount: 1 },
+              ),
+            });
+            return `${String(yanit.status)} ${((await yanit.json()) as { code?: string }).code ?? ''}`;
+          },
+          {
+            adres:
+              yol === 'evidence' ? '/api/v1/evidence/uploads' : `/api/v1/shipments/${id}/${yol}`,
+            kimlik: id,
+          },
+        );
         depo.kontrol(
           `${yol}: sunucu 409 SHIPMENT_NOT_DUE dönmeli`,
           kod === '409 SHIPMENT_NOT_DUE',

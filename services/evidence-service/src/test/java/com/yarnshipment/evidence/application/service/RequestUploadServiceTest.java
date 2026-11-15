@@ -22,9 +22,11 @@ import com.yarnshipment.evidence.application.port.out.ShipmentAccessPort.Shipmen
 import com.yarnshipment.evidence.application.port.out.UploadIntentPort;
 import com.yarnshipment.evidence.domain.model.EvidenceType;
 import com.yarnshipment.evidence.domain.model.ShipmentLockedException;
+import com.yarnshipment.evidence.domain.model.ShipmentNotDueException;
 import com.yarnshipment.evidence.domain.model.UploadIntent;
 import com.yarnshipment.evidence.domain.model.UploadNotAllowedException;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
@@ -129,6 +131,27 @@ class RequestUploadServiceTest {
                 .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, true, false));
         assertThatThrownBy(() -> request.requestUpload(command(claimant, EvidenceType.QUALITY_CLAIM)))
                 .isInstanceOf(ShipmentLockedException.class);
+    }
+
+    @Test
+    @DisplayName("Sevkiyat günü gelmeden depo çıkış kanıtı yüklenemez; gün gelince yüklenir")
+    void shouldRejectDispatchEvidenceBeforeShipmentDay() {
+        Actor warehouse = TestTokens.actor("warehouse");
+        when(storage.presignUpload(any())).thenReturn(new PresignedUpload("u", Map.of(), TestUploads.expiry()));
+        when(shipments.findAccessible(TestUploads.SHIPMENT_ID)).thenReturn(snapshotOn("2026-10-28"));
+
+        assertThatThrownBy(() -> request.requestUpload(command(warehouse, EvidenceType.DISPATCH_SCALE)))
+                .isInstanceOf(ShipmentNotDueException.class);
+        verify(storage, never()).presignUpload(any());
+
+        when(shipments.findAccessible(TestUploads.SHIPMENT_ID)).thenReturn(snapshotOn("2026-10-27"));
+        assertThat(request.requestUpload(command(warehouse, EvidenceType.DISPATCH_SCALE))
+                        .evidenceId())
+                .isNotNull();
+    }
+
+    private static ShipmentSnapshot snapshotOn(String day) {
+        return new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, false, false, LocalDate.parse(day));
     }
 
     private void openShipment(boolean locked) {

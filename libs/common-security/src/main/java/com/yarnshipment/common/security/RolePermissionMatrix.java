@@ -43,10 +43,7 @@ public final class RolePermissionMatrix {
      */
     private static Set<Permission> permissionsForAdmin() {
         return EnumSet.of(
-                Permission.MASTER_DATA_VIEW,
-                Permission.USER_MANAGE,
-                Permission.SETTINGS_MANAGE,
-                Permission.AUDIT_VIEW);
+                Permission.MASTER_DATA_VIEW, Permission.USER_MANAGE, Permission.SETTINGS_MANAGE, Permission.AUDIT_VIEW);
     }
 
     private static Set<Permission> permissionsForWarehouse() {

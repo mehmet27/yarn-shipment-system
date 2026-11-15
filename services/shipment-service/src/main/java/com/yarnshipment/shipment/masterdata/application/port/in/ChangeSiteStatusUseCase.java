@@ -4,7 +4,7 @@ import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
 import java.util.UUID;
 
-/** Ana veri yönetimi: ChangeSiteStatus. Yalnızca MASTER_DATA_MANAGE yetkisi olan yönetici çağırır. */
+/** Ana veri yönetimi: ChangeSiteStatus. Yalnızca MASTER_DATA_MANAGE yetkisi olan müdür çağırır. */
 public interface ChangeSiteStatusUseCase {
 
     void changeSiteStatus(Actor actor, UUID id, MasterDataStatus status);

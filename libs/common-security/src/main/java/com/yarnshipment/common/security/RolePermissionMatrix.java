@@ -38,17 +38,12 @@ public final class RolePermissionMatrix {
     }
 
     /**
-     * Yönetici yalnızca sistemi yönetir: tanımlar, partiler, kullanıcılar, görünüm ayarları ve denetim kaydı. Sevkiyat,
-     * kanıt, uyuşmazlık, rapor ve stok gibi iş ekranlarını görmez; bu işler müdür, kalite ve depo rollerindedir.
+     * Yönetici yalnızca sistemi yönetir: kullanıcılar, görünüm/kural ayarları ve denetim kaydı. Tanımlar ve partiler
+     * müdürdedir; sevkiyat, kanıt, uyuşmazlık, rapor ve stok gibi iş ekranlarını da görmez.
      */
     private static Set<Permission> permissionsForAdmin() {
         return EnumSet.of(
-                Permission.MASTER_DATA_VIEW,
-                Permission.MASTER_DATA_MANAGE,
-                Permission.USER_MANAGE,
-                Permission.SETTINGS_MANAGE,
-                Permission.LOT_QUALITY_LOCK,
-                Permission.AUDIT_VIEW);
+                Permission.MASTER_DATA_VIEW, Permission.USER_MANAGE, Permission.SETTINGS_MANAGE, Permission.AUDIT_VIEW);
     }
 
     private static Set<Permission> permissionsForWarehouse() {
@@ -85,11 +80,13 @@ public final class RolePermissionMatrix {
 
     /**
      * Müdür sevkiyatı açar, iptal eder ve irsaliye gelince tamamlar (saha analizi, 10.11.2026); çıkış tartısını
-     * düzeltir ve kanıtı geçersiz kılar (yöneticiden devralındı).
+     * düzeltir ve kanıtı geçersiz kılar; tanımlar (ana veri) ve partiler de müdürdedir (yöneticiden devralındı).
      */
     private static Set<Permission> permissionsForManager() {
         return EnumSet.of(
                 Permission.MASTER_DATA_VIEW,
+                Permission.MASTER_DATA_MANAGE,
+                Permission.LOT_QUALITY_LOCK,
                 Permission.SHIPMENT_VIEW,
                 Permission.SHIPMENT_CREATE,
                 Permission.SHIPMENT_CANCEL,

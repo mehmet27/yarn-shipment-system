@@ -90,7 +90,7 @@ class LotServicesTest {
     @DisplayName("Pasif ya da bilinmeyen iplik tedarikçisi reddedilir")
     void shouldRejectInactiveYarnSupplier() {
         // given
-        Actor admin = TestTokens.actor("admin");
+        Actor manager = TestTokens.actor("manager");
         UUID supplier = UUID.randomUUID();
         givenValidReferences();
         when(lots.activeSiteExists(TestTokens.SITE_ID)).thenReturn(true);
@@ -98,7 +98,7 @@ class LotServicesTest {
         LotDetails withSupplier = new LotDetails("P-3", PRODUCT, GRADE, LocalDate.parse("2026-10-29"), supplier);
 
         // when / then
-        assertThatThrownBy(() -> management.createLot(admin, TestTokens.SITE_ID, withSupplier))
+        assertThatThrownBy(() -> management.createLot(manager, TestTokens.SITE_ID, withSupplier))
                 .isInstanceOf(InvalidMasterDataException.class);
         verify(lots, never()).insertLot(any(), any(), any());
     }
@@ -107,19 +107,19 @@ class LotServicesTest {
     @DisplayName("Pasif iplik, pasif kalite ya da ileri tarihli üretim reddedilir")
     void shouldRejectInvalidReferences() {
         // given
-        Actor admin = TestTokens.actor("admin");
+        Actor manager = TestTokens.actor("manager");
         when(lots.activeSiteExists(TestTokens.SITE_ID)).thenReturn(true);
         when(lots.activeProductExists(PRODUCT)).thenReturn(false);
         when(lots.activeQualityGradeExists(GRADE)).thenReturn(true);
         LotDetails future = new LotDetails("P-2", PRODUCT, GRADE, LocalDate.parse("2026-10-31"));
 
         // when / then
-        assertThatThrownBy(() -> management.createLot(admin, TestTokens.SITE_ID, DETAILS))
+        assertThatThrownBy(() -> management.createLot(manager, TestTokens.SITE_ID, DETAILS))
                 .isInstanceOf(InvalidMasterDataException.class)
                 .extracting(e -> ((InvalidMasterDataException) e).field())
                 .isEqualTo("productId");
         when(lots.activeProductExists(PRODUCT)).thenReturn(true);
-        assertThatThrownBy(() -> management.createLot(admin, TestTokens.SITE_ID, future))
+        assertThatThrownBy(() -> management.createLot(manager, TestTokens.SITE_ID, future))
                 .isInstanceOf(InvalidMasterDataException.class)
                 .extracting(e -> ((InvalidMasterDataException) e).field())
                 .isEqualTo("productionDate");
@@ -132,7 +132,7 @@ class LotServicesTest {
         when(lots.findLot(LOT)).thenReturn(Optional.of(lot(NOW)));
 
         // when / then
-        assertThatThrownBy(() -> management.updateLot(TestTokens.actor("admin"), LOT, DETAILS))
+        assertThatThrownBy(() -> management.updateLot(TestTokens.actor("manager"), LOT, DETAILS))
                 .isInstanceOf(LotQualityLockedException.class);
         verify(lots, never()).updateLot(any(), any(), any());
     }
@@ -159,12 +159,12 @@ class LotServicesTest {
     @DisplayName("Kilitli parti yeniden kilitlenemez, pasif parti kilitlenemez; olay yayınlanmaz")
     void shouldRejectRelockAndInactiveLot() {
         // given
-        Actor admin = TestTokens.actor("admin");
+        Actor manager = TestTokens.actor("manager");
         when(lots.findLot(LOT)).thenReturn(Optional.of(lot(NOW))).thenReturn(Optional.of(inactiveLot()));
 
         // when / then
-        assertThatThrownBy(() -> locking.lockLotQuality(admin, LOT)).isInstanceOf(LotQualityLockedException.class);
-        assertThatThrownBy(() -> locking.lockLotQuality(admin, LOT)).isInstanceOf(InvalidMasterDataException.class);
+        assertThatThrownBy(() -> locking.lockLotQuality(manager, LOT)).isInstanceOf(LotQualityLockedException.class);
+        assertThatThrownBy(() -> locking.lockLotQuality(manager, LOT)).isInstanceOf(InvalidMasterDataException.class);
         verify(lots, never()).lockQuality(any(), any(), any());
         verify(events, never()).publishQualityLocked(any(), any());
     }
@@ -173,13 +173,13 @@ class LotServicesTest {
     @DisplayName("Eşzamanlı kilitte koşullu güncelleme tutmazsa LOT_QUALITY_LOCKED verilir")
     void shouldReportConcurrentLock() {
         // given
-        Actor admin = TestTokens.actor("admin");
+        Actor manager = TestTokens.actor("manager");
         when(lots.findLot(LOT)).thenReturn(Optional.of(lot(null)));
         when(lots.activeQualityGradeExists(GRADE)).thenReturn(true);
-        when(lots.lockQuality(admin.userId(), LOT, NOW)).thenReturn(false);
+        when(lots.lockQuality(manager.userId(), LOT, NOW)).thenReturn(false);
 
         // when / then
-        assertThatThrownBy(() -> locking.lockLotQuality(admin, LOT)).isInstanceOf(LotQualityLockedException.class);
+        assertThatThrownBy(() -> locking.lockLotQuality(manager, LOT)).isInstanceOf(LotQualityLockedException.class);
         verify(events, never()).publishQualityLocked(any(), any());
     }
 
@@ -188,7 +188,7 @@ class LotServicesTest {
     void shouldReportMissingLot() {
         when(lots.findLot(LOT)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> locking.lockLotQuality(TestTokens.actor("admin"), LOT))
+        assertThatThrownBy(() -> locking.lockLotQuality(TestTokens.actor("manager"), LOT))
                 .isInstanceOf(MasterDataNotFoundException.class);
     }
 
@@ -203,7 +203,7 @@ class LotServicesTest {
 
         // when
         management.listLots(quality, query);
-        management.listLots(TestTokens.actor("admin"), query);
+        management.listLots(TestTokens.actor("manager"), query);
 
         // then
         verify(lots).findLots(scope, query);

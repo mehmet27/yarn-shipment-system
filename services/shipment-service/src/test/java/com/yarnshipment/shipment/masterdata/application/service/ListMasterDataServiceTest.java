@@ -49,13 +49,13 @@ class ListMasterDataServiceTest {
     @DisplayName("Ana veri yöneticisi kapsamından bağımsız olarak tüm lokasyonları görür")
     void shouldListAllSitesForMasterDataManager() throws Exception {
         // given
-        Actor admin = TestTokens.actor("admin");
+        Actor manager = TestTokens.actor("manager");
         MasterDataQuery query = new MasterDataQuery(null, 0, SIZE);
         MasterDataPage<Site> page = new MasterDataPage<>(List.of(), 0, SIZE, 0);
         when(port.findSites(AccessScope.UNRESTRICTED, query)).thenReturn(page);
 
         // when / then
-        assertThat(service.listSites(admin, query)).isSameAs(page);
+        assertThat(service.listSites(manager, query)).isSameAs(page);
         verifyNoInteractions(scopeGuard);
     }
 

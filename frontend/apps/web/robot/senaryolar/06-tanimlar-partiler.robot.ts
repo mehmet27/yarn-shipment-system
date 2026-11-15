@@ -17,20 +17,17 @@ async function ara(sayfa: Page, metin: string) {
   await sayfa.waitForTimeout(500);
 }
 
-test('Tanımlar: yönetici her tanım türünde ekler, düzenler ve pasife alır', async ({ giris }) => {
-  test.skip(!rolTanimli('admin'), 'admin için şifre tanımlı değil');
-  const admin = await giris('admin');
-  admin.beklenen(/4\d\d (POST|PUT|PATCH) \/api\/v1\/master-data/);
-  // Yönetici bakiye ekranını göremez; fasoncuyu pasife alırken bakiye sorgusu 403 döner ve ekran "bakiyesi kontrol
-  // edilemedi" uyarısıyla "Yine de pasife al" düğmesini gösterir (beklenen davranış).
-  admin.beklenen(/403 GET \/api\/v1\/balances/);
+test('Tanımlar: müdür her tanım türünde ekler, düzenler ve pasife alır', async ({ giris }) => {
+  test.skip(!rolTanimli('mudur'), 'mudur için şifre tanımlı değil');
+  const mudur = await giris('mudur');
+  mudur.beklenen(/4\d\d (POST|PUT|PATCH) \/api\/v1\/master-data/);
   const ek = damga().slice(-6);
-  await admin.sayfa.goto('/panel/tanimlar');
+  await mudur.sayfa.goto('/panel/tanimlar');
   for (const t of TANIMLAR) {
-    await admin.adim(`${t.sekme}: ekle, düzenle, pasife al`, async () => {
-      await admin.sayfa.goto('/panel/tanimlar');
-      await admin.sayfa.getByRole('tab', { name: t.sekme, exact: true }).click();
-      await admin.sayfa.waitForTimeout(500);
+    await mudur.adim(`${t.sekme}: ekle, düzenle, pasife al`, async () => {
+      await mudur.sayfa.goto('/panel/tanimlar');
+      await mudur.sayfa.getByRole('tab', { name: t.sekme, exact: true }).click();
+      await mudur.sayfa.waitForTimeout(500);
       const sonEk = 'ek' in t ? ek.replace(/\D/g, '').padStart(4, '1').slice(-4) : `-${ek}`;
       const degerler = Object.entries(t.alanlar).map(
         ([etiket, on]) => [etiket, `${on}${sonEk}`] as const,
@@ -40,91 +37,91 @@ test('Tanımlar: yönetici her tanım türünde ekler, düzenler ve pasife alır
       const yeni =
         'ek' in t ? `${aranan.slice(0, -1)}${aranan.endsWith('7') ? '8' : '7'}` : `${aranan}9`;
       // Boş kayıt reddedilir
-      await admin.sayfa.getByRole('button', { name: 'Ekle' }).click();
-      const pencere = admin.sayfa.getByRole('dialog');
+      await mudur.sayfa.getByRole('button', { name: 'Ekle' }).click();
+      const pencere = mudur.sayfa.getByRole('dialog');
       await pencere.getByRole('button', { name: 'Kaydet' }).click();
-      admin.kontrol(`${t.sekme}: boş kayıt uyarı vermeli`, (await admin.mesajlar()).length > 0);
+      mudur.kontrol(`${t.sekme}: boş kayıt uyarı vermeli`, (await mudur.mesajlar()).length > 0);
       for (const [etiket, deger] of degerler)
         await pencere.getByLabel(etiket, { exact: true }).fill(deger);
       await pencere.getByRole('button', { name: 'Kaydet' }).click();
-      await ara(admin.sayfa, aranan);
-      await expect(admin.sayfa.getByText(aranan).first()).toBeVisible();
+      await ara(mudur.sayfa, aranan);
+      await expect(mudur.sayfa.getByText(aranan).first()).toBeVisible();
       // Düzenle
-      await satir(admin.sayfa, aranan, 'Düzenle').getByRole('button', { name: 'Düzenle' }).click();
-      const duzen = admin.sayfa.getByRole('dialog');
+      await satir(mudur.sayfa, aranan, 'Düzenle').getByRole('button', { name: 'Düzenle' }).click();
+      const duzen = mudur.sayfa.getByRole('dialog');
       const ilkEtiket = degerler[degerler.length - 1]?.[0] ?? '';
       await duzen.getByLabel(ilkEtiket, { exact: true }).fill(yeni);
       await duzen.getByRole('button', { name: 'Kaydet' }).click();
-      await ara(admin.sayfa, yeni);
-      await expect(admin.sayfa.getByText(yeni).first()).toBeVisible();
+      await ara(mudur.sayfa, yeni);
+      await expect(mudur.sayfa.getByText(yeni).first()).toBeVisible();
       // Pasife al
-      await satir(admin.sayfa, yeni, 'Pasife al')
+      await satir(mudur.sayfa, yeni, 'Pasife al')
         .getByRole('button', { name: 'Pasife al' })
         .click();
-      await admin.sayfa.waitForTimeout(800);
-      const onay = admin.sayfa
+      await mudur.sayfa.waitForTimeout(800);
+      const onay = mudur.sayfa
         .getByRole('dialog')
         .getByRole('button', { name: /pasife al|Onayla|Evet/i });
       if ((await onay.count()) > 0) await onay.first().click();
-      await expect(admin.sayfa.getByText(yeni)).toHaveCount(0);
+      await expect(mudur.sayfa.getByText(yeni)).toHaveCount(0);
       // Pasifleri göster anahtarı kaydı geri getirir
-      await admin.sayfa.getByLabel('Pasifleri göster').click({ force: true });
-      await expect(admin.sayfa.getByText(yeni).first()).toBeVisible();
-      await admin.sayfa.getByLabel('Pasifleri göster').click({ force: true });
+      await mudur.sayfa.getByLabel('Pasifleri göster').click({ force: true });
+      await expect(mudur.sayfa.getByText(yeni).first()).toBeVisible();
+      await mudur.sayfa.getByLabel('Pasifleri göster').click({ force: true });
     });
   }
 });
 
-test('Partiler: yönetici parti ekler, düzenler, kalitesini kilitler, pasife alır', async ({
+test('Partiler: müdür parti ekler, düzenler, kalitesini kilitler, pasife alır', async ({
   giris,
 }) => {
-  test.skip(!rolTanimli('admin'), 'admin için şifre tanımlı değil');
-  const admin = await giris('admin');
-  admin.beklenen(/4\d\d (POST|PUT|PATCH) \/api\/v1\/master-data/);
+  test.skip(!rolTanimli('mudur'), 'mudur için şifre tanımlı değil');
+  const mudur = await giris('mudur');
+  mudur.beklenen(/4\d\d (POST|PUT|PATCH) \/api\/v1\/master-data/);
   const no = `P-${damga().slice(-8)}`;
-  await admin.sayfa.goto('/panel/partiler');
-  await admin.adim('parti: boş kayıt reddedilir', async () => {
-    await admin.sayfa.getByRole('button', { name: 'Ekle' }).click();
-    await admin.sayfa.getByRole('dialog').getByRole('button', { name: 'Kaydet' }).click();
-    admin.kontrol('boş parti uyarı vermeli', (await admin.mesajlar()).length > 0);
+  await mudur.sayfa.goto('/panel/partiler');
+  await mudur.adim('parti: boş kayıt reddedilir', async () => {
+    await mudur.sayfa.getByRole('button', { name: 'Ekle' }).click();
+    await mudur.sayfa.getByRole('dialog').getByRole('button', { name: 'Kaydet' }).click();
+    mudur.kontrol('boş parti uyarı vermeli', (await mudur.mesajlar()).length > 0);
   });
-  await admin.adim('parti: ekle', async () => {
-    const pencere = admin.sayfa.getByRole('dialog');
+  await mudur.adim('parti: ekle', async () => {
+    const pencere = mudur.sayfa.getByRole('dialog');
     await pencere.getByLabel('Parti numarası *', { exact: true }).fill(no);
-    await sec(admin.sayfa, /^İplik \*/, '', pencere);
-    await sec(admin.sayfa, /^Kalite sınıfı/, '', pencere);
+    await sec(mudur.sayfa, /^İplik \*/, '', pencere);
+    await sec(mudur.sayfa, /^Kalite sınıfı/, '', pencere);
     await pencere.getByLabel(/Üretim tarihi/).fill('2026-11-01');
     await pencere.getByRole('button', { name: 'Kaydet' }).click();
-    await expect(admin.sayfa.getByText(no).first()).toBeVisible();
+    await expect(mudur.sayfa.getByText(no).first()).toBeVisible();
   });
-  await admin.adim('parti: düzenle', async () => {
-    await satir(admin.sayfa, no, 'Düzenle').getByRole('button', { name: 'Düzenle' }).click();
-    await admin.sayfa
+  await mudur.adim('parti: düzenle', async () => {
+    await satir(mudur.sayfa, no, 'Düzenle').getByRole('button', { name: 'Düzenle' }).click();
+    await mudur.sayfa
       .getByRole('dialog')
       .getByLabel('Parti numarası *', { exact: true })
       .fill(`${no}-d`);
-    await admin.sayfa.getByRole('dialog').getByRole('button', { name: 'Kaydet' }).click();
-    await expect(admin.sayfa.getByText(`${no}-d`).first()).toBeVisible();
+    await mudur.sayfa.getByRole('dialog').getByRole('button', { name: 'Kaydet' }).click();
+    await expect(mudur.sayfa.getByText(`${no}-d`).first()).toBeVisible();
   });
-  await admin.adim('parti: kaliteyi kilitle (onaylı)', async () => {
-    await satir(admin.sayfa, `${no}-d`, 'Kaliteyi kilitle')
+  await mudur.adim('parti: kaliteyi kilitle (onaylı)', async () => {
+    await satir(mudur.sayfa, `${no}-d`, 'Kaliteyi kilitle')
       .getByRole('button', { name: 'Kaliteyi kilitle' })
       .click();
-    await admin.sayfa
+    await mudur.sayfa
       .getByRole('button', { name: /Evet|Onayla|Kilitle$/ })
       .last()
       .click();
-    await expect(satir(admin.sayfa, `${no}-d`, 'Pasife al')).toContainText(/kilitli/i);
+    await expect(satir(mudur.sayfa, `${no}-d`, 'Pasife al')).toContainText(/kilitli/i);
   });
-  await admin.adim('parti: pasife al', async () => {
-    await satir(admin.sayfa, `${no}-d`, 'Pasife al')
+  await mudur.adim('parti: pasife al', async () => {
+    await satir(mudur.sayfa, `${no}-d`, 'Pasife al')
       .getByRole('button', { name: 'Pasife al' })
       .click();
-    await admin.sayfa.waitForTimeout(800);
-    const onay = admin.sayfa
+    await mudur.sayfa.waitForTimeout(800);
+    const onay = mudur.sayfa
       .getByRole('dialog')
       .getByRole('button', { name: /Pasife al|Onayla|Evet/ });
     if ((await onay.count()) > 0) await onay.first().click();
-    await expect(admin.sayfa.getByText(`${no}-d`)).toHaveCount(0);
+    await expect(mudur.sayfa.getByText(`${no}-d`)).toHaveCount(0);
   });
 });

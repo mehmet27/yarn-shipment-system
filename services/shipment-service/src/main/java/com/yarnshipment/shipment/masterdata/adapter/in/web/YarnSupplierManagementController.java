@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
-/** İplik tedarikçisi yönetim uçları; yalnızca MASTER_DATA_MANAGE yetkisi olan yönetici (SEC-02: final değildir). */
+/** İplik tedarikçisi yönetim uçları; yalnızca MASTER_DATA_MANAGE yetkisi olan müdür (SEC-02: final değildir). */
 @RestController
 public class YarnSupplierManagementController implements YarnSupplierManagementApi {
 

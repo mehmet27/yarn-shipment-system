@@ -4,7 +4,7 @@ import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.masterdata.domain.model.Vehicle;
 import java.util.UUID;
 
-/** Ana veri yönetimi: UpdateVehicle. Yalnızca MASTER_DATA_MANAGE yetkisi olan yönetici çağırır. */
+/** Ana veri yönetimi: UpdateVehicle. Yalnızca MASTER_DATA_MANAGE yetkisi olan müdür çağırır. */
 public interface UpdateVehicleUseCase {
 
     Vehicle updateVehicle(Actor actor, UUID id, String plateNo);

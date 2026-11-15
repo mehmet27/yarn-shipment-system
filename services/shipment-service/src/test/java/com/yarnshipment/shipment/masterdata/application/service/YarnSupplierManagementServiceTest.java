@@ -21,17 +21,17 @@ class YarnSupplierManagementServiceTest {
 
     private final YarnSupplierPort suppliers = mock(YarnSupplierPort.class);
     private final YarnSupplierManagementService service = new YarnSupplierManagementService(suppliers);
-    private final Actor admin = TestTokens.actor("admin");
+    private final Actor manager = TestTokens.actor("manager");
 
     @Test
     @DisplayName("Tedarikçi adı temizlenerek eklenir")
     void shouldCreateWithCleanedName() {
         // given
         UUID id = UUID.randomUUID();
-        when(suppliers.insertYarnSupplier(admin.userId(), "Şireci")).thenReturn(new YarnSupplier(id, "Şireci", true));
+        when(suppliers.insertYarnSupplier(manager.userId(), "Şireci")).thenReturn(new YarnSupplier(id, "Şireci", true));
 
         // when
-        YarnSupplier created = service.createYarnSupplier(admin, "  Şireci ");
+        YarnSupplier created = service.createYarnSupplier(manager, "  Şireci ");
 
         // then
         assertThat(created.id()).isEqualTo(id);
@@ -42,15 +42,15 @@ class YarnSupplierManagementServiceTest {
     void shouldRejectUnknownSupplier() {
         // given
         UUID id = UUID.randomUUID();
-        when(suppliers.updateYarnSupplier(admin.userId(), id, "Karesi")).thenReturn(Optional.empty());
-        when(suppliers.setYarnSupplierStatus(admin.userId(), id, MasterDataStatus.INACTIVE))
+        when(suppliers.updateYarnSupplier(manager.userId(), id, "Karesi")).thenReturn(Optional.empty());
+        when(suppliers.setYarnSupplierStatus(manager.userId(), id, MasterDataStatus.INACTIVE))
                 .thenReturn(false);
 
         // when / then
-        assertThatThrownBy(() -> service.updateYarnSupplier(admin, id, "Karesi"))
+        assertThatThrownBy(() -> service.updateYarnSupplier(manager, id, "Karesi"))
                 .isInstanceOf(MasterDataNotFoundException.class);
-        assertThatThrownBy(() -> service.changeYarnSupplierStatus(admin, id, MasterDataStatus.INACTIVE))
+        assertThatThrownBy(() -> service.changeYarnSupplierStatus(manager, id, MasterDataStatus.INACTIVE))
                 .isInstanceOf(MasterDataNotFoundException.class);
-        verify(suppliers).setYarnSupplierStatus(admin.userId(), id, MasterDataStatus.INACTIVE);
+        verify(suppliers).setYarnSupplierStatus(manager.userId(), id, MasterDataStatus.INACTIVE);
     }
 }

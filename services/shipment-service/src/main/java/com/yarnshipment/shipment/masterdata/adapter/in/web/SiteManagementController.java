@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Site yönetim uçları; yalnızca MASTER_DATA_MANAGE yetkisi olan yönetici (SEC-02: final değildir). */
+/** Site yönetim uçları; yalnızca MASTER_DATA_MANAGE yetkisi olan müdür (SEC-02: final değildir). */
 @RestController
 public class SiteManagementController implements SiteManagementApi {
 

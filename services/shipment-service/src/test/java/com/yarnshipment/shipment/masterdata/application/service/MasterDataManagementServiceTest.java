@@ -28,7 +28,7 @@ class MasterDataManagementServiceTest {
     private final MasterDataCommandPort port = mock(MasterDataCommandPort.class);
     private final SubcontractorManagementService subcontractors = new SubcontractorManagementService(port);
     private final DriverManagementService drivers = new DriverManagementService(port);
-    private final Actor actor = TestTokens.actor("admin");
+    private final Actor actor = TestTokens.actor("manager");
     private final UUID id = UUID.randomUUID();
 
     @Test

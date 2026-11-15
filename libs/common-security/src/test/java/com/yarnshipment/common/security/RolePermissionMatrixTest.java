@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 class RolePermissionMatrixTest {
 
     @Test
-    @DisplayName("Müdürün yazma izinleri: sevkiyat, giriş kayıtları, fire, fatura, tartı, düzeltme, kanıt")
+    @DisplayName("Müdürün yazma izinleri: tanımlar, partiler, sevkiyat, kayıtlar, fire, fatura, tartı, düzeltme")
     void shouldLimitManagerWrites() {
         // when
         Set<Permission> permissions = RolePermissionMatrix.permissionsOf(List.of(Role.MANAGER));
@@ -21,6 +21,8 @@ class RolePermissionMatrixTest {
         // then
         assertThat(permissions.stream().filter(Permission::isWrite))
                 .containsExactlyInAnyOrder(
+                        Permission.MASTER_DATA_MANAGE,
+                        Permission.LOT_QUALITY_LOCK,
                         Permission.SHIPMENT_CREATE,
                         Permission.SHIPMENT_CANCEL,
                         Permission.SHIPMENT_COMPLETE,
@@ -91,10 +93,8 @@ class RolePermissionMatrixTest {
         assertThat(RolePermissionMatrix.permissionsOf(List.of(Role.ADMIN)))
                 .containsExactlyInAnyOrder(
                         Permission.MASTER_DATA_VIEW,
-                        Permission.MASTER_DATA_MANAGE,
                         Permission.USER_MANAGE,
                         Permission.SETTINGS_MANAGE,
-                        Permission.LOT_QUALITY_LOCK,
                         Permission.AUDIT_VIEW);
     }
 

@@ -3,14 +3,7 @@ import type { CurrentUser, Permission, Role } from '@iplik/api-client';
 /** Yetkilendirme analizi rol-izin matrisinin sahte API karşılığı ("kendi" kısıtı backend'dedir). */
 const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
   // Yönetici yalnızca sistemi yönetir; sevkiyat, kanıt, uyuşmazlık, rapor ve stok ekranlarını görmez.
-  ADMIN: [
-    'MASTER_DATA_VIEW',
-    'MASTER_DATA_MANAGE',
-    'USER_MANAGE',
-    'SETTINGS_MANAGE',
-    'LOT_QUALITY_LOCK',
-    'AUDIT_VIEW',
-  ],
+  ADMIN: ['MASTER_DATA_VIEW', 'USER_MANAGE', 'SETTINGS_MANAGE', 'AUDIT_VIEW'],
   WAREHOUSE: [
     'MASTER_DATA_VIEW',
     'SHIPMENT_VIEW',
@@ -41,6 +34,8 @@ const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> = {
   ],
   MANAGER: [
     'MASTER_DATA_VIEW',
+    'MASTER_DATA_MANAGE',
+    'LOT_QUALITY_LOCK',
     'SHIPMENT_VIEW',
     'SHIPMENT_CREATE',
     'SHIPMENT_CANCEL',

@@ -90,7 +90,7 @@ class LotManagementControllerTest {
     void shouldRejectMissingField() {
         String withoutDate = BODY.replace(",\"productionDate\":\"2026-10-10\"", "");
 
-        assertThat(exchange(mvc.post().uri(URI).header("Idempotency-Key", KEY), "admin", withoutDate))
+        assertThat(exchange(mvc.post().uri(URI).header("Idempotency-Key", KEY), "manager", withoutDate))
                 .hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(create);
     }
@@ -104,8 +104,8 @@ class LotManagementControllerTest {
         when(lock.lockLotQuality(any(), eq(locked))).thenThrow(new LotQualityLockedException(locked));
 
         // when
-        MvcTestResult ok = exchange(mvc.post().uri(URI + "/" + LOT + "/quality-lock"), "admin", null);
-        MvcTestResult conflict = exchange(mvc.post().uri(URI + "/" + locked + "/quality-lock"), "admin", null);
+        MvcTestResult ok = exchange(mvc.post().uri(URI + "/" + LOT + "/quality-lock"), "manager", null);
+        MvcTestResult conflict = exchange(mvc.post().uri(URI + "/" + locked + "/quality-lock"), "manager", null);
 
         // then
         assertThat(ok).hasStatusOk();

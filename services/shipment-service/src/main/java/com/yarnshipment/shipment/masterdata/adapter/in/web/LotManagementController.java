@@ -18,7 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Parti ve kalite kilidi uçları; LOT_QUALITY_LOCK yetkisi olan kalite kullanıcısı ve yönetici. Lokasyon kapsamı
+ * Parti ve kalite kilidi uçları; LOT_QUALITY_LOCK yetkisi olan kalite kullanıcısı ve müdür. Lokasyon kapsamı
  * serviste denetlenir (SEC-02: final değildir).
  */
 @RestController

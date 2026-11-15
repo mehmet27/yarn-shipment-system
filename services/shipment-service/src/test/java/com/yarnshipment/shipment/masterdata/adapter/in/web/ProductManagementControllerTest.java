@@ -60,7 +60,7 @@ class ProductManagementControllerTest {
                 .thenReturn(new Product(ID, "PES-30-1", new ProductDetails("Polyester 30/1", "Ne 30/1"), true));
 
         // when
-        MvcTestResult result = post(TestTokens.token("admin").build(), BODY);
+        MvcTestResult result = post(TestTokens.token("manager").build(), BODY);
 
         // then
         assertThat(result).hasStatus(HttpStatus.CREATED);
@@ -80,7 +80,7 @@ class ProductManagementControllerTest {
     void shouldMapDuplicateCode() {
         when(create.createProduct(any(), any(), any())).thenThrow(new DuplicateCodeException("code", "PES-30-1"));
 
-        MvcTestResult result = post(TestTokens.token("admin").build(), BODY);
+        MvcTestResult result = post(TestTokens.token("manager").build(), BODY);
 
         assertThat(result).hasStatus(HttpStatus.CONFLICT);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("DUPLICATE_CODE");

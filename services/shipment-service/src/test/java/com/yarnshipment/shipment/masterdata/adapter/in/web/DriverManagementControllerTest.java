@@ -61,7 +61,7 @@ class DriverManagementControllerTest {
         when(createDriver.createDriver(any(), any())).thenThrow(new InvalidMasterDataException("fullName", "blank"));
 
         // when
-        MvcTestResult result = post(admin(), DRIVERS, "{\"fullName\": \"  \"}");
+        MvcTestResult result = post(manager(), DRIVERS, "{\"fullName\": \"  \"}");
 
         // then
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
@@ -81,8 +81,8 @@ class DriverManagementControllerTest {
         String body = "{\"fullName\": \"Ali Yılmaz\", \"subcontractorId\": \"" + ID + "\"}";
 
         // when
-        MvcTestResult created = post(admin(), DRIVERS, body);
-        MvcTestResult updated = send(mvc.put().uri(DRIVERS + "/" + driverId), admin(), body);
+        MvcTestResult created = post(manager(), DRIVERS, body);
+        MvcTestResult updated = send(mvc.put().uri(DRIVERS + "/" + driverId), manager(), body);
 
         // then
         assertThat(created).hasStatus(HttpStatus.CREATED);
@@ -100,7 +100,7 @@ class DriverManagementControllerTest {
                 .changeDriverStatus(any(), eq(ID), eq(MasterDataStatus.INACTIVE));
 
         // when
-        MvcTestResult result = send(mvc.post().uri(DRIVERS + "/" + ID + "/deactivate"), admin(), null);
+        MvcTestResult result = send(mvc.post().uri(DRIVERS + "/" + ID + "/deactivate"), manager(), null);
 
         // then
         assertThat(result).hasStatus(HttpStatus.NOT_FOUND);
@@ -110,8 +110,8 @@ class DriverManagementControllerTest {
     @DisplayName("Şoför rolü 403 alır; pasife alma ve etkinleştirme 204 döner")
     void shouldForbidDriverRoleAndToggleStatus() throws Exception {
         MvcTestResult forbidden = post(TestTokens.token("offline_access").build(), DRIVERS, "{\"fullName\": \"X\"}");
-        MvcTestResult off = send(mvc.post().uri(DRIVERS + "/" + ID + "/deactivate"), admin(), null);
-        MvcTestResult on = send(mvc.post().uri(DRIVERS + "/" + ID + "/activate"), admin(), null);
+        MvcTestResult off = send(mvc.post().uri(DRIVERS + "/" + ID + "/deactivate"), manager(), null);
+        MvcTestResult on = send(mvc.post().uri(DRIVERS + "/" + ID + "/activate"), manager(), null);
 
         assertThat(forbidden).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(off).hasStatus(HttpStatus.NO_CONTENT);
@@ -121,8 +121,8 @@ class DriverManagementControllerTest {
         verify(driverStatus).changeDriverStatus(any(), eq(ID), eq(MasterDataStatus.ACTIVE));
     }
 
-    private static Jwt admin() {
-        return TestTokens.token("admin").build();
+    private static Jwt manager() {
+        return TestTokens.token("manager").build();
     }
 
     private MvcTestResult post(Jwt jwt, String uri, String body) {

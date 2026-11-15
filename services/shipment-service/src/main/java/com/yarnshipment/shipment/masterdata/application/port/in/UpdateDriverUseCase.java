@@ -5,7 +5,7 @@ import com.yarnshipment.shipment.masterdata.domain.model.Driver;
 import com.yarnshipment.shipment.masterdata.domain.model.DriverDetails;
 import java.util.UUID;
 
-/** Ana veri yönetimi: UpdateDriver. Yalnızca MASTER_DATA_MANAGE yetkisi olan yönetici çağırır. */
+/** Ana veri yönetimi: UpdateDriver. Yalnızca MASTER_DATA_MANAGE yetkisi olan müdür çağırır. */
 public interface UpdateDriverUseCase {
 
     Driver updateDriver(Actor actor, UUID id, DriverDetails details);

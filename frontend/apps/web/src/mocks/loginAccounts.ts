@@ -104,13 +104,30 @@ export function setMockLoginAccountEnabled(id: string, enabled: boolean): boolea
   return true;
 }
 
-/** Yeni geçici şifre verilince hesap ilk giriş bekleyen olur; bulunamazsa `false` döner. */
+/** Şifre talebi kapanır: `passwordRequestedAt` alanı hiç yer almaz. */
+function withoutRequest(account: LoginAccountView): LoginAccountView {
+  const copy = { ...account };
+  delete copy.passwordRequestedAt;
+  return copy;
+}
+
+/** Yeni geçici şifre verilince hesap ilk giriş bekleyen olur ve şifre talebi kapanır; bulunamazsa `false` döner. */
 export function setMockLoginAccountPassword(id: string): boolean {
   if (!accounts.some((candidate) => candidate.id === id)) return false;
-  accounts = accounts.map((candidate) =>
-    candidate.id === id ? { ...candidate, passwordChangeRequired: true } : candidate,
-  );
+  accounts = accounts.map((candidate) => {
+    if (candidate.id !== id) return candidate;
+    return { ...withoutRequest(candidate), passwordChangeRequired: true };
+  });
   return true;
+}
+
+/** Hesap sahibi adminden şifre ister (giriş adına göre); olmayan ya da kapalı hesap sessizce yok sayılır. */
+export function requestMockPassword(username: string): void {
+  accounts = accounts.map((candidate) =>
+    candidate.username === username.trim() && candidate.enabled
+      ? { ...candidate, passwordRequestedAt: new Date().toISOString() }
+      : candidate,
+  );
 }
 
 /** Ad soyadı değiştirir; bulunamazsa `false` döner. */

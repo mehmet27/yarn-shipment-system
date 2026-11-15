@@ -23,6 +23,12 @@ public interface AuthUserPort {
     /** Başarılı girişi yazar: sayaç ve kilit sıfırlanır. */
     void recordSuccessfulLogin(UUID userId, Instant now);
 
+    /**
+     * Hesap sahibinin adminden şifre talebini yazar; yalnızca açık hesapta, en az {@code minFailedAttempts} hatalı
+     * giriş sayılmışsa ya da hesap kilitliyse. Koşul sağlanmazsa hiçbir şey yazılmaz (sessizce).
+     */
+    void requestPassword(String username, int minFailedAttempts, Instant now);
+
     /** Kişinin kendi seçtiği şifre özetini yazar; zorunlu şifre değiştirme bayrağı kalkar. */
     void replacePasswordHash(UUID userId, String passwordHash, Instant now);
 }

@@ -2,6 +2,7 @@ package com.yarnshipment.shipment.masterdata.application.service;
 
 import com.yarnshipment.shipment.masterdata.application.port.in.auth.AuthenticateUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.auth.ChangeOwnPasswordUseCase;
+import com.yarnshipment.shipment.masterdata.application.port.in.auth.RequestPasswordUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.out.AuthUserPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.PasswordHasherPort;
 import com.yarnshipment.shipment.masterdata.domain.model.AccountLockedException;
@@ -24,9 +25,11 @@ import org.springframework.stereotype.Service;
  * hesap {@value #LOCK_MINUTES} dakika kilitlenir. Sayaç tek SQL ifadesiyle güncellendiği için transaction açılmaz.
  */
 @Service
-public final class AuthenticationService implements AuthenticateUseCase, ChangeOwnPasswordUseCase {
+public final class AuthenticationService
+        implements AuthenticateUseCase, ChangeOwnPasswordUseCase, RequestPasswordUseCase {
 
     static final int MAX_FAILED_ATTEMPTS = 5;
+    static final int FAILED_ATTEMPTS_TO_REQUEST_PASSWORD = 3;
     static final long LOCK_MINUTES = 15;
     private static final Duration LOCK_DURATION = Duration.ofMinutes(LOCK_MINUTES);
 
@@ -59,6 +62,11 @@ public final class AuthenticationService implements AuthenticateUseCase, ChangeO
         }
         users.recordSuccessfulLogin(user.id(), now);
         return SessionUser.of(user);
+    }
+
+    @Override
+    public void requestPassword(String username) {
+        users.requestPassword(username.strip(), FAILED_ATTEMPTS_TO_REQUEST_PASSWORD, clock.instant());
     }
 
     @Override

@@ -26,6 +26,42 @@ class AuthenticationServiceTest {
     private final AuthenticationService service = new AuthenticationService(users, hasher, clock);
 
     @Test
+    @DisplayName("Şifre talebi en az 3 hatalı girişten sonra ya da kilitliyken kaydedilir; yoksa sessizce yok sayılır")
+    void shouldRecordPasswordRequestOnlyAfterFailedAttempts() {
+        UUID id = users.add("depo");
+        UUID closed = users.add("kapali", false, null);
+        for (int i = 0; i < 2; i++) {
+            assertThatThrownBy(() -> service.authenticate("depo", "yanlis"))
+                    .isInstanceOf(AuthenticationFailedException.class);
+        }
+
+        service.requestPassword("depo");
+        assertThat(users.hasPasswordRequest(id)).isFalse();
+
+        assertThatThrownBy(() -> service.authenticate("depo", "yanlis"))
+                .isInstanceOf(AuthenticationFailedException.class);
+        service.requestPassword(" DEPO ");
+        service.requestPassword("yok");
+        service.requestPassword("kapali");
+
+        assertThat(users.hasPasswordRequest(id)).isTrue();
+        assertThat(users.hasPasswordRequest(closed)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Kilitli hesap şifre isteyebilir; başarılı giriş talebi kapatır")
+    void shouldAcceptRequestWhenLockedAndClearOnLogin() {
+        UUID id = users.add("depo", true, NOW.plus(LOCK));
+
+        service.requestPassword("depo");
+        assertThat(users.hasPasswordRequest(id)).isTrue();
+
+        clock.advance(LOCK.plusSeconds(1));
+        service.authenticate("depo", PASSWORD);
+        assertThat(users.hasPasswordRequest(id)).isFalse();
+    }
+
+    @Test
     @DisplayName("Doğru şifreyle giriş yapılır; kullanıcı adı büyük/küçük harf duyarsızdır")
     void shouldAuthenticate() {
         UUID id = users.add("depo");

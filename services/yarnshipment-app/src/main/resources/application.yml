@@ -54,11 +54,13 @@ yarnshipment:
       # Giriş sayfası da marka rengini okur; yazma ucu yöntem güvenliğiyle (SETTINGS_MANAGE) korunur.
       - /api/v1/branding
       - /api/v1/auth/login
+      - /api/v1/auth/password-requests
       # Yetki imzalı adresin kendisidir (kanıt dosyası yükleme/indirme).
       - /api/v1/evidence/files/**
     # Tarayıcı bu yollara çerezsiz ve CSRF belirteci olmadan PUT eder.
     csrf-ignored-paths:
       - /api/v1/evidence/files/**
+      - /api/v1/auth/password-requests
   events:
     # Modüller arası olaylar süreç içi iletilir (Kafka yok). Konu ve kaynak olay türünün önekinden gelir; denetim
     # kaydı bunlardan varlık türünü ve servis adını çıkarır (kaynak adları geçmiş kayıtlarla aynı kalır).

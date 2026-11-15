@@ -528,6 +528,8 @@ export interface LoginAccountView {
   enabled: boolean;
   /** Kişi geçici şifreyle açıldı, henüz kendi şifresini belirlemedi */
   passwordChangeRequired: boolean;
+  /** Hesap sahibi adminden şifre istedi; açık talep yoksa gelmez */
+  passwordRequestedAt?: string;
   createdAt?: string;
   workArea?: WorkArea;
 }
@@ -585,7 +587,17 @@ export interface LoginResponse {
   passwordChangeRequired: boolean;
 }
 
+export interface PasswordRequest {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  username: string;
+}
+
 export interface ChangeOwnPasswordRequest {
+  /** Doğruysa (varsayılan) kullanıcının diğer oturumları sonlandırılır; yanlışsa yalnızca şifre değişir */
+  terminateOtherSessions?: boolean;
   /**
      * @minLength 1
      * @maxLength 128
@@ -1329,6 +1341,23 @@ export const login = (
       {url: `/api/v1/auth/login`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: loginRequest
+    },
+      );
+    }
+
+/**
+ * Giriş yapmamış kişi içindir. Talep yalnızca hesapta art arda en az 3 hatalı giriş varsa (ya da hesap kilitliyse)
+ * kaydedilir ve yöneticinin Kullanıcılar ekranında görünür; yönetici geçici şifre verince kapanır. Cevap her
+ * durumda 204'tür: hesabın var olup olmadığı ya da koşulun sağlanıp sağlanmadığı söylenmez.
+ * @summary Hesap sahibi adminden şifre ister
+ */
+export const requestPassword = (
+    passwordRequest: PasswordRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/auth/password-requests`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: passwordRequest
     },
       );
     }
@@ -2358,6 +2387,7 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 
 export type GetCurrentUserResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
 export type LoginResult = NonNullable<Awaited<ReturnType<typeof login>>>
+export type RequestPasswordResult = NonNullable<Awaited<ReturnType<typeof requestPassword>>>
 export type LogoutResult = NonNullable<Awaited<ReturnType<typeof logout>>>
 export type ChangeOwnPasswordResult = NonNullable<Awaited<ReturnType<typeof changeOwnPassword>>>
 export type CreateShipmentResult = NonNullable<Awaited<ReturnType<typeof createShipment>>>

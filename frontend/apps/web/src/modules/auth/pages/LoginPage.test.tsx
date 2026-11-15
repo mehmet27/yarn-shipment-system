@@ -32,7 +32,50 @@ async function fillAndSubmit() {
   await userEvent.click(screen.getByRole('button', { name: 'Giriş yap' }));
 }
 
+const failedLogin = () =>
+  http.post('/api/v1/auth/login', () =>
+    HttpResponse.json({ code: 'AUTHENTICATION_FAILED', status: 401 }, { status: 401 }),
+  );
+
 describe('LoginPage', () => {
+  it('üçüncü hatalı denemede adminden şifre talep edilebilir; ilk ikisinde öneri yoktur', async () => {
+    let requested = '';
+    server.use(
+      failedLogin(),
+      http.post('/api/v1/auth/password-requests', async ({ request }) => {
+        requested = ((await request.json()) as { username: string }).username;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    renderPage();
+    await fillAndSubmit();
+    await screen.findByText('Kullanıcı adı ya da şifre hatalı.');
+    expect(
+      screen.queryByRole('button', { name: 'Adminden şifre talep et' }),
+    ).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Giriş yap' }));
+    await userEvent.type(screen.getByLabelText(/Şifre/), 'baska');
+    await userEvent.click(screen.getByRole('button', { name: 'Giriş yap' }));
+    await userEvent.type(screen.getByLabelText(/Şifre/), 'baska');
+    await userEvent.click(screen.getByRole('button', { name: 'Giriş yap' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Adminden şifre talep et' }));
+    expect(await screen.findByText(/Talebiniz yöneticiye iletildi/)).toBeInTheDocument();
+    expect(requested).toBe('depo');
+  });
+
+  it('hesap kilitlenince de şifre talebi önerilir', async () => {
+    server.use(
+      http.post('/api/v1/auth/login', () =>
+        HttpResponse.json({ code: 'ACCOUNT_LOCKED', status: 423 }, { status: 423 }),
+      ),
+    );
+    renderPage();
+    await fillAndSubmit();
+    expect(
+      await screen.findByRole('button', { name: 'Adminden şifre talep et' }),
+    ).toBeInTheDocument();
+  });
+
   it('girişten sonra geldiği sayfaya döner', async () => {
     server.use(
       http.post('/api/v1/auth/login', () => HttpResponse.json({ passwordChangeRequired: false })),

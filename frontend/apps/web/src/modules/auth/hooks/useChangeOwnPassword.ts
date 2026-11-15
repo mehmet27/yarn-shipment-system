@@ -11,10 +11,14 @@ export function useChangeOwnPassword() {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<unknown>(undefined);
 
-  const submit = (currentPassword: string, newPassword: string) => {
+  const submit = (
+    currentPassword: string,
+    newPassword: string,
+    terminateOtherSessions: boolean,
+  ) => {
     setIsPending(true);
     setError(undefined);
-    changeOwnPassword({ currentPassword, newPassword })
+    changeOwnPassword({ currentPassword, newPassword, terminateOtherSessions })
       .then(async () => {
         await queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
         void navigate('/', { replace: true });

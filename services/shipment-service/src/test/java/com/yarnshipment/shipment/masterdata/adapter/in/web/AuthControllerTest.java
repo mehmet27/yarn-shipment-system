@@ -3,11 +3,13 @@ package com.yarnshipment.shipment.masterdata.adapter.in.web;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.yarnshipment.common.security.ActorAuthenticationToken;
 import com.yarnshipment.common.security.Role;
+import com.yarnshipment.common.security.session.SessionTerminator;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.masterdata.application.port.in.auth.AuthenticateUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.auth.ChangeOwnPasswordUseCase;
@@ -51,6 +53,9 @@ class AuthControllerTest {
 
     @MockitoBean
     private ChangeOwnPasswordUseCase changePassword;
+
+    @MockitoBean
+    private SessionTerminator terminator;
 
     @Autowired
     AuthControllerTest(MockMvcTester mvc) {
@@ -154,6 +159,22 @@ class AuthControllerTest {
         assertThat(anonymous).hasStatus(HttpStatus.UNAUTHORIZED);
         assertThat(signedIn).hasStatus(HttpStatus.NO_CONTENT);
         verify(changePassword).changeOwnPassword(USER_ID, "Sifre-12345", "Yeni-Sifre-678");
+    }
+
+    @Test
+    @DisplayName("Şifre değişince diğer oturumlar varsayılan olarak kapanır; kutu kapalıysa kapanmaz")
+    void shouldTerminateOtherSessionsOnlyWhenAsked() {
+        when(changePassword.changeOwnPassword(eq(USER_ID), any(), any())).thenReturn(sessionUser(false));
+        String base = "\"currentPassword\":\"Sifre-12345\",\"newPassword\":\"Yeni-Sifre-678\"";
+
+        putPassword("{" + base + "}", sessionOf("warehouse"));
+        verify(terminator).terminateOthers(eq(USER_ID), any());
+
+        putPassword("{" + base + ",\"terminateOtherSessions\":false}", sessionOf("warehouse"));
+        verify(terminator, times(1)).terminateOthers(eq(USER_ID), any());
+
+        putPassword("{" + base + ",\"terminateOtherSessions\":true}", sessionOf("warehouse"));
+        verify(terminator, times(2)).terminateOthers(eq(USER_ID), any());
     }
 
     @Test

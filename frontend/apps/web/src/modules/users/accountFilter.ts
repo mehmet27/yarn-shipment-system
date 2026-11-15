@@ -1,6 +1,6 @@
 import type { LoginAccountView } from '@iplik/api-client';
 
-export type StatusFilter = 'ALL' | 'ENABLED' | 'DISABLED' | 'PENDING';
+export type StatusFilter = 'ALL' | 'ENABLED' | 'DISABLED' | 'PENDING' | 'REQUESTED';
 export type AccountFilter = { status: StatusFilter; role: string | null };
 
 export const NO_FILTER: AccountFilter = { status: 'ALL', role: null };
@@ -23,6 +23,8 @@ export function applyFilter(
         return !account.enabled;
       case 'PENDING':
         return account.passwordChangeRequired;
+      case 'REQUESTED':
+        return account.passwordRequestedAt !== undefined;
       case 'ALL':
         return true;
     }

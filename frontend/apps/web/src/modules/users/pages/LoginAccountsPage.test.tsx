@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
+import { requestMockPassword } from '@/mocks/loginAccounts';
 import { server } from '@/mocks/server';
 import { renderApp } from '@/test/renderApp';
 
@@ -11,6 +12,40 @@ const PATH = '/api/v1/master-data/login-accounts';
 describe('Kullanıcılar ekranı', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it('şifre isteyen hesap üstte uyarıyla ve satırda rozetle görünür; Göster süzgeci o hesaba daraltır', async () => {
+    requestMockPassword('depo');
+    renderApp('/panel/kullanicilar');
+    expect(await screen.findByText('1 kullanıcı şifre istedi')).toBeInTheDocument();
+    const table = await screen.findByRole('table');
+    const row = within(table)
+      .getAllByRole('row')
+      .find((candidate) => within(candidate).queryByText('Depo Sorumlusu') !== null);
+    expect(row).toBeDefined();
+    if (row === undefined) return;
+    expect(within(row).getByText('Şifre istedi')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Göster' }));
+    await waitFor(() => {
+      expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(2);
+    });
+  });
+
+  it('yönetici geçici şifre verince şifre talebi kapanır', async () => {
+    requestMockPassword('depo');
+    renderApp('/panel/kullanicilar');
+    await screen.findByText('1 kullanıcı şifre istedi');
+    await userEvent.click(screen.getByRole('button', { name: 'depo için diğer işlemler' }));
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'depo için yeni şifre ver' }),
+    );
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.type(within(dialog).getByLabelText(/İlk şifre/), 'Gecici-Sifre-1');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Şifreyi kaydet' }));
+    await waitFor(() => {
+      expect(screen.queryByText('1 kullanıcı şifre istedi')).not.toBeInTheDocument();
+    });
   });
 
   it('yönetici giriş hesaplarını kullanıcı adı, rol ve durumla görür; şifre gösterilmez', async () => {

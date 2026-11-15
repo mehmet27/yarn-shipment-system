@@ -19,9 +19,11 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -52,7 +54,9 @@ public final class YarnShipmentSecurityConfiguration {
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionFixation(fixation -> fixation.changeSessionId())
                         .maximumSessions(-1)
-                        .sessionRegistry(sessionRegistry))
+                        .sessionRegistry(sessionRegistry)
+                        // Sonlandırılan oturumun sahibi açıkça 401 alır (varsayılan: 200 ve düz metin).
+                        .expiredSessionStrategy(expiredSessionStrategy(problems)))
                 .authorizeHttpRequests(requests -> requests.dispatcherTypeMatchers(DispatcherType.ERROR)
                         .permitAll()
                         .requestMatchers(publicPaths)
@@ -71,6 +75,11 @@ public final class YarnShipmentSecurityConfiguration {
             http.csrf(AbstractHttpConfigurer::disable);
         }
         return http.build();
+    }
+
+    private static SessionInformationExpiredStrategy expiredSessionStrategy(SecurityProblemResponses problems) {
+        return event -> problems.commence(
+                event.getRequest(), event.getResponse(), new SessionAuthenticationException("Session expired"));
     }
 
     private static String[] csrfIgnoredPaths(SecurityProperties properties) {

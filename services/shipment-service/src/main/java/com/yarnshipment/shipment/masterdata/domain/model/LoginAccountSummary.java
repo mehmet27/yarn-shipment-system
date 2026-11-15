@@ -17,6 +17,7 @@ import org.jspecify.annotations.Nullable;
  * @param passwordChangeRequired kişi geçici şifreyle açıldı, henüz kendi şifresini belirlemedi
  * @param createdAt hesabın açıldığı an
  * @param workArea kalite rolündeki kullanıcının çalışma alanı; başka rolde ya da kayıt yoksa boş
+ * @param passwordRequestedAt hesap sahibinin adminden şifre istediği an; açık talep yoksa boş
  */
 public record LoginAccountSummary(
         String id,
@@ -26,7 +27,8 @@ public record LoginAccountSummary(
         boolean enabled,
         boolean passwordChangeRequired,
         @Nullable Instant createdAt,
-        @Nullable StaffWorkArea workArea) {
+        @Nullable StaffWorkArea workArea,
+        @Nullable Instant passwordRequestedAt) {
 
     public LoginAccountSummary {
         Objects.requireNonNull(id, "id");
@@ -42,11 +44,12 @@ public record LoginAccountSummary(
             boolean enabled,
             boolean passwordChangeRequired,
             @Nullable Instant createdAt) {
-        this(id, username, fullName, roles, enabled, passwordChangeRequired, createdAt, null);
+        this(id, username, fullName, roles, enabled, passwordChangeRequired, createdAt, null, null);
     }
 
     public LoginAccountSummary withWorkArea(@Nullable StaffWorkArea area) {
-        return new LoginAccountSummary(id, username, fullName, roles, enabled, passwordChangeRequired, createdAt, area);
+        return new LoginAccountSummary(
+                id, username, fullName, roles, enabled, passwordChangeRequired, createdAt, area, passwordRequestedAt);
     }
 
     /** Giriş adı ya da ad içinde büyük-küçük harf duyarsız arar. */

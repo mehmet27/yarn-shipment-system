@@ -45,6 +45,24 @@ describe('ChangePasswordPage', () => {
     expect(await screen.findByText('ana sayfa')).toBeInTheDocument();
   });
 
+  it('diğer oturumları kapat kutusu varsayılan açıktır ve seçim sunucuya iletilir', async () => {
+    const bodies: { terminateOtherSessions?: boolean }[] = [];
+    server.use(
+      http.put('/api/v1/auth/password', async ({ request }) => {
+        bodies.push((await request.json()) as { terminateOtherSessions?: boolean });
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    renderPage(false);
+    const option = screen.getByRole('checkbox', { name: /Diğer oturumlarımı kapat/ });
+    expect(option).toBeChecked();
+    await fill('eski-sifre', 'yeni-sifre-1', 'yeni-sifre-1');
+    await userEvent.click(option);
+    await userEvent.click(screen.getByRole('button', { name: 'Şifreyi değiştir' }));
+    await screen.findByText('ana sayfa');
+    expect(bodies).toEqual([expect.objectContaining({ terminateOtherSessions: false })]);
+  });
+
   it('yeni şifreler aynı değilse uyarır ve göndermez', async () => {
     renderPage(false);
     await fill('eski-sifre', 'yeni-sifre-1', 'yeni-sifre-2');

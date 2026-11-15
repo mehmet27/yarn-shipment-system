@@ -53,7 +53,7 @@ pnpm test:e2e --trace on                 # adım adım iz kaydı (rapordan açı
 1. İskeleti üretin (`frontend` klasöründe):
 
    ```bash
-   pnpm test:e2e:yeni-ekran raporlar ADMIN /panel/raporlar "Raporlar"
+   pnpm test:e2e:yeni-ekran raporlar MANAGER /panel/raporlar "Raporlar"
    ```
 
    Bu komut `screens/raporlar.e2e.ts` dosyasını açar ve ekranı `screens.ts` listesine ekler. Ekran

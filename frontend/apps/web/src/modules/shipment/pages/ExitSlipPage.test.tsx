@@ -1,8 +1,14 @@
 import { screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { createHandlers } from '@/mocks/handlers';
+import { server } from '@/mocks/server';
 import { renderApp } from '@/test/renderApp';
 
 describe('ExitSlipPage', () => {
+  beforeEach(() => {
+    server.use(...createHandlers('MANAGER'));
+  });
+
   it('çuvalları sıra no ve kg olarak toplamıyla gösterir', async () => {
     renderApp('/panel/sevkiyat/shp-0007/ambar-cikis-fisi');
     expect(await screen.findByRole('heading', { name: 'Ambar Çıkış Fişi' })).toBeInTheDocument();

@@ -97,6 +97,11 @@ yalnızca `admin` şifresi (`kullanicilar.local.json` ya da `ROBOT_SIFRE`) doğr
 Robotun iş kuralı bilgisi senaryolardan ayrıdır: `kurallar/yetki.ts` (hangi rol hangi ekranı açar) ve `kurallar/hesap.ts` (fire formülü, stok düşümü,
 kilo ve irsaliye sınırları). Kural değişince (yeni rol, yeni formül, yeni sınır) yalnızca bu dosyalar güncellenir.
 
+**Roller ve işler:** `admin` yalnızca sistemi yönetir (kullanıcılar, tanımlar, partiler, görünüm ayarları ve denetim kaydı); sevkiyat, uyuşmazlık,
+rapor, bakiye ve merkez stok ekranlarını göremez (API'den de 403). Çıkış tartısı düzeltme ve kanıt geçersiz kılma **müdür**dedir; uyuşmazlığı
+yalnızca **kalite** karara bağlar. İş senaryolarında bu işler bu rollerle yapılır; yönetici yalnızca sistem senaryolarında (`06`, `07`, `08-gorunum`,
+`14` yönetici bölümü) ve denetim kaydını okurken (`10`, müdürle) görünür.
+
 ## Kapsam kaydı (kimse unutulmasın)
 
 Gezgin (`05`) veri değiştirmeyen her şeye kendisi tıklar. **Veri değiştiren bir düğme** (kaydet, sil, iptal, pasife al,

@@ -85,7 +85,7 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
   });
 
   it('tamamlanmamış sevkiyatta fasoncu sekmeleri görünmez', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/shp-0001');
     await screen.findByRole('tab', { name: 'Kilolar' });
     expect(screen.queryByRole('tab', { name: 'Fire dosyası' })).not.toBeInTheDocument();

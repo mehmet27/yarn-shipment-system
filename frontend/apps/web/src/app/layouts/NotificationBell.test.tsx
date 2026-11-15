@@ -25,7 +25,7 @@ function renderBell() {
 describe('NotificationBell', () => {
   it('açık uyuşmazlık sayısını rozet olarak gösterir', async () => {
     server.use(
-      http.get(ME_PATH, () => HttpResponse.json(createMockUser('ADMIN'))),
+      http.get(ME_PATH, () => HttpResponse.json(createMockUser('MANAGER'))),
       http.get(DISCREPANCIES_PATH, () =>
         HttpResponse.json({
           items: [],

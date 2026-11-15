@@ -20,7 +20,15 @@ export const EKRANLAR = [
 
 /** İzinli ekranlar; listede olmayan her ekran için 403 beklenir. */
 export const IZINLI: Record<string, readonly string[]> = {
-  admin: EKRANLAR.filter((e) => e !== '/panel/faturalanacaklar'),
+  // Yönetici yalnızca sistemi yönetir: iş ekranlarını (sevkiyat, uyuşmazlık, rapor, bakiye, stok) hiç görmez.
+  admin: [
+    '/panel',
+    '/panel/tanimlar',
+    '/panel/partiler',
+    '/panel/kullanicilar',
+    '/panel/denetim',
+    '/panel/gorunum',
+  ],
   depo: ['/panel', '/panel/sevkiyat', '/panel/merkez-stok'],
   kalite: [
     '/panel',

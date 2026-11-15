@@ -7,7 +7,7 @@ import { renderApp } from '@/test/renderApp';
 
 describe('Sevkiyat dosyası sekmeleri', () => {
   it('Geçmiş sekmesi durum geçişlerini eskiden yeniye listeler', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/shp-0003');
     await userEvent.click(await screen.findByRole('tab', { name: 'Geçmiş' }));
     expect(await screen.findByText('Taslak → Fasoncuya yolda')).toBeInTheDocument();

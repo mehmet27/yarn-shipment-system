@@ -84,6 +84,7 @@ Rol, izin ve claim adları koddaki adlarla aynıdır ve İngilizcedir (kod stand
 - Süreç analizi v2 (A3): `SHIPMENT_CREATE` Depo'dan alındı, yalnız Müdür ve Admin sevkiyat açar; Depo yalnız `DISPATCH_RECORD` ile çıkış tartısı girer.
 - Süreç analizi v2, 3.3: `GENERAL_MANAGER` (yalnız `REPORT_VIEW`, `BALANCE_VIEW`) ve yeni izinler eklendi: `FABRIC_RECEIPT_RECORD` (Kalite, Müdür), `YARN_RETURN_RECORD` (Depo, Müdür), `FIRE_RATE_EDIT`, `INVOICE_MARK`, `WEIGHT_MISMATCH_RESOLVE` (Müdür), `BALANCE_VIEW` (Müdür, Genel müdür, Kalite, Admin).
 - `SHIPMENT_CREATE` Admin'e de verildi, çünkü süreç tablosunda (7.1, adım 1) sorumlu "Depo / Admin".
+- **14.11.2026 güncellemesi (bu maddeler yukarıdaki Admin satırlarının yerine geçer):** Admin yalnızca sistemi yönetir; izinleri `MASTER_DATA_VIEW`, `MASTER_DATA_MANAGE`, `USER_MANAGE`, `SETTINGS_MANAGE`, `LOT_QUALITY_LOCK`, `AUDIT_VIEW`. Sevkiyat, kanıt, uyuşmazlık, rapor, bakiye ve merkez stok izinleri Admin'den alındı; bu ekranları görmez, API'den de 403 alır. Gerekçeli düzeltme kaydı (`CORRECTION_CREATE`) ve kanıt geçersiz kılma (`EVIDENCE_INVALIDATE`) Müdür'e geçti; uyuşmazlığı yalnızca Kalite karara bağlar. Matris `RolePermissionMatrix`, testi `RolePermissionMatrixTest`'tir.
 - Kanıt görüntüleme kör girişe bağlandı: çıkış kantar fotoğrafı kiloyu gösterdiği için fasoncu onu karşılaştırmadan önce göremez; depo da teslim kantar fotoğrafını göremez.
 - Yönetici hiçbir yazma izni almaz; kodda bunu doğrulayan bir test olacak. Şoför çıkış kilosunu görmez, yalnız çuval sayısı ve mühür numarasını görür (Y1).
 

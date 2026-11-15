@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 class RolePermissionMatrixTest {
 
     @Test
-    @DisplayName("Müdürün yazma izinleri sevkiyat yaşam döngüsü, kumaş/iplik girişi, fire, fatura ve tartı kararıdır")
+    @DisplayName("Müdürün yazma izinleri: sevkiyat, giriş kayıtları, fire, fatura, tartı, düzeltme, kanıt")
     void shouldLimitManagerWrites() {
         // when
         Set<Permission> permissions = RolePermissionMatrix.permissionsOf(List.of(Role.MANAGER));
@@ -25,6 +25,8 @@ class RolePermissionMatrixTest {
                         Permission.SHIPMENT_CANCEL,
                         Permission.SHIPMENT_COMPLETE,
                         Permission.EVIDENCE_UPLOAD_CLAIM,
+                        Permission.EVIDENCE_INVALIDATE,
+                        Permission.CORRECTION_CREATE,
                         Permission.QUALITY_CLAIM_OPEN,
                         Permission.FABRIC_RECEIPT_RECORD,
                         Permission.YARN_RETURN_RECORD,
@@ -42,41 +44,53 @@ class RolePermissionMatrixTest {
     }
 
     @Test
-    @DisplayName("Sevkiyatı yalnızca müdür ve admin açar; depo açamaz")
+    @DisplayName("Sevkiyatı yalnızca müdür açar; depo ve admin açamaz")
     void shouldNotAllowWarehouseToCreateShipments() {
-        assertThat(rolesHaving(Permission.SHIPMENT_CREATE)).containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER);
+        assertThat(rolesHaving(Permission.SHIPMENT_CREATE)).containsExactly(Role.MANAGER);
         assertThat(rolesHaving(Permission.BALANCE_VIEW))
-                .containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER, Role.QUALITY, Role.GENERAL_MANAGER);
+                .containsExactlyInAnyOrder(Role.MANAGER, Role.QUALITY, Role.GENERAL_MANAGER);
     }
 
     @Test
     @DisplayName("Merkez stoğa iplik girişini depo, kumaş girişini kalite yapar; müdür yalnız stoğu görür")
     void shouldSplitCentralStockPermissions() {
-        assertThat(rolesHaving(Permission.CENTRAL_STOCK_RECORD)).containsExactlyInAnyOrder(Role.ADMIN, Role.WAREHOUSE);
-        assertThat(rolesHaving(Permission.CENTRAL_PRODUCTION_RECORD))
-                .containsExactlyInAnyOrder(Role.ADMIN, Role.QUALITY);
+        assertThat(rolesHaving(Permission.CENTRAL_STOCK_RECORD)).containsExactly(Role.WAREHOUSE);
+        assertThat(rolesHaving(Permission.CENTRAL_PRODUCTION_RECORD)).containsExactly(Role.QUALITY);
         assertThat(rolesHaving(Permission.CENTRAL_STOCK_VIEW))
-                .containsExactlyInAnyOrder(Role.ADMIN, Role.WAREHOUSE, Role.QUALITY, Role.MANAGER);
+                .containsExactlyInAnyOrder(Role.WAREHOUSE, Role.QUALITY, Role.MANAGER);
     }
 
     @Test
-    @DisplayName("Uyuşmazlığı yalnızca admin ve kalite kapatır")
-    void shouldAllowOnlyAdminAndQualityToResolveDiscrepancy() {
+    @DisplayName("Uyuşmazlığı yalnızca kalite kapatır")
+    void shouldAllowOnlyQualityToResolveDiscrepancy() {
         // when
         List<Role> resolvers = rolesHaving(Permission.DISCREPANCY_RESOLVE);
 
         // then
-        assertThat(resolvers).containsExactlyInAnyOrder(Role.ADMIN, Role.QUALITY);
+        assertThat(resolvers).containsExactly(Role.QUALITY);
     }
 
     @Test
-    @DisplayName("Çıkış tartısını yalnızca depo girer; sevkiyatı müdür ve admin tamamlar")
+    @DisplayName("Çıkış tartısını yalnızca depo girer; sevkiyatı müdür tamamlar")
     void shouldSeparateDispatchAndCompletion() {
         // when / then
         assertThat(rolesHaving(Permission.DISPATCH_RECORD)).containsExactly(Role.WAREHOUSE);
-        assertThat(rolesHaving(Permission.SHIPMENT_COMPLETE)).containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER);
-        // A3: depo sevkiyat açamaz; yalnızca müdür ve admin açar.
-        assertThat(rolesHaving(Permission.SHIPMENT_CREATE)).containsExactlyInAnyOrder(Role.ADMIN, Role.MANAGER);
+        assertThat(rolesHaving(Permission.SHIPMENT_COMPLETE)).containsExactly(Role.MANAGER);
+        // A3: depo sevkiyat açamaz; yalnızca müdür açar.
+        assertThat(rolesHaving(Permission.SHIPMENT_CREATE)).containsExactly(Role.MANAGER);
+    }
+
+    @Test
+    @DisplayName("Yönetici yalnızca sistem yönetimi izinlerine sahiptir; iş ekranlarını göremez")
+    void shouldLimitAdminToSystemAdministration() {
+        assertThat(RolePermissionMatrix.permissionsOf(List.of(Role.ADMIN)))
+                .containsExactlyInAnyOrder(
+                        Permission.MASTER_DATA_VIEW,
+                        Permission.MASTER_DATA_MANAGE,
+                        Permission.USER_MANAGE,
+                        Permission.SETTINGS_MANAGE,
+                        Permission.LOT_QUALITY_LOCK,
+                        Permission.AUDIT_VIEW);
     }
 
     @Test

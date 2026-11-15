@@ -21,6 +21,9 @@ test('Tanımlar: yönetici her tanım türünde ekler, düzenler ve pasife alır
   test.skip(!rolTanimli('admin'), 'admin için şifre tanımlı değil');
   const admin = await giris('admin');
   admin.beklenen(/4\d\d (POST|PUT|PATCH) \/api\/v1\/master-data/);
+  // Yönetici bakiye ekranını göremez; fasoncuyu pasife alırken bakiye sorgusu 403 döner ve ekran "bakiyesi kontrol
+  // edilemedi" uyarısıyla "Yine de pasife al" düğmesini gösterir (beklenen davranış).
+  admin.beklenen(/403 GET \/api\/v1\/balances/);
   const ek = damga().slice(-6);
   await admin.sayfa.goto('/panel/tanimlar');
   for (const t of TANIMLAR) {
@@ -61,7 +64,7 @@ test('Tanımlar: yönetici her tanım türünde ekler, düzenler ve pasife alır
       await admin.sayfa.waitForTimeout(800);
       const onay = admin.sayfa
         .getByRole('dialog')
-        .getByRole('button', { name: /Pasife al|Onayla|Evet/ });
+        .getByRole('button', { name: /pasife al|Onayla|Evet/i });
       if ((await onay.count()) > 0) await onay.first().click();
       await expect(admin.sayfa.getByText(yeni)).toHaveCount(0);
       // Pasifleri göster anahtarı kaydı geri getirir

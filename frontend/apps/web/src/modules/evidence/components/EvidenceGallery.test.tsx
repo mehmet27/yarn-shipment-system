@@ -54,8 +54,8 @@ describe('Kanıtlar sekmesi', () => {
 });
 
 describe('Kanıt geçersiz kılma', () => {
-  it('admin gerekçeyle geçersiz kılar, kanıt rozetle görünür', async () => {
-    server.use(...createHandlers('ADMIN'));
+  it('müdür gerekçeyle geçersiz kılar, kanıt rozetle görünür', async () => {
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/shp-0001');
     (await screen.findByRole('tab', { name: 'Kanıtlar' })).click();
     (await screen.findAllByRole('button', { name: 'Geçersiz kıl' }))[0]?.click();

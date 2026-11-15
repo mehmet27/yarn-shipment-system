@@ -1,8 +1,12 @@
+import { ME_PATH } from '@iplik/api-client';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
+import { createStockHandlers } from '@/mocks/stockHandlers';
 import { server } from '@/mocks/server';
+import { createMockUser } from '@/mocks/users';
 import { renderApp } from '@/test/renderApp';
 
 describe('Merkez iplik stoku', () => {
@@ -30,7 +34,17 @@ describe('Merkez iplik stoku', () => {
   });
 
   it('kalite kumaş girer; iplik fire ile stoktan düşer', async () => {
-    server.use(...createHandlers('ADMIN'));
+    // İplik girişi (depo) ile kumaş girişi (kalite) farklı rollerdedir; akışı tek ekranda denemek için iki izni de taşıyan sahte kullanıcı.
+    const quality = createMockUser('QUALITY');
+    const both = {
+      ...quality,
+      permissions: [...quality.permissions, 'CENTRAL_STOCK_RECORD' as const],
+    };
+    server.use(
+      http.get(ME_PATH, () => HttpResponse.json(both)),
+      ...createStockHandlers(both),
+      ...createHandlers('QUALITY'),
+    );
     const user = userEvent.setup();
     renderApp('/panel/merkez-stok');
     await user.click(await screen.findByRole('tab', { name: 'İplik girişi' }));

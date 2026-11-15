@@ -31,7 +31,7 @@ describe('Panel ana sayfası ve raporlar', () => {
   });
 
   it('dönem seçimi dashboard sorgusunu yeniler', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel');
     await screen.findByTestId('stat-total');
     await userEvent.click(screen.getByText('7 gün'));

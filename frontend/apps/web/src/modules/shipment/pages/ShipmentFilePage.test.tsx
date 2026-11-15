@@ -1,11 +1,15 @@
 import { getShipment } from '@iplik/api-client';
 import { screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
 import { renderApp } from '@/test/renderApp';
 
 describe('ShipmentFilePage', () => {
+  beforeEach(() => {
+    server.use(...createHandlers('MANAGER'));
+  });
+
   it('tamamlanan sevkiyatta çıkış tartısını ve irsaliye numarasını gösterir', async () => {
     renderApp('/panel/sevkiyat/shp-0007');
     expect(await screen.findByRole('heading', { name: 'SVK-2026-0007' })).toBeInTheDocument();

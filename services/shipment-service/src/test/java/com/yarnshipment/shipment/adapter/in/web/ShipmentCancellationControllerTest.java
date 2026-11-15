@@ -46,9 +46,9 @@ class ShipmentCancellationControllerTest {
     }
 
     @Test
-    @DisplayName("Yönetici iptal eder; 204 döner ve gerekçe use case'e iletilir")
+    @DisplayName("Müdür iptal eder; 204 döner ve gerekçe use case'e iletilir")
     void shouldCancel() throws Exception {
-        MvcTestResult result = post(TestTokens.token("admin").build(), BODY);
+        MvcTestResult result = post(TestTokens.token("manager").build(), BODY);
 
         assertThat(result).hasStatus(HttpStatus.NO_CONTENT);
         ArgumentCaptor<CancelShipmentCommand> command = ArgumentCaptor.forClass(CancelShipmentCommand.class);
@@ -69,7 +69,7 @@ class ShipmentCancellationControllerTest {
     @Test
     @DisplayName("Boş gerekçe şemadan 400 alır")
     void shouldRejectEmptyReason() throws Exception {
-        assertThat(post(TestTokens.token("admin").build(), "{\"reason\": \"\"}"))
+        assertThat(post(TestTokens.token("manager").build(), "{\"reason\": \"\"}"))
                 .hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(cancelShipmentUseCase);
     }
@@ -77,16 +77,16 @@ class ShipmentCancellationControllerTest {
     @Test
     @DisplayName("Alan ve durum hataları kodlarıyla eşlenir: 400 ve 409")
     void shouldMapErrors() throws Exception {
-        Jwt admin = TestTokens.token("admin").build();
+        Jwt manager = TestTokens.token("manager").build();
         doThrow(new InvalidCancellationException("reason"))
                 .when(cancelShipmentUseCase)
                 .cancelShipment(any());
-        MvcTestResult invalid = post(admin, BODY);
+        MvcTestResult invalid = post(manager, BODY);
         doThrow(new InvalidShipmentStatusException(
                         SHIPMENT, ShipmentStatus.AWAITING_DELIVERY, ShipmentStatus.CANCELLED))
                 .when(cancelShipmentUseCase)
                 .cancelShipment(any());
-        MvcTestResult conflict = post(admin, BODY);
+        MvcTestResult conflict = post(manager, BODY);
 
         assertThat(invalid).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(invalid).bodyJson().extractingPath("$.code").isEqualTo("INVALID_CANCELLATION");

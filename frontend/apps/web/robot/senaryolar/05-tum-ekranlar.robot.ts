@@ -13,14 +13,15 @@ for (const [rol, rotalar] of Object.entries(IZINLI)) {
     test.skip(!rolTanimli(rol), `${rol} için kullanıcı/şifre tanımlı değil`);
     const robot = await giris(rol);
     const yollar = rotalar.filter((r) => r !== '/panel/gorunum' || rol === 'admin');
-    if (rol !== 'genel-mudur') {
+    // Sevkiyat ve uyuşmazlık verisi yalnızca o ekranları açabilen rollerde çekilir (yönetici 403 alır).
+    if (rotalar.includes('/panel/sevkiyat')) {
       const liste = await robot.api<Liste>('/api/v1/shipments?size=100');
       const durumlar = new Map<string, string>();
       for (const s of liste.items)
         if (!durumlar.has(s.status)) durumlar.set(s.status, s.shipmentId);
       for (const id of durumlar.values()) yollar.push(`/panel/sevkiyat/${id}`);
     }
-    if (rol !== 'genel-mudur') {
+    if (rotalar.includes('/panel/sevkiyat')) {
       const uy = await robot
         .api<{ items: { id?: string; discrepancyId?: string }[] }>('/api/v1/discrepancies?size=1')
         .catch(() => undefined);

@@ -33,7 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
-/** Gerekçeli düzeltme uçlarının sözleşmesi: yalnızca Admin yazar, değerler alan modeline çevrilir, hatalar eşlenir. */
+/** Gerekçeli düzeltme uçlarının sözleşmesi: yalnızca Müdür yazar, değerler alan modeline çevrilir, hatalar eşlenir. */
 @WebMvcTest(controllers = ShipmentCorrectionController.class)
 class ShipmentCorrectionControllerTest {
 
@@ -69,11 +69,11 @@ class ShipmentCorrectionControllerTest {
     }
 
     @Test
-    @DisplayName("Admin tartımı düzeltir; 201 ile eski ve yeni değer döner, tekrar anahtarı use case'e iletilir")
+    @DisplayName("Müdür tartımı düzeltir; 201 ile eski ve yeni değer döner, tekrar anahtarı use case'e iletilir")
     void shouldRecordWeighingCorrection() {
         when(recordCorrectionUseCase.recordCorrection(any())).thenReturn(SAVED);
 
-        MvcTestResult result = post(TestTokens.token("admin").build(), WEIGHING);
+        MvcTestResult result = post(TestTokens.token("manager").build(), WEIGHING);
 
         assertThat(result).hasStatus(HttpStatus.CREATED);
         assertThat(result).bodyJson().extractingPath("$.oldValue").isEqualTo(SAVED.oldValue());
@@ -86,15 +86,15 @@ class ShipmentCorrectionControllerTest {
     }
 
     @Test
-    @DisplayName("Düzeltme izni olmayan yönetici 403 alır; düzeltmeleri yine de okuyabilir")
-    void shouldForbidManagerWrite() {
+    @DisplayName("Düzeltme izni olmayan kalite 403 alır; düzeltmeleri yine de okuyabilir")
+    void shouldForbidQualityWrite() {
         when(getCorrectionsUseCase.getCorrections(any())).thenReturn(List.of(SAVED));
 
-        assertThat(post(TestTokens.token("manager").build(), WEIGHING)).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(TestTokens.token("quality").build(), WEIGHING)).hasStatus(HttpStatus.FORBIDDEN);
         MvcTestResult list = mvc.get()
                 .uri(URI)
                 .with(SecurityMockMvcRequestPostProcessors.authentication(
-                        TestTokens.CONVERTER.convert(TestTokens.token("manager").build())))
+                        TestTokens.CONVERTER.convert(TestTokens.token("quality").build())))
                 .exchange();
 
         verifyNoInteractions(recordCorrectionUseCase);
@@ -105,17 +105,17 @@ class ShipmentCorrectionControllerTest {
     @Test
     @DisplayName("Tartımda eksik dara, alan hatası ve çakışma kodlarıyla eşlenir")
     void shouldMapErrors() {
-        Jwt admin = TestTokens.token("admin").build();
+        Jwt manager = TestTokens.token("manager").build();
         MvcTestResult missingTare =
-                post(admin, "{\"target\": \"DISPATCH_WEIGHING\", \"grossKg\": \"10.000\", \"reason\": \"x\"}");
+                post(manager, "{\"target\": \"DISPATCH_WEIGHING\", \"grossKg\": \"10.000\", \"reason\": \"x\"}");
         doThrow(new InvalidCorrectionException("value"))
                 .when(recordCorrectionUseCase)
                 .recordCorrection(any());
-        MvcTestResult unchanged = post(admin, WEIGHING);
+        MvcTestResult unchanged = post(manager, WEIGHING);
         doThrow(new CorrectionConflictException(SHIPMENT, CorrectionTarget.DISPATCH_WEIGHING))
                 .when(recordCorrectionUseCase)
                 .recordCorrection(any());
-        MvcTestResult conflict = post(admin, WEIGHING);
+        MvcTestResult conflict = post(manager, WEIGHING);
 
         assertThat(missingTare).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(missingTare).bodyJson().extractingPath("$.errors[0].field").isEqualTo("tareKg");

@@ -55,6 +55,7 @@ export const Permission = {
   MASTER_DATA_MANAGE: 'MASTER_DATA_MANAGE',
   USER_MANAGE: 'USER_MANAGE',
   SETTINGS_MANAGE: 'SETTINGS_MANAGE',
+  PERMISSION_MANAGE: 'PERMISSION_MANAGE',
   LOT_QUALITY_LOCK: 'LOT_QUALITY_LOCK',
   SHIPMENT_VIEW: 'SHIPMENT_VIEW',
   SHIPMENT_CREATE: 'SHIPMENT_CREATE',
@@ -82,6 +83,23 @@ export const Permission = {
   CENTRAL_STOCK_RECORD: 'CENTRAL_STOCK_RECORD',
   CENTRAL_PRODUCTION_RECORD: 'CENTRAL_PRODUCTION_RECORD',
 } as const;
+
+export interface RolePermissionRow {
+  role: Role;
+  editable: boolean;
+  permissions: Permission[];
+  defaults: Permission[];
+}
+
+export interface RolePermissionsView {
+  roles: RolePermissionRow[];
+  /** Yalnızca yöneticide olan, başka role verilemeyen izinler */
+  lockedPermissions: Permission[];
+}
+
+export interface RolePermissionsSaveRequest {
+  permissions: Permission[];
+}
 
 /**
  * Kalite kullanıcısının çalışma alanı; merkez kalite yalnız merkez fabrikanın kumaşını, fasoncu kalite yalnız fasoncuların kumaşını görür
@@ -1724,6 +1742,48 @@ export const setLoginAccountPassword = (
     }
 
 /**
+ * Yalnızca yönetici (PERMISSION_MANAGE). Her rol için geçerli izinler ve koddaki varsayılanları döner. Yönetici ve sistem rolü sabittir (`editable: false`); `USER_MANAGE`, `SETTINGS_MANAGE` ve `PERMISSION_MANAGE` yalnızca yöneticidedir ve başka role verilemez (`lockedPermissions`).
+ * @summary Rollerin izinleri ve varsayılanları
+ */
+export const listRolePermissions = (
+
+ ) => {
+      return customInstance<RolePermissionsView>(
+      {url: `/api/v1/role-permissions`, method: 'GET'
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (PERMISSION_MANAGE). Gönderilen liste rolün yeni izin kümesidir (boş liste hiçbir izin vermez). Yönetici rolü ve yalnızca yöneticide olan izinler değiştirilemez (`INVALID_MASTER_DATA`, 400). Aynı istek tekrarlanırsa sonuç değişmez. Açık oturumlar sonraki istekte yeni izinle çalışır. Değişiklik denetim kaydına düşer.
+ * @summary Rolün izinlerini kaydeder
+ */
+export const saveRolePermissions = (
+    role: 'ADMIN' | 'WAREHOUSE' | 'QUALITY' | 'MANAGER' | 'GENERAL_MANAGER',
+    rolePermissionsSaveRequest: RolePermissionsSaveRequest,
+ ) => {
+      return customInstance<RolePermissionsView>(
+      {url: `/api/v1/role-permissions/${role}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: rolePermissionsSaveRequest
+    },
+      );
+    }
+
+/**
+ * Yalnızca yönetici (PERMISSION_MANAGE). Tekrarı zararsızdır. Yönetici rolü sabittir (`INVALID_MASTER_DATA`, 400).
+ * @summary Rolün izinlerini koddaki varsayılana döndürür
+ */
+export const resetRolePermissions = (
+    role: 'ADMIN' | 'WAREHOUSE' | 'QUALITY' | 'MANAGER' | 'GENERAL_MANAGER',
+ ) => {
+      return customInstance<RolePermissionsView>(
+      {url: `/api/v1/role-permissions/${role}/reset`, method: 'POST'
+    },
+      );
+    }
+
+/**
  * Girişsiz çağrılır; giriş sayfası da markalı olsun diye. Hiç kaydedilmemişse varsayılan ana renk döner (`companyName` ve `logoDataUrl` yoktur). Yanıt önbelleğe alınmaz.
  * @summary Kurulumun marka ayarı (firma adı, ana renk, logo)
  */
@@ -2411,6 +2471,9 @@ export type ChangeLoginAccountRoleResult = NonNullable<Awaited<ReturnType<typeof
 export type ChangeLoginAccountNameResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountName>>>
 export type ChangeLoginAccountEnabledResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountEnabled>>>
 export type SetLoginAccountPasswordResult = NonNullable<Awaited<ReturnType<typeof setLoginAccountPassword>>>
+export type ListRolePermissionsResult = NonNullable<Awaited<ReturnType<typeof listRolePermissions>>>
+export type SaveRolePermissionsResult = NonNullable<Awaited<ReturnType<typeof saveRolePermissions>>>
+export type ResetRolePermissionsResult = NonNullable<Awaited<ReturnType<typeof resetRolePermissions>>>
 export type GetBrandingResult = NonNullable<Awaited<ReturnType<typeof getBranding>>>
 export type SaveBrandingResult = NonNullable<Awaited<ReturnType<typeof saveBranding>>>
 export type ActivateDriverResult = NonNullable<Awaited<ReturnType<typeof activateDriver>>>

@@ -41,6 +41,7 @@ tags:
   - name: LoginAccounts
   - name: LoginAccountAccess
   - name: Branding
+  - name: RolePermissions
   - name: CurrentUser
 security:
   - sessionCookie: []
@@ -803,6 +804,74 @@ paths:
           $ref: '#/components/responses/NotFound'
         '502':
           $ref: '#/components/responses/BadGateway'
+  /api/v1/role-permissions:
+    get:
+      tags: [RolePermissions]
+      operationId: listRolePermissions
+      summary: Rollerin izinleri ve varsayılanları
+      description: |
+        Yalnızca yönetici (PERMISSION_MANAGE). Her rol için geçerli izinler ve koddaki varsayılanları döner. Yönetici ve sistem rolü sabittir (`editable: false`); `USER_MANAGE`, `SETTINGS_MANAGE` ve `PERMISSION_MANAGE` yalnızca yöneticidedir ve başka role verilemez (`lockedPermissions`).
+      responses:
+        '200':
+          description: Rol izinleri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolePermissionsView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/role-permissions/{role}:
+    put:
+      tags: [RolePermissions]
+      operationId: saveRolePermissions
+      summary: Rolün izinlerini kaydeder
+      description: |
+        Yalnızca yönetici (PERMISSION_MANAGE). Gönderilen liste rolün yeni izin kümesidir (boş liste hiçbir izin vermez). Yönetici rolü ve yalnızca yöneticide olan izinler değiştirilemez (`INVALID_MASTER_DATA`, 400). Aynı istek tekrarlanırsa sonuç değişmez. Açık oturumlar sonraki istekte yeni izinle çalışır. Değişiklik denetim kaydına düşer.
+      parameters:
+        - $ref: '#/components/parameters/RoleName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RolePermissionsSaveRequest'
+      responses:
+        '200':
+          description: Kaydedildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolePermissionsView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/role-permissions/{role}/reset:
+    post:
+      tags: [RolePermissions]
+      operationId: resetRolePermissions
+      summary: Rolün izinlerini koddaki varsayılana döndürür
+      description: |
+        Yalnızca yönetici (PERMISSION_MANAGE). Tekrarı zararsızdır. Yönetici rolü sabittir (`INVALID_MASTER_DATA`, 400).
+      parameters:
+        - $ref: '#/components/parameters/RoleName'
+      responses:
+        '200':
+          description: Varsayılana döndü
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolePermissionsView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /api/v1/branding:
     get:
       tags: [Branding]
@@ -2074,6 +2143,12 @@ components:
       in: cookie
       name: JSESSIONID
   parameters:
+    RoleName:
+      name: role
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Role'
     Page:
       name: page
       in: query
@@ -2206,6 +2281,7 @@ components:
         - MASTER_DATA_MANAGE
         - USER_MANAGE
         - SETTINGS_MANAGE
+        - PERMISSION_MANAGE
         - LOT_QUALITY_LOCK
         - SHIPMENT_VIEW
         - SHIPMENT_CREATE
@@ -2232,6 +2308,43 @@ components:
         - CENTRAL_STOCK_VIEW
         - CENTRAL_STOCK_RECORD
         - CENTRAL_PRODUCTION_RECORD
+    RolePermissionsView:
+      type: object
+      required: [roles, lockedPermissions]
+      properties:
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RolePermissionRow'
+        lockedPermissions:
+          type: array
+          description: Yalnızca yöneticide olan, başka role verilemeyen izinler
+          items:
+            $ref: '#/components/schemas/Permission'
+    RolePermissionRow:
+      type: object
+      required: [role, editable, permissions, defaults]
+      properties:
+        role:
+          $ref: '#/components/schemas/Role'
+        editable:
+          type: boolean
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
+        defaults:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
+    RolePermissionsSaveRequest:
+      type: object
+      required: [permissions]
+      properties:
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
     CurrentUserResponse:
       type: object
       required: [userId, fullName, roles, permissions, siteIds, mfaVerified]

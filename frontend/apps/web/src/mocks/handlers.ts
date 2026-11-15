@@ -23,6 +23,7 @@ import {
 } from './mockStore';
 import { createAuditHandlers } from './auditHandlers';
 import { createBrandingHandlers } from './brandingHandlers';
+import { createRolePermissionHandlers } from './rolePermissionHandlers';
 import { createCorrectionHandlers } from './correctionHandlers';
 import { createClaimHandlers } from './claimHandlers';
 import { createDiscrepancyHandlers } from './discrepancyHandlers';
@@ -393,6 +394,7 @@ export function createHandlers(role: Role) {
     createShipmentHandler,
     ...createMasterDataHandlers(createMockUser(role).permissions),
     ...createBrandingHandlers(createMockUser(role).permissions),
+    ...createRolePermissionHandlers(createMockUser(role).permissions),
     ...createLotHandlers(createMockUser(role).permissions),
     ...createLoginAccountHandlers(createMockUser(role).permissions),
     ...createEvidenceHandlers(createMockUser(role).permissions),

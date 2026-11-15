@@ -8,6 +8,8 @@ export const KAPSANAN: Record<string, string> = {
   '/panel/merkez-stok|Kumaşı kaydet': '02-formlar, 03-akis',
   '/panel/sevkiyat/yeni|Taslak oluştur': '02-formlar, 03-akis',
   '/panel/gorunum|Kaydet': '08-gorunum-raporlar',
+  '/panel/yetkiler|Kaydet': '17-yetkiler',
+  '/panel/yetkiler|Varsayılana dön': '17-yetkiler',
   '/panel/kullanicilar|Hesabı düzenle': '07-kullanicilar',
   '*|Şifremi değiştir': '07-kullanicilar (Şifre değiştirme)',
   '/sifre-degistir|Şifreyi değiştir': '00-kurulum, 07-kullanicilar',

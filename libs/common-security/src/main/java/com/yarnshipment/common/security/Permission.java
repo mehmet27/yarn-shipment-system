@@ -12,6 +12,8 @@ public enum Permission implements GrantedAuthority {
     MASTER_DATA_MANAGE(AccessType.WRITE),
     USER_MANAGE(AccessType.WRITE),
     SETTINGS_MANAGE(AccessType.WRITE),
+    /** Rollerin izinlerini düzenler (Yetkiler ekranı). Yalnızca yönetici; başka role verilemez. */
+    PERMISSION_MANAGE(AccessType.WRITE),
     LOT_QUALITY_LOCK(AccessType.WRITE),
     SHIPMENT_VIEW(AccessType.READ),
     SHIPMENT_CREATE(AccessType.WRITE),

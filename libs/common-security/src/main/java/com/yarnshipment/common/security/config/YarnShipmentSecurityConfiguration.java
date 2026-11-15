@@ -1,6 +1,8 @@
 package com.yarnshipment.common.security.config;
 
 import com.yarnshipment.common.security.CsrfCookieFilter;
+import com.yarnshipment.common.security.PermissionRefreshFilter;
+import com.yarnshipment.common.security.RolePermissionProvider;
 import com.yarnshipment.common.security.SecurityProperties;
 import com.yarnshipment.common.security.web.SecurityProblemResponses;
 import jakarta.servlet.DispatcherType;
@@ -20,6 +22,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.session.SessionAuthenticationException;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -44,6 +47,12 @@ public final class YarnShipmentSecurityConfiguration {
     /** Giriş çağrısı CSRF çerezi olmadan gelir; JSON gövdesi ve SameSite çerez giriş sahteciliğini engeller. */
     private static final String LOGIN_PATH = "/api/v1/auth/login";
 
+    private final ObjectProvider<RolePermissionProvider> rolePermissions;
+
+    YarnShipmentSecurityConfiguration(ObjectProvider<RolePermissionProvider> rolePermissions) {
+        this.rolePermissions = rolePermissions;
+    }
+
     @Bean
     SecurityFilterChain yarnShipmentSecurityFilterChain(
             HttpSecurity http,
@@ -63,6 +72,10 @@ public final class YarnShipmentSecurityConfiguration {
                         .permitAll()
                         .anyRequest()
                         .authenticated())
+                .addFilterAfter(
+                        new PermissionRefreshFilter(
+                                () -> rolePermissions.getIfAvailable(() -> RolePermissionProvider.DEFAULTS)),
+                        SecurityContextHolderFilter.class)
                 .exceptionHandling(
                         handling -> handling.authenticationEntryPoint(problems).accessDeniedHandler(problems));
         if (properties.csrfEnabled()) {

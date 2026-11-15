@@ -9,6 +9,7 @@ import { PendingWeightDecisions } from '@/modules/shipment';
 /** Yönetici yalnızca sistemi yönetir; ana sayfada yetkisi olduğu sistem ekranlarının kısayolları görünür. */
 const SYSTEM_SHORTCUTS: readonly { to: string; labelKey: string; permission: Permission }[] = [
   { to: '/panel/kullanicilar', labelKey: 'nav.users', permission: 'USER_MANAGE' },
+  { to: '/panel/yetkiler', labelKey: 'nav.permissions', permission: 'PERMISSION_MANAGE' },
   { to: '/panel/tanimlar', labelKey: 'nav.masterData', permission: 'MASTER_DATA_MANAGE' },
   { to: '/panel/partiler', labelKey: 'nav.lots', permission: 'LOT_QUALITY_LOCK' },
   { to: '/panel/gorunum', labelKey: 'nav.branding', permission: 'SETTINGS_MANAGE' },

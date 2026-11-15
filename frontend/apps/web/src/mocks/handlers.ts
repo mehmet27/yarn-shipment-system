@@ -12,6 +12,7 @@ import { calculateNetKg, isKilogram, subtractKg } from '@iplik/units';
 import { http, HttpResponse } from 'msw';
 import {
   assignMockBagWeights,
+  updateMockShipmentDate,
   addMockShipment,
   completeMockShipment,
   decideMockWeight,
@@ -178,6 +179,24 @@ const cancelShipmentHandler = http.post(`${SHIPMENTS_PATH}/:shipmentId/cancel`, 
   updateMockShipmentStatus(shipment.shipmentId, 'CANCELLED');
   return new HttpResponse(null, { status: 204 });
 });
+
+/** Sevkiyat günü: yalnızca taslakta ve bugünden önce olmayan bir güne değişir. */
+const updateShipmentDateHandler = http.put(
+  `${SHIPMENTS_PATH}/:shipmentId/shipment-date`,
+  async ({ params, request }) => {
+    const shipment = findMockShipment(params.shipmentId);
+    if (shipment === undefined) return notFound();
+    const body = (await request.json()) as { shipmentDate?: unknown };
+    if (!isIsoDay(body.shipmentDate) || body.shipmentDate < todayIsoDate()) {
+      return problem(400, 'INVALID_SHIPMENT', 'Geçersiz sevkiyat günü');
+    }
+    if (shipment.status !== 'DRAFT') {
+      return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
+    }
+    updateMockShipmentDate(shipment.shipmentId, body.shipmentDate);
+    return new HttpResponse(null, { status: 204 });
+  },
+);
 
 /** İrsaliyeyle tamamlama: AWAITING_DELIVERY → COMPLETED; numara ya da kanıt eksikse 400. */
 const completeShipmentHandler = http.post(
@@ -355,6 +374,7 @@ export function createHandlers(role: Role) {
     createListShipmentsHandler(role),
     createGetShipmentHandler(role),
     cancelShipmentHandler,
+    updateShipmentDateHandler,
     completeShipmentHandler,
     dispatchWeighingHandler,
     weightDecisionHandler,

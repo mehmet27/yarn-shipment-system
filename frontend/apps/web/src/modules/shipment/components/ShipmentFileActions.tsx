@@ -4,14 +4,17 @@ import { ActionBar, Button } from '@iplik/ui';
 import { Link } from 'react-router';
 import { CancelShipmentForm } from './CancelShipmentForm';
 import { CompleteShipmentForm } from './CompleteShipmentForm';
+import { UpdateShipmentDateForm } from './UpdateShipmentDateForm';
 import { WeightDecisionForm } from './WeightDecisionForm';
 
 /** Sevkiyat dosyasındaki eylemler; yalnızca `allowedActions` listesindekiler görünür (FE-SEC-03). */
 export function ShipmentFileActions({
   shipmentId,
+  shipmentDate,
   actions,
 }: {
   shipmentId: string;
+  shipmentDate: string;
   actions: readonly ShipmentAction[];
 }) {
   const { t } = useTranslation();
@@ -28,6 +31,9 @@ export function ShipmentFileActions({
         <WeightDecisionForm shipmentId={shipmentId} />
       )}
       {actions.includes('COMPLETE') && <CompleteShipmentForm shipmentId={shipmentId} />}
+      {actions.includes('UPDATE_SHIPMENT_DATE') && (
+        <UpdateShipmentDateForm shipmentId={shipmentId} shipmentDate={shipmentDate} />
+      )}
       {actions.includes('CANCEL') && <CancelShipmentForm shipmentId={shipmentId} />}
     </>
   );

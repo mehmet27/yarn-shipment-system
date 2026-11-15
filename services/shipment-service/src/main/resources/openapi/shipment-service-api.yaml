@@ -23,6 +23,7 @@ tags:
   - name: ShipmentFile
   - name: ShipmentBags
   - name: ShipmentCancellation
+  - name: ShipmentSchedule
   - name: ShipmentWeightDecision
   - name: ShipmentSettings
   - name: ShipmentCorrection
@@ -1722,6 +1723,40 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /api/v1/shipments/{shipmentId}/shipment-date:
+    put:
+      tags: [ShipmentSchedule]
+      operationId: updateShipmentDate
+      summary: Taslak sevkiyatın sevkiyat gününü günceller
+      description: |
+        Müdür (SHIPMENT_CREATE). Yalnızca taslak (DRAFT) sevkiyatın günü değişir; gün bugünden önce olamaz (400).
+        Aynı günü yeniden göndermek zararsızdır. Taslak dışı sevkiyat `INVALID_SHIPMENT_STATUS` döner.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateShipmentDateRequest'
+      responses:
+        '204':
+          description: Gün güncellendi
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
   /api/v1/shipments/{shipmentId}/cancel:
     post:
       tags: [ShipmentCancellation]
@@ -2218,6 +2253,7 @@ components:
         - COMPLETE
         - OPEN_QUALITY_CLAIM
         - CREATE_CORRECTION
+        - UPDATE_SHIPMENT_DATE
     PageMetadata:
       type: object
       required: [number, size, totalElements, totalPages]
@@ -2402,6 +2438,14 @@ components:
           format: int32
           minimum: 0
           description: Bu istekle eklenen çuval sayısı
+    UpdateShipmentDateRequest:
+      type: object
+      required: [shipmentDate]
+      properties:
+        shipmentDate:
+          description: Yeni sevkiyat günü (Türkiye saati); bugün ya da ileri bir gün
+          type: string
+          format: date
     CreateShipmentRequest:
       type: object
       required: [siteId, subcontractorId, subcontractorTitle, lines, shipmentDate]

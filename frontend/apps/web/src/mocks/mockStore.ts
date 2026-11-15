@@ -82,6 +82,13 @@ export function completeMockShipment(shipmentId: string, waybillNo: string): voi
   );
 }
 
+/** Müdür taslak sevkiyatın gününü değiştirir. */
+export function updateMockShipmentDate(shipmentId: string, shipmentDate: string): void {
+  shipments = shipments.map((shipment) =>
+    shipment.shipmentId === shipmentId ? { ...shipment, shipmentDate } : shipment,
+  );
+}
+
 /** Admin düzeltmesi: çıkış tartısı yeni değeriyle değişir (eskisi düzeltme kaydında kalır). */
 export function patchMockShipment(
   shipmentId: string,
@@ -111,7 +118,7 @@ export function addMockShipment(request: CreateShipmentRequest): InternalShipmen
     ...(request.driverName === undefined ? {} : { driverName: request.driverName }),
     ...(request.plateNo === undefined ? {} : { plateNo: request.plateNo }),
     createdAt: new Date().toISOString(),
-    allowedActions: ['ASSIGN_BAGS', 'RECORD_DISPATCH', 'CANCEL'],
+    allowedActions: allowedActionsOf('DRAFT'),
     lines: request.lines.map(({ yarnTypeId, yarnTypeText, lotId, netKg }, index) => ({
       lineNo: index + 1,
       netKg,

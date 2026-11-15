@@ -15,6 +15,7 @@ export function RolePermissionsPage() {
         <Tabs
           defaultValue={view.roles.find((row) => row.editable)?.role ?? null}
           keepMounted={false}
+          variant="pills"
         >
           <Tabs.List aria-label={t('permissions.roleTabs')}>
             {view.roles.map((row) => (

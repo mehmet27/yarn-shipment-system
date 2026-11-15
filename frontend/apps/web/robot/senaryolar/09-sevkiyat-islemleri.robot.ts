@@ -1,4 +1,4 @@
-import { tamamlanmisSevkiyat, taslakAc, cuvalEkle } from '../support/akis';
+import { cuvalEkle, kumasGir, tamamlanmisSevkiyat, taslakAc } from '../support/akis';
 import { GENEL_MESAJ, expect, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import { damga, resim, sec } from '../support/yardimci';
@@ -36,21 +36,12 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
 }) => {
   const depo = await giris('depo');
   const mudur = await giris('mudur');
-  for (const r of [depo, mudur]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
+  const fasonKalite = await giris('fason-kalite');
+  for (const r of [depo, mudur, fasonKalite]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
   const iplik = damga();
   const y = { depo, mudur };
   const faturali = await tamamlanmisSevkiyat(y, iplik, '100', '3');
   const kapali = await tamamlanmisSevkiyat(y, `${iplik}-2`, '100', '3');
-
-  const kumasGir = async (id: string, kg: string, no: string) => {
-    await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
-    await sekme(mudur, 'Kumaş girişi');
-    await mudur.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
-    await mudur.sayfa.getByLabel(/Kumaş net kilosu/).fill(kg);
-    await mudur.sayfa.getByLabel(/İrsaliye no/).fill(no);
-    await mudur.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
-    await mudur.sayfa.waitForTimeout(1500);
-  };
 
   await mudur.adim(
     'fire oranını değiştir: gerekçesiz reddedilir, gerekçeyle kaydolur',
@@ -77,7 +68,7 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
   );
 
   await mudur.adim('eksik kumaş: dosya faturalanacaklar listesine düşer', async () => {
-    await kumasGir(faturali, '90', `${iplik}-K`);
+    await kumasGir(fasonKalite, faturali, '90', `${iplik}-K`);
     const fire = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
     mudur.kontrol('hatalı kilo oluşmalı', Number(fire.faultyKg) > 0, fire.faultyKg);
     await mudur.sayfa.goto('/panel/faturalanacaklar');
@@ -95,7 +86,7 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
   });
 
   await mudur.adim('hatalı kilo yoksa dosya kapatılır', async () => {
-    await kumasGir(kapali, '98', `${iplik}-K2`);
+    await kumasGir(fasonKalite, kapali, '98', `${iplik}-K2`);
     await mudur.sayfa.goto(`/panel/sevkiyat/${kapali}`);
     await sekme(mudur, 'Fire dosyası');
     await mudur.sayfa.getByRole('button', { name: 'Kapat' }).click();

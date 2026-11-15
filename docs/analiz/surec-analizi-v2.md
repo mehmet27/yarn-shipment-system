@@ -142,7 +142,7 @@ Endpoint'ler rol değil izin ister; matrisin tek kaynağı `libs/common-security
 
 | İzin | Kim | Ne için |
 |---|---|---|
-| `FABRIC_RECEIPT_RECORD` | Kalite, Müdür | Kumaş girişi |
+| `FABRIC_RECEIPT_RECORD` | Kalite | Kumaş girişi (müdürden alındı, 15.11.2026) |
 | `YARN_RETURN_RECORD` | Depo, Müdür | Fasoncudan iplik dönüşü / fasoncudan gelen iplik |
 | `FIRE_RATE_EDIT` | Müdür | Sevkiyatın fire oranını değiştirmek |
 | `INVOICE_MARK` | Müdür | "Fatura edildi" işareti |

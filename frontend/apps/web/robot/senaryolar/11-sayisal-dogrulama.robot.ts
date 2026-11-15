@@ -1,5 +1,5 @@
 import { fireHesapla, kiloEsit } from '../kurallar/hesap';
-import { cuvalEkle, tamamlanmisSevkiyat, taslakAc } from '../support/akis';
+import { cuvalEkle, kumasGir, tamamlanmisSevkiyat, taslakAc } from '../support/akis';
 import { expect, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import { damga, resim, sec } from '../support/yardimci';
@@ -171,7 +171,8 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
   const depo = await giris('depo');
   const mudur = await giris('mudur');
   const kalite = await giris('kalite');
-  for (const r of [depo, mudur, kalite]) r.beklenen(/4\d\d (POST|PUT) /);
+  const fasonKalite = await giris('fason-kalite');
+  for (const r of [depo, mudur, kalite, fasonKalite]) r.beklenen(/4\d\d (POST|PUT) /);
   const iplik = damga();
   const id = await tamamlanmisSevkiyat({ depo, mudur }, iplik, '100', '3');
   const fire = () => mudur.api<Fire>(`/api/v1/shipments/${id}/fire-settlement`);
@@ -227,13 +228,7 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
   });
 
   await mudur.adim('kumaş 80 kg: hatalı kilo formülle aynı', async () => {
-    await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
-    await mudur.sayfa.getByRole('tab', { name: 'Kumaş girişi', exact: true }).click();
-    await mudur.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
-    await mudur.sayfa.getByLabel(/Kumaş net kilosu/).fill('80');
-    await mudur.sayfa.getByLabel(/İrsaliye no/).fill(`${iplik}-K`);
-    await mudur.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
-    await mudur.sayfa.waitForTimeout(1500);
+    await kumasGir(fasonKalite, id, '80', `${iplik}-K`);
     await kontrolEt('kumaş sonrası', {
       gonderilen: 100,
       donen: 10,

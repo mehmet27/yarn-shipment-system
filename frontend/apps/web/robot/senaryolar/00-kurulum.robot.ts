@@ -14,7 +14,14 @@ import {
  */
 const KULLANICILAR = [
   { rol: 'depo', giris: 'depo', ad: 'Davut Depocu', rolAdi: 'Depo' },
-  { rol: 'kalite', giris: 'kalite', ad: 'Kerem Kalite', rolAdi: 'Kalite' },
+  { rol: 'kalite', giris: 'kalite', ad: 'Kerem Kalite', rolAdi: 'Kalite', alan: 'Merkez fabrika' },
+  {
+    rol: 'fason-kalite',
+    giris: 'fason.kalite',
+    ad: 'Fatma Fason Kalite',
+    rolAdi: 'Kalite',
+    alan: 'Fasoncular',
+  },
   { rol: 'mudur', giris: 'mudur', ad: 'Melek Müdür', rolAdi: 'Müdür' },
   { rol: 'genel-mudur', giris: 'genel.mudur', ad: 'Genel Müdür', rolAdi: 'Genel müdür' },
 ] as const;
@@ -59,10 +66,14 @@ test('Kurulum: yönetici eksik kullanıcıları açar, her biri ilk girişi yapa
       const pencere = admin.sayfa.getByRole('dialog');
       await sec(admin.sayfa, /^Rol/, k.rolAdi, pencere);
       const alan = pencere.getByLabel(/Çalışma alanı/);
-      // Kalite rolü bir çalışma alanı ister (merkez fabrika ya da fasoncular); ilk seçenek yeter.
+      // Kalite rolü bir çalışma alanı ister: `kalite` merkez fabrikayı, `fason.kalite` fasoncuları görür.
       if ((await alan.count()) > 0) {
         await alan.first().click();
-        await admin.sayfa.locator('[role=option]:visible').first().click();
+        await admin.sayfa
+          .locator('[role=option]:visible')
+          .filter({ hasText: 'alan' in k ? k.alan : '' })
+          .first()
+          .click();
       }
       await pencere.getByLabel(/Giriş adı/).fill(k.giris);
       await pencere.getByLabel(/Ad soyad/).fill(k.ad);

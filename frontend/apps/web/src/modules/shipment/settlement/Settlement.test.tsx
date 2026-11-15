@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
+import { addMockReceipt } from '@/mocks/settlements';
 import { renderApp } from '@/test/renderApp';
 
 const COMPLETED = '/panel/sevkiyat/shp-0003';
@@ -44,12 +45,22 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     expect(await within(form).findByText(/toplamı kumaş kilosuna eşit/)).toBeInTheDocument();
   });
 
-  it('müdür oranı değiştirir ve hatalı kiloyu faturalar; dosya kapanır', async () => {
+  it('müdür kumaş girişi yapamaz; kumaş sekmesinde form görünmez', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp(COMPLETED);
-    const form = await recordFabric('1.900');
-    await userEvent.click(within(form).getByRole('button', { name: 'Kumaş girişini kaydet' }));
-    await screen.findByText(/Süprem · 1\.900 kg/);
+    await openTab('Kumaş girişi');
+    expect(screen.queryByRole('region', { name: 'Kumaş girişi' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Kumaş girişini kaydet' })).not.toBeInTheDocument();
+  });
+
+  it('müdür oranı değiştirir ve hatalı kiloyu faturalar; dosya kapanır', async () => {
+    addMockReceipt(
+      'shp-0003',
+      { fabricType: 'Süprem', netKg: '1900', waybillNo: 'KUM-1' },
+      'user-quality',
+    );
+    server.use(...createHandlers('MANAGER'));
+    renderApp(COMPLETED);
     await openTab('Fire dosyası');
     await userEvent.type(await screen.findByLabelText('Değişiklik gerekçesi'), 'Sözleşme');
     await userEvent.click(screen.getByRole('button', { name: 'Oranı kaydet' }));
@@ -61,12 +72,15 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
   });
 
   it('müdür hatalı kilosu olmayan dosyayı kapatır', async () => {
+    addMockReceipt(
+      'shp-0003',
+      { fabricType: 'Süprem', netKg: '2000', waybillNo: 'KUM-2' },
+      'user-quality',
+    );
     server.use(...createHandlers('MANAGER'));
     renderApp(COMPLETED);
-    const form = await recordFabric('2.000');
-    await userEvent.click(within(form).getByRole('button', { name: 'Kumaş girişini kaydet' }));
-    await screen.findByText(/Süprem · 2\.000 kg/);
     await openTab('Fire dosyası');
+    await screen.findByTestId('fire-status');
     await userEvent.click(await screen.findByRole('button', { name: 'Kapat' }));
     expect(await screen.findByText('Dosya kapandı.')).toBeInTheDocument();
   });

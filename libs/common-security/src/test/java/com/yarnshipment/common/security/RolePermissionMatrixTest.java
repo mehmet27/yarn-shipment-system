@@ -28,7 +28,6 @@ class RolePermissionMatrixTest {
                         Permission.EVIDENCE_INVALIDATE,
                         Permission.CORRECTION_CREATE,
                         Permission.QUALITY_CLAIM_OPEN,
-                        Permission.FABRIC_RECEIPT_RECORD,
                         Permission.YARN_RETURN_RECORD,
                         Permission.FIRE_RATE_EDIT,
                         Permission.INVOICE_MARK,
@@ -49,6 +48,12 @@ class RolePermissionMatrixTest {
         assertThat(rolesHaving(Permission.SHIPMENT_CREATE)).containsExactly(Role.MANAGER);
         assertThat(rolesHaving(Permission.BALANCE_VIEW))
                 .containsExactlyInAnyOrder(Role.MANAGER, Role.QUALITY, Role.GENERAL_MANAGER);
+    }
+
+    @Test
+    @DisplayName("Fasoncudan gelen kumaşın girişini yalnızca kalite yapar; müdür giremez")
+    void shouldLetOnlyQualityRecordFabricReceipts() {
+        assertThat(rolesHaving(Permission.FABRIC_RECEIPT_RECORD)).containsExactly(Role.QUALITY);
     }
 
     @Test

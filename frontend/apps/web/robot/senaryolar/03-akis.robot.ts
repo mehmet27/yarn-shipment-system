@@ -1,5 +1,6 @@
 import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
+import { kumasGir } from '../support/akis';
 import { damga, resim, sec } from '../support/yardimci';
 
 type FireDosyasi = { fireRate: string; sentKg: string; fabricKg: string; status: string };
@@ -17,8 +18,9 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
   const depo = await giris('depo');
   const kalite = await giris('kalite');
   const mudur = await giris('mudur');
+  const fasonKalite = await giris('fason-kalite');
   // Bu senaryo reddedilen istekleri bilerek dener; 4xx beklenir, 5xx ve konsol hataları sorundur.
-  for (const r of [depo, kalite, mudur])
+  for (const r of [depo, kalite, mudur, fasonKalite])
     r.beklenen(/4\d\d (POST|PUT|DELETE) /, /404 GET \/api\/v1\/shipments\/[\w-]+\/fire-settlement/);
 
   await depo.adim('depo: merkeze iplik girişi', async () => {
@@ -181,32 +183,42 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     mudur.kontrol('gönderilen iplik 100 kg', Number(fire.sentKg) === 100, fire.sentKg);
   });
 
-  await mudur.adim('müdür: gönderilen ipliği aşan kumaş girişi reddedilmeli', async () => {
+  await fasonKalite.adim(
+    'fasoncu kalite: gönderilen ipliği aşan kumaş girişi reddedilmeli',
+    async () => {
+      await kumasGir(fasonKalite, sevkiyatId, '150', `${iplik}-K1`);
+      const mesajlar = await fasonKalite.mesajlar();
+      fasonKalite.kontrol(
+        'iplikten fazla kumaş nedeniyle reddedilmeli',
+        mesajlar.some((m) => /iplik/i.test(m) && !GENEL_MESAJ.test(m)),
+        mesajlar.join(' | '),
+      );
+    },
+  );
+
+  await fasonKalite.adim(
+    'fasoncu kalite: makul kumaş girişi kaydolur, fire dosyası sayıları tutar',
+    async () => {
+      await kumasGir(fasonKalite, sevkiyatId, '90', `${iplik}-K2`);
+      await fasonKalite.sayfa.waitForTimeout(1500);
+      const fire = await fasonKalite.api<FireDosyasi>(
+        `/api/v1/shipments/${sevkiyatId}/fire-settlement`,
+      );
+      fasonKalite.kontrol('kumaş toplamı 90 kg', Number(fire.fabricKg) === 90, fire.fabricKg);
+      fasonKalite.kontrol(
+        'kumaş girişi sonrası dosya faturalanmaya hazır',
+        fire.status === 'TO_INVOICE',
+        fire.status,
+      );
+    },
+  );
+
+  await mudur.adim('müdür: kumaş girişi yapamaz (formu görmez)', async () => {
     await mudur.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
     await sekme(mudur, 'Kumaş girişi');
-    await mudur.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
-    await mudur.sayfa.getByLabel(/Kumaş net kilosu/).fill('150');
-    await mudur.sayfa.getByLabel(/İrsaliye no/).fill(`${iplik}-K1`);
-    await mudur.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
-    const mesajlar = await mudur.mesajlar();
     mudur.kontrol(
-      'iplikten fazla kumaş nedeniyle reddedilmeli',
-      mesajlar.some((m) => /iplik/i.test(m) && !GENEL_MESAJ.test(m)),
-      mesajlar.join(' | '),
-    );
-  });
-
-  await mudur.adim('müdür: makul kumaş girişi kaydolur, fire dosyası sayıları tutar', async () => {
-    await mudur.sayfa.getByLabel(/Kumaş net kilosu/).fill('90');
-    await mudur.sayfa.getByLabel(/İrsaliye no/).fill(`${iplik}-K2`);
-    await mudur.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
-    await mudur.sayfa.waitForTimeout(1500);
-    const fire = await mudur.api<FireDosyasi>(`/api/v1/shipments/${sevkiyatId}/fire-settlement`);
-    mudur.kontrol('kumaş toplamı 90 kg', Number(fire.fabricKg) === 90, fire.fabricKg);
-    mudur.kontrol(
-      'kumaş girişi sonrası dosya faturalanmaya hazır',
-      fire.status === 'TO_INVOICE',
-      fire.status,
+      'müdürde kumaş girişi formu yok',
+      (await mudur.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).count()) === 0,
     );
   });
 

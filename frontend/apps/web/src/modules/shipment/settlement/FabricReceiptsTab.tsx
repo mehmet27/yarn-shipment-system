@@ -6,7 +6,7 @@ import { FabricForm } from './FabricForm';
 import { FabricReceiptCard } from './FabricReceiptCard';
 import { useFabricReceipts } from './hooks';
 
-/** Fasoncudan gelen kumaş girişleri; kayıt kalite/müdür/admin (FABRIC_RECEIPT_RECORD). */
+/** Fasoncudan gelen kumaş girişleri; kayıt yalnız kalite (FABRIC_RECEIPT_RECORD). */
 export function FabricReceiptsTab({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
   const canRecord = usePermission('FABRIC_RECEIPT_RECORD');

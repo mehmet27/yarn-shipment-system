@@ -4,7 +4,7 @@ import {
   kiloMetni as kg,
   uretimIplikDusumu,
 } from '../kurallar/hesap';
-import { tamamlanmisSevkiyat } from '../support/akis';
+import { kumasGir, tamamlanmisSevkiyat } from '../support/akis';
 import { expect, test } from '../support/robot';
 import { damga } from '../support/yardimci';
 
@@ -51,7 +51,8 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
   const depo = await giris('depo');
   const kalite = await giris('kalite');
   const mudur = await giris('mudur');
-  for (const r of [depo, kalite, mudur]) r.beklenen(/4\d\d (POST|PUT) /);
+  const fasonKalite = await giris('fason-kalite');
+  for (const r of [depo, kalite, mudur, fasonKalite]) r.beklenen(/4\d\d (POST|PUT) /);
   const iplik = damga();
   const satirBul = (b: Bakiye) =>
     b.items.find((i) => i.yarnType === iplik && i.subcontractorTitle === 'Başka Dokuma Ltd.');
@@ -239,13 +240,7 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
   await mudur.adim(
     'doğrula: 90 kg kumaş → fire hesabı (beklenen 97, hatalı 7, fire %10)',
     async () => {
-      await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
-      await mudur.sayfa.getByRole('tab', { name: 'Kumaş girişi', exact: true }).click();
-      await mudur.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
-      await mudur.sayfa.getByLabel(/Kumaş net kilosu/).fill('90');
-      await mudur.sayfa.getByLabel(/İrsaliye no/).fill(`${iplik}-K`);
-      await mudur.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
-      await mudur.sayfa.waitForTimeout(1500);
+      await kumasGir(fasonKalite, id, '90', `${iplik}-K`);
       const fire = await mudur.api<Fire>(`/api/v1/shipments/${id}/fire-settlement`);
       const h = fireHesapla({ gonderilen: 100, donen: 0, itiraz: 0, kumas: 90, oran: 0.03 });
       mudur.kontrol(
@@ -262,6 +257,7 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
         yakin(Number(fire.actualFirePercent), h.gerceklesenYuzde) && fire.status === 'TO_INVOICE',
         `${fire.actualFirePercent} ${fire.status}`,
       );
+      await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
       await mudur.sayfa.getByRole('tab', { name: 'Fire dosyası', exact: true }).click();
       await mudur.sayfa.waitForTimeout(600);
       const metin = (await mudur.sayfa.innerText('main')).replace(/\s+/g, ' ');

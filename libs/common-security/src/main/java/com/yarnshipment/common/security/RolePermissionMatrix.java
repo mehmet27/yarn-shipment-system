@@ -103,7 +103,6 @@ public final class RolePermissionMatrix {
                 Permission.DISCREPANCY_VIEW,
                 Permission.AUDIT_VIEW,
                 Permission.REPORT_VIEW,
-                Permission.FABRIC_RECEIPT_RECORD,
                 Permission.YARN_RETURN_RECORD,
                 Permission.FIRE_RATE_EDIT,
                 Permission.INVOICE_MARK,

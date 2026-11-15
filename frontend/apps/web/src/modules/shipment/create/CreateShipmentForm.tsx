@@ -1,4 +1,5 @@
 import { toProblem } from '@iplik/api-client';
+import { todayIsoDate } from '@iplik/i18n';
 import { Box, Group } from '@iplik/ui';
 import { useState } from 'react';
 import { useSoleSiteId } from '@/modules/masterdata';
@@ -18,7 +19,10 @@ export type CreateShipmentFormProps = { onCreated: (shipmentId: string) => void 
 
 /** Sevkiyat oluşturma: solda üç kart, sağda yapışkan özet; dar ekranda tek sütun. */
 export function CreateShipmentForm({ onCreated }: CreateShipmentFormProps) {
-  const [draft, setDraft] = useState<CreateDraft>(EMPTY_CREATE_DRAFT);
+  const [draft, setDraft] = useState<CreateDraft>(() => ({
+    ...EMPTY_CREATE_DRAFT,
+    shipmentDate: todayIsoDate(),
+  }));
   const [fieldErrors, setFieldErrors] = useState<CreateFieldErrors>({});
   const [isSiteMissing, setIsSiteMissing] = useState(false);
   const defaultFirePct = useFireRateDefault();

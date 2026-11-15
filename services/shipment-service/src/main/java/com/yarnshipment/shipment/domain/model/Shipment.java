@@ -2,6 +2,8 @@ package com.yarnshipment.shipment.domain.model;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -18,9 +20,11 @@ import org.jspecify.annotations.Nullable;
  * @param planned beklenen yük
  * @param dispatchWeighing geçerli çıkış tartımı; henüz girilmediyse {@code null}
  * @param waybillNo tamamlarken girilen irsaliye numarası
+ * @param shipmentDate sevkiyat günü; depo bu günden önce çuval atayamaz ve çıkış tartımı giremez
  * @param createdAt oluşturma zamanı
  * @param recipe reçete satırları, fire oranı ve son kantar karşılaştırması
  */
+@SuppressWarnings("checkstyle:RecordComponentNumber")
 public record Shipment(
         UUID id,
         String shipmentNo,
@@ -30,6 +34,7 @@ public record Shipment(
         PlannedLoad planned,
         @Nullable Weighing dispatchWeighing,
         @Nullable String waybillNo,
+        LocalDate shipmentDate,
         Instant createdAt,
         RecipeState recipe) {
 
@@ -63,8 +68,36 @@ public record Shipment(
         Objects.requireNonNull(status, "status");
         Objects.requireNonNull(parties, "parties");
         Objects.requireNonNull(planned, "planned");
+        Objects.requireNonNull(shipmentDate, "shipmentDate");
         Objects.requireNonNull(createdAt, "createdAt");
         Objects.requireNonNull(recipe, "recipe");
+    }
+
+    /** Sevkiyat tarihi olmayan (eski) kayıt: tarih oluşturulma günüdür (UTC). */
+    @SuppressWarnings("checkstyle:ParameterNumber")
+    public Shipment(
+            UUID id,
+            String shipmentNo,
+            UUID siteId,
+            ShipmentStatus status,
+            ShipmentParties parties,
+            PlannedLoad planned,
+            @Nullable Weighing dispatchWeighing,
+            @Nullable String waybillNo,
+            Instant createdAt,
+            RecipeState recipe) {
+        this(
+                id,
+                shipmentNo,
+                siteId,
+                status,
+                parties,
+                planned,
+                dispatchWeighing,
+                waybillNo,
+                createdAt.atZone(ZoneOffset.UTC).toLocalDate(),
+                createdAt,
+                recipe);
     }
 
     public List<RecipeLine> lines() {
@@ -81,6 +114,13 @@ public record Shipment(
 
     public UUID subcontractorId() {
         return parties.subcontractorId();
+    }
+
+    /** Depo, sevkiyat gününden önce çuval atayamaz ve çıkış tartımı giremez (409, {@code SHIPMENT_NOT_DUE}). */
+    public void requireDue(LocalDate today) {
+        if (today.isBefore(shipmentDate)) {
+            throw new ShipmentNotDueException(id, shipmentDate);
+        }
     }
 
     /** Çuvallar yalnızca çıkış tartımından önce (DRAFT) atanabilir. */

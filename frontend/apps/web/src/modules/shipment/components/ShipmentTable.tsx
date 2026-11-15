@@ -1,10 +1,8 @@
 import type { ShipmentSummary } from '@iplik/api-client';
-import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Anchor, Stack, Table, useMediaQuery } from '@iplik/ui';
-import { Link } from 'react-router';
+import { useTranslation } from '@iplik/i18n';
+import { Stack, Table, useMediaQuery } from '@iplik/ui';
+import { ShipmentRow } from './ShipmentRow';
 import { ShipmentCard } from './ShipmentCard';
-import { ShipmentProgress } from './ShipmentProgress';
-import { ShipmentStatusBadge } from './ShipmentStatusBadge';
 
 const DESKTOP_QUERY = '(min-width: 48em)';
 
@@ -40,33 +38,13 @@ export function ShipmentTable({ shipments }: ShipmentTableProps) {
             <Table.Th>{t('shipment.field.subcontractor')}</Table.Th>
             <Table.Th>{t('shipment.field.driver')}</Table.Th>
             <Table.Th>{t('shipment.field.plate')}</Table.Th>
+            <Table.Th>{t('shipment.field.shipmentDate')}</Table.Th>
             <Table.Th>{t('shipment.field.createdAt')}</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
           {shipments.map((shipment) => (
-            <Table.Tr key={shipment.shipmentId}>
-              <Table.Td style={{ whiteSpace: 'nowrap' }}>
-                <Anchor component={Link} to={`/panel/sevkiyat/${shipment.shipmentId}`}>
-                  {shipment.shipmentNo}
-                </Anchor>
-              </Table.Td>
-              <Table.Td>
-                <Stack gap={6} align="flex-start">
-                  <ShipmentStatusBadge status={shipment.status} />
-                  <ShipmentProgress status={shipment.status} />
-                </Stack>
-              </Table.Td>
-              <Table.Td c="brand.8" fw={500}>
-                {t(`shipment.nextStep.${shipment.status}`)}
-              </Table.Td>
-              <Table.Td>{shipment.subcontractorTitle}</Table.Td>
-              <Table.Td>{shipment.driverName}</Table.Td>
-              <Table.Td style={{ whiteSpace: 'nowrap' }}>{shipment.plateNo}</Table.Td>
-              <Table.Td style={{ whiteSpace: 'nowrap' }}>
-                {formatDateTime(shipment.createdAt)}
-              </Table.Td>
-            </Table.Tr>
+            <ShipmentRow key={shipment.shipmentId} shipment={shipment} />
           ))}
         </Table.Tbody>
       </Table>

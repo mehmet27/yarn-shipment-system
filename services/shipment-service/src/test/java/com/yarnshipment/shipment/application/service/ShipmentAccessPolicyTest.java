@@ -8,12 +8,14 @@ import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.ShipmentAction;
 import com.yarnshipment.shipment.application.port.in.ShipmentAudience;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class ShipmentAccessPolicyTest {
 
-    private final ShipmentAccessPolicy policy = new ShipmentAccessPolicy();
+    private final ShipmentAccessPolicy policy = new ShipmentAccessPolicy(TestShipments.CLOCK);
 
     @Test
     @DisplayName("Görünüm role göre seçilir: depo depo görünümünü, iç roller iç görünümü alır")
@@ -49,6 +51,18 @@ class ShipmentAccessPolicyTest {
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY), manager))
                 .containsExactlyInAnyOrder(
                         ShipmentAction.COMPLETE, ShipmentAction.CANCEL, ShipmentAction.CREATE_CORRECTION);
+    }
+
+    @Test
+    @DisplayName("Depo, sevkiyat günü gelmeden çuval atayamaz ve çıkış tartımı giremez; gün gelince yapar")
+    void shouldHideWarehouseActionsBeforeShipmentDay() {
+        Actor warehouse = TestTokens.actor("warehouse");
+        LocalDate today = LocalDate.ofInstant(TestShipments.CLOCK.instant(), ZoneOffset.UTC);
+
+        assertThat(policy.allowedActions(TestShipments.scheduledFor(today.plusDays(1)), warehouse))
+                .isEmpty();
+        assertThat(policy.allowedActions(TestShipments.scheduledFor(today), warehouse))
+                .containsExactlyInAnyOrder(ShipmentAction.ASSIGN_BAGS, ShipmentAction.RECORD_DISPATCH);
     }
 
     @Test

@@ -125,3 +125,9 @@ export async function adminSifreVer(admin: Page, girisAdi: string, gecici: strin
   if (!sonuc.ok()) throw new Error(`Şifre verme ${String(sonuc.status())} döndü (${girisAdi})`);
   await admin.keyboard.press('Escape');
 }
+
+/** Fabrikanın (İstanbul) günü, `YYYY-MM-DD`; `fark` gün ekler ya da çıkarır. */
+export function istanbulGunu(fark = 0): string {
+  const an = new Date(Date.now() + fark * 24 * 60 * 60 * 1000);
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(an);
+}

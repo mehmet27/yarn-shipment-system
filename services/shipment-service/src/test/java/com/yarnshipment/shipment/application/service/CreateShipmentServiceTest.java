@@ -18,6 +18,7 @@ import com.yarnshipment.shipment.domain.model.ShipmentParties;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.Test;
 class CreateShipmentServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-10-21T09:00:00Z");
+    private static final LocalDate DAY = LocalDate.of(2026, 10, 21);
     private static final UUID KEY = UUID.fromString("0192f0a0-0000-7000-8000-0000000000cc");
     private static final UUID OTHER_SITE = UUID.fromString("0192f0a0-0000-7000-8000-0000000000ff");
 
@@ -53,7 +55,7 @@ class CreateShipmentServiceTest {
 
     private CreateShipmentCommand command(UUID siteId, @Nullable BigDecimal fireRate) {
         ShipmentParties parties = RecipeFixtures.parties("Örnek Tekstil", null, null);
-        return new CreateShipmentCommand(warehouse, KEY, siteId, parties, null, LINES, fireRate);
+        return new CreateShipmentCommand(warehouse, KEY, siteId, parties, null, LINES, fireRate, DAY);
     }
 
     @Test
@@ -66,6 +68,22 @@ class CreateShipmentServiceTest {
             assertThat(shipment.createdAt()).isEqualTo(NOW);
             assertThat(shipment.siteId()).isEqualTo(TestTokens.SITE_ID);
         });
+    }
+
+    @Test
+    @DisplayName("Geçmiş bir sevkiyat günü reddedilir; bugün ve ileri günler kabul edilir (Türkiye saati)")
+    void shouldRejectPastShipmentDay() {
+        ShipmentParties parties = RecipeFixtures.parties("Örnek Tekstil", null, null);
+        CreateShipmentCommand past = new CreateShipmentCommand(
+                warehouse, KEY, TestTokens.SITE_ID, parties, null, LINES, null, DAY.minusDays(1));
+        CreateShipmentCommand future = new CreateShipmentCommand(
+                warehouse, KEY, TestTokens.SITE_ID, parties, null, LINES, null, DAY.plusDays(1));
+
+        assertThatThrownBy(() -> service.createShipment(past)).isInstanceOf(InvalidNewShipmentException.class);
+        service.createShipment(command(TestTokens.SITE_ID));
+        service.createShipment(future);
+
+        assertThat(created).extracting(NewShipment::shipmentDate).containsExactly(DAY, DAY.plusDays(1));
     }
 
     @Test
@@ -91,7 +109,7 @@ class CreateShipmentServiceTest {
                         () -> service.createShipment(command(TestTokens.SITE_ID, ServiceTestSupport.decimal("0.2100"))))
                 .isInstanceOf(InvalidNewShipmentException.class);
         ShipmentParties parties = RecipeFixtures.parties("Örnek", null, null);
-        assertThatThrownBy(() -> new NewShipment(TestTokens.SITE_ID, parties, null, List.of(), FIRE, NOW))
+        assertThatThrownBy(() -> new NewShipment(TestTokens.SITE_ID, parties, null, List.of(), FIRE, DAY, NOW))
                 .isInstanceOf(InvalidNewShipmentException.class);
         assertThatThrownBy(() -> RecipeFixtures.recipeLine(1, null, "x", BigDecimal.ZERO))
                 .isInstanceOf(InvalidNewShipmentException.class);
@@ -113,11 +131,11 @@ class CreateShipmentServiceTest {
         ShipmentParties noName = RecipeFixtures.parties("Örnek", UUID.randomUUID(), null);
         ShipmentParties plateOnly = RecipeFixtures.parties("Örnek", null, "34ABC123");
 
-        assertThatThrownBy(() -> new NewShipment(TestTokens.SITE_ID, noName, null, LINES, FIRE, NOW))
+        assertThatThrownBy(() -> new NewShipment(TestTokens.SITE_ID, noName, null, LINES, FIRE, DAY, NOW))
                 .isInstanceOf(InvalidNewShipmentException.class)
                 .extracting(e -> ((InvalidNewShipmentException) e).field())
                 .isEqualTo("driverId");
-        assertThatThrownBy(() -> new NewShipment(TestTokens.SITE_ID, plateOnly, null, LINES, FIRE, NOW))
+        assertThatThrownBy(() -> new NewShipment(TestTokens.SITE_ID, plateOnly, null, LINES, FIRE, DAY, NOW))
                 .isInstanceOf(InvalidNewShipmentException.class)
                 .extracting(e -> ((InvalidNewShipmentException) e).field())
                 .isEqualTo("vehicleId");

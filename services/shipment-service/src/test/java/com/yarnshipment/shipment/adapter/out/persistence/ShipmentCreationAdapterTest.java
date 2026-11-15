@@ -9,6 +9,7 @@ import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.ShipmentParties;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -36,6 +37,7 @@ class ShipmentCreationAdapterTest {
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-00000000d001");
     private static final UUID SUBCONTRACTOR = UUID.fromString("0192f0a0-0000-7000-8000-00000000c001");
     private static final Instant NOW = Instant.parse("2026-10-21T09:00:00Z");
+    private static final LocalDate DAY = LocalDate.of(2026, 10, 22);
 
     private static final List<RecipeLine> LINES = List.of(
             new RecipeLine(1, null, "36/1 VİSKON", null, new BigDecimal("19488.000")),
@@ -61,11 +63,14 @@ class ShipmentCreationAdapterTest {
         ShipmentParties parties = new ShipmentParties(SUBCONTRACTOR, "Örnek Tekstil", null, null, null);
 
         CreatedShipment created =
-                adapter.create(new NewShipment(SITE, parties, null, LINES, new BigDecimal("0.0400"), NOW), USER);
+                adapter.create(new NewShipment(SITE, parties, null, LINES, new BigDecimal("0.0400"), DAY, NOW), USER);
 
         assertThat(created.shipmentNo()).startsWith("SV-20261021-");
         assertThat(jdbc.queryForObject("SELECT status FROM shipment WHERE id = ?", String.class, created.id()))
                 .isEqualTo("DRAFT");
+        assertThat(jdbc.queryForObject(
+                        "SELECT shipment_date FROM shipment WHERE id = ?", LocalDate.class, created.id()))
+                .isEqualTo(DAY);
         assertThat(jdbc.queryForObject(
                         "SELECT from_status FROM shipment_status_history WHERE shipment_id = ?",
                         String.class,
@@ -81,7 +86,7 @@ class ShipmentCreationAdapterTest {
         ShipmentParties parties = new ShipmentParties(SUBCONTRACTOR, "Örnek Tekstil", null, null, null);
 
         CreatedShipment created =
-                adapter.create(new NewShipment(SITE, parties, null, LINES, new BigDecimal("0.0600"), NOW), USER);
+                adapter.create(new NewShipment(SITE, parties, null, LINES, new BigDecimal("0.0600"), DAY, NOW), USER);
 
         assertThat(jdbc.queryForObject(
                         "SELECT planned_net_kg FROM shipment WHERE id = ?", BigDecimal.class, created.id()))
@@ -100,8 +105,8 @@ class ShipmentCreationAdapterTest {
         UUID vehicle = UUID.randomUUID();
         ShipmentParties parties = new ShipmentParties(SUBCONTRACTOR, "Örnek Tekstil", driver, "Ali Yılmaz", "34ABC123");
 
-        CreatedShipment created =
-                adapter.create(new NewShipment(SITE, parties, vehicle, LINES, new BigDecimal("0.0400"), NOW), USER);
+        CreatedShipment created = adapter.create(
+                new NewShipment(SITE, parties, vehicle, LINES, new BigDecimal("0.0400"), DAY, NOW), USER);
 
         assertThat(jdbc.queryForObject("SELECT plate_no FROM shipment WHERE id = ?", String.class, created.id()))
                 .isEqualTo("34ABC123");

@@ -32,10 +32,10 @@ final class ShipmentCreationAdapter implements ShipmentCreationPort {
             INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, driver_id,
                                   driver_name, vehicle_id, plate_no, status, planned_net_kg, fire_rate,
                                   source_subcontractor_id, source_subcontractor_title, direct_transfer_supplier,
-                                  direct_transfer_waybill_no, created_at, created_by)
+                                  direct_transfer_waybill_no, shipment_date, created_at, created_by)
             VALUES (:id, :siteId, :no, :subcontractorId, :title, :driverId, :driverName, :vehicleId, :plateNo,
                     'DRAFT', :plannedNetKg, :fireRate, :sourceId, :sourceTitle, :transferSupplier,
-                    :transferWaybill, :at, :actor)""";
+                    :transferWaybill, :shipmentDate, :at, :actor)""";
     private static final String INSERT_LINE = """
             INSERT INTO shipment_line (id, shipment_id, line_no, yarn_type_id, yarn_type_text, lot_id, net_kg,
                                        fabric_type, lycra, width_type, yarn_length, puss_fine, unit_price,
@@ -90,6 +90,7 @@ final class ShipmentCreationAdapter implements ShipmentCreationPort {
                 .param("sourceTitle", parties.sourceSubcontractorTitle())
                 .param("transferSupplier", parties.directTransferSupplier())
                 .param("transferWaybill", parties.directTransferWaybillNo())
+                .param("shipmentDate", shipment.shipmentDate())
                 .param("at", at)
                 .param("actor", actorUserId)
                 .update();

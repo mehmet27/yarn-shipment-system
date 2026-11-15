@@ -28,7 +28,7 @@ class GetShipmentServiceTest {
     private final List<SecurityAuditEvent> audit = new ArrayList<>();
     private final ScopeGuard scopeGuard =
             new ScopeGuard(audit::add, Clock.fixed(TestShipments.CREATED_AT, ZoneOffset.UTC));
-    private final ShipmentAccessPolicy policy = new ShipmentAccessPolicy();
+    private final ShipmentAccessPolicy policy = new ShipmentAccessPolicy(TestShipments.CLOCK);
     private final GetShipmentService getService = new GetShipmentService(port, scopeGuard, policy);
 
     @Test

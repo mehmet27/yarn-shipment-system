@@ -26,7 +26,7 @@ class ListShipmentsServiceTest {
     private final InMemoryShipmentQueryPort port = new InMemoryShipmentQueryPort();
     private final ScopeGuard scopeGuard =
             new ScopeGuard(event -> {}, Clock.fixed(TestShipments.CREATED_AT, ZoneOffset.UTC));
-    private final ShipmentAccessPolicy policy = new ShipmentAccessPolicy();
+    private final ShipmentAccessPolicy policy = new ShipmentAccessPolicy(TestShipments.CLOCK);
     private final ListShipmentsService listService = new ListShipmentsService(port, scopeGuard, policy);
 
     @Test

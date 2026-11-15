@@ -76,6 +76,7 @@ function createShipment(index: number): InternalShipmentView {
       { lineNo: 2, yarnTypeText: '20 denye likra', netKg: kg('482.500') },
     ],
     fireRate: '0.0400',
+    shipmentDate: '2026-10-20',
     createdAt: new Date(Date.UTC(2026, 9, 20, 6) - index * 3_600_000).toISOString(),
     allowedActions: allowedActionsOf(status),
     ...(DISPATCHED.has(status) && status !== 'CANCELLED' ? { dispatchWeighing: dispatch } : {}),

@@ -154,6 +154,8 @@ export interface ShipmentSummaryView {
   sourceSubcontractorTitle?: string;
   driverName?: string;
   plateNo?: string;
+  /** Sevkiyat günü (Türkiye saati); depo bu günden önce çuval atayamaz ve çıkış tartımı giremez */
+  shipmentDate: string;
   createdAt: string;
   allowedActions: ShipmentAction[];
 }
@@ -321,6 +323,8 @@ export interface RecipeLineInput {
 export type FireRate = string;
 
 export interface CreateShipmentRequest {
+  /** Sevkiyat günü (Türkiye saati); depo bu günden önce çuval atayamaz ve çıkış tartımı giremez */
+  shipmentDate: string;
   /**
      * Reçete satırları (en az bir); beklenen net kilo satırların toplamıdır
      * @minItems 1
@@ -952,6 +956,8 @@ export interface InternalShipmentView {
   dispatchWeighing?: WeighingView;
   /** Tamamlanırken girilen irsaliye numarası */
   waybillNo?: string;
+  /** Sevkiyat günü (Türkiye saati); depo bu günden önce çuval atayamaz ve çıkış tartımı giremez */
+  shipmentDate: string;
   createdAt: string;
   fireRate?: FireRate;
   lines?: RecipeLineView[];
@@ -989,6 +995,8 @@ export interface WarehouseShipmentView {
   dispatchWeighing?: WeighingView;
   /** Tamamlanırken girilen irsaliye numarası */
   waybillNo?: string;
+  /** Sevkiyat günü (Türkiye saati); depo bu günden önce çuval atayamaz ve çıkış tartımı giremez */
+  shipmentDate: string;
   createdAt: string;
   fireRate?: FireRate;
   lines?: RecipeLineView[];
@@ -1024,7 +1032,7 @@ export interface SubcontractorShipmentView {
 export type LockedResponse = Problem;
 
 /**
- * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE) ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da düzeltilecek kayıt bu arada değişti (CORRECTION_CONFLICT)
+ * Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE) ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da düzeltilecek kayıt bu arada değişti (CORRECTION_CONFLICT) ya da sevkiyat günü gelmedi (SHIPMENT_NOT_DUE)
  */
 export type ConflictResponse = Problem;
 

@@ -12,7 +12,8 @@ import {
 const SITE = 'site-merkez';
 const subcontractor = { value: 'sub-1', label: 'Bursa Tekstil' };
 const line = { ...newLine(), yarnText: '20 denye likra', netKg: '2.036' };
-const base = { ...EMPTY_CREATE_DRAFT, subcontractor, lines: [line] };
+const TODAY = '2026-11-15';
+const base = { ...EMPTY_CREATE_DRAFT, subcontractor, lines: [line], shipmentDate: '2026-11-20' };
 
 describe('createDraft', () => {
   it('fasoncu zorunludur', () => {
@@ -27,6 +28,7 @@ describe('createDraft', () => {
       subcontractorTitle: 'Bursa Tekstil',
       lines: [{ netKg: '2036.000', yarnTypeText: '20 denye likra' }],
       fireRate: '0.0400',
+      shipmentDate: '2026-11-20',
     });
   });
 
@@ -115,6 +117,20 @@ describe('createDraft', () => {
       { yarnTypeId: 'prd-1', lotId: 'lot-1', netKg: '19488.000' },
       { yarnTypeText: '20 denye likra', netKg: '2036.000' },
     ]);
+  });
+
+  it('sevkiyat tarihi zorunludur, bugünden önce olamaz ve istekte gün olarak gider', () => {
+    expect(validateCreateFields({ ...base, shipmentDate: '' }, '4', TODAY).shipmentDate).toBe(
+      'shipmentDateRequired',
+    );
+    expect(
+      validateCreateFields({ ...base, shipmentDate: '2026-11-14' }, '4', TODAY).shipmentDate,
+    ).toBe('shipmentDatePast');
+    expect(
+      validateCreateFields({ ...base, shipmentDate: TODAY }, '4', TODAY).shipmentDate,
+    ).toBeUndefined();
+    expect(toCreateRequest(base, SITE)?.shipmentDate).toBe('2026-11-20');
+    expect(toCreateRequest({ ...base, shipmentDate: '' }, SITE)).toBeUndefined();
   });
 
   it('fire oranı yüzdeden kesire çevrilir ve 0-20 dışı reddedilir', () => {

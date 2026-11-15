@@ -4,6 +4,7 @@ import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.ShipmentParties;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import org.jspecify.annotations.Nullable;
  * @param vehicleId araç kimliği
  * @param lines reçete satırları, en az bir
  * @param fireRate fire oranı; boşsa ayardaki varsayılan
+ * @param shipmentDate sevkiyat günü; bugün ya da ileri bir gün (Türkiye saati)
  */
 public record CreateShipmentCommand(
         Actor actor,
@@ -27,7 +29,8 @@ public record CreateShipmentCommand(
         ShipmentParties parties,
         @Nullable UUID vehicleId,
         List<RecipeLine> lines,
-        @Nullable BigDecimal fireRate) {
+        @Nullable BigDecimal fireRate,
+        LocalDate shipmentDate) {
 
     public CreateShipmentCommand {
         Objects.requireNonNull(actor, "actor");
@@ -35,5 +38,6 @@ public record CreateShipmentCommand(
         Objects.requireNonNull(siteId, "siteId");
         Objects.requireNonNull(parties, "parties");
         Objects.requireNonNull(lines, "lines");
+        Objects.requireNonNull(shipmentDate, "shipmentDate");
     }
 }

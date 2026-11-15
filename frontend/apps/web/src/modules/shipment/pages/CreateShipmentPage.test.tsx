@@ -1,3 +1,4 @@
+import { todayIsoDate } from '@iplik/i18n';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
@@ -35,6 +36,18 @@ describe('CreateShipmentPage', () => {
     },
     LONG_FLOW_TIMEOUT_MS,
   );
+
+  it('sevkiyat tarihi bugünle gelir; silinirse gönderilmez ve tarih seçin uyarısı çıkar', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/sevkiyat/yeni');
+    const date = await screen.findByLabelText(/Sevkiyat tarihi/);
+    expect(date).toHaveValue(todayIsoDate());
+    await userEvent.clear(date);
+    await pick('Alıcı fasoncu', 'Bursa Tekstil');
+    await fillRecipe('2.036');
+    await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
+    expect(await screen.findByText('Sevkiyat tarihini seçin.')).toBeInTheDocument();
+  });
 
   it('fasoncu seçilmeden göndermeyi engeller', async () => {
     server.use(...createHandlers('MANAGER'));

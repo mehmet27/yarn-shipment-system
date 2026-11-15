@@ -8,6 +8,7 @@ import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidNewShipmentException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.InvalidWeightDecisionException;
+import com.yarnshipment.shipment.domain.model.ShipmentNotDueException;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicatePlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicateSubcontractorException;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
@@ -49,6 +50,13 @@ public final class ShipmentExceptionHandler {
     @ExceptionHandler(InvalidShipmentStatusException.class)
     public ProblemDetail handleInvalidStatus(HttpServletRequest request) {
         return problem(request, HttpStatus.CONFLICT, "INVALID_SHIPMENT_STATUS");
+    }
+
+    @ExceptionHandler(ShipmentNotDueException.class)
+    public ProblemDetail handleNotDue(ShipmentNotDueException exception, HttpServletRequest request) {
+        ProblemDetail problem = problem(request, HttpStatus.CONFLICT, "SHIPMENT_NOT_DUE");
+        problem.setProperty("shipmentDate", exception.shipmentDate().toString());
+        return problem;
     }
 
     @ExceptionHandler(InvalidCancellationException.class)

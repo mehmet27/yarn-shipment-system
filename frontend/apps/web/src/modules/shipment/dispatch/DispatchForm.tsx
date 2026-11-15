@@ -23,6 +23,7 @@ const FIELDS = [
 function failureKey(error: unknown): string {
   const { code } = toProblem(error);
   if (code === 'INVALID_SHIPMENT_STATUS') return 'dispatch.notDraft';
+  if (code === 'SHIPMENT_NOT_DUE') return 'dispatch.notDue';
   if (code === 'INVALID_DISPATCH') return 'dispatch.inconsistent';
   return 'dispatch.submitFailed';
 }

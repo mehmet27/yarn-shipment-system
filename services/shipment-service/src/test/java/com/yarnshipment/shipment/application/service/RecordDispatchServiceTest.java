@@ -14,10 +14,12 @@ import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
+import com.yarnshipment.shipment.domain.model.ShipmentNotDueException;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,16 @@ class RecordDispatchServiceTest {
 
     private RecordDispatchCommand command(Actor actor) {
         return ServiceTestSupport.dispatchCommand(actor, KEY, TestDispatches.measurement());
+    }
+
+    @Test
+    @DisplayName("Sevkiyat günü gelmeden çıkış tartımı girilemez; hiçbir şey yazılmaz")
+    void shouldRejectBeforeShipmentDay() {
+        queryPort.add(TestShipments.scheduledFor(LocalDate.parse("2026-10-22")));
+
+        assertThatThrownBy(() -> service.recordDispatch(command(warehouse)))
+                .isInstanceOf(ShipmentNotDueException.class);
+        assertThat(commandPort.recordings()).isEmpty();
     }
 
     @Test

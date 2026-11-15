@@ -8,3 +8,15 @@ const DATE_TIME_FORMAT = new Intl.DateTimeFormat('tr-TR', {
 export function formatDateTime(isoUtc: string): string {
   return DATE_TIME_FORMAT.format(new Date(isoUtc));
 }
+
+/** Saatsiz gün (`2026-11-20`) Türkçe gösterilir; saat dilimi kaymasın diye parçalar elle birleştirilir. */
+export function formatDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-');
+  return `${day ?? ''}.${month ?? ''}.${year ?? ''}`;
+}
+
+/** Bugünün günü (`YYYY-MM-DD`), fabrikanın saatiyle (İstanbul). */
+export function todayIsoDate(now: Date = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(now);
+  return parts;
+}

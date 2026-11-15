@@ -1,5 +1,5 @@
 import type { ShipmentSummary } from '@iplik/api-client';
-import { formatDateTime, useTranslation } from '@iplik/i18n';
+import { formatDate, useTranslation } from '@iplik/i18n';
 import { Group, Paper, Stack, Text } from '@iplik/ui';
 import { Link } from 'react-router';
 import { ShipmentProgress } from './ShipmentProgress';
@@ -42,7 +42,8 @@ export function ShipmentCard({ shipment, to }: ShipmentCardProps) {
           </Text>
         )}
         <Text size="sm" c="dimmed">
-          {shipment.plateNo} · {formatDateTime(shipment.createdAt)}
+          {shipment.plateNo} · {t('shipment.field.shipmentDate')}:{' '}
+          {formatDate(shipment.shipmentDate)}
         </Text>
         <ShipmentProgress status={shipment.status} />
         <Text size="sm" c="brand.8" fw={500}>

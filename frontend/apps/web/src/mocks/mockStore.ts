@@ -104,6 +104,7 @@ export function addMockShipment(request: CreateShipmentRequest): InternalShipmen
     status: 'DRAFT',
     subcontractorId: request.subcontractorId,
     subcontractorTitle: request.subcontractorTitle,
+    shipmentDate: request.shipmentDate,
     ...(request.sourceSubcontractorTitle === undefined
       ? {}
       : { sourceSubcontractorTitle: request.sourceSubcontractorTitle }),

@@ -19,6 +19,7 @@ final class ShipmentMapper {
                 new PlannedLoad(entity.getPlannedBagCount(), entity.getPlannedNetKg()),
                 sides.dispatchWeighing(entity.getId()),
                 entity.getWaybillNo(),
+                entity.getShipmentDate(),
                 entity.getCreatedAt(),
                 new Shipment.RecipeState(
                         recipes.lines(entity.getId()), entity.getFireRate(), recipes.weightCheck(entity.getId())));

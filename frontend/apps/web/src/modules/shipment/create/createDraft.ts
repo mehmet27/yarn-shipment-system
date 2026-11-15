@@ -1,6 +1,7 @@
 import type { CreateShipmentRequest, RecipeLineInput } from '@iplik/api-client';
 import type { Kilogram } from '@iplik/units';
 import { parseFireRatePct, parseKg, sumKg } from '@iplik/units';
+import { todayIsoDate } from '@iplik/i18n';
 import type { MasterOption } from '../hooks/useMasterOptions';
 
 /** Reçete satırı taslağı; kilo kullanıcının yazdığı Türkçe metindir. `key` yalnız liste anahtarıdır. */
@@ -40,6 +41,8 @@ export type CreateDraft = {
   lines: readonly RecipeLineDraft[];
   /** Yüzde metni; `undefined` ayardaki varsayılanı kullanır. */
   fireRatePct: string | undefined;
+  /** Sevkiyat günü (`YYYY-MM-DD`); depo bu günden önce işlem yapamaz. Boş metin "seçilmedi" demektir. */
+  shipmentDate: string;
   /** Yalnız sipariş formu PDF'inde basılır; sevkiyatla kaydedilmez. */
   orderNo: string;
   contactPerson: string;
@@ -74,6 +77,7 @@ export const EMPTY_CREATE_DRAFT: CreateDraft = {
   vehicle: undefined,
   lines: [newLine()],
   fireRatePct: undefined,
+  shipmentDate: '',
   orderNo: '',
   contactPerson: '',
 };
@@ -88,11 +92,18 @@ export type CreateError =
   | 'lineYarnRequired'
   | 'lineKgInvalid'
   | 'linePriceInvalid'
-  | 'fireRateInvalid';
+  | 'fireRateInvalid'
+  | 'shipmentDateRequired'
+  | 'shipmentDatePast';
 
 export type CreateFieldErrors = Partial<
   Record<
-    'subcontractor' | 'sourceSubcontractor' | 'directTransfer' | 'lines' | 'fireRate',
+    | 'subcontractor'
+    | 'sourceSubcontractor'
+    | 'directTransfer'
+    | 'lines'
+    | 'fireRate'
+    | 'shipmentDate',
     CreateError
   >
 >;
@@ -135,8 +146,18 @@ function sourceError(draft: CreateDraft): {
     : {};
 }
 
+/** Sevkiyat günü seçilmeli ve bugünden önce olmamalı (ISO günler metin olarak sıralanır). */
+function shipmentDateError(shipmentDate: string, today: string): CreateFieldErrors {
+  if (shipmentDate === '') return { shipmentDate: 'shipmentDateRequired' };
+  return shipmentDate < today ? { shipmentDate: 'shipmentDatePast' } : {};
+}
+
 /** Tüm eksik zorunlu alanlar birden döner; hata mesajı ilgili alanın altında gösterilir. */
-export function validateCreateFields(draft: CreateDraft, defaultFirePct = '4'): CreateFieldErrors {
+export function validateCreateFields(
+  draft: CreateDraft,
+  defaultFirePct = '4',
+  today: string = todayIsoDate(),
+): CreateFieldErrors {
   const firstLineError = draft.lines.map(lineError).find((error) => error !== undefined);
   return {
     ...(draft.subcontractor === undefined
@@ -148,6 +169,7 @@ export function validateCreateFields(draft: CreateDraft, defaultFirePct = '4'): 
     ...(parseFireRatePct(draft.fireRatePct ?? defaultFirePct) === undefined
       ? { fireRate: 'fireRateInvalid' as const }
       : {}),
+    ...shipmentDateError(draft.shipmentDate, today),
   };
 }
 
@@ -240,7 +262,9 @@ export function toCreateRequest(
   const { subcontractor, driver, vehicle } = draft;
   const lines = draft.lines.map(toRecipeLine);
   const fireRate = parseFireRatePct(draft.fireRatePct ?? defaultFirePct);
-  if (subcontractor === undefined || fireRate === undefined) return undefined;
+  if (subcontractor === undefined || fireRate === undefined || draft.shipmentDate === '') {
+    return undefined;
+  }
   if (lines.length === 0 || lines.some((line) => line === undefined)) return undefined;
   return {
     siteId,
@@ -250,6 +274,7 @@ export function toCreateRequest(
     ...directTransferFields(draft),
     lines: lines.filter((line): line is RecipeLineInput => line !== undefined),
     fireRate,
+    shipmentDate: draft.shipmentDate,
     ...(driver === undefined ? {} : { driverId: driver.value, driverName: driver.label }),
     ...(vehicle === undefined ? {} : { vehicleId: vehicle.value, plateNo: vehicle.label }),
   };

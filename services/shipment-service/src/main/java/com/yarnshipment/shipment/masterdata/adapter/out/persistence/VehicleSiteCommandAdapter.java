@@ -26,6 +26,10 @@ final class VehicleSiteCommandAdapter implements VehicleSiteCommandPort {
     private static final String STATUS_VEHICLE = "UPDATE md_vehicle SET active = :active WHERE id = :id";
     private static final String INSERT_SITE =
             "INSERT INTO md_site (id, name, created_at, created_by) VALUES (:id, :value, :at, :actor)";
+    /** Yeni lokasyon mevcut tüm hesapların kapsamına girer (hesaplar açılışta etkin lokasyonların kopyasını alır). */
+    private static final String GRANT_SITE_TO_ACCOUNTS =
+            "UPDATE app_user SET site_ids = array_append(site_ids, :id) WHERE NOT (:id = ANY (site_ids))";
+
     private static final String UPDATE_SITE = "UPDATE md_site SET name = :value WHERE id = :id";
     private static final String STATUS_SITE = "UPDATE md_site SET active = :active WHERE id = :id";
 
@@ -70,6 +74,7 @@ final class VehicleSiteCommandAdapter implements VehicleSiteCommandPort {
     @Override
     public Site insertSite(UUID actorId, String name) {
         UUID id = insert(INSERT_SITE, actorId, name);
+        jdbc.sql(GRANT_SITE_TO_ACCOUNTS).param("id", id).update();
         return new Site(id, name);
     }
 

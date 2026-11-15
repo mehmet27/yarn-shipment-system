@@ -66,6 +66,8 @@ Ardından yığını başlatıp `ROBOT_SIFRE` olarak admin'in şifresini değil,
 eksik kullanıcıları (depo, kalite, fasoncu kalite, müdür, genel müdür) yönetici ekranından açar, her biriyle ilk girişi yapıp
 `ROBOT_SIFRE` şifresini belirler; sonraki senaryolar bu hesaplarla koşar.
 
+**Lokasyon:** hesap açmak lokasyona bağlı değildir. Veritabanında hiç lokasyon yoksa uygulama açılışta "Merkez" lokasyonunu kendisi açıp lokasyonsuz hesaplara verir; sonradan açılan lokasyon da tüm hesaplara eklenir. Bu yüzden robotun kurulum adımında lokasyon girmesi gerekmez.
+
 **Elle açılmış hesaplar:** kullanıcı zaten varsa kurulum robotun şifresiyle girmeyi dener (tek deneme; hesap kilidine
 takılmamak için). Giremezse yönetici ekranında **Şifre ver** ile geçici şifre (`<şifre>-ilk`) atar, kullanıcı ilk girişte
 robotun şifresini seçer. Yani elle açılmış `depo` gibi bir hesabın şifresi farklı olsa da robot kendini düzeltir;

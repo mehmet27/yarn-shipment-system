@@ -61,10 +61,9 @@ public final class StaffLoginAccountService
 
     @Override
     public void createStaffLoginAccount(Actor actor, StaffAccountRequest request) {
+        // Etkin lokasyon yoksa hesap lokasyonsuz açılır; sonradan açılan lokasyon tüm hesaplara eklenir
+        // (VehicleSiteCommandAdapter.insertSite), böylece ilk kurulumda hesap açmak lokasyona bağlı değildir.
         List<UUID> siteIds = new ArrayList<>(targets.findAllActiveSiteIds());
-        if (siteIds.isEmpty()) {
-            throw new InvalidMasterDataException("siteIds", "no active site");
-        }
         requireWorkAreaOnlyForQuality(request.role(), request.workArea());
         UUID userId = accounts.createStaff(new StaffAccountSpec(
                 request.username(),

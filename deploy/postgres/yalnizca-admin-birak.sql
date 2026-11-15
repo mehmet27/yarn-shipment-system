@@ -9,9 +9,10 @@
 --   -v onay=SIL         zorunlu; verilmezse hiçbir şey silinmez
 --   -v ayarlari_koru=1  isteğe bağlı; app_setting (fire oranı, kantar toleransı, firma adı/renk/logo) de kalsın
 --
--- Kalanlar: app_user (yalnızca admin; kilit/başarısız deneme/şifre talebi temizlenir, lokasyon listesi boşaltılır),
--- role_permission (olduğu gibi), flyway_schema_history tabloları, audit_chain_head (denetim zinciri başlangıca alınır).
--- Silinenler: sevkiyatlar, kantar/tartı, stok ve bakiye hareketleri, fireler, ana veriler (lokasyon, ürün, alt yüklenici,
+-- Kalanlar: app_user (yalnızca admin; kilit/başarısız deneme/şifre talebi temizlenir), role_permission (olduğu gibi),
+-- md_site (lokasyonlar: yeni kullanıcı açmak için en az bir aktif lokasyon gerekir ve lokasyonu yalnızca müdür tanımlar,
+-- silinirse ilk kullanıcı açılamaz), flyway_schema_history tabloları, audit_chain_head (denetim zinciri başlangıca alınır).
+-- Silinenler: sevkiyatlar, kantar/tartı, stok ve bakiye hareketleri, fireler, ana veriler (ürün, alt yüklenici,
 -- araç, şoför, tedarikçi...), uyuşmazlık/kalite itirazları, kanıt kayıtları, denetim kayıtları, idempotency kayıtları,
 -- admin dışındaki kullanıcılar. Kanıt DOSYALARI diskte durur (EVIDENCE_STORAGE_ROOT); onları ayrıca silmelisiniz.
 --
@@ -35,7 +36,7 @@ SELECT set_config('yas.onay', :'onay', true), set_config('yas.ayarlari_koru', :'
 DO $$
 DECLARE
     tablolar text;
-    korunacak text[] := ARRAY['flyway_schema_history', 'app_user', 'role_permission', 'audit_chain_head'];
+    korunacak text[] := ARRAY['flyway_schema_history', 'app_user', 'role_permission', 'audit_chain_head', 'md_site'];
 BEGIN
     IF current_setting('yas.onay') <> 'SIL' THEN
         RAISE EXCEPTION 'Onay değeri SIL olmalı';
@@ -64,9 +65,9 @@ $$;
 
 -- Admin dışındaki hesaplar.
 DELETE FROM shipment.app_user WHERE lower(username) <> 'admin';
--- Silinen lokasyonlara işaret eden listeyi temizle; kilit ve şifre talebi kalmasın.
+-- Kilit ve şifre talebi kalmasın.
 UPDATE shipment.app_user
-   SET site_ids = '{}', failed_attempts = 0, locked_until = NULL, password_requested_at = NULL
+   SET failed_attempts = 0, locked_until = NULL, password_requested_at = NULL
  WHERE lower(username) = 'admin';
 
 -- Denetim zincirinin son halkası boşalan audit_log ile uyumlu olsun (ilk kayıt sıfır özetten başlar).

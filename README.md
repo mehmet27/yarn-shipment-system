@@ -104,6 +104,7 @@ docker compose -f deploy/docker-compose.yml exec -T postgres \
 
 - `-v onay=SIL` zorunludur; verilmezse hiçbir şey silinmez. Betik tek transaction'dır, hata olursa hiçbir şey silinmez.
 - Şema, `flyway_schema_history` tabloları, fonksiyonlar ve roller kalır; uygulama yeniden kurulum olmadan açılır. Denetim zinciri (`audit_chain_head`) başa alınır.
+- Lokasyonlar (`md_site`) **kalır**: yeni kullanıcı açmak için en az bir aktif lokasyon gerekir, lokasyonu da yalnızca müdür tanımlar; silinirse ilk müdür açılamaz.
 - `-v ayarlari_koru=1` eklenirse `app_setting` (fire oranı, kantar toleransı, firma adı/renk/logo) de kalır; eklenmezse silinir.
 - Kanıt dosyaları diskte (`EVIDENCE_STORAGE_ROOT`) durur; betik onları silmez, gerekirse ayrıca temizleyin.
 - Sunucuda (`deploy/prod`) aynı komut ilgili compose dosyasıyla çalıştırılır; canlıda önce yedek (`DEPLOY.md`) alın.

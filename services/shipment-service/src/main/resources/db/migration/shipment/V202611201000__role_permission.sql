@@ -65,6 +65,6 @@ INSERT INTO role_permission (role, permission) VALUES
 
 CREATE TRIGGER role_permission_audit_local
     AFTER INSERT OR UPDATE OR DELETE ON role_permission
-    FOR EACH ROW EXECUTE FUNCTION audit_local_capture();
+    FOR EACH ROW EXECUTE FUNCTION platform.audit_local_capture();
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON role_permission TO ${app_role};

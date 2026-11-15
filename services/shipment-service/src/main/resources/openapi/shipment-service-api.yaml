@@ -24,6 +24,7 @@ tags:
   - name: ShipmentBags
   - name: ShipmentCancellation
   - name: ShipmentSchedule
+  - name: PasswordRequest
   - name: ShipmentWeightDecision
   - name: ShipmentSettings
   - name: ShipmentCorrection
@@ -88,6 +89,27 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '423':
           $ref: '#/components/responses/Locked'
+  /api/v1/auth/password-requests:
+    post:
+      tags: [PasswordRequest]
+      operationId: requestPassword
+      summary: Hesap sahibi adminden şifre ister
+      description: |
+        Giriş yapmamış kişi içindir. Talep yalnızca hesapta art arda en az 3 hatalı giriş varsa (ya da hesap kilitliyse)
+        kaydedilir ve yöneticinin Kullanıcılar ekranında görünür; yönetici geçici şifre verince kapanır. Cevap her
+        durumda 204'tür: hesabın var olup olmadığı ya da koşulun sağlanıp sağlanmadığı söylenmez.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordRequest'
+      responses:
+        '204':
+          description: Talep alındı
+        '400':
+          $ref: '#/components/responses/BadRequest'
   /api/v1/auth/logout:
     post:
       tags: [Authentication]
@@ -2743,6 +2765,10 @@ components:
         passwordChangeRequired:
           type: boolean
           description: Kişi geçici şifreyle açıldı, henüz kendi şifresini belirlemedi
+        passwordRequestedAt:
+          type: string
+          format: date-time
+          description: Hesap sahibi adminden şifre istedi; açık talep yoksa gelmez
         createdAt:
           type: string
           format: date-time
@@ -2798,10 +2824,22 @@ components:
         passwordChangeRequired:
           type: boolean
           description: Kişi geçici şifreyle girdi; önce şifresini değiştirmelidir.
+    PasswordRequest:
+      type: object
+      required: [username]
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 100
     ChangeOwnPasswordRequest:
       type: object
       required: [currentPassword, newPassword]
       properties:
+        terminateOtherSessions:
+          description: Doğruysa (varsayılan) kullanıcının diğer oturumları sonlandırılır; yanlışsa yalnızca şifre değişir
+          type: boolean
+          default: true
         currentPassword:
           type: string
           minLength: 1

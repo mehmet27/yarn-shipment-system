@@ -71,8 +71,9 @@ public class AuthController implements AuthenticationApi {
     public ResponseEntity<Void> changeOwnPassword(ChangeOwnPasswordRequest body) {
         SessionUser user = changePassword.changeOwnPassword(
                 currentActorProvider.getCurrentActor().userId(), body.getCurrentPassword(), body.getNewPassword());
-        String keep = request.getSession(true).getId();
-        terminator.terminateOthers(user.id(), keep);
+        if (!Boolean.FALSE.equals(body.getTerminateOtherSessions())) {
+            terminator.terminateOthers(user.id(), request.getSession(true).getId());
+        }
         sessions.establish(SessionActors.tokenOf(user), request, response);
         return ResponseEntity.noContent().build();
     }

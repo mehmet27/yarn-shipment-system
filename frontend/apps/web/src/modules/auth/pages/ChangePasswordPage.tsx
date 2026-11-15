@@ -4,6 +4,7 @@ import { Alert, Center, Paper, PasswordInput, Stack, Text } from '@iplik/ui';
 import { useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import { ChangePasswordActions } from '../components/ChangePasswordActions';
+import { TerminateSessionsOption } from '../components/TerminateSessionsOption';
 import { useChangeOwnPassword } from '../hooks/useChangeOwnPassword';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 
@@ -35,6 +36,7 @@ export function ChangePasswordPage() {
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [repeat, setRepeat] = useState('');
+  const [shouldTerminateOthers, setShouldTerminateOthers] = useState(true);
   const { submit, isPending, error } = useChangeOwnPassword();
   const isMismatch = repeat !== '' && next !== repeat;
   const canSubmit = current !== '' && next.length >= MIN_PASSWORD_LENGTH && next === repeat;
@@ -44,7 +46,7 @@ export function ChangePasswordPage() {
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            submit(current, next);
+            submit(current, next, shouldTerminateOthers);
           }}
         >
           <Stack>
@@ -71,6 +73,10 @@ export function ChangePasswordPage() {
               error={isMismatch ? t('auth.changePassword.mismatch') : undefined}
               autoComplete="new-password"
               {...field(setRepeat)}
+            />
+            <TerminateSessionsOption
+              isChecked={shouldTerminateOthers}
+              onChange={setShouldTerminateOthers}
             />
             {error !== undefined && <Alert color="red">{t(errorKey(error))}</Alert>}
             <ChangePasswordActions

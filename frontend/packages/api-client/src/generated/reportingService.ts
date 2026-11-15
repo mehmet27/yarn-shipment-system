@@ -58,8 +58,8 @@ export interface OpenDiscrepanciesView {
   overdue: number;
 }
 
-export type OverdueDiscrepancyViewSeverity = typeof OverdueDiscrepancyViewSeverity[keyof typeof OverdueDiscrepancyViewSeverity];
-
+export type OverdueDiscrepancyViewSeverity =
+  (typeof OverdueDiscrepancyViewSeverity)[keyof typeof OverdueDiscrepancyViewSeverity];
 
 export const OverdueDiscrepancyViewSeverity = {
   YELLOW: 'YELLOW',
@@ -127,8 +127,7 @@ export interface BalanceMatrixRowView {
   inTransitKg: string;
 }
 
-export type FireRowViewStatus = typeof FireRowViewStatus[keyof typeof FireRowViewStatus];
-
+export type FireRowViewStatus = (typeof FireRowViewStatus)[keyof typeof FireRowViewStatus];
 
 export const FireRowViewStatus = {
   AWAITING_FABRIC: 'AWAITING_FABRIC',
@@ -166,9 +165,9 @@ export interface YarnVsFabricRowView {
   actualFireRate: string;
   shortageKg: string;
   /**
-     * Fire sınırını aşan sevkiyat sayısı (rapor, ceza değil)
-     * @minimum 0
-     */
+   * Fire sınırını aşan sevkiyat sayısı (rapor, ceza değil)
+   * @minimum 0
+   */
   overLimitShipmentCount: number;
   /** Fire sınırını aşan sevkiyatların toplam fire kilosu (T − K) */
   overLimitFireKg: string;
@@ -226,255 +225,236 @@ export type ToParameter = string;
 export type SiteIdParameter = string;
 
 export type GetDashboardParams = {
-/**
- * Dönem başı (dahil), Europe/Istanbul günü
- */
-from?: FromParameter;
-/**
- * Dönem sonu (dahil), Europe/Istanbul günü
- */
-to?: ToParameter;
-/**
- * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
- */
-siteId?: SiteIdParameter;
+  /**
+   * Dönem başı (dahil), Europe/Istanbul günü
+   */
+  from?: FromParameter;
+  /**
+   * Dönem sonu (dahil), Europe/Istanbul günü
+   */
+  to?: ToParameter;
+  /**
+   * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+   */
+  siteId?: SiteIdParameter;
 };
 
 export type GetSubcontractorReportParams = {
-/**
- * Dönem başı (dahil), Europe/Istanbul günü
- */
-from?: FromParameter;
-/**
- * Dönem sonu (dahil), Europe/Istanbul günü
- */
-to?: ToParameter;
-/**
- * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
- */
-siteId?: SiteIdParameter;
+  /**
+   * Dönem başı (dahil), Europe/Istanbul günü
+   */
+  from?: FromParameter;
+  /**
+   * Dönem sonu (dahil), Europe/Istanbul günü
+   */
+  to?: ToParameter;
+  /**
+   * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+   */
+  siteId?: SiteIdParameter;
 };
 
 export type GetShipmentReportParams = {
-/**
- * Dönem başı (dahil), Europe/Istanbul günü
- */
-from?: FromParameter;
-/**
- * Dönem sonu (dahil), Europe/Istanbul günü
- */
-to?: ToParameter;
-/**
- * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
- */
-siteId?: SiteIdParameter;
+  /**
+   * Dönem başı (dahil), Europe/Istanbul günü
+   */
+  from?: FromParameter;
+  /**
+   * Dönem sonu (dahil), Europe/Istanbul günü
+   */
+  to?: ToParameter;
+  /**
+   * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+   */
+  siteId?: SiteIdParameter;
 };
 
 export type GetSubcontractorBalanceReportParams = {
-/**
- * Dönem başı (dahil), Europe/Istanbul günü
- */
-from?: FromParameter;
-/**
- * Dönem sonu (dahil), Europe/Istanbul günü
- */
-to?: ToParameter;
-/**
- * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
- */
-siteId?: SiteIdParameter;
+  /**
+   * Dönem başı (dahil), Europe/Istanbul günü
+   */
+  from?: FromParameter;
+  /**
+   * Dönem sonu (dahil), Europe/Istanbul günü
+   */
+  to?: ToParameter;
+  /**
+   * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+   */
+  siteId?: SiteIdParameter;
 };
 
 export type GetBalanceMatrixParams = {
-/**
- * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
- */
-siteId?: SiteIdParameter;
+  /**
+   * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+   */
+  siteId?: SiteIdParameter;
 };
 
 export type GetFireReportParams = {
-/**
- * Dönem başı (dahil), Europe/Istanbul günü
- */
-from?: FromParameter;
-/**
- * Dönem sonu (dahil), Europe/Istanbul günü
- */
-to?: ToParameter;
-/**
- * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
- */
-siteId?: SiteIdParameter;
-subcontractorId?: string;
+  /**
+   * Dönem başı (dahil), Europe/Istanbul günü
+   */
+  from?: FromParameter;
+  /**
+   * Dönem sonu (dahil), Europe/Istanbul günü
+   */
+  to?: ToParameter;
+  /**
+   * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+   */
+  siteId?: SiteIdParameter;
+  subcontractorId?: string;
 };
 
 export type GetYarnVsFabricReportParams = {
-/**
- * Dönem başı (dahil), Europe/Istanbul günü
- */
-from?: FromParameter;
-/**
- * Dönem sonu (dahil), Europe/Istanbul günü
- */
-to?: ToParameter;
-/**
- * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
- */
-siteId?: SiteIdParameter;
+  /**
+   * Dönem başı (dahil), Europe/Istanbul günü
+   */
+  from?: FromParameter;
+  /**
+   * Dönem sonu (dahil), Europe/Istanbul günü
+   */
+  to?: ToParameter;
+  /**
+   * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+   */
+  siteId?: SiteIdParameter;
 };
 
 export type GetToInvoiceReportParams = {
-/**
- * Dönem başı (dahil), Europe/Istanbul günü
- */
-from?: FromParameter;
-/**
- * Dönem sonu (dahil), Europe/Istanbul günü
- */
-to?: ToParameter;
-/**
- * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
- */
-siteId?: SiteIdParameter;
+  /**
+   * Dönem başı (dahil), Europe/Istanbul günü
+   */
+  from?: FromParameter;
+  /**
+   * Dönem sonu (dahil), Europe/Istanbul günü
+   */
+  to?: ToParameter;
+  /**
+   * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+   */
+  siteId?: SiteIdParameter;
 };
 
 /**
  * @summary Panel ana sayfa özeti
  */
-export const getDashboard = (
-    params?: GetDashboardParams,
- ) => {
-      return customInstance<DashboardView>(
-      {url: `/api/v1/reports/dashboard`, method: 'GET',
-        params
-    },
-      );
-    }
+export const getDashboard = (params?: GetDashboardParams) => {
+  return customInstance<DashboardView>({ url: `/api/v1/reports/dashboard`, method: 'GET', params });
+};
 
 /**
  * En yüksek uyuşmazlık oranı önce gelir.
  * @summary Fasoncu bazında sevkiyat sayısı, uyuşmazlık oranı ve ortalama kilo farkı
  */
-export const getSubcontractorReport = (
-    params?: GetSubcontractorReportParams,
- ) => {
-      return customInstance<PartyStatsView[]>(
-      {url: `/api/v1/reports/subcontractors`, method: 'GET',
-        params
-    },
-      );
-    }
+export const getSubcontractorReport = (params?: GetSubcontractorReportParams) => {
+  return customInstance<PartyStatsView[]>({
+    url: `/api/v1/reports/subcontractors`,
+    method: 'GET',
+    params,
+  });
+};
 
 /**
  * Dönemde oluşturulan sevkiyatlar, en yeni önce. En çok 5000 satır döner; dönem daraltılarak fazlasına ulaşılır.
  * @summary Sevkiyat dökümü
  */
-export const getShipmentReport = (
-    params?: GetShipmentReportParams,
- ) => {
-      return customInstance<ShipmentRowView[]>(
-      {url: `/api/v1/reports/shipments`, method: 'GET',
-        params
-    },
-      );
-    }
+export const getShipmentReport = (params?: GetShipmentReportParams) => {
+  return customInstance<ShipmentRowView[]>({
+    url: `/api/v1/reports/shipments`,
+    method: 'GET',
+    params,
+  });
+};
 
 /**
  * İptal edilen sevkiyatlar sayılmaz; yolda kalan miktarı en yüksek olan önce gelir.
  * @summary Fasoncu bazında gönderilen, teslim alınan ve yolda kalan kilo
  */
-export const getSubcontractorBalanceReport = (
-    params?: GetSubcontractorBalanceReportParams,
- ) => {
-      return customInstance<SubcontractorBalanceView[]>(
-      {url: `/api/v1/reports/subcontractor-balance`, method: 'GET',
-        params
-    },
-      );
-    }
+export const getSubcontractorBalanceReport = (params?: GetSubcontractorBalanceReportParams) => {
+  return customInstance<SubcontractorBalanceView[]>({
+    url: `/api/v1/reports/subcontractor-balance`,
+    method: 'GET',
+    params,
+  });
+};
 
 /**
  * BALANCE_VIEW gerekir. balanceKg hareketlerin işaretli toplamıdır.
  * @summary İplik cinsi x fasoncu bakiye matrisi
  */
-export const getBalanceMatrix = (
-    params?: GetBalanceMatrixParams,
- ) => {
-      return customInstance<BalanceMatrixRowView[]>(
-      {url: `/api/v1/reports/balance-matrix`, method: 'GET',
-        params
-    },
-      );
-    }
+export const getBalanceMatrix = (params?: GetBalanceMatrixParams) => {
+  return customInstance<BalanceMatrixRowView[]>({
+    url: `/api/v1/reports/balance-matrix`,
+    method: 'GET',
+    params,
+  });
+};
 
 /**
  * REPORT_VIEW gerekir. Dönem tamamlanma tarihine göredir. Oranlar kesirdir (0.0400 = %4).
  * @summary Sevkiyat bazında fire dosyaları
  */
-export const getFireReport = (
-    params?: GetFireReportParams,
- ) => {
-      return customInstance<FireRowView[]>(
-      {url: `/api/v1/reports/fire`, method: 'GET',
-        params
-    },
-      );
-    }
+export const getFireReport = (params?: GetFireReportParams) => {
+  return customInstance<FireRowView[]>({ url: `/api/v1/reports/fire`, method: 'GET', params });
+};
 
 /**
  * REPORT_VIEW gerekir.
  * @summary Fasoncu bazında giden iplik ve gelen kumaş
  */
-export const getYarnVsFabricReport = (
-    params?: GetYarnVsFabricReportParams,
- ) => {
-      return customInstance<YarnVsFabricRowView[]>(
-      {url: `/api/v1/reports/yarn-vs-fabric`, method: 'GET',
-        params
-    },
-      );
-    }
+export const getYarnVsFabricReport = (params?: GetYarnVsFabricReportParams) => {
+  return customInstance<YarnVsFabricRowView[]>({
+    url: `/api/v1/reports/yarn-vs-fabric`,
+    method: 'GET',
+    params,
+  });
+};
 
 /**
  * REPORT_VIEW gerekir. Eksik kilo sıfırdan büyük ve durum TO_INVOICE olanlar.
  * @summary Faturalanacak fire dosyaları
  */
-export const getToInvoiceReport = (
-    params?: GetToInvoiceReportParams,
- ) => {
-      return customInstance<FireRowView[]>(
-      {url: `/api/v1/reports/to-invoice`, method: 'GET',
-        params
-    },
-      );
-    }
+export const getToInvoiceReport = (params?: GetToInvoiceReportParams) => {
+  return customInstance<FireRowView[]>({
+    url: `/api/v1/reports/to-invoice`,
+    method: 'GET',
+    params,
+  });
+};
 
 /**
  * BALANCE_VIEW gerekir. (fasoncu, iplik cinsi) için OPENING varsa satır atlanır.
  * @summary Açılış bakiyesini OPENING hareketi olarak içe aktarır
  */
-export const importOpeningBalance = (
-    openingImportRequest: OpeningImportRequest,
- ) => {
-      return customInstance<OpeningImportResult>(
-      {url: `/api/v1/reports/balance/opening-import`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: openingImportRequest
-    },
-      );
-    }
-
+export const importOpeningBalance = (openingImportRequest: OpeningImportRequest) => {
+  return customInstance<OpeningImportResult>({
+    url: `/api/v1/reports/balance/opening-import`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: openingImportRequest,
+  });
+};
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
-    type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
-export type GetDashboardResult = NonNullable<Awaited<ReturnType<typeof getDashboard>>>
-export type GetSubcontractorReportResult = NonNullable<Awaited<ReturnType<typeof getSubcontractorReport>>>
-export type GetShipmentReportResult = NonNullable<Awaited<ReturnType<typeof getShipmentReport>>>
-export type GetSubcontractorBalanceReportResult = NonNullable<Awaited<ReturnType<typeof getSubcontractorBalanceReport>>>
-export type GetBalanceMatrixResult = NonNullable<Awaited<ReturnType<typeof getBalanceMatrix>>>
-export type GetFireReportResult = NonNullable<Awaited<ReturnType<typeof getFireReport>>>
-export type GetYarnVsFabricReportResult = NonNullable<Awaited<ReturnType<typeof getYarnVsFabricReport>>>
-export type GetToInvoiceReportResult = NonNullable<Awaited<ReturnType<typeof getToInvoiceReport>>>
-export type ImportOpeningBalanceResult = NonNullable<Awaited<ReturnType<typeof importOpeningBalance>>>
+export type GetDashboardResult = NonNullable<Awaited<ReturnType<typeof getDashboard>>>;
+export type GetSubcontractorReportResult = NonNullable<
+  Awaited<ReturnType<typeof getSubcontractorReport>>
+>;
+export type GetShipmentReportResult = NonNullable<Awaited<ReturnType<typeof getShipmentReport>>>;
+export type GetSubcontractorBalanceReportResult = NonNullable<
+  Awaited<ReturnType<typeof getSubcontractorBalanceReport>>
+>;
+export type GetBalanceMatrixResult = NonNullable<Awaited<ReturnType<typeof getBalanceMatrix>>>;
+export type GetFireReportResult = NonNullable<Awaited<ReturnType<typeof getFireReport>>>;
+export type GetYarnVsFabricReportResult = NonNullable<
+  Awaited<ReturnType<typeof getYarnVsFabricReport>>
+>;
+export type GetToInvoiceReportResult = NonNullable<Awaited<ReturnType<typeof getToInvoiceReport>>>;
+export type ImportOpeningBalanceResult = NonNullable<
+  Awaited<ReturnType<typeof importOpeningBalance>>
+>;

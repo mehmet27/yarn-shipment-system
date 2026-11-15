@@ -6,6 +6,7 @@ import com.yarnshipment.shipment.masterdata.domain.model.StaffRole;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +20,7 @@ final class FakeAuthUsers implements AuthUserPort {
 
     private final Map<UUID, AuthUser> users = new HashMap<>();
     private final Map<UUID, Integer> failures = new HashMap<>();
+    private final Set<UUID> passwordRequests = new HashSet<>();
 
     /** Bu depoyu ve sahte özetleyiciyi kullanan şifre üretici. */
     PasswordIssuer issuer() {
@@ -51,6 +53,10 @@ final class FakeAuthUsers implements AuthUserPort {
         return Objects.requireNonNull(users.get(id), "user");
     }
 
+    boolean hasPasswordRequest(UUID id) {
+        return passwordRequests.contains(id);
+    }
+
     int failures(UUID id) {
         return failures.getOrDefault(id, 0);
     }
@@ -80,13 +86,23 @@ final class FakeAuthUsers implements AuthUserPort {
     }
 
     @Override
+    public void requestPassword(String username, int minFailedAttempts, Instant now) {
+        findByUsername(username)
+                .filter(AuthUser::enabled)
+                .filter(user -> failures(user.id()) >= minFailedAttempts || user.isLockedAt(now))
+                .ifPresent(user -> passwordRequests.add(user.id()));
+    }
+
+    @Override
     public void recordSuccessfulLogin(UUID userId, Instant now) {
+        passwordRequests.remove(userId);
         failures.put(userId, 0);
         users.put(userId, withLock(user(userId), null));
     }
 
     @Override
     public void replacePasswordHash(UUID userId, String passwordHash, Instant now) {
+        passwordRequests.remove(userId);
         AuthUser user = user(userId);
         users.put(
                 userId,

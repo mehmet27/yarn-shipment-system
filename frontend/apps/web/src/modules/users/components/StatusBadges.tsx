@@ -12,6 +12,11 @@ export function StatusBadges({ account }: StatusBadgesProps) {
       <Badge color={account.enabled ? 'green' : 'gray'}>
         {t(account.enabled ? 'users.status.enabled' : 'users.status.disabled')}
       </Badge>
+      {account.passwordRequestedAt !== undefined && (
+        <Badge color="red" variant="filled">
+          {t('users.status.passwordRequested')}
+        </Badge>
+      )}
       {account.passwordChangeRequired && (
         <Badge color="yellow" variant="light">
           {t('users.status.passwordChangeRequired')}

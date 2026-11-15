@@ -32,7 +32,15 @@
         "INVALID_CURRENT_PASSWORD": "Mevcut şifre hatalı.",
         "WEAK_PASSWORD": "Yeni şifre kurallara uymuyor; daha uzun ve tahmin edilmesi zor bir şifre yazın.",
         "unknown": "Şifre değiştirilemedi. Lütfen tekrar deneyin."
-      }
+      },
+      "terminateOthers": "Diğer oturumlarımı kapat",
+      "terminateOthersHint": "Başka cihaz ve tarayıcılarda açık oturumlarınız kapanır; yeniden giriş yapmaları gerekir."
+    },
+    "passwordRequest": {
+      "hint": "Şifrenizi unuttuysanız yöneticiden yeni şifre isteyebilirsiniz.",
+      "submit": "Adminden şifre talep et",
+      "sent": "Talebiniz yöneticiye iletildi. Yönetici size geçici bir şifre verecek.",
+      "failed": "Talep gönderilemedi. Lütfen tekrar deneyin."
     }
   },
   "error": {
@@ -885,7 +893,8 @@
     "status": {
       "enabled": "Etkin",
       "disabled": "Devre dışı",
-      "passwordChangeRequired": "İlk giriş bekleniyor"
+      "passwordChangeRequired": "İlk giriş bekleniyor",
+      "passwordRequested": "Şifre istedi"
     },
     "role": {
       "ADMIN": "Yönetici",
@@ -953,6 +962,11 @@
     "workArea": {
       "CENTRAL": "Merkez fabrika",
       "SUBCONTRACTOR": "Fasoncular"
+    },
+    "requests": {
+      "title": "{{count}} kullanıcı şifre istedi",
+      "names": "{{names}}. Hesabın menüsünden \"Şifre ver\" ile geçici şifre verin; talep kapanır.",
+      "show": "Göster"
     }
   },
   "report": {

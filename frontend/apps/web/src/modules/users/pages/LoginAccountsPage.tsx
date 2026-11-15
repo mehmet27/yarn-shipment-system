@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { type AccountFilter, NO_FILTER } from '../accountFilter';
 import { AccountFilters } from '../components/AccountFilters';
 import { CreateAccountModal } from '../components/CreateAccountModal';
+import { PasswordRequestsNotice } from '../components/PasswordRequestsNotice';
 import { LoginAccountResults } from '../components/LoginAccountResults';
 import { useLoginAccounts } from '../hooks/useLoginAccounts';
 
@@ -48,6 +49,12 @@ export function LoginAccountsPage() {
         onChange={(event) => {
           setSearch(event.currentTarget.value);
           setPage(1);
+        }}
+      />
+      <PasswordRequestsNotice
+        accounts={query.data?.rows ?? []}
+        onShow={() => {
+          setFilter({ ...NO_FILTER, status: 'REQUESTED' });
         }}
       />
       <AccountFilters value={filter} onChange={setFilter} />

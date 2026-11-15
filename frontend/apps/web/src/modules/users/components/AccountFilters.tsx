@@ -8,12 +8,13 @@ export type AccountFiltersProps = {
   onChange: (value: AccountFilter) => void;
 };
 
-const STATUSES: readonly StatusFilter[] = ['ALL', 'ENABLED', 'DISABLED', 'PENDING'];
+const STATUSES: readonly StatusFilter[] = ['ALL', 'ENABLED', 'DISABLED', 'PENDING', 'REQUESTED'];
 const STATUS_KEYS: Record<StatusFilter, string> = {
   ALL: 'users.filter.allStatuses',
   ENABLED: 'users.status.enabled',
   DISABLED: 'users.status.disabled',
   PENDING: 'users.status.passwordChangeRequired',
+  REQUESTED: 'users.status.passwordRequested',
 };
 
 /** Durum ve rol süzgeçleri. */

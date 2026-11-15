@@ -81,7 +81,7 @@ final class StaffAccountAdapter implements StaffAccountPort, AccountCredentialPo
         requireUpdated(jdbc.sql("""
                         UPDATE app_user
                            SET password_hash = :hash, password_change_required = true, failed_attempts = 0,
-                               locked_until = NULL, updated_at = :now
+                               locked_until = NULL, password_requested_at = NULL, updated_at = :now
                          WHERE id = :id""")
                 .param("hash", passwordHash)
                 .param("now", now())

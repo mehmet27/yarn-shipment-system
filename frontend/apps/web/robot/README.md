@@ -92,6 +92,7 @@ yalnızca `admin` şifresi (`kullanicilar.local.json` ya da `ROBOT_SIFRE`) doğr
 | `13-erisilebilirlik-dayaniklilik` | Etiketsiz düğme/alan, alt metni, lang, başlık, sayfa ve API süresi; F5 ve geri/ileri; çift tıklamada tekrar kayıt; oturum düşünce davranış                                                                                                                                                                                                                                                                                                                                             |
 | `14-rastgele-girdi`               | Formlara uzun metin, emoji, HTML/betik, SQL parçası, uç sayılar girer; çökme, 5xx ve XSS arar                                                                                                                                                                                                                                                                                                                                                                                          |
 | `15-sevkiyat-tarihi`              | Müdür sevkiyat tarihini girer ve sonradan günceller (boş/geçmiş tarih uyarısı, listede ve dosyada tarih); depo tarih gelmeden çuval atayamaz, çıkış tartısı giremez (ekranda ve sunucuda 409 `SHIPMENT_NOT_DUE`), tarih bugüne alınınca yapabilir                                                                                                                                                                                                                                      |
+| `16-sifre-talebi-ve-oturum`       | Giriş sayfasında 3 hatalı denemeden sonra "Adminden şifre talep et" çıkar (ilk ikisinde çıkmaz); talep Kullanıcılar ekranında uyarı ve rozetle görünür, admin geçici şifre verince kapanır; sunucu koşulsuz talebi kaydetmez. Şifre değişirken "Diğer oturumlarımı kapat" kutusu: kapalıyken diğer oturum açık kalır, açıkken gerçekten kapanır (401)                                                                                                                                  |
 
 ## Kural tablosu (`robot/kurallar`)
 
@@ -108,6 +109,15 @@ yalnızca **kalite** karara bağlar. İş senaryolarında bu işler bu rollerle 
 Gezgin (`05`) veri değiştirmeyen her şeye kendisi tıklar. **Veri değiştiren bir düğme** (kaydet, sil, iptal, pasife al,
 kilitle…) için `support/kapsam.ts` içine `rota|düğme adı` → senaryo kaydı eklenmelidir; yoksa rapor
 "Kapsam açığı: …" yazar ve robot kırmızı olur. Yani yeni bir düğme eklenince robota senaryo yazmadan yeşil çıkmaz.
+
+## Koşu kuralı
+
+- Her geliştirmede **yalnızca değişen özelliğin senaryoları** koşulur (`pnpm robot -- --rol=<senaryo adı>`); **tam koşu yalnızca
+  kullanıcı isterse** yapılır.
+- **Her robot koşusundan sonra** (tam koşu ya da PR koşusu) ortam sıfırlanır: `cd frontend && pnpm yerel:sifirla -- --evet`.
+  Docker verisi silinir; sistemde yalnızca `admin` kalır, robotun açtığı kullanıcılar (`depo`, `kalite`, `mudur`, `genel.mudur`,
+  `sifre.*` vb.) ve `ROBOT-…` kayıtları kalmaz. Robotu yeniden çalıştırmadan önce admin'in kalıcı şifresi yine `kullanicilar.local.json`
+  içindedir (sıfırlamadan sonra admin ilk girişte şifresini belirler).
 
 ## Yeni özellik eklerken robotu güncelleme kuralı
 

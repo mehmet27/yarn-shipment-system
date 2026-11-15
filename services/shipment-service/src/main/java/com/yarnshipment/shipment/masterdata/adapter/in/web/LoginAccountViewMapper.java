@@ -23,6 +23,7 @@ final class LoginAccountViewMapper {
                 .enabled(account.enabled())
                 .passwordChangeRequired(account.passwordChangeRequired())
                 .createdAt(utc(account.createdAt()))
+                .passwordRequestedAt(utc(account.passwordRequestedAt()))
                 .workArea(
                         account.workArea() == null
                                 ? null

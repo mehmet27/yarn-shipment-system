@@ -9,7 +9,7 @@ export {
   ME_PATH,
   safeReturnTo,
 } from './me';
-export { changeOwnPassword, login } from './generated/shipmentService';
+export { changeOwnPassword, login, requestPassword } from './generated/shipmentService';
 export type {
   ChangeOwnPasswordRequest,
   LoginRequest,

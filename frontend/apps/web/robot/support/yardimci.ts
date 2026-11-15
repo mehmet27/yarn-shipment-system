@@ -131,3 +131,37 @@ export function istanbulGunu(fark = 0): string {
   const an = new Date(Date.now() + fark * 24 * 60 * 60 * 1000);
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(an);
 }
+
+/** Yönetici ekranından Depo rolünde yeni hesap açar (geçici şifreyle); ilk girişi yapmaz. */
+export async function depoHesabiAc(admin: Page, girisAdi: string, ad: string, ilkSifre: string) {
+  await admin.goto('/panel/kullanicilar');
+  await admin.getByRole('button', { name: 'Yeni kullanıcı' }).click();
+  const pencere = admin.getByRole('dialog');
+  await sec(admin, /^Rol/, 'Depo', pencere);
+  await pencere.getByLabel(/Giriş adı/).fill(girisAdi);
+  await pencere.getByLabel(/Ad soyad/).fill(ad);
+  await pencere.getByLabel(/İlk şifre/).fill(ilkSifre);
+  await pencere.getByRole('button', { name: 'Hesabı aç' }).click();
+  await admin.getByText(`${girisAdi} hesabı açıldı`).waitFor();
+  await admin.keyboard.press('Escape');
+}
+
+/** Geçici şifreyle ilk girişi yapar ve kendi şifresini seçer; oturum açık kalır. */
+export async function ilkGirisVeSifreSec(
+  sayfa: Page,
+  girisAdi: string,
+  ilk: string,
+  kendi: string,
+) {
+  await girisFormu(sayfa, girisAdi, ilk);
+  await sayfa.waitForURL(/sifre-degistir/, { timeout: 20_000 });
+  await sifreDegistirFormu(sayfa, ilk, kendi);
+  await sayfa.waitForURL((adres) => !/giris|sifre-degistir/.test(adres.pathname), {
+    timeout: 20_000,
+  });
+}
+
+/** Oturumun hâlâ geçerli olup olmadığı: `/api/v1/me` durum kodu (200 açık, 401 kapanmış). */
+export async function oturumDurumu(sayfa: Page): Promise<number> {
+  return sayfa.evaluate(async () => (await fetch('/api/v1/me')).status);
+}

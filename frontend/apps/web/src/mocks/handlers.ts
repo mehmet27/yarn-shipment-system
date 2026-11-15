@@ -28,6 +28,7 @@ import { createClaimHandlers } from './claimHandlers';
 import { createDiscrepancyHandlers } from './discrepancyHandlers';
 import { createEvidenceHandlers } from './evidenceHandlers';
 import { createLoginAccountHandlers } from './loginAccountHandlers';
+import { requestMockPassword } from './loginAccounts';
 import { createLotHandlers } from './lotHandlers';
 import { createMasterDataHandlers } from './masterDataHandlers';
 import { createReportHandlers } from './reportHandlers';
@@ -363,6 +364,15 @@ const logoutHandler = http.post(
 const loginHandler = http.post('/api/v1/auth/login', () =>
   HttpResponse.json({ passwordChangeRequired: false }),
 );
+/** Şifre talebi: giriş istemez, cevap her durumda 204'tür (hesabın varlığı sızmaz). */
+const passwordRequestHandler = http.post('/api/v1/auth/password-requests', async ({ request }) => {
+  const body = (await request.json()) as { username?: unknown };
+  if (typeof body.username !== 'string' || body.username.trim() === '') {
+    return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
+  }
+  requestMockPassword(body.username);
+  return new HttpResponse(null, { status: 204 });
+});
 const changeOwnPasswordHandler = http.put(
   '/api/v1/auth/password',
   () => new HttpResponse(null, { status: 204 }),
@@ -395,6 +405,7 @@ export function createHandlers(role: Role) {
     ...createStockHandlers(createMockUser(role)),
     logoutHandler,
     loginHandler,
+    passwordRequestHandler,
     changeOwnPasswordHandler,
   ];
 }

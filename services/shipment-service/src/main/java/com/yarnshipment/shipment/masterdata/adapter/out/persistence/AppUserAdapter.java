@@ -45,17 +45,25 @@ final class AppUserAdapter implements AuthUserPort, LoginAccountPort, ActorNameP
 
     private static final String SUCCESSFUL_LOGIN = """
             UPDATE app_user
-               SET failed_attempts = 0, locked_until = NULL, last_login_at = :now, updated_at = :now
+               SET failed_attempts = 0, locked_until = NULL, password_requested_at = NULL, last_login_at = :now,
+                   updated_at = :now
              WHERE id = :id""";
 
     private static final String REPLACE_PASSWORD = """
             UPDATE app_user
                SET password_hash = :hash, password_change_required = false, password_changed_at = :now,
-                   failed_attempts = 0, locked_until = NULL, updated_at = :now
+                   failed_attempts = 0, locked_until = NULL, password_requested_at = NULL, updated_at = :now
              WHERE id = :id""";
 
+    private static final String REQUEST_PASSWORD = """
+            UPDATE app_user
+               SET password_requested_at = :now
+             WHERE lower(username) = lower(:username) AND enabled
+               AND (failed_attempts >= :min OR locked_until > :now)""";
+
     private static final String LIST_ALL = """
-            SELECT id, username, full_name, role, enabled, password_change_required, created_at
+            SELECT id, username, full_name, role, enabled, password_change_required, created_at,
+                   password_requested_at
               FROM app_user ORDER BY lower(username)""";
 
     private final JdbcClient jdbc;
@@ -86,6 +94,15 @@ final class AppUserAdapter implements AuthUserPort, LoginAccountPort, ActorNameP
                 .param("id", userId)
                 .param("maxAttempts", maxAttempts)
                 .param("lockedUntil", Timestamp.from(now.plus(lockFor)))
+                .param("now", Timestamp.from(now))
+                .update();
+    }
+
+    @Override
+    public void requestPassword(String username, int minFailedAttempts, Instant now) {
+        jdbc.sql(REQUEST_PASSWORD)
+                .param("username", username)
+                .param("min", minFailedAttempts)
                 .param("now", Timestamp.from(now))
                 .update();
     }
@@ -151,7 +168,9 @@ final class AppUserAdapter implements AuthUserPort, LoginAccountPort, ActorNameP
                 List.of(rs.getString("role")),
                 rs.getBoolean("enabled"),
                 rs.getBoolean("password_change_required"),
-                instant(rs.getTimestamp("created_at")));
+                instant(rs.getTimestamp("created_at")),
+                null,
+                instant(rs.getTimestamp("password_requested_at")));
     }
 
     private static @Nullable Instant instant(@Nullable Timestamp timestamp) {

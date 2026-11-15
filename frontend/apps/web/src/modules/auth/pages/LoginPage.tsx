@@ -3,9 +3,11 @@ import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Center, Paper, PasswordInput, Stack, Text, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import type { SyntheticEvent } from 'react';
+import { PasswordRequestBox } from '../components/PasswordRequestBox';
 import { useLogin } from '../hooks/useLogin';
 
 const KNOWN_CODES = ['AUTHENTICATION_FAILED', 'ACCOUNT_LOCKED'];
+const FAILURES_TO_OFFER_REQUEST = 3;
 const FORM_WIDTH_PX = 380;
 
 function errorKey(error: unknown): string {
@@ -18,7 +20,12 @@ export function LoginPage() {
   const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { submit, isPending, error } = useLogin();
+  const { submit, isPending, error, failures } = useLogin();
+  const isLocked = error !== undefined && toProblem(error).code === 'ACCOUNT_LOCKED';
+  const canRequestPassword =
+    username.trim() !== '' &&
+    failures.username === username.trim() &&
+    (failures.count >= FAILURES_TO_OFFER_REQUEST || isLocked);
 
   const onSubmit = (event: SyntheticEvent) => {
     event.preventDefault();
@@ -56,6 +63,7 @@ export function LoginPage() {
               required
             />
             {error !== undefined && <Alert color="red">{t(errorKey(error))}</Alert>}
+            {canRequestPassword && <PasswordRequestBox username={username} />}
             <Button type="submit" loading={isPending} disabled={username === '' || password === ''}>
               {t('auth.login.submit')}
             </Button>

@@ -42,6 +42,7 @@ yarnshipment:
     - /actuator/info
     - /api/v1/branding
     - /api/v1/auth/login
+    - /api/v1/auth/password-requests
   events:
     routes:
       - type-prefix: com.yarnshipment.shipment.

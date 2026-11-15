@@ -36,7 +36,8 @@ export interface Problem {
  */
 export type Kg = string;
 
-export type Role = (typeof Role)[keyof typeof Role];
+export type Role = typeof Role[keyof typeof Role];
+
 
 export const Role = {
   ADMIN: 'ADMIN',
@@ -46,7 +47,8 @@ export const Role = {
   GENERAL_MANAGER: 'GENERAL_MANAGER',
 } as const;
 
-export type Permission = (typeof Permission)[keyof typeof Permission];
+export type Permission = typeof Permission[keyof typeof Permission];
+
 
 export const Permission = {
   MASTER_DATA_VIEW: 'MASTER_DATA_VIEW',
@@ -84,7 +86,8 @@ export const Permission = {
 /**
  * Kalite kullanıcısının çalışma alanı; merkez kalite yalnız merkez fabrikanın kumaşını, fasoncu kalite yalnız fasoncuların kumaşını görür
  */
-export type WorkArea = (typeof WorkArea)[keyof typeof WorkArea];
+export type WorkArea = typeof WorkArea[keyof typeof WorkArea];
+
 
 export const WorkArea = {
   CENTRAL: 'CENTRAL',
@@ -103,7 +106,8 @@ export interface CurrentUserResponse {
   workArea?: WorkArea;
 }
 
-export type ShipmentStatus = (typeof ShipmentStatus)[keyof typeof ShipmentStatus];
+export type ShipmentStatus = typeof ShipmentStatus[keyof typeof ShipmentStatus];
+
 
 export const ShipmentStatus = {
   DRAFT: 'DRAFT',
@@ -116,7 +120,8 @@ export const ShipmentStatus = {
 /**
  * Kullanıcının bu sevkiyatta şu an yapabileceği işlem; buton yalnızca listede varsa gösterilir.
  */
-export type ShipmentAction = (typeof ShipmentAction)[keyof typeof ShipmentAction];
+export type ShipmentAction = typeof ShipmentAction[keyof typeof ShipmentAction];
+
 
 export const ShipmentAction = {
   ASSIGN_BAGS: 'ASSIGN_BAGS',
@@ -164,7 +169,8 @@ export interface ShipmentPageResponse {
 /**
  * Görünüm türü; hangi alanların bulunacağını belirler.
  */
-export type Audience = (typeof Audience)[keyof typeof Audience];
+export type Audience = typeof Audience[keyof typeof Audience];
+
 
 export const Audience = {
   INTERNAL: 'INTERNAL',
@@ -182,7 +188,8 @@ export interface WeighingView {
 /**
  * Düzeltilen kayıt: çıkış tartımı (brüt ve dara)
  */
-export type CorrectionTarget = (typeof CorrectionTarget)[keyof typeof CorrectionTarget];
+export type CorrectionTarget = typeof CorrectionTarget[keyof typeof CorrectionTarget];
+
 
 export const CorrectionTarget = {
   DISPATCH_WEIGHING: 'DISPATCH_WEIGHING',
@@ -196,13 +203,14 @@ export interface RecordCorrectionRequest {
   grossKg?: Kg;
   tareKg?: Kg;
   /**
-   * @minLength 1
-   * @maxLength 500
-   */
+     * @minLength 1
+     * @maxLength 500
+     */
   reason: string;
 }
 
-export type CorrectionViewStatus = (typeof CorrectionViewStatus)[keyof typeof CorrectionViewStatus];
+export type CorrectionViewStatus = typeof CorrectionViewStatus[keyof typeof CorrectionViewStatus];
+
 
 export const CorrectionViewStatus = {
   PENDING: 'PENDING',
@@ -231,10 +239,10 @@ export interface CorrectionListResponse {
 
 export interface CompleteShipmentRequest {
   /**
-   * Müdüre ulaşan irsaliyenin numarası
-   * @minLength 1
-   * @maxLength 64
-   */
+     * Müdüre ulaşan irsaliyenin numarası
+     * @minLength 1
+     * @maxLength 64
+     */
   waybillNo: string;
   /** evidence-service'e WAYBILL türüyle yüklenen irsaliye belgesinin kimliği */
   waybillEvidenceId: string;
@@ -242,26 +250,26 @@ export interface CompleteShipmentRequest {
 
 export interface CancelShipmentRequest {
   /**
-   * @minLength 1
-   * @maxLength 500
-   */
+     * @minLength 1
+     * @maxLength 500
+     */
   reason: string;
 }
 
 export interface AssignShipmentBagsRequest {
   /**
-   * Eklenecek çuvalların kiloları; her kilo bir çuvaldır, girilme sırasıyla numaralanır
-   * @minItems 1
-   * @maxItems 500
-   */
+     * Eklenecek çuvalların kiloları; her kilo bir çuvaldır, girilme sırasıyla numaralanır
+     * @minItems 1
+     * @maxItems 500
+     */
   weightsKg: Kg[];
 }
 
 export interface AssignShipmentBagsResponse {
   /**
-   * Bu istekle eklenen çuval sayısı
-   * @minimum 0
-   */
+     * Bu istekle eklenen çuval sayısı
+     * @minimum 0
+     */
   assignedCount: number;
 }
 
@@ -276,41 +284,41 @@ export interface UpdateShipmentDateRequest {
 export interface RecipeLineInput {
   yarnTypeId?: string;
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
+     * @minLength 1
+     * @maxLength 200
+     */
   yarnTypeText?: string;
   lotId?: string;
   netKg: Kg;
   /**
-   * Sipariş formu, kumaş cinsi
-   * @maxLength 200
-   */
+     * Sipariş formu, kumaş cinsi
+     * @maxLength 200
+     */
   fabricType?: string;
   /**
-   * Sipariş formu, LYC (ör. 30 denye)
-   * @maxLength 200
-   */
+     * Sipariş formu, LYC (ör. 30 denye)
+     * @maxLength 200
+     */
   lycra?: string;
   /**
-   * Sipariş formu, tüp / may / açık en
-   * @pattern ^(TUBE|MAY|OPEN_WIDTH)$
-   */
+     * Sipariş formu, tüp / may / açık en
+     * @pattern ^(TUBE|MAY|OPEN_WIDTH)$
+     */
   widthType?: string;
   /**
-   * Sipariş formu, iplik uzunluğu / lycra
-   * @maxLength 200
-   */
+     * Sipariş formu, iplik uzunluğu / lycra
+     * @maxLength 200
+     */
   yarnLength?: string;
   /**
-   * Sipariş formu, puss-fine
-   * @maxLength 200
-   */
+     * Sipariş formu, puss-fine
+     * @maxLength 200
+     */
   pussFine?: string;
   /**
-   * Sipariş formu, birim fiyat (TL/kg)
-   * @pattern ^\d{1,8}(\.\d{1,4})?$
-   */
+     * Sipariş formu, birim fiyat (TL/kg)
+     * @pattern ^\d{1,8}(\.\d{1,4})?$
+     */
   unitPrice?: string;
 }
 
@@ -324,49 +332,49 @@ export interface CreateShipmentRequest {
   /** Sevkiyat günü (Türkiye saati); depo bu günden önce çuval atayamaz ve çıkış tartımı giremez */
   shipmentDate: string;
   /**
-   * Reçete satırları (en az bir); beklenen net kilo satırların toplamıdır
-   * @minItems 1
-   * @maxItems 50
-   */
+     * Reçete satırları (en az bir); beklenen net kilo satırların toplamıdır
+     * @minItems 1
+     * @maxItems 50
+     */
   lines: RecipeLineInput[];
   fireRate?: FireRate;
   siteId: string;
   subcontractorId: string;
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
+     * @minLength 1
+     * @maxLength 200
+     */
   subcontractorTitle: string;
   /** İplik merkezden değil başka bir fasoncudan gidiyorsa gönderen fasoncu; sourceSubcontractorTitle ile birlikte verilir */
   sourceSubcontractorId?: string;
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
+     * @minLength 1
+     * @maxLength 200
+     */
   sourceSubcontractorTitle?: string;
   /**
-   * Doluysa iplik depoya girmeden kamyondan kamyona aktarılır; gelen tedarikçi. Gönderen fasoncu ile birlikte verilemez
-   * @minLength 1
-   * @maxLength 200
-   */
+     * Doluysa iplik depoya girmeden kamyondan kamyona aktarılır; gelen tedarikçi. Gönderen fasoncu ile birlikte verilemez
+     * @minLength 1
+     * @maxLength 200
+     */
   directTransferSupplier?: string;
   /**
-   * Kapıdan aktarılan ipliğin geliş irsaliye numarası; directTransferSupplier ile birlikte verilir
-   * @minLength 1
-   * @maxLength 100
-   */
+     * Kapıdan aktarılan ipliğin geliş irsaliye numarası; directTransferSupplier ile birlikte verilir
+     * @minLength 1
+     * @maxLength 100
+     */
   directTransferWaybillNo?: string;
   driverId?: string;
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
+     * @minLength 1
+     * @maxLength 200
+     */
   driverName?: string;
   vehicleId?: string;
   /**
-   * @minLength 1
-   * @maxLength 20
-   */
+     * @minLength 1
+     * @maxLength 20
+     */
   plateNo?: string;
 }
 
@@ -377,34 +385,34 @@ export interface RecipeLineView {
   lotId?: string;
   netKg: Kg;
   /**
-   * Sipariş formu, kumaş cinsi
-   * @maxLength 200
-   */
+     * Sipariş formu, kumaş cinsi
+     * @maxLength 200
+     */
   fabricType?: string;
   /**
-   * Sipariş formu, LYC (ör. 30 denye)
-   * @maxLength 200
-   */
+     * Sipariş formu, LYC (ör. 30 denye)
+     * @maxLength 200
+     */
   lycra?: string;
   /**
-   * Sipariş formu, tüp / may / açık en
-   * @pattern ^(TUBE|MAY|OPEN_WIDTH)$
-   */
+     * Sipariş formu, tüp / may / açık en
+     * @pattern ^(TUBE|MAY|OPEN_WIDTH)$
+     */
   widthType?: string;
   /**
-   * Sipariş formu, iplik uzunluğu / lycra
-   * @maxLength 200
-   */
+     * Sipariş formu, iplik uzunluğu / lycra
+     * @maxLength 200
+     */
   yarnLength?: string;
   /**
-   * Sipariş formu, puss-fine
-   * @maxLength 200
-   */
+     * Sipariş formu, puss-fine
+     * @maxLength 200
+     */
   pussFine?: string;
   /**
-   * Sipariş formu, birim fiyat (TL/kg)
-   * @pattern ^\d{1,8}(\.\d{1,4})?$
-   */
+     * Sipariş formu, birim fiyat (TL/kg)
+     * @pattern ^\d{1,8}(\.\d{1,4})?$
+     */
   unitPrice?: string;
 }
 
@@ -412,14 +420,15 @@ export interface WeightCheckView {
   expectedKg: Kg;
   measuredKg: Kg;
   /**
-   * Tartılan - beklenen; eksik yükte negatif
-   * @pattern ^-?\d{1,9}\.\d{3}$
-   */
+     * Tartılan - beklenen; eksik yükte negatif
+     * @pattern ^-?\d{1,9}\.\d{3}$
+     */
   diffKg: string;
   shortfallReason?: string;
 }
 
-export type WeightDecisionKind = (typeof WeightDecisionKind)[keyof typeof WeightDecisionKind];
+export type WeightDecisionKind = typeof WeightDecisionKind[keyof typeof WeightDecisionKind];
+
 
 export const WeightDecisionKind = {
   CANCEL: 'CANCEL',
@@ -430,9 +439,9 @@ export const WeightDecisionKind = {
 export interface WeightDecisionRequest {
   decision: WeightDecisionKind;
   /**
-   * @minLength 1
-   * @maxLength 500
-   */
+     * @minLength 1
+     * @maxLength 500
+     */
   reason: string;
 }
 
@@ -463,8 +472,8 @@ export interface SubcontractorPageResponse {
   page: PageMetadata;
 }
 
-export type MasterDataStatusFilter =
-  (typeof MasterDataStatusFilter)[keyof typeof MasterDataStatusFilter];
+export type MasterDataStatusFilter = typeof MasterDataStatusFilter[keyof typeof MasterDataStatusFilter];
+
 
 export const MasterDataStatusFilter = {
   ACTIVE: 'ACTIVE',
@@ -473,17 +482,17 @@ export const MasterDataStatusFilter = {
 
 export interface SubcontractorRequest {
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
+     * @minLength 1
+     * @maxLength 200
+     */
   title: string;
 }
 
 export interface DriverRequest {
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
+     * @minLength 1
+     * @maxLength 200
+     */
   fullName: string;
   /** Fasonculuk şoförü ise bağlı olduğu etkin fasoncu; kendi şoförü ise boş */
   subcontractorId?: string;
@@ -528,7 +537,8 @@ export interface LoginAccountView {
 /**
  * Yönetici tarafından açılabilen fabrika içi roller; şoför ve fasoncu kayıtlarından açılır
  */
-export type StaffRole = (typeof StaffRole)[keyof typeof StaffRole];
+export type StaffRole = typeof StaffRole[keyof typeof StaffRole];
+
 
 export const StaffRole = {
   ADMIN: 'ADMIN',
@@ -540,35 +550,35 @@ export const StaffRole = {
 
 export interface StaffLoginAccountRequest {
   /**
-   * Giriş adı; küçük harf, rakam, nokta, alt çizgi ve tire
-   * @pattern ^[a-z0-9][a-z0-9._-]{2,63}$
-   */
+     * Giriş adı; küçük harf, rakam, nokta, alt çizgi ve tire
+     * @pattern ^[a-z0-9][a-z0-9._-]{2,63}$
+     */
   username: string;
   /**
-   * @minLength 2
-   * @maxLength 200
-   */
+     * @minLength 2
+     * @maxLength 200
+     */
   fullName: string;
   role: StaffRole;
   workArea?: WorkArea;
   /**
-   * Yöneticinin belirlediği geçici şifre; kişi ilk girişte değiştirir. SMS ya da e-posta doğrulaması yoktur.
-   * @minLength 8
-   * @maxLength 128
-   */
+     * Yöneticinin belirlediği geçici şifre; kişi ilk girişte değiştirir. SMS ya da e-posta doğrulaması yoktur.
+     * @minLength 8
+     * @maxLength 128
+     */
   password: string;
 }
 
 export interface LoginRequest {
   /**
-   * @minLength 1
-   * @maxLength 100
-   */
+     * @minLength 1
+     * @maxLength 100
+     */
   username: string;
   /**
-   * @minLength 1
-   * @maxLength 128
-   */
+     * @minLength 1
+     * @maxLength 128
+     */
   password: string;
 }
 
@@ -579,9 +589,9 @@ export interface LoginResponse {
 
 export interface PasswordRequest {
   /**
-   * @minLength 1
-   * @maxLength 100
-   */
+     * @minLength 1
+     * @maxLength 100
+     */
   username: string;
 }
 
@@ -589,14 +599,14 @@ export interface ChangeOwnPasswordRequest {
   /** Doğruysa (varsayılan) kullanıcının diğer oturumları sonlandırılır; yanlışsa yalnızca şifre değişir */
   terminateOtherSessions?: boolean;
   /**
-   * @minLength 1
-   * @maxLength 128
-   */
+     * @minLength 1
+     * @maxLength 128
+     */
   currentPassword: string;
   /**
-   * @minLength 8
-   * @maxLength 128
-   */
+     * @minLength 8
+     * @maxLength 128
+     */
   newPassword: string;
 }
 
@@ -606,9 +616,9 @@ export interface ChangeLoginAccountEnabledRequest {
 
 export interface SetLoginAccountPasswordRequest {
   /**
-   * @minLength 8
-   * @maxLength 128
-   */
+     * @minLength 8
+     * @maxLength 128
+     */
   password: string;
 }
 
@@ -622,10 +632,10 @@ export interface ChangeLoginAccountRoleRequest {
 
 export interface ChangeLoginAccountNameRequest {
   /**
-   * Ad soyad; son boşluktan öncesi ad, sonrası soyad olarak yazılır
-   * @minLength 2
-   * @maxLength 200
-   */
+     * Ad soyad; son boşluktan öncesi ad, sonrası soyad olarak yazılır
+     * @minLength 2
+     * @maxLength 200
+     */
   fullName: string;
 }
 
@@ -658,17 +668,17 @@ export interface VehiclePageResponse {
 
 export interface VehicleRequest {
   /**
-   * @minLength 1
-   * @maxLength 20
-   */
+     * @minLength 1
+     * @maxLength 20
+     */
   plateNo: string;
 }
 
 export interface SiteRequest {
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
+     * @minLength 1
+     * @maxLength 200
+     */
   name: string;
 }
 
@@ -686,28 +696,28 @@ export interface SitePageResponse {
 
 export interface ProductCreateRequest {
   /**
-   * Harf veya rakamla başlar; harf, rakam ve + . _ / - içerir. Büyük harfe çevrilir, sonra değişmez
-   * @minLength 1
-   * @maxLength 40
-   */
+     * Harf veya rakamla başlar; harf, rakam ve + . _ / - içerir. Büyük harfe çevrilir, sonra değişmez
+     * @minLength 1
+     * @maxLength 40
+     */
   code: string;
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
+     * @minLength 1
+     * @maxLength 200
+     */
   name: string;
   /**
-   * İplik numarası, ör. Ne 30/1
-   * @maxLength 50
-   */
+     * İplik numarası, ör. Ne 30/1
+     * @maxLength 50
+     */
   yarnCount?: string;
 }
 
 export interface ProductUpdateRequest {
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
+     * @minLength 1
+     * @maxLength 200
+     */
   name: string;
   /** @maxLength 50 */
   yarnCount?: string;
@@ -745,34 +755,34 @@ export interface BrandingSaveRequest {
 
 export interface QualityGradeCreateRequest {
   /**
-   * Harf veya rakamla başlar; harf, rakam ve + . _ / - içerir. Büyük harfe çevrilir, sonra değişmez
-   * @minLength 1
-   * @maxLength 40
-   */
+     * Harf veya rakamla başlar; harf, rakam ve + . _ / - içerir. Büyük harfe çevrilir, sonra değişmez
+     * @minLength 1
+     * @maxLength 40
+     */
   code: string;
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
+     * @minLength 1
+     * @maxLength 200
+     */
   name: string;
   /**
-   * Listelerde ve seçicilerde görünme sırası; küçük olan önce gelir (boşsa 0)
-   * @minimum 0
-   * @maximum 9999
-   */
+     * Listelerde ve seçicilerde görünme sırası; küçük olan önce gelir (boşsa 0)
+     * @minimum 0
+     * @maximum 9999
+     */
   sortOrder?: number;
 }
 
 export interface QualityGradeUpdateRequest {
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
+     * @minLength 1
+     * @maxLength 200
+     */
   name: string;
   /**
-   * @minimum 0
-   * @maximum 9999
-   */
+     * @minimum 0
+     * @maximum 9999
+     */
   sortOrder?: number;
 }
 
@@ -795,18 +805,18 @@ export interface QualityGradePageResponse {
 
 export interface YarnSupplierCreateRequest {
   /**
-   * Tedarikçi adı; büyük/küçük harf duyarsız tekildir
-   * @minLength 1
-   * @maxLength 200
-   */
+     * Tedarikçi adı; büyük/küçük harf duyarsız tekildir
+     * @minLength 1
+     * @maxLength 200
+     */
   name: string;
 }
 
 export interface YarnSupplierUpdateRequest {
   /**
-   * @minLength 1
-   * @maxLength 200
-   */
+     * @minLength 1
+     * @maxLength 200
+     */
   name: string;
 }
 
@@ -825,10 +835,10 @@ export interface YarnSupplierPageResponse {
 export interface LotCreateRequest {
   siteId: string;
   /**
-   * Parti numarası; lokasyonda tektir, büyük harfe çevrilir
-   * @minLength 1
-   * @maxLength 40
-   */
+     * Parti numarası; lokasyonda tektir, büyük harfe çevrilir
+     * @minLength 1
+     * @maxLength 40
+     */
   lotNo: string;
   productId: string;
   qualityGradeId: string;
@@ -839,10 +849,10 @@ export interface LotCreateRequest {
 
 export interface LotUpdateRequest {
   /**
-   * Parti numarası; lokasyonda tektir, büyük harfe çevrilir
-   * @minLength 1
-   * @maxLength 40
-   */
+     * Parti numarası; lokasyonda tektir, büyük harfe çevrilir
+     * @minLength 1
+     * @maxLength 40
+     */
   lotNo: string;
   productId: string;
   qualityGradeId: string;
@@ -897,9 +907,9 @@ export interface ShipmentHistoryResponse {
 
 export interface DispatchBagView {
   /**
-   * Sevkiyat içindeki çuval sırası
-   * @minimum 1
-   */
+     * Sevkiyat içindeki çuval sırası
+     * @minimum 1
+     */
   seqNo: number;
   weightKg: Kg;
   assignedAt: string;
@@ -922,20 +932,20 @@ export interface DispatchWeighingRequest {
   loadedVehicleKg?: Kg;
   emptyVehicleKg?: Kg;
   /**
-   * Depo eksik yüklüyorsa nedeni (stok yetmedi gibi); müdürün kararına girdi olur
-   * @minLength 1
-   * @maxLength 500
-   */
+     * Depo eksik yüklüyorsa nedeni (stok yetmedi gibi); müdürün kararına girdi olur
+     * @minLength 1
+     * @maxLength 500
+     */
   shortfallReason?: string;
   /**
-   * Tartılan çuval sayısı
-   * @minimum 1
-   */
+     * Tartılan çuval sayısı
+     * @minimum 1
+     */
   bagCount: number;
 }
 
-export type InternalShipmentViewAudience =
-  (typeof InternalShipmentViewAudience)[keyof typeof InternalShipmentViewAudience];
+export type InternalShipmentViewAudience = typeof InternalShipmentViewAudience[keyof typeof InternalShipmentViewAudience];
+
 
 export const InternalShipmentViewAudience = {
   INTERNAL: 'INTERNAL',
@@ -973,8 +983,8 @@ export interface InternalShipmentView {
   allowedActions: ShipmentAction[];
 }
 
-export type WarehouseShipmentViewAudience =
-  (typeof WarehouseShipmentViewAudience)[keyof typeof WarehouseShipmentViewAudience];
+export type WarehouseShipmentViewAudience = typeof WarehouseShipmentViewAudience[keyof typeof WarehouseShipmentViewAudience];
+
 
 export const WarehouseShipmentViewAudience = {
   WAREHOUSE: 'WAREHOUSE',
@@ -1086,231 +1096,236 @@ export type SearchTextParameter = string;
 export type IdempotencyKeyParameter = string;
 
 export type ListShipmentsParams = {
-  /**
-   * @minimum 0
-   */
-  page?: PageParameter;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  size?: SizeParameter;
-  /**
-   * Yalnızca bu durumlardaki sevkiyatlar
-   */
-  status?: ShipmentStatus[];
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Yalnızca bu durumlardaki sevkiyatlar
+ */
+status?: ShipmentStatus[];
 };
 
 export type ListSubcontractorsParams = {
-  /**
-   * @minimum 0
-   */
-  page?: PageParameter;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  size?: SizeParameter;
-  /**
-   * Arama metni
-   * @minLength 1
-   * @maxLength 100
-   */
-  q?: SearchTextParameter;
-  /**
-   * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
-   */
-  status?: StatusFilterParameter;
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
 };
 
 export type ListDriversParams = {
-  /**
-   * @minimum 0
-   */
-  page?: PageParameter;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  size?: SizeParameter;
-  /**
-   * Arama metni
-   * @minLength 1
-   * @maxLength 100
-   */
-  q?: SearchTextParameter;
-  /**
-   * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
-   */
-  status?: StatusFilterParameter;
-  subcontractorId?: string;
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
+subcontractorId?: string;
 };
 
 export type ListLoginAccountsParams = {
-  /**
-   * @minimum 0
-   */
-  page?: PageParameter;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  size?: SizeParameter;
-  /**
-   * Arama metni
-   * @minLength 1
-   * @maxLength 100
-   */
-  q?: SearchTextParameter;
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
 };
 
 export type ListUserNamesParams = {
-  /**
-   * Kullanıcı kimlikleri (en çok 100)
-   * @minItems 1
-   * @maxItems 100
-   */
-  ids: string[];
+/**
+ * Kullanıcı kimlikleri (en çok 100)
+ * @minItems 1
+ * @maxItems 100
+ */
+ids: string[];
 };
 
 export type ListVehiclesParams = {
-  /**
-   * @minimum 0
-   */
-  page?: PageParameter;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  size?: SizeParameter;
-  /**
-   * Arama metni
-   * @minLength 1
-   * @maxLength 100
-   */
-  q?: SearchTextParameter;
-  /**
-   * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
-   */
-  status?: StatusFilterParameter;
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
 };
 
 export type ListSitesParams = {
-  /**
-   * @minimum 0
-   */
-  page?: PageParameter;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  size?: SizeParameter;
-  /**
-   * Arama metni
-   * @minLength 1
-   * @maxLength 100
-   */
-  q?: SearchTextParameter;
-  /**
-   * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
-   */
-  status?: StatusFilterParameter;
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
 };
 
 export type ListProductsParams = {
-  /**
-   * @minimum 0
-   */
-  page?: PageParameter;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  size?: SizeParameter;
-  /**
-   * Arama metni
-   * @minLength 1
-   * @maxLength 100
-   */
-  q?: SearchTextParameter;
-  /**
-   * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
-   */
-  status?: StatusFilterParameter;
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
 };
 
 export type ListQualityGradesParams = {
-  /**
-   * @minimum 0
-   */
-  page?: PageParameter;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  size?: SizeParameter;
-  /**
-   * Arama metni
-   * @minLength 1
-   * @maxLength 100
-   */
-  q?: SearchTextParameter;
-  /**
-   * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
-   */
-  status?: StatusFilterParameter;
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
 };
 
 export type ListYarnSuppliersParams = {
-  /**
-   * @minimum 0
-   */
-  page?: PageParameter;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  size?: SizeParameter;
-  /**
-   * Arama metni
-   * @minLength 1
-   * @maxLength 100
-   */
-  q?: SearchTextParameter;
-  /**
-   * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
-   */
-  status?: StatusFilterParameter;
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
 };
 
 export type ListLotsParams = {
-  /**
-   * @minimum 0
-   */
-  page?: PageParameter;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  size?: SizeParameter;
-  /**
-   * Arama metni
-   * @minLength 1
-   * @maxLength 100
-   */
-  q?: SearchTextParameter;
-  /**
-   * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
-   */
-  status?: StatusFilterParameter;
+/**
+ * @minimum 0
+ */
+page?: PageParameter;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: SizeParameter;
+/**
+ * Arama metni
+ * @minLength 1
+ * @maxLength 100
+ */
+q?: SearchTextParameter;
+/**
+ * ACTIVE yalnızca etkin kayıtlar (varsayılan); ALL pasifler de gelir (yalnızca MASTER_DATA_MANAGE, yoksa 403)
+ */
+status?: StatusFilterParameter;
 };
 
 /**
  * @summary Oturumdaki kullanıcı, rolleri, izinleri ve kapsamı
  */
-export const getCurrentUser = () => {
-  return customInstance<CurrentUserResponse>({ url: `/api/v1/me`, method: 'GET' });
-};
+export const getCurrentUser = (
+
+ ) => {
+      return customInstance<CurrentUserResponse>(
+      {url: `/api/v1/me`, method: 'GET'
+    },
+      );
+    }
 
 /**
  * Başarılı girişte HttpOnly oturum çerezi verilir; token tarayıcıya inmez. Kullanıcı adı ya da şifre yanlışsa,
@@ -1319,14 +1334,16 @@ export const getCurrentUser = () => {
  * şifresini değiştirene kadar başka işlem yapamaz.
  * @summary Kullanıcı adı ve şifreyle oturum açar
  */
-export const login = (loginRequest: LoginRequest) => {
-  return customInstance<LoginResponse>({
-    url: `/api/v1/auth/login`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: loginRequest,
-  });
-};
+export const login = (
+    loginRequest: LoginRequest,
+ ) => {
+      return customInstance<LoginResponse>(
+      {url: `/api/v1/auth/login`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: loginRequest
+    },
+      );
+    }
 
 /**
  * Giriş yapmamış kişi içindir. Talep yalnızca hesapta art arda en az 3 hatalı giriş varsa (ya da hesap kilitliyse)
@@ -1334,21 +1351,28 @@ export const login = (loginRequest: LoginRequest) => {
  * durumda 204'tür: hesabın var olup olmadığı ya da koşulun sağlanıp sağlanmadığı söylenmez.
  * @summary Hesap sahibi adminden şifre ister
  */
-export const requestPassword = (passwordRequest: PasswordRequest) => {
-  return customInstance<void>({
-    url: `/api/v1/auth/password-requests`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: passwordRequest,
-  });
-};
+export const requestPassword = (
+    passwordRequest: PasswordRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/auth/password-requests`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: passwordRequest
+    },
+      );
+    }
 
 /**
  * @summary Oturumu kapatır
  */
-export const logout = () => {
-  return customInstance<void>({ url: `/api/v1/auth/logout`, method: 'POST' });
-};
+export const logout = (
+
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/auth/logout`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Mevcut şifre doğrulanır; yanlışsa 400 `INVALID_CURRENT_PASSWORD`. Yeni şifre kurala uymuyorsa ya da eskisiyle
@@ -1356,14 +1380,16 @@ export const logout = () => {
  * devam eder. Geçici şifreyle giren kişi bu ucu kullanır.
  * @summary Oturumdaki kullanıcı kendi şifresini değiştirir
  */
-export const changeOwnPassword = (changeOwnPasswordRequest: ChangeOwnPasswordRequest) => {
-  return customInstance<void>({
-    url: `/api/v1/auth/password`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: changeOwnPasswordRequest,
-  });
-};
+export const changeOwnPassword = (
+    changeOwnPasswordRequest: ChangeOwnPasswordRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/auth/password`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: changeOwnPasswordRequest
+    },
+      );
+    }
 
 /**
  * Çıkış lokasyonu ve fasoncu ile taslak sevkiyat açar; numara sunucuda üretilir. Lokasyon kullanıcının
@@ -1372,32 +1398,42 @@ export const changeOwnPassword = (changeOwnPasswordRequest: ChangeOwnPasswordReq
  * istek yeni sevkiyat açmaz, ilk yanıtı döner.
  * @summary Sevkiyat taslağı oluşturur (DRAFT)
  */
-export const createShipment = (createShipmentRequest: CreateShipmentRequest) => {
-  return customInstance<CreateShipmentResponse>({
-    url: `/api/v1/shipments`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: createShipmentRequest,
-  });
-};
+export const createShipment = (
+    createShipmentRequest: CreateShipmentRequest,
+ ) => {
+      return customInstance<CreateShipmentResponse>(
+      {url: `/api/v1/shipments`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: createShipmentRequest
+    },
+      );
+    }
 
 /**
  * Fasoncu yalnızca kendi, iç kullanıcılar yalnızca yetkili oldukları lokasyonlardaki sevkiyatları görür. Filtre sorguya eklenir (SEC-03).
  * @summary Kapsamdaki sevkiyatlar, en yeni önce
  */
-export const listShipments = (params?: ListShipmentsParams) => {
-  return customInstance<ShipmentPageResponse>({ url: `/api/v1/shipments`, method: 'GET', params });
-};
+export const listShipments = (
+    params?: ListShipmentsParams,
+ ) => {
+      return customInstance<ShipmentPageResponse>(
+      {url: `/api/v1/shipments`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * @summary Sevkiyat ayrıntısı, isteyenin görünümüyle
  */
-export const getShipment = (shipmentId: string) => {
-  return customInstance<ShipmentDetailResponse>({
-    url: `/api/v1/shipments/${shipmentId}`,
-    method: 'GET',
-  });
-};
+export const getShipment = (
+    shipmentId: string,
+ ) => {
+      return customInstance<ShipmentDetailResponse>(
+      {url: `/api/v1/shipments/${shipmentId}`, method: 'GET'
+    },
+      );
+    }
 
 /**
  * Depo çalışanı kantar fişindeki brüt, dara ve çuval sayısını girer. Net kilo brüt ile daradan hesaplanır.
@@ -1406,16 +1442,16 @@ export const getShipment = (shipmentId: string) => {
  * @summary Depo çıkış tartımını kaydeder (DRAFT → AWAITING_DELIVERY)
  */
 export const recordDispatchWeighing = (
-  shipmentId: string,
-  dispatchWeighingRequest: DispatchWeighingRequest,
-) => {
-  return customInstance<void>({
-    url: `/api/v1/shipments/${shipmentId}/dispatch-weighing`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: dispatchWeighingRequest,
-  });
-};
+    shipmentId: string,
+    dispatchWeighingRequest: DispatchWeighingRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/dispatch-weighing`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: dispatchWeighingRequest
+    },
+      );
+    }
 
 /**
  * Müdür irsaliye belgesini önce evidence-service'e WAYBILL türüyle yükler, sonra irsaliye numarası ve belgenin
@@ -1425,141 +1461,160 @@ export const recordDispatchWeighing = (
  * @summary İrsaliye müdüre ulaştı, sevkiyatı tamamlar (AWAITING_DELIVERY → COMPLETED)
  */
 export const completeShipment = (
-  shipmentId: string,
-  completeShipmentRequest: CompleteShipmentRequest,
-) => {
-  return customInstance<void>({
-    url: `/api/v1/shipments/${shipmentId}/completion`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: completeShipmentRequest,
-  });
-};
+    shipmentId: string,
+    completeShipmentRequest: CompleteShipmentRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/completion`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: completeShipmentRequest
+    },
+      );
+    }
 
 /**
  * Sevkiyat oluşturma ekranında fasoncu seçimi için. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
  * @summary Fasoncu listesi
  */
-export const listSubcontractors = (params?: ListSubcontractorsParams) => {
-  return customInstance<SubcontractorPageResponse>({
-    url: `/api/v1/master-data/subcontractors`,
-    method: 'GET',
-    params,
-  });
-};
+export const listSubcontractors = (
+    params?: ListSubcontractorsParams,
+ ) => {
+      return customInstance<SubcontractorPageResponse>(
+      {url: `/api/v1/master-data/subcontractors`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Ünvan boş olamaz ve tektir (büyük/küçük harf ve baş/son boşluk yok sayılır, pasif kayıtlar dahil); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Fasoncu ekler
  */
-export const createSubcontractor = (subcontractorRequest: SubcontractorRequest) => {
-  return customInstance<SubcontractorView>({
-    url: `/api/v1/master-data/subcontractors`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: subcontractorRequest,
-  });
-};
+export const createSubcontractor = (
+    subcontractorRequest: SubcontractorRequest,
+ ) => {
+      return customInstance<SubcontractorView>(
+      {url: `/api/v1/master-data/subcontractors`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: subcontractorRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Başka fasoncunun ünvanı 409 `DUPLICATE_SUBCONTRACTOR` verir.
  * @summary Fasoncu günceller
  */
 export const updateSubcontractor = (
-  subcontractorId: string,
-  subcontractorRequest: SubcontractorRequest,
-) => {
-  return customInstance<SubcontractorView>({
-    url: `/api/v1/master-data/subcontractors/${subcontractorId}`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: subcontractorRequest,
-  });
-};
+    subcontractorId: string,
+    subcontractorRequest: SubcontractorRequest,
+ ) => {
+      return customInstance<SubcontractorView>(
+      {url: `/api/v1/master-data/subcontractors/${subcontractorId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: subcontractorRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
  * @summary Fasoncu pasife alır
  */
-export const deactivateSubcontractor = (subcontractorId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/subcontractors/${subcontractorId}/deactivate`,
-    method: 'POST',
-  });
-};
+export const deactivateSubcontractor = (
+    subcontractorId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/subcontractors/${subcontractorId}/deactivate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Fasoncu yeniden etkinleştirir
  */
-export const activateSubcontractor = (subcontractorId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/subcontractors/${subcontractorId}/activate`,
-    method: 'POST',
-  });
-};
+export const activateSubcontractor = (
+    subcontractorId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/subcontractors/${subcontractorId}/activate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Şoför seçimi için; `subcontractorId` verilirse yalnızca o fasoncunun şoförleri gelir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
  * @summary Şoför listesi
  */
-export const listDrivers = (params?: ListDriversParams) => {
-  return customInstance<DriverPageResponse>({
-    url: `/api/v1/master-data/drivers`,
-    method: 'GET',
-    params,
-  });
-};
+export const listDrivers = (
+    params?: ListDriversParams,
+ ) => {
+      return customInstance<DriverPageResponse>(
+      {url: `/api/v1/master-data/drivers`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Fasoncu verilirse etkin bir fasoncu olmalıdır. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Şoför ekler
  */
-export const createDriver = (driverRequest: DriverRequest) => {
-  return customInstance<DriverView>({
-    url: `/api/v1/master-data/drivers`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: driverRequest,
-  });
-};
+export const createDriver = (
+    driverRequest: DriverRequest,
+ ) => {
+      return customInstance<DriverView>(
+      {url: `/api/v1/master-data/drivers`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: driverRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
  * @summary Şoför günceller
  */
-export const updateDriver = (driverId: string, driverRequest: DriverRequest) => {
-  return customInstance<DriverView>({
-    url: `/api/v1/master-data/drivers/${driverId}`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: driverRequest,
-  });
-};
+export const updateDriver = (
+    driverId: string,
+    driverRequest: DriverRequest,
+ ) => {
+      return customInstance<DriverView>(
+      {url: `/api/v1/master-data/drivers/${driverId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: driverRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
  * @summary Şoför pasife alır
  */
-export const deactivateDriver = (driverId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/drivers/${driverId}/deactivate`,
-    method: 'POST',
-  });
-};
+export const deactivateDriver = (
+    driverId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/drivers/${driverId}/deactivate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (USER_MANAGE). Giriş hesabı olan kullanıcılar giriş adına göre sıralı gelir. Arama `q` ile giriş adı ve adda yapılır
  * (büyük-küçük harf duyarsız). Şifre ya da başka kimlik bilgisi hiçbir zaman dönmez.
  * @summary Giriş hesabı olan kullanıcıların listesi
  */
-export const listLoginAccounts = (params?: ListLoginAccountsParams) => {
-  return customInstance<LoginAccountPageResponse>({
-    url: `/api/v1/master-data/login-accounts`,
-    method: 'GET',
-    params,
-  });
-};
+export const listLoginAccounts = (
+    params?: ListLoginAccountsParams,
+ ) => {
+      return customInstance<LoginAccountPageResponse>(
+      {url: `/api/v1/master-data/login-accounts`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (USER_MANAGE). Depo, kalite, müdür ya da yönetici hesabını yöneticinin yazdığı
@@ -1568,14 +1623,16 @@ export const listLoginAccounts = (params?: ListLoginAccountsParams) => {
  * almaz. Giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`; şifre kurala uymuyorsa 400 `WEAK_PASSWORD`.
  * @summary Fabrika içi giriş hesabı açar
  */
-export const createStaffLoginAccount = (staffLoginAccountRequest: StaffLoginAccountRequest) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/login-accounts`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: staffLoginAccountRequest,
-  });
-};
+export const createStaffLoginAccount = (
+    staffLoginAccountRequest: StaffLoginAccountRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/login-accounts`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: staffLoginAccountRequest
+    },
+      );
+    }
 
 /**
  * Denetim kaydı gibi ekranlarda kimliği ada çevirir. Yönetici (USER_MANAGE) ve denetim görüntüleyen roller
@@ -1583,13 +1640,15 @@ export const createStaffLoginAccount = (staffLoginAccountRequest: StaffLoginAcco
  * bulunmayan kimlik yanıtta olmaz.
  * @summary Kullanıcı kimliklerinin okunur adları
  */
-export const listUserNames = (params: ListUserNamesParams) => {
-  return customInstance<UserNameListResponse>({
-    url: `/api/v1/master-data/user-names`,
-    method: 'GET',
-    params,
-  });
-};
+export const listUserNames = (
+    params: ListUserNamesParams,
+ ) => {
+      return customInstance<UserNameListResponse>(
+      {url: `/api/v1/master-data/user-names`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (USER_MANAGE). Kullanıcının fabrika içi rolünü (depo, kalite, müdür, yönetici) yenisiyle
@@ -1599,16 +1658,16 @@ export const listUserNames = (params: ListUserNamesParams) => {
  * @summary Fabrika içi hesabın rolünü değiştirir
  */
 export const changeLoginAccountRole = (
-  userId: string,
-  changeLoginAccountRoleRequest: ChangeLoginAccountRoleRequest,
-) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/login-accounts/${userId}/role`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: changeLoginAccountRoleRequest,
-  });
-};
+    userId: string,
+    changeLoginAccountRoleRequest: ChangeLoginAccountRoleRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/login-accounts/${userId}/role`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: changeLoginAccountRoleRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (USER_MANAGE). Kullanıcının ad soyadını kimlik sağlayıcıdaki profilinde günceller; giriş adı,
@@ -1617,16 +1676,16 @@ export const changeLoginAccountRole = (
  * @summary Fabrika içi hesabın ad soyadını değiştirir
  */
 export const changeLoginAccountName = (
-  userId: string,
-  changeLoginAccountNameRequest: ChangeLoginAccountNameRequest,
-) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/login-accounts/${userId}/name`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: changeLoginAccountNameRequest,
-  });
-};
+    userId: string,
+    changeLoginAccountNameRequest: ChangeLoginAccountNameRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/login-accounts/${userId}/name`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: changeLoginAccountNameRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (USER_MANAGE). Pasife alınan kullanıcı giremez ve açık oturumları kapanır; veri silinmez.
@@ -1635,16 +1694,16 @@ export const changeLoginAccountName = (
  * @summary Giriş hesabını pasife alır ya da yeniden açar
  */
 export const changeLoginAccountEnabled = (
-  userId: string,
-  changeLoginAccountEnabledRequest: ChangeLoginAccountEnabledRequest,
-) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/login-accounts/${userId}/enabled`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: changeLoginAccountEnabledRequest,
-  });
-};
+    userId: string,
+    changeLoginAccountEnabledRequest: ChangeLoginAccountEnabledRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/login-accounts/${userId}/enabled`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: changeLoginAccountEnabledRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (USER_MANAGE). Şifre geçicidir: kişi bir sonraki girişte kendi şifresini seçer, açık oturumları
@@ -1653,436 +1712,509 @@ export const changeLoginAccountEnabled = (
  * @summary Kullanıcıya yeni geçici şifre belirler
  */
 export const setLoginAccountPassword = (
-  userId: string,
-  setLoginAccountPasswordRequest: SetLoginAccountPasswordRequest,
-) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/login-accounts/${userId}/password`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: setLoginAccountPasswordRequest,
-  });
-};
+    userId: string,
+    setLoginAccountPasswordRequest: SetLoginAccountPasswordRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/login-accounts/${userId}/password`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: setLoginAccountPasswordRequest
+    },
+      );
+    }
 
 /**
  * Girişsiz çağrılır; giriş sayfası da markalı olsun diye. Hiç kaydedilmemişse varsayılan ana renk döner (`companyName` ve `logoDataUrl` yoktur). Yanıt önbelleğe alınmaz.
  * @summary Kurulumun marka ayarı (firma adı, ana renk, logo)
  */
-export const getBranding = () => {
-  return customInstance<BrandingView>({ url: `/api/v1/branding`, method: 'GET' });
-};
+export const getBranding = (
+
+ ) => {
+      return customInstance<BrandingView>(
+      {url: `/api/v1/branding`, method: 'GET'
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (SETTINGS_MANAGE). Tek kayıt vardır; tüm alanlar yazılır (boş bırakılan `companyName` ve `logoDataUrl` silinir). Aynı istek tekrarlanırsa sonuç değişmez. Ana renk `#rrggbb` olmalı; logo png, jpeg, webp ya da svg base64 data adresi ve en çok 200 000 karakterdir. Geçersiz değer `INVALID_MASTER_DATA`. Değişiklik denetim kaydına düşer.
  * @summary Marka ayarını kaydeder
  */
-export const saveBranding = (brandingSaveRequest: BrandingSaveRequest) => {
-  return customInstance<BrandingView>({
-    url: `/api/v1/branding`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: brandingSaveRequest,
-  });
-};
+export const saveBranding = (
+    brandingSaveRequest: BrandingSaveRequest,
+ ) => {
+      return customInstance<BrandingView>(
+      {url: `/api/v1/branding`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: brandingSaveRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Şoför yeniden etkinleştirir
  */
-export const activateDriver = (driverId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/drivers/${driverId}/activate`,
-    method: 'POST',
-  });
-};
+export const activateDriver = (
+    driverId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/drivers/${driverId}/activate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Araç seçimi için. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
  * @summary Araç listesi
  */
-export const listVehicles = (params?: ListVehiclesParams) => {
-  return customInstance<VehiclePageResponse>({
-    url: `/api/v1/master-data/vehicles`,
-    method: 'GET',
-    params,
-  });
-};
+export const listVehicles = (
+    params?: ListVehiclesParams,
+ ) => {
+      return customInstance<VehiclePageResponse>(
+      {url: `/api/v1/master-data/vehicles`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`); başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Araç ekler
  */
-export const createVehicle = (vehicleRequest: VehicleRequest) => {
-  return customInstance<VehicleView>({
-    url: `/api/v1/master-data/vehicles`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: vehicleRequest,
-  });
-};
+export const createVehicle = (
+    vehicleRequest: VehicleRequest,
+ ) => {
+      return customInstance<VehicleView>(
+      {url: `/api/v1/master-data/vehicles`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: vehicleRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Plaka kuralı eklemedeki gibidir (`INVALID_PLATE`, `DUPLICATE_PLATE`).
  * @summary Araç günceller
  */
-export const updateVehicle = (vehicleId: string, vehicleRequest: VehicleRequest) => {
-  return customInstance<VehicleView>({
-    url: `/api/v1/master-data/vehicles/${vehicleId}`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: vehicleRequest,
-  });
-};
+export const updateVehicle = (
+    vehicleId: string,
+    vehicleRequest: VehicleRequest,
+ ) => {
+      return customInstance<VehicleView>(
+      {url: `/api/v1/master-data/vehicles/${vehicleId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: vehicleRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
  * @summary Araç pasife alır
  */
-export const deactivateVehicle = (vehicleId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/vehicles/${vehicleId}/deactivate`,
-    method: 'POST',
-  });
-};
+export const deactivateVehicle = (
+    vehicleId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/vehicles/${vehicleId}/deactivate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Araç yeniden etkinleştirir
  */
-export const activateVehicle = (vehicleId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/vehicles/${vehicleId}/activate`,
-    method: 'POST',
-  });
-};
+export const activateVehicle = (
+    vehicleId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/vehicles/${vehicleId}/activate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07); `MASTER_DATA_MANAGE` izni olan (admin) tüm lokasyonları görür, böylece yeni açtığı lokasyonu yönetebilir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
  * @summary Lokasyon listesi
  */
-export const listSites = (params?: ListSitesParams) => {
-  return customInstance<SitePageResponse>({
-    url: `/api/v1/master-data/sites`,
-    method: 'GET',
-    params,
-  });
-};
+export const listSites = (
+    params?: ListSitesParams,
+ ) => {
+      return customInstance<SitePageResponse>(
+      {url: `/api/v1/master-data/sites`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Ad boş olamaz. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Lokasyon ekler
  */
-export const createSite = (siteRequest: SiteRequest) => {
-  return customInstance<SiteView>({
-    url: `/api/v1/master-data/sites`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: siteRequest,
-  });
-};
+export const createSite = (
+    siteRequest: SiteRequest,
+ ) => {
+      return customInstance<SiteView>(
+      {url: `/api/v1/master-data/sites`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: siteRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
  * @summary Lokasyon günceller
  */
-export const updateSite = (siteId: string, siteRequest: SiteRequest) => {
-  return customInstance<SiteView>({
-    url: `/api/v1/master-data/sites/${siteId}`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: siteRequest,
-  });
-};
+export const updateSite = (
+    siteId: string,
+    siteRequest: SiteRequest,
+ ) => {
+      return customInstance<SiteView>(
+      {url: `/api/v1/master-data/sites/${siteId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: siteRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
  * @summary Lokasyon pasife alır
  */
-export const deactivateSite = (siteId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/sites/${siteId}/deactivate`,
-    method: 'POST',
-  });
-};
+export const deactivateSite = (
+    siteId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/sites/${siteId}/deactivate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Lokasyon yeniden etkinleştirir
  */
-export const activateSite = (siteId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/sites/${siteId}/activate`,
-    method: 'POST',
-  });
-};
+export const activateSite = (
+    siteId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/sites/${siteId}/activate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * İplik (ürün) seçimi için; koda göre sıralı. Arama `q` ile kod ve adda yapılır (büyük-küçük harf duyarsız).
  * @summary İplik listesi
  */
-export const listProducts = (params?: ListProductsParams) => {
-  return customInstance<ProductPageResponse>({
-    url: `/api/v1/master-data/products`,
-    method: 'GET',
-    params,
-  });
-};
+export const listProducts = (
+    params?: ListProductsParams,
+ ) => {
+      return customInstance<ProductPageResponse>(
+      {url: `/api/v1/master-data/products`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Kod boşluklardan arındırılıp büyük harfe çevrilir; harf veya rakamla başlar, en çok 40 karakterdir ve yalnızca harf, rakam ve `+ . _ / -` içerir (değilse 400 `INVALID_MASTER_DATA`). Kullanılmış kod 409 `DUPLICATE_CODE` verir. Kod eklendikten sonra değişmez. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary İplik ekler
  */
-export const createProduct = (productCreateRequest: ProductCreateRequest) => {
-  return customInstance<ProductView>({
-    url: `/api/v1/master-data/products`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: productCreateRequest,
-  });
-};
+export const createProduct = (
+    productCreateRequest: ProductCreateRequest,
+ ) => {
+      return customInstance<ProductView>(
+      {url: `/api/v1/master-data/products`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: productCreateRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve iplik numarası güncellenir. Kayıt pasif olsa da güncellenebilir.
  * @summary İplik günceller
  */
-export const updateProduct = (productId: string, productUpdateRequest: ProductUpdateRequest) => {
-  return customInstance<ProductView>({
-    url: `/api/v1/master-data/products/${productId}`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: productUpdateRequest,
-  });
-};
+export const updateProduct = (
+    productId: string,
+    productUpdateRequest: ProductUpdateRequest,
+ ) => {
+      return customInstance<ProductView>(
+      {url: `/api/v1/master-data/products/${productId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: productUpdateRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif iplik yeni partiye verilemez; mevcut partiler etkilenmez.
  * @summary İplik pasife alır
  */
-export const deactivateProduct = (productId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/products/${productId}/deactivate`,
-    method: 'POST',
-  });
-};
+export const deactivateProduct = (
+    productId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/products/${productId}/deactivate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary İplik yeniden etkinleştirir
  */
-export const activateProduct = (productId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/products/${productId}/activate`,
-    method: 'POST',
-  });
-};
+export const activateProduct = (
+    productId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/products/${productId}/activate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Kalite sınıfı (A, B ...) seçimi için; koda göre sıralı. Arama `q` ile kod ve adda yapılır.
  * @summary Kalite sınıfı listesi
  */
-export const listQualityGrades = (params?: ListQualityGradesParams) => {
-  return customInstance<QualityGradePageResponse>({
-    url: `/api/v1/master-data/quality-grades`,
-    method: 'GET',
-    params,
-  });
-};
+export const listQualityGrades = (
+    params?: ListQualityGradesParams,
+ ) => {
+      return customInstance<QualityGradePageResponse>(
+      {url: `/api/v1/master-data/quality-grades`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Kod kuralı iplikteki gibidir (`INVALID_MASTER_DATA`, `DUPLICATE_CODE`); kod partinin kilidiyle çuvala kopyalandığı için eklendikten sonra değişmez. Etiket rengi `#RRGGBB` biçimindedir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Kalite sınıfı ekler
  */
-export const createQualityGrade = (qualityGradeCreateRequest: QualityGradeCreateRequest) => {
-  return customInstance<QualityGradeView>({
-    url: `/api/v1/master-data/quality-grades`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: qualityGradeCreateRequest,
-  });
-};
+export const createQualityGrade = (
+    qualityGradeCreateRequest: QualityGradeCreateRequest,
+ ) => {
+      return customInstance<QualityGradeView>(
+      {url: `/api/v1/master-data/quality-grades`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: qualityGradeCreateRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve etiket rengi güncellenir.
  * @summary Kalite sınıfı günceller
  */
 export const updateQualityGrade = (
-  qualityGradeId: string,
-  qualityGradeUpdateRequest: QualityGradeUpdateRequest,
-) => {
-  return customInstance<QualityGradeView>({
-    url: `/api/v1/master-data/quality-grades/${qualityGradeId}`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: qualityGradeUpdateRequest,
-  });
-};
+    qualityGradeId: string,
+    qualityGradeUpdateRequest: QualityGradeUpdateRequest,
+ ) => {
+      return customInstance<QualityGradeView>(
+      {url: `/api/v1/master-data/quality-grades/${qualityGradeId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: qualityGradeUpdateRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif sınıf yeni partiye verilemez ve kilitlenecek partide kullanılamaz.
  * @summary Kalite sınıfı pasife alır
  */
-export const deactivateQualityGrade = (qualityGradeId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/quality-grades/${qualityGradeId}/deactivate`,
-    method: 'POST',
-  });
-};
+export const deactivateQualityGrade = (
+    qualityGradeId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/quality-grades/${qualityGradeId}/deactivate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Kalite sınıfı yeniden etkinleştirir
  */
-export const activateQualityGrade = (qualityGradeId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/quality-grades/${qualityGradeId}/activate`,
-    method: 'POST',
-  });
-};
+export const activateQualityGrade = (
+    qualityGradeId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/quality-grades/${qualityGradeId}/activate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * İplik tedarikçisi (Şireci, Karesi ...) seçimi için; ada göre sıralı. Arama `q` ile adda yapılır. Pasifleri yalnızca yönetici `status=ALL` ile görür.
  * @summary İplik tedarikçisi listesi
  */
-export const listYarnSuppliers = (params?: ListYarnSuppliersParams) => {
-  return customInstance<YarnSupplierPageResponse>({
-    url: `/api/v1/master-data/yarn-suppliers`,
-    method: 'GET',
-    params,
-  });
-};
+export const listYarnSuppliers = (
+    params?: ListYarnSuppliersParams,
+ ) => {
+      return customInstance<YarnSupplierPageResponse>(
+      {url: `/api/v1/master-data/yarn-suppliers`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Ad büyük/küçük harf duyarsız tekildir (`DUPLICATE_CODE`, alan `name`). Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz.
  * @summary İplik tedarikçisi ekler
  */
-export const createYarnSupplier = (yarnSupplierCreateRequest: YarnSupplierCreateRequest) => {
-  return customInstance<YarnSupplierView>({
-    url: `/api/v1/master-data/yarn-suppliers`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: yarnSupplierCreateRequest,
-  });
-};
+export const createYarnSupplier = (
+    yarnSupplierCreateRequest: YarnSupplierCreateRequest,
+ ) => {
+      return customInstance<YarnSupplierView>(
+      {url: `/api/v1/master-data/yarn-suppliers`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: yarnSupplierCreateRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Adı değiştirir; yeni ad da tekil olmalıdır.
  * @summary İplik tedarikçisi günceller
  */
 export const updateYarnSupplier = (
-  yarnSupplierId: string,
-  yarnSupplierUpdateRequest: YarnSupplierUpdateRequest,
-) => {
-  return customInstance<YarnSupplierView>({
-    url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: yarnSupplierUpdateRequest,
-  });
-};
+    yarnSupplierId: string,
+    yarnSupplierUpdateRequest: YarnSupplierUpdateRequest,
+ ) => {
+      return customInstance<YarnSupplierView>(
+      {url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: yarnSupplierUpdateRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez; pasif tedarikçi yeni partiye verilemez. Tekrarı zararsızdır.
  * @summary İplik tedarikçisi pasife alır
  */
-export const deactivateYarnSupplier = (yarnSupplierId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}/deactivate`,
-    method: 'POST',
-  });
-};
+export const deactivateYarnSupplier = (
+    yarnSupplierId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}/deactivate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı geri getirir. Tekrarı zararsızdır.
  * @summary İplik tedarikçisi yeniden etkinleştirir
  */
-export const activateYarnSupplier = (yarnSupplierId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}/activate`,
-    method: 'POST',
-  });
-};
+export const activateYarnSupplier = (
+    yarnSupplierId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/yarn-suppliers/${yarnSupplierId}/activate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Partiler, üretim tarihine göre yeniden eskiye. Yalnızca kullanıcının yetkili olduğu lokasyonların partileri gelir; `MASTER_DATA_MANAGE` izni olan hepsini görür. Arama `q` ile parti numarası, iplik kodu ve adında yapılır. `status=ALL` için `LOT_QUALITY_LOCK` gerekir.
  * @summary Parti listesi
  */
-export const listLots = (params?: ListLotsParams) => {
-  return customInstance<LotPageResponse>({
-    url: `/api/v1/master-data/lots`,
-    method: 'GET',
-    params,
-  });
-};
+export const listLots = (
+    params?: ListLotsParams,
+ ) => {
+      return customInstance<LotPageResponse>(
+      {url: `/api/v1/master-data/lots`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Parti numarası kod kuralına uyar ve lokasyonda tektir (`DUPLICATE_CODE`). Lokasyon, iplik ve kalite sınıfı etkin olmalı, üretim tarihi ileride olamaz (değilse 400 `INVALID_MASTER_DATA`). Parti kilitsiz açılır; çuval bağlanabilmesi için kalitesi kilitlenmelidir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Parti ekler
  */
-export const createLot = (lotCreateRequest: LotCreateRequest) => {
-  return customInstance<LotView>({
-    url: `/api/v1/master-data/lots`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: lotCreateRequest,
-  });
-};
+export const createLot = (
+    lotCreateRequest: LotCreateRequest,
+ ) => {
+      return customInstance<LotView>(
+      {url: `/api/v1/master-data/lots`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: lotCreateRequest
+    },
+      );
+    }
 
 /**
  * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Yalnızca kalitesi kilitlenmemiş parti düzenlenir; kilitli parti 409 `LOT_QUALITY_LOCKED` verir. Lokasyon değişmez.
  * @summary Parti günceller
  */
-export const updateLot = (lotId: string, lotUpdateRequest: LotUpdateRequest) => {
-  return customInstance<LotView>({
-    url: `/api/v1/master-data/lots/${lotId}`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: lotUpdateRequest,
-  });
-};
+export const updateLot = (
+    lotId: string,
+    lotUpdateRequest: LotUpdateRequest,
+ ) => {
+      return customInstance<LotView>(
+      {url: `/api/v1/master-data/lots/${lotId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: lotUpdateRequest
+    },
+      );
+    }
 
 /**
  * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Kilitli parti de pasife alınabilir; kilit ve kalite değişmez.
  * @summary Parti pasife alır
  */
-export const deactivateLot = (lotId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/lots/${lotId}/deactivate`,
-    method: 'POST',
-  });
-};
+export const deactivateLot = (
+    lotId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/lots/${lotId}/deactivate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Parti yeniden etkinleştirir
  */
-export const activateLot = (lotId: string) => {
-  return customInstance<void>({
-    url: `/api/v1/master-data/lots/${lotId}/activate`,
-    method: 'POST',
-  });
-};
+export const activateLot = (
+    lotId: string,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/master-data/lots/${lotId}/activate`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında (rapor Bölüm 10). Kilitten sonra partinin numarası, ipliği, kalitesi ve üretim tarihi değişmez ve kilit geri alınamaz; Kilitli parti 409 `LOT_QUALITY_LOCKED`; pasif parti ya da pasif kalite sınıfı 400 `INVALID_MASTER_DATA` verir.
  * @summary Partinin kalitesini kilitler
  */
-export const lockLotQuality = (lotId: string) => {
-  return customInstance<LotView>({
-    url: `/api/v1/master-data/lots/${lotId}/quality-lock`,
-    method: 'POST',
-  });
-};
+export const lockLotQuality = (
+    lotId: string,
+ ) => {
+      return customInstance<LotView>(
+      {url: `/api/v1/master-data/lots/${lotId}/quality-lock`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Kapsamdaki her kullanıcı için aynıdır; kişisel veri taşımaz, işlemi yapan yalnızca kimlikle gelir.
  * @summary Sevkiyatın durum geçmişi, eskiden yeniye
  */
-export const getShipmentHistory = (shipmentId: string) => {
-  return customInstance<ShipmentHistoryResponse>({
-    url: `/api/v1/shipments/${shipmentId}/history`,
-    method: 'GET',
-  });
-};
+export const getShipmentHistory = (
+    shipmentId: string,
+ ) => {
+      return customInstance<ShipmentHistoryResponse>(
+      {url: `/api/v1/shipments/${shipmentId}/history`, method: 'GET'
+    },
+      );
+    }
 
 /**
  * Müdür (SHIPMENT_CREATE). Yalnızca taslak (DRAFT) sevkiyatın günü değişir; gün bugünden önce olamaz (400).
@@ -2090,16 +2222,16 @@ export const getShipmentHistory = (shipmentId: string) => {
  * @summary Taslak sevkiyatın sevkiyat gününü günceller
  */
 export const updateShipmentDate = (
-  shipmentId: string,
-  updateShipmentDateRequest: UpdateShipmentDateRequest,
-) => {
-  return customInstance<void>({
-    url: `/api/v1/shipments/${shipmentId}/shipment-date`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: updateShipmentDateRequest,
-  });
-};
+    shipmentId: string,
+    updateShipmentDateRequest: UpdateShipmentDateRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/shipment-date`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updateShipmentDateRequest
+    },
+      );
+    }
 
 /**
  * Müdür ya da yönetici (SHIPMENT_CANCEL). Taslak (DRAFT), kantar uyuşmazlığındaki (WEIGHT_MISMATCH) ya da teslim bekleyen (AWAITING_DELIVERY) sevkiyat
@@ -2109,16 +2241,16 @@ export const updateShipmentDate = (
  * @summary Tamamlanmamış sevkiyatı iptal eder
  */
 export const cancelShipment = (
-  shipmentId: string,
-  cancelShipmentRequest: CancelShipmentRequest,
-) => {
-  return customInstance<void>({
-    url: `/api/v1/shipments/${shipmentId}/cancel`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: cancelShipmentRequest,
-  });
-};
+    shipmentId: string,
+    cancelShipmentRequest: CancelShipmentRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/cancel`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: cancelShipmentRequest
+    },
+      );
+    }
 
 /**
  * Müdür ya da yönetici (SHIPMENT_CANCEL). `CANCEL`: sevkiyat iptal olur, çuvallar serbest kalır. `ADD_REMOVE_BAGS`:
@@ -2128,38 +2260,45 @@ export const cancelShipment = (
  * @summary Kantar uyuşmazlığına karar verir (WEIGHT_MISMATCH)
  */
 export const decideWeightMismatch = (
-  shipmentId: string,
-  weightDecisionRequest: WeightDecisionRequest,
-) => {
-  return customInstance<void>({
-    url: `/api/v1/shipments/${shipmentId}/weight-decision`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: weightDecisionRequest,
-  });
-};
+    shipmentId: string,
+    weightDecisionRequest: WeightDecisionRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/weight-decision`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: weightDecisionRequest
+    },
+      );
+    }
 
 /**
  * Sevkiyat görüntüleme izni olan herkes okur; müdür yeni sevkiyat formunu bununla doldurur.
  * @summary Varsayılan fire oranı ve kantar toleransı
  */
-export const getShipmentSettings = () => {
-  return customInstance<ShipmentSettingsView>({ url: `/api/v1/settings/shipment`, method: 'GET' });
-};
+export const getShipmentSettings = (
+
+ ) => {
+      return customInstance<ShipmentSettingsView>(
+      {url: `/api/v1/settings/shipment`, method: 'GET'
+    },
+      );
+    }
 
 /**
  * Yalnızca yönetici (SETTINGS_MANAGE). Fire oranı 0–0.20, tolerans kg ≥ 0. Değişiklik denetim kaydına düşer.
  * Geçersiz değer `INVALID_SHIPMENT`.
  * @summary Varsayılan fire oranını ve kantar toleransını kaydeder
  */
-export const saveShipmentSettings = (shipmentSettingsRequest: ShipmentSettingsRequest) => {
-  return customInstance<ShipmentSettingsView>({
-    url: `/api/v1/settings/shipment`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    data: shipmentSettingsRequest,
-  });
-};
+export const saveShipmentSettings = (
+    shipmentSettingsRequest: ShipmentSettingsRequest,
+ ) => {
+      return customInstance<ShipmentSettingsView>(
+      {url: `/api/v1/settings/shipment`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: shipmentSettingsRequest
+    },
+      );
+    }
 
 /**
  * Yalnızca Admin (CORRECTION_CREATE). Tamamlanıp kilitlenmiş sevkiyatta da çalışır (rapor 7.8). Kayıt
@@ -2171,27 +2310,29 @@ export const saveShipmentSettings = (shipmentSettingsRequest: ShipmentSettingsRe
  * @summary Çıkış tartımını gerekçeyle düzeltir
  */
 export const recordCorrection = (
-  shipmentId: string,
-  recordCorrectionRequest: RecordCorrectionRequest,
-) => {
-  return customInstance<CorrectionView>({
-    url: `/api/v1/shipments/${shipmentId}/corrections`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: recordCorrectionRequest,
-  });
-};
+    shipmentId: string,
+    recordCorrectionRequest: RecordCorrectionRequest,
+ ) => {
+      return customInstance<CorrectionView>(
+      {url: `/api/v1/shipments/${shipmentId}/corrections`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: recordCorrectionRequest
+    },
+      );
+    }
 
 /**
  * Admin ve yönetici (CORRECTION_CREATE ya da AUDIT_VIEW); eski ve yeni değer birlikte döner.
  * @summary Sevkiyatın düzeltme kayıtları, eskiden yeniye
  */
-export const listCorrections = (shipmentId: string) => {
-  return customInstance<CorrectionListResponse>({
-    url: `/api/v1/shipments/${shipmentId}/corrections`,
-    method: 'GET',
-  });
-};
+export const listCorrections = (
+    shipmentId: string,
+ ) => {
+      return customInstance<CorrectionListResponse>(
+      {url: `/api/v1/shipments/${shipmentId}/corrections`, method: 'GET'
+    },
+      );
+    }
 
 /**
  * Depo çuvalları sıra numarasıyla ve kiloyla yazar; her kilo bir çuvaldır ve sevkiyattaki son sıradan devam eden
@@ -2200,146 +2341,118 @@ export const listCorrections = (shipmentId: string) => {
  * @summary Çuvalları taslak sevkiyata ekler
  */
 export const assignShipmentBags = (
-  shipmentId: string,
-  assignShipmentBagsRequest: AssignShipmentBagsRequest,
-) => {
-  return customInstance<AssignShipmentBagsResponse>({
-    url: `/api/v1/shipments/${shipmentId}/bags`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: assignShipmentBagsRequest,
-  });
-};
+    shipmentId: string,
+    assignShipmentBagsRequest: AssignShipmentBagsRequest,
+ ) => {
+      return customInstance<AssignShipmentBagsResponse>(
+      {url: `/api/v1/shipments/${shipmentId}/bags`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: assignShipmentBagsRequest
+    },
+      );
+    }
 
 /**
  * Çıkışta girilen çuvallar (sıra no ve kg). Liste sayfalanmaz: bir sevkiyatın çuval sayısıyla sınırlıdır.
  * @summary Sevkiyatın çuvalları, isteyenin görünümüyle
  */
-export const getShipmentBags = (shipmentId: string) => {
-  return customInstance<ShipmentBagsResponse>({
-    url: `/api/v1/shipments/${shipmentId}/bags`,
-    method: 'GET',
-  });
-};
+export const getShipmentBags = (
+    shipmentId: string,
+ ) => {
+      return customInstance<ShipmentBagsResponse>(
+      {url: `/api/v1/shipments/${shipmentId}/bags`, method: 'GET'
+    },
+      );
+    }
 
 /**
  * Yanlış girilen çuvalı sıra numarasıyla sevkiyat listesinden çıkarır. Yalnızca çıkış tartımından önce (DRAFT)
  * yapılabilir. Çuval sevkiyatta değilse de 204 döner, böylece istek güvenle tekrarlanır.
  * @summary Çuvalı taslak sevkiyattan çıkarır
  */
-export const removeShipmentBag = (shipmentId: string, seqNo: number) => {
-  return customInstance<void>({
-    url: `/api/v1/shipments/${shipmentId}/bags/${seqNo}`,
-    method: 'DELETE',
-  });
-};
+export const removeShipmentBag = (
+    shipmentId: string,
+    seqNo: number,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/bags/${seqNo}`, method: 'DELETE'
+    },
+      );
+    }
+
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+    type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
-export type GetCurrentUserResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
-export type LoginResult = NonNullable<Awaited<ReturnType<typeof login>>>;
-export type RequestPasswordResult = NonNullable<Awaited<ReturnType<typeof requestPassword>>>;
-export type LogoutResult = NonNullable<Awaited<ReturnType<typeof logout>>>;
-export type ChangeOwnPasswordResult = NonNullable<Awaited<ReturnType<typeof changeOwnPassword>>>;
-export type CreateShipmentResult = NonNullable<Awaited<ReturnType<typeof createShipment>>>;
-export type ListShipmentsResult = NonNullable<Awaited<ReturnType<typeof listShipments>>>;
-export type GetShipmentResult = NonNullable<Awaited<ReturnType<typeof getShipment>>>;
-export type RecordDispatchWeighingResult = NonNullable<
-  Awaited<ReturnType<typeof recordDispatchWeighing>>
->;
-export type CompleteShipmentResult = NonNullable<Awaited<ReturnType<typeof completeShipment>>>;
-export type ListSubcontractorsResult = NonNullable<Awaited<ReturnType<typeof listSubcontractors>>>;
-export type CreateSubcontractorResult = NonNullable<
-  Awaited<ReturnType<typeof createSubcontractor>>
->;
-export type UpdateSubcontractorResult = NonNullable<
-  Awaited<ReturnType<typeof updateSubcontractor>>
->;
-export type DeactivateSubcontractorResult = NonNullable<
-  Awaited<ReturnType<typeof deactivateSubcontractor>>
->;
-export type ActivateSubcontractorResult = NonNullable<
-  Awaited<ReturnType<typeof activateSubcontractor>>
->;
-export type ListDriversResult = NonNullable<Awaited<ReturnType<typeof listDrivers>>>;
-export type CreateDriverResult = NonNullable<Awaited<ReturnType<typeof createDriver>>>;
-export type UpdateDriverResult = NonNullable<Awaited<ReturnType<typeof updateDriver>>>;
-export type DeactivateDriverResult = NonNullable<Awaited<ReturnType<typeof deactivateDriver>>>;
-export type ListLoginAccountsResult = NonNullable<Awaited<ReturnType<typeof listLoginAccounts>>>;
-export type CreateStaffLoginAccountResult = NonNullable<
-  Awaited<ReturnType<typeof createStaffLoginAccount>>
->;
-export type ListUserNamesResult = NonNullable<Awaited<ReturnType<typeof listUserNames>>>;
-export type ChangeLoginAccountRoleResult = NonNullable<
-  Awaited<ReturnType<typeof changeLoginAccountRole>>
->;
-export type ChangeLoginAccountNameResult = NonNullable<
-  Awaited<ReturnType<typeof changeLoginAccountName>>
->;
-export type ChangeLoginAccountEnabledResult = NonNullable<
-  Awaited<ReturnType<typeof changeLoginAccountEnabled>>
->;
-export type SetLoginAccountPasswordResult = NonNullable<
-  Awaited<ReturnType<typeof setLoginAccountPassword>>
->;
-export type GetBrandingResult = NonNullable<Awaited<ReturnType<typeof getBranding>>>;
-export type SaveBrandingResult = NonNullable<Awaited<ReturnType<typeof saveBranding>>>;
-export type ActivateDriverResult = NonNullable<Awaited<ReturnType<typeof activateDriver>>>;
-export type ListVehiclesResult = NonNullable<Awaited<ReturnType<typeof listVehicles>>>;
-export type CreateVehicleResult = NonNullable<Awaited<ReturnType<typeof createVehicle>>>;
-export type UpdateVehicleResult = NonNullable<Awaited<ReturnType<typeof updateVehicle>>>;
-export type DeactivateVehicleResult = NonNullable<Awaited<ReturnType<typeof deactivateVehicle>>>;
-export type ActivateVehicleResult = NonNullable<Awaited<ReturnType<typeof activateVehicle>>>;
-export type ListSitesResult = NonNullable<Awaited<ReturnType<typeof listSites>>>;
-export type CreateSiteResult = NonNullable<Awaited<ReturnType<typeof createSite>>>;
-export type UpdateSiteResult = NonNullable<Awaited<ReturnType<typeof updateSite>>>;
-export type DeactivateSiteResult = NonNullable<Awaited<ReturnType<typeof deactivateSite>>>;
-export type ActivateSiteResult = NonNullable<Awaited<ReturnType<typeof activateSite>>>;
-export type ListProductsResult = NonNullable<Awaited<ReturnType<typeof listProducts>>>;
-export type CreateProductResult = NonNullable<Awaited<ReturnType<typeof createProduct>>>;
-export type UpdateProductResult = NonNullable<Awaited<ReturnType<typeof updateProduct>>>;
-export type DeactivateProductResult = NonNullable<Awaited<ReturnType<typeof deactivateProduct>>>;
-export type ActivateProductResult = NonNullable<Awaited<ReturnType<typeof activateProduct>>>;
-export type ListQualityGradesResult = NonNullable<Awaited<ReturnType<typeof listQualityGrades>>>;
-export type CreateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof createQualityGrade>>>;
-export type UpdateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof updateQualityGrade>>>;
-export type DeactivateQualityGradeResult = NonNullable<
-  Awaited<ReturnType<typeof deactivateQualityGrade>>
->;
-export type ActivateQualityGradeResult = NonNullable<
-  Awaited<ReturnType<typeof activateQualityGrade>>
->;
-export type ListYarnSuppliersResult = NonNullable<Awaited<ReturnType<typeof listYarnSuppliers>>>;
-export type CreateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof createYarnSupplier>>>;
-export type UpdateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof updateYarnSupplier>>>;
-export type DeactivateYarnSupplierResult = NonNullable<
-  Awaited<ReturnType<typeof deactivateYarnSupplier>>
->;
-export type ActivateYarnSupplierResult = NonNullable<
-  Awaited<ReturnType<typeof activateYarnSupplier>>
->;
-export type ListLotsResult = NonNullable<Awaited<ReturnType<typeof listLots>>>;
-export type CreateLotResult = NonNullable<Awaited<ReturnType<typeof createLot>>>;
-export type UpdateLotResult = NonNullable<Awaited<ReturnType<typeof updateLot>>>;
-export type DeactivateLotResult = NonNullable<Awaited<ReturnType<typeof deactivateLot>>>;
-export type ActivateLotResult = NonNullable<Awaited<ReturnType<typeof activateLot>>>;
-export type LockLotQualityResult = NonNullable<Awaited<ReturnType<typeof lockLotQuality>>>;
-export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof getShipmentHistory>>>;
-export type UpdateShipmentDateResult = NonNullable<Awaited<ReturnType<typeof updateShipmentDate>>>;
-export type CancelShipmentResult = NonNullable<Awaited<ReturnType<typeof cancelShipment>>>;
-export type DecideWeightMismatchResult = NonNullable<
-  Awaited<ReturnType<typeof decideWeightMismatch>>
->;
-export type GetShipmentSettingsResult = NonNullable<
-  Awaited<ReturnType<typeof getShipmentSettings>>
->;
-export type SaveShipmentSettingsResult = NonNullable<
-  Awaited<ReturnType<typeof saveShipmentSettings>>
->;
-export type RecordCorrectionResult = NonNullable<Awaited<ReturnType<typeof recordCorrection>>>;
-export type ListCorrectionsResult = NonNullable<Awaited<ReturnType<typeof listCorrections>>>;
-export type AssignShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof assignShipmentBags>>>;
-export type GetShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof getShipmentBags>>>;
-export type RemoveShipmentBagResult = NonNullable<Awaited<ReturnType<typeof removeShipmentBag>>>;
+export type GetCurrentUserResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
+export type LoginResult = NonNullable<Awaited<ReturnType<typeof login>>>
+export type RequestPasswordResult = NonNullable<Awaited<ReturnType<typeof requestPassword>>>
+export type LogoutResult = NonNullable<Awaited<ReturnType<typeof logout>>>
+export type ChangeOwnPasswordResult = NonNullable<Awaited<ReturnType<typeof changeOwnPassword>>>
+export type CreateShipmentResult = NonNullable<Awaited<ReturnType<typeof createShipment>>>
+export type ListShipmentsResult = NonNullable<Awaited<ReturnType<typeof listShipments>>>
+export type GetShipmentResult = NonNullable<Awaited<ReturnType<typeof getShipment>>>
+export type RecordDispatchWeighingResult = NonNullable<Awaited<ReturnType<typeof recordDispatchWeighing>>>
+export type CompleteShipmentResult = NonNullable<Awaited<ReturnType<typeof completeShipment>>>
+export type ListSubcontractorsResult = NonNullable<Awaited<ReturnType<typeof listSubcontractors>>>
+export type CreateSubcontractorResult = NonNullable<Awaited<ReturnType<typeof createSubcontractor>>>
+export type UpdateSubcontractorResult = NonNullable<Awaited<ReturnType<typeof updateSubcontractor>>>
+export type DeactivateSubcontractorResult = NonNullable<Awaited<ReturnType<typeof deactivateSubcontractor>>>
+export type ActivateSubcontractorResult = NonNullable<Awaited<ReturnType<typeof activateSubcontractor>>>
+export type ListDriversResult = NonNullable<Awaited<ReturnType<typeof listDrivers>>>
+export type CreateDriverResult = NonNullable<Awaited<ReturnType<typeof createDriver>>>
+export type UpdateDriverResult = NonNullable<Awaited<ReturnType<typeof updateDriver>>>
+export type DeactivateDriverResult = NonNullable<Awaited<ReturnType<typeof deactivateDriver>>>
+export type ListLoginAccountsResult = NonNullable<Awaited<ReturnType<typeof listLoginAccounts>>>
+export type CreateStaffLoginAccountResult = NonNullable<Awaited<ReturnType<typeof createStaffLoginAccount>>>
+export type ListUserNamesResult = NonNullable<Awaited<ReturnType<typeof listUserNames>>>
+export type ChangeLoginAccountRoleResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountRole>>>
+export type ChangeLoginAccountNameResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountName>>>
+export type ChangeLoginAccountEnabledResult = NonNullable<Awaited<ReturnType<typeof changeLoginAccountEnabled>>>
+export type SetLoginAccountPasswordResult = NonNullable<Awaited<ReturnType<typeof setLoginAccountPassword>>>
+export type GetBrandingResult = NonNullable<Awaited<ReturnType<typeof getBranding>>>
+export type SaveBrandingResult = NonNullable<Awaited<ReturnType<typeof saveBranding>>>
+export type ActivateDriverResult = NonNullable<Awaited<ReturnType<typeof activateDriver>>>
+export type ListVehiclesResult = NonNullable<Awaited<ReturnType<typeof listVehicles>>>
+export type CreateVehicleResult = NonNullable<Awaited<ReturnType<typeof createVehicle>>>
+export type UpdateVehicleResult = NonNullable<Awaited<ReturnType<typeof updateVehicle>>>
+export type DeactivateVehicleResult = NonNullable<Awaited<ReturnType<typeof deactivateVehicle>>>
+export type ActivateVehicleResult = NonNullable<Awaited<ReturnType<typeof activateVehicle>>>
+export type ListSitesResult = NonNullable<Awaited<ReturnType<typeof listSites>>>
+export type CreateSiteResult = NonNullable<Awaited<ReturnType<typeof createSite>>>
+export type UpdateSiteResult = NonNullable<Awaited<ReturnType<typeof updateSite>>>
+export type DeactivateSiteResult = NonNullable<Awaited<ReturnType<typeof deactivateSite>>>
+export type ActivateSiteResult = NonNullable<Awaited<ReturnType<typeof activateSite>>>
+export type ListProductsResult = NonNullable<Awaited<ReturnType<typeof listProducts>>>
+export type CreateProductResult = NonNullable<Awaited<ReturnType<typeof createProduct>>>
+export type UpdateProductResult = NonNullable<Awaited<ReturnType<typeof updateProduct>>>
+export type DeactivateProductResult = NonNullable<Awaited<ReturnType<typeof deactivateProduct>>>
+export type ActivateProductResult = NonNullable<Awaited<ReturnType<typeof activateProduct>>>
+export type ListQualityGradesResult = NonNullable<Awaited<ReturnType<typeof listQualityGrades>>>
+export type CreateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof createQualityGrade>>>
+export type UpdateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof updateQualityGrade>>>
+export type DeactivateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof deactivateQualityGrade>>>
+export type ActivateQualityGradeResult = NonNullable<Awaited<ReturnType<typeof activateQualityGrade>>>
+export type ListYarnSuppliersResult = NonNullable<Awaited<ReturnType<typeof listYarnSuppliers>>>
+export type CreateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof createYarnSupplier>>>
+export type UpdateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof updateYarnSupplier>>>
+export type DeactivateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof deactivateYarnSupplier>>>
+export type ActivateYarnSupplierResult = NonNullable<Awaited<ReturnType<typeof activateYarnSupplier>>>
+export type ListLotsResult = NonNullable<Awaited<ReturnType<typeof listLots>>>
+export type CreateLotResult = NonNullable<Awaited<ReturnType<typeof createLot>>>
+export type UpdateLotResult = NonNullable<Awaited<ReturnType<typeof updateLot>>>
+export type DeactivateLotResult = NonNullable<Awaited<ReturnType<typeof deactivateLot>>>
+export type ActivateLotResult = NonNullable<Awaited<ReturnType<typeof activateLot>>>
+export type LockLotQualityResult = NonNullable<Awaited<ReturnType<typeof lockLotQuality>>>
+export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof getShipmentHistory>>>
+export type UpdateShipmentDateResult = NonNullable<Awaited<ReturnType<typeof updateShipmentDate>>>
+export type CancelShipmentResult = NonNullable<Awaited<ReturnType<typeof cancelShipment>>>
+export type DecideWeightMismatchResult = NonNullable<Awaited<ReturnType<typeof decideWeightMismatch>>>
+export type GetShipmentSettingsResult = NonNullable<Awaited<ReturnType<typeof getShipmentSettings>>>
+export type SaveShipmentSettingsResult = NonNullable<Awaited<ReturnType<typeof saveShipmentSettings>>>
+export type RecordCorrectionResult = NonNullable<Awaited<ReturnType<typeof recordCorrection>>>
+export type ListCorrectionsResult = NonNullable<Awaited<ReturnType<typeof listCorrections>>>
+export type AssignShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof assignShipmentBags>>>
+export type GetShipmentBagsResult = NonNullable<Awaited<ReturnType<typeof getShipmentBags>>>
+export type RemoveShipmentBagResult = NonNullable<Awaited<ReturnType<typeof removeShipmentBag>>>

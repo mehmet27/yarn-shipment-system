@@ -97,6 +97,7 @@ export {
   listLoginAccounts,
   removeShipmentBag,
   setLoginAccountPassword,
+  updateShipmentDate,
 } from './masterData';
 export type {
   RecipeLineInput,

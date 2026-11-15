@@ -131,6 +131,7 @@ export const ShipmentAction = {
   COMPLETE: 'COMPLETE',
   OPEN_QUALITY_CLAIM: 'OPEN_QUALITY_CLAIM',
   CREATE_CORRECTION: 'CREATE_CORRECTION',
+  UPDATE_SHIPMENT_DATE: 'UPDATE_SHIPMENT_DATE',
 } as const;
 
 export interface PageMetadata {
@@ -270,6 +271,11 @@ export interface AssignShipmentBagsResponse {
      * @minimum 0
      */
   assignedCount: number;
+}
+
+export interface UpdateShipmentDateRequest {
+  /** Yeni sevkiyat günü (Türkiye saati); bugün ya da ileri bir gün */
+  shipmentDate: string;
 }
 
 /**
@@ -2182,6 +2188,23 @@ export const getShipmentHistory = (
     }
 
 /**
+ * Müdür (SHIPMENT_CREATE). Yalnızca taslak (DRAFT) sevkiyatın günü değişir; gün bugünden önce olamaz (400).
+ * Aynı günü yeniden göndermek zararsızdır. Taslak dışı sevkiyat `INVALID_SHIPMENT_STATUS` döner.
+ * @summary Taslak sevkiyatın sevkiyat gününü günceller
+ */
+export const updateShipmentDate = (
+    shipmentId: string,
+    updateShipmentDateRequest: UpdateShipmentDateRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/shipment-date`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updateShipmentDateRequest
+    },
+      );
+    }
+
+/**
  * Müdür ya da yönetici (SHIPMENT_CANCEL). Taslak (DRAFT), kantar uyuşmazlığındaki (WEIGHT_MISMATCH) ya da teslim bekleyen (AWAITING_DELIVERY) sevkiyat
  * iptal edilir, ör. kantar farkı nedeniyle durdurulan sevkiyat; gerekçe zorunludur.
  * Zaten iptal edilmiş sevkiyata gelen istek başarılı döner. Tamamlanmış sevkiyat iptal
@@ -2393,6 +2416,7 @@ export type DeactivateLotResult = NonNullable<Awaited<ReturnType<typeof deactiva
 export type ActivateLotResult = NonNullable<Awaited<ReturnType<typeof activateLot>>>
 export type LockLotQualityResult = NonNullable<Awaited<ReturnType<typeof lockLotQuality>>>
 export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof getShipmentHistory>>>
+export type UpdateShipmentDateResult = NonNullable<Awaited<ReturnType<typeof updateShipmentDate>>>
 export type CancelShipmentResult = NonNullable<Awaited<ReturnType<typeof cancelShipment>>>
 export type DecideWeightMismatchResult = NonNullable<Awaited<ReturnType<typeof decideWeightMismatch>>>
 export type GetShipmentSettingsResult = NonNullable<Awaited<ReturnType<typeof getShipmentSettings>>>

@@ -64,6 +64,7 @@ const ACTION_PERMISSION: Readonly<Record<ShipmentAction, Permission>> = {
   COMPLETE: 'SHIPMENT_COMPLETE',
   OPEN_QUALITY_CLAIM: 'QUALITY_CLAIM_OPEN',
   CREATE_CORRECTION: 'CORRECTION_CREATE',
+  UPDATE_SHIPMENT_DATE: 'SHIPMENT_CREATE',
 };
 
 /** Backend gibi işlemi yalnızca izni olan kullanıcıya açar; Yönetici hiç düzenleme butonu görmez. */

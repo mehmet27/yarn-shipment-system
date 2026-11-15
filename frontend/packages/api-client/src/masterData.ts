@@ -59,6 +59,7 @@ export {
   decideWeightMismatch,
   getShipmentSettings,
   saveShipmentSettings,
+  updateShipmentDate,
 } from './generated/shipmentService';
 export type {
   RecipeLineInput,

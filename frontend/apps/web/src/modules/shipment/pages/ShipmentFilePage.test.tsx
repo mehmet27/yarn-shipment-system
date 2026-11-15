@@ -1,5 +1,7 @@
 import { getShipment } from '@iplik/api-client';
-import { screen, within } from '@testing-library/react';
+import { formatDate, todayIsoDate } from '@iplik/i18n';
+import { screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { addMockShipment } from '@/mocks/mockStore';
@@ -54,6 +56,37 @@ describe('sevkiyat günü', () => {
     renderApp('/panel/sevkiyat/shp-0001');
     expect(await screen.findByRole('link', { name: 'Çıkış tartısını gir' })).toBeInTheDocument();
     expect(screen.queryByText(/Bu tarihten önce çuval atanamaz/)).not.toBeInTheDocument();
+  });
+});
+
+describe('sevkiyat günü güncelleme', () => {
+  it('müdür taslakta tarihi değiştirir; depo uyarısı kalkar ve çıkış düğmesi gelir', async () => {
+    server.use(...createHandlers('MANAGER'));
+    const created = addMockShipment({
+      siteId: 'site-merkez',
+      subcontractorId: 'sub-0',
+      subcontractorTitle: 'Örnek Tekstil A.Ş.',
+      lines: [{ yarnTypeText: '30/1 Penye', netKg: '100.000' }],
+      fireRate: '0.0400',
+      shipmentDate: '2099-12-20',
+    });
+    renderApp(`/panel/sevkiyat/${created.shipmentId}`);
+    await userEvent.click(await screen.findByRole('button', { name: 'Tarihi değiştir' }));
+    const date = screen.getByLabelText(/Yeni sevkiyat tarihi/);
+    await userEvent.clear(date);
+    await userEvent.type(date, todayIsoDate());
+    await userEvent.click(screen.getByRole('button', { name: 'Tarihi güncelle' }));
+    await waitFor(() => {
+      expect(screen.queryByText(/Bu tarihten önce çuval atanamaz/)).not.toBeInTheDocument();
+    });
+    expect(await screen.findByText(formatDate(todayIsoDate()))).toBeInTheDocument();
+  });
+
+  it('depo tarihi değiştiremez; tamamlanmış sevkiyatta da düğme yoktur', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    renderApp('/panel/sevkiyat/shp-0001');
+    await screen.findByRole('heading', { name: 'SVK-2026-0001' });
+    expect(screen.queryByRole('button', { name: 'Tarihi değiştir' })).not.toBeInTheDocument();
   });
 });
 

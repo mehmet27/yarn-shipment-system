@@ -283,7 +283,18 @@
       "title": "Kantar uyuşmazlığı: {{count}} sevkiyat kararınızı bekliyor",
       "hint": "Sevkiyat dosyasını açıp iptal, çuval ekle/çıkar ya da reçeteyi güncelle kararını verin."
     },
-    "notDue": "Sevkiyat tarihi {{date}}. Bu tarihten önce çuval atanamaz ve çıkış tartısı girilemez."
+    "notDue": "Sevkiyat tarihi {{date}}. Bu tarihten önce çuval atanamaz ve çıkış tartısı girilemez.",
+    "schedule": {
+      "open": "Tarihi değiştir",
+      "label": "Yeni sevkiyat tarihi (şu an {{date}})",
+      "save": "Tarihi güncelle",
+      "dismiss": "Vazgeç",
+      "errors": {
+        "INVALID_SHIPMENT_STATUS": "Sevkiyat tarihi yalnızca taslak sevkiyatta değişir.",
+        "INVALID_SHIPMENT": "Sevkiyat tarihi bugünden önce olamaz.",
+        "unknown": "Tarih güncellenemedi. Lütfen tekrar deneyin."
+      }
+    }
   },
   "dispatch": {
     "title": "Çıkış tartısı",

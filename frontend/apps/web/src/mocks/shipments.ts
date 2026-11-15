@@ -42,7 +42,7 @@ function pick<T>(values: readonly T[], index: number): T {
 export function allowedActionsOf(status: ShipmentStatus): InternalShipmentView['allowedActions'] {
   switch (status) {
     case 'DRAFT':
-      return ['ASSIGN_BAGS', 'RECORD_DISPATCH', 'CANCEL'];
+      return ['ASSIGN_BAGS', 'RECORD_DISPATCH', 'CANCEL', 'UPDATE_SHIPMENT_DATE'];
     case 'WEIGHT_MISMATCH':
       return ['CANCEL', 'RESOLVE_WEIGHT_MISMATCH'];
     case 'AWAITING_DELIVERY':

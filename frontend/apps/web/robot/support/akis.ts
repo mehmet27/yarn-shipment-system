@@ -103,3 +103,15 @@ export async function tamamlanmisSevkiyat(
   await tamamla(y.mudur, id, `${iplik}-IRS`);
   return id;
 }
+
+/** Fasoncu kalite, fasoncudan gelen kumaşı girer (müdür kumaş giremez); formu doldurup kaydeder, sonucu beklemez. */
+export async function kumasGir(fasonKalite: Robot, id: string, kg: string, irsaliyeNo: string) {
+  await fasonKalite.sayfa.goto(`/panel/sevkiyat/${id}`);
+  await fasonKalite.sayfa.getByRole('tab', { name: 'Kumaş girişi', exact: true }).click();
+  await fasonKalite.sayfa.waitForTimeout(600);
+  await fasonKalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
+  await fasonKalite.sayfa.getByLabel(/Kumaş net kilosu/).fill(kg);
+  await fasonKalite.sayfa.getByLabel(/İrsaliye no/).fill(irsaliyeNo);
+  await fasonKalite.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
+  await fasonKalite.sayfa.waitForTimeout(1500);
+}

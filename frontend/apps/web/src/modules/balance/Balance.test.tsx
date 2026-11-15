@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
+import { addMockReceipt } from '@/mocks/settlements';
 import { renderApp } from '@/test/renderApp';
 
 describe('Fasoncu bakiyesi', () => {
@@ -32,16 +33,14 @@ describe('Fasoncu bakiyesi', () => {
 
 describe('Faturalanacaklar', () => {
   it('müdür hatalı kilosu olan dosyayı listeler ve dosyaya gider', async () => {
+    addMockReceipt(
+      'shp-0003',
+      { fabricType: 'Süprem', netKg: '1900', waybillNo: 'K-1' },
+      'user-quality',
+    );
     server.use(...createHandlers('MANAGER'));
     const { router } = renderApp('/panel/sevkiyat/shp-0003');
-    await userEvent.click(await screen.findByRole('tab', { name: 'Kumaş girişi' }));
-    const form = await screen.findByRole('region', { name: 'Kumaş girişi' });
-    await userEvent.type(within(form).getByLabelText(/Kumaş cinsi/), 'Süprem');
-    await userEvent.type(within(form).getByLabelText(/Kumaş net kilosu/), '1.900');
-    await userEvent.type(within(form).getByLabelText(/İrsaliye no/), 'K-1');
-    await userEvent.click(within(form).getByRole('button', { name: 'Kumaş girişini kaydet' }));
-    await screen.findByText(/Süprem · 1\.900 kg/);
-    await userEvent.click(screen.getByRole('link', { name: 'Faturalanacaklar' }));
+    await userEvent.click(await screen.findByRole('link', { name: 'Faturalanacaklar' }));
     const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
     expect(within(card).getByText(/Hatalı kilo 3,2 kg/)).toBeInTheDocument();
     await userEvent.click(within(card).getByRole('link', { name: 'SVK-2026-0003' }));

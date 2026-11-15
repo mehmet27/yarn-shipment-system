@@ -63,7 +63,7 @@ cd frontend && pnpm yerel:sifirla    # hacimleri siler, yalnızca admin'li kurar
 Ardından yığını başlatıp `ROBOT_SIFRE` olarak admin'in şifresini değil, **tüm robot kullanıcılarının alacağı** şifreyi verin
 (en az 8 karakter ve kolay tahmin edilmeyen bir şifre; `12345678` gibileri reddedilir). `admin` için
 `robot/kullanicilar.local.json` içine kendi şifresini yazın: `{ "admin": "<admin şifresi>" }`. `00-kurulum` senaryosu
-eksik kullanıcıları (depo, kalite, müdür, genel müdür) yönetici ekranından açar, her biriyle ilk girişi yapıp
+eksik kullanıcıları (depo, kalite, fasoncu kalite, müdür, genel müdür) yönetici ekranından açar, her biriyle ilk girişi yapıp
 `ROBOT_SIFRE` şifresini belirler; sonraki senaryolar bu hesaplarla koşar.
 
 **Elle açılmış hesaplar:** kullanıcı zaten varsa kurulum robotun şifresiyle girmeyi dener (tek deneme; hesap kilidine
@@ -79,7 +79,7 @@ yalnızca `admin` şifresi (`kullanicilar.local.json` ya da `ROBOT_SIFRE`) doğr
 | `00-kurulum`                      | Temiz kurulumda eksik kullanıcıları yönetici ekranından açar ve ilk girişlerini yapar                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `01-gezinti`                      | Her rolle tüm ekranları açar; yetkili ekranda hata/konsol/ağ hatası, yetkisizde 403 arar                                                                                                                                                                                                                                                                                                                                                                                               |
 | `02-formlar`                      | Formlara eksik/hatalı değer girer; ekranın nedeni söyleyen bir mesaj gösterdiğini ve 5xx olmadığını denetler                                                                                                                                                                                                                                                                                                                                                                           |
-| `03-akis`                         | İplik girişi → kumaş üretimi → sevkiyat → çuval → çıkış tartısı → tamamlama → kumaş girişi → kalite itirazı → uyuşmazlık                                                                                                                                                                                                                                                                                                                                                               |
+| `03-akis`                         | İplik girişi → kumaş üretimi → sevkiyat → çuval → çıkış tartısı → tamamlama → kumaş girişi (fasoncu kalite; müdür giremez) → kalite itirazı → uyuşmazlık                                                                                                                                                                                                                                                                                                                               |
 | `04-tutarlilik`                   | Özet, bakiye ve fire dosyası sayılarını API'den çekip birbiriyle karşılaştırır                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `05-tum-ekranlar`                 | **Gezgin:** her rol her ekranda her sekme, filtre, anahtar, liste, sayfalama ve indirme düğmesine tıklar; sevkiyat dosyasının her durumunu ve uyuşmazlık detayını da gezer. Veri değiştiren düğmeleri tıklamaz ama `support/kapsam.ts` kaydında senaryosu yoksa **kapsam açığı** raporlar                                                                                                                                                                                              |
 | `06-tanimlar-partiler`            | Tanımlar (6 tür) ve partilerde ekle, düzenle, kilitle, pasife al                                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -101,7 +101,7 @@ kilo ve irsaliye sınırları). Kural değişince (yeni rol, yeni formül, yeni 
 
 **Roller ve işler:** `admin` yalnızca sistemi yönetir (kullanıcılar, tanımlar, partiler, görünüm ayarları ve denetim kaydı); sevkiyat, uyuşmazlık,
 rapor, bakiye ve merkez stok ekranlarını göremez (API'den de 403). Çıkış tartısı düzeltme ve kanıt geçersiz kılma **müdür**dedir; uyuşmazlığı
-yalnızca **kalite** karara bağlar. İş senaryolarında bu işler bu rollerle yapılır; yönetici yalnızca sistem senaryolarında (`06`, `07`, `08-gorunum`,
+yalnızca **kalite** karara bağlar. Fasoncudan gelen kumaşı yalnızca **fasoncu kalite** (`fason-kalite` rolü, `fason.kalite` hesabı, çalışma alanı Fasoncular) girer; müdür giremez, merkez kalite de sevkiyata kumaş giremez. İş senaryolarında bu işler bu rollerle yapılır; yönetici yalnızca sistem senaryolarında (`06`, `07`, `08-gorunum`,
 `14` yönetici bölümü) ve denetim kaydını okurken (`10`, müdürle) görünür.
 
 ## Kapsam kaydı (kimse unutulmasın)
@@ -115,7 +115,7 @@ kilitle…) için `support/kapsam.ts` içine `rota|düğme adı` → senaryo kay
 - Her geliştirmede **yalnızca değişen özelliğin senaryoları** koşulur (`pnpm robot -- --rol=<senaryo adı>`); **tam koşu yalnızca
   kullanıcı isterse** yapılır.
 - **Her robot koşusundan sonra** (tam koşu ya da PR koşusu) ortam sıfırlanır: `cd frontend && pnpm yerel:sifirla -- --evet`.
-  Docker verisi silinir; sistemde yalnızca `admin` kalır, robotun açtığı kullanıcılar (`depo`, `kalite`, `mudur`, `genel.mudur`,
+  Docker verisi silinir; sistemde yalnızca `admin` kalır, robotun açtığı kullanıcılar (`depo`, `kalite`, `fason.kalite`, `mudur`, `genel.mudur`,
   `sifre.*` vb.) ve `ROBOT-…` kayıtları kalmaz. Robotu yeniden çalıştırmadan önce admin'in kalıcı şifresi yine `kullanicilar.local.json`
   içindedir (sıfırlamadan sonra admin ilk girişte şifresini belirler).
 

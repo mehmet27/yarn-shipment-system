@@ -93,6 +93,21 @@ hacimlerini siler ve yeniden kurar; backend'i derleyip uygulamayı (`LOCAL_SAMPL
 CI gibiyse, `DOCKER_HOST` uzak sunucuysa ya da Docker bağlamı yerel değilse durur; `deploy/.env` yoksa çalışmaz.
 Sıfırlamadan sonra diğer kullanıcıları, siz isterseniz robot açar: `pnpm robot -- --rol=Kurulum` (`frontend/apps/web/robot/README.md`).
 
+## Mevcut veritabanında yalnızca admin ve yetkileri bırakma
+
+`pnpm yerel:sifirla` Docker verisini baştan kurar; bu yüzden Yetkiler ekranında yaptığınız değişiklikler de (`role_permission`) varsayılana döner. Veritabanını silmeden, **yalnızca `admin` kullanıcısını ve Yetkiler ekranının verisini bırakıp** geri kalan her şeyi silmek için `deploy/postgres/yalnizca-admin-birak.sql` kullanılır (geri alınamaz; önce yedek alın, uygulamayı durdurmanız önerilir):
+
+```bash
+docker compose -f deploy/docker-compose.yml exec -T postgres \
+  psql -U postgres -d yarnshipment -v ON_ERROR_STOP=1 -v onay=SIL < deploy/postgres/yalnizca-admin-birak.sql
+```
+
+- `-v onay=SIL` zorunludur; verilmezse hiçbir şey silinmez. Betik tek transaction'dır, hata olursa hiçbir şey silinmez.
+- Şema, `flyway_schema_history` tabloları, fonksiyonlar ve roller kalır; uygulama yeniden kurulum olmadan açılır. Denetim zinciri (`audit_chain_head`) başa alınır.
+- `-v ayarlari_koru=1` eklenirse `app_setting` (fire oranı, kantar toleransı, firma adı/renk/logo) de kalır; eklenmezse silinir.
+- Kanıt dosyaları diskte (`EVIDENCE_STORAGE_ROOT`) durur; betik onları silmez, gerekirse ayrıca temizleyin.
+- Sunucuda (`deploy/prod`) aynı komut ilgili compose dosyasıyla çalıştırılır; canlıda önce yedek (`DEPLOY.md`) alın.
+
 ## Uygulamayı çalıştırma (yarnshipment-app)
 
 shipment, discrepancy, evidence, reporting ve audit modülleri `services/yarnshipment-app` içinde tek Spring Boot uygulaması olarak çalışır (port `8083`); önünde ayrı bir geçit yoktur, giriş de bu uygulamadadır. Tek `application.yml` ve tek bağlantı havuzu vardır; her şema kendi Flyway'iyle (kendi `flyway_schema_history` tablosu) açılışta kurulur, migration'lar `services/<modül>-service/src/main/resources/db/migration/<şema>/` altındadır. PostgreSQL'i ayrıca kurmanız gerekmez; yukarıdaki Compose yeterlidir.

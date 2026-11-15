@@ -13,6 +13,10 @@ export function useRoleDraft(row: RolePermissionRow) {
   const [selected, setSelected] = useState<ReadonlySet<Permission>>(new Set(row.permissions));
   const [notice, setNotice] = useState<'saved' | 'reset' | undefined>(undefined);
   const isDirty = !sameSet(selected, row.permissions);
+  const defaultSet = new Set(row.defaults);
+  const diffCount =
+    [...selected].filter((p) => !defaultSet.has(p)).length +
+    row.defaults.filter((p) => !selected.has(p)).length;
   const isDefault = !isDirty && sameSet(new Set(row.defaults), row.permissions);
 
   const toggle = (permission: Permission, checked: boolean) => {
@@ -41,5 +45,5 @@ export function useRoleDraft(row: RolePermissionRow) {
       },
     });
   };
-  return { selected, notice, isDirty, isDefault, toggle, submit, restore, save, reset };
+  return { selected, notice, isDirty, isDefault, diffCount, toggle, submit, restore, save, reset };
 }

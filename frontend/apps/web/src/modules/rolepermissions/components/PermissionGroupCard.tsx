@@ -20,11 +20,15 @@ export function PermissionGroupCard({
   onToggle,
 }: PermissionGroupCardProps) {
   const { t } = useTranslation();
+  const countLabel = `${String(group.permissions.filter((p) => selected.has(p)).length)} / ${String(group.permissions.length)}`;
   return (
-    <Paper withBorder p="md">
-      <Title order={4} mb="xs">
-        {t(`permissions.groups.${group.key}`)}
-      </Title>
+    <Paper withBorder p="md" h="100%">
+      <Group justify="space-between" mb="xs">
+        <Title order={4}>{t(`permissions.groups.${group.key}`)}</Title>
+        <Badge variant="light" aria-label={countLabel}>
+          {countLabel}
+        </Badge>
+      </Group>
       <Stack gap="xs">
         {group.permissions.map((permission) => {
           const isLocked = lockedPermissions.includes(permission);

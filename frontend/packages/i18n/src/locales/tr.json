@@ -1395,6 +1395,7 @@
     "fixedRole": "Yönetici rolünün yetkileri değiştirilemez.",
     "locked": "Yalnızca yönetici",
     "changed": "Değişiklik var",
+    "summary": "{{count}} yetki seçili, varsayılana göre {{diff}} fark var",
     "save": "Kaydet",
     "saved": "Yetkiler kaydedildi.",
     "reset": "Varsayılana dön",

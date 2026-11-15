@@ -29,6 +29,7 @@ final class VehicleSiteCommandAdapter implements VehicleSiteCommandPort {
     /** Yeni lokasyon mevcut tüm hesapların kapsamına girer (hesaplar açılışta etkin lokasyonların kopyasını alır). */
     private static final String GRANT_SITE_TO_ACCOUNTS =
             "UPDATE app_user SET site_ids = array_append(site_ids, :id) WHERE NOT (:id = ANY (site_ids))";
+
     private static final String UPDATE_SITE = "UPDATE md_site SET name = :value WHERE id = :id";
     private static final String STATUS_SITE = "UPDATE md_site SET active = :active WHERE id = :id";
 

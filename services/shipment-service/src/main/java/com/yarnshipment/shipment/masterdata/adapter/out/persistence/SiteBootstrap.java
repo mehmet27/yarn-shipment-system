@@ -33,7 +33,8 @@ final class SiteBootstrap implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments arguments) {
-        Long existing = jdbc.sql("SELECT count(*) FROM md_site").query(Long.class).single();
+        Long existing =
+                jdbc.sql("SELECT count(*) FROM md_site").query(Long.class).single();
         if (existing == 0) {
             UUID id = UUID.randomUUID();
             jdbc.sql("INSERT INTO md_site (id, name, created_at, created_by) VALUES (:id, :name, :at, :actor)")
@@ -47,8 +48,7 @@ final class SiteBootstrap implements ApplicationRunner {
         int granted = jdbc.sql("""
                         UPDATE app_user
                            SET site_ids = (SELECT array_agg(id) FROM md_site WHERE active)
-                         WHERE cardinality(site_ids) = 0 AND EXISTS (SELECT 1 FROM md_site WHERE active)""")
-                .update();
+                         WHERE cardinality(site_ids) = 0 AND EXISTS (SELECT 1 FROM md_site WHERE active)""").update();
         if (granted > 0) {
             log.info("Active sites granted to accounts without sites count={}", granted);
         }

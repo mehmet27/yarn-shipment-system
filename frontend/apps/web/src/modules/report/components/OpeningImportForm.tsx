@@ -1,4 +1,4 @@
-import { useTranslation } from '@iplik/i18n';
+import { todayIsoDate, useTranslation } from '@iplik/i18n';
 import { Button, Stack, Text, Textarea, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useCurrentUser } from '@/modules/auth';
@@ -8,8 +8,7 @@ import { OpeningMessages } from './OpeningMessages';
 import { OpeningPreview } from './OpeningPreview';
 import { parseOpeningLines } from '../openingImport';
 
-const ISO_DATE_LENGTH = 10;
-const today = () => new Date().toISOString().slice(0, ISO_DATE_LENGTH);
+const today = () => todayIsoDate();
 
 /** Admin/Müdür: 'fasoncu;iplik;kg' satırlarını yapıştırıp önizleyerek açılış bakiyesi yükler. */
 export function OpeningImportForm() {

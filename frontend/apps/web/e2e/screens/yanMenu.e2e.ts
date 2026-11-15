@@ -11,7 +11,8 @@ test('yan menü masaüstünde kapanıp açılır, mobilde bağlantıya tıklayı
   openAs,
 }) => {
   await openAs('ADMIN', '/panel');
-  const link = page.getByRole('link', { name: 'Tanımlar' });
+  // Ana sayfadaki kısayolla aynı ada sahip olduğundan yan menüdeki (ilk) bağlantı alınır.
+  const link = page.getByRole('link', { name: 'Tanımlar' }).first();
   const toggle = page
     .getByRole('button', { name: 'Yan menü', exact: true })
     .and(page.locator(':visible'));

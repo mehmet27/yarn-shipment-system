@@ -1,3 +1,4 @@
+import { todayIsoDate } from '@iplik/i18n';
 import type {
   CurrentUser,
   InternalShipmentView,
@@ -11,14 +12,23 @@ import type {
 
 /** Her görünümde bulunan ortak alanlar. */
 function toBase(shipment: InternalShipmentView) {
-  const { shipmentId, shipmentNo, siteId, status, subcontractorTitle, createdAt, allowedActions } =
-    shipment;
+  const {
+    shipmentId,
+    shipmentNo,
+    siteId,
+    status,
+    subcontractorTitle,
+    shipmentDate,
+    createdAt,
+    allowedActions,
+  } = shipment;
   return {
     shipmentId,
     shipmentNo,
     siteId,
     status,
     subcontractorTitle,
+    shipmentDate,
     createdAt,
     allowedActions,
     ...(shipment.plateNo === undefined ? {} : { plateNo: shipment.plateNo }),
@@ -62,8 +72,10 @@ export function toPermittedView(view: ShipmentDetail, permissions: readonly Perm
     ...view,
     allowedActions: view.allowedActions.filter(
       (action) =>
-        permissions.includes(ACTION_PERMISSION[action]) ||
-        (action === 'ASSIGN_BAGS' && permissions.includes('DISPATCH_RECORD')),
+        (view.shipmentDate <= todayIsoDate() ||
+          (action !== 'ASSIGN_BAGS' && action !== 'RECORD_DISPATCH')) &&
+        (permissions.includes(ACTION_PERMISSION[action]) ||
+          (action === 'ASSIGN_BAGS' && permissions.includes('DISPATCH_RECORD'))),
     ),
   };
 }

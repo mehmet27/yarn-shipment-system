@@ -1,7 +1,9 @@
 package com.yarnshipment.shipment.adapter.in.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -12,7 +14,9 @@ import com.yarnshipment.shipment.application.port.in.GetShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsUseCase;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
+import com.yarnshipment.shipment.domain.model.ShipmentNotDueException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,5 +112,19 @@ class DispatchWeighingControllerTest {
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("INVALID_DISPATCH");
         assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo("tareKg");
+    }
+
+    @Test
+    @DisplayName("Sevkiyat günü gelmediyse çıkış kaydı 409 SHIPMENT_NOT_DUE ve günü döner")
+    void shouldMapShipmentNotDue() {
+        doThrow(new ShipmentNotDueException(TestShipments.SHIPMENT_ID, LocalDate.parse("2026-12-01")))
+                .when(recordDispatchUseCase)
+                .recordDispatch(any());
+
+        MvcTestResult result = post(TestTokens.token("warehouse").build(), VALID_BODY);
+
+        assertThat(result).hasStatus(HttpStatus.CONFLICT);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("SHIPMENT_NOT_DUE");
+        assertThat(result).bodyJson().extractingPath("$.shipmentDate").isEqualTo("2026-12-01");
     }
 }

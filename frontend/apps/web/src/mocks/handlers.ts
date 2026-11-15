@@ -6,6 +6,7 @@ import type {
   Weighing,
 } from '@iplik/api-client';
 import { ME_PATH, SHIPMENTS_PATH } from '@iplik/api-client';
+import { todayIsoDate } from '@iplik/i18n';
 import type { Kilogram } from '@iplik/units';
 import { calculateNetKg, isKilogram, subtractKg } from '@iplik/units';
 import { http, HttpResponse } from 'msw';
@@ -51,6 +52,8 @@ type DispatchBody = {
 const isKg = (value: unknown): value is Kilogram => typeof value === 'string' && isKilogram(value);
 const isPositiveInt = (value: unknown): value is number =>
   typeof value === 'number' && Number.isInteger(value) && value >= 1;
+const isIsoDay = (value: unknown): value is string =>
+  typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
 const isNonEmpty = (value: unknown): value is string => typeof value === 'string' && value !== '';
 
 function readDispatchBody(json: unknown): DispatchBody | undefined {
@@ -150,7 +153,9 @@ function createTabHandlers(role: Role) {
       const body = (await request.json()) as { weightsKg?: string[] };
       const weights = body.weightsKg ?? [];
       return withShipment(params.shipmentId, (s) =>
-        HttpResponse.json({ assignedCount: assignMockBagWeights(s.shipmentId, weights) }),
+        s.shipmentDate > todayIsoDate()
+          ? problem(409, 'SHIPMENT_NOT_DUE', 'Sevkiyat günü gelmedi')
+          : HttpResponse.json({ assignedCount: assignMockBagWeights(s.shipmentId, weights) }),
       );
     }),
     http.delete(`${SHIPMENTS_PATH}/:shipmentId/bags/:seqNo`, ({ params }) =>
@@ -204,6 +209,9 @@ const dispatchWeighingHandler = http.post(
     if (body === undefined) return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
     if (shipment.status !== 'DRAFT') {
       return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
+    }
+    if (shipment.shipmentDate > todayIsoDate()) {
+      return problem(409, 'SHIPMENT_NOT_DUE', 'Sevkiyat günü gelmedi');
     }
     const weighing = toMockWeighing(body);
     const expected = shipment.plannedNetKg;
@@ -290,6 +298,15 @@ function readSource(body: Record<string, unknown>) {
     : {};
 }
 
+/** Reçete, fire oranı ve sevkiyat günü; biri geçersizse `undefined`. */
+function readCreateDetails(body: Record<string, unknown>) {
+  const lines = readRecipeLines(body.lines);
+  const fireRate = readFireRate(body.fireRate);
+  const { shipmentDate } = body;
+  if (lines === undefined || fireRate === undefined || !isIsoDay(shipmentDate)) return undefined;
+  return { lines, fireRate, shipmentDate };
+}
+
 /** Sevkiyat oluşturma: zorunlu alanlar eksikse 400, aksi halde 201 ve yeni numara. */
 const createShipmentHandler = http.post(SHIPMENTS_PATH, async ({ request }) => {
   const json: unknown = await request.json();
@@ -299,17 +316,16 @@ const createShipmentHandler = http.post(SHIPMENTS_PATH, async ({ request }) => {
     return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
   }
   const { driverName, plateNo } = body;
-  const lines = readRecipeLines(body.lines);
-  const fireRate = readFireRate(body.fireRate);
-  if (lines === undefined || fireRate === undefined) {
-    return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
-  }
+  const details = readCreateDetails(body);
+  if (details === undefined) return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
+  const { lines, fireRate, shipmentDate } = details;
   const created = addMockShipment({
     siteId,
     subcontractorId,
     subcontractorTitle,
     lines,
     fireRate,
+    shipmentDate,
     ...readSource(body),
     ...(isNonEmpty(driverName) ? { driverName } : {}),
     ...(isNonEmpty(plateNo) ? { plateNo } : {}),

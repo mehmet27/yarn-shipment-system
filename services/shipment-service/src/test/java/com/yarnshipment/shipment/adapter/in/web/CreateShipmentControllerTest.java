@@ -33,7 +33,8 @@ class CreateShipmentControllerTest {
     private static final String KEY = "0192f0a0-0000-7000-8000-0000000000dd";
     private static final String VALID_BODY = "{\"siteId\": \"" + TestTokens.SITE_ID + "\", \"subcontractorId\": \""
             + TestTokens.SUBCONTRACTOR_ID + "\", \"subcontractorTitle\": \"Örnek Tekstil\","
-            + " \"fireRate\": \"0.0500\", \"lines\": [{\"yarnTypeText\": \"36/1 VİSKON\","
+            + " \"shipmentDate\": \"2026-10-22\", \"fireRate\": \"0.0500\","
+            + " \"lines\": [{\"yarnTypeText\": \"36/1 VİSKON\","
             + " \"netKg\": \"19488.000\"}]}";
 
     private final MockMvcTester mvc;
@@ -76,7 +77,8 @@ class CreateShipmentControllerTest {
         boolean lines =
                 command.lines().size() == 1 && command.lines().getFirst().lineNo() == 1;
         boolean fire = new java.math.BigDecimal("0.0500").compareTo(command.fireRate()) == 0;
-        return header && lines && fire;
+        boolean day = command.shipmentDate().toString().equals("2026-10-22");
+        return header && lines && fire && day;
     }
 
     @Test

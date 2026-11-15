@@ -9,7 +9,9 @@ import com.yarnshipment.shipment.application.port.in.CreateShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.CreatedShipment;
 import com.yarnshipment.shipment.application.port.out.ShipmentCreationPort;
 import com.yarnshipment.shipment.application.port.out.ShipmentSettingsPort;
+import com.yarnshipment.shipment.domain.model.InvalidNewShipmentException;
 import com.yarnshipment.shipment.domain.model.NewShipment;
+import com.yarnshipment.shipment.domain.model.ShipmentDays;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.util.UUID;
@@ -45,8 +47,17 @@ public class CreateShipmentService implements CreateShipmentUseCase {
         BigDecimal fireRate = command.fireRate() != null
                 ? command.fireRate()
                 : settingsPort.find().defaultFireRate();
+        if (command.shipmentDate().isBefore(ShipmentDays.today(clock))) {
+            throw new InvalidNewShipmentException("shipmentDate", "must not be in the past");
+        }
         NewShipment shipment = new NewShipment(
-                command.siteId(), command.parties(), command.vehicleId(), command.lines(), fireRate, clock.instant());
+                command.siteId(),
+                command.parties(),
+                command.vehicleId(),
+                command.lines(),
+                fireRate,
+                command.shipmentDate(),
+                clock.instant());
         ScopedResource target = new ScopedResource(RESOURCE_TYPE, UUID.randomUUID(), shipment.siteId());
         scopeGuard.validateInScope(actor, target, Permission.SHIPMENT_CREATE.name());
         return creationPort.create(shipment, actor.userId());

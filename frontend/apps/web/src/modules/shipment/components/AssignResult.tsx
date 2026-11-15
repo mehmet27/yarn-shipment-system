@@ -9,7 +9,9 @@ export function AssignResult({ error, count }: { error: Error | null; count: num
     const code = toProblem(error).code;
     return (
       <Alert color="red">
-        {t(`shipment.bags.assign.errors.${code === 'INVALID_SHIPMENT_STATUS' ? code : 'unknown'}`)}
+        {t(
+          `shipment.bags.assign.errors.${code === 'INVALID_SHIPMENT_STATUS' || code === 'SHIPMENT_NOT_DUE' ? code : 'unknown'}`,
+        )}
       </Alert>
     );
   }

@@ -6,8 +6,11 @@ import com.yarnshipment.shipment.domain.model.ShipmentParties;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.model.Weighing;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,6 +22,9 @@ public final class TestShipments {
     public static final UUID DRIVER_ID = UUID.fromString("0192f0a0-0000-7000-8000-000000000004");
     public static final UUID SHIPMENT_ID = UUID.fromString("0192f0a0-0000-7000-8000-0000000000aa");
     public static final Instant CREATED_AT = Instant.parse("2026-10-21T06:00:00Z");
+    /** Sevkiyat günü (oluşturulma günü) geçmiş sayılan sabit saat: tüm örnek sevkiyatlar için gün gelmiştir. */
+    public static final Clock CLOCK = Clock.fixed(CREATED_AT.plus(Duration.ofDays(30)), ZoneOffset.UTC);
+
     public static final int BAG_COUNT = 40;
     public static final String WAYBILL_NO = "IRS-2026-0001";
 
@@ -38,6 +44,23 @@ public final class TestShipments {
                 dispatch,
                 status == ShipmentStatus.COMPLETED ? WAYBILL_NO : null,
                 CREATED_AT,
+                Shipment.RecipeState.LEGACY);
+    }
+
+    /** Verilen sevkiyat gününe ayarlanmış, çıkış tartımı girilmemiş taslak sevkiyat. */
+    public static Shipment scheduledFor(LocalDate shipmentDate) {
+        Shipment shipment = withoutDispatch(ShipmentStatus.DRAFT);
+        return new Shipment(
+                shipment.id(),
+                shipment.shipmentNo(),
+                shipment.siteId(),
+                shipment.status(),
+                shipment.parties(),
+                shipment.planned(),
+                null,
+                null,
+                shipmentDate,
+                shipment.createdAt(),
                 Shipment.RecipeState.LEGACY);
     }
 

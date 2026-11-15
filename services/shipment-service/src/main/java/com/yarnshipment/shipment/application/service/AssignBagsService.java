@@ -7,6 +7,7 @@ import com.yarnshipment.shipment.application.port.in.AssignBagsUseCase;
 import com.yarnshipment.shipment.application.port.out.BagAssignmentPort;
 import com.yarnshipment.shipment.domain.bag.BagAssignment;
 import com.yarnshipment.shipment.domain.model.Shipment;
+import com.yarnshipment.shipment.domain.model.ShipmentDays;
 import java.time.Clock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ public class AssignBagsService implements AssignBagsUseCase {
         Actor actor = command.actor();
         Shipment shipment = shipments.load(actor, command.shipmentId(), Permission.DISPATCH_RECORD);
         shipment.requireBagsAssignable();
+        shipment.requireDue(ShipmentDays.today(clock));
         return assignmentPort.assign(
                 new BagAssignment(shipment.id(), command.weightsKg()), actor.userId(), clock.instant());
     }

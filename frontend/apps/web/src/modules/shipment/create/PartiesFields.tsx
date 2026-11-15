@@ -4,6 +4,7 @@ import { SimpleGrid, TextInput } from '@iplik/ui';
 import type { CreateDraft, CreateFieldErrors } from './createDraft';
 import { withSubcontractor } from './createDraft';
 import { MasterSelect } from './MasterSelect';
+import { ShipmentDateField } from './ShipmentDateField';
 
 type PartiesFieldsProps = {
   draft: CreateDraft;
@@ -50,6 +51,7 @@ export function PartiesFields({ draft, onChange, errors }: PartiesFieldsProps) {
         />
       </SimpleGrid>
       <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
+        <ShipmentDateField draft={draft} onChange={onChange} errors={errors} />
         <TextInput
           label={t('create.contactPerson')}
           value={draft.contactPerson}

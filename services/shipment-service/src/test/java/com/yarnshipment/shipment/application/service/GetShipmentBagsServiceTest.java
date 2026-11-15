@@ -24,7 +24,7 @@ class GetShipmentBagsServiceTest {
     private final Clock clock = Clock.fixed(Instant.parse("2026-10-21T09:00:00Z"), ZoneOffset.UTC);
     private final GetShipmentBagsService service = new GetShipmentBagsService(
             new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
-            new ShipmentAccessPolicy(),
+            new ShipmentAccessPolicy(TestShipments.CLOCK),
             bagsPort);
 
     private ShipmentBags bagsFor(Actor actor) {

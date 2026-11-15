@@ -19,16 +19,7 @@ final class ShipmentCreations {
     private ShipmentCreations() {}
 
     static CreateShipmentCommand toCommand(Actor actor, UUID idempotencyKey, CreateShipmentRequest request) {
-        ShipmentParties parties = new ShipmentParties(
-                request.getSubcontractorId(),
-                request.getSubcontractorTitle(),
-                request.getDriverId(),
-                request.getDriverName(),
-                request.getPlateNo(),
-                request.getSourceSubcontractorId(),
-                request.getSourceSubcontractorTitle(),
-                request.getDirectTransferSupplier(),
-                request.getDirectTransferWaybillNo());
+        ShipmentParties parties = parties(request);
         List<RecipeLine> lines = new ArrayList<>();
         for (RecipeLineInput input : request.getLines()) {
             lines.add(new RecipeLine(
@@ -41,7 +32,27 @@ final class ShipmentCreations {
         }
         BigDecimal fireRate = request.getFireRate() == null ? null : new BigDecimal(request.getFireRate());
         return new CreateShipmentCommand(
-                actor, idempotencyKey, request.getSiteId(), parties, request.getVehicleId(), lines, fireRate);
+                actor,
+                idempotencyKey,
+                request.getSiteId(),
+                parties,
+                request.getVehicleId(),
+                lines,
+                fireRate,
+                request.getShipmentDate());
+    }
+
+    private static ShipmentParties parties(CreateShipmentRequest request) {
+        return new ShipmentParties(
+                request.getSubcontractorId(),
+                request.getSubcontractorTitle(),
+                request.getDriverId(),
+                request.getDriverName(),
+                request.getPlateNo(),
+                request.getSourceSubcontractorId(),
+                request.getSourceSubcontractorTitle(),
+                request.getDirectTransferSupplier(),
+                request.getDirectTransferWaybillNo());
     }
 
     private static OrderSpec orderSpec(RecipeLineInput input) {

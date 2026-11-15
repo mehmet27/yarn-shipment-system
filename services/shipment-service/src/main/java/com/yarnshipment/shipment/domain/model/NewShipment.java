@@ -2,6 +2,7 @@ package com.yarnshipment.shipment.domain.model;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -15,6 +16,7 @@ import org.jspecify.annotations.Nullable;
  * @param vehicleId araç kimliği; plaka ile birlikte ya da hiç verilir
  * @param lines reçete satırları, en az bir
  * @param fireRate fire oranı (0.04 = %4), 0 ile 0.20 arası
+ * @param shipmentDate sevkiyat günü; depo bu günden önce işlem yapamaz
  * @param createdAt oluşturma zamanı
  */
 public record NewShipment(
@@ -23,11 +25,13 @@ public record NewShipment(
         @Nullable UUID vehicleId,
         List<RecipeLine> lines,
         BigDecimal fireRate,
+        LocalDate shipmentDate,
         Instant createdAt) {
 
     public NewShipment {
         Objects.requireNonNull(siteId, "siteId");
         Objects.requireNonNull(parties, "parties");
+        Objects.requireNonNull(shipmentDate, "shipmentDate");
         Objects.requireNonNull(createdAt, "createdAt");
         Objects.requireNonNull(lines, "lines");
         Objects.requireNonNull(fireRate, "fireRate");

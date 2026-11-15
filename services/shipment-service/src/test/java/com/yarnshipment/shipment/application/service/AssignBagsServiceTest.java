@@ -12,10 +12,12 @@ import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.out.BagAssignmentPort;
 import com.yarnshipment.shipment.domain.bag.BagAssignment;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
+import com.yarnshipment.shipment.domain.model.ShipmentNotDueException;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,23 @@ class AssignBagsServiceTest {
     private AssignBagsCommand command() {
         return new AssignBagsCommand(
                 warehouse, TestShipments.SHIPMENT_ID, List.of(new BigDecimal("25.000"), new BigDecimal("24.500")));
+    }
+
+    @Test
+    @DisplayName("Sevkiyat günü gelmeden çuval atanamaz; gün gelince atanır")
+    void shouldRejectBeforeShipmentDay() {
+        queryPort.add(TestShipments.scheduledFor(LocalDate.parse("2026-10-23")));
+
+        assertThatThrownBy(() -> service().assignBags(command())).isInstanceOf(ShipmentNotDueException.class);
+        assertThat(assigned).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Sevkiyat günü bugünse (Türkiye saati) çuval atanır")
+    void shouldAssignOnShipmentDay() throws Exception {
+        queryPort.add(TestShipments.scheduledFor(LocalDate.parse("2026-10-22")));
+
+        assertThat(service().assignBags(command())).isEqualTo(2);
     }
 
     @Test

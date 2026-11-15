@@ -2073,7 +2073,7 @@ components:
         (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da
         fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE)
         ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da düzeltilecek kayıt bu arada
-        değişti (CORRECTION_CONFLICT)
+        değişti (CORRECTION_CONFLICT) ya da sevkiyat günü gelmedi (SHIPMENT_NOT_DUE)
       content:
         application/problem+json:
           schema:
@@ -2247,7 +2247,8 @@ components:
     ShipmentSummaryView:
       description: Liste satırı; tüm rollerde aynıdır.
       type: object
-      required: [shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle, createdAt, allowedActions]
+      required: [shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle, shipmentDate, createdAt,
+                 allowedActions]
       properties:
         shipmentId:
           type: string
@@ -2272,6 +2273,10 @@ components:
           type: string
         plateNo:
           type: string
+        shipmentDate:
+          description: Sevkiyat günü (Türkiye saati); depo bu günden önce çuval atayamaz ve çıkış tartımı giremez
+          type: string
+          format: date
         createdAt:
           type: string
           format: date-time
@@ -2399,8 +2404,12 @@ components:
           description: Bu istekle eklenen çuval sayısı
     CreateShipmentRequest:
       type: object
-      required: [siteId, subcontractorId, subcontractorTitle, lines]
+      required: [siteId, subcontractorId, subcontractorTitle, lines, shipmentDate]
       properties:
+        shipmentDate:
+          description: Sevkiyat günü (Türkiye saati); depo bu günden önce çuval atayamaz ve çıkış tartımı giremez
+          type: string
+          format: date
         lines:
           description: Reçete satırları (en az bir); beklenen net kilo satırların toplamıdır
           type: array
@@ -3253,8 +3262,8 @@ components:
     InternalShipmentView:
       description: Admin, kalite ve müdür.
       type: object
-      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle, createdAt,
-                 allowedActions]
+      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle, shipmentDate,
+                 createdAt, allowedActions]
       properties:
         audience:
           $ref: '#/components/schemas/Audience'
@@ -3295,6 +3304,10 @@ components:
         waybillNo:
           description: Tamamlanırken girilen irsaliye numarası
           type: string
+        shipmentDate:
+          description: Sevkiyat günü (Türkiye saati); depo bu günden önce çuval atayamaz ve çıkış tartımı giremez
+          type: string
+          format: date
         createdAt:
           type: string
           format: date-time
@@ -3313,8 +3326,8 @@ components:
     WarehouseShipmentView:
       description: Depo.
       type: object
-      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle, createdAt,
-                 allowedActions]
+      required: [audience, shipmentId, shipmentNo, siteId, status, subcontractorId, subcontractorTitle, shipmentDate,
+                 createdAt, allowedActions]
       properties:
         audience:
           $ref: '#/components/schemas/Audience'
@@ -3355,6 +3368,10 @@ components:
         waybillNo:
           description: Tamamlanırken girilen irsaliye numarası
           type: string
+        shipmentDate:
+          description: Sevkiyat günü (Türkiye saati); depo bu günden önce çuval atayamaz ve çıkış tartımı giremez
+          type: string
+          format: date
         createdAt:
           type: string
           format: date-time

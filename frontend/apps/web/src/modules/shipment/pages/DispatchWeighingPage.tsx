@@ -1,4 +1,4 @@
-import { useTranslation } from '@iplik/i18n';
+import { formatDate, useTranslation } from '@iplik/i18n';
 import { Alert, Anchor, PageHero, Paper, Stack } from '@iplik/ui';
 import { Link, useNavigate, useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
@@ -32,7 +32,11 @@ export function DispatchWeighingPage() {
                 />
               </Paper>
             ) : (
-              <Alert color="yellow">{t('dispatch.notDraft')}</Alert>
+              <Alert color="yellow">
+                {shipment.status === 'DRAFT'
+                  ? t('shipment.notDue', { date: formatDate(shipment.shipmentDate) })
+                  : t('dispatch.notDraft')}
+              </Alert>
             )}
           </Stack>
         )}

@@ -1,7 +1,8 @@
 import type { ShipmentDetail } from '@iplik/api-client';
-import { useTranslation } from '@iplik/i18n';
+import { formatDate, useTranslation } from '@iplik/i18n';
 import { Button, Group, Paper, ProgressSteps, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
 import { Link } from 'react-router';
+import { NotDueNotice } from './NotDueNotice';
 import { findDriverName } from './shipmentViews';
 import { useFieldText } from './useFieldText';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
@@ -19,6 +20,7 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
   const source =
     'sourceSubcontractorTitle' in shipment ? shipment.sourceSubcontractorTitle : undefined;
   const facts = [
+    { labelKey: 'shipment.field.shipmentDate', value: formatDate(shipment.shipmentDate) },
     { labelKey: 'shipment.field.subcontractor', value: shipment.subcontractorTitle },
     ...(source === undefined ? [] : [{ labelKey: 'shipment.field.source', value: source }]),
     { labelKey: 'shipment.field.driver', value: text(findDriverName(shipment)) },
@@ -53,6 +55,7 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
             current={toProgressDone(shipment.status) - 1}
           />
         )}
+        <NotDueNotice shipment={shipment} />
         <Text c="brand.8" fw={600}>
           {t('shipment.progress.current', { step: t(`shipment.nextStep.${shipment.status}`) })}
         </Text>

@@ -128,7 +128,8 @@
       "createdAt": "Oluşturma",
       "status": "Durum",
       "waybillNo": "İrsaliye no",
-      "source": "Gönderen"
+      "source": "Gönderen",
+      "shipmentDate": "Sevkiyat tarihi"
     },
     "cancel": {
       "open": "İptal et",
@@ -219,7 +220,8 @@
         "done": "{{count}} çuval eklendi.",
         "errors": {
           "INVALID_SHIPMENT_STATUS": "Çuval yalnızca taslak sevkiyatta eklenip çıkarılabilir.",
-          "unknown": "Çuvallar eklenemedi. Lütfen tekrar deneyin."
+          "unknown": "Çuvallar eklenemedi. Lütfen tekrar deneyin.",
+          "SHIPMENT_NOT_DUE": "Sevkiyat tarihi gelmeden çuval eklenemez."
         }
       }
     },
@@ -280,7 +282,8 @@
     "pendingDecisions": {
       "title": "Kantar uyuşmazlığı: {{count}} sevkiyat kararınızı bekliyor",
       "hint": "Sevkiyat dosyasını açıp iptal, çuval ekle/çıkar ya da reçeteyi güncelle kararını verin."
-    }
+    },
+    "notDue": "Sevkiyat tarihi {{date}}. Bu tarihten önce çuval atanamaz ve çıkış tartısı girilemez."
   },
   "dispatch": {
     "title": "Çıkış tartısı",
@@ -302,7 +305,8 @@
     "grossKg": "Dolu araç tartısı (brüt)",
     "tareKg": "Boş araç tartısı (dara)",
     "shortfallReason": "Eksik gönderim nedeni (isteğe bağlı)",
-    "mismatchNotice": "Net kilo beklenenle tutmazsa sevkiyat kantar uyuşmazlığına düşer ve müdür karar verir."
+    "mismatchNotice": "Net kilo beklenenle tutmazsa sevkiyat kantar uyuşmazlığına düşer ve müdür karar verir.",
+    "notDue": "Sevkiyat tarihi gelmeden çıkış tartısı girilemez."
   },
   "create": {
     "open": "Yeni sevkiyat",
@@ -340,7 +344,9 @@
       "linePriceInvalid": "Fiyat en çok 4 ondalıklı, negatif olmayan bir sayı olmalı.",
       "sourceSameAsReceiver": "Gönderen ve alıcı fasoncu aynı olamaz.",
       "sourceRequired": "Gönderen fasoncuyu seçin.",
-      "supplierRequired": "Kapıdan aktarma için tedarikçiyi yazın."
+      "supplierRequired": "Kapıdan aktarma için tedarikçiyi yazın.",
+      "shipmentDateRequired": "Sevkiyat tarihini seçin.",
+      "shipmentDatePast": "Sevkiyat tarihi bugünden önce olamaz."
     },
     "recipe": {
       "title": "Reçete satırları",
@@ -412,7 +418,9 @@
       ]
     },
     "orderNo": "Sipariş no",
-    "contactPerson": "Yetkili kişi"
+    "contactPerson": "Yetkili kişi",
+    "shipmentDate": "Sevkiyat tarihi",
+    "shipmentDateHint": "Depo bu tarihten önce çuval atayamaz ve çıkış tartısı giremez."
   },
   "masterData": {
     "title": "Tanımlar",
@@ -1086,8 +1094,7 @@
       "add": "Rapor logosu ekle",
       "change": "Logoyu değiştir",
       "remove": "Logoyu kaldır",
-      "invalid": "Logo PNG veya JPEG olmalı ve en çok 200 KB olabilir.",
-      "file": "Logo dosyası"
+      "invalid": "Logo PNG veya JPEG olmalı ve en çok 200 KB olabilir."
     },
     "shipments": {
       "limitNote": "En çok 5000 sevkiyat listelenir; fazlası için dönemi daraltın.",

@@ -15,6 +15,7 @@ export async function taslakAc(
   fire = '3',
   kaynak: Kaynak = { tur: 'merkez' },
   alici = 'Başka Dokuma',
+  tarih?: string,
 ): Promise<string> {
   await mudur.sayfa.goto('/panel/sevkiyat/yeni');
   await sec(mudur.sayfa, /Alıcı fasoncu/, alici);
@@ -26,6 +27,8 @@ export async function taslakAc(
     await mudur.sayfa.getByLabel(/^Tedarikçi/).fill(kaynak.tedarikci);
   }
   await mudur.sayfa.getByLabel(/Fire oranı/).fill(fire);
+  // Sevkiyat tarihi formda bugünle gelir; verilirse o güne ayarlanır.
+  if (tarih !== undefined) await mudur.sayfa.getByLabel(/Sevkiyat tarihi/).fill(tarih);
   await mudur.sayfa
     .getByLabel(/serbest metin/i)
     .first()

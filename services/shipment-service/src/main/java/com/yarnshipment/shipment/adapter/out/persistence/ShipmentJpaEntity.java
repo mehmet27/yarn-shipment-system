@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.hibernate.annotations.Immutable;
 import org.jspecify.annotations.Nullable;
@@ -15,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Immutable
 @Table(name = "shipment")
-@SuppressWarnings("NullAway.Init")
+@SuppressWarnings({"NullAway.Init", "PMD.TooManyFields"})
 class ShipmentJpaEntity {
 
     private static final String TEXT = "text";
@@ -46,6 +47,9 @@ class ShipmentJpaEntity {
 
     @Column(name = "e_waybill_no", columnDefinition = TEXT)
     private @Nullable String waybillNo;
+
+    @Column(name = "shipment_date")
+    private LocalDate shipmentDate;
 
     @Column(name = "created_at")
     private Instant createdAt;
@@ -91,6 +95,10 @@ class ShipmentJpaEntity {
     @Nullable
     String getWaybillNo() {
         return waybillNo;
+    }
+
+    LocalDate getShipmentDate() {
+        return shipmentDate;
     }
 
     Instant getCreatedAt() {

@@ -9,6 +9,7 @@ import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
 import com.yarnshipment.shipment.application.port.out.ShipmentSettingsPort;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.Shipment;
+import com.yarnshipment.shipment.domain.model.ShipmentDays;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.time.Clock;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,7 @@ public class RecordDispatchService implements RecordDispatchUseCase {
         if (isRepeatedRequest(shipment)) {
             return;
         }
+        shipment.requireDue(ShipmentDays.today(clock));
         if (shipment.status() == ShipmentStatus.DRAFT
                 && bagsPort.findDispatchBags(shipment.id()).size()
                         != command.measurement().bagCount()) {

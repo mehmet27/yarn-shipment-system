@@ -36,6 +36,11 @@ public enum ShipmentAction {
         return requiredPermission;
     }
 
+    /** Depo işleri sevkiyat günü gelmeden yapılamaz. */
+    public boolean requiresShipmentDay() {
+        return this == ASSIGN_BAGS || this == RECORD_DISPATCH;
+    }
+
     public boolean isAllowedIn(ShipmentStatus status) {
         return allowedStatuses.contains(status);
     }

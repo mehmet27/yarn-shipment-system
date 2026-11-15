@@ -30,6 +30,7 @@ final class ShipmentPages {
                 .sourceSubcontractorTitle(shipment.parties().sourceSubcontractorTitle())
                 .driverName(shipment.parties().driverName())
                 .plateNo(shipment.parties().plateNo())
+                .shipmentDate(shipment.shipmentDate())
                 .createdAt(WebMappings.utc(shipment.createdAt()))
                 .allowedActions(WebMappings.actions(item.allowedActions()));
     }

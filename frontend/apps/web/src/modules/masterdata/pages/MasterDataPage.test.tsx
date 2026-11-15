@@ -8,7 +8,7 @@ import { renderApp } from '@/test/renderApp';
 
 describe('MasterDataPage', () => {
   it('yönetici fasoncu ekler ve listede görür', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
     await userEvent.type(screen.getByLabelText(/Fasoncu ünvanı/), 'Yeni Örme Ltd.');
@@ -17,7 +17,7 @@ describe('MasterDataPage', () => {
   });
 
   it('boş ünvanı göndermeden uyarır', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
@@ -25,7 +25,7 @@ describe('MasterDataPage', () => {
   });
 
   it('pasife alınan kayıt listeden düşer, pasifleri göster ile geri açılır', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     server.use(
       http.get('/api/v1/balances', () => HttpResponse.json({ items: [], totalKg: '0.000' })),
     );
@@ -39,7 +39,7 @@ describe('MasterDataPage', () => {
   });
 
   it('bakiyesi olan fasoncu pasife alınırken uyarır, onaylanırsa pasife alır', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     server.use(
       http.get('/api/v1/balances', () =>
         HttpResponse.json({
@@ -67,7 +67,7 @@ describe('MasterDataPage', () => {
   });
 
   it('bakiyesi olan fasoncuda vazgeçilirse pasife alınmaz', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     server.use(
       http.get('/api/v1/balances', () =>
         HttpResponse.json({
@@ -92,7 +92,7 @@ describe('MasterDataPage', () => {
   });
 
   it('aynı plaka 409 ile reddedilir', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('tab', { name: 'Araçlar' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
@@ -102,7 +102,7 @@ describe('MasterDataPage', () => {
   });
 
   it('kayıttan sonra başarı bildirimi gösterir', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
     await userEvent.type(screen.getByLabelText(/Fasoncu ünvanı/), 'Yeni Örme Ltd.');
@@ -117,7 +117,7 @@ describe('MasterDataPage', () => {
   });
 
   it('aynı fasoncu ünvanını sunucu hatasıyla alanın altında gösterir', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
     await userEvent.type(screen.getByLabelText(/Fasoncu ünvanı/), ' aydın örme ');
@@ -129,7 +129,7 @@ describe('MasterDataPage', () => {
   });
 
   it('TR plaka desenine uymayan plakayı göndermeden reddeder', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('tab', { name: 'Araçlar' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
@@ -143,7 +143,7 @@ describe('MasterDataPage', () => {
   });
 
   it('iplik kodla eklenir; aynı kod sunucu hatasıyla kod alanında gösterilir', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('tab', { name: 'İplikler' }));
     expect(await screen.findByText('PES-30-1')).toBeInTheDocument();
@@ -161,7 +161,7 @@ describe('MasterDataPage', () => {
   });
 
   it('kalite sınıfında geçersiz sırayı göndermeden reddeder; kod düzenlenemez', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('tab', { name: 'Kalite sınıfları' }));
     const card = await screen.findByRole('group', { name: 'İkinci kalite' });
@@ -176,12 +176,19 @@ describe('MasterDataPage', () => {
   });
 
   it('iplik tedarikçileri sekmesinde tedarikçi listelenir ve pasife alınabilir', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('tab', { name: 'İplik tedarikçileri' }));
     const card = await screen.findByRole('group', { name: 'Şireci' });
     await userEvent.click(within(card).getByRole('button', { name: 'Pasife al' }));
     expect(screen.queryByRole('group', { name: 'Şireci' })).not.toBeInTheDocument();
+  });
+
+  it('Yönetici artık bu sayfaya giremez; yetki müdürdedir', async () => {
+    server.use(...createHandlers('ADMIN'));
+    renderApp('/panel/tanimlar');
+    expect(await screen.findByText(/yetki/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ekle' })).not.toBeInTheDocument();
   });
 
   it('MASTER_DATA_MANAGE yetkisi olmayan rol bu sayfaya giremez', async () => {

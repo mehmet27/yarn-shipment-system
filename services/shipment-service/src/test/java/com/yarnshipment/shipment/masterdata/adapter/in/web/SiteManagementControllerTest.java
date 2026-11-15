@@ -59,7 +59,7 @@ class SiteManagementControllerTest {
         when(create.createSite(any(), eq("Merkez Depo"))).thenReturn(new Site(ID, "Merkez Depo"));
 
         // when
-        MvcTestResult result = post(admin(), BODY);
+        MvcTestResult result = post(manager(), BODY);
 
         // then
         assertThat(result).hasStatus(HttpStatus.CREATED);
@@ -68,8 +68,8 @@ class SiteManagementControllerTest {
     }
 
     @Test
-    @DisplayName("Yönetici olmayan rol 403 alır ve use case çağrılmaz")
-    void shouldForbidNonAdmin() throws Exception {
+    @DisplayName("Müdür olmayan rol 403 alır ve use case çağrılmaz")
+    void shouldForbidNonManager() throws Exception {
         MvcTestResult result = post(TestTokens.token("warehouse").build(), BODY);
 
         assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
@@ -79,7 +79,7 @@ class SiteManagementControllerTest {
     @Test
     @DisplayName("Boş alan şemadan 400 alır")
     void shouldRejectEmptyField() throws Exception {
-        assertThat(post(admin(), "{\"name\": \"\"}")).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post(manager(), "{\"name\": \"\"}")).hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(create);
     }
 
@@ -113,8 +113,8 @@ class SiteManagementControllerTest {
         verify(status).changeSiteStatus(any(), eq(ID), eq(MasterDataStatus.ACTIVE));
     }
 
-    private static Jwt admin() {
-        return TestTokens.token("admin").build();
+    private static Jwt manager() {
+        return TestTokens.token("manager").build();
     }
 
     private MvcTestResult post(Jwt jwt, String body) {
@@ -123,7 +123,7 @@ class SiteManagementControllerTest {
 
     private MvcTestResult send(
             MockMvcTester.MockMvcRequestBuilder builder, @org.jspecify.annotations.Nullable String body) {
-        return exchange(builder, admin(), body);
+        return exchange(builder, manager(), body);
     }
 
     private MvcTestResult exchange(

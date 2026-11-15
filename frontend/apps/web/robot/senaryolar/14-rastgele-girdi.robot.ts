@@ -128,22 +128,28 @@ test('Rastgele girdi: müdür yeni sevkiyat alanları', async ({ giris }) => {
   );
 });
 
-test('Rastgele girdi: yönetici tanım ve kullanıcı alanları', async ({ giris }) => {
-  test.skip(!rolTanimli('admin'), 'admin yok');
-  const admin = await giris('admin');
-  admin.beklenen(/4\d\d (POST|PUT) /);
+test('Rastgele girdi: müdür tanım alanları', async ({ giris }) => {
+  test.skip(!rolTanimli('mudur'), 'mudur yok');
+  const mudur = await giris('mudur');
+  mudur.beklenen(/4\d\d (POST|PUT) /);
   await dene(
-    admin,
+    mudur,
     'fasoncu tanımı',
     [{ etiket: /Fasoncu ünvanı/, tur: 'metin' }],
     async () => {
-      await admin.sayfa.getByRole('dialog').getByRole('button', { name: 'Kaydet' }).click();
+      await mudur.sayfa.getByRole('dialog').getByRole('button', { name: 'Kaydet' }).click();
     },
     async () => {
-      await admin.sayfa.goto('/panel/tanimlar');
-      await admin.sayfa.getByRole('button', { name: 'Ekle' }).click();
+      await mudur.sayfa.goto('/panel/tanimlar');
+      await mudur.sayfa.getByRole('button', { name: 'Ekle' }).click();
     },
   );
+});
+
+test('Rastgele girdi: yönetici kullanıcı alanları', async ({ giris }) => {
+  test.skip(!rolTanimli('admin'), 'admin yok');
+  const admin = await giris('admin');
+  admin.beklenen(/4\d\d (POST|PUT) /);
   await dene(
     admin,
     'yeni kullanıcı',

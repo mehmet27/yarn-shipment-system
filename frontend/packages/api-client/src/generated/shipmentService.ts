@@ -1487,7 +1487,7 @@ export const listSubcontractors = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Ünvan boş olamaz ve tektir (büyük/küçük harf ve baş/son boşluk yok sayılır, pasif kayıtlar dahil); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Ünvan boş olamaz ve tektir (büyük/küçük harf ve baş/son boşluk yok sayılır, pasif kayıtlar dahil); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Fasoncu ekler
  */
 export const createSubcontractor = (
@@ -1502,7 +1502,7 @@ export const createSubcontractor = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Başka fasoncunun ünvanı 409 `DUPLICATE_SUBCONTRACTOR` verir.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Başka fasoncunun ünvanı 409 `DUPLICATE_SUBCONTRACTOR` verir.
  * @summary Fasoncu günceller
  */
 export const updateSubcontractor = (
@@ -1518,7 +1518,7 @@ export const updateSubcontractor = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
  * @summary Fasoncu pasife alır
  */
 export const deactivateSubcontractor = (
@@ -1531,7 +1531,7 @@ export const deactivateSubcontractor = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Fasoncu yeniden etkinleştirir
  */
 export const activateSubcontractor = (
@@ -1558,7 +1558,7 @@ export const listDrivers = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Fasoncu verilirse etkin bir fasoncu olmalıdır. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Fasoncu verilirse etkin bir fasoncu olmalıdır. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Şoför ekler
  */
 export const createDriver = (
@@ -1573,7 +1573,7 @@ export const createDriver = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
  * @summary Şoför günceller
  */
 export const updateDriver = (
@@ -1589,7 +1589,7 @@ export const updateDriver = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
  * @summary Şoför pasife alır
  */
 export const deactivateDriver = (
@@ -1752,7 +1752,7 @@ export const saveBranding = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Şoför yeniden etkinleştirir
  */
 export const activateDriver = (
@@ -1779,7 +1779,7 @@ export const listVehicles = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`); başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`); başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Araç ekler
  */
 export const createVehicle = (
@@ -1794,7 +1794,7 @@ export const createVehicle = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Plaka kuralı eklemedeki gibidir (`INVALID_PLATE`, `DUPLICATE_PLATE`).
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Plaka kuralı eklemedeki gibidir (`INVALID_PLATE`, `DUPLICATE_PLATE`).
  * @summary Araç günceller
  */
 export const updateVehicle = (
@@ -1810,7 +1810,7 @@ export const updateVehicle = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
  * @summary Araç pasife alır
  */
 export const deactivateVehicle = (
@@ -1823,7 +1823,7 @@ export const deactivateVehicle = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Araç yeniden etkinleştirir
  */
 export const activateVehicle = (
@@ -1836,7 +1836,7 @@ export const activateVehicle = (
     }
 
 /**
- * Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07); `MASTER_DATA_MANAGE` izni olan (admin) tüm lokasyonları görür, böylece yeni açtığı lokasyonu yönetebilir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+ * Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07); `MASTER_DATA_MANAGE` izni olan (müdür) tüm lokasyonları görür, böylece yeni açtığı lokasyonu yönetebilir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
  * @summary Lokasyon listesi
  */
 export const listSites = (
@@ -1850,7 +1850,7 @@ export const listSites = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Ad boş olamaz. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Ad boş olamaz. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Lokasyon ekler
  */
 export const createSite = (
@@ -1865,7 +1865,7 @@ export const createSite = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
  * @summary Lokasyon günceller
  */
 export const updateSite = (
@@ -1881,7 +1881,7 @@ export const updateSite = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
  * @summary Lokasyon pasife alır
  */
 export const deactivateSite = (
@@ -1894,7 +1894,7 @@ export const deactivateSite = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Lokasyon yeniden etkinleştirir
  */
 export const activateSite = (
@@ -1921,7 +1921,7 @@ export const listProducts = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Kod boşluklardan arındırılıp büyük harfe çevrilir; harf veya rakamla başlar, en çok 40 karakterdir ve yalnızca harf, rakam ve `+ . _ / -` içerir (değilse 400 `INVALID_MASTER_DATA`). Kullanılmış kod 409 `DUPLICATE_CODE` verir. Kod eklendikten sonra değişmez. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Kod boşluklardan arındırılıp büyük harfe çevrilir; harf veya rakamla başlar, en çok 40 karakterdir ve yalnızca harf, rakam ve `+ . _ / -` içerir (değilse 400 `INVALID_MASTER_DATA`). Kullanılmış kod 409 `DUPLICATE_CODE` verir. Kod eklendikten sonra değişmez. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary İplik ekler
  */
 export const createProduct = (
@@ -1936,7 +1936,7 @@ export const createProduct = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve iplik numarası güncellenir. Kayıt pasif olsa da güncellenebilir.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve iplik numarası güncellenir. Kayıt pasif olsa da güncellenebilir.
  * @summary İplik günceller
  */
 export const updateProduct = (
@@ -1952,7 +1952,7 @@ export const updateProduct = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif iplik yeni partiye verilemez; mevcut partiler etkilenmez.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif iplik yeni partiye verilemez; mevcut partiler etkilenmez.
  * @summary İplik pasife alır
  */
 export const deactivateProduct = (
@@ -1965,7 +1965,7 @@ export const deactivateProduct = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary İplik yeniden etkinleştirir
  */
 export const activateProduct = (
@@ -1992,7 +1992,7 @@ export const listQualityGrades = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Kod kuralı iplikteki gibidir (`INVALID_MASTER_DATA`, `DUPLICATE_CODE`); kod partinin kilidiyle çuvala kopyalandığı için eklendikten sonra değişmez. Etiket rengi `#RRGGBB` biçimindedir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Kod kuralı iplikteki gibidir (`INVALID_MASTER_DATA`, `DUPLICATE_CODE`); kod partinin kilidiyle çuvala kopyalandığı için eklendikten sonra değişmez. Etiket rengi `#RRGGBB` biçimindedir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Kalite sınıfı ekler
  */
 export const createQualityGrade = (
@@ -2007,7 +2007,7 @@ export const createQualityGrade = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve etiket rengi güncellenir.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve etiket rengi güncellenir.
  * @summary Kalite sınıfı günceller
  */
 export const updateQualityGrade = (
@@ -2023,7 +2023,7 @@ export const updateQualityGrade = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif sınıf yeni partiye verilemez ve kilitlenecek partide kullanılamaz.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif sınıf yeni partiye verilemez ve kilitlenecek partide kullanılamaz.
  * @summary Kalite sınıfı pasife alır
  */
 export const deactivateQualityGrade = (
@@ -2036,7 +2036,7 @@ export const deactivateQualityGrade = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Kalite sınıfı yeniden etkinleştirir
  */
 export const activateQualityGrade = (
@@ -2063,7 +2063,7 @@ export const listYarnSuppliers = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Ad büyük/küçük harf duyarsız tekildir (`DUPLICATE_CODE`, alan `name`). Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Ad büyük/küçük harf duyarsız tekildir (`DUPLICATE_CODE`, alan `name`). Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz.
  * @summary İplik tedarikçisi ekler
  */
 export const createYarnSupplier = (
@@ -2078,7 +2078,7 @@ export const createYarnSupplier = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Adı değiştirir; yeni ad da tekil olmalıdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Adı değiştirir; yeni ad da tekil olmalıdır.
  * @summary İplik tedarikçisi günceller
  */
 export const updateYarnSupplier = (
@@ -2094,7 +2094,7 @@ export const updateYarnSupplier = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez; pasif tedarikçi yeni partiye verilemez. Tekrarı zararsızdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez; pasif tedarikçi yeni partiye verilemez. Tekrarı zararsızdır.
  * @summary İplik tedarikçisi pasife alır
  */
 export const deactivateYarnSupplier = (
@@ -2107,7 +2107,7 @@ export const deactivateYarnSupplier = (
     }
 
 /**
- * Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı geri getirir. Tekrarı zararsızdır.
+ * Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı geri getirir. Tekrarı zararsızdır.
  * @summary İplik tedarikçisi yeniden etkinleştirir
  */
 export const activateYarnSupplier = (
@@ -2134,7 +2134,7 @@ export const listLots = (
     }
 
 /**
- * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Parti numarası kod kuralına uyar ve lokasyonda tektir (`DUPLICATE_CODE`). Lokasyon, iplik ve kalite sınıfı etkin olmalı, üretim tarihi ileride olamaz (değilse 400 `INVALID_MASTER_DATA`). Parti kilitsiz açılır; çuval bağlanabilmesi için kalitesi kilitlenmelidir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+ * Kalite kullanıcısı veya müdür (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Parti numarası kod kuralına uyar ve lokasyonda tektir (`DUPLICATE_CODE`). Lokasyon, iplik ve kalite sınıfı etkin olmalı, üretim tarihi ileride olamaz (değilse 400 `INVALID_MASTER_DATA`). Parti kilitsiz açılır; çuval bağlanabilmesi için kalitesi kilitlenmelidir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
  * @summary Parti ekler
  */
 export const createLot = (
@@ -2149,7 +2149,7 @@ export const createLot = (
     }
 
 /**
- * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Yalnızca kalitesi kilitlenmemiş parti düzenlenir; kilitli parti 409 `LOT_QUALITY_LOCKED` verir. Lokasyon değişmez.
+ * Kalite kullanıcısı veya müdür (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Yalnızca kalitesi kilitlenmemiş parti düzenlenir; kilitli parti 409 `LOT_QUALITY_LOCKED` verir. Lokasyon değişmez.
  * @summary Parti günceller
  */
 export const updateLot = (
@@ -2165,7 +2165,7 @@ export const updateLot = (
     }
 
 /**
- * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Kilitli parti de pasife alınabilir; kilit ve kalite değişmez.
+ * Kalite kullanıcısı veya müdür (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Kilitli parti de pasife alınabilir; kilit ve kalite değişmez.
  * @summary Parti pasife alır
  */
 export const deactivateLot = (
@@ -2178,7 +2178,7 @@ export const deactivateLot = (
     }
 
 /**
- * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+ * Kalite kullanıcısı veya müdür (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
  * @summary Parti yeniden etkinleştirir
  */
 export const activateLot = (
@@ -2191,7 +2191,7 @@ export const activateLot = (
     }
 
 /**
- * Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında (rapor Bölüm 10). Kilitten sonra partinin numarası, ipliği, kalitesi ve üretim tarihi değişmez ve kilit geri alınamaz; Kilitli parti 409 `LOT_QUALITY_LOCKED`; pasif parti ya da pasif kalite sınıfı 400 `INVALID_MASTER_DATA` verir.
+ * Kalite kullanıcısı veya müdür (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında (rapor Bölüm 10). Kilitten sonra partinin numarası, ipliği, kalitesi ve üretim tarihi değişmez ve kilit geri alınamaz; Kilitli parti 409 `LOT_QUALITY_LOCKED`; pasif parti ya da pasif kalite sınıfı 400 `INVALID_MASTER_DATA` verir.
  * @summary Partinin kalitesini kilitler
  */
 export const lockLotQuality = (

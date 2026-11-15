@@ -118,8 +118,8 @@ class MasterDataControllerTest {
     }
 
     @Test
-    @DisplayName("Pasif kayıtları yalnızca yönetici isteyebilir; yönetici istediğinde sorguya iletilir")
-    void shouldAllowInactiveOnlyForAdmin() {
+    @DisplayName("Pasif kayıtları yalnızca müdür isteyebilir; müdür istediğinde sorguya iletilir")
+    void shouldAllowInactiveOnlyForManager() {
         // given
         when(vehicles.listVehicles(any())).thenReturn(new MasterDataPage<>(List.of(), 0, SIZE, 0));
         String uri = "/api/v1/master-data/vehicles?status=ALL";
@@ -129,7 +129,7 @@ class MasterDataControllerTest {
         MvcTestResult allowed = mvc.get()
                 .uri(uri)
                 .with(SecurityMockMvcRequestPostProcessors.authentication(
-                        TestTokens.CONVERTER.convert(TestTokens.token("admin").build())))
+                        TestTokens.CONVERTER.convert(TestTokens.token("manager").build())))
                 .exchange();
 
         // then

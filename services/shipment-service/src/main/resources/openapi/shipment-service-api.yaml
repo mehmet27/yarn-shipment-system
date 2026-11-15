@@ -343,7 +343,7 @@ paths:
       operationId: createSubcontractor
       summary: Fasoncu ekler
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Ünvan boş olamaz ve tektir (büyük/küçük harf ve baş/son boşluk yok sayılır, pasif kayıtlar dahil); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Ünvan boş olamaz ve tektir (büyük/küçük harf ve baş/son boşluk yok sayılır, pasif kayıtlar dahil); kullanılmış ünvan 409 `DUPLICATE_SUBCONTRACTOR` verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -373,7 +373,7 @@ paths:
       operationId: updateSubcontractor
       summary: Fasoncu günceller
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Başka fasoncunun ünvanı 409 `DUPLICATE_SUBCONTRACTOR` verir.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Başka fasoncunun ünvanı 409 `DUPLICATE_SUBCONTRACTOR` verir.
       parameters:
         - name: subcontractorId
           in: path
@@ -410,7 +410,7 @@ paths:
       operationId: deactivateSubcontractor
       summary: Fasoncu pasife alır
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
       parameters:
         - name: subcontractorId
           in: path
@@ -433,7 +433,7 @@ paths:
       operationId: activateSubcontractor
       summary: Fasoncu yeniden etkinleştirir
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
       parameters:
         - name: subcontractorId
           in: path
@@ -486,7 +486,7 @@ paths:
       operationId: createDriver
       summary: Şoför ekler
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Fasoncu verilirse etkin bir fasoncu olmalıdır. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Fasoncu verilirse etkin bir fasoncu olmalıdır. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -514,7 +514,7 @@ paths:
       operationId: updateDriver
       summary: Şoför günceller
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
       parameters:
         - name: driverId
           in: path
@@ -549,7 +549,7 @@ paths:
       operationId: deactivateDriver
       summary: Şoför pasife alır
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
       parameters:
         - name: driverId
           in: path
@@ -849,7 +849,7 @@ paths:
       operationId: activateDriver
       summary: Şoför yeniden etkinleştirir
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
       parameters:
         - name: driverId
           in: path
@@ -896,7 +896,7 @@ paths:
       operationId: createVehicle
       summary: Araç ekler
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`); başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Plaka boşluksuz büyük harfe çevrilir ve Türkiye plaka biçiminde olmalıdır (01-81 il kodu, 1-3 harf, 2-4 rakam; değilse 400 `INVALID_PLATE`); başka bir araçta kullanılan plaka 409 verir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -926,7 +926,7 @@ paths:
       operationId: updateVehicle
       summary: Araç günceller
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Plaka kuralı eklemedeki gibidir (`INVALID_PLATE`, `DUPLICATE_PLATE`).
+        Yalnızca müdür (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir. Plaka kuralı eklemedeki gibidir (`INVALID_PLATE`, `DUPLICATE_PLATE`).
       parameters:
         - name: vehicleId
           in: path
@@ -963,7 +963,7 @@ paths:
       operationId: deactivateVehicle
       summary: Araç pasife alır
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
       parameters:
         - name: vehicleId
           in: path
@@ -986,7 +986,7 @@ paths:
       operationId: activateVehicle
       summary: Araç yeniden etkinleştirir
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
       parameters:
         - name: vehicleId
           in: path
@@ -1009,7 +1009,7 @@ paths:
       operationId: listSites
       summary: Lokasyon listesi
       description: |
-        Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07); `MASTER_DATA_MANAGE` izni olan (admin) tüm lokasyonları görür, böylece yeni açtığı lokasyonu yönetebilir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+        Yalnızca kullanıcının yetkili olduğu lokasyonlar gelir (GEN-07); `MASTER_DATA_MANAGE` izni olan (müdür) tüm lokasyonları görür, böylece yeni açtığı lokasyonu yönetebilir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
@@ -1033,7 +1033,7 @@ paths:
       operationId: createSite
       summary: Lokasyon ekler
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Ad boş olamaz. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Ad boş olamaz. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -1063,7 +1063,7 @@ paths:
       operationId: updateSite
       summary: Lokasyon günceller
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Gönderilen alanlar kaydın yeni halidir; kayıt pasif olsa da güncellenebilir.
       parameters:
         - name: siteId
           in: path
@@ -1100,7 +1100,7 @@ paths:
       operationId: deactivateSite
       summary: Lokasyon pasife alır
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, eski sevkiyatlar etkilenmez; kayıt silinmez. Tekrarı zararsızdır.
       parameters:
         - name: siteId
           in: path
@@ -1123,7 +1123,7 @@ paths:
       operationId: activateSite
       summary: Lokasyon yeniden etkinleştirir
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
       parameters:
         - name: siteId
           in: path
@@ -1170,7 +1170,7 @@ paths:
       operationId: createProduct
       summary: İplik ekler
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Kod boşluklardan arındırılıp büyük harfe çevrilir; harf veya rakamla başlar, en çok 40 karakterdir ve yalnızca harf, rakam ve `+ . _ / -` içerir (değilse 400 `INVALID_MASTER_DATA`). Kullanılmış kod 409 `DUPLICATE_CODE` verir. Kod eklendikten sonra değişmez. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Kod boşluklardan arındırılıp büyük harfe çevrilir; harf veya rakamla başlar, en çok 40 karakterdir ve yalnızca harf, rakam ve `+ . _ / -` içerir (değilse 400 `INVALID_MASTER_DATA`). Kullanılmış kod 409 `DUPLICATE_CODE` verir. Kod eklendikten sonra değişmez. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -1200,7 +1200,7 @@ paths:
       operationId: updateProduct
       summary: İplik günceller
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve iplik numarası güncellenir. Kayıt pasif olsa da güncellenebilir.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve iplik numarası güncellenir. Kayıt pasif olsa da güncellenebilir.
       parameters:
         - name: productId
           in: path
@@ -1237,7 +1237,7 @@ paths:
       operationId: deactivateProduct
       summary: İplik pasife alır
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif iplik yeni partiye verilemez; mevcut partiler etkilenmez.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif iplik yeni partiye verilemez; mevcut partiler etkilenmez.
       parameters:
         - name: productId
           in: path
@@ -1260,7 +1260,7 @@ paths:
       operationId: activateProduct
       summary: İplik yeniden etkinleştirir
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
       parameters:
         - name: productId
           in: path
@@ -1307,7 +1307,7 @@ paths:
       operationId: createQualityGrade
       summary: Kalite sınıfı ekler
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Kod kuralı iplikteki gibidir (`INVALID_MASTER_DATA`, `DUPLICATE_CODE`); kod partinin kilidiyle çuvala kopyalandığı için eklendikten sonra değişmez. Etiket rengi `#RRGGBB` biçimindedir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Kod kuralı iplikteki gibidir (`INVALID_MASTER_DATA`, `DUPLICATE_CODE`); kod partinin kilidiyle çuvala kopyalandığı için eklendikten sonra değişmez. Etiket rengi `#RRGGBB` biçimindedir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -1337,7 +1337,7 @@ paths:
       operationId: updateQualityGrade
       summary: Kalite sınıfı günceller
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve etiket rengi güncellenir.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Kod değişmez; yalnızca ad ve etiket rengi güncellenir.
       parameters:
         - name: qualityGradeId
           in: path
@@ -1374,7 +1374,7 @@ paths:
       operationId: deactivateQualityGrade
       summary: Kalite sınıfı pasife alır
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif sınıf yeni partiye verilemez ve kilitlenecek partide kullanılamaz.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Pasif sınıf yeni partiye verilemez ve kilitlenecek partide kullanılamaz.
       parameters:
         - name: qualityGradeId
           in: path
@@ -1397,7 +1397,7 @@ paths:
       operationId: activateQualityGrade
       summary: Kalite sınıfı yeniden etkinleştirir
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
       parameters:
         - name: qualityGradeId
           in: path
@@ -1444,7 +1444,7 @@ paths:
       operationId: createYarnSupplier
       summary: İplik tedarikçisi ekler
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Ad büyük/küçük harf duyarsız tekildir (`DUPLICATE_CODE`, alan `name`). Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Ad büyük/küçük harf duyarsız tekildir (`DUPLICATE_CODE`, alan `name`). Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -1474,7 +1474,7 @@ paths:
       operationId: updateYarnSupplier
       summary: İplik tedarikçisi günceller
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Adı değiştirir; yeni ad da tekil olmalıdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Adı değiştirir; yeni ad da tekil olmalıdır.
       parameters:
         - name: yarnSupplierId
           in: path
@@ -1511,7 +1511,7 @@ paths:
       operationId: deactivateYarnSupplier
       summary: İplik tedarikçisi pasife alır
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez; pasif tedarikçi yeni partiye verilemez. Tekrarı zararsızdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasif kayıt listelerde görünmez, kayıt silinmez; pasif tedarikçi yeni partiye verilemez. Tekrarı zararsızdır.
       parameters:
         - name: yarnSupplierId
           in: path
@@ -1534,7 +1534,7 @@ paths:
       operationId: activateYarnSupplier
       summary: İplik tedarikçisi yeniden etkinleştirir
       description: |
-        Yalnızca yönetici (MASTER_DATA_MANAGE). Pasife alınmış kaydı geri getirir. Tekrarı zararsızdır.
+        Yalnızca müdür (MASTER_DATA_MANAGE). Pasife alınmış kaydı geri getirir. Tekrarı zararsızdır.
       parameters:
         - name: yarnSupplierId
           in: path
@@ -1581,7 +1581,7 @@ paths:
       operationId: createLot
       summary: Parti ekler
       description: |
-        Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Parti numarası kod kuralına uyar ve lokasyonda tektir (`DUPLICATE_CODE`). Lokasyon, iplik ve kalite sınıfı etkin olmalı, üretim tarihi ileride olamaz (değilse 400 `INVALID_MASTER_DATA`). Parti kilitsiz açılır; çuval bağlanabilmesi için kalitesi kilitlenmelidir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
+        Kalite kullanıcısı veya müdür (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Parti numarası kod kuralına uyar ve lokasyonda tektir (`DUPLICATE_CODE`). Lokasyon, iplik ve kalite sınıfı etkin olmalı, üretim tarihi ileride olamaz (değilse 400 `INVALID_MASTER_DATA`). Parti kilitsiz açılır; çuval bağlanabilmesi için kalitesi kilitlenmelidir. Aynı `Idempotency-Key` ile tekrar gönderilen istek yeni kayıt açmaz, ilk yanıtı döner.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -1611,7 +1611,7 @@ paths:
       operationId: updateLot
       summary: Parti günceller
       description: |
-        Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Yalnızca kalitesi kilitlenmemiş parti düzenlenir; kilitli parti 409 `LOT_QUALITY_LOCKED` verir. Lokasyon değişmez.
+        Kalite kullanıcısı veya müdür (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Yalnızca kalitesi kilitlenmemiş parti düzenlenir; kilitli parti 409 `LOT_QUALITY_LOCKED` verir. Lokasyon değişmez.
       parameters:
         - name: lotId
           in: path
@@ -1648,7 +1648,7 @@ paths:
       operationId: deactivateLot
       summary: Parti pasife alır
       description: |
-        Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Kilitli parti de pasife alınabilir; kilit ve kalite değişmez.
+        Kalite kullanıcısı veya müdür (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasif kayıt listelerde görünmez, kayıt silinmez. Tekrarı zararsızdır. Kilitli parti de pasife alınabilir; kilit ve kalite değişmez.
       parameters:
         - name: lotId
           in: path
@@ -1671,7 +1671,7 @@ paths:
       operationId: activateLot
       summary: Parti yeniden etkinleştirir
       description: |
-        Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
+        Kalite kullanıcısı veya müdür (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında; MASTER_DATA_MANAGE izni olan tüm lokasyonlarda. Pasife alınmış kaydı listelere geri getirir. Tekrarı zararsızdır.
       parameters:
         - name: lotId
           in: path
@@ -1694,7 +1694,7 @@ paths:
       operationId: lockLotQuality
       summary: Partinin kalitesini kilitler
       description: |
-        Kalite kullanıcısı veya yönetici (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında (rapor Bölüm 10). Kilitten sonra partinin numarası, ipliği, kalitesi ve üretim tarihi değişmez ve kilit geri alınamaz; Kilitli parti 409 `LOT_QUALITY_LOCKED`; pasif parti ya da pasif kalite sınıfı 400 `INVALID_MASTER_DATA` verir.
+        Kalite kullanıcısı veya müdür (LOT_QUALITY_LOCK), yalnızca kendi lokasyonlarında (rapor Bölüm 10). Kilitten sonra partinin numarası, ipliği, kalitesi ve üretim tarihi değişmez ve kilit geri alınamaz; Kilitli parti 409 `LOT_QUALITY_LOCKED`; pasif parti ya da pasif kalite sınıfı 400 `INVALID_MASTER_DATA` verir.
       parameters:
         - name: lotId
           in: path

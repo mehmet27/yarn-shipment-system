@@ -21,14 +21,7 @@ export const EKRANLAR = [
 /** İzinli ekranlar; listede olmayan her ekran için 403 beklenir. */
 export const IZINLI: Record<string, readonly string[]> = {
   // Yönetici yalnızca sistemi yönetir: iş ekranlarını (sevkiyat, uyuşmazlık, rapor, bakiye, stok) hiç görmez.
-  admin: [
-    '/panel',
-    '/panel/tanimlar',
-    '/panel/partiler',
-    '/panel/kullanicilar',
-    '/panel/denetim',
-    '/panel/gorunum',
-  ],
+  admin: ['/panel', '/panel/kullanicilar', '/panel/denetim', '/panel/gorunum'],
   depo: ['/panel', '/panel/sevkiyat', '/panel/merkez-stok'],
   kalite: [
     '/panel',
@@ -50,6 +43,8 @@ export const IZINLI: Record<string, readonly string[]> = {
     '/panel/faturalanacaklar',
     '/panel/merkez-stok',
     '/panel/denetim',
+    '/panel/tanimlar',
+    '/panel/partiler',
   ],
   'genel-mudur': ['/panel', '/panel/raporlar', '/panel/bakiye'],
 };

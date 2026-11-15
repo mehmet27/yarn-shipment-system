@@ -5,7 +5,7 @@ import com.yarnshipment.shipment.masterdata.domain.lot.LotDetails;
 import com.yarnshipment.shipment.masterdata.domain.lot.ProductionLot;
 import java.util.UUID;
 
-/** Parti ekler. LOT_QUALITY_LOCK yetkisi olan kalite kullanıcısı veya yönetici, kendi lokasyonunda. */
+/** Parti ekler. LOT_QUALITY_LOCK yetkisi olan kalite kullanıcısı veya müdür, kendi lokasyonunda. */
 public interface CreateLotUseCase {
 
     ProductionLot createLot(Actor actor, UUID siteId, LotDetails details);

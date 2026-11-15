@@ -59,7 +59,7 @@ class VehicleManagementControllerTest {
         when(create.createVehicle(any(), eq("34ABC123"))).thenReturn(new Vehicle(ID, "34ABC123"));
 
         // when
-        MvcTestResult result = post(admin(), BODY);
+        MvcTestResult result = post(manager(), BODY);
 
         // then
         assertThat(result).hasStatus(HttpStatus.CREATED);
@@ -68,8 +68,8 @@ class VehicleManagementControllerTest {
     }
 
     @Test
-    @DisplayName("Yönetici olmayan rol 403 alır ve use case çağrılmaz")
-    void shouldForbidNonAdmin() throws Exception {
+    @DisplayName("Müdür olmayan rol 403 alır ve use case çağrılmaz")
+    void shouldForbidNonManager() throws Exception {
         MvcTestResult result = post(TestTokens.token("warehouse").build(), BODY);
 
         assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
@@ -79,7 +79,7 @@ class VehicleManagementControllerTest {
     @Test
     @DisplayName("Boş alan şemadan 400 alır")
     void shouldRejectEmptyField() throws Exception {
-        assertThat(post(admin(), "{\"plateNo\": \"\"}")).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post(manager(), "{\"plateNo\": \"\"}")).hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(create);
     }
 
@@ -91,7 +91,7 @@ class VehicleManagementControllerTest {
                 .thenThrow(new com.yarnshipment.shipment.masterdata.domain.model.DuplicatePlateException("34ABC123"));
 
         // when
-        MvcTestResult result = post(admin(), "{\"plateNo\": \"34 abc 123\"}");
+        MvcTestResult result = post(manager(), "{\"plateNo\": \"34 abc 123\"}");
 
         // then
         assertThat(result).hasStatus(HttpStatus.CONFLICT);
@@ -106,7 +106,7 @@ class VehicleManagementControllerTest {
                 .thenThrow(new com.yarnshipment.shipment.masterdata.domain.model.InvalidPlateException("ABC"));
 
         // when
-        MvcTestResult result = post(admin(), "{\"plateNo\": \"abc\"}");
+        MvcTestResult result = post(manager(), "{\"plateNo\": \"abc\"}");
 
         // then
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
@@ -146,8 +146,8 @@ class VehicleManagementControllerTest {
         verify(status).changeVehicleStatus(any(), eq(ID), eq(MasterDataStatus.ACTIVE));
     }
 
-    private static Jwt admin() {
-        return TestTokens.token("admin").build();
+    private static Jwt manager() {
+        return TestTokens.token("manager").build();
     }
 
     private MvcTestResult post(Jwt jwt, String body) {
@@ -156,7 +156,7 @@ class VehicleManagementControllerTest {
 
     private MvcTestResult send(
             MockMvcTester.MockMvcRequestBuilder builder, @org.jspecify.annotations.Nullable String body) {
-        return exchange(builder, admin(), body);
+        return exchange(builder, manager(), body);
     }
 
     private MvcTestResult exchange(

@@ -60,7 +60,7 @@ class SubcontractorManagementControllerTest {
                 .thenReturn(new Subcontractor(ID, "Yeni Tekstil"));
 
         // when
-        MvcTestResult result = post(admin(), SUBCONTRACTORS, "{\"title\": \"Yeni Tekstil\"}");
+        MvcTestResult result = post(manager(), SUBCONTRACTORS, "{\"title\": \"Yeni Tekstil\"}");
 
         // then
         assertThat(result).hasStatus(HttpStatus.CREATED);
@@ -71,7 +71,7 @@ class SubcontractorManagementControllerTest {
     @Test
     @DisplayName("Boş ünvan şemadan 400 alır; use case çağrılmaz")
     void shouldRejectMissingTitle() throws Exception {
-        assertThat(post(admin(), SUBCONTRACTORS, "{\"title\": \"\"}")).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post(manager(), SUBCONTRACTORS, "{\"title\": \"\"}")).hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(createSubcontractor);
     }
 
@@ -83,7 +83,7 @@ class SubcontractorManagementControllerTest {
                 .thenThrow(new DuplicateSubcontractorException("Yeni Tekstil"));
 
         // when
-        MvcTestResult result = post(admin(), SUBCONTRACTORS, "{\"title\": \"yeni tekstil\"}");
+        MvcTestResult result = post(manager(), SUBCONTRACTORS, "{\"title\": \"yeni tekstil\"}");
 
         // then
         assertThat(result).hasStatus(HttpStatus.CONFLICT);
@@ -99,7 +99,7 @@ class SubcontractorManagementControllerTest {
                 .thenThrow(new MasterDataNotFoundException("Subcontractor", ID));
 
         // when
-        MvcTestResult result = send(mvc.put().uri(SUBCONTRACTORS + "/" + ID), admin(), "{\"title\": \"Yeni\"}");
+        MvcTestResult result = send(mvc.put().uri(SUBCONTRACTORS + "/" + ID), manager(), "{\"title\": \"Yeni\"}");
 
         // then
         assertThat(result).hasStatus(HttpStatus.NOT_FOUND);
@@ -107,8 +107,8 @@ class SubcontractorManagementControllerTest {
     }
 
     @Test
-    @DisplayName("Yönetici olmayan rol 403 alır ve use case çağrılmaz")
-    void shouldForbidNonAdminRole() throws Exception {
+    @DisplayName("Müdür olmayan rol 403 alır ve use case çağrılmaz")
+    void shouldForbidNonManagerRole() throws Exception {
         MvcTestResult result = post(TestTokens.token("warehouse").build(), SUBCONTRACTORS, "{\"title\": \"X\"}");
 
         assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
@@ -118,8 +118,8 @@ class SubcontractorManagementControllerTest {
     @Test
     @DisplayName("Pasife alma ve yeniden etkinleştirme 204 döner ve doğru durumu iletir")
     void shouldDeactivateAndActivate() throws Exception {
-        MvcTestResult off = send(mvc.post().uri(SUBCONTRACTORS + "/" + ID + "/deactivate"), admin(), null);
-        MvcTestResult on = send(mvc.post().uri(SUBCONTRACTORS + "/" + ID + "/activate"), admin(), null);
+        MvcTestResult off = send(mvc.post().uri(SUBCONTRACTORS + "/" + ID + "/deactivate"), manager(), null);
+        MvcTestResult on = send(mvc.post().uri(SUBCONTRACTORS + "/" + ID + "/activate"), manager(), null);
 
         assertThat(off).hasStatus(HttpStatus.NO_CONTENT);
         assertThat(on).hasStatus(HttpStatus.NO_CONTENT);
@@ -127,8 +127,8 @@ class SubcontractorManagementControllerTest {
         verify(subcontractorStatus).changeSubcontractorStatus(any(), eq(ID), eq(MasterDataStatus.ACTIVE));
     }
 
-    private static Jwt admin() {
-        return TestTokens.token("admin").build();
+    private static Jwt manager() {
+        return TestTokens.token("manager").build();
     }
 
     private MvcTestResult post(Jwt jwt, String uri, String body) {

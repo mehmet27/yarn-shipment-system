@@ -33,7 +33,7 @@ describe('LotsPage', () => {
   });
 
   it('kalite onayla kilitlenir; kilitli partide düzenle ve kilitle kalkar', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/partiler');
     const card = await screen.findByRole('group', { name: 'P-2026-0002' });
     await userEvent.click(within(card).getByRole('button', { name: 'Kaliteyi kilitle' }));
@@ -47,11 +47,18 @@ describe('LotsPage', () => {
   });
 
   it('kilitli partide yalnızca pasife alma vardır', async () => {
-    server.use(...createHandlers('ADMIN'));
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/partiler');
     const card = await screen.findByRole('group', { name: 'P-2026-0001' });
     expect(within(card).getByRole('button', { name: 'Pasife al' })).toBeInTheDocument();
     expect(within(card).queryByRole('button', { name: 'Düzenle' })).not.toBeInTheDocument();
+  });
+
+  it('Yönetici artık bu sayfaya giremez; yetki müdürdedir', async () => {
+    server.use(...createHandlers('ADMIN'));
+    renderApp('/panel/partiler');
+    expect(await screen.findByText(/yetki/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ekle' })).not.toBeInTheDocument();
   });
 
   it('LOT_QUALITY_LOCK yetkisi olmayan rol bu sayfaya giremez', async () => {

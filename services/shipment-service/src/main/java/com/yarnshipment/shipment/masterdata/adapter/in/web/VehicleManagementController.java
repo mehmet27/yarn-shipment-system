@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Vehicle yönetim uçları; yalnızca MASTER_DATA_MANAGE yetkisi olan yönetici (SEC-02: final değildir). */
+/** Vehicle yönetim uçları; yalnızca MASTER_DATA_MANAGE yetkisi olan müdür (SEC-02: final değildir). */
 @RestController
 public class VehicleManagementController implements VehicleManagementApi {
 

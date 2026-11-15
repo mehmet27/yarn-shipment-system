@@ -29,7 +29,7 @@ class VehicleSiteManagementServiceTest {
     private final VehicleSiteCommandPort port = mock(VehicleSiteCommandPort.class);
     private final VehicleManagementService vehicles = new VehicleManagementService(port);
     private final SiteManagementService sites = new SiteManagementService(port);
-    private final Actor actor = TestTokens.actor("admin");
+    private final Actor actor = TestTokens.actor("manager");
     private final UUID id = UUID.randomUUID();
 
     @Test

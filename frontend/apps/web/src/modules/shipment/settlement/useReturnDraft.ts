@@ -13,11 +13,8 @@ export function useReturnDraft() {
       setDraft((current) => ({ ...current, [name]: value }));
     },
   });
-  const setDirection = (direction: YarnReturnDraft['direction']) => {
-    setDraft((current) => ({ ...current, direction }));
-  };
   const reset = () => {
     setDraft(EMPTY_RETURN_DRAFT);
   };
-  return { draft, field, setDirection, reset };
+  return { draft, field, reset };
 }

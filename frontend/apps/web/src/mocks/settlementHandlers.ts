@@ -54,10 +54,8 @@ function readReceipt(json: unknown): FabricReceiptRequest | undefined {
 
 function readReturn(json: unknown): YarnReturnRequest | undefined {
   if (!isRecord(json) || !text(json.yarnType) || !positiveKg(json.netKg)) return undefined;
-  const { direction } = json;
-  if (direction !== 'RETURN' && direction !== 'FROM_SUBCONTRACTOR') return undefined;
+  if (json.direction !== undefined && json.direction !== 'RETURN') return undefined;
   return {
-    direction,
     yarnType: json.yarnType,
     netKg: json.netKg,
     ...(text(json.lotId) ? { lotId: json.lotId } : {}),

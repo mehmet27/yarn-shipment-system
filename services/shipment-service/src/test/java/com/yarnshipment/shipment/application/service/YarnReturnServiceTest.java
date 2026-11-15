@@ -42,16 +42,16 @@ class YarnReturnServiceTest {
                 TestShipments.SHIPMENT_ID, TestShipments.SUBCONTRACTOR_ID, new BigDecimal("1000.000")));
     }
 
-    private RecordYarnReturnCommand command(ReturnDirection direction, String netKg) {
+    private RecordYarnReturnCommand command(String netKg) {
         return new RecordYarnReturnCommand(
-                warehouse, TestShipments.SHIPMENT_ID, direction, "30/1 penye", null, new BigDecimal(netKg), "IRS-9");
+                warehouse, TestShipments.SHIPMENT_ID, "30/1 penye", null, new BigDecimal(netKg), "IRS-9");
     }
 
     @Test
     @DisplayName("Dönen iplik kaydedilir")
     void shouldRecordReturnedYarn() {
         // when
-        YarnReturn record = service.recordYarnReturn(command(ReturnDirection.RETURN, "100"));
+        YarnReturn record = service.recordYarnReturn(command("100"));
 
         // then
         assertThat(yarnReturns.saved()).containsExactly(record);
@@ -66,25 +66,22 @@ class YarnReturnServiceTest {
         settlements.givenTotals("900", "0", "0");
 
         // when / then
-        assertThatThrownBy(() -> service.recordYarnReturn(command(ReturnDirection.RETURN, "100.001")))
+        assertThatThrownBy(() -> service.recordYarnReturn(command("100.001")))
                 .isInstanceOf(InvalidLedgerInputException.class);
-        service.recordYarnReturn(command(ReturnDirection.RETURN, "100"));
+        service.recordYarnReturn(command("100"));
         assertThat(yarnReturns.saved()).hasSize(1);
     }
 
     @Test
-    @DisplayName("Fasoncudan gelen iplik fire tabanı sınırına tabi değildir")
-    void shouldNotLimitYarnFromSubcontractor() {
-        // given
-        settlements.givenTotals("1000", "0", "0");
-
+    @DisplayName("Kayıt her zaman fasoncudan depoya dönüş olarak yazılır")
+    void shouldAlwaysRecordAsReturn() {
         // when
-        service.recordYarnReturn(command(ReturnDirection.FROM_SUBCONTRACTOR, "50"));
+        service.recordYarnReturn(command("50"));
 
         // then
         assertThat(yarnReturns.saved())
                 .singleElement()
-                .satisfies(record -> assertThat(record.direction()).isEqualTo(ReturnDirection.FROM_SUBCONTRACTOR));
+                .satisfies(record -> assertThat(record.direction()).isEqualTo(ReturnDirection.RETURN));
     }
 
     @Test
@@ -97,7 +94,7 @@ class YarnReturnServiceTest {
                 new ScopedShipmentLoader(other, new ScopeGuard(event -> {}, clock)), yarnReturns, settlements, clock);
 
         // when / then
-        assertThatThrownBy(() -> awaiting.recordYarnReturn(command(ReturnDirection.RETURN, "10")))
+        assertThatThrownBy(() -> awaiting.recordYarnReturn(command("10")))
                 .isInstanceOf(InvalidShipmentStatusException.class);
     }
 }

@@ -2,7 +2,6 @@ import type {
   FabricReceiptRequest,
   InvoiceRequest,
   FireRateRequest,
-  YarnReturnDirection,
   YarnReturnRequest,
   YarnShare,
 } from '@iplik/api-client/settlements';
@@ -65,14 +64,12 @@ export function toFabricRequest(draft: FabricDraft): FabricReceiptRequest | Draf
 }
 
 export type YarnReturnDraft = {
-  direction: YarnReturnDirection;
   yarnType: string;
   lotId: string;
   netKg: string;
   waybillNo: string;
 };
 export const EMPTY_RETURN_DRAFT: YarnReturnDraft = {
-  direction: 'RETURN',
   yarnType: '',
   lotId: '',
   netKg: '',
@@ -86,7 +83,6 @@ export function toReturnRequest(draft: YarnReturnDraft): YarnReturnRequest | Dra
   const lotId = draft.lotId.trim();
   const waybillNo = draft.waybillNo.trim();
   return {
-    direction: draft.direction,
     yarnType: draft.yarnType.trim(),
     netKg,
     ...(lotId === '' ? {} : { lotId }),

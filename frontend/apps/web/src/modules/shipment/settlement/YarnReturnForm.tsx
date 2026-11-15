@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Paper, Select, Stack, Text, TextInput, Title } from '@iplik/ui';
+import { Alert, Button, Paper, Stack, Text, TextInput, Title } from '@iplik/ui';
 import { useState } from 'react';
 import { useRecordYarnReturn } from './hooks';
 import type { DraftError } from './settlementDraft';
@@ -7,11 +7,9 @@ import { toReturnRequest } from './settlementDraft';
 import { settlementErrorKey } from './settlementErrors';
 import { useReturnDraft } from './useReturnDraft';
 
-const DIRECTIONS = ['RETURN', 'FROM_SUBCONTRACTOR'] as const;
-
 export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
-  const { draft, field, setDirection, reset } = useReturnDraft();
+  const { draft, field, reset } = useReturnDraft();
   const [error, setError] = useState<DraftError>();
   const mutation = useRecordYarnReturn(shipmentId);
   const submit = () => {
@@ -25,19 +23,6 @@ export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
         <Title order={3} size="h4">
           {t('settlement.yarn.title')}
         </Title>
-        <Select
-          label={t('settlement.yarn.direction')}
-          data={DIRECTIONS.map((value) => ({
-            value,
-            label: t(`settlement.yarn.directions.${value}`),
-          }))}
-          value={draft.direction}
-          allowDeselect={false}
-          onChange={(value) => {
-            const direction = DIRECTIONS.find((item) => item === value);
-            if (direction !== undefined) setDirection(direction);
-          }}
-        />
         <TextInput label={t('settlement.yarn.yarnType')} withAsterisk {...field('yarnType')} />
         <TextInput label={t('settlement.yarn.lotId')} {...field('lotId')} />
         <TextInput

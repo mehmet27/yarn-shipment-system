@@ -103,7 +103,7 @@ export function addMockReturn(
 ): YarnReturn {
   const entry: YarnReturn = {
     id: nextId('ret'),
-    direction: request.direction,
+    direction: 'RETURN',
     yarnType: request.yarnType,
     ...(request.lotId === undefined ? {} : { lotId: request.lotId }),
     netKg: request.netKg,
@@ -114,7 +114,7 @@ export function addMockReturn(
   addMovement(
     {
       shipmentId,
-      kind: request.direction === 'RETURN' ? 'YARN_RETURN' : 'YARN_FROM_SUBCONTRACTOR',
+      kind: 'YARN_RETURN',
       yarnType: request.yarnType,
       netKg: `-${request.netKg}`,
     },

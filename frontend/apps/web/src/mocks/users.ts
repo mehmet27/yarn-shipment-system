@@ -49,7 +49,6 @@ export const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> 
     'DISCREPANCY_VIEW',
     'AUDIT_VIEW',
     'REPORT_VIEW',
-    'YARN_RETURN_RECORD',
     'FIRE_RATE_EDIT',
     'INVOICE_MARK',
     'BALANCE_VIEW',

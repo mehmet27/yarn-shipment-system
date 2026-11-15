@@ -73,6 +73,7 @@ export type FabricReceiptRequest = {
   yarns?: YarnShare[];
 };
 
+/** FROM_SUBCONTRACTOR artık yeni kayıt açılmaz; yalnızca eski kayıtlar listede görünür. */
 export type YarnReturnDirection = 'RETURN' | 'FROM_SUBCONTRACTOR';
 export type YarnReturn = {
   id: string;
@@ -84,7 +85,6 @@ export type YarnReturn = {
   createdAt: string;
 };
 export type YarnReturnRequest = {
-  direction: YarnReturnDirection;
   yarnType: string;
   lotId?: string;
   netKg: string;

@@ -57,7 +57,7 @@ describe('LotsPage', () => {
   it('Yönetici artık bu sayfaya giremez; yetki müdürdedir', async () => {
     server.use(...createHandlers('ADMIN'));
     renderApp('/panel/partiler');
-    expect(await screen.findByText(/yetki/i)).toBeInTheDocument();
+    expect((await screen.findAllByText(/yetki/i)).length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: 'Ekle' })).not.toBeInTheDocument();
   });
 

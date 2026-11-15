@@ -25,6 +25,7 @@ final class SessionActors {
         Set<Role> roles = user.passwordChangeRequired()
                 ? Set.of()
                 : EnumSet.of(Role.valueOf(user.role().name()));
+        // Başlangıç izinleri koddaki varsayılandır; PermissionRefreshFilter sonraki her istekte güncel kayıtla yeniler.
         Set<Permission> permissions = RolePermissionMatrix.permissionsOf(roles);
         Actor actor = new Actor(user.id(), user.username(), roles, permissions, user.siteIds(), false);
         List<GrantedAuthority> authorities = new ArrayList<>(permissions);

@@ -8,6 +8,7 @@ export type NavIconName =
   | 'branding'
   | 'audit'
   | 'users'
+  | 'permissions'
   | 'balances'
   | 'invoices'
   | 'bell'
@@ -28,6 +29,7 @@ const PATHS: Record<NavIconName, string> = {
   audit: 'M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6',
   users:
     'M9 11a4 4 0 100-8 4 4 0 000 8zM2 21c0-4 3-6 7-6s7 2 7 6M17 3.5a4 4 0 010 7M22 21c0-3-1.5-5-4-5.7',
+  permissions: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4',
   balances: 'M12 3v18M5 7h14M5 7l-3 7a3 3 0 006 0zM19 7l-3 7a3 3 0 006 0z',
   invoices: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6',
   bell: 'M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 004 0',

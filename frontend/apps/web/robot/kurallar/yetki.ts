@@ -14,6 +14,7 @@ export const EKRANLAR = [
   '/panel/faturalanacaklar',
   '/panel/merkez-stok',
   '/panel/kullanicilar',
+  '/panel/yetkiler',
   '/panel/denetim',
   '/panel/gorunum',
 ] as const;

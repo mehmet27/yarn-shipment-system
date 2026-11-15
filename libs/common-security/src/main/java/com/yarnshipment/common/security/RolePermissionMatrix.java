@@ -12,6 +12,14 @@ import java.util.Set;
  */
 public final class RolePermissionMatrix {
 
+    /** Yalnızca yöneticide olan, başka role verilemeyen izinler; yönetici kendi yetkisini sabit tutar. */
+    public static final Set<Permission> ADMIN_ONLY =
+            Set.copyOf(EnumSet.of(Permission.USER_MANAGE, Permission.SETTINGS_MANAGE, Permission.PERMISSION_MANAGE));
+
+    /** İzinleri Yetkiler ekranından düzenlenebilen roller; yönetici ve sistem rolü sabittir. */
+    public static final Set<Role> EDITABLE_ROLES =
+            Set.copyOf(EnumSet.of(Role.WAREHOUSE, Role.QUALITY, Role.MANAGER, Role.GENERAL_MANAGER));
+
     private static final Map<Role, Set<Permission>> PERMISSIONS_BY_ROLE = createMatrix();
 
     private RolePermissionMatrix() {}
@@ -21,6 +29,16 @@ public final class RolePermissionMatrix {
         Set<Permission> permissions = EnumSet.noneOf(Permission.class);
         roles.forEach(role -> permissions.addAll(PERMISSIONS_BY_ROLE.getOrDefault(role, Set.of())));
         return Set.copyOf(permissions);
+    }
+
+    /** Rolün koddaki varsayılan izinleri; ekrandan "varsayılana dön" ve ilk kurulum buradan alır. */
+    public static Set<Permission> defaultsOf(Role role) {
+        return PERMISSIONS_BY_ROLE.getOrDefault(role, Set.of());
+    }
+
+    /** Varsayılan matristeki rol→izin eşlemesinin tamamı (yalnız okunur). */
+    public static Map<Role, Set<Permission>> defaults() {
+        return PERMISSIONS_BY_ROLE;
     }
 
     private static Map<Role, Set<Permission>> createMatrix() {
@@ -38,12 +56,17 @@ public final class RolePermissionMatrix {
     }
 
     /**
-     * Yönetici yalnızca sistemi yönetir: kullanıcılar, görünüm/kural ayarları ve denetim kaydı. Tanımlar ve partiler
-     * müdürdedir; sevkiyat, kanıt, uyuşmazlık, rapor ve stok gibi iş ekranlarını da görmez.
+     * Yönetici yalnızca sistemi yönetir: kullanıcılar, görünüm/kural ayarları, yetkiler ve denetim kaydı. Tanımlar ve
+     * partiler müdürdedir; sevkiyat, kanıt, uyuşmazlık, rapor ve stok gibi iş ekranlarını da görmez. Yöneticinin
+     * izinleri sabittir: Yetkiler ekranından değişmez.
      */
     private static Set<Permission> permissionsForAdmin() {
         return EnumSet.of(
-                Permission.MASTER_DATA_VIEW, Permission.USER_MANAGE, Permission.SETTINGS_MANAGE, Permission.AUDIT_VIEW);
+                Permission.MASTER_DATA_VIEW,
+                Permission.USER_MANAGE,
+                Permission.SETTINGS_MANAGE,
+                Permission.PERMISSION_MANAGE,
+                Permission.AUDIT_VIEW);
     }
 
     private static Set<Permission> permissionsForWarehouse() {

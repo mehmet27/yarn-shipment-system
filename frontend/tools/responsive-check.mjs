@@ -11,7 +11,8 @@ const WIDTHS = [360, 768, 1280];
 const SCREENS = [
   ['WAREHOUSE', '/panel/sevkiyat'],
   ['WAREHOUSE', '/panel/sevkiyat/yeni'],
-  ['ADMIN', '/panel/tanimlar'],
+  ['MANAGER', '/panel/tanimlar'],
+  ['ADMIN', '/panel/yetkiler'],
   ['ADMIN', '/panel/kullanicilar'],
   ['ADMIN', '/panel/uyusmazliklar'],
   ['ADMIN', '/panel/uyusmazliklar/disc-0'],

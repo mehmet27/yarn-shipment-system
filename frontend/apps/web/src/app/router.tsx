@@ -3,6 +3,7 @@ import { auditPanelRoutes } from '@/modules/audit';
 import { balancePanelRoutes } from '@/modules/balance';
 import { stockPanelRoutes } from '@/modules/stock';
 import { brandingPanelRoutes } from '@/modules/branding';
+import { rolePermissionsPanelRoutes } from '@/modules/rolepermissions';
 import { discrepancyPanelRoutes } from '@/modules/discrepancy';
 import { masterDataPanelRoutes } from '@/modules/masterdata';
 import { reportPanelRoutes } from '@/modules/report';
@@ -42,6 +43,7 @@ const routes: RouteObject[] = [
       ...brandingPanelRoutes,
       ...masterDataPanelRoutes,
       ...usersPanelRoutes,
+      ...rolePermissionsPanelRoutes,
       ...reportPanelRoutes,
       ...auditPanelRoutes,
       ...balancePanelRoutes,

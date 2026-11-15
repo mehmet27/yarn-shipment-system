@@ -93,16 +93,17 @@ yalnızca `admin` şifresi (`kullanicilar.local.json` ya da `ROBOT_SIFRE`) doğr
 | `14-rastgele-girdi`               | Formlara uzun metin, emoji, HTML/betik, SQL parçası, uç sayılar girer; çökme, 5xx ve XSS arar                                                                                                                                                                                                                                                                                                                                                                                          |
 | `15-sevkiyat-tarihi`              | Müdür sevkiyat tarihini girer ve sonradan günceller (boş/geçmiş tarih uyarısı, listede ve dosyada tarih); depo tarih gelmeden çuval atayamaz, çıkış tartısı giremez (ekranda ve sunucuda 409 `SHIPMENT_NOT_DUE`), tarih bugüne alınınca yapabilir                                                                                                                                                                                                                                      |
 | `16-sifre-talebi-ve-oturum`       | Giriş sayfasında 3 hatalı denemeden sonra "Adminden şifre talep et" çıkar (ilk ikisinde çıkmaz); talep Kullanıcılar ekranında uyarı ve rozetle görünür, admin geçici şifre verince kapanır; sunucu koşulsuz talebi kaydetmez. Şifre değişirken "Diğer oturumlarımı kapat" kutusu: kapalıyken diğer oturum açık kalır, açıkken gerçekten kapanır (401)                                                                                                                                  |
+| `17-yetkiler`                     | Yetkiler ekranı: yönetici rolü ve yalnızca yöneticide olan izinler kilitli; genel müdüre denetim izni verilince açık oturumu yeniden giriş istemeden `/panel/denetim`'i açar, "Varsayılana dön" ile tekrar 403 olur                                                                                                                                                                                                                                                                    |
 
 ## Kural tablosu (`robot/kurallar`)
 
 Robotun iş kuralı bilgisi senaryolardan ayrıdır: `kurallar/yetki.ts` (hangi rol hangi ekranı açar) ve `kurallar/hesap.ts` (fire formülü, stok düşümü,
 kilo ve irsaliye sınırları). Kural değişince (yeni rol, yeni formül, yeni sınır) yalnızca bu dosyalar güncellenir.
 
-**Roller ve işler:** `admin` yalnızca sistemi yönetir (kullanıcılar, görünüm/kural ayarları ve denetim kaydı); **tanımlar ve partiler müdürdedir** (kalite de partileri görür ve kilitler; admin ikisini de açamaz, API'den de 403); sevkiyat, uyuşmazlık,
+**Roller ve işler:** `admin` yalnızca sistemi yönetir (kullanıcılar, görünüm/kural ayarları, **yetkiler** ve denetim kaydı); **tanımlar ve partiler müdürdedir** (kalite de partileri görür ve kilitler; admin ikisini de açamaz, API'den de 403); sevkiyat, uyuşmazlık,
 rapor, bakiye ve merkez stok ekranlarını göremez (API'den de 403). Çıkış tartısı düzeltme ve kanıt geçersiz kılma **müdür**dedir; uyuşmazlığı
 yalnızca **kalite** karara bağlar. Fasoncudan gelen kumaşı yalnızca **fasoncu kalite** (`fason-kalite` rolü, `fason.kalite` hesabı, çalışma alanı Fasoncular) girer; müdür giremez, merkez kalite de sevkiyata kumaş giremez. İş senaryolarında bu işler bu rollerle yapılır; yönetici yalnızca sistem senaryolarında (`07`, `08-gorunum`,
-`14` yönetici bölümü); tanım ve parti senaryosu (`06`) müdürle koşar ve denetim kaydını okurken (`10`, müdürle) görünür.
+`14` yönetici bölümü, `17`); tanım ve parti senaryosu (`06`) müdürle koşar ve denetim kaydını okurken (`10`, müdürle) görünür.
 
 ## Kapsam kaydı (kimse unutulmasın)
 

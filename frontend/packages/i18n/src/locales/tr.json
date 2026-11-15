@@ -71,7 +71,8 @@
     "branding": "Görünüm",
     "balances": "Fasoncu bakiyesi",
     "toInvoice": "Faturalanacaklar",
-    "centralStock": "Merkez iplik stoku"
+    "centralStock": "Merkez iplik stoku",
+    "permissions": "Yetkiler"
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}",
@@ -1386,5 +1387,62 @@
     "negativeBadge": "Eksi stok",
     "kindFilter": "Hareket türü",
     "allKinds": "Tüm hareketler"
+  },
+  "permissions": {
+    "title": "Yetkiler",
+    "intro": "Her rolün hangi ekranı açabileceğini ve hangi işlemi yapabileceğini buradan belirleyin. Değişiklik, o roldeki herkese bir sonraki işlemlerinde hemen yansır; yeniden giriş gerekmez.",
+    "lockedNote": "Yönetici yetkileri sabittir. Kullanıcılar, ayarlar ve yetki yönetimi yalnızca yöneticide kalır; başka role verilemez.",
+    "fixedRole": "Yönetici rolünün yetkileri değiştirilemez.",
+    "locked": "Yalnızca yönetici",
+    "changed": "Değişiklik var",
+    "save": "Kaydet",
+    "saved": "Yetkiler kaydedildi.",
+    "reset": "Varsayılana dön",
+    "resetDone": "Varsayılan yetkiler geri yüklendi.",
+    "loadFailed": "Yetkiler yüklenemedi.",
+    "failed": "Yetkiler kaydedilemedi.",
+    "roleTabs": "Roller",
+    "groups": {
+      "masterData": "Tanımlar ve partiler",
+      "shipment": "Sevkiyat",
+      "evidence": "Kanıt ve düzeltme",
+      "quality": "Kalite ve uyuşmazlık",
+      "stock": "Stok ve bakiye",
+      "reporting": "Rapor ve denetim",
+      "system": "Sistem yönetimi"
+    },
+    "items": {
+      "MASTER_DATA_VIEW": "Tanım listelerini görür (fasoncu, şoför, araç, iplik adları)",
+      "MASTER_DATA_MANAGE": "Tanımlar ekranı: kayıt ekler, düzenler, pasife alır",
+      "LOT_QUALITY_LOCK": "Partiler ekranı: parti ekler, düzenler, kalitesini kilitler",
+      "SHIPMENT_VIEW": "Sevkiyatları görür",
+      "SHIPMENT_CREATE": "Yeni sevkiyat açar",
+      "SHIPMENT_CANCEL": "Sevkiyat taslağını iptal eder",
+      "SHIPMENT_COMPLETE": "İrsaliye gelince sevkiyatı tamamlar",
+      "DISPATCH_RECORD": "Çıkış tartısını ve çuvalları kaydeder",
+      "DISPATCH_VIEW": "Çıkış tartısı bilgisini görür",
+      "WEIGHT_MISMATCH_RESOLVE": "Kantar uyuşmazlığını yeniden tartıya açar",
+      "FIRE_RATE_EDIT": "Fire oranını değiştirir",
+      "INVOICE_MARK": "Faturalanacaklar: fatura edildi işaretler",
+      "EVIDENCE_UPLOAD_DISPATCH": "Çıkış kanıtı (fotoğraf, fiş) yükler",
+      "EVIDENCE_UPLOAD_CLAIM": "İtiraz kanıtı yükler",
+      "EVIDENCE_VIEW": "Kanıtları görür",
+      "EVIDENCE_INVALIDATE": "Kanıtı geçersiz kılar",
+      "CORRECTION_CREATE": "Kayıt düzeltmesi yapar",
+      "QUALITY_CLAIM_OPEN": "Kalite itirazı açar",
+      "DISCREPANCY_VIEW": "Uyuşmazlıklar ekranını görür",
+      "DISCREPANCY_RESOLVE": "Uyuşmazlığı karara bağlar",
+      "FABRIC_RECEIPT_RECORD": "Fasoncudan gelen kumaşı girer",
+      "YARN_RETURN_RECORD": "İplik dönüşünü ve gelen ipliği kaydeder",
+      "BALANCE_VIEW": "Fasoncu bakiyesini görür",
+      "CENTRAL_STOCK_VIEW": "Merkez iplik stokunu görür",
+      "CENTRAL_STOCK_RECORD": "Merkeze gelen ipliği stoğa yazar",
+      "CENTRAL_PRODUCTION_RECORD": "Merkezde üretilen kumaşı girer",
+      "REPORT_VIEW": "Raporlar ekranını görür",
+      "AUDIT_VIEW": "Denetim kaydını görür",
+      "USER_MANAGE": "Kullanıcılar ekranı",
+      "SETTINGS_MANAGE": "Görünüm ve kural ayarları",
+      "PERMISSION_MANAGE": "Yetkiler ekranı"
+    }
   }
 }

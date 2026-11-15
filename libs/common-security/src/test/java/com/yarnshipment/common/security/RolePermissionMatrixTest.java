@@ -95,7 +95,21 @@ class RolePermissionMatrixTest {
                         Permission.MASTER_DATA_VIEW,
                         Permission.USER_MANAGE,
                         Permission.SETTINGS_MANAGE,
+                        Permission.PERMISSION_MANAGE,
                         Permission.AUDIT_VIEW);
+    }
+
+    @Test
+    @DisplayName("Yalnızca yöneticide olan izinler başka rolün varsayılanında yoktur; düzenlenebilir roller sabittir")
+    void shouldKeepAdminOnlyPermissionsWithAdmin() {
+        assertThat(RolePermissionMatrix.ADMIN_ONLY)
+                .containsExactlyInAnyOrder(
+                        Permission.USER_MANAGE, Permission.SETTINGS_MANAGE, Permission.PERMISSION_MANAGE);
+        assertThat(RolePermissionMatrix.EDITABLE_ROLES)
+                .containsExactlyInAnyOrder(Role.WAREHOUSE, Role.QUALITY, Role.MANAGER, Role.GENERAL_MANAGER);
+        for (Permission locked : RolePermissionMatrix.ADMIN_ONLY) {
+            assertThat(rolesHaving(locked)).containsExactly(Role.ADMIN);
+        }
     }
 
     @Test

@@ -59,6 +59,12 @@ const ITEMS: readonly PanelNavItem[] = [
   },
   { to: '/panel/denetim', labelKey: 'nav.audit', icon: 'audit', permission: 'AUDIT_VIEW' },
   { to: '/panel/kullanicilar', labelKey: 'nav.users', icon: 'users', permission: 'USER_MANAGE' },
+  {
+    to: '/panel/yetkiler',
+    labelKey: 'nav.permissions',
+    icon: 'permissions',
+    permission: 'PERMISSION_MANAGE',
+  },
 ];
 
 const NAV_LINK_STYLES = { label: { fontWeight: 500 } } as const;

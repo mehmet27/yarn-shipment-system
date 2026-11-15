@@ -199,3 +199,14 @@ Tüm maddeler 20.10.2026'da **karar verildi**. Proje sahibi seçimi büyümeye u
 - Veri kuralları tek bir politika katmanında toplanır ve sorgu kapsamı nesnesiyle veritabanına iner. Tesis, bölge veya firma gibi yeni bir kapsam bu nesneye alan eklenerek gelir.
 - Servisler arası olaylar aktör ve tesis bilgisini taşır; raporlama ve audit ileride tesis bazında bölünebilir.
 - Keycloak, OIDC standardı dışında özel bir özelliğiyle kodun içine girmez; gerekirse başka bir OIDC sağlayıcıya geçmek yalnız claim eşlemesini değiştirir.
+
+## Yetkiler ekranı: rol izinlerinin yönetimi
+
+Rol→izin eşlemesi `role_permission` tablosundadır ve yönetici tarafından **Yönetim > Yetkiler** ekranından (`/panel/yetkiler`, `PERMISSION_MANAGE`) düzenlenir. İlk içerik koddaki varsayılan matristir (`RolePermissionMatrix`); "Varsayılana dön" rolü bu matrise çevirir.
+
+- **Sabit olanlar:** Yönetici ve sistem rolünün izinleri kodda sabittir, tabloda yer almaz. `USER_MANAGE`, `SETTINGS_MANAGE` ve `PERMISSION_MANAGE` yalnızca yöneticide kalır; başka role verilemez (API 400, veritabanı CHECK). Yönetici kendi yetkisini bu ekrandan değiştiremez.
+- **Düzenlenebilir roller:** depo, kalite, müdür, genel müdür.
+- **Anında etki:** `PermissionRefreshFilter` her istekte oturumdaki kullanıcının izinlerini rolünün güncel izinleriyle yeniler; yeniden giriş gerekmez. İzinler kısa süreli önbellekten (5 sn) okunur, bu uygulamadaki değişiklikte önbellek işlem tamamlanınca hemen silinir.
+- **Yeni izin eklenince:** koddaki enum'a eklenir ve `role_permission` için bir migration ile ilgili rollere yazılır; tablo, kodun varsayılanından otomatik beslenmez.
+- **İz:** değişiklikler `audit_local` trigger'ıyla kaydedilir.
+- Satıra bağlı kurallar (lokasyon kapsamı, `Role.SYSTEM`, müdür/kalite ayrımı) izne değil role bağlıdır ve bu ekrandan yönetilmez.

@@ -42,7 +42,8 @@ class ShipmentAccessPolicyTest {
 
         // when / then
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.DRAFT), manager))
-                .containsExactlyInAnyOrder(ShipmentAction.CANCEL, ShipmentAction.CREATE_CORRECTION);
+                .containsExactlyInAnyOrder(
+                        ShipmentAction.CANCEL, ShipmentAction.CREATE_CORRECTION, ShipmentAction.UPDATE_SHIPMENT_DATE);
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.WEIGHT_MISMATCH), manager))
                 .containsExactlyInAnyOrder(
                         ShipmentAction.CANCEL,

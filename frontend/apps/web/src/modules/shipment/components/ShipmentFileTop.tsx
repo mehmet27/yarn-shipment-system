@@ -24,7 +24,11 @@ export function ShipmentFileTop({ shipment }: { shipment: ShipmentDetail }) {
           hideWhenEmpty
         />
       )}
-      <ShipmentFileActions shipmentId={shipment.shipmentId} actions={shipment.allowedActions} />
+      <ShipmentFileActions
+        shipmentId={shipment.shipmentId}
+        shipmentDate={shipment.shipmentDate}
+        actions={shipment.allowedActions}
+      />
       <EvidenceUpload shipmentId={shipment.shipmentId} />
     </>
   );

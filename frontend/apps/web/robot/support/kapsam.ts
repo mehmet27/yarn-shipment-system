@@ -20,6 +20,7 @@ export const KAPSANAN: Record<string, string> = {
   '/panel/raporlar|Satırları yükle': '08-gorunum-raporlar',
   '/panel/sevkiyat/<id>|Sevkiyatı tamamla': '03-akis, 09',
   '/panel/sevkiyat/<id>|İptal et': '09-sevkiyat-islemleri',
+  '/panel/sevkiyat/<id>|Tarihi değiştir': '15-sevkiyat-tarihi',
   '/panel/sevkiyat/<id>|Listeye ekle': '03-akis, 09',
   '/panel/sevkiyat/<id>|Çuvalları ekle': '03-akis, 09',
   '/panel/sevkiyat/<id>|Sevkiyattan çıkar': '09-sevkiyat-islemleri',

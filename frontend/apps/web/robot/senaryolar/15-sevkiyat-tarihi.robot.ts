@@ -83,4 +83,28 @@ test('Sevkiyat tarihi: müdür tarih girer, depo tarih gelmeden işlem yapamaz',
       }
     },
   );
+
+  await mudur.adim(
+    'tarih güncelleme: geçmiş güne alınamaz; bugüne alınınca depo işlem yapabilir',
+    async () => {
+      await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
+      await mudur.sayfa.getByRole('button', { name: 'Tarihi değiştir' }).click();
+      const alan = mudur.sayfa.getByLabel(/Yeni sevkiyat tarihi/);
+      await alan.fill(istanbulGunu(-1));
+      mudur.kontrol(
+        'geçmiş tarihle güncelle düğmesi pasif',
+        await mudur.sayfa.getByRole('button', { name: 'Tarihi güncelle' }).isDisabled(),
+      );
+      await alan.fill(istanbulGunu());
+      await mudur.sayfa.getByRole('button', { name: 'Tarihi güncelle' }).click();
+      await expect(mudur.sayfa.getByRole('button', { name: 'Tarihi değiştir' })).toBeVisible();
+      await expect(mudur.sayfa.getByText(/Bu tarihten önce çuval atanamaz/)).toHaveCount(0);
+    },
+  );
+
+  await depo.adim('tarih bugüne alındı: depo çıkış tartısı düğmesini görür', async () => {
+    await depo.sayfa.goto(`/panel/sevkiyat/${id}`);
+    await expect(depo.sayfa.getByRole('link', { name: 'Çıkış tartısını gir' })).toBeVisible();
+    await expect(depo.sayfa.getByText(/Bu tarihten önce çuval atanamaz/)).toHaveCount(0);
+  });
 });

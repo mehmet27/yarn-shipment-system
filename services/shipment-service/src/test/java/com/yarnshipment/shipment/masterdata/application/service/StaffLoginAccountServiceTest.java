@@ -191,14 +191,15 @@ class StaffLoginAccountServiceTest {
     }
 
     @Test
-    @DisplayName("Etkin lokasyon yoksa hesap açılmaz")
-    void shouldRejectWhenNoActiveSite() {
+    @DisplayName("Etkin lokasyon yoksa hesap lokasyonsuz açılır (ilk kurulum lokasyona bağlı değildir)")
+    void shouldCreateAccountWithoutSitesWhenNoActiveSite() {
         activeSites = Set.of();
-        StaffAccountRequest request = new StaffAccountRequest("d", "Ayşe Depo", StaffRole.QUALITY, "Gecici-Sifre-1");
+        StaffAccountRequest request = new StaffAccountRequest("d", "Ayşe Depo", StaffRole.WAREHOUSE, "Gecici-Sifre-1");
 
-        assertThatThrownBy(() -> service.createStaffLoginAccount(admin, request))
-                .isInstanceOf(InvalidMasterDataException.class);
-        assertThat(openedStaff).isEmpty();
+        service.createStaffLoginAccount(admin, request);
+
+        assertThat(openedStaff).hasSize(1);
+        assertThat(openedStaff.get(0).siteIds()).isEmpty();
     }
 
     @Test

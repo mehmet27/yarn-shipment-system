@@ -85,6 +85,27 @@ class VehicleSiteCommandAdapterTest {
     }
 
     @Test
+    @DisplayName("Yeni lokasyon mevcut tüm hesapların kapsamına eklenir (lokasyonsuz açılmış hesap dahil)")
+    void shouldGrantNewSiteToExistingAccounts() throws Exception {
+        // given
+        UUID actor = UUID.randomUUID();
+        UUID account = UUID.randomUUID();
+        var owner = DATABASE.migratorJdbc();
+        owner.update(
+                "INSERT INTO app_user (id, username, full_name, role, password_hash) "
+                        + "VALUES (?, 'lokasyonsuz', 'Lokasyonsuz Kisi', 'MANAGER', '!')",
+                account);
+
+        // when
+        var site = inTx(() -> adapter.insertSite(actor, "Sonradan Acilan"));
+
+        // then
+        assertThat(owner.queryForObject(
+                        "SELECT ? = ANY (site_ids) FROM app_user WHERE id = ?", Boolean.class, site.id(), account))
+                .isTrue();
+    }
+
+    @Test
     @DisplayName("Lokasyon eklenir, güncellenir, pasife alınır; olmayan kayıtta false döner")
     void shouldWriteSiteAndReportMissingRows() throws Exception {
         // given

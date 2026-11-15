@@ -30,7 +30,8 @@ dosyasını güvenli bir yere yedekleyin (içindeki sırlar kaybolursa veriye er
 
 1. `https://APP_HOST` adresini açın, `admin` ve `INITIAL_ADMIN_PASSWORD` ile girin. İlk girişte uygulama yeni şifre ister.
 2. İkinci faktör (OTP) şimdilik yoktur; ileride eklenebilir. Bu yüzden `admin` şifresini uzun ve tahmin edilmesi zor seçin.
-3. Uygulamada lokasyonları ve temel tanımları girin, ardından Kullanıcılar ekranından depo, kalite, şoför, fasoncu hesaplarını açın.
+3. Kullanıcılar ekranından önce müdür hesabını, ardından depo, kalite ve diğer hesapları açın; temel tanımları (fasoncu, iplik vb.) müdür girer.
+   Lokasyon girmeniz gerekmez: hiç lokasyon yoksa uygulama açılışta "Merkez" lokasyonunu kendisi açar ve tüm hesaplara verir.
    Üretimde test kullanıcısı yoktur; `local` profili hiçbir yerde açılmaz.
 
 ## 3. Günlük işler

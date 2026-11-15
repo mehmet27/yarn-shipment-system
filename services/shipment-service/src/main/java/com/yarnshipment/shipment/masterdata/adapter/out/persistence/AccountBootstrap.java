@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Component;
  * (şifre değiştirme istenmez). Şifreler loglanmaz.
  */
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 final class AccountBootstrap implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(AccountBootstrap.class);

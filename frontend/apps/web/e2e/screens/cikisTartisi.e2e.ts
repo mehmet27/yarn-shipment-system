@@ -13,8 +13,7 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
     'depo tartı ve fişi kaydeder; sevkiyat Fasoncuya yolda olur',
     { tag: '@smoke' },
     async ({ page, openAs }) => {
-      await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001');
-      await page.getByRole('link', { name: 'Çıkış tartısını gir' }).click();
+      await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis');
       await fillFields(page, WEIGHING);
       await expect(page.getByText('Net: 1.982,5 kg')).toBeVisible();
       await captureTicket(page);

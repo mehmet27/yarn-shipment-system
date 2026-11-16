@@ -3,7 +3,7 @@ import { pick } from '../support/form';
 import { expect, test } from '../support/test';
 
 async function fillRecipe(page: Page) {
-  await page.getByLabel(/ya da serbest metin/).fill('20 denye likra');
+  await page.getByLabel(/ya da listede yoksa yazın/).fill('20 denye likra');
   await page.getByLabel(/Net kg 1/).fill('2.036');
 }
 

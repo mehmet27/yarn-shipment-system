@@ -5,6 +5,7 @@ import { formatKg } from '@iplik/units';
 import { useState } from 'react';
 import { TicketCapture } from '@/modules/evidence';
 import { useRecordDispatch } from '../hooks/useRecordDispatch';
+import { PhotoFailedNotice } from './PhotoFailedNotice';
 import type { DispatchDraft, DispatchError } from './dispatchDraft';
 import {
   EMPTY_DISPATCH_DRAFT,
@@ -28,18 +29,23 @@ function failureKey(error: unknown): string {
   return 'dispatch.submitFailed';
 }
 
-/** Tartı kaydedildi ama fotoğraf yüklenemedi: tartı tekrar girilemez, fiş dosyadan eklenir. */
-function PhotoFailedNotice({ onContinue }: { onContinue: () => void }) {
-  const { t } = useTranslation();
-  return (
-    <Alert color="orange">
-      <Stack gap="xs">
-        <Text>{t('dispatch.photoFailed')}</Text>
-        <Button variant="default" w="fit-content" onClick={onContinue}>
-          {t('dispatch.continue')}
-        </Button>
-      </Stack>
-    </Alert>
+type DispatchMutation = ReturnType<typeof useRecordDispatch>;
+
+/** Geçerli taslağı gönderir; fotoğraf yüklendi mi bilgisini `done` ile bildirir. */
+function sendDispatch(
+  draft: DispatchDraft,
+  mutation: DispatchMutation,
+  done: (isPhotoUploaded: boolean) => void,
+) {
+  const request = toDispatchRequest(draft);
+  if (request === undefined || draft.ticket === undefined) return;
+  mutation.mutate(
+    { request, photo: draft.ticket },
+    {
+      onSuccess: (result) => {
+        done(result.photoUploaded);
+      },
+    },
   );
 }
 
@@ -54,20 +60,11 @@ export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
   const mutation = useRecordDispatch(shipmentId);
   const weighing = parseDispatchWeighing(draft);
   const submit = () => {
-    const validation = validateDispatch(draft);
-    setError(validation);
-    const request = toDispatchRequest(draft);
-    if (request !== undefined && draft.ticket !== undefined) {
-      mutation.mutate(
-        { request, photo: draft.ticket },
-        {
-          onSuccess: (result) => {
-            if (result.photoUploaded) onSaved();
-            else setPhotoMissing(true);
-          },
-        },
-      );
-    }
+    setError(validateDispatch(draft));
+    sendDispatch(draft, mutation, (isUploaded) => {
+      if (isUploaded) onSaved();
+      else setPhotoMissing(true);
+    });
   };
   return (
     <Stack>

@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { expect, rolTanimli, test } from '../support/robot';
 import {
   adminSifreVer,
@@ -10,6 +11,22 @@ import {
 } from '../support/yardimci';
 
 const TALEP_DUGMESI = 'Adminden şifre talep et';
+
+/**
+ * Hatalı şifreyle bir giriş denemesi yapar ve sunucunun yanıtını bekler. Yanıt dinleyicisi tıklamadan ÖNCE kurulur:
+ * sunucu hızlı yanıt verince dinleyici sonradan kurulursa yanıt kaçar ve bekleme zaman aşımına düşer.
+ * İlk deneme formu açar; sonrakiler aynı sayfada şifreyi yeniden yazar (hatalı deneme sayacı sunucuda tutulur).
+ */
+async function hataliGiris(sayfa: Page, kisi: string, deneme: number) {
+  const yanit = sayfa.waitForResponse((y) => y.url().includes('/api/v1/auth/login'));
+  if (deneme === 1) {
+    await girisFormu(sayfa, kisi, `yanlis-${String(deneme)}`);
+  } else {
+    await sayfa.getByLabel(/^Şifre/).fill(`yanlis-${String(deneme)}`);
+    await sayfa.getByRole('button', { name: 'Giriş yap' }).click();
+  }
+  await yanit;
+}
 
 test('Şifre talebi: 3 hatalı girişte adminden şifre istenir; admin görür, şifre verir, talep kapanır', async ({
   giris,
@@ -39,13 +56,7 @@ test('Şifre talebi: 3 hatalı girişte adminden şifre istenir; admin görür, 
     async () => {
       for (let deneme = 1; deneme <= 3; deneme += 1) {
         // Sayaç sayfa bellekte tutulur: ilk deneme formu açar, sonrakiler aynı sayfada şifreyi yeniden yazar.
-        if (deneme === 1) {
-          await girisFormu(sayfa, kisi, `yanlis-${String(deneme)}`);
-        } else {
-          await sayfa.getByLabel(/^Şifre/).fill(`yanlis-${String(deneme)}`);
-          await sayfa.getByRole('button', { name: 'Giriş yap' }).click();
-        }
-        await sayfa.waitForResponse((y) => y.url().includes('/api/v1/auth/login'));
+        await hataliGiris(sayfa, kisi, deneme);
         await sayfa.getByText('Kullanıcı adı ya da şifre hatalı.').waitFor();
         const adet = await sayfa.getByRole('button', { name: TALEP_DUGMESI }).count();
         admin.kontrol(
@@ -73,13 +84,7 @@ test('Şifre talebi: 3 hatalı girişte adminden şifre istenir; admin görür, 
   await admin.adim('admin hesabı için talep düğmesi çıkmaz, açıklama görünür', async () => {
     const adminSayfa = await (await browser.newContext({ locale: 'tr-TR' })).newPage();
     for (let deneme = 1; deneme <= 3; deneme += 1) {
-      if (deneme === 1) {
-        await girisFormu(adminSayfa, 'admin', `yanlis-${String(deneme)}`);
-      } else {
-        await adminSayfa.getByLabel(/^Şifre/).fill(`yanlis-${String(deneme)}`);
-        await adminSayfa.getByRole('button', { name: 'Giriş yap' }).click();
-      }
-      await adminSayfa.waitForResponse((y) => y.url().includes('/api/v1/auth/login'));
+      await hataliGiris(adminSayfa, 'admin', deneme);
       await adminSayfa.getByText('Kullanıcı adı ya da şifre hatalı.').waitFor();
     }
     await expect(adminSayfa.getByText(/Yönetici hesabı için şifre talebi/)).toBeVisible();

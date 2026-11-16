@@ -1,36 +1,13 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Paper, Stack, Text, TextInput, Title } from '@iplik/ui';
-import { useState } from 'react';
 import { MasterSelect } from '@/modules/shipment';
-import { useRecordYarnReceipt } from '../hooks/useCentralStock';
-import type { ReceiptDraft, StockDraftError } from '../stockDraft';
-import { EMPTY_RECEIPT_DRAFT, toReceiptRequest } from '../stockDraft';
 import { stockErrorKey } from '../stockErrors';
+import { useReceiptSubmit } from '../useReceiptSubmit';
 
 /** Merkeze gelen ipliği stoğa yazar. */
 export function YarnReceiptForm() {
   const { t } = useTranslation();
-  const [draft, setDraft] = useState<ReceiptDraft>(EMPTY_RECEIPT_DRAFT);
-  const [error, setError] = useState<StockDraftError>();
-  const mutation = useRecordYarnReceipt();
-  const field = (name: 'netKg' | 'note') => ({
-    value: draft[name],
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-      const { value } = event.currentTarget;
-      setDraft((current) => ({ ...current, [name]: value }));
-    },
-  });
-  const submit = () => {
-    mutation.reset();
-    const request = toReceiptRequest(draft);
-    setError(typeof request === 'string' ? request : undefined);
-    if (typeof request === 'string') return;
-    mutation.mutate(request, {
-      onSuccess: () => {
-        setDraft(EMPTY_RECEIPT_DRAFT);
-      },
-    });
-  };
+  const { draft, setDraft, field, error, submit, mutation } = useReceiptSubmit();
   return (
     <Paper withBorder p="md" component="section" aria-label={t('stock.receipt.title')}>
       <Stack>

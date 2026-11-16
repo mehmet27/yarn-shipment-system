@@ -16,7 +16,7 @@ test('Yetkiler: yönetici rolün iznini değiştirir; açık oturum yeniden giri
     await expect(admin.sayfa.getByText('Yönetici rolünün yetkileri değiştirilemez.')).toBeVisible();
     await expect(admin.sayfa.getByRole('checkbox', { name: 'Yetkiler ekranı' })).toBeDisabled();
     await expect(admin.sayfa.getByRole('button', { name: 'Kaydet' })).toHaveCount(0);
-    await admin.sayfa.getByRole('tab', { name: 'Müdür' }).click();
+    await admin.sayfa.getByRole('tab', { name: 'Müdür', exact: true }).click();
     await expect(admin.sayfa.getByRole('checkbox', { name: 'Kullanıcılar ekranı' })).toBeDisabled();
     await expect(admin.sayfa.getByText('Yalnızca yönetici')).toHaveCount(3);
   });

@@ -3,7 +3,6 @@ import { Alert, Button, Group, Paper, Stack, Text, TextInput, Title } from '@ipl
 import { formatKgText } from '@iplik/units';
 import { useState } from 'react';
 import { useFireRateDefault } from '@/modules/shipment';
-import { YarnTypeList } from './YarnTypeList';
 import { ProductionYarnRows } from './ProductionYarnRows';
 import { useRecordCentralProduction } from '../hooks/useCentralStock';
 import type { StockDraftError } from '../stockDraft';
@@ -12,7 +11,7 @@ import { stockErrorKey } from '../stockErrors';
 import { useProductionDraft } from '../useProductionDraft';
 
 /** Merkez fabrikanın ürettiği kumaş: hangi iplikten kaç kg kumaş çıktığı girilir, iplik fire ile stoktan düşer. */
-export function ProductionForm({ yarnTypes }: { yarnTypes: string[] }) {
+export function ProductionForm() {
   const { t } = useTranslation();
   const defaultFirePct = useFireRateDefault();
   const { draft, field, setYarn, addYarn, removeYarn, reset } = useProductionDraft(defaultFirePct);
@@ -40,7 +39,6 @@ export function ProductionForm({ yarnTypes }: { yarnTypes: string[] }) {
           onAdd={addYarn}
           onRemove={removeYarn}
         />
-        <YarnTypeList yarnTypes={yarnTypes} />
         <Text size="sm">
           {t('stock.production.total', { kg: formatKgText(productionTotalKg(draft)) })}
         </Text>

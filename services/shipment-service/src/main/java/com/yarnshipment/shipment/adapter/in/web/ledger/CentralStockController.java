@@ -10,7 +10,6 @@ import com.yarnshipment.shipment.application.port.in.stock.GetCentralStockUseCas
 import com.yarnshipment.shipment.application.port.in.stock.RecordCentralProductionUseCase;
 import com.yarnshipment.shipment.application.port.in.stock.RecordYarnReceiptUseCase;
 import com.yarnshipment.shipment.application.port.in.stock.RequireWorkAreaUseCase;
-import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.stock.WorkArea;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -59,7 +58,7 @@ public class CentralStockController {
     public ResponseEntity<CentralStockMovementView> recordYarnReceipt(@RequestBody YarnReceiptRequest request) {
         RecordYarnReceiptUseCase.Command command = new RecordYarnReceiptUseCase.Command(
                 currentActorProvider.getCurrentActor(),
-                LedgerRequests.required(request.yarnType(), "yarnType"),
+                LedgerRequests.requiredId(request.productId(), "productId"),
                 LedgerRequests.kg(request.netKg(), "netKg"),
                 request.note());
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -70,11 +69,11 @@ public class CentralStockController {
     @PreAuthorize("hasAuthority('CENTRAL_PRODUCTION_RECORD')")
     public ResponseEntity<CentralProductionView> recordProduction(@RequestBody CentralProductionRequest request) {
         workAreas.requireAccess(currentActorProvider.getCurrentActor(), WorkArea.CENTRAL);
-        List<YarnShare> yarns = request.yarns() == null
+        List<RecordCentralProductionUseCase.YarnRequest> yarns = request.yarns() == null
                 ? List.of()
                 : request.yarns().stream()
-                        .map(share -> new YarnShare(
-                                LedgerRequests.required(share.yarnType(), "yarns.yarnType"),
+                        .map(share -> new RecordCentralProductionUseCase.YarnRequest(
+                                LedgerRequests.requiredId(share.productId(), "yarns.productId"),
                                 LedgerRequests.kg(share.netKg(), "yarns.netKg")))
                         .toList();
         RecordCentralProductionUseCase.Command command = new RecordCentralProductionUseCase.Command(

@@ -13,10 +13,11 @@ final class CentralStockViews {
 
     private CentralStockViews() {}
 
-    record CentralStockRowView(String yarnType, String stockKg) {}
+    record CentralStockRowView(@Nullable UUID productId, String yarnType, String stockKg) {}
 
     record CentralStockMovementView(
             UUID id,
+            @Nullable UUID productId,
             String yarnType,
             String kind,
             String netKg,
@@ -39,7 +40,8 @@ final class CentralStockViews {
     static CentralStockView stock(CentralStockOverview overview) {
         return new CentralStockView(
                 overview.rows().stream()
-                        .map(row -> new CentralStockRowView(row.yarnType(), BalanceViews.kg(row.stockKg())))
+                        .map(row -> new CentralStockRowView(
+                                row.productId(), row.yarnType(), BalanceViews.kg(row.stockKg())))
                         .toList(),
                 BalanceViews.kg(overview.totalKg()),
                 BalanceViews.kg(overview.producedFabricKg()),
@@ -54,6 +56,7 @@ final class CentralStockViews {
     static CentralStockMovementView movement(CentralStockMovement movement) {
         return new CentralStockMovementView(
                 movement.id(),
+                movement.productId(),
                 movement.yarnType(),
                 movement.kind().name(),
                 BalanceViews.kg(movement.netKg()),

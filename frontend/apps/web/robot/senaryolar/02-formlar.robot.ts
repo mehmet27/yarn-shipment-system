@@ -1,6 +1,7 @@
 import { GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
-import { damga, sec } from '../support/yardimci';
+import { iplikTanimla } from '../support/akis';
+import { damga, iplikSec, sec } from '../support/yardimci';
 
 /** Geçersiz girişte ekran, nedeni söyleyen bir mesaj göstermeli (genel "tekrar deneyin" yetmez). */
 async function nedenliMesajVar(robot: Robot, ad: string) {
@@ -15,22 +16,35 @@ async function nedenliMesajVar(robot: Robot, ad: string) {
 
 test('Formlar: depo iplik girişi geçersiz değerleri reddeder', async ({ giris }) => {
   const robot = await giris('depo');
+  const mudur = await giris('mudur');
   robot.beklenen(/400 POST \/api\/v1\/central-stock/);
+  // İplik serbest metin değil, Tanımlar'daki aktif iplikler arasından seçilir.
+  const tanimli = damga();
+  await iplikTanimla(mudur, tanimli);
   await robot.sayfa.goto('/panel/merkez-stok');
   await robot.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
+  await robot.adim("iplik girişi: Tanımlar'da olmayan iplik seçilemez", async () => {
+    const alan = robot.sayfa.getByLabel(/İplik cinsi/).first();
+    await alan.click();
+    await alan.fill(`${tanimli}-tanimsiz`);
+    robot.kontrol(
+      'listede olmayan iplik için seçenek çıkmamalı',
+      (await robot.sayfa.locator('[role=option]:visible').count()) === 0,
+    );
+    await robot.sayfa.getByLabel(/Gelen net kg/).fill('5');
+    await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+    await nedenliMesajVar(robot, 'iplik girişi tanımsız iplik');
+  });
   for (const [ad, iplik, kg] of [
     ['boş', '', ''],
-    ['kilo 0', 'ROBOT-test', '0'],
-    ['kilo eksi', 'ROBOT-test', '-5'],
-    ['kilo harf', 'ROBOT-test', 'abc'],
-    ['kilo 4 ondalık', 'ROBOT-test', '1,2345'],
-    ['kilo 100.000 üstü', 'ROBOT-test', '100001'],
+    ['kilo 0', tanimli, '0'],
+    ['kilo eksi', tanimli, '-5'],
+    ['kilo harf', tanimli, 'abc'],
+    ['kilo 4 ondalık', tanimli, '1,2345'],
+    ['kilo 100.000 üstü', tanimli, '100001'],
   ] as const) {
     await robot.adim(`iplik girişi: ${ad}`, async () => {
-      await robot.sayfa
-        .getByLabel(/İplik cinsi/)
-        .first()
-        .fill(iplik);
+      if (iplik !== '') await iplikSec(robot.sayfa, /İplik cinsi/, iplik);
       await robot.sayfa.getByLabel(/Gelen net kg/).fill(kg);
       await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
       await nedenliMesajVar(robot, `iplik girişi ${ad}`);
@@ -40,17 +54,21 @@ test('Formlar: depo iplik girişi geçersiz değerleri reddeder', async ({ giris
 
 test('Formlar: kalite kumaş girişi stokta olmayan iplikle üretimi reddeder', async ({ giris }) => {
   const robot = await giris('kalite');
+  const mudur = await giris('mudur');
   robot.beklenen(/40\d POST \/api\/v1\/central-stock/);
+  // Stokta hiç girişi olmayan ama Tanımlar'da aktif bir iplik: seçilebilir, üretim stok yetersizliğiyle reddedilir.
+  const stoksuz = `${damga()}-yok`;
+  await iplikTanimla(mudur, stoksuz);
   await robot.sayfa.goto('/panel/merkez-stok');
   await robot.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
   for (const [ad, k] of [
     ['boş', { kumas: '', iplik: '', kg: '', fire: '' }],
-    ['fire 150', { kumas: 'Süprem', iplik: 'ROBOT-yok', kg: '5', fire: '150' }],
-    ['stokta olmayan iplik', { kumas: 'Süprem', iplik: `${damga()}-yok`, kg: '5', fire: '3' }],
+    ['fire 150', { kumas: 'Süprem', iplik: stoksuz, kg: '5', fire: '150' }],
+    ['stokta olmayan iplik', { kumas: 'Süprem', iplik: stoksuz, kg: '5', fire: '3' }],
   ] as const) {
     await robot.adim(`kumaş girişi: ${ad}`, async () => {
       await robot.sayfa.getByLabel(/Kumaş cinsi/).fill(k.kumas);
-      await robot.sayfa.getByLabel(/İplik cinsi 1/).fill(k.iplik);
+      if (k.iplik !== '') await iplikSec(robot.sayfa, /İplik cinsi 1/, k.iplik);
       await robot.sayfa.getByLabel(/Kumaş kg 1/).fill(k.kg);
       await robot.sayfa.getByLabel(/Fire \(%\)/).fill(k.fire);
       await robot.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();

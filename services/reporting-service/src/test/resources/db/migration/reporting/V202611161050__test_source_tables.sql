@@ -9,6 +9,11 @@ CREATE TABLE shipment.md_subcontractor (
     title text NOT NULL
 );
 
+CREATE TABLE shipment.md_product (
+    id   uuid PRIMARY KEY,
+    name text NOT NULL
+);
+
 CREATE TABLE shipment.shipment (
     id                  uuid           PRIMARY KEY,
     site_id             uuid           NOT NULL,

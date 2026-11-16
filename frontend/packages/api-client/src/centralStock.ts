@@ -4,9 +4,11 @@ import { customInstance } from './customInstance';
 export const CENTRAL_STOCK_PATH = '/api/v1/central-stock';
 
 export type CentralStockKind = 'YARN_RECEIPT' | 'TO_SUBCONTRACTOR' | 'PRODUCTION';
-export type CentralStockRow = { yarnType: string; stockKg: string };
+/** `productId` boştur: Tanımlar'daki bir iplikle eşlenemeyen eski serbest metin satırı. */
+export type CentralStockRow = { productId?: string; yarnType: string; stockKg: string };
 export type CentralStockMovement = {
   id: string;
+  productId?: string;
   yarnType: string;
   kind: CentralStockKind;
   netKg: string;
@@ -33,14 +35,15 @@ export type CentralStock = {
   movements: CentralStockMovement[];
 };
 
-export type YarnReceiptRequest = { yarnType: string; netKg: string; note?: string };
+/** `productId`: Tanımlar'daki aktif iplik. */
+export type YarnReceiptRequest = { productId: string; netKg: string; note?: string };
 export type CentralProductionRequest = {
   fabricType: string;
   /** Oran olarak, ör. "0.04". */
   fireRate: string;
   rollCount?: number;
   waybillNo?: string;
-  yarns: { yarnType: string; netKg: string }[];
+  yarns: { productId: string; netKg: string }[];
 };
 export type CentralProduction = {
   id: string;

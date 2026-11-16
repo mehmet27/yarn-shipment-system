@@ -99,6 +99,8 @@ yalnızca `admin` şifresi (`kullanicilar.local.json` ya da `ROBOT_SIFRE`) doğr
 
 ## Kural tablosu (`robot/kurallar`)
 
+**Merkez stok iplik seçimi:** merkeze iplik girişi ve merkez kumaş girişinde iplik serbest metin değildir; Tanımlar'daki **aktif iplikler** arasından seçilir (liste sunucuda aranır, ilk sayfa 20 kayıt). Stokla çalışan her senaryo ipliği önce müdürle `iplikTanimla(mudur, ad)` (`support/akis.ts`) ile Tanımlar'a ekler, formda `iplikSec(sayfa, etiket, ad)` (`support/yardimci.ts`) ile adı yazıp seçer. Sevkiyat reçetesindeki serbest metin ve iplik dönüşü formu değişmedi; sevkiyat çıkışında reçete ipliği tanımla **ada göre** eşleşirse merkez stok satırı aynı iplikte birleşir (bu yüzden robot aynı adı kullanır). Stok ve bakiye API'si iplik adını (`yarnType`) döner; bakiyede UUID görünmemelidir.
+
 Robotun iş kuralı bilgisi senaryolardan ayrıdır: `kurallar/yetki.ts` (hangi rol hangi ekranı açar) ve `kurallar/hesap.ts` (fire formülü, stok düşümü,
 kilo ve irsaliye sınırları). Kural değişince (yeni rol, yeni formül, yeni sınır) yalnızca bu dosyalar güncellenir.
 

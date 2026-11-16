@@ -10,7 +10,10 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
@@ -20,17 +23,21 @@ import org.springframework.stereotype.Component;
 final class CentralStockAdapter implements CentralStockPort {
 
     private static final String INSERT_MOVEMENT = """
-            INSERT INTO central_stock_movement (id, yarn_type, kind, net_kg, production_id, fabric_kg, note,
+            INSERT INTO central_stock_movement (id, product_id, yarn_type, kind, net_kg, production_id, fabric_kg, note,
                                                 occurred_at, created_by, source_ref)
-            VALUES (:id, :yarnType, :kind, :netKg, :productionId, :fabricKg, :note, :occurredAt, :createdBy,
+            VALUES (:id, :productId, :yarnType, :kind, :netKg, :productionId, :fabricKg, :note, :occurredAt, :createdBy,
                     :sourceRef)""";
     private static final String INSERT_PRODUCTION = """
             INSERT INTO fabric_lot (id, source, fabric_type, net_kg, fire_rate, roll_count, waybill_no, occurred_at,
                                     created_by)
             VALUES (:id, 'CENTRAL', :fabricType, :netKg, :fireRate, :rollCount, :waybillNo, :producedAt, :createdBy)""";
     private static final String STOCK = """
-            SELECT yarn_type, sum(net_kg) AS stock_kg FROM central_stock_movement
-            GROUP BY yarn_type ORDER BY yarn_type""";
+            SELECT m.product_id, coalesce(p.name, m.yarn_type) AS yarn_type, sum(m.net_kg) AS stock_kg
+            FROM central_stock_movement m
+            LEFT JOIN md_product p ON p.id = m.product_id
+            GROUP BY m.product_id, coalesce(p.name, m.yarn_type)
+            ORDER BY coalesce(p.name, m.yarn_type), m.product_id""";
+    private static final String ACTIVE_PRODUCTS = "SELECT id, name FROM md_product WHERE active AND id IN (:ids)";
     private static final String PRODUCED = "SELECT coalesce(sum(net_kg), 0) FROM fabric_lot WHERE source = 'CENTRAL'";
     private static final String FLOW = """
             SELECT
@@ -42,8 +49,10 @@ final class CentralStockAdapter implements CentralStockPort {
                 (SELECT coalesce(-sum(net_kg), 0) FROM central_stock_movement
                   WHERE kind = 'PRODUCTION') AS used_kg""";
     private static final String RECENT = """
-            SELECT id, yarn_type, kind, net_kg, production_id, fabric_kg, note, occurred_at, created_by
-            FROM central_stock_movement ORDER BY occurred_at DESC, id DESC LIMIT ?""";
+            SELECT m.id, m.product_id, coalesce(p.name, m.yarn_type) AS yarn_type, m.kind, m.net_kg, m.production_id,
+                   m.fabric_kg, m.note, m.occurred_at, m.created_by
+            FROM central_stock_movement m LEFT JOIN md_product p ON p.id = m.product_id
+            ORDER BY m.occurred_at DESC, m.id DESC LIMIT ?""";
 
     private final JdbcClient jdbc;
 
@@ -74,8 +83,27 @@ final class CentralStockAdapter implements CentralStockPort {
     @Override
     public List<CentralStockRow> findStock() {
         return jdbc.sql(STOCK)
-                .query((rs, i) -> new CentralStockRow(rs.getString("yarn_type"), rs.getBigDecimal("stock_kg")))
+                .query((rs, i) -> new CentralStockRow(
+                        rs.getObject("product_id", UUID.class),
+                        rs.getString("yarn_type"),
+                        rs.getBigDecimal("stock_kg")))
                 .list();
+    }
+
+    @Override
+    public Map<UUID, String> findActiveProductNames(Collection<UUID> productIds) {
+        if (productIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<UUID, String> names = new HashMap<>();
+        jdbc.sql(ACTIVE_PRODUCTS)
+                .param("ids", List.copyOf(productIds))
+                .query((rs, i) -> {
+                    names.put(rs.getObject("id", UUID.class), rs.getString("name"));
+                    return null;
+                })
+                .list();
+        return names;
     }
 
     @Override
@@ -102,6 +130,7 @@ final class CentralStockAdapter implements CentralStockPort {
     private static CentralStockMovement toMovement(ResultSet rs) throws SQLException {
         return new CentralStockMovement(
                 rs.getObject("id", UUID.class),
+                rs.getObject("product_id", UUID.class),
                 rs.getString("yarn_type"),
                 CentralStockKind.valueOf(rs.getString("kind")),
                 rs.getBigDecimal("net_kg"),
@@ -115,6 +144,7 @@ final class CentralStockAdapter implements CentralStockPort {
     private void insert(CentralStockMovement movement, String sourceRef) {
         jdbc.sql(INSERT_MOVEMENT)
                 .param("id", movement.id())
+                .param("productId", movement.productId())
                 .param("yarnType", movement.yarnType())
                 .param("kind", movement.kind().name())
                 .param("netKg", movement.netKg())

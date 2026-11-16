@@ -4,6 +4,7 @@ import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /** Merkeze gelen ipliği stoğa yazar (CENTRAL_STOCK_RECORD). */
@@ -15,19 +16,19 @@ public interface RecordYarnReceiptUseCase {
      * Merkeze iplik girişi isteği.
      *
      * @param actor kaydeden (SEC-04)
-     * @param yarnType iplik cinsi
+     * @param productId iplik tanımı (Tanımlar'daki aktif iplik)
      * @param netKg gelen net kg
      * @param note not, isteğe bağlı
      */
     record Command(
             Actor actor,
-            String yarnType,
+            UUID productId,
             BigDecimal netKg,
             @Nullable String note) {
 
         public Command {
             Objects.requireNonNull(actor, "actor");
-            Objects.requireNonNull(yarnType, "yarnType");
+            Objects.requireNonNull(productId, "productId");
             Objects.requireNonNull(netKg, "netKg");
         }
     }

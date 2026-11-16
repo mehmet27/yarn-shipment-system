@@ -1,17 +1,25 @@
 package com.yarnshipment.shipment.application.port.in.stock;
 
 import com.yarnshipment.common.security.Actor;
-import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /** Merkez fabrikanın ürettiği kumaşı girer ve tükettiği ipliği fire ile merkez stoktan düşer. */
 public interface RecordCentralProductionUseCase {
 
     CentralProduction recordCentralProduction(Command command);
+
+    /**
+     * Üretimde kullanılan iplik tanımı ve net kg.
+     *
+     * @param productId iplik tanımı
+     * @param netKg net kg
+     */
+    record YarnRequest(UUID productId, BigDecimal netKg) {}
 
     /**
      * Merkez kumaş girişi isteği; kumaş kilosu iplik paylarının toplamıdır.
@@ -21,7 +29,7 @@ public interface RecordCentralProductionUseCase {
      * @param fireRate fire oranı, 0 ile 0,20 arası
      * @param rollCount top/rulo sayısı, isteğe bağlı
      * @param waybillNo iç numara, isteğe bağlı
-     * @param yarns kumaşın yapıldığı iplikler
+     * @param yarns kumaşın yapıldığı iplik tanımları ve kiloları (ad sunucuda çözülür)
      */
     record Command(
             Actor actor,
@@ -29,7 +37,7 @@ public interface RecordCentralProductionUseCase {
             BigDecimal fireRate,
             @Nullable Integer rollCount,
             @Nullable String waybillNo,
-            List<YarnShare> yarns) {
+            List<YarnRequest> yarns) {
 
         public Command {
             Objects.requireNonNull(actor, "actor");

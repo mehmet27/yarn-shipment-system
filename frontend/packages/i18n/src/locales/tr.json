@@ -1317,6 +1317,7 @@
     "receipt": {
       "title": "Merkeze iplik girişi",
       "yarnType": "İplik cinsi",
+      "yarnHint": "İplik cinsi Tanımlar'daki aktif iplikler arasından seçilir; listede yoksa müdür Tanımlar'dan iplik eklemelidir.",
       "netKg": "Gelen net kg",
       "note": "Not (irsaliye vb.)",
       "submit": "İplik girişini kaydet",

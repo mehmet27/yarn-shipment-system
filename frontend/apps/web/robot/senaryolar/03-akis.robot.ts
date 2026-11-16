@@ -1,7 +1,7 @@
 import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
-import { kumasGir } from '../support/akis';
-import { damga, resim, sec } from '../support/yardimci';
+import { iplikTanimla, kumasGir } from '../support/akis';
+import { damga, iplikSec, resim, sec } from '../support/yardimci';
 
 type FireDosyasi = { fireRate: string; sentKg: string; fabricKg: string; status: string };
 type Sevkiyat = { fireRate: string; status: string };
@@ -23,13 +23,17 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
   for (const r of [depo, kalite, mudur, fasonKalite])
     r.beklenen(/4\d\d (POST|PUT|DELETE) /, /404 GET \/api\/v1\/shipments\/[\w-]+\/fire-settlement/);
 
-  await depo.adim('depo: merkeze iplik girişi', async () => {
+  await mudur.adim(
+    "müdür: ipliği Tanımlar'a ekler (stok girişi yalnızca tanımlı iplikle)",
+    async () => {
+      await iplikTanimla(mudur, iplik);
+    },
+  );
+
+  await depo.adim('depo: merkeze iplik girişi (listeden seçim)', async () => {
     await depo.sayfa.goto('/panel/merkez-stok');
     await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
-    await depo.sayfa
-      .getByLabel(/İplik cinsi/)
-      .first()
-      .fill(iplik);
+    await iplikSec(depo.sayfa, /İplik cinsi/, iplik);
     await depo.sayfa.getByLabel(/Gelen net kg/).fill('200');
     await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
     await depo.sayfa.getByText('İplik girişi kaydedildi.').waitFor();
@@ -41,7 +45,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     await kalite.sayfa.goto('/panel/merkez-stok');
     await kalite.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
     await kalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
-    await kalite.sayfa.getByLabel(/İplik cinsi 1/).fill(iplik);
+    await iplikSec(kalite.sayfa, /İplik cinsi 1/, iplik);
     await kalite.sayfa.getByLabel(/Kumaş kg 1/).fill('50');
     await kalite.sayfa.getByLabel(/Fire \(%\)/).fill('3');
     await kalite.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();
@@ -60,7 +64,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     // Önceki adım "Eldeki iplik" sekmesinde bitti; form sekmesine dönülür, başarılı kayıttan sonra form boşalmıştır.
     await kalite.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
     await kalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
-    await kalite.sayfa.getByLabel(/İplik cinsi 1/).fill(iplik);
+    await iplikSec(kalite.sayfa, /İplik cinsi 1/, iplik);
     await kalite.sayfa.getByLabel(/Fire \(%\)/).fill('3');
     await kalite.sayfa.getByLabel(/Kumaş kg 1/).fill('5000');
     await kalite.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();

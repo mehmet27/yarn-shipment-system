@@ -44,12 +44,12 @@ export function CentralStockPage() {
         </Tabs.Panel>
         {canReceipt && (
           <Tabs.Panel value="receipt" pt="md">
-            <YarnReceiptForm yarnTypes={query.data?.rows.map((row) => row.yarnType) ?? []} />
+            <YarnReceiptForm />
           </Tabs.Panel>
         )}
         {canProduction && (
           <Tabs.Panel value="production" pt="md">
-            <ProductionForm yarnTypes={query.data?.rows.map((row) => row.yarnType) ?? []} />
+            <ProductionForm />
           </Tabs.Panel>
         )}
       </Tabs>

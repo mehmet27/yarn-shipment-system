@@ -21,7 +21,10 @@ export function useProductionDraft(defaultFirePct: string) {
     }));
   };
   const addYarn = () => {
-    setDraft((current) => ({ ...current, yarns: [...current.yarns, { yarnType: '', netKg: '' }] }));
+    setDraft((current) => ({
+      ...current,
+      yarns: [...current.yarns, { product: undefined, netKg: '' }],
+    }));
   };
   const removeYarn = (index: number) => {
     setDraft((current) => ({ ...current, yarns: current.yarns.filter((_, i) => i !== index) }));

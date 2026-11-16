@@ -2,6 +2,21 @@ import { expect } from './robot';
 import type { Robot } from './robot';
 import { resim, sec } from './yardimci';
 
+/**
+ * Müdür Tanımlar > İplikler'e yeni iplik ekler. Merkez stok girişi ve kumaş girişi yalnızca Tanımlar'daki aktif iplikle
+ * yapılır; bu yüzden stokla çalışan her senaryo önce ipliği tanımlar. Kod benzersiz olmalıdır.
+ */
+export async function iplikTanimla(mudur: Robot, ad: string) {
+  await mudur.sayfa.goto('/panel/tanimlar');
+  await mudur.sayfa.getByRole('tab', { name: 'İplikler', exact: true }).click();
+  await mudur.sayfa.getByRole('button', { name: 'Ekle' }).click();
+  const pencere = mudur.sayfa.getByRole('dialog');
+  await pencere.getByLabel('Kod *', { exact: true }).fill(`RB${ad.replaceAll(/\D/g, '')}`);
+  await pencere.getByLabel('İplik adı *', { exact: true }).fill(ad);
+  await pencere.getByRole('button', { name: 'Kaydet' }).click();
+  await pencere.waitFor({ state: 'hidden' });
+}
+
 export type Yonetim = { depo: Robot; mudur: Robot };
 
 /** Müdür taslağı açar; sevkiyat kimliğini döner. */

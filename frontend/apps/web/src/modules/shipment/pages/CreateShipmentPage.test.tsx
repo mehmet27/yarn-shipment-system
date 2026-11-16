@@ -1,5 +1,5 @@
 import { todayIsoDate } from '@iplik/i18n';
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
@@ -33,6 +33,31 @@ describe('CreateShipmentPage', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
       expect(await screen.findByText('SVK-2026-0046')).toBeInTheDocument();
       expect(screen.getByText('Taslak', { selector: '.mantine-Badge-label' })).toBeInTheDocument();
+    },
+    LONG_FLOW_TIMEOUT_MS,
+  );
+
+  it(
+    'art arda iki tıklama aynı sipariş için tek sevkiyat açar',
+    async () => {
+      server.use(...createHandlers('MANAGER'));
+      let posts = 0;
+      server.events.on('request:start', ({ request }) => {
+        if (request.method === 'POST' && new URL(request.url).pathname === '/api/v1/shipments') {
+          posts += 1;
+        }
+      });
+      renderApp('/panel/sevkiyat/yeni');
+      await pick('Alıcı fasoncu', 'Bursa Tekstil');
+      await fillRecipe('2.036');
+      const button = await screen.findByRole('button', { name: 'Taslak oluştur' });
+      act(() => {
+        button.click();
+        button.click();
+      });
+      expect(await screen.findByText('SVK-2026-0046')).toBeInTheDocument();
+      expect(posts).toBe(1);
+      server.events.removeAllListeners();
     },
     LONG_FLOW_TIMEOUT_MS,
   );

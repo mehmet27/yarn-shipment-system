@@ -37,6 +37,17 @@ final class CentralStockAdapter implements CentralStockPort {
             LEFT JOIN md_product p ON p.id = m.product_id
             GROUP BY m.product_id, coalesce(p.name, m.yarn_type)
             ORDER BY coalesce(p.name, m.yarn_type), m.product_id""";
+    private static final String SHORTAGES = """
+            SELECT st.product_id, p.name AS yarn_type, st.stock_kg
+            FROM (SELECT product_id, sum(net_kg) AS stock_kg
+                  FROM central_stock_movement
+                  WHERE product_id IN (SELECT product_id FROM central_stock_movement
+                                       WHERE shipment_id = :shipmentId AND kind = 'TO_SUBCONTRACTOR'
+                                         AND product_id IS NOT NULL)
+                  GROUP BY product_id) st
+            JOIN md_product p ON p.id = st.product_id
+            WHERE st.stock_kg < 0
+            ORDER BY p.name""";
     private static final String ACTIVE_PRODUCTS = "SELECT id, name FROM md_product WHERE active AND id IN (:ids)";
     private static final String PRODUCED = "SELECT coalesce(sum(net_kg), 0) FROM fabric_lot WHERE source = 'CENTRAL'";
     private static final String FLOW = """
@@ -83,6 +94,17 @@ final class CentralStockAdapter implements CentralStockPort {
     @Override
     public List<CentralStockRow> findStock() {
         return jdbc.sql(STOCK)
+                .query((rs, i) -> new CentralStockRow(
+                        rs.getObject("product_id", UUID.class),
+                        rs.getString("yarn_type"),
+                        rs.getBigDecimal("stock_kg")))
+                .list();
+    }
+
+    @Override
+    public List<CentralStockRow> findShortagesAfterDispatch(UUID shipmentId) {
+        return jdbc.sql(SHORTAGES)
+                .param("shipmentId", shipmentId)
                 .query((rs, i) -> new CentralStockRow(
                         rs.getObject("product_id", UUID.class),
                         rs.getString("yarn_type"),

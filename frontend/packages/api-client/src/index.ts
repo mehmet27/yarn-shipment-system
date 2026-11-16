@@ -17,7 +17,7 @@ export type {
 } from './generated/shipmentService';
 export type { CurrentUser, Permission, Role } from './me';
 export { classifyProblem, toProblem } from './problem';
-export type { FieldError, Problem, ProblemKind } from './problem';
+export type { FieldError, Problem, ProblemKind, StockShortfall } from './problem';
 export {
   completeShipment,
   getShipment,

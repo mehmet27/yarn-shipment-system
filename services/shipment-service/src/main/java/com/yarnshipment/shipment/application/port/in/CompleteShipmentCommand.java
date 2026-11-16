@@ -12,9 +12,21 @@ import java.util.UUID;
  * @param waybillNo irsaliye numarası
  * @param waybillEvidenceId evidence-service'e önceden yüklenen irsaliye belgesi
  * @param idempotencyKey istemcinin ürettiği tekrar anahtarı (API-04)
+ * @param acceptStockShortage merkez stok yetmiyorsa eksik kadar sistem girişi yazılmasının onayı
  */
 public record CompleteShipmentCommand(
-        Actor actor, UUID shipmentId, String waybillNo, UUID waybillEvidenceId, UUID idempotencyKey) {
+        Actor actor,
+        UUID shipmentId,
+        String waybillNo,
+        UUID waybillEvidenceId,
+        UUID idempotencyKey,
+        boolean acceptStockShortage) {
+
+    /** Stok eksiği onaylanmamış (varsayılan) istek. */
+    public CompleteShipmentCommand(
+            Actor actor, UUID shipmentId, String waybillNo, UUID waybillEvidenceId, UUID idempotencyKey) {
+        this(actor, shipmentId, waybillNo, waybillEvidenceId, idempotencyKey, false);
+    }
 
     public CompleteShipmentCommand {
         Objects.requireNonNull(actor, "actor");

@@ -1,4 +1,12 @@
-import { cuvalEkle, kumasGir, tamamlanmisSevkiyat, taslakAc } from '../support/akis';
+import {
+  cuvalEkle,
+  iplikTanimla,
+  kumasGir,
+  stokUyarisiylaTamamla,
+  tamamlanmisSevkiyat,
+  taslakAc,
+  tartiGir,
+} from '../support/akis';
 import { GENEL_MESAJ, expect, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import { damga, resim, sec } from '../support/yardimci';
@@ -29,6 +37,58 @@ test('Sevkiyat: çuval çıkarma ve taslak iptali', async ({ giris }) => {
     await gonder.click();
     // İptalden sonra durum "İptal" olur ve iptal formu kaybolur; /iptal/i büyük İ ile eşleşmez.
     await expect(mudur.sayfa.locator('main')).toContainText('İptal edildi');
+  });
+});
+
+test('Sevkiyat: merkez stok yetmiyorsa uyarı çıkar, müdür onaylayınca eksik kadar sistem girişi yazılır', async ({
+  giris,
+}) => {
+  const depo = await giris('depo');
+  const mudur = await giris('mudur');
+  for (const r of [depo, mudur]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
+  const iplik = damga();
+  type Stok = {
+    rows: { yarnType: string; stockKg: string }[];
+    movements: { yarnType: string; kind: string; netKg: string; note?: string }[];
+  };
+  await mudur.adim("iplik Tanımlar'da var ama merkez stokta hiç yok", async () => {
+    await iplikTanimla(mudur, iplik);
+  });
+  const id = await taslakAc(mudur, iplik, '100');
+  await cuvalEkle(depo, id, 2, '50');
+  await tartiGir(depo, id, '103,5', '3,5', '2');
+  await depo.sayfa.waitForURL(new RegExp(`${id}$`), { timeout: 15_000 });
+  await mudur.adim('müdür: stok yetmeyince uyarı görür, onaylayınca tamamlanır', async () => {
+    mudur.beklenen(/409 POST \/api\/v1\/shipments\/[\w-]+\/completion/);
+    const uyari = await stokUyarisiylaTamamla(mudur, id, `${iplik}-IRS`);
+    mudur.kontrol(
+      'uyarı iplik adını ve eksik kiloyu söylemeli',
+      uyari.includes(iplik) && /100 kg/.test(uyari),
+      uyari,
+    );
+    mudur.kontrol(
+      'uyarı iki doğru yolu söylemeli (merkeze iplik girişi, kapıdan aktarma)',
+      /Merkeze iplik girişi/.test(uyari) && /Kapıdan aktarma/.test(uyari),
+      uyari,
+    );
+  });
+  await depo.adim('doğrula: stok eksiye düşmez (0 kg), sistem girişi iz bırakır', async () => {
+    const stok = await depo.api<Stok>('/api/v1/central-stock');
+    const satir = stok.rows.find((r) => r.yarnType === iplik);
+    depo.kontrol(
+      'iplik stoğu 0 kg olmalı, eksi olmamalı',
+      Number(satir?.stockKg) === 0,
+      satir?.stockKg,
+    );
+    const giris = stok.movements.find(
+      (m) =>
+        m.yarnType === iplik && m.kind === 'YARN_RECEIPT' && /Sistem girişi/.test(m.note ?? ''),
+    );
+    depo.kontrol(
+      '100 kg sistem girişi yazılmış olmalı',
+      Number(giris?.netKg) === 100,
+      giris?.netKg,
+    );
   });
 });
 

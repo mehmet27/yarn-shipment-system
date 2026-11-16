@@ -8,11 +8,14 @@ import com.yarnshipment.common.security.scope.ScopeGuard;
 import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.CompleteShipmentCommand;
+import com.yarnshipment.shipment.application.port.in.stock.CentralStockRow;
 import com.yarnshipment.shipment.domain.completion.Completion;
 import com.yarnshipment.shipment.domain.evidence.EvidenceReference;
 import com.yarnshipment.shipment.domain.evidence.InvalidWaybillEvidenceException;
 import com.yarnshipment.shipment.domain.fire.FireSettlementStatus;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
+import com.yarnshipment.shipment.domain.stock.CentralStockShortfallException;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -37,12 +40,15 @@ class CompleteShipmentServiceTest {
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final Actor manager = TestTokens.actor("manager");
     private final RecordingLedgerPorts ledger = new RecordingLedgerPorts();
+    private final InMemoryCentralStock centralStock = new InMemoryCentralStock(Map.of());
+    private final RecordingLedgerEvents events = new RecordingLedgerEvents();
     private final InMemoryFireSettlementPort fireSettlements = new InMemoryFireSettlementPort();
     private final CompleteShipmentService service = new CompleteShipmentService(
             new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
             (completion, actorUserId) -> completions.add(completion),
             id -> Optional.ofNullable(evidence.get(id)),
             ledger,
+            new CentralStockShortageCover(centralStock, events),
             fireSettlements,
             clock);
 
@@ -92,6 +98,40 @@ class CompleteShipmentServiceTest {
             assertThat(settlement.sentKg()).isEqualByComparingTo("1982.500");
             assertThat(settlement.subcontractorId()).isEqualTo(TestShipments.SUBCONTRACTOR_ID);
         });
+    }
+
+    @Test
+    @DisplayName("Merkez stok yetmiyorsa onaysız tamamlama uyarıyla reddedilir, eksik kilo bildirilir")
+    void shouldWarnWhenCentralStockIsShort() {
+        queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
+        givenEvidence(TestShipments.SHIPMENT_ID, EvidenceReference.WAYBILL);
+        centralStock.givenShortages(List.of(new CentralStockRow(UUID.randomUUID(), "Pamuk", new BigDecimal("-100"))));
+        CompleteShipmentCommand command = command(manager, "IRS-1");
+
+        assertThatThrownBy(() -> service.completeShipment(command))
+                .isInstanceOfSatisfying(
+                        CentralStockShortfallException.class,
+                        error -> assertThat(error.shortfalls()).singleElement().satisfies(item -> {
+                            assertThat(item.yarnType()).isEqualTo("Pamuk");
+                            assertThat(item.missingKg()).isEqualByComparingTo("100");
+                        }));
+        assertThat(events.names).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Müdür onaylarsa eksik kilo kadar sistem girişi yazılır ve sevkiyat tamamlanır")
+    void shouldCoverShortageWhenAccepted() {
+        queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
+        givenEvidence(TestShipments.SHIPMENT_ID, EvidenceReference.WAYBILL);
+        UUID product = UUID.randomUUID();
+        centralStock.givenShortages(List.of(new CentralStockRow(product, "Pamuk", new BigDecimal("-100"))));
+
+        service.completeShipment(new CompleteShipmentCommand(
+                manager, TestShipments.SHIPMENT_ID, "IRS-1", EVIDENCE, UUID.randomUUID(), true));
+
+        assertThat(centralStock.stockOf(product)).isEqualByComparingTo("100");
+        assertThat(events.names).containsExactly("yarnReceipt");
+        assertThat(completions).hasSize(1);
     }
 
     @Test

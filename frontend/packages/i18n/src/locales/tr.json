@@ -261,6 +261,12 @@
       "waybillUploaded": "İrsaliye yüklendi",
       "waybillNo": "İrsaliye no",
       "confirm": "Sevkiyatı tamamla",
+      "shortfall": {
+        "title": "Merkez depoda iplik stoğu yetmiyor",
+        "item": "{{yarn}}: {{kg}} eksik",
+        "advice": "Doğru yol: depo kullanıcısı önce 'Merkeze iplik girişi' yapar. Mal doğrudan tedarikçiden gidiyorsa sevkiyatı 'Kapıdan aktarma' olarak oluşturun. Yine de tamamlarsanız eksik kilo kadar merkeze sistem girişi yazılır ve stok eksiye düşmez.",
+        "confirm": "Yine de tamamla (eksiği sistem girsin)"
+      },
       "errors": {
         "INVALID_SHIPMENT_STATUS": "Sevkiyat tamamlanabilecek durumda değil; önce çıkış tartısı girilmeli.",
         "INVALID_COMPLETION": "İrsaliye numarası geçersiz.",

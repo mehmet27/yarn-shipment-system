@@ -1,6 +1,7 @@
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { WaybillUpload } from '@/modules/evidence';
+import { StockShortfallAlert } from './StockShortfallAlert';
 import { Alert, Button, Paper, Stack, Text, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useCompleteShipment } from '../hooks/useCompleteShipment';
@@ -28,6 +29,12 @@ export function CompleteShipmentForm({ shipmentId }: { shipmentId: string }) {
   const [evidenceId, setEvidenceId] = useState<string>();
   const mutation = useCompleteShipment(shipmentId);
   const trimmed = waybillNo.trim();
+  const problem = mutation.isError ? toProblem(mutation.error) : undefined;
+  const shortfalls = problem?.code === 'CENTRAL_STOCK_SHORTFALL' ? problem.shortfalls : undefined;
+  const submit = (acceptStockShortage: boolean) => {
+    if (evidenceId === undefined) return;
+    mutation.mutate({ waybillNo: trimmed, waybillEvidenceId: evidenceId, acceptStockShortage });
+  };
   return (
     <Paper withBorder p="md" maw={560}>
       <Stack>
@@ -45,7 +52,16 @@ export function CompleteShipmentForm({ shipmentId }: { shipmentId: string }) {
             setWaybillNo(event.currentTarget.value);
           }}
         />
-        {mutation.isError && (
+        {mutation.isError && shortfalls !== undefined && (
+          <StockShortfallAlert
+            shortfalls={shortfalls}
+            loading={mutation.isPending}
+            onConfirm={() => {
+              submit(true);
+            }}
+          />
+        )}
+        {mutation.isError && shortfalls === undefined && (
           <Alert color="red">{t(completeErrorKey(toProblem(mutation.error).code))}</Alert>
         )}
         <Button
@@ -53,8 +69,7 @@ export function CompleteShipmentForm({ shipmentId }: { shipmentId: string }) {
           disabled={trimmed === '' || evidenceId === undefined}
           loading={mutation.isPending}
           onClick={() => {
-            if (evidenceId === undefined) return;
-            mutation.mutate({ waybillNo: trimmed, waybillEvidenceId: evidenceId });
+            submit(false);
           }}
         >
           {t('shipment.complete.confirm')}

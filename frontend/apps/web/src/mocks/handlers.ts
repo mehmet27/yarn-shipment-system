@@ -207,13 +207,24 @@ const completeShipmentHandler = http.post(
     const shipment = findMockShipment(params.shipmentId);
     if (shipment === undefined) return notFound();
     const json: unknown = await request.json();
-    const { waybillNo, waybillEvidenceId } =
+    const { waybillNo, waybillEvidenceId, acceptStockShortage } =
       typeof json === 'object' && json !== null ? (json as Record<string, unknown>) : {};
     if (!isNonEmpty(waybillNo) || !isNonEmpty(waybillEvidenceId)) {
       return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
     }
     if (shipment.status !== 'AWAITING_DELIVERY') {
       return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
+    }
+    if (waybillNo.includes('STOKYOK') && acceptStockShortage !== true) {
+      return HttpResponse.json(
+        {
+          status: 409,
+          code: 'CENTRAL_STOCK_SHORTFALL',
+          title: 'Merkez stok yetmiyor',
+          shortfalls: [{ yarnType: 'Pamuk 20/1', missingKg: '100.000' }],
+        },
+        { status: 409 },
+      );
     }
     completeMockShipment(shipment.shipmentId, waybillNo.trim());
     return new HttpResponse(null, { status: 204 });

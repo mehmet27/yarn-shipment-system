@@ -12,7 +12,7 @@ Hesap **Kullanıcılar** ekranından (`/panel/kullanicilar`, yalnızca `USER_MAN
 
 Yeni kurulumda `admin` hesabı yoktur; uygulama açılışta `YARNSHIPMENT_AUTH_BOOTSTRAP_ADMIN_PASSWORD` değeriyle oluşturur
 (üretim compose'unda `.env` içindeki `INITIAL_ADMIN_PASSWORD`; yerel `local` profilinde `LOCAL_TEST_USER_PASSWORD`). Hesap zaten
-varsa dokunulmaz. İlk girişte şifre değiştirilir.
+varsa dokunulmaz. İlk girişte şifre değiştirilir. Unutulan admin şifresi sunucuda sıfırlanır: bkz. DEPLOY.md "Admin şifresini sıfırlama" (giriş ekranından talep edilemez).
 
 ## Kullanıcılar ekranı
 

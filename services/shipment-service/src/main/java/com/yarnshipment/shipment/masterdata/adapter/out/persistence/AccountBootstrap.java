@@ -17,7 +17,9 @@ import org.springframework.stereotype.Component;
  * İlk kurulumda giriş yapılabilen bir hesap sağlar. {@code yarnshipment.auth.bootstrap.admin-password} doluysa
  * {@code admin} kullanıcısı yoksa açılır (ilk girişte şifre değiştirilir); eski sistemden alınmış ve şifresi
  * belirlenmemiş ("!") {@code admin} varsa şifresi bununla belirlenir. Hesap zaten kullanılabiliyorsa hiçbir şey
- * değişmez. Yerel geliştirmede {@code sample-users} açıksa örnek sevkiyat verisiyle eşleşen dört kullanıcı da açılır
+ * değişmez. {@code yarnshipment.auth.bootstrap.reset-admin=true} verilirse (sunucu sahibinin bilinçli işlemi) var olan
+ * {@code admin} hesabının şifresi bu değerle sıfırlanır, kilit ve hatalı deneme sayacı temizlenir, ilk girişte şifre
+ * değişimi istenir; bayrak sonra kaldırılmalıdır. Yerel geliştirmede {@code sample-users} açıksa örnek sevkiyat verisiyle eşleşen dört kullanıcı da açılır
  * (şifre değiştirme istenmez). Şifreler loglanmaz.
  */
 @Component
@@ -41,13 +43,16 @@ final class AccountBootstrap implements ApplicationRunner {
     private final String adminPassword;
     private final boolean sampleUsers;
     private final String samplePassword;
+    private final boolean resetAdmin;
 
     AccountBootstrap(
             JdbcClient jdbc,
             PasswordHasherPort hasher,
             @Value("${yarnshipment.auth.bootstrap.admin-password:}") String adminPassword,
             @Value("${yarnshipment.auth.bootstrap.sample-users:false}") boolean sampleUsers,
-            @Value("${yarnshipment.auth.bootstrap.sample-password:}") String samplePassword) {
+            @Value("${yarnshipment.auth.bootstrap.sample-password:}") String samplePassword,
+            @Value("${yarnshipment.auth.bootstrap.reset-admin:false}") boolean resetAdmin) {
+        this.resetAdmin = resetAdmin;
         this.jdbc = jdbc;
         this.hasher = hasher;
         this.adminPassword = adminPassword;
@@ -93,11 +98,12 @@ final class AccountBootstrap implements ApplicationRunner {
                     .param("hash", hasher.hash(adminPassword))
                     .update();
             log.info("Initial admin account created");
-        } else if (UNUSABLE.equals(existing)) {
+        } else if (resetAdmin || UNUSABLE.equals(existing)) {
             jdbc.sql("""
-                            UPDATE app_user SET password_hash = :hash, password_change_required = true, enabled = true
+                            UPDATE app_user SET password_hash = :hash, password_change_required = true, enabled = true,
+                                   failed_attempts = 0, locked_until = NULL, password_requested_at = NULL
                              WHERE lower(username) = 'admin'""").param("hash", hasher.hash(adminPassword)).update();
-            log.info("Initial admin password set");
+            log.info(resetAdmin ? "Admin password reset by operator" : "Initial admin password set");
         }
     }
 

@@ -101,3 +101,12 @@ ile dosyaları yerine koyup `chown -R 10001 <aynı klasör>` çalıştırın ve 
   temizlenir. Kullanıcılar Keycloak'ta kalmıştır ve yeni `shipment.app_user` tablosuna **otomatik taşınmaz**: açılışta yalnızca
   `admin` hesabı (`INITIAL_ADMIN_PASSWORD` ile) oluşur; diğer kullanıcıları yönetici Kullanıcılar ekranından yeniden açar.
   Eski `keycloak` şeması gerekmiyorsa yedek aldıktan sonra `DROP SCHEMA keycloak CASCADE;` ile silinebilir.
+
+## Admin şifresini sıfırlama
+
+Giriş ekranından admin şifresi talep edilemez; unutulursa sunucu sahibi sıfırlar (`deploy/prod` klasöründe):
+
+1. `.env` içinde `INITIAL_ADMIN_PASSWORD` değerini yeni geçici şifreyle (en az 8 karakter) değiştirin ve `RESET_ADMIN_PASSWORD=true` satırını ekleyin.
+2. `docker compose up -d app` ile uygulamayı yeniden başlatın. `admin` şifresi bu değer olur, hesap kilidi kalkar.
+3. **Hemen** `RESET_ADMIN_PASSWORD` satırını silin (ya da `false` yapın) ve uygulamayı bir kez daha başlatın; aksi halde her açılışta şifre sıfırlanır.
+4. `admin` ile girin; uygulama yeni şifre seçtirir.

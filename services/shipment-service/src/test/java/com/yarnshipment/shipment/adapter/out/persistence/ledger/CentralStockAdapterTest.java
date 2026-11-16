@@ -143,13 +143,11 @@ class CentralStockAdapterTest {
                 AT,
                 USER));
 
-        assertThat(stock.findStock())
-                .singleElement()
-                .satisfies(row -> {
-                    assertThat(row.productId()).isEqualTo(PRODUCT);
-                    assertThat(row.yarnType()).isEqualTo("Ne 30/1 Penye Combed");
-                    assertThat(row.stockKg()).isEqualByComparingTo("150");
-                });
+        assertThat(stock.findStock()).singleElement().satisfies(row -> {
+            assertThat(row.productId()).isEqualTo(PRODUCT);
+            assertThat(row.yarnType()).isEqualTo("Ne 30/1 Penye Combed");
+            assertThat(row.stockKg()).isEqualByComparingTo("150");
+        });
     }
 
     @Test
@@ -195,7 +193,10 @@ class CentralStockAdapterTest {
         ledger.recordDispatch(SHIPMENT, SUBCONTRACTOR, AT, USER);
 
         assertThat(stock.findStock())
-                .extracting(CentralStockRow::productId, CentralStockRow::yarnType, row -> row.stockKg().toPlainString())
+                .extracting(
+                        CentralStockRow::productId,
+                        CentralStockRow::yarnType,
+                        row -> row.stockKg().toPlainString())
                 .contains(
                         org.assertj.core.groups.Tuple.tuple(PRODUCT, YARN, "-15.000"),
                         org.assertj.core.groups.Tuple.tuple(null, "Bilinmeyen Metin", "-3.000"));

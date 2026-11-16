@@ -64,7 +64,10 @@ public record CentralStockMovement(
      * @param note not, isteğe bağlı
      */
     public record Receipt(
-            UUID productId, String yarnType, BigDecimal netKg, @Nullable String note) {}
+            UUID productId,
+            String yarnType,
+            BigDecimal netKg,
+            @Nullable String note) {}
 
     /** Merkeze iplik girişi. */
     public static CentralStockMovement receipt(Receipt receipt, Instant at, UUID createdBy) {

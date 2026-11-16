@@ -27,8 +27,8 @@ final class ActiveYarnProducts {
     }
 
     List<ProductShare> toShares(List<YarnRequest> yarns) {
-        Map<UUID, String> names =
-                stock.findActiveProductNames(yarns.stream().map(YarnRequest::productId).toList());
+        Map<UUID, String> names = stock.findActiveProductNames(
+                yarns.stream().map(YarnRequest::productId).toList());
         return yarns.stream()
                 .map(yarn -> {
                     String name = names.get(yarn.productId());

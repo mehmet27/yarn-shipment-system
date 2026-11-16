@@ -19,8 +19,8 @@ import org.springframework.stereotype.Component;
  * belirlenmemiş ("!") {@code admin} varsa şifresi bununla belirlenir. Hesap zaten kullanılabiliyorsa hiçbir şey
  * değişmez. {@code yarnshipment.auth.bootstrap.reset-admin=true} verilirse (sunucu sahibinin bilinçli işlemi) var olan
  * {@code admin} hesabının şifresi bu değerle sıfırlanır, kilit ve hatalı deneme sayacı temizlenir, ilk girişte şifre
- * değişimi istenir; bayrak sonra kaldırılmalıdır. Yerel geliştirmede {@code sample-users} açıksa örnek sevkiyat verisiyle eşleşen dört kullanıcı da açılır
- * (şifre değiştirme istenmez). Şifreler loglanmaz.
+ * değişimi istenir; bayrak sonra kaldırılmalıdır. Yerel geliştirmede {@code sample-users} açıksa örnek sevkiyat
+ * verisiyle eşleşen dört kullanıcı da açılır (şifre değiştirme istenmez). Şifreler loglanmaz.
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)

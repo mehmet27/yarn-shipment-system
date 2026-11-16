@@ -98,6 +98,14 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     await depo.sayfa.getByText('Sevkiyattaki çuvallar (2)').waitFor();
   });
 
+  await depo.adim('depo: Kilolar sekmesinden sipariş formunu PDF indirir', async () => {
+    await depo.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
+    await sekme(depo, 'Kilolar');
+    const indirme = depo.sayfa.waitForEvent('download');
+    await depo.sayfa.getByRole('button', { name: 'Sipariş formu PDF' }).click();
+    expect((await indirme).suggestedFilename()).toMatch(/\.pdf$/i);
+  });
+
   const tarteGir = async (brut: string, dara: string, cuval: string, ad: string) => {
     await depo.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}/cikis`);
     await depo.sayfa.getByLabel(/Dolu araç tartısı/).fill(brut);

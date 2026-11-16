@@ -132,7 +132,7 @@ test('Dayanıklılık: yenileme, geri/ileri ve çift tıklama veri tekrarlamaz',
     await mudur.sayfa.locator('[role=option]:visible').first().click();
     await mudur.sayfa.getByLabel(/Fire oranı/).fill('3');
     await mudur.sayfa
-      .getByLabel(/serbest metin/i)
+      .getByLabel(/ya da listede yoksa yazın/i)
       .first()
       .fill(iplik);
     await mudur.sayfa.getByLabel(/Net kg 1/).fill('10');

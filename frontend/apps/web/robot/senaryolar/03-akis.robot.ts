@@ -82,7 +82,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     await sec(mudur.sayfa, /Alıcı fasoncu/, 'Başka Dokuma');
     await mudur.sayfa.getByLabel(/Fire oranı/).fill('3');
     await mudur.sayfa
-      .getByLabel(/serbest metin/i)
+      .getByLabel(/ya da listede yoksa yazın/i)
       .first()
       .fill(iplik);
     await mudur.sayfa.getByLabel(/Net kg 1/).fill('100');
@@ -94,7 +94,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
   await mudur.adim('müdür: taslak sevkiyatta itiraz/laboratuvar kanıtı yüklenemez', async () => {
     await mudur.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
     await mudur.sayfa.getByText('Kilolar', { exact: true }).first().waitFor();
-    await expect(mudur.sayfa.getByText('Ne yükleniyor?')).toHaveCount(0);
+    await expect(mudur.sayfa.getByText('Yüklenecek belge ne?')).toHaveCount(0);
   });
 
   await depo.adim('depo: iki çuval ekler (2 × 50 kg)', async () => {

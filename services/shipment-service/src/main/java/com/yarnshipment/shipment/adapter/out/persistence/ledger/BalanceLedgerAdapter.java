@@ -100,10 +100,14 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
     private static final String LINE_COLUMNS = """
             SELECT column_name FROM information_schema.columns
             WHERE table_schema = current_schema() AND table_name = 'shipment_line'""";
+    private static final String MOVEMENT_COUNT = """
+            SELECT count(*) FROM balance_movement m
+            LEFT JOIN md_product p ON p.id::text = m.yarn_type""";
     private static final String MOVEMENT_COLUMNS = """
-            SELECT id, subcontractor_id, yarn_type, lot_id, shipment_id, kind, net_kg, occurred_at, created_by, reason,
-                   source_ref
-            FROM balance_movement""";
+            SELECT m.id, m.subcontractor_id, coalesce(p.name, m.yarn_type) AS yarn_type, m.lot_id, m.shipment_id,
+                   m.kind, m.net_kg, m.occurred_at, m.created_by, m.reason, m.source_ref
+            FROM balance_movement m
+            LEFT JOIN md_product p ON p.id::text = m.yarn_type""";
 
     private final JdbcClient jdbc;
     private final BalanceMovementWriter writer;
@@ -131,20 +135,19 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
         Map<String, Object> params = new LinkedHashMap<>();
         List<String> conditions = new ArrayList<>();
         if (query.subcontractorId() != null) {
-            conditions.add("subcontractor_id = :subcontractorId");
+            conditions.add("m.subcontractor_id = :subcontractorId");
             params.put("subcontractorId", query.subcontractorId());
         }
         if (query.yarnType() != null) {
-            conditions.add("yarn_type = :yarnType");
+            conditions.add("coalesce(p.name, m.yarn_type) = :yarnType");
             params.put("yarnType", query.yarnType());
         }
         String where = conditions.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditions);
-        Long total = bind(jdbc.sql("SELECT count(*) FROM balance_movement" + where), params)
-                .query(Long.class)
-                .single();
+        Long total =
+                bind(jdbc.sql(MOVEMENT_COUNT + where), params).query(Long.class).single();
         List<BalanceMovement> items = bind(
                         jdbc.sql(MOVEMENT_COLUMNS + where
-                                + " ORDER BY occurred_at DESC, id DESC LIMIT :limit OFFSET :offset"),
+                                + " ORDER BY m.occurred_at DESC, m.id DESC LIMIT :limit OFFSET :offset"),
                         params)
                 .param("limit", query.size())
                 .param("offset", (long) query.page() * query.size())

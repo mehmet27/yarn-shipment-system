@@ -3,6 +3,9 @@ import { useTranslation } from '@iplik/i18n';
 import { Table } from '@iplik/ui';
 import { formatFireRate, formatKg3 } from '../format';
 
+/** Kumaşı henüz gelmemiş sevkiyatta fire ve eksik hesaplanamaz; "%100 fire" göstermek yanıltır. */
+const NOT_YET = '—';
+
 const MIN_WIDTH_PLAIN = 860;
 const MIN_WIDTH_STATUS = 1100;
 
@@ -31,25 +34,28 @@ export function FireTable({ rows, withStatus }: { rows: FireRowView[]; withStatu
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {rows.map((row) => (
-            <Table.Tr key={row.shipmentId}>
-              <Table.Td>{row.shipmentNo}</Table.Td>
-              <Table.Td>{row.subcontractorName}</Table.Td>
-              <Table.Td>{formatKg3(row.sentKg)}</Table.Td>
-              <Table.Td>{formatKg3(row.returnedYarnKg)}</Table.Td>
-              <Table.Td>{formatKg3(row.fabricKg)}</Table.Td>
-              <Table.Td>{formatFireRate(row.fireRate)}</Table.Td>
-              <Table.Td>{formatKg3(row.expectedFabricKg)}</Table.Td>
-              <Table.Td>{formatFireRate(row.actualFireRate)}</Table.Td>
-              <Table.Td>{formatKg3(row.shortageKg)}</Table.Td>
-              {withStatus && (
-                <>
-                  <Table.Td>{t(`report.fire.status.${row.status}`)}</Table.Td>
-                  <Table.Td>{row.invoiceNo ?? ''}</Table.Td>
-                </>
-              )}
-            </Table.Tr>
-          ))}
+          {rows.map((row) => {
+            const isAwaiting = row.status === 'AWAITING_FABRIC';
+            return (
+              <Table.Tr key={row.shipmentId}>
+                <Table.Td>{row.shipmentNo}</Table.Td>
+                <Table.Td>{row.subcontractorName}</Table.Td>
+                <Table.Td>{formatKg3(row.sentKg)}</Table.Td>
+                <Table.Td>{formatKg3(row.returnedYarnKg)}</Table.Td>
+                <Table.Td>{isAwaiting ? NOT_YET : formatKg3(row.fabricKg)}</Table.Td>
+                <Table.Td>{formatFireRate(row.fireRate)}</Table.Td>
+                <Table.Td>{formatKg3(row.expectedFabricKg)}</Table.Td>
+                <Table.Td>{isAwaiting ? NOT_YET : formatFireRate(row.actualFireRate)}</Table.Td>
+                <Table.Td>{isAwaiting ? NOT_YET : formatKg3(row.shortageKg)}</Table.Td>
+                {withStatus && (
+                  <>
+                    <Table.Td>{t(`report.fire.status.${row.status}`)}</Table.Td>
+                    <Table.Td>{row.invoiceNo ?? ''}</Table.Td>
+                  </>
+                )}
+              </Table.Tr>
+            );
+          })}
         </Table.Tbody>
       </Table>
     </Table.ScrollContainer>

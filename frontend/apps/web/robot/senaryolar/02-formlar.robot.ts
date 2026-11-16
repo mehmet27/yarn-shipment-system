@@ -95,7 +95,7 @@ test('Formlar: müdür yeni sevkiyat formu eksik ve hatalı girişte uyarır', a
     await robot.adim(`yeni sevkiyat: ${ad}`, async () => {
       await robot.sayfa.getByLabel(/Fire oranı/).fill(fire);
       await robot.sayfa
-        .getByLabel(/serbest metin/i)
+        .getByLabel(/ya da listede yoksa yazın/i)
         .first()
         .fill('ROBOT-iplik');
       await robot.sayfa.getByLabel(/Net kg 1/).fill(kg);

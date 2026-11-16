@@ -3,7 +3,7 @@ import { expect, rolTanimli, test } from '../support/robot';
 import { damga, satir, sec } from '../support/yardimci';
 
 const TANIMLAR = [
-  { sekme: 'Fasoncular', alanlar: { 'Fasoncu ünvanı *': 'Fason' } },
+  { sekme: 'Fasoncular', alanlar: { 'Fasoncu adı *': 'Fason' } },
   { sekme: 'Şoförler', alanlar: { 'Ad soyad *': 'Şoför' } },
   { sekme: 'Araçlar', alanlar: { 'Plaka *': '34RBT' }, ek: 'sayi' },
   { sekme: 'İplikler', alanlar: { 'Kod *': 'RB', 'İplik adı *': 'İplik' } },
@@ -82,7 +82,7 @@ test('Partiler: müdür parti ekler, düzenler, kalitesini kilitler, pasife alı
   // Lot seçicisi önbelleğe alınır; sayfa yenilenmeden yeni parti eklenince seçicide görünmelidir.
   await mudur.adim('parti: sevkiyat formunun lot seçicisi önbelleğe alınır', async () => {
     await mudur.sayfa.goto('/panel/sevkiyat/yeni');
-    await mudur.sayfa.getByLabel('Lot (isteğe bağlı)').first().click();
+    await mudur.sayfa.getByLabel('Parti no (isteğe bağlı)').first().click();
     await mudur.sayfa.keyboard.press('Escape');
     await mudur.sayfa.getByRole('link', { name: 'Partiler', exact: true }).click();
     await expect(mudur.sayfa).toHaveURL(/\/panel\/partiler/);
@@ -106,7 +106,7 @@ test('Partiler: müdür parti ekler, düzenler, kalitesini kilitler, pasife alı
     async () => {
       await mudur.sayfa.getByRole('link', { name: 'Sevkiyatlar', exact: true }).click();
       await mudur.sayfa.getByRole('link', { name: 'Yeni sevkiyat' }).click();
-      await mudur.sayfa.getByLabel('Lot (isteğe bağlı)').first().click();
+      await mudur.sayfa.getByLabel('Parti no (isteğe bağlı)').first().click();
       await expect(
         mudur.sayfa.locator('[role=option]:visible').filter({ hasText: no }).first(),
       ).toBeVisible();
@@ -139,10 +139,8 @@ test('Partiler: müdür parti ekler, düzenler, kalitesini kilitler, pasife alı
       .getByRole('button', { name: 'Pasife al' })
       .click();
     await mudur.sayfa.waitForTimeout(800);
-    const onay = mudur.sayfa
-      .getByRole('dialog')
-      .getByRole('button', { name: /Pasife al|Onayla|Evet/ });
-    if ((await onay.count()) > 0) await onay.first().click();
+    // Parti kartında pasife alma satır içi onay ister ("Evet, pasife al"); yanlışlıkla basılmasın diye.
+    await mudur.sayfa.getByRole('button', { name: 'Evet, pasife al' }).click();
     await expect(mudur.sayfa.getByText(`${no}-d`)).toHaveCount(0);
   });
 });

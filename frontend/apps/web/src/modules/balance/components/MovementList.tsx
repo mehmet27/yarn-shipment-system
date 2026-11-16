@@ -1,6 +1,12 @@
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Stack, Table, Text } from '@iplik/ui';
-import { formatSignedKg, ListPagination, QueryState, useActorLabel } from '@/modules/shipment';
+import {
+  formatSignedKg,
+  ListPagination,
+  QueryState,
+  useActorLabel,
+  useYarnLabel,
+} from '@/modules/shipment';
 import type { MovementFilter } from '../hooks/useBalances';
 import { useBalanceMovements } from '../hooks/useBalances';
 
@@ -13,6 +19,7 @@ export function MovementList({
 }) {
   const { t } = useTranslation();
   const actorLabel = useActorLabel();
+  const yarnLabel = useYarnLabel();
   const query = useBalanceMovements(filter);
   return (
     <QueryState query={query}>
@@ -37,7 +44,7 @@ export function MovementList({
                     <Table.Tr key={move.id}>
                       <Table.Td>{formatDateTime(move.occurredAt)}</Table.Td>
                       <Table.Td>{t(`settlement.balances.kinds.${move.kind}`)}</Table.Td>
-                      <Table.Td>{move.yarnType}</Table.Td>
+                      <Table.Td>{yarnLabel(move.yarnType)}</Table.Td>
                       <Table.Td>{formatSignedKg(move.netKg)}</Table.Td>
                       <Table.Td>{move.reason ?? actorLabel(move.createdBy)}</Table.Td>
                     </Table.Tr>

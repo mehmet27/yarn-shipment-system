@@ -42,12 +42,12 @@ describe('Kantar uyuşmazlığı', () => {
     expect(within(recipe).getByText(/Fire oranı: %4/)).toBeInTheDocument();
   });
 
-  it('müdür gerekçesiz karar veremez, gerekçeyle reçeteyi güncelleyince sevkiyat yola çıkar', async () => {
+  it('müdür gerekçesiz karar veremez, gerekçeyle iplik listesini güncelleyince sevkiyat yola çıkar', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp(MISMATCH);
     const submit = await screen.findByRole('button', { name: 'Kararı kaydet' });
     expect(submit).toBeDisabled();
-    await userEvent.click(screen.getByText('Reçeteyi güncelle'));
+    await userEvent.click(screen.getByText('İplik listesini güncelle'));
     await userEvent.type(screen.getByLabelText(/Gerekçe/), 'Fark kabul edildi');
     await userEvent.click(submit);
     expect(
@@ -59,7 +59,7 @@ describe('Kantar uyuşmazlığı', () => {
     server.use(...createHandlers('MANAGER'));
     renderApp(MISMATCH);
     const panel = await screen.findByTestId('weight-decision');
-    ['İptal et', 'Çuval ekle-çıkar', 'Reçeteyi güncelle'].forEach((name) => {
+    ['İptal et', 'Çuval ekle-çıkar', 'İplik listesini güncelle'].forEach((name) => {
       expect(within(panel).getByText(name)).toBeInTheDocument();
     });
   });

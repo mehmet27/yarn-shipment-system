@@ -69,6 +69,14 @@ class LedgerAdaptersTest {
                                   created_at, created_by)
             VALUES (?, ?, 'DISPATCH', 34050, 18, 40, now(), ?, now(), ?)""";
 
+    private static final String INSERT_NAMED_PRODUCT = """
+            INSERT INTO md_product (id, code, name, active, created_at, created_by)
+            VALUES (?, 'PAM', 'Pamuk 20/1', true, now(), ?)""";
+    private static final String INSERT_PRODUCT_MOVEMENT = """
+            INSERT INTO balance_movement (id, subcontractor_id, yarn_type, shipment_id, kind, net_kg, occurred_at,
+                                          created_by, source_ref)
+            VALUES (?, ?, ?, ?, 'DISPATCH', 100, now(), ?, 'TEST:yarn-name')""";
+
     @Autowired
     private BalanceLedgerAdapter ledger;
 
@@ -212,6 +220,25 @@ class LedgerAdaptersTest {
             assertThat(movement.kind().name()).isEqualTo("YARN_RETURN");
             assertThat(movement.netKg()).isEqualByComparingTo("-100");
         });
+    }
+
+    @Test
+    @DisplayName("Hareketlerde iplik kimliği yerine iplik adı görünür; ad ile süzülebilir")
+    void shouldShowYarnNameInsteadOfProductId() {
+        // given
+        UUID product = UUID.fromString("0192f0a0-0000-7000-8000-00000000a201");
+        jdbc.update(INSERT_NAMED_PRODUCT, product, USER);
+        jdbc.update(INSERT_PRODUCT_MOVEMENT, UUID.randomUUID(), SUBCONTRACTOR, product.toString(), SHIPMENT, USER);
+
+        // when
+        MovementPage page = ledger.findMovements(
+                new ListMovementsQuery(TestTokens.actor("manager"), SUBCONTRACTOR, "Pamuk 20/1", 0, PAGE_SIZE));
+
+        // then
+        assertThat(page.totalElements()).isEqualTo(1);
+        assertThat(page.items())
+                .singleElement()
+                .satisfies(movement -> assertThat(movement.yarn().yarnType()).isEqualTo("Pamuk 20/1"));
     }
 
     @Test

@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 import { Can, useCurrentUser } from '@/modules/auth';
 import type { Permission } from '@iplik/api-client';
 import { DashboardSection } from '@/modules/report';
-import { PendingWeightDecisions } from '@/modules/shipment';
+import { PendingDispatches, PendingWeightDecisions } from '@/modules/shipment';
 
 /** Yönetici yalnızca sistemi yönetir; ana sayfada yetkisi olduğu sistem ekranlarının kısayolları görünür. */
 const SYSTEM_SHORTCUTS: readonly { to: string; labelKey: string; permission: Permission }[] = [
@@ -26,6 +26,9 @@ export function PanelHomePage() {
       </Title>
       <Can permission="SHIPMENT_VIEW">
         <PendingWeightDecisions />
+      </Can>
+      <Can permission="DISPATCH_RECORD">
+        <PendingDispatches />
       </Can>
       <Can
         permission="REPORT_VIEW"

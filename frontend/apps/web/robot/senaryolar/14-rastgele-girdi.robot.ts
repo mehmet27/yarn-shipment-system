@@ -106,7 +106,7 @@ test('Rastgele girdi: müdür yeni sevkiyat alanları', async ({ giris }) => {
     [
       { etiket: /Fire oranı/, tur: 'sayi' },
       { etiket: /Net kg 1/, tur: 'sayi' },
-      { etiket: /serbest metin/i, tur: 'metin', ilk: true },
+      { etiket: /ya da listede yoksa yazın/i, tur: 'metin', ilk: true },
       { etiket: /Sipariş no/, tur: 'metin' },
       { etiket: /Yetkili kişi/, tur: 'metin' },
     ],
@@ -122,7 +122,7 @@ test('Rastgele girdi: müdür yeni sevkiyat alanları', async ({ giris }) => {
       await mudur.sayfa.locator('[role=option]:visible').first().click();
       await mudur.sayfa.getByLabel(/Fire oranı/).fill('3');
       await mudur.sayfa
-        .getByLabel(/serbest metin/i)
+        .getByLabel(/ya da listede yoksa yazın/i)
         .first()
         .fill('ROBOT-fuzz');
       await mudur.sayfa.getByLabel(/Net kg 1/).fill('1');
@@ -137,7 +137,7 @@ test('Rastgele girdi: müdür tanım alanları', async ({ giris }) => {
   await dene(
     mudur,
     'fasoncu tanımı',
-    [{ etiket: /Fasoncu ünvanı/, tur: 'metin' }],
+    [{ etiket: /Fasoncu adı/, tur: 'metin' }],
     async () => {
       await mudur.sayfa.getByRole('dialog').getByRole('button', { name: 'Kaydet' }).click();
     },

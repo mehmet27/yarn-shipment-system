@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Table } from '@iplik/ui';
+import { useYarnLabel } from '@/modules/shipment';
 import { formatKg3 } from '../format';
 import type { BalanceMatrix } from '../pivot';
 
@@ -7,6 +8,7 @@ const MIN_WIDTH = 560;
 
 export function MatrixTable({ matrix }: { matrix: BalanceMatrix }) {
   const { t } = useTranslation();
+  const yarnLabel = useYarnLabel();
   return (
     <Table.ScrollContainer minWidth={MIN_WIDTH}>
       <Table striped>
@@ -23,7 +25,7 @@ export function MatrixTable({ matrix }: { matrix: BalanceMatrix }) {
         <Table.Tbody>
           {matrix.rows.map((row) => (
             <Table.Tr key={row.yarnType}>
-              <Table.Td>{row.yarnType}</Table.Td>
+              <Table.Td>{yarnLabel(row.yarnType)}</Table.Td>
               {matrix.columns.map((column) => (
                 <Table.Td key={column.id}>{formatKg3(row.values[column.id] ?? 0)}</Table.Td>
               ))}

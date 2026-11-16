@@ -12,7 +12,7 @@ async function pick(label: string, option: string) {
 }
 
 async function fillRecipe(netKg: string) {
-  await userEvent.type(await screen.findByLabelText(/ya da serbest metin/), '20 denye likra');
+  await userEvent.type(await screen.findByLabelText(/ya da listede yoksa yazın/), '20 denye likra');
   await userEvent.type(screen.getByLabelText(/Net kg 1/), netKg);
 }
 

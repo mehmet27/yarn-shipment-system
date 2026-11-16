@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Tabs } from '@iplik/ui';
+import { Stack, Tabs, Text } from '@iplik/ui';
 import { EvidenceGallery } from '@/modules/evidence';
 import { ClaimsTabTrigger, QualityClaimsSection } from '@/modules/claim';
 import { useParams } from 'react-router';
@@ -51,10 +51,16 @@ export function ShipmentFilePage() {
             </Tabs.Panel>
             {canSeeCorrections && shipment.audience === 'INTERNAL' && (
               <Tabs.Panel value="corrections" pt="md">
+                <Text size="sm" c="dimmed" mb="sm">
+                  {t('shipment.file.tabHints.corrections')}
+                </Text>
                 <CorrectionsTab shipment={shipment} />
               </Tabs.Panel>
             )}
             <Tabs.Panel value="claims" pt="md">
+              <Text size="sm" c="dimmed" mb="sm">
+                {t('shipment.file.tabHints.claims')}
+              </Text>
               <QualityClaimsSection shipmentId={shipmentId} />
             </Tabs.Panel>
             {isCompleted(shipment) && <SettlementTabPanels shipmentId={shipmentId} />}

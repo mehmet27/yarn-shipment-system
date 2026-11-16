@@ -2,13 +2,14 @@ import type { BalancesView } from '@iplik/api-client/settlements';
 import { useTranslation } from '@iplik/i18n';
 import { Table, Text } from '@iplik/ui';
 import { sumKg } from '@iplik/units';
-import { formatSignedKg } from '@/modules/shipment';
+import { formatSignedKg, useYarnLabel } from '@/modules/shipment';
 
 type Cells = Map<string, string>;
 
 /** Satır: fasoncu, sütun: iplik cinsi; hücre bakiye kilosu. Toplamlar `sumKg` ile (Big). */
 export function BalanceMatrix({ view }: { view: BalancesView }) {
   const { t } = useTranslation();
+  const yarnLabel = useYarnLabel();
   if (view.items.length === 0) return <Text c="dimmed">{t('settlement.balances.empty')}</Text>;
   const yarns = [...new Set(view.items.map((row) => row.yarnType))].sort();
   const parties = new Map<string, { title: string; cells: Cells }>();
@@ -27,7 +28,7 @@ export function BalanceMatrix({ view }: { view: BalancesView }) {
           <Table.Tr>
             <Table.Th>{t('settlement.balances.subcontractor')}</Table.Th>
             {yarns.map((yarn) => (
-              <Table.Th key={yarn}>{yarn}</Table.Th>
+              <Table.Th key={yarn}>{yarnLabel(yarn)}</Table.Th>
             ))}
             <Table.Th>{t('settlement.balances.total')}</Table.Th>
           </Table.Tr>

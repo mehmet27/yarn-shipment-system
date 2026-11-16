@@ -15,8 +15,9 @@ import {
 } from './dispatchDraft';
 
 const FIELDS = [
-  { name: 'grossKg', inputMode: 'decimal' },
+  // Metin "önce boş araç (dara), sonra dolu araç (brüt)" der; alanlar da bu sırayla gelir.
   { name: 'tareKg', inputMode: 'decimal' },
+  { name: 'grossKg', inputMode: 'decimal' },
   { name: 'bagCount', inputMode: 'numeric' },
   { name: 'shortfallReason', inputMode: 'text' },
 ] as const satisfies readonly { name: Exclude<keyof DispatchDraft, 'ticket'>; inputMode: string }[];
@@ -79,6 +80,7 @@ export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
           key={name}
           inputMode={inputMode}
           {...(name === 'shortfallReason' ? { maxLength: 500 } : {})}
+          {...(name === 'grossKg' || name === 'tareKg' ? { rightSection: 'kg' } : {})}
           label={t(`dispatch.${name}`)}
           value={draft[name]}
           onChange={(event) => {

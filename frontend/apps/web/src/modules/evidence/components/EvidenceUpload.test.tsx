@@ -44,4 +44,12 @@ describe('EvidenceUpload', () => {
     renderApp('/panel/sevkiyat/shp-0003');
     expect(await screen.findByRole('button', { name: 'Fotoğraf çek' })).toBeInTheDocument();
   });
+
+  it('birden çok belge türü izinliyse tür seçilmeden yükleme düğmeleri pasiftir', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/sevkiyat/shp-0003');
+    const button = await screen.findByRole('button', { name: 'Fotoğraf çek' });
+    expect(screen.getByText('Yüklenecek belge ne?')).toBeInTheDocument();
+    expect(button).toBeDisabled();
+  });
 });

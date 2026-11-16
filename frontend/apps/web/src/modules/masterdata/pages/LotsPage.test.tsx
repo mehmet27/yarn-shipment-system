@@ -54,6 +54,17 @@ describe('LotsPage', () => {
     expect(within(card).queryByRole('button', { name: 'Düzenle' })).not.toBeInTheDocument();
   });
 
+  it('pasife alma önce onay ister; vazgeçilirse parti etkin kalır', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/partiler');
+    const card = await screen.findByRole('group', { name: 'P-2026-0001' });
+    await userEvent.click(within(card).getByRole('button', { name: 'Pasife al' }));
+    expect(within(card).getByText(/pasife alınsın mı/)).toBeInTheDocument();
+    await userEvent.click(within(card).getByRole('button', { name: 'Vazgeç' }));
+    expect(within(card).queryByText(/pasife alınsın mı/)).not.toBeInTheDocument();
+    expect(within(card).getByRole('button', { name: 'Pasife al' })).toBeInTheDocument();
+  });
+
   it('Yönetici artık bu sayfaya giremez; yetki müdürdedir', async () => {
     server.use(...createHandlers('ADMIN'));
     renderApp('/panel/partiler');

@@ -58,7 +58,7 @@ final class AppUserAdapter implements AuthUserPort, LoginAccountPort, ActorNameP
     private static final String REQUEST_PASSWORD = """
             UPDATE app_user
                SET password_requested_at = :now
-             WHERE lower(username) = lower(:username) AND enabled
+             WHERE lower(username) = lower(:username) AND enabled AND role <> 'ADMIN'
                AND (failed_attempts >= :min OR locked_until > :now)""";
 
     private static final String LIST_ALL = """

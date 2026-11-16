@@ -26,8 +26,8 @@ function renderPage(url = '/giris') {
   );
 }
 
-async function fillAndSubmit() {
-  await userEvent.type(screen.getByLabelText(/Kullanıcı adı/), 'depo');
+async function fillAndSubmit(username = 'depo') {
+  await userEvent.type(screen.getByLabelText(/Kullanıcı adı/), username);
   await userEvent.type(screen.getByLabelText(/Şifre/), 'gizli-sifre');
   await userEvent.click(screen.getByRole('button', { name: 'Giriş yap' }));
 }
@@ -61,6 +61,21 @@ describe('LoginPage', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Adminden şifre talep et' }));
     expect(await screen.findByText(/Talebiniz yöneticiye iletildi/)).toBeInTheDocument();
     expect(requested).toBe('depo');
+  });
+
+  it('admin hesabı için talep düğmesi çıkmaz, açıklama gösterilir', async () => {
+    server.use(failedLogin());
+    renderPage();
+    await fillAndSubmit('admin');
+    await screen.findByText('Kullanıcı adı ya da şifre hatalı.');
+    for (let deneme = 0; deneme < 2; deneme += 1) {
+      await userEvent.type(screen.getByLabelText(/Şifre/), 'baska');
+      await userEvent.click(screen.getByRole('button', { name: 'Giriş yap' }));
+    }
+    expect(await screen.findByText(/Yönetici hesabı için şifre talebi/)).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Adminden şifre talep et' }),
+    ).not.toBeInTheDocument();
   });
 
   it('hesap kilitlenince de şifre talebi önerilir', async () => {

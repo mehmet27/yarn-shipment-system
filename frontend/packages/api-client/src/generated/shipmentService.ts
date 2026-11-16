@@ -401,6 +401,10 @@ export interface RecipeLineView {
   yarnTypeId?: string;
   yarnTypeText?: string;
   lotId?: string;
+  /** Listeden seçilen iplik cinsinin adı; ekran kimlik yerine bunu gösterir */
+  yarnTypeName?: string;
+  /** Seçilen lotun numarası; ekran kimlik yerine bunu gösterir */
+  lotNo?: string;
   netKg: Kg;
   /**
      * Sipariş formu, kumaş cinsi

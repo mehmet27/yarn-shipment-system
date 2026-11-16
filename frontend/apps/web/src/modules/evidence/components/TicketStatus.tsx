@@ -1,21 +1,20 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert } from '@iplik/ui';
-import type { TicketOutcome } from '../ticketTypes';
 import type { FileProblem } from '../uploadTypes';
 
-/** Seçilen dosyanın sorununu ve fotoğrafın kaydedildiğini gösterir. */
+/** Seçilen dosyanın sorununu ve fotoğrafın henüz yüklenmediğini (onayda yüklenecek) gösterir. */
 export function TicketStatus({
   problem,
-  outcome,
+  isSelected,
 }: {
   problem: FileProblem | undefined;
-  outcome: TicketOutcome | undefined;
+  isSelected: boolean;
 }) {
   const { t } = useTranslation();
   return (
     <>
       {problem !== undefined && <Alert color="red">{t(`ticket.fileErrors.${problem}`)}</Alert>}
-      {outcome !== undefined && <Alert color="green">{t('ticket.photoDone')}</Alert>}
+      {isSelected && <Alert color="blue">{t('ticket.selected')}</Alert>}
     </>
   );
 }

@@ -1,13 +1,11 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Stack } from '@iplik/ui';
+import { Alert, Stack } from '@iplik/ui';
 import { useEffect, useState } from 'react';
 import type { QualityIssue } from '../imageQuality';
 
 export type TicketPreviewProps = {
   file: File;
   issues: readonly QualityIssue[];
-  isSending: boolean;
-  onSend: () => void;
 };
 
 function useObjectUrl(file: File): string | undefined {
@@ -23,8 +21,8 @@ function useObjectUrl(file: File): string | undefined {
   return url;
 }
 
-/** Çekilen fişin önizlemesi; bulanık/parlak uyarısı gönderimi engellemez, yeniden çekmeyi önerir. */
-export function TicketPreview({ file, issues, isSending, onSend }: TicketPreviewProps) {
+/** Çekilen fişin önizlemesi; bulanık/parlak uyarısı kaydı engellemez, yeniden çekmeyi önerir. */
+export function TicketPreview({ file, issues }: TicketPreviewProps) {
   const { t } = useTranslation();
   const url = useObjectUrl(file);
   return (
@@ -41,9 +39,6 @@ export function TicketPreview({ file, issues, isSending, onSend }: TicketPreview
           {t(`ticket.quality.${issue}`)}
         </Alert>
       ))}
-      <Button loading={isSending} onClick={onSend}>
-        {t('ticket.send')}
-      </Button>
     </Stack>
   );
 }

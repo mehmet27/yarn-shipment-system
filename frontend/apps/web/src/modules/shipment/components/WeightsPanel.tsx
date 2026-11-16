@@ -3,6 +3,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Stack } from '@iplik/ui';
 import { EvidenceGallery } from '@/modules/evidence';
 import { DispatchWeighingPanel } from './DispatchWeighingPanel';
+import { OrderFormDownloadButton } from './OrderFormDownloadButton';
 import { RecipePanel } from './RecipePanel';
 import { findDispatchWeighing, findRecipe } from './shipmentViews';
 
@@ -20,6 +21,7 @@ export function WeightsPanel({ shipment }: { shipment: ShipmentDetail }) {
         hideWhenEmpty
       />
       {recipe !== undefined && <RecipePanel lines={recipe.lines} fireRate={recipe.fireRate} />}
+      <OrderFormDownloadButton shipment={shipment} />
     </Stack>
   );
 }

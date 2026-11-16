@@ -42,6 +42,8 @@ final class WebMappings {
                 .yarnTypeId(line.yarnTypeId())
                 .yarnTypeText(line.yarnTypeText())
                 .lotId(line.lotId())
+                .yarnTypeName(line.yarnTypeName())
+                .lotNo(line.lotNo())
                 .netKg(kg(line.netKg()))
                 .fabricType(spec.fabricType())
                 .lycra(spec.lycra())

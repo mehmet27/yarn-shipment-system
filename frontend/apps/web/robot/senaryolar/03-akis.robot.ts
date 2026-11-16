@@ -87,6 +87,12 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     sevkiyatId = mudur.sayfa.url().split('/').pop() ?? '';
   });
 
+  await mudur.adim('müdür: taslak sevkiyatta itiraz/laboratuvar kanıtı yüklenemez', async () => {
+    await mudur.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
+    await mudur.sayfa.getByText('Kilolar', { exact: true }).first().waitFor();
+    await expect(mudur.sayfa.getByText('Ne yükleniyor?')).toHaveCount(0);
+  });
+
   await depo.adim('depo: iki çuval ekler (2 × 50 kg)', async () => {
     await depo.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
     await sekme(depo, 'Çuvallar');
@@ -96,6 +102,14 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     }
     await depo.sayfa.getByRole('button', { name: /çuvalı ekle/ }).click();
     await depo.sayfa.getByText('Sevkiyattaki çuvallar (2)').waitFor();
+  });
+
+  await depo.adim('depo: Kilolar sekmesinden sipariş formunu PDF indirir', async () => {
+    await depo.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
+    await sekme(depo, 'Kilolar');
+    const indirme = depo.sayfa.waitForEvent('download');
+    await depo.sayfa.getByRole('button', { name: 'Sipariş formu PDF' }).click();
+    expect((await indirme).suggestedFilename()).toMatch(/\.pdf$/i);
   });
 
   const tarteGir = async (brut: string, dara: string, cuval: string, ad: string) => {
@@ -111,9 +125,8 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
         mimeType: 'image/jpeg',
         buffer: await resim(depo.sayfa, 3),
       });
-    await depo.sayfa.getByRole('button', { name: 'Fotoğrafı gönder' }).click();
     await depo.sayfa
-      .getByText(/fotoğrafı kaydedildi/)
+      .getByText(/Fotoğraf seçildi/)
       .first()
       .waitFor();
     await depo.sayfa.getByRole('button', { name: 'Kaydet' }).click();
@@ -121,7 +134,13 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     return { ad, mesajlar };
   };
 
-  await depo.adim('depo: fotoğrafı seçip göndermeden kaydederse nedenini söylemeli', async () => {
+  await depo.adim("depo: fotoğraf seçilince Kaydet'e kadar sisteme yüklenmez", async () => {
+    let yukleme = 0;
+    depo.sayfa.on('request', (istek) => {
+      if (istek.method() === 'POST' && /\/api\/v1\/evidence\/uploads$/.test(istek.url())) {
+        yukleme += 1;
+      }
+    });
     await depo.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}/cikis`);
     await depo.sayfa.getByLabel(/Dolu araç tartısı/).fill('103,5');
     await depo.sayfa.getByLabel(/Boş araç tartısı/).fill('3,5');
@@ -134,8 +153,16 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
         mimeType: 'image/jpeg',
         buffer: await resim(depo.sayfa, 4),
       });
-    await depo.sayfa.getByRole('button', { name: 'Kaydet' }).click();
-    await depo.sayfa.getByText(/henüz göndermediniz/).waitFor();
+    await depo.sayfa
+      .getByText(/Fotoğraf seçildi/)
+      .first()
+      .waitFor();
+    await depo.sayfa.waitForTimeout(1000);
+    depo.kontrol(
+      "Kaydet'ten önce fotoğraf yüklenmemeli",
+      yukleme === 0,
+      `yükleme: ${String(yukleme)}`,
+    );
   });
 
   await depo.adim('depo: çuval sayısı tutmayan tartı nedenini söylemeli', async () => {

@@ -1,7 +1,7 @@
 import { toProblem } from '@iplik/api-client';
 import { todayIsoDate } from '@iplik/i18n';
 import { Box, Group } from '@iplik/ui';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSoleSiteId } from '@/modules/masterdata';
 import { useCreateShipment } from '../hooks/useCreateShipment';
 import { useFireRateDefault } from '../hooks/useFireRateDefault';
@@ -28,16 +28,23 @@ export function CreateShipmentForm({ onCreated }: CreateShipmentFormProps) {
   const defaultFirePct = useFireRateDefault();
   const mutation = useCreateShipment();
   const siteId = useSoleSiteId();
+  // Art arda tıklama ya da Enter, düğme "yükleniyor" olmadan önce ikinci bir kayıt açmasın (aynı siparişe iki taslak).
+  const isInFlight = useRef(false);
   const submit = () => {
+    if (isInFlight.current) return;
     const validation = validateCreate(draft, defaultFirePct);
     setFieldErrors(validateCreateFields(draft, defaultFirePct));
     setIsSiteMissing(siteId === undefined);
     const request =
       siteId === undefined ? undefined : toCreateRequest(draft, siteId, defaultFirePct);
     if (validation === undefined && request !== undefined) {
+      isInFlight.current = true;
       mutation.mutate(request, {
         onSuccess: (created) => {
           onCreated(created.id);
+        },
+        onSettled: () => {
+          isInFlight.current = false;
         },
       });
     }

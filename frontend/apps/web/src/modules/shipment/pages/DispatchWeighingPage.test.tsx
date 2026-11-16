@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
@@ -29,12 +30,76 @@ describe('DispatchWeighingPage', () => {
     expect(screen.getByText('Net: 1.982,5 kg')).toBeInTheDocument();
     await captureTicket();
     expect(
-      await screen.findByText('Kantar fişi fotoğrafı kaydedildi, devam edebilirsiniz.'),
+      await screen.findByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(
       await screen.findByText('Fasoncuya yolda', { selector: '.mantine-Badge-label' }),
     ).toBeInTheDocument();
+  });
+
+  it('fotoğraf, çıkış tartısı kaydedilmeden sisteme yüklenmez; Kaydet ile yüklenir', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    let uploads = 0;
+    server.events.on('request:start', ({ request }) => {
+      if (
+        request.method === 'POST' &&
+        new URL(request.url).pathname === '/api/v1/evidence/uploads'
+      ) {
+        uploads += 1;
+      }
+    });
+    renderApp('/panel/sevkiyat/shp-0001/cikis');
+    await screen.findByRole('button', { name: 'Kaydet' });
+    await fill({
+      'Dolu araç tartısı (brüt)': '2.000',
+      'Boş araç tartısı (dara)': '17,5',
+      'Çuval sayısı': '40',
+    });
+    await captureTicket();
+    expect(
+      await screen.findByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
+    ).toBeInTheDocument();
+    expect(uploads).toBe(0);
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(
+      await screen.findByText('Fasoncuya yolda', { selector: '.mantine-Badge-label' }),
+    ).toBeInTheDocument();
+    expect(uploads).toBe(1);
+    server.events.removeAllListeners();
+  });
+
+  it('sunucu çıkış tartısını reddederse fotoğraf hiç yüklenmez', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    server.use(
+      http.post('/api/v1/shipments/:shipmentId/dispatch-weighing', () =>
+        HttpResponse.json(
+          { type: 'about:blank', title: 'x', status: 409, code: 'INVALID_DISPATCH' },
+          { status: 409, headers: { 'Content-Type': 'application/problem+json' } },
+        ),
+      ),
+    );
+    let uploads = 0;
+    server.events.on('request:start', ({ request }) => {
+      if (
+        request.method === 'POST' &&
+        new URL(request.url).pathname === '/api/v1/evidence/uploads'
+      ) {
+        uploads += 1;
+      }
+    });
+    renderApp('/panel/sevkiyat/shp-0001/cikis');
+    await screen.findByRole('button', { name: 'Kaydet' });
+    await fill({
+      'Dolu araç tartısı (brüt)': '2.000',
+      'Boş araç tartısı (dara)': '17,5',
+      'Çuval sayısı': '40',
+    });
+    await captureTicket();
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(await screen.findByText(/Tartı değerleri tutarsız/)).toBeInTheDocument();
+    expect(uploads).toBe(0);
+    server.events.removeAllListeners();
   });
 
   it('hatalı girişte kaydetmeden uyarır', async () => {

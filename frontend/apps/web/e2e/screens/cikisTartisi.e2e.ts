@@ -19,7 +19,7 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
       await expect(page.getByText('Net: 1.982,5 kg')).toBeVisible();
       await captureTicket(page);
       await expect(
-        page.getByText('Kantar fişi fotoğrafı kaydedildi, devam edebilirsiniz.'),
+        page.getByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
       ).toBeVisible();
       await page.getByRole('button', { name: 'Kaydet' }).click();
       await expect(page.getByTestId('shipment-status')).toHaveText('Fasoncuya yolda');
@@ -35,16 +35,23 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
     ).toBeVisible();
   });
 
-  test('fotoğraf seçilip gönderilmeden kaydetmez ve nedenini söyler', async ({ page, openAs }) => {
+  test('fotoğraf, çıkış tartısı kaydedilene kadar sisteme yüklenmez', async ({ page, openAs }) => {
     await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis');
-    await fillFields(page, WEIGHING);
-    await page.getByTestId('ticket-input').setInputFiles({
-      name: 'fis.jpg',
-      mimeType: 'image/jpeg',
-      buffer: Buffer.alloc(2000),
+    let uploads = 0;
+    page.on('request', (request) => {
+      if (request.method() === 'POST' && request.url().endsWith('/api/v1/evidence/uploads')) {
+        uploads += 1;
+      }
     });
+    await fillFields(page, WEIGHING);
+    await captureTicket(page);
+    await expect(
+      page.getByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
+    ).toBeVisible();
+    expect(uploads).toBe(0);
     await page.getByRole('button', { name: 'Kaydet' }).click();
-    await expect(page.getByText(/henüz göndermediniz/)).toBeVisible();
+    await expect(page.getByTestId('shipment-status')).toHaveText('Fasoncuya yolda');
+    expect(uploads).toBe(1);
   });
 
   test('çıkış yetkisi olmayan rol yetki sayfasına düşer', async ({ page, openAs }) => {
@@ -52,7 +59,7 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
     await expect(page.getByText('Bu sayfayı görme yetkiniz yok.')).toBeVisible();
   });
 
-  // H-20: fotoğraf yerine metin dosyası seçilince gönderme düğmesi çıkmaz, sebep yazılır.
+  // H-20: fotoğraf yerine metin dosyası seçilince fotoğraf seçildi bildirimi çıkmaz, sebep yazılır.
   test('fiş yerine fotoğraf olmayan dosyayı kabul etmez', async ({ page, openAs }) => {
     await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis');
     await fillFields(page, WEIGHING);
@@ -64,6 +71,6 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
     await expect(
       page.getByText('Kantar fişi için fotoğraf seçin (JPEG, PNG veya HEIC).'),
     ).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Fotoğrafı gönder' })).toHaveCount(0);
+    await expect(page.getByText(/Fotoğraf seçildi/)).toHaveCount(0);
   });
 });

@@ -93,7 +93,7 @@ describe('Kantar uyuşmazlığı', () => {
     await userEvent.type(screen.getByLabelText(/Eksik gönderim nedeni/), 'Stok yetmedi');
     await captureTicket();
     expect(
-      await screen.findByText('Kantar fişi fotoğrafı kaydedildi, devam edebilirsiniz.'),
+      await screen.findByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(

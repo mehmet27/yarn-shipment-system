@@ -8,7 +8,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { LotDraft } from '../lotDraft';
 import { normalizeLotNo } from '../lotDraft';
-import { LOTS_KEY } from './useLots';
+import { LOTS_KEY, LOT_OPTIONS_KEY } from './useLots';
 import { useSoleSiteId } from './useSoleSiteId';
 
 /** Tek lokasyon yüklenmeden parti açılamaz; hata genel hata olarak gösterilir. */
@@ -23,7 +23,12 @@ function useInvalidatingMutation<T>(mutationFn: (request: T) => Promise<unknown>
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: LOTS_KEY }),
+    // Sevkiyat formunun lot seçicisi de (staleTime: Infinity) yenilenmeli; yoksa yeni parti oturum boyunca görünmez.
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: LOTS_KEY }),
+        queryClient.invalidateQueries({ queryKey: LOT_OPTIONS_KEY }),
+      ]),
   });
 }
 

@@ -19,9 +19,13 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 final class ShipmentRecipes {
 
     private static final String LINES = """
-            SELECT shipment_id, line_no, yarn_type_id, yarn_type_text, lot_id, net_kg,
-                   fabric_type, lycra, width_type, yarn_length, puss_fine, unit_price
-            FROM shipment_line WHERE shipment_id IN (:ids) ORDER BY shipment_id, line_no""";
+            SELECT l.shipment_id, l.line_no, l.yarn_type_id, l.yarn_type_text, l.lot_id, l.net_kg,
+                   l.fabric_type, l.lycra, l.width_type, l.yarn_length, l.puss_fine, l.unit_price,
+                   p.name AS yarn_type_name, lot.lot_no
+            FROM shipment_line l
+            LEFT JOIN md_product p ON p.id = l.yarn_type_id
+            LEFT JOIN md_production_lot lot ON lot.id = l.lot_id
+            WHERE l.shipment_id IN (:ids) ORDER BY l.shipment_id, l.line_no""";
     private static final String LATEST_CHECKS = """
             SELECT DISTINCT ON (shipment_id) shipment_id, empty_kg, loaded_kg, expected_kg, tolerance_kg,
                    shortfall_reason
@@ -56,7 +60,9 @@ final class ShipmentRecipes {
                 rs.getString("yarn_type_text"),
                 rs.getObject("lot_id", UUID.class),
                 rs.getBigDecimal("net_kg"),
-                orderSpec(rs));
+                orderSpec(rs),
+                rs.getString("yarn_type_name"),
+                rs.getString("lot_no"));
         lines.computeIfAbsent(rs.getObject("shipment_id", UUID.class), id -> new ArrayList<>())
                 .add(line);
         return line;

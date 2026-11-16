@@ -7,7 +7,7 @@ const GUVENLI_DUGME =
 
 /** Dosya seçtirdiği ya da kamera açtığı için gezginin dokunmadığı düğmeler; dosya yükleme senaryolarında denenir. */
 const DOSYA_DUGME =
-  /^(Fotoğraf çek|Dosya seç|Logo seç|Rapor logosu ekle|Yazdır|Yeniden çek|Fotoğrafı gönder|Ekrandan renk seç)$/;
+  /^(Fotoğraf çek|Dosya seç|Logo seç|Rapor logosu ekle|Yazdır|Yeniden çek|Ekrandan renk seç)$/;
 
 /** Kişiye özgü düğme adlarını ortak ada çevirir (ör. 'depo hesabını düzenle' → 'Hesabı düzenle'). */
 const genelAd = (ad: string) =>

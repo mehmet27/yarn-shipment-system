@@ -312,6 +312,8 @@
     "net": "Net: {{net}}",
     "submit": "Kaydet",
     "back": "Sevkiyata dön",
+    "photoFailed": "Çıkış tartısı kaydedildi ama kantar fişi fotoğrafı yüklenemedi. Sevkiyat dosyasındaki \"Fotoğraf ve belgeler\" bölümünden fişi yeniden ekleyin.",
+    "continue": "Sevkiyat dosyasına git",
     "submitFailed": "Çıkış tartısı kaydedilemedi. Lütfen tekrar deneyin.",
     "notDraft": "Bu sevkiyatın çıkış tartısı artık girilemez.",
     "inconsistent": "Tartı değerleri tutarsız: çuval sayısı, sevkiyata eklenen çuval sayısıyla aynı olmalı. Çuvalları ekleyip tekrar deneyin.",
@@ -319,8 +321,7 @@
       "invalidKg": "Kiloyu 1.982,5 biçiminde girin.",
       "tareExceedsGross": "Dara brütten büyük olamaz.",
       "invalidBagCount": "Çuval sayısı 1 veya daha büyük bir tam sayı olmalı.",
-      "ticketRequired": "Devam etmek için kantar fişinin fotoğrafı gerekli.",
-      "ticketNotSent": "Fotoğrafı seçtiniz ama henüz göndermediniz. Önce \"Fotoğrafı gönder\" düğmesine basın."
+      "ticketRequired": "Devam etmek için kantar fişinin fotoğrafı gerekli."
     },
     "grossKg": "Dolu araç tartısı (brüt)",
     "tareKg": "Boş araç tartısı (dara)",
@@ -706,9 +707,8 @@
     "guide": "Fişi çerçeveye sığdırın, düz tutun; parlama ve gölge olmasın.",
     "capture": "Fişin fotoğrafını çek",
     "retake": "Yeniden çek",
-    "send": "Fotoğrafı gönder",
     "previewAlt": "Çekilen kantar fişi",
-    "photoDone": "Kantar fişi fotoğrafı kaydedildi, devam edebilirsiniz.",
+    "selected": "Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.",
     "quality": {
       "BLURRY": "Fotoğraf bulanık görünüyor; yeniden çekmeniz önerilir.",
       "GLARE": "Fotoğrafta parlama var; yeniden çekmeniz önerilir."

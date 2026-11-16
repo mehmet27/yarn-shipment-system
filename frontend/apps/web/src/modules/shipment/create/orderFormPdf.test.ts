@@ -41,4 +41,16 @@ describe('buildOrderFormDefinition', () => {
     expect(text).toContain('21,00 TL');
     expect(text).toContain('09/11/2026');
   });
+
+  it('sipariş numarası etiketle aynı hücrede değil, kendi geniş hücresinde basılır', () => {
+    const definition = buildOrderFormDefinition(
+      { ...EMPTY_CREATE_DRAFT, orderNo: '123487411' },
+      TEXTS,
+      '09/11/2026',
+    );
+    const text = JSON.stringify(definition.content);
+    expect(text).toContain('"text":"SİPARİŞ NO :"');
+    expect(text).toContain('"text":"123487411"');
+    expect(text).not.toContain('SİPARİŞ NO :  123487411');
+  });
 });

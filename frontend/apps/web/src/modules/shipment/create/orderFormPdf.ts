@@ -97,8 +97,9 @@ function infoBlock(draft: CreateDraft, texts: OrderFormTexts, date: string): Con
             text: [{ text: `${texts.firm} : `, bold: true }, draft.subcontractor?.label ?? ''],
             margin: [2, 3, 0, 3],
           },
-          { text: `${texts.orderNo} :  ${draft.orderNo}`, bold: true, margin: [2, 3, 0, 3] },
-          { text: '' },
+          // Etiket dar ortadaki sütuna, numara sağdaki geniş sütuna yazılır; aksi halde numara alt satıra taşar.
+          { text: `${texts.orderNo} :`, bold: true, margin: [2, 3, 0, 3] },
+          { text: draft.orderNo, bold: true, margin: [2, 3, 0, 3] },
         ],
         [
           {

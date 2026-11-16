@@ -79,7 +79,14 @@ test('Partiler: müdür parti ekler, düzenler, kalitesini kilitler, pasife alı
   const mudur = await giris('mudur');
   mudur.beklenen(/4\d\d (POST|PUT|PATCH) \/api\/v1\/master-data/);
   const no = `P-${damga().slice(-8)}`;
-  await mudur.sayfa.goto('/panel/partiler');
+  // Lot seçicisi önbelleğe alınır; sayfa yenilenmeden yeni parti eklenince seçicide görünmelidir.
+  await mudur.adim('parti: sevkiyat formunun lot seçicisi önbelleğe alınır', async () => {
+    await mudur.sayfa.goto('/panel/sevkiyat/yeni');
+    await mudur.sayfa.getByLabel('Lot (isteğe bağlı)').first().click();
+    await mudur.sayfa.keyboard.press('Escape');
+    await mudur.sayfa.getByRole('link', { name: 'Partiler', exact: true }).click();
+    await expect(mudur.sayfa).toHaveURL(/\/panel\/partiler/);
+  });
   await mudur.adim('parti: boş kayıt reddedilir', async () => {
     await mudur.sayfa.getByRole('button', { name: 'Ekle' }).click();
     await mudur.sayfa.getByRole('dialog').getByRole('button', { name: 'Kaydet' }).click();
@@ -94,6 +101,20 @@ test('Partiler: müdür parti ekler, düzenler, kalitesini kilitler, pasife alı
     await pencere.getByRole('button', { name: 'Kaydet' }).click();
     await expect(mudur.sayfa.getByText(no).first()).toBeVisible();
   });
+  await mudur.adim(
+    'parti: yeni parti yenilemeden sevkiyat formunun lot seçicisinde görünür',
+    async () => {
+      await mudur.sayfa.getByRole('link', { name: 'Sevkiyatlar', exact: true }).click();
+      await mudur.sayfa.getByRole('link', { name: 'Yeni sevkiyat' }).click();
+      await mudur.sayfa.getByLabel('Lot (isteğe bağlı)').first().click();
+      await expect(
+        mudur.sayfa.locator('[role=option]:visible').filter({ hasText: no }).first(),
+      ).toBeVisible();
+      await mudur.sayfa.keyboard.press('Escape');
+      await mudur.sayfa.getByRole('link', { name: 'Partiler', exact: true }).click();
+      await expect(mudur.sayfa).toHaveURL(/\/panel\/partiler/);
+    },
+  );
   await mudur.adim('parti: düzenle', async () => {
     await satir(mudur.sayfa, no, 'Düzenle').getByRole('button', { name: 'Düzenle' }).click();
     await mudur.sayfa

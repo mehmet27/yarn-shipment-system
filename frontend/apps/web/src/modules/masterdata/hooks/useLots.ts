@@ -6,6 +6,8 @@ import type { ListParams } from '../kinds';
 import { MASTER_ADMIN_PATH } from '../kinds';
 
 export const LOTS_KEY = [MASTER_ADMIN_PATH, 'lots'] as const;
+/** Sevkiyat formundaki lot seçicisinin önbellek anahtarı (`useMasterOptions`, kind = 'lot'). */
+export const LOT_OPTIONS_KEY = [MASTER_ADMIN_PATH, 'lot'] as const;
 
 const CHOICE_PAGE_SIZE = 100;
 

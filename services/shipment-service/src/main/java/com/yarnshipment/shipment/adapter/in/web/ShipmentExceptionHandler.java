@@ -11,7 +11,6 @@ import com.yarnshipment.shipment.domain.model.InvalidWeightDecisionException;
 import com.yarnshipment.shipment.domain.model.ShipmentNotDueException;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicatePlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicateSubcontractorException;
-import com.yarnshipment.shipment.masterdata.domain.model.DuplicateYarnNameException;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidPlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.LoginAccountExistsException;
@@ -108,15 +107,9 @@ public final class ShipmentExceptionHandler {
         return problem(request, HttpStatus.NOT_FOUND, "MASTER_DATA_NOT_FOUND");
     }
 
-    @ExceptionHandler({
-        DuplicatePlateException.class,
-        DuplicateSubcontractorException.class,
-        DuplicateYarnNameException.class
-    })
+    @ExceptionHandler({DuplicatePlateException.class, DuplicateSubcontractorException.class})
     public ProblemDetail handleDuplicateMasterData(RuntimeException exception, HttpServletRequest request) {
-        String code = exception instanceof DuplicatePlateException
-                ? "DUPLICATE_PLATE"
-                : exception instanceof DuplicateYarnNameException ? "DUPLICATE_YARN_NAME" : "DUPLICATE_SUBCONTRACTOR";
+        String code = exception instanceof DuplicatePlateException ? "DUPLICATE_PLATE" : "DUPLICATE_SUBCONTRACTOR";
         return problem(request, HttpStatus.CONFLICT, code);
     }
 

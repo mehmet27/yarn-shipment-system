@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.yarnshipment.shipment.adapter.out.persistence.PostgresTestDatabase;
 import com.yarnshipment.shipment.masterdata.domain.catalog.DuplicateCodeException;
 import com.yarnshipment.shipment.masterdata.domain.catalog.ProductDetails;
-import com.yarnshipment.shipment.masterdata.domain.model.DuplicateYarnNameException;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.DisplayName;
@@ -86,10 +85,10 @@ class ProductAdapterTest {
         // then
         assertThatThrownBy(() ->
                         inTx(() -> products.insertProduct(actor, "PAM-C", new ProductDetails(" pamuk 20/1 ", null))))
-                .isInstanceOf(DuplicateYarnNameException.class);
+                .isInstanceOf(DuplicateCodeException.class);
         assertThatThrownBy(() ->
                         inTx(() -> products.updateProduct(actor, other.id(), new ProductDetails("PAMUK 20/1", null))))
-                .isInstanceOf(DuplicateYarnNameException.class);
+                .isInstanceOf(DuplicateCodeException.class);
         assertThat(inTx(() -> products.updateProduct(actor, first.id(), new ProductDetails("Pamuk 20/1", "Ne 20/1"))))
                 .isPresent();
     }

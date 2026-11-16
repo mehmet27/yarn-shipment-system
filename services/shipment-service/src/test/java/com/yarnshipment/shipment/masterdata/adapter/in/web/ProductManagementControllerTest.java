@@ -13,7 +13,6 @@ import com.yarnshipment.shipment.masterdata.application.port.in.catalog.UpdatePr
 import com.yarnshipment.shipment.masterdata.domain.catalog.DuplicateCodeException;
 import com.yarnshipment.shipment.masterdata.domain.catalog.Product;
 import com.yarnshipment.shipment.masterdata.domain.catalog.ProductDetails;
-import com.yarnshipment.shipment.masterdata.domain.model.DuplicateYarnNameException;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -79,7 +78,7 @@ class ProductManagementControllerTest {
     @Test
     @DisplayName("Kullanılmış iplik adı DUPLICATE_YARN_NAME ile 409 döner")
     void shouldMapDuplicateYarnName() {
-        when(create.createProduct(any(), any(), any())).thenThrow(new DuplicateYarnNameException("Pamuk 20/1"));
+        when(create.createProduct(any(), any(), any())).thenThrow(new DuplicateCodeException("name", "Pamuk 20/1"));
 
         MvcTestResult result = post(TestTokens.token("manager").build(), BODY);
 

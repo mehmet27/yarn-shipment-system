@@ -40,7 +40,8 @@
       "hint": "Şifrenizi unuttuysanız yöneticiden yeni şifre isteyebilirsiniz.",
       "submit": "Adminden şifre talep et",
       "sent": "Talebiniz yöneticiye iletildi. Yönetici size geçici bir şifre verecek.",
-      "failed": "Talep gönderilemedi. Lütfen tekrar deneyin."
+      "failed": "Talep gönderilemedi. Lütfen tekrar deneyin.",
+      "adminHint": "Yönetici hesabı için şifre talebi gönderilemez. Hesap kilitlendiyse 15 dakika sonra tekrar deneyin; şifreyi unuttuysanız başka bir yönetici ya da sistem sahibi sıfırlayabilir."
     }
   },
   "error": {

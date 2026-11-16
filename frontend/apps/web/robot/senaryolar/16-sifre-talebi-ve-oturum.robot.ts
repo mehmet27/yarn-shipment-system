@@ -70,6 +70,25 @@ test('Şifre talebi: 3 hatalı girişte adminden şifre istenir; admin görür, 
     admin.kontrol('talep cevabı hesabın durumunu sızdırmadan 204 olmalı', kod === 204, String(kod));
   });
 
+  await admin.adim('admin hesabı için talep düğmesi çıkmaz, açıklama görünür', async () => {
+    const adminSayfa = await (await browser.newContext({ locale: 'tr-TR' })).newPage();
+    for (let deneme = 1; deneme <= 3; deneme += 1) {
+      if (deneme === 1) {
+        await girisFormu(adminSayfa, 'admin', `yanlis-${String(deneme)}`);
+      } else {
+        await adminSayfa.getByLabel(/^Şifre/).fill(`yanlis-${String(deneme)}`);
+        await adminSayfa.getByRole('button', { name: 'Giriş yap' }).click();
+      }
+      await adminSayfa.waitForResponse((y) => y.url().includes('/api/v1/auth/login'));
+      await adminSayfa.getByText('Kullanıcı adı ya da şifre hatalı.').waitFor();
+    }
+    await expect(adminSayfa.getByText(/Yönetici hesabı için şifre talebi/)).toBeVisible();
+    admin.kontrol(
+      'admin için talep düğmesi olmamalı',
+      (await adminSayfa.getByRole('button', { name: TALEP_DUGMESI }).count()) === 0,
+    );
+  });
+
   await admin.adim('admin: Kullanıcılar ekranında talebi görür', async () => {
     await admin.sayfa.goto('/panel/kullanicilar');
     await expect(admin.sayfa.getByText(/1 kullanıcı şifre istedi/)).toBeVisible();

@@ -68,6 +68,9 @@ services:
       # İlk kurulumda `admin` hesabının şifresi (yalnızca hesap yoksa ya da şifresi atanmamışsa kullanılır); ilk girişte
       # değiştirmesi istenir.
       YARNSHIPMENT_AUTH_BOOTSTRAP_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?.env içinde INITIAL_ADMIN_PASSWORD tanımlayın}
+      # Unutulan admin şifresi için (DEPLOY.md "Admin şifresini sıfırlama"): `.env` içine RESET_ADMIN_PASSWORD=true yazılıp
+      # uygulama yeniden başlatılınca `admin` şifresi INITIAL_ADMIN_PASSWORD olur; sonra bayrak silinmelidir.
+      YARNSHIPMENT_AUTH_BOOTSTRAP_RESET_ADMIN: ${RESET_ADMIN_PASSWORD:-false}
       # Oturum çerezi yalnızca HTTPS üzerinden gönderilir; TLS'i Caddy sonlandırır, X-Forwarded-* başlıklarına güvenilir.
       SESSION_COOKIE_SECURE: "true"
       SERVER_FORWARD_HEADERS_STRATEGY: framework

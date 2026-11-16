@@ -30,6 +30,18 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
   await mudur.adim('müdür: ipliği tanımlar, stok girişi için depo hazırlanır', async () => {
     await iplikTanimla(mudur, iplik);
   });
+  await mudur.adim('aynı iplik adı ikinci kez eklenemez', async () => {
+    await mudur.sayfa.goto('/panel/tanimlar');
+    await mudur.sayfa.getByRole('tab', { name: 'İplikler', exact: true }).click();
+    await mudur.sayfa.getByRole('button', { name: 'Ekle' }).click();
+    const pencere = mudur.sayfa.getByRole('dialog');
+    await pencere.getByLabel('Kod *', { exact: true }).fill(`${iplik}-B`);
+    await pencere.getByLabel('İplik adı *', { exact: true }).fill(iplik.toLowerCase());
+    await pencere.getByRole('button', { name: 'Kaydet' }).click();
+    await expect(pencere.getByText('Bu adla kayıtlı bir iplik zaten var.')).toBeVisible();
+    await mudur.sayfa.keyboard.press('Escape');
+  });
+
   await depo.adim('depo: merkeze iplik girişi', async () => {
     await depo.sayfa.goto('/panel/merkez-stok');
     await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();

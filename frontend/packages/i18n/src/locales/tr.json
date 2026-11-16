@@ -457,7 +457,7 @@
       ]
     },
     "orderNo": "Sipariş no",
-    "contactPerson": "Yetkili kişi",
+    "contactPerson": "İlgili kişi",
     "shipmentDate": "Sevkiyat tarihi",
     "shipmentDateHint": "Depo bu tarihten önce çuval atayamaz ve çıkış tartısı giremez."
   },
@@ -536,6 +536,7 @@
     "serverErrors": {
       "DUPLICATE_PLATE": "Bu plaka başka bir araçta kullanılıyor.",
       "DUPLICATE_SUBCONTRACTOR": "Bu ünvanla kayıtlı bir fasoncu zaten var.",
+      "DUPLICATE_YARN_NAME": "Bu adla kayıtlı bir iplik zaten var.",
       "INVALID_PLATE": "Geçerli bir plaka girin (ör. 34 ABC 123).",
       "DUPLICATE_CODE": "Bu kod başka bir kayıtta kullanılıyor."
     },

@@ -31,6 +31,9 @@ final class ProductAdapter implements ProductPort {
     private static final String UPDATE =
             "UPDATE md_product SET name = :name, yarn_count = :extra WHERE id = :id RETURNING " + COLUMNS;
     private static final String STATUS = "UPDATE md_product SET active = :active WHERE id = :id";
+    private static final String NAME_TAKEN = """
+            SELECT EXISTS (SELECT 1 FROM md_product
+                           WHERE lower(btrim(name)) = lower(btrim(:name)) AND id IS DISTINCT FROM :id)""";
 
     private final PagedQuery paged;
     private final CatalogWriter writer;
@@ -51,12 +54,14 @@ final class ProductAdapter implements ProductPort {
 
     @Override
     public Product insertProduct(UUID actorId, String code, ProductDetails details) {
+        writer.requireFreeName(NAME_TAKEN, details.name(), null);
         UUID id = writer.insert(INSERT, actorId, row(code, details));
         return new Product(id, code, details, true);
     }
 
     @Override
     public Optional<Product> updateProduct(UUID actorId, UUID id, ProductDetails details) {
+        writer.requireFreeName(NAME_TAKEN, details.name(), id);
         return writer.rewrite(UPDATE, actorId, id, row("", details))
                 .query((rs, rowNumber) -> product(rs))
                 .optional();

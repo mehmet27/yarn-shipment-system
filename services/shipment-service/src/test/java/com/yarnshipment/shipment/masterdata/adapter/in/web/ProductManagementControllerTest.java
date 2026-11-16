@@ -13,6 +13,7 @@ import com.yarnshipment.shipment.masterdata.application.port.in.catalog.UpdatePr
 import com.yarnshipment.shipment.masterdata.domain.catalog.DuplicateCodeException;
 import com.yarnshipment.shipment.masterdata.domain.catalog.Product;
 import com.yarnshipment.shipment.masterdata.domain.catalog.ProductDetails;
+import com.yarnshipment.shipment.masterdata.domain.model.DuplicateYarnNameException;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -73,6 +74,17 @@ class ProductManagementControllerTest {
     void shouldForbidQuality() {
         assertThat(post(TestTokens.token("quality").build(), BODY)).hasStatus(HttpStatus.FORBIDDEN);
         verifyNoInteractions(create);
+    }
+
+    @Test
+    @DisplayName("Kullanılmış iplik adı DUPLICATE_YARN_NAME ile 409 döner")
+    void shouldMapDuplicateYarnName() {
+        when(create.createProduct(any(), any(), any())).thenThrow(new DuplicateYarnNameException("Pamuk 20/1"));
+
+        MvcTestResult result = post(TestTokens.token("manager").build(), BODY);
+
+        assertThat(result).hasStatus(HttpStatus.CONFLICT);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("DUPLICATE_YARN_NAME");
     }
 
     @Test

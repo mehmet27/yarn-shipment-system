@@ -108,7 +108,7 @@ test('Rastgele girdi: müdür yeni sevkiyat alanları', async ({ giris }) => {
       { etiket: /Net kg 1/, tur: 'sayi' },
       { etiket: /ya da listede yoksa yazın/i, tur: 'metin', ilk: true },
       { etiket: /Sipariş no/, tur: 'metin' },
-      { etiket: /Yetkili kişi/, tur: 'metin' },
+      { etiket: /İlgili kişi/, tur: 'metin' },
     ],
     async () => {
       await mudur.sayfa.getByRole('button', { name: 'Taslak oluştur' }).click();

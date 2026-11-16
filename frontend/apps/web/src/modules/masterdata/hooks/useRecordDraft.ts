@@ -14,7 +14,12 @@ import type { RecordError } from '../recordDraft';
 import { useSaveRecord } from './useSaveRecord';
 
 /** Sunucunun ad alanına ait hataları (`masterData.serverErrors.*`) alanın altında görünür. */
-const FIELD_CODES = ['DUPLICATE_PLATE', 'DUPLICATE_SUBCONTRACTOR', 'INVALID_PLATE'];
+const FIELD_CODES = [
+  'DUPLICATE_PLATE',
+  'DUPLICATE_SUBCONTRACTOR',
+  'DUPLICATE_YARN_NAME',
+  'INVALID_PLATE',
+];
 
 /** Formdaki alanlar; kod yalnızca kodlu türlerde ve yalnızca eklerken girilir. */
 export type DraftField = 'label' | 'code' | 'extra';

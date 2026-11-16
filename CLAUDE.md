@@ -8,3 +8,5 @@
   ile sıfırlanır: yalnızca `admin` kalır, robotun açtığı tüm kullanıcılar ve veriler silinir.
 
 - **Yerel ortamı sıfırlama:** `cd frontend && pnpm yerel:sifirla` (`tools/yerel-sifirla.mjs`) yerel Docker verisini silip yalnızca `admin`'li temiz bir ortam kurar ve yığını gizli (pencere açmadan) yeniden başlatır; robotu başlatmaz. `pnpm yerel:durdur` / `pnpm yerel:baslat` ile servisler durdurulur/başlatılır. Yalnızca yerel geliştirme içindir; canlı/CI/uzak Docker ortamında kendiliğinden durur. Ayrıntı: kök `README.md`.
+
+- **Arayüz dili:** ekran metinleri fabrika çalışanının günlük diliyle yazılır (harfli kısaltma, kod, UUID ya da muhasebe terimi yok). Metinler tek yerde: `frontend/packages/i18n/src/locales/tr.json`. Aynı kavram her ekranda aynı sözcükle geçer; sözlük `frontend/apps/web/robot/README.md` "Arayüz dili" bölümündedir, yeni metin eklerken oraya uyun ve değiştirdiğiniz sözcüğü robot senaryolarında da güncelleyin.

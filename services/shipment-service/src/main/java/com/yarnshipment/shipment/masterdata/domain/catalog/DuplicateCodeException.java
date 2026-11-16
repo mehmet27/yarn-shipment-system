@@ -2,7 +2,10 @@ package com.yarnshipment.shipment.masterdata.domain.catalog;
 
 import java.io.Serial;
 
-/** Kod ya da parti numarası başka bir kayıtta kullanılıyor (409, {@code DUPLICATE_CODE}). */
+/**
+ * Kod ya da parti numarası başka bir kayıtta kullanılıyor (409, {@code DUPLICATE_CODE}); alan {@code name} ise aynı
+ * iplik adı var demektir (409, {@code DUPLICATE_YARN_NAME}).
+ */
 public final class DuplicateCodeException extends RuntimeException {
 
     @Serial

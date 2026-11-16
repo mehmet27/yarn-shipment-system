@@ -73,4 +73,23 @@ class ProductAdapterTest {
     private <T> T inTx(Supplier<T> action) {
         return new TransactionTemplate(transactionManager).execute(status -> action.get());
     }
+
+    @Test
+    @DisplayName("Aynı iplik adı (harf ve boşluk farkı sayılmadan) ikinci kez eklenemez ya da verilemez")
+    void shouldRejectDuplicateYarnName() {
+        // given
+        UUID actor = UUID.randomUUID();
+        var first = inTx(() -> products.insertProduct(actor, "PAM-A", new ProductDetails("Pamuk 20/1", null)));
+        var other = inTx(() -> products.insertProduct(actor, "PAM-B", new ProductDetails("Pamuk 30/1", null)));
+
+        // then
+        assertThatThrownBy(() ->
+                        inTx(() -> products.insertProduct(actor, "PAM-C", new ProductDetails(" pamuk 20/1 ", null))))
+                .isInstanceOf(DuplicateCodeException.class);
+        assertThatThrownBy(() ->
+                        inTx(() -> products.updateProduct(actor, other.id(), new ProductDetails("PAMUK 20/1", null))))
+                .isInstanceOf(DuplicateCodeException.class);
+        assertThat(inTx(() -> products.updateProduct(actor, first.id(), new ProductDetails("Pamuk 20/1", "Ne 20/1"))))
+                .isPresent();
+    }
 }

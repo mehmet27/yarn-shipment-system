@@ -53,7 +53,7 @@ describe('Panel ana sayfası ve raporlar', () => {
     renderApp('/panel/raporlar');
     await userEvent.click(await screen.findByRole('tab', { name: 'Bakiye matrisi' }));
     expect(await screen.findByText('30/1 Penye')).toBeInTheDocument();
-    expect(screen.getAllByText('2.982,500 kg').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('2.982,5 kg').length).toBeGreaterThan(0);
     expect(screen.getByText('Açılış bakiyesi yükle')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Fire raporu' }));
     expect(await screen.findByText('SV-2026-0007')).toBeInTheDocument();

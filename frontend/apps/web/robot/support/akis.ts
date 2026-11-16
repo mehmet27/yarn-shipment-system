@@ -45,7 +45,7 @@ export async function taslakAc(
   // Sevkiyat tarihi formda bugünle gelir; verilirse o güne ayarlanır.
   if (tarih !== undefined) await mudur.sayfa.getByLabel(/Sevkiyat tarihi/).fill(tarih);
   await mudur.sayfa
-    .getByLabel(/serbest metin/i)
+    .getByLabel(/ya da listede yoksa yazın/i)
     .first()
     .fill(iplik);
   await mudur.sayfa.getByLabel(/Net kg 1/).fill(kg);

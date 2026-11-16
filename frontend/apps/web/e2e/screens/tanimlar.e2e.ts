@@ -4,7 +4,7 @@ test.describe('Tanımlar', { tag: '@panel' }, () => {
   test('yönetici fasoncu ekler ve listede görür', { tag: '@smoke' }, async ({ page, openAs }) => {
     await openAs('MANAGER', '/panel/tanimlar');
     await page.getByRole('button', { name: 'Ekle' }).click();
-    await page.getByLabel(/Fasoncu ünvanı/).fill('Yeni Örme Ltd.');
+    await page.getByLabel(/Fasoncu adı/).fill('Yeni Örme Ltd.');
     await page.getByRole('button', { name: 'Kaydet' }).click();
     await expect(page.getByRole('group', { name: 'Yeni Örme Ltd.' })).toBeVisible();
   });
@@ -13,14 +13,14 @@ test.describe('Tanımlar', { tag: '@panel' }, () => {
   test('ekleme ve düzenlemeden sonra başarı bildirimi gösterir', async ({ page, openAs }) => {
     await openAs('MANAGER', '/panel/tanimlar');
     await page.getByRole('button', { name: 'Ekle' }).click();
-    await page.getByLabel(/Fasoncu ünvanı/).fill('Yeni Örme Ltd.');
+    await page.getByLabel(/Fasoncu adı/).fill('Yeni Örme Ltd.');
     await page.getByRole('button', { name: 'Kaydet' }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByRole('status')).toHaveText('Kayıt eklendi.');
 
     const card = page.getByRole('group', { name: 'Aydın Örme' });
     await card.getByRole('button', { name: 'Düzenle' }).click();
-    await page.getByLabel(/Fasoncu ünvanı/).fill('Aydın Örme A.Ş.');
+    await page.getByLabel(/Fasoncu adı/).fill('Aydın Örme A.Ş.');
     await page.getByRole('button', { name: 'Kaydet' }).click();
     await expect(page.getByRole('status')).toHaveText('Değişiklikler kaydedildi.');
     await page.getByRole('button', { name: 'Kapat' }).click();
@@ -56,7 +56,7 @@ test.describe('Tanımlar', { tag: '@panel' }, () => {
   test('aynı fasoncu ünvanını reddeder', async ({ page, openAs }) => {
     await openAs('MANAGER', '/panel/tanimlar');
     await page.getByRole('button', { name: 'Ekle' }).click();
-    await page.getByLabel(/Fasoncu ünvanı/).fill(' aydın örme ');
+    await page.getByLabel(/Fasoncu adı/).fill(' aydın örme ');
     await page.getByRole('button', { name: 'Kaydet' }).click();
     await expect(page.getByText('Bu ünvanla kayıtlı bir fasoncu zaten var.')).toBeVisible();
     await expect(page.getByRole('group', { name: 'Aydın Örme' })).toHaveCount(1);

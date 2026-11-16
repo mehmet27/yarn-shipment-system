@@ -11,7 +11,7 @@ describe('MasterDataPage', () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
-    await userEvent.type(screen.getByLabelText(/Fasoncu ünvanı/), 'Yeni Örme Ltd.');
+    await userEvent.type(screen.getByLabelText(/Fasoncu adı/), 'Yeni Örme Ltd.');
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(await screen.findByText('Yeni Örme Ltd.')).toBeInTheDocument();
   });
@@ -105,13 +105,13 @@ describe('MasterDataPage', () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
-    await userEvent.type(screen.getByLabelText(/Fasoncu ünvanı/), 'Yeni Örme Ltd.');
+    await userEvent.type(screen.getByLabelText(/Fasoncu adı/), 'Yeni Örme Ltd.');
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(await screen.findByRole('status')).toHaveTextContent('Kayıt eklendi.');
 
     const card = await screen.findByRole('group', { name: 'Yeni Örme Ltd.' });
     await userEvent.click(within(card).getByRole('button', { name: 'Düzenle' }));
-    await userEvent.type(screen.getByLabelText(/Fasoncu ünvanı/), ' A.Ş.');
+    await userEvent.type(screen.getByLabelText(/Fasoncu adı/), ' A.Ş.');
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(await screen.findByRole('status')).toHaveTextContent('Değişiklikler kaydedildi.');
   });
@@ -120,12 +120,12 @@ describe('MasterDataPage', () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
-    await userEvent.type(screen.getByLabelText(/Fasoncu ünvanı/), ' aydın örme ');
+    await userEvent.type(screen.getByLabelText(/Fasoncu adı/), ' aydın örme ');
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(
       await screen.findByText('Bu ünvanla kayıtlı bir fasoncu zaten var.'),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText(/Fasoncu ünvanı/)).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText(/Fasoncu adı/)).toHaveAttribute('aria-invalid', 'true');
   });
 
   it('TR plaka desenine uymayan plakayı göndermeden reddeder', async () => {
@@ -158,6 +158,25 @@ describe('MasterDataPage', () => {
     await userEvent.type(screen.getByLabelText(/İplik numarası/), 'Ne 40/1');
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(await screen.findByText('PES-40-1')).toBeInTheDocument();
+  });
+
+  it('aynı iplik adı sunucu hatasıyla ad alanında gösterilir', async () => {
+    server.use(...createHandlers('MANAGER'));
+    server.use(
+      http.post('/api/v1/master-data/products', () =>
+        HttpResponse.json(
+          { code: 'DUPLICATE_YARN_NAME', title: 'İplik adı kullanımda', status: 409 },
+          { status: 409 },
+        ),
+      ),
+    );
+    renderApp('/panel/tanimlar');
+    await userEvent.click(await screen.findByRole('tab', { name: 'İplikler' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
+    await userEvent.type(screen.getByLabelText(/^Kod/), 'pam-20-1');
+    await userEvent.type(screen.getByLabelText(/İplik adı/), 'Pamuk 20/1');
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(await screen.findByText('Bu adla kayıtlı bir iplik zaten var.')).toBeInTheDocument();
   });
 
   it('kalite sınıfında geçersiz sırayı göndermeden reddeder; kod düzenlenemez', async () => {

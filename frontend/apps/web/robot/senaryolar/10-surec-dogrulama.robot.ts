@@ -180,9 +180,8 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
     await mudur.sayfa.waitForTimeout(600);
     const metin = await mudur.sayfa.innerText('main');
     mudur.kontrol(
-      'Ekran: Geçmiş "Başka bir kullanıcı" yazmaz, her adımda kişinin ad soyadı görünür',
-      !metin.includes('Başka bir kullanıcı') &&
-        adli.every((c) => metin.includes(c.changedByName ?? '')),
+      'Ekran: Geçmiş "Bir çalışan" yazmaz, her adımda kişinin ad soyadı görünür',
+      !metin.includes('Bir çalışan') && adli.every((c) => metin.includes(c.changedByName ?? '')),
       metin.slice(0, 300),
     );
   });

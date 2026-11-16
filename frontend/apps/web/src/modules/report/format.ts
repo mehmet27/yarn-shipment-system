@@ -17,10 +17,10 @@ export function shortId(id: string): string {
   return id.slice(0, SHORT_ID_LENGTH);
 }
 
-const kg3 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const kg3 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
 const pct2 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-/** Üç ondalıklı Türkçe kilo, ör. `1.982,500 kg`. */
+/** Türkçe kilo, en çok üç ondalık; gereksiz sıfır yazılmaz, ör. `1.982,5 kg`, `100 kg` (ekranın geri kalanıyla aynı). */
 export function formatKg3(value: string | number): string {
   return `${kg3.format(Number(value))} kg`;
 }

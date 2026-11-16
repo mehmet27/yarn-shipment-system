@@ -42,7 +42,7 @@ describe('Faturalanacaklar', () => {
     const { router } = renderApp('/panel/sevkiyat/shp-0003');
     await userEvent.click(await screen.findByRole('link', { name: 'Faturalanacaklar' }));
     const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
-    expect(within(card).getByText(/Hatalı kilo 3,2 kg/)).toBeInTheDocument();
+    expect(within(card).getByText(/Faturalanacak kilo 3,2 kg/)).toBeInTheDocument();
     await userEvent.click(within(card).getByRole('link', { name: 'SVK-2026-0003' }));
     expect(router.state.location.pathname).toBe('/panel/sevkiyat/shp-0003');
   });

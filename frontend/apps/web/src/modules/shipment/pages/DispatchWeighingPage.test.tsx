@@ -14,14 +14,34 @@ async function fill(values: Record<string, string>) {
 }
 
 describe('DispatchWeighingPage', () => {
+  it('depo ana sayfasında yüklenecek sevkiyatları listeler', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    renderApp('/panel');
+    const card = await screen.findByTestId('pending-dispatches');
+    expect(card).toHaveTextContent(/Yüklenecek sevkiyat: \d+/);
+    expect(card).toHaveTextContent('önce çuvalları ekleyin, sonra çıkış tartısını girin');
+  });
+
+  it('çuval eklenmemişse tartı düğmesi pasiftir ve önce çuval eklenmesini söyler', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    server.use(
+      http.get('/api/v1/shipments/shp-0001/bags', () =>
+        HttpResponse.json({ dispatchBags: [], deliveryBags: [] }),
+      ),
+    );
+    renderApp('/panel/sevkiyat/shp-0001');
+    expect(
+      await screen.findByText(
+        'Önce "Çuvallar" sekmesinden çuvalları ekleyin, sonra tartıyı girin.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Çıkış tartısını gir' })).toBeDisabled();
+  });
+
   it('depo çıkış tartısını kaydeder, sevkiyat Fasoncuya yolda olur', async () => {
     server.use(...createHandlers('WAREHOUSE'));
-    renderApp('/panel/sevkiyat/shp-0001');
-    await userEvent.click(
-      await screen
-        .findByRole('link', { name: 'Çıkış tartısını gir' })
-        .catch(() => screen.findByRole('button', { name: 'Çıkış tartısını gir' })),
-    );
+    renderApp('/panel/sevkiyat/shp-0001/cikis');
+    await screen.findByLabelText('Dolu araç tartısı (brüt)');
     await fill({
       'Dolu araç tartısı (brüt)': '2.000',
       'Boş araç tartısı (dara)': '17,5',

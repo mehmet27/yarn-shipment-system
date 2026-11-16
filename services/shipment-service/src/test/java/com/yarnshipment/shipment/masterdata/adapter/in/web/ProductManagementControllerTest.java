@@ -76,6 +76,17 @@ class ProductManagementControllerTest {
     }
 
     @Test
+    @DisplayName("Kullanılmış iplik adı DUPLICATE_YARN_NAME ile 409 döner")
+    void shouldMapDuplicateYarnName() {
+        when(create.createProduct(any(), any(), any())).thenThrow(new DuplicateCodeException("name", "Pamuk 20/1"));
+
+        MvcTestResult result = post(TestTokens.token("manager").build(), BODY);
+
+        assertThat(result).hasStatus(HttpStatus.CONFLICT);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("DUPLICATE_YARN_NAME");
+    }
+
+    @Test
     @DisplayName("Kullanılmış kod DUPLICATE_CODE ile 409 döner")
     void shouldMapDuplicateCode() {
         when(create.createProduct(any(), any(), any())).thenThrow(new DuplicateCodeException("code", "PES-30-1"));

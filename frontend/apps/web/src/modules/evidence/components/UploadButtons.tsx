@@ -10,9 +10,11 @@ const FILE_INPUT: TestInputProps = { 'data-testid': 'upload-file-input' };
 /** Mobilde "Fotoğraf çek" kamerayı açar; "Dosya seç" galeriyi/dosyaları (PDF dahil) açar. */
 export function UploadButtons({
   isLoading,
+  isDisabled = false,
   onPick,
 }: {
   isLoading: boolean;
+  isDisabled?: boolean;
   onPick: (file: File | null) => void;
 }) {
   const { t } = useTranslation();
@@ -27,7 +29,7 @@ export function UploadButtons({
         }}
       >
         {(props) => (
-          <Button size="lg" loading={isLoading} {...props}>
+          <Button size="lg" loading={isLoading} disabled={isDisabled} {...props}>
             {t('evidence.camera')}
           </Button>
         )}
@@ -40,7 +42,7 @@ export function UploadButtons({
         }}
       >
         {(props) => (
-          <Button size="lg" variant="default" loading={isLoading} {...props}>
+          <Button size="lg" variant="default" loading={isLoading} disabled={isDisabled} {...props}>
             {t('evidence.file')}
           </Button>
         )}

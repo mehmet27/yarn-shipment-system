@@ -4,6 +4,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Group, Paper, Stack, Text } from '@iplik/ui';
 import { useState } from 'react';
 import { useLockLot } from '../hooks/useLotMutations';
+import { LockOpenButton } from './LockOpenButton';
 
 /** Kilit geri alınamaz: önce "Kaliteyi kilitle", sonra parti ve kaliteyi gösteren onay. */
 export function LockLotButton({ lot }: { lot: LotView }) {
@@ -12,15 +13,11 @@ export function LockLotButton({ lot }: { lot: LotView }) {
   const mutation = useLockLot();
   if (!isConfirming) {
     return (
-      <Button
-        color="orange"
-        variant="light"
-        onClick={() => {
+      <LockOpenButton
+        onOpen={() => {
           setConfirming(true);
         }}
-      >
-        {t('lots.lock.open')}
-      </Button>
+      />
     );
   }
   const code = mutation.isError ? toProblem(mutation.error).code : undefined;

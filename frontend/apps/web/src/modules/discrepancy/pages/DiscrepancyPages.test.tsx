@@ -68,6 +68,6 @@ describe('Uyuşmazlık ekranları', () => {
     renderApp('/panel/uyusmazliklar/disc-0');
     expect(await screen.findByText(/· Kerem Kalite$/)).toBeInTheDocument();
     expect(screen.getByText('Melek Müdür')).toBeInTheDocument();
-    expect(screen.queryByText(/Başka bir kullanıcı/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Bir çalışan/)).not.toBeInTheDocument();
   });
 });

@@ -1,7 +1,8 @@
 import type { ShipmentAction } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { ActionBar, Button } from '@iplik/ui';
+import { ActionBar, Button, Text } from '@iplik/ui';
 import { Link } from 'react-router';
+import { useShipmentBags } from '../hooks/useShipmentBags';
 import { CancelShipmentForm } from './CancelShipmentForm';
 import { CompleteShipmentForm } from './CompleteShipmentForm';
 import { UpdateShipmentDateForm } from './UpdateShipmentDateForm';
@@ -18,13 +19,26 @@ export function ShipmentFileActions({
   actions: readonly ShipmentAction[];
 }) {
   const { t } = useTranslation();
+  const canRecordDispatch = actions.includes('RECORD_DISPATCH');
+  // Çuval eklenmeden tartı girilemez (çuval sayısı eşleşmeli); liste yüklenene kadar düğme açık kalır.
+  const bags = useShipmentBags(shipmentId, canRecordDispatch);
+  const isBagsFirst = bags.data?.dispatchBags.length === 0;
   return (
     <>
-      {actions.includes('RECORD_DISPATCH') && (
+      {canRecordDispatch && (
         <ActionBar>
-          <Button component={Link} to="cikis" relative="path">
-            {t('shipment.file.recordDispatch')}
-          </Button>
+          {isBagsFirst && (
+            <Text size="sm" c="dimmed">
+              {t('shipment.file.bagsFirst')}
+            </Text>
+          )}
+          {isBagsFirst ? (
+            <Button disabled>{t('shipment.file.recordDispatch')}</Button>
+          ) : (
+            <Button component={Link} to="cikis" relative="path">
+              {t('shipment.file.recordDispatch')}
+            </Button>
+          )}
         </ActionBar>
       )}
       {actions.includes('RESOLVE_WEIGHT_MISMATCH') && (

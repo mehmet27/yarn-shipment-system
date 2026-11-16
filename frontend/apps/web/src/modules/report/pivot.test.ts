@@ -47,8 +47,8 @@ describe('pivotBalanceMatrix', () => {
 });
 
 describe('biçimler', () => {
-  it('kilo 3 ondalık, fire yüzde', () => {
-    expect(formatKg3('1982.5')).toBe('1.982,500 kg');
+  it('kilo en çok 3 ondalık, fire yüzde', () => {
+    expect(formatKg3('1982.5')).toBe('1.982,5 kg');
     expect(formatFireRate('0.0403')).toBe('%4,03');
   });
 });

@@ -27,7 +27,9 @@ public final class CatalogExceptionHandler {
 
     @ExceptionHandler(DuplicateCodeException.class)
     public ProblemDetail handleDuplicateCode(DuplicateCodeException exception, HttpServletRequest request) {
-        ProblemDetail problem = problems.create(request, HttpStatus.CONFLICT, "DUPLICATE_CODE");
+        // Aynı iplik adı da bu istisnayla gelir (alan "name"); ekranda ad alanının altında gösterilir.
+        String code = "name".equals(exception.field()) ? "DUPLICATE_YARN_NAME" : "DUPLICATE_CODE";
+        ProblemDetail problem = problems.create(request, HttpStatus.CONFLICT, code);
         problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "duplicate")));
         return problem;
     }

@@ -35,10 +35,11 @@ export function EvidenceUpload({ shipmentId, isCompleted }: EvidenceUploadProps)
   const [selected, setSelected] = useState<EvidenceType>();
   const [problem, setProblem] = useState<FileProblem>();
   const mutation = useUploadEvidence(shipmentId);
-  const evidenceType = selected ?? allowed[0];
-  if (evidenceType === undefined) return null;
+  // Tek seçenek varsa o seçilidir; birden çoksa yanlış türde yükleme olmasın diye kullanıcı kendisi seçer.
+  const evidenceType = selected ?? (allowed.length === 1 ? allowed[0] : undefined);
+  if (allowed.length === 0) return null;
   const upload = (file: File | null) => {
-    if (file === null) return;
+    if (file === null || evidenceType === undefined) return;
     const found = fileProblem(file, ACCEPTED_MIME_TYPES);
     setProblem(found);
     if (found === undefined) mutation.mutate({ file, evidenceType });
@@ -50,13 +51,18 @@ export function EvidenceUpload({ shipmentId, isCompleted }: EvidenceUploadProps)
         <Select
           label={t('evidence.type')}
           data={allowed.map((value) => ({ value, label: t(`evidence.types.${value}`) }))}
-          value={evidenceType}
+          placeholder={t('evidence.typePlaceholder')}
+          value={evidenceType ?? null}
           onChange={(value) => {
             setSelected(allowed.find((type) => type === value));
           }}
           allowDeselect={false}
         />
-        <UploadButtons isLoading={mutation.isPending} onPick={upload} />
+        <UploadButtons
+          isLoading={mutation.isPending}
+          isDisabled={evidenceType === undefined}
+          onPick={upload}
+        />
         {problem !== undefined && <Alert color="red">{t(`evidence.errors.${problem}`)}</Alert>}
         {mutation.isError && <Alert color="red">{t(uploadErrorKey(mutation.error))}</Alert>}
         {mutation.isSuccess && <Alert color="green">{t('evidence.done')}</Alert>}

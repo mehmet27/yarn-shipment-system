@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 import com.yarnshipment.shipment.masterdata.domain.catalog.DuplicateCodeException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.Clock;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -42,6 +43,21 @@ final class CatalogWriter {
             throw new DuplicateCodeException("code", row.code());
         }
         return id;
+    }
+
+    /**
+     * {@code :name, :id} parametreli "ad kullanımda mı" sorgusunu çalıştırır; kullanımdaysa
+     * {@link DuplicateCodeException} (alan {@code name}) atar. {@code selfId} güncellenen kaydı sayım dışı bırakır.
+     */
+    void requireFreeName(String sql, String name, @Nullable UUID selfId) {
+        boolean isTaken = jdbc.sql(sql)
+                .param("name", name)
+                .param("id", selfId, Types.OTHER)
+                .query(Boolean.class)
+                .single();
+        if (isTaken) {
+            throw new DuplicateCodeException("name", name);
+        }
     }
 
     /** {@code :id, :name, :extra} parametreli güncellemeyi hazırlar. */

@@ -1,8 +1,8 @@
 import type { LotView } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Badge, Button, Group, Paper, Stack, Text } from '@iplik/ui';
-import { useSetLotActive } from '../hooks/useLotMutations';
+import { Badge, Group, Paper, Stack, Text } from '@iplik/ui';
 import { LockLotButton } from './LockLotButton';
+import { LotActions } from './LotActions';
 import { LotLockState } from './LotLockState';
 
 export type LotCardProps = { lot: LotView; onEdit: (lot: LotView) => void };
@@ -17,7 +17,6 @@ function formatDay(day: string): string {
 /** Parti kartı: kilitli partide yalnızca pasife alma kalır; kilitsizde düzenle ve kilitle. */
 export function LotCard({ lot, onEdit }: LotCardProps) {
   const { t } = useTranslation();
-  const mutation = useSetLotActive();
   const isLocked = lot.qualityLockedAt !== undefined;
   return (
     <Paper withBorder p="md" role="group" aria-label={lot.lotNo}>
@@ -46,28 +45,7 @@ export function LotCard({ lot, onEdit }: LotCardProps) {
             : t('lots.supplier', { name: lot.yarnSupplierName })}
         </Text>
         {!isLocked && lot.active && <LockLotButton lot={lot} />}
-        <Group grow>
-          {!isLocked && (
-            <Button
-              variant="default"
-              onClick={() => {
-                onEdit(lot);
-              }}
-            >
-              {t('masterData.edit')}
-            </Button>
-          )}
-          <Button
-            variant="light"
-            color={lot.active ? 'red' : 'green'}
-            loading={mutation.isPending}
-            onClick={() => {
-              mutation.mutate({ id: lot.id, isActive: !lot.active });
-            }}
-          >
-            {t(lot.active ? 'masterData.deactivate' : 'masterData.activate')}
-          </Button>
-        </Group>
+        <LotActions lot={lot} isLocked={isLocked} onEdit={onEdit} />
       </Stack>
     </Paper>
   );

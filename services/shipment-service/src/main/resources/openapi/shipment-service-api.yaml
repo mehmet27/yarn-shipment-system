@@ -2701,6 +2701,12 @@ components:
         lotId:
           type: string
           format: uuid
+        yarnTypeName:
+          type: string
+          description: Listeden seçilen iplik cinsinin adı; ekran kimlik yerine bunu gösterir
+        lotNo:
+          type: string
+          description: Seçilen lotun numarası; ekran kimlik yerine bunu gösterir
         netKg:
           $ref: '#/components/schemas/Kg'
         fabricType:

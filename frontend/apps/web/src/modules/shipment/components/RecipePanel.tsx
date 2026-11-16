@@ -10,7 +10,7 @@ export type RecipePanelProps = {
 };
 
 function yarnLabel(line: RecipeLineView): string {
-  return line.yarnTypeText ?? line.yarnTypeId ?? '—';
+  return line.yarnTypeName ?? line.yarnTypeText ?? line.yarnTypeId ?? '—';
 }
 
 /** Sipariş formu ayrıntıları: LYC, en türü, iplik uzunluğu, puss-fine ve fiyat; girilmeyenler atlanır. */
@@ -49,7 +49,7 @@ export function RecipePanel({ lines, fireRate }: RecipePanelProps) {
                 <Table.Td>{yarnLabel(line)}</Table.Td>
                 <Table.Td>{line.fabricType ?? '—'}</Table.Td>
                 <Table.Td>{specText(line, t)}</Table.Td>
-                <Table.Td>{line.lotId ?? '—'}</Table.Td>
+                <Table.Td>{line.lotNo ?? line.lotId ?? '—'}</Table.Td>
                 <Table.Td ta="right">{formatKgText(line.netKg)}</Table.Td>
               </Table.Tr>
             ))}

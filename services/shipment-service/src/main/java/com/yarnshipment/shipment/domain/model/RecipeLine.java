@@ -15,6 +15,8 @@ import org.jspecify.annotations.Nullable;
  * @param lotId isteğe bağlı lot
  * @param netKg net kilo, sıfırdan büyük, en çok 3 ondalık
  * @param spec sipariş formu ayrıntıları; girilmediyse boş
+ * @param yarnTypeName seçilen iplik cinsinin adı; yalnızca okunurken doldurulur, kaydedilmez
+ * @param lotNo seçilen lotun numarası; yalnızca okunurken doldurulur, kaydedilmez
  */
 public record RecipeLine(
         int lineNo,
@@ -22,7 +24,9 @@ public record RecipeLine(
         @Nullable String yarnTypeText,
         @Nullable UUID lotId,
         BigDecimal netKg,
-        @Nullable OrderSpec spec) {
+        @Nullable OrderSpec spec,
+        @Nullable String yarnTypeName,
+        @Nullable String lotNo) {
 
     public static final int MAX_TEXT_LENGTH = 200;
     private static final int KG_SCALE = 3;
@@ -35,6 +39,17 @@ public record RecipeLine(
             @Nullable UUID lotId,
             BigDecimal netKg) {
         this(lineNo, yarnTypeId, yarnTypeText, lotId, netKg, null);
+    }
+
+    /** Ad ve lot numarası okunmamış (yeni) satır. */
+    public RecipeLine(
+            int lineNo,
+            @Nullable UUID yarnTypeId,
+            @Nullable String yarnTypeText,
+            @Nullable UUID lotId,
+            BigDecimal netKg,
+            @Nullable OrderSpec spec) {
+        this(lineNo, yarnTypeId, yarnTypeText, lotId, netKg, spec, null, null);
     }
 
     public RecipeLine {
@@ -62,6 +77,6 @@ public record RecipeLine(
     }
 
     public RecipeLine withNetKg(BigDecimal newNetKg) {
-        return new RecipeLine(lineNo, yarnTypeId, yarnTypeText, lotId, newNetKg, spec);
+        return new RecipeLine(lineNo, yarnTypeId, yarnTypeText, lotId, newNetKg, spec, yarnTypeName, lotNo);
     }
 }

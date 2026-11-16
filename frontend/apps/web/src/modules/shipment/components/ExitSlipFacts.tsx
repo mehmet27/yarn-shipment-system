@@ -14,7 +14,7 @@ export function ExitSlipFacts({ shipment }: { shipment: ShipmentDetail }) {
   const source =
     'sourceSubcontractorTitle' in shipment ? shipment.sourceSubcontractorTitle : undefined;
   const facts = [
-    { key: 'lot', value: joinUnique(lines.map((line) => line.lotId)) },
+    { key: 'lot', value: joinUnique(lines.map((line) => line.lotNo ?? line.lotId)) },
     { key: 'firm', value: source ?? t('shipment.exitSlip.center') },
     { key: 'fabricType', value: joinUnique(lines.map((line) => line.fabricType)) },
     { key: 'date', value: new Date(shipment.createdAt).toLocaleDateString('tr-TR') },

@@ -29,12 +29,43 @@ describe('DispatchWeighingPage', () => {
     expect(screen.getByText('Net: 1.982,5 kg')).toBeInTheDocument();
     await captureTicket();
     expect(
-      await screen.findByText('Kantar fişi fotoğrafı kaydedildi, devam edebilirsiniz.'),
+      await screen.findByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(
       await screen.findByText('Fasoncuya yolda', { selector: '.mantine-Badge-label' }),
     ).toBeInTheDocument();
+  });
+
+  it('fotoğraf, çıkış tartısı kaydedilmeden sisteme yüklenmez; Kaydet ile yüklenir', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    let uploads = 0;
+    server.events.on('request:start', ({ request }) => {
+      if (
+        request.method === 'POST' &&
+        new URL(request.url).pathname === '/api/v1/evidence/uploads'
+      ) {
+        uploads += 1;
+      }
+    });
+    renderApp('/panel/sevkiyat/shp-0001/cikis');
+    await screen.findByRole('button', { name: 'Kaydet' });
+    await fill({
+      'Dolu araç tartısı (brüt)': '2.000',
+      'Boş araç tartısı (dara)': '17,5',
+      'Çuval sayısı': '40',
+    });
+    await captureTicket();
+    expect(
+      await screen.findByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
+    ).toBeInTheDocument();
+    expect(uploads).toBe(0);
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(
+      await screen.findByText('Fasoncuya yolda', { selector: '.mantine-Badge-label' }),
+    ).toBeInTheDocument();
+    expect(uploads).toBe(1);
+    server.events.removeAllListeners();
   });
 
   it('hatalı girişte kaydetmeden uyarır', async () => {

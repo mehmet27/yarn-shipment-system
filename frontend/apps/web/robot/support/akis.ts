@@ -61,9 +61,8 @@ export async function tartiGir(depo: Robot, id: string, brut: string, dara: stri
     .locator('input[type=file]')
     .first()
     .setInputFiles({ name: 'fis.jpg', mimeType: 'image/jpeg', buffer: await resim(depo.sayfa, 3) });
-  await depo.sayfa.getByRole('button', { name: 'Fotoğrafı gönder' }).click();
   await depo.sayfa
-    .getByText(/fotoğrafı kaydedildi/)
+    .getByText(/Fotoğraf seçildi/)
     .first()
     .waitFor();
   await depo.sayfa.getByRole('button', { name: 'Kaydet' }).click();

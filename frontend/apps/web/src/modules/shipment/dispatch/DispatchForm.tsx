@@ -34,15 +34,16 @@ export type DispatchFormProps = { shipmentId: string; onSaved: () => void };
 export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<DispatchDraft>(EMPTY_DISPATCH_DRAFT);
-  const [isTicketPending, setIsTicketPending] = useState(false);
   const [error, setError] = useState<DispatchError>();
   const mutation = useRecordDispatch(shipmentId);
   const weighing = parseDispatchWeighing(draft);
   const submit = () => {
-    const validation = validateDispatch(draft, isTicketPending);
+    const validation = validateDispatch(draft);
     setError(validation);
-    const request = toDispatchRequest(draft, isTicketPending);
-    if (request !== undefined) mutation.mutate(request, { onSuccess: onSaved });
+    const request = toDispatchRequest(draft);
+    if (request !== undefined && draft.ticket !== undefined) {
+      mutation.mutate({ request, photo: draft.ticket }, { onSuccess: onSaved });
+    }
   };
   return (
     <Stack>
@@ -69,11 +70,8 @@ export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
       )}
       {typeof weighing !== 'string' && (
         <TicketCapture
-          shipmentId={shipmentId}
-          evidenceType="DISPATCH_SCALE"
-          outcome={draft.ticket}
-          onPendingChange={setIsTicketPending}
-          onOutcome={(ticket) => {
+          file={draft.ticket}
+          onFileChange={(ticket) => {
             setDraft({ ...draft, ticket });
           }}
         />

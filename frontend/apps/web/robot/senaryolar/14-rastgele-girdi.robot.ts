@@ -1,6 +1,8 @@
 import type { Page } from '@playwright/test';
+import { iplikTanimla } from '../support/akis';
 import { rolTanimli, test } from '../support/robot';
 import type { Robot } from '../support/robot';
+import { damga, iplikSec } from '../support/yardimci';
 
 /** Alanlara verilen kötü niyetli ya da uç değerler; sistem çökmemeli, 5xx vermemeli, betik çalıştırmamalı. */
 const METINLER = [
@@ -68,14 +70,17 @@ async function dene(
 }
 
 test('Rastgele girdi: depo iplik girişi alanları', async ({ giris }) => {
-  test.skip(!rolTanimli('depo'), 'depo yok');
+  test.skip(!rolTanimli('depo') || !rolTanimli('mudur'), 'depo ya da mudur yok');
   const depo = await giris('depo');
+  const mudur = await giris('mudur');
   depo.beklenen(/4\d\d (POST|PUT) /);
+  // İplik serbest metin değil, Tanımlar'dan seçilir; bu yüzden metin fuzz'u yalnızca kilo ve not alanlarına yapılır.
+  const iplik = damga();
+  await iplikTanimla(mudur, iplik);
   await dene(
     depo,
     'iplik girişi',
     [
-      { etiket: /İplik cinsi/, tur: 'metin', ilk: true },
       { etiket: /Gelen net kg/, tur: 'sayi' },
       { etiket: /Not/, tur: 'metin' },
     ],
@@ -85,10 +90,7 @@ test('Rastgele girdi: depo iplik girişi alanları', async ({ giris }) => {
     async () => {
       await depo.sayfa.goto('/panel/merkez-stok');
       await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
-      await depo.sayfa
-        .getByLabel(/İplik cinsi/)
-        .first()
-        .fill('ROBOT-fuzz');
+      await iplikSec(depo.sayfa, /İplik cinsi/, iplik);
       await depo.sayfa.getByLabel(/Gelen net kg/).fill('1');
     },
   );

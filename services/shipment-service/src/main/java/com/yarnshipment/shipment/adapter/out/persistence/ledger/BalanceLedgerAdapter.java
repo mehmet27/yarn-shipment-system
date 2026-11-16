@@ -38,7 +38,8 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
     static final String UNSPECIFIED_YARN = "(reçetesiz)";
 
     private static final String BALANCES = """
-            SELECT t.subcontractor_id, coalesce(m.title, t.subcontractor_id::text) AS title, t.yarn_type,
+            SELECT t.subcontractor_id, coalesce(m.title, t.subcontractor_id::text) AS title,
+                   coalesce(p.name, t.yarn_type) AS yarn_type,
                    sum(t.balance_kg) AS balance_kg, sum(t.in_transit_kg) AS in_transit_kg
             FROM (
                 SELECT subcontractor_id, yarn_type, net_kg AS balance_kg, 0::numeric AS in_transit_kg
@@ -50,9 +51,10 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
                 WHERE s.status = 'AWAITING_DELIVERY'
             ) t
             LEFT JOIN md_subcontractor m ON m.id = t.subcontractor_id
+            LEFT JOIN md_product p ON p.id::text = t.yarn_type
             WHERE (CAST(:subcontractorId AS uuid) IS NULL OR t.subcontractor_id = CAST(:subcontractorId AS uuid))
-            GROUP BY t.subcontractor_id, m.title, t.yarn_type
-            ORDER BY title, t.yarn_type""".formatted(UNSPECIFIED_YARN);
+            GROUP BY t.subcontractor_id, m.title, coalesce(p.name, t.yarn_type)
+            ORDER BY title, 3""".formatted(UNSPECIFIED_YARN);
     private static final String DISPATCHED_BY_YARN = """
             SELECT yarn_type, sum(net_kg) AS net_kg FROM balance_movement
             WHERE shipment_id = :shipmentId AND kind = 'DISPATCH'
@@ -65,27 +67,33 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
             WHERE id = :shipmentId AND source_subcontractor_id IS NOT NULL""";
     /** Merkezden çıkan sevkiyatın iplikleri merkez stoktan düşer; gönderen fasoncu varsa merkez stoğa dokunulmaz. */
     private static final String CENTRAL_STOCK_OUT = """
-            INSERT INTO central_stock_movement (id, yarn_type, kind, net_kg, shipment_id, occurred_at, created_by,
-                                                source_ref)
-            SELECT gen_random_uuid(), coalesce(p.name, bm.yarn_type), 'TO_SUBCONTRACTOR', -bm.net_kg, bm.shipment_id,
-                   bm.occurred_at, bm.created_by, 'CENTRAL_OUT:' || bm.source_ref
+            INSERT INTO central_stock_movement (id, product_id, yarn_type, kind, net_kg, shipment_id, occurred_at,
+                                                created_by, source_ref)
+            SELECT gen_random_uuid(), p.id, coalesce(p.name, bm.yarn_type), 'TO_SUBCONTRACTOR', -bm.net_kg,
+                   bm.shipment_id, bm.occurred_at, bm.created_by, 'CENTRAL_OUT:' || bm.source_ref
             FROM balance_movement bm
             JOIN shipment s ON s.id = bm.shipment_id AND s.source_subcontractor_id IS NULL
-            LEFT JOIN md_product p ON p.id::text = bm.yarn_type
+            LEFT JOIN LATERAL (
+                SELECT id, name FROM md_product
+                WHERE id::text = bm.yarn_type OR lower(btrim(name)) = lower(btrim(bm.yarn_type))
+                ORDER BY (id::text = bm.yarn_type) DESC, id LIMIT 1) p ON true
             WHERE bm.shipment_id = :shipmentId AND bm.kind = 'DISPATCH'
             ON CONFLICT (source_ref) DO NOTHING""";
 
     /** Kapıdan aktarmada iplik depoya girmez; çıkıştan önce aynı kilo giriş (+) yazılır, stok eksiye düşmez. */
     private static final String CENTRAL_STOCK_DIRECT_IN = """
-            INSERT INTO central_stock_movement (id, yarn_type, kind, net_kg, shipment_id, note, occurred_at, created_by,
-                                                source_ref)
-            SELECT gen_random_uuid(), coalesce(p.name, bm.yarn_type), 'YARN_RECEIPT', bm.net_kg, bm.shipment_id,
+            INSERT INTO central_stock_movement (id, product_id, yarn_type, kind, net_kg, shipment_id, note, occurred_at,
+                                                created_by, source_ref)
+            SELECT gen_random_uuid(), p.id, coalesce(p.name, bm.yarn_type), 'YARN_RECEIPT', bm.net_kg, bm.shipment_id,
                    'Kapıdan aktarma: ' || s.direct_transfer_supplier
                        || coalesce(' / ' || s.direct_transfer_waybill_no, ''),
                    bm.occurred_at, bm.created_by, 'DIRECT_IN:' || bm.source_ref
             FROM balance_movement bm
             JOIN shipment s ON s.id = bm.shipment_id AND s.direct_transfer_supplier IS NOT NULL
-            LEFT JOIN md_product p ON p.id::text = bm.yarn_type
+            LEFT JOIN LATERAL (
+                SELECT id, name FROM md_product
+                WHERE id::text = bm.yarn_type OR lower(btrim(name)) = lower(btrim(bm.yarn_type))
+                ORDER BY (id::text = bm.yarn_type) DESC, id LIMIT 1) p ON true
             WHERE bm.shipment_id = :shipmentId AND bm.kind = 'DISPATCH'
             ON CONFLICT (source_ref) DO NOTHING""";
 

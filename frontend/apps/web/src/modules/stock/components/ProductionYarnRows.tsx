@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Button, Group, Stack, Text, TextInput } from '@iplik/ui';
-import { YARN_LIST_ID } from './YarnTypeList';
+import { MasterSelect } from '@/modules/shipment';
 import type { YarnLineDraft } from '../stockDraft';
 
 export type ProductionYarnRowsProps = {
@@ -20,12 +20,12 @@ export function ProductionYarnRows({ rows, onChange, onAdd, onRemove }: Producti
         // Satırın kimliği yok; yalnız sondan eklenir ve sırayla silinir.
         // eslint-disable-next-line react/no-array-index-key -- kimliksiz taslak satırı
         <Group key={index} grow align="flex-end">
-          <TextInput
+          <MasterSelect
+            kind="product"
             label={`${t('stock.production.yarnType')} ${String(index + 1)}`}
-            list={YARN_LIST_ID}
-            value={row.yarnType}
-            onChange={(event) => {
-              onChange(index, { yarnType: event.currentTarget.value });
+            value={row.product}
+            onChange={(product) => {
+              onChange(index, { product });
             }}
           />
           <TextInput

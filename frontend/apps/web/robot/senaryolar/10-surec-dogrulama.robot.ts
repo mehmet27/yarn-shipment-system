@@ -4,9 +4,9 @@ import {
   kiloMetni as kg,
   uretimIplikDusumu,
 } from '../kurallar/hesap';
-import { kumasGir, tamamlanmisSevkiyat } from '../support/akis';
+import { iplikTanimla, kumasGir, tamamlanmisSevkiyat } from '../support/akis';
 import { expect, test } from '../support/robot';
-import { damga } from '../support/yardimci';
+import { damga, iplikSec } from '../support/yardimci';
 
 type Dashboard = {
   shipments: Record<string, number>;
@@ -73,13 +73,14 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
     stok: await depo.api<Stok>('/api/v1/central-stock'),
   };
 
+  await mudur.adim("müdür: ipliği Tanımlar'a ekler", async () => {
+    await iplikTanimla(mudur, iplik);
+  });
+
   await depo.adim('doğrula: iplik girişi stoğu tam 200 kg artırır', async () => {
     await depo.sayfa.goto('/panel/merkez-stok');
     await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
-    await depo.sayfa
-      .getByLabel(/İplik cinsi/)
-      .first()
-      .fill(iplik);
+    await iplikSec(depo.sayfa, /İplik cinsi/, iplik);
     await depo.sayfa.getByLabel(/Gelen net kg/).fill('200');
     await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
     await depo.sayfa.getByRole('tab', { name: 'Eldeki iplik' }).click();
@@ -106,7 +107,7 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
       await kalite.sayfa.goto('/panel/merkez-stok');
       await kalite.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
       await kalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
-      await kalite.sayfa.getByLabel(/İplik cinsi 1/).fill(iplik);
+      await iplikSec(kalite.sayfa, /İplik cinsi 1/, iplik);
       await kalite.sayfa.getByLabel(/Kumaş kg 1/).fill('50');
       await kalite.sayfa.getByLabel(/Fire \(%\)/).fill('3');
       await kalite.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();

@@ -11,6 +11,21 @@ export async function sec(
   await sayfa.locator('[role=option]:visible').filter({ hasText: secenek }).first().click();
 }
 
+/**
+ * Merkez stok formlarındaki iplik seçici: Tanımlar'daki aktif iplikler arasından, adı yazarak arayıp seçer.
+ * Serbest metin yoktur; iplik Tanımlar'da yoksa seçilemez (liste sunucuda aranır, ilk sayfa 20 kayıttır).
+ */
+export async function iplikSec(sayfa: Page, etiket: string | RegExp, ad: string) {
+  const alan = sayfa.getByLabel(etiket).first();
+  await alan.click();
+  await alan.fill(ad);
+  await sayfa
+    .locator('[role=option]:visible')
+    .filter({ hasText: ad })
+    .first()
+    .click({ timeout: 15_000 });
+}
+
 /** Sunucuya yüklenebilecek, sahte ama gerçekçi bir JPEG (kantar fişi, irsaliye, itiraz fotoğrafı). */
 export async function resim(sayfa: Page, tohum = 1): Promise<Buffer> {
   // Her fotoğraf benzersiz olmalı: aynı dosyanın yeniden yüklenmesi sistemde 'kanıt tekrar kullanımı' olayı üretir.

@@ -12,7 +12,8 @@ import org.jspecify.annotations.Nullable;
  * Merkez iplik stoku defterinin bir satırı; yalnız eklenir.
  *
  * @param id kayıt
- * @param yarnType iplik cinsi
+ * @param productId iplik tanımı; tanımla eşlenemeyen eski satırlarda boş
+ * @param yarnType iplik cinsinin hareket anındaki adı
  * @param kind tür
  * @param netKg işaretli net kg: girişte artı, çıkışta eksi
  * @param productionId üretim satırında üretim kaydı
@@ -23,6 +24,7 @@ import org.jspecify.annotations.Nullable;
  */
 public record CentralStockMovement(
         UUID id,
+        @Nullable UUID productId,
         String yarnType,
         CentralStockKind kind,
         BigDecimal netKg,
@@ -56,12 +58,16 @@ public record CentralStockMovement(
     /**
      * Merkeze gelen iplik isteği.
      *
-     * @param yarnType iplik cinsi
+     * @param productId iplik tanımı
+     * @param yarnType iplik tanımının adı
      * @param netKg gelen net kg
      * @param note not, isteğe bağlı
      */
     public record Receipt(
-            String yarnType, BigDecimal netKg, @Nullable String note) {}
+            UUID productId,
+            String yarnType,
+            BigDecimal netKg,
+            @Nullable String note) {}
 
     /** Merkeze iplik girişi. */
     public static CentralStockMovement receipt(Receipt receipt, Instant at, UUID createdBy) {
@@ -70,6 +76,7 @@ public record CentralStockMovement(
                 : receipt.note().strip();
         return new CentralStockMovement(
                 UUID.randomUUID(),
+                receipt.productId(),
                 receipt.yarnType(),
                 CentralStockKind.YARN_RECEIPT,
                 receipt.netKg(),

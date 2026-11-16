@@ -9,10 +9,10 @@ import com.yarnshipment.shipment.application.port.in.stock.RecordYarnReceiptUseC
 import com.yarnshipment.shipment.application.port.out.ledger.CentralStockPort;
 import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.balance.Kilograms;
-import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
 import com.yarnshipment.shipment.domain.stock.InsufficientCentralStockException;
+import com.yarnshipment.shipment.domain.stock.ProductShare;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,11 +37,13 @@ public class CentralStockService
     private static final int RECENT_LIMIT = 50;
 
     private final CentralStockPort stock;
+    private final ActiveYarnProducts products;
     private final LedgerEventPort events;
     private final Clock clock;
 
     public CentralStockService(CentralStockPort stock, LedgerEventPort events, Clock clock) {
         this.stock = stock;
+        this.products = new ActiveYarnProducts(stock);
         this.events = events;
         this.clock = clock;
     }
@@ -48,8 +51,9 @@ public class CentralStockService
     @Override
     @Transactional
     public CentralStockMovement recordYarnReceipt(RecordYarnReceiptUseCase.Command command) {
+        String yarnName = products.nameOf(command.productId(), "productId");
         CentralStockMovement receipt = CentralStockMovement.receipt(
-                new CentralStockMovement.Receipt(command.yarnType(), command.netKg(), command.note()),
+                new CentralStockMovement.Receipt(command.productId(), yarnName, command.netKg(), command.note()),
                 clock.instant(),
                 command.actor().userId());
         stock.saveReceipt(receipt);
@@ -60,7 +64,8 @@ public class CentralStockService
     @Override
     @Transactional
     public CentralProduction recordCentralProduction(RecordCentralProductionUseCase.Command command) {
-        BigDecimal netKg = command.yarns().stream().map(YarnShare::netKg).reduce(Kilograms.ZERO, BigDecimal::add);
+        List<ProductShare> shares = products.toShares(command.yarns());
+        BigDecimal netKg = shares.stream().map(ProductShare::netKg).reduce(Kilograms.ZERO, BigDecimal::add);
         Instant at = clock.instant();
         CentralProduction production = new CentralProduction(
                 UUID.randomUUID(),
@@ -70,7 +75,7 @@ public class CentralStockService
                 command.rollCount(),
                 command.waybillNo(),
                 at,
-                command.yarns(),
+                shares,
                 command.actor().userId());
         List<CentralStockMovement> consumptions = production.consumptions();
         requireStockFor(consumptions);
@@ -81,16 +86,21 @@ public class CentralStockService
 
     /** Üretim yalnızca stokta girişi olan ve yetecek kadar bulunan iplikten yapılır. */
     private void requireStockFor(List<CentralStockMovement> consumptions) {
-        Map<String, BigDecimal> available = new HashMap<>();
-        stock.findStock().forEach(row -> available.merge(row.yarnType(), row.stockKg(), BigDecimal::add));
-        Map<String, BigDecimal> needed = new LinkedHashMap<>();
+        Map<UUID, BigDecimal> available = new HashMap<>();
+        stock.findStock().stream()
+                .filter(row -> row.productId() != null)
+                .forEach(row -> available.merge(row.productId(), row.stockKg(), BigDecimal::add));
+        Map<UUID, BigDecimal> needed = new LinkedHashMap<>();
+        Map<UUID, String> names = new HashMap<>();
         for (CentralStockMovement consumption : consumptions) {
-            needed.merge(consumption.yarnType(), consumption.netKg().negate(), BigDecimal::add);
+            UUID productId = Objects.requireNonNull(consumption.productId(), "productId");
+            needed.merge(productId, consumption.netKg().negate(), BigDecimal::add);
+            names.put(productId, consumption.yarnType());
         }
-        needed.forEach((key, kg) -> {
-            BigDecimal have = available.getOrDefault(key, Kilograms.ZERO);
+        needed.forEach((productId, kg) -> {
+            BigDecimal have = available.getOrDefault(productId, Kilograms.ZERO);
             if (have.compareTo(kg) < 0) {
-                throw new InsufficientCentralStockException(key, have);
+                throw new InsufficientCentralStockException(names.getOrDefault(productId, productId.toString()), have);
             }
         });
     }

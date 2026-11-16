@@ -1,4 +1,5 @@
 import type { CentralProductionRequest, YarnReceiptRequest } from '@iplik/api-client/central-stock';
+import type { MasterOption } from '@/modules/shipment';
 import { parseKg, pctInputToRate, sumKg } from '@iplik/units';
 
 export const MAX_FIRE_PCT = 20;
@@ -6,16 +7,17 @@ export const MAX_FIRE_PCT = 20;
 /** i18n anahtarı (`stock.draftErrors.*`). */
 export type StockDraftError = 'required' | 'invalidKg' | 'invalidRate' | 'invalidRollCount';
 
-export type YarnLineDraft = { yarnType: string; netKg: string };
-export type ReceiptDraft = { yarnType: string; netKg: string; note: string };
-export const EMPTY_RECEIPT_DRAFT: ReceiptDraft = { yarnType: '', netKg: '', note: '' };
+/** İplik, Tanımlar'daki aktif iplik listesinden seçilir; serbest metin yoktur. */
+export type YarnLineDraft = { product: MasterOption | undefined; netKg: string };
+export type ReceiptDraft = { product: MasterOption | undefined; netKg: string; note: string };
+export const EMPTY_RECEIPT_DRAFT: ReceiptDraft = { product: undefined, netKg: '', note: '' };
 
 export function toReceiptRequest(draft: ReceiptDraft): YarnReceiptRequest | StockDraftError {
   const netKg = parseKg(draft.netKg);
-  if (draft.yarnType.trim() === '') return 'required';
+  if (draft.product === undefined) return 'required';
   if (netKg === undefined) return 'invalidKg';
   const note = draft.note.trim();
-  return { yarnType: draft.yarnType.trim(), netKg, ...(note === '' ? {} : { note }) };
+  return { productId: draft.product.value, netKg, ...(note === '' ? {} : { note }) };
 }
 
 export type ProductionDraft = {
@@ -30,18 +32,20 @@ export const emptyProductionDraft = (firePct: string): ProductionDraft => ({
   firePct,
   rollCount: '',
   waybillNo: '',
-  yarns: [{ yarnType: '', netKg: '' }],
+  yarns: [{ product: undefined, netKg: '' }],
 });
 
 const ROLL_PATTERN = /^[1-9]\d*$/;
 
-function toYarnLines(rows: readonly YarnLineDraft[]): YarnLineDraft[] | StockDraftError {
-  const lines: YarnLineDraft[] = [];
+function toYarnLines(
+  rows: readonly YarnLineDraft[],
+): CentralProductionRequest['yarns'] | StockDraftError {
+  const lines: CentralProductionRequest['yarns'] = [];
   for (const row of rows) {
     const netKg = parseKg(row.netKg);
-    if (row.yarnType.trim() === '') return 'required';
+    if (row.product === undefined) return 'required';
     if (netKg === undefined) return 'invalidKg';
-    lines.push({ yarnType: row.yarnType.trim(), netKg });
+    lines.push({ productId: row.product.value, netKg });
   }
   return lines.length === 0 ? 'required' : lines;
 }

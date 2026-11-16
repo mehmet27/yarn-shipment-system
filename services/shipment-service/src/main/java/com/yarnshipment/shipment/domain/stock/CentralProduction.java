@@ -2,7 +2,6 @@ package com.yarnshipment.shipment.domain.stock;
 
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
 import com.yarnshipment.shipment.domain.balance.Kilograms;
-import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -33,7 +32,7 @@ public record CentralProduction(
         @Nullable Integer rollCount,
         @Nullable String waybillNo,
         Instant producedAt,
-        List<YarnShare> yarns,
+        List<ProductShare> yarns,
         UUID createdBy) {
 
     public static final int MAX_TEXT_LENGTH = 128;
@@ -51,7 +50,7 @@ public record CentralProduction(
         requireValidFireRate(fireRate);
         requireValidOptionals(rollCount, waybillNo);
         yarns = List.copyOf(yarns);
-        BigDecimal total = yarns.stream().map(YarnShare::netKg).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal total = yarns.stream().map(ProductShare::netKg).reduce(BigDecimal.ZERO, BigDecimal::add);
         if (yarns.isEmpty() || total.compareTo(netKg) != 0) {
             throw new InvalidLedgerInputException("yarns");
         }
@@ -86,10 +85,11 @@ public record CentralProduction(
         return yarns.stream().map(share -> consumption(share, keep)).toList();
     }
 
-    private CentralStockMovement consumption(YarnShare share, BigDecimal keep) {
+    private CentralStockMovement consumption(ProductShare share, BigDecimal keep) {
         BigDecimal withFire = share.netKg().divide(keep, Kilograms.SCALE, RoundingMode.HALF_UP);
         return new CentralStockMovement(
                 UUID.randomUUID(),
+                share.productId(),
                 share.yarnType(),
                 CentralStockKind.PRODUCTION,
                 withFire.negate(),

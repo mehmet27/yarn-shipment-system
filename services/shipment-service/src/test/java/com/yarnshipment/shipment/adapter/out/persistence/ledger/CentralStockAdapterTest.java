@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.adapter.out.persistence.PostgresTestDatabase;
 import com.yarnshipment.shipment.application.port.in.stock.CentralStockRow;
-import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
+import com.yarnshipment.shipment.domain.stock.ProductShare;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -38,6 +38,11 @@ class CentralStockAdapterTest {
     private static final Instant AT = Instant.parse("2026-11-13T09:00:00Z");
     private static final int RECENT_LIMIT = 10;
     private static final String YARN = "Ne 30/1 Penye";
+    private static final UUID PRODUCT = UUID.fromString("0192f0a0-0000-7000-8000-00000000a101");
+    private static final UUID INACTIVE_PRODUCT = UUID.fromString("0192f0a0-0000-7000-8000-00000000a102");
+    private static final String INSERT_PRODUCT = """
+            INSERT INTO md_product (id, code, name, active, created_at, created_by)
+            VALUES (?, ?, ?, ?, now(), ?)""";
     private static final String INSERT_SHIPMENT = """
             INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title, status,
                                   source_subcontractor_id, source_subcontractor_title, created_at, created_by)
@@ -63,6 +68,8 @@ class CentralStockAdapterTest {
 
     @BeforeEach
     void insertShipments() {
+        jdbc.update(INSERT_PRODUCT, PRODUCT, "P-30", YARN, true, USER);
+        jdbc.update(INSERT_PRODUCT, INACTIVE_PRODUCT, "P-OLD", "Eski İplik", false, USER);
         jdbc.update(INSERT_SHIPMENT, SHIPMENT, TestTokens.SITE_ID, "SV-C1", SUBCONTRACTOR, null, null, USER);
         jdbc.update(INSERT_WEIGHING, UUID.randomUUID(), SHIPMENT, USER, USER);
         jdbc.update(
@@ -102,7 +109,9 @@ class CentralStockAdapterTest {
     void shouldAddReceiptAndDeductProductionWithFire() {
         // given
         stock.saveReceipt(CentralStockMovement.receipt(
-                new CentralStockMovement.Receipt(YARN, new BigDecimal("20000"), "Tedarikçi irsaliyesi"), AT, USER));
+                new CentralStockMovement.Receipt(PRODUCT, YARN, new BigDecimal("20000"), "Tedarikçi irsaliyesi"),
+                AT,
+                USER));
         CentralProduction production = new CentralProduction(
                 UUID.randomUUID(),
                 "Süprem",
@@ -111,7 +120,7 @@ class CentralStockAdapterTest {
                 null,
                 null,
                 AT,
-                List.of(new YarnShare(YARN, new BigDecimal("1000"))),
+                List.of(new ProductShare(PRODUCT, YARN, new BigDecimal("1000"))),
                 USER);
 
         // when
@@ -121,6 +130,76 @@ class CentralStockAdapterTest {
         assertThat(stockOf(YARN)).isEqualByComparingTo("18958.333");
         assertThat(stock.findRecent(RECENT_LIMIT)).hasSize(2);
         assertThat(stock.findProducedFabricKg()).isEqualByComparingTo("1000");
+    }
+
+    @Test
+    @DisplayName("Stok iplik tanımına göre gruplanır; tanım yeniden adlandırılınca satır bölünmez, güncel ad görünür")
+    void shouldGroupStockByProductAndShowCurrentName() {
+        stock.saveReceipt(CentralStockMovement.receipt(
+                new CentralStockMovement.Receipt(PRODUCT, YARN, new BigDecimal("100"), null), AT, USER));
+        jdbc.update("UPDATE md_product SET name = 'Ne 30/1 Penye Combed' WHERE id = ?", PRODUCT);
+        stock.saveReceipt(CentralStockMovement.receipt(
+                new CentralStockMovement.Receipt(PRODUCT, "Ne 30/1 Penye Combed", new BigDecimal("50"), null),
+                AT,
+                USER));
+
+        assertThat(stock.findStock()).singleElement().satisfies(row -> {
+            assertThat(row.productId()).isEqualTo(PRODUCT);
+            assertThat(row.yarnType()).isEqualTo("Ne 30/1 Penye Combed");
+            assertThat(row.stockKg()).isEqualByComparingTo("150");
+        });
+    }
+
+    @Test
+    @DisplayName("Yalnızca aktif iplik tanımlarının adları çözülür")
+    void shouldResolveOnlyActiveProducts() {
+        assertThat(stock.findActiveProductNames(List.of(PRODUCT, INACTIVE_PRODUCT, UUID.randomUUID())))
+                .containsOnlyKeys(PRODUCT)
+                .containsEntry(PRODUCT, YARN);
+        assertThat(stock.findActiveProductNames(List.of())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Sevkiyat düşüşü reçetedeki iplik tanımına (id ya da ad) bağlanır; bilinmeyen metin bağsız kalır")
+    void shouldLinkDispatchDeductionToProduct() {
+        jdbc.update(
+                "INSERT INTO balance_movement (id, subcontractor_id, yarn_type, shipment_id, kind, net_kg,"
+                        + " occurred_at, created_by, source_ref) VALUES (gen_random_uuid(), ?, ?, ?, 'DISPATCH', 10,"
+                        + " now(), ?, ?)",
+                SUBCONTRACTOR,
+                PRODUCT.toString(),
+                SHIPMENT,
+                USER,
+                "T:1");
+        jdbc.update(
+                "INSERT INTO balance_movement (id, subcontractor_id, yarn_type, shipment_id, kind, net_kg,"
+                        + " occurred_at, created_by, source_ref) VALUES (gen_random_uuid(), ?, ?, ?, 'DISPATCH', 5,"
+                        + " now(), ?, ?)",
+                SUBCONTRACTOR,
+                "  ne 30/1 PENYE ",
+                SHIPMENT,
+                USER,
+                "T:2");
+        jdbc.update(
+                "INSERT INTO balance_movement (id, subcontractor_id, yarn_type, shipment_id, kind, net_kg,"
+                        + " occurred_at, created_by, source_ref) VALUES (gen_random_uuid(), ?, ?, ?, 'DISPATCH', 3,"
+                        + " now(), ?, ?)",
+                SUBCONTRACTOR,
+                "Bilinmeyen Metin",
+                SHIPMENT,
+                USER,
+                "T:3");
+
+        ledger.recordDispatch(SHIPMENT, SUBCONTRACTOR, AT, USER);
+
+        assertThat(stock.findStock())
+                .extracting(
+                        CentralStockRow::productId,
+                        CentralStockRow::yarnType,
+                        row -> row.stockKg().toPlainString())
+                .contains(
+                        org.assertj.core.groups.Tuple.tuple(PRODUCT, YARN, "-15.000"),
+                        org.assertj.core.groups.Tuple.tuple(null, "Bilinmeyen Metin", "-3.000"));
     }
 
     @Test

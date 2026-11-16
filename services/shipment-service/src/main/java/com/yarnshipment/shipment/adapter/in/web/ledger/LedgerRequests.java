@@ -37,9 +37,13 @@ final class LedgerRequests {
 
     /** Merkeze iplik girişi gövdesi. */
     record YarnReceiptRequest(
-            @Nullable String yarnType,
+            @Nullable UUID productId,
             @Nullable String netKg,
             @Nullable String note) {}
+
+    /** Merkez kumaşın tükettiği iplik tanımı. */
+    record CentralYarnRequest(
+            @Nullable UUID productId, @Nullable String netKg) {}
 
     /** Merkez fabrika kumaş girişi gövdesi. */
     record CentralProductionRequest(
@@ -47,7 +51,7 @@ final class LedgerRequests {
             @Nullable String fireRate,
             @Nullable Integer rollCount,
             @Nullable String waybillNo,
-            @Nullable List<YarnShareRequest> yarns) {}
+            @Nullable List<CentralYarnRequest> yarns) {}
 
     /** Fire oranı değişikliği gövdesi. */
     record FireRateRequest(
@@ -61,6 +65,13 @@ final class LedgerRequests {
 
     static String required(@Nullable String value, String field) {
         if (value == null || value.isBlank()) {
+            throw new InvalidLedgerInputException(field);
+        }
+        return value;
+    }
+
+    static UUID requiredId(@Nullable UUID value, String field) {
+        if (value == null) {
             throw new InvalidLedgerInputException(field);
         }
         return value;

@@ -27,7 +27,8 @@ test('Sevkiyat: çuval çıkarma ve taslak iptali', async ({ giris }) => {
     mudur.kontrol('gerekçesiz iptal düğmesi pasif', await gonder.isDisabled());
     await mudur.sayfa.getByLabel(/İptal gerekçesi/).fill('Robot iptali');
     await gonder.click();
-    await expect(mudur.sayfa.locator('main')).toContainText(/iptal/i);
+    // İptalden sonra durum "İptal" olur ve iptal formu kaybolur; /iptal/i büyük İ ile eşleşmez.
+    await expect(mudur.sayfa.locator('main')).toContainText('İptal edildi');
   });
 });
 

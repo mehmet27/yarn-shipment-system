@@ -1,28 +1,16 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Group, Paper, Stack, Text, TextInput, Title } from '@iplik/ui';
 import { formatKgText } from '@iplik/units';
-import { useState } from 'react';
-import { useFireRateDefault } from '@/modules/shipment';
 import { ProductionYarnRows } from './ProductionYarnRows';
-import { useRecordCentralProduction } from '../hooks/useCentralStock';
-import type { StockDraftError } from '../stockDraft';
-import { productionTotalKg, toProductionRequest } from '../stockDraft';
+import { productionTotalKg } from '../stockDraft';
 import { stockErrorKey } from '../stockErrors';
-import { useProductionDraft } from '../useProductionDraft';
+import { useProductionSubmit } from '../useProductionSubmit';
 
 /** Merkez fabrikanın ürettiği kumaş: hangi iplikten kaç kg kumaş çıktığı girilir, iplik fire ile stoktan düşer. */
 export function ProductionForm() {
   const { t } = useTranslation();
-  const defaultFirePct = useFireRateDefault();
-  const { draft, field, setYarn, addYarn, removeYarn, reset } = useProductionDraft(defaultFirePct);
-  const [error, setError] = useState<StockDraftError>();
-  const mutation = useRecordCentralProduction();
-  const submit = () => {
-    mutation.reset();
-    const request = toProductionRequest(draft);
-    setError(typeof request === 'string' ? request : undefined);
-    if (typeof request !== 'string') mutation.mutate(request, { onSuccess: reset });
-  };
+  const { draft, field, setYarn, addYarn, removeYarn, error, submit, mutation } =
+    useProductionSubmit();
   return (
     <Paper withBorder p="md" component="section" aria-label={t('stock.production.title')}>
       <Stack>

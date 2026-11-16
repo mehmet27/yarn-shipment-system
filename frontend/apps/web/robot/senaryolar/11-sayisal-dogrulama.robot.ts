@@ -144,7 +144,8 @@ test('Sayısal doğrulama: taslak iptali stoğu, bakiyeyi ve tamamlanan sayısı
     await mudur.sayfa.getByRole('button', { name: 'İptal et' }).click();
     await mudur.sayfa.getByLabel(/İptal gerekçesi/).fill('Robot sayısal iptal');
     await mudur.sayfa.getByRole('button', { name: 'Sevkiyatı iptal et' }).click();
-    await expect(mudur.sayfa.locator('main')).toContainText(/iptal/i);
+    // İptalden sonra durum "İptal" olur ve iptal formu kaybolur; /iptal/i büyük İ ile eşleşmez.
+    await expect(mudur.sayfa.locator('main')).toContainText('İptal edildi');
   });
   await mudur.adim('doğrula: sayılar yalnızca "iptal" sayacında değişir', async () => {
     const sonra = await anlik(mudur);

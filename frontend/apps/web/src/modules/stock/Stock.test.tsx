@@ -1,5 +1,5 @@
 import { ME_PATH } from '@iplik/api-client';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
@@ -93,6 +93,41 @@ describe('Merkez iplik stoku', () => {
 
     expect(await screen.findByText('Zorunlu alanları doldurun.')).toBeInTheDocument();
     expect(screen.queryByText('İplik girişi kaydedildi.')).not.toBeInTheDocument();
+  });
+
+  it('iplik girişi düğmesine çift tıklanınca tek kayıt yazılır', async () => {
+    let posts = 0;
+    server.use(
+      http.post('/api/v1/central-stock/yarn-receipts', () => {
+        posts += 1;
+        return HttpResponse.json(
+          {
+            id: 'x',
+            productId: 'prd-0',
+            yarnType: 'Polyester 30/1',
+            kind: 'YARN_RECEIPT',
+            netKg: '10.000',
+            occurredAt: '2026-11-13T09:00:00Z',
+          },
+          { status: 201 },
+        );
+      }),
+      ...createHandlers('WAREHOUSE'),
+    );
+    const user = userEvent.setup();
+    renderApp('/panel/merkez-stok');
+    await user.click(await screen.findByRole('tab', { name: 'İplik girişi' }));
+    const form = screen.getByRole('region', { name: 'Merkeze iplik girişi' });
+    await pickYarn(user, /İplik cinsi/, 'Polyester 30/1');
+    await user.type(within(form).getByLabelText(/Gelen net kg/), '10');
+    await user.dblClick(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    // Yanıt çok hızlı gelirse ikinci tıklama boşalmış forma düşer; önemli olan tek kayıt yazılmasıdır.
+    await waitFor(() => {
+      expect(posts).toBe(1);
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(posts).toBe(1);
   });
 
   it('müdür stoğu görür ama giriş formu yoktur; genel müdür menüde görmez', async () => {

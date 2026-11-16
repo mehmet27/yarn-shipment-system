@@ -2545,6 +2545,12 @@ components:
           description: evidence-service'e WAYBILL türüyle yüklenen irsaliye belgesinin kimliği
           type: string
           format: uuid
+        acceptStockShortage:
+          description: >-
+            Merkez iplik stoğu yetmiyorsa (CENTRAL_STOCK_SHORTFALL uyarısı) eksik kilo kadar merkez giriş sistem
+            tarafından yazılarak tamamlanmasının onayı; varsayılan false
+          type: boolean
+          default: false
     CancelShipmentRequest:
       type: object
       required: [reason]

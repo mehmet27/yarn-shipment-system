@@ -84,7 +84,8 @@ public class ShipmentController implements ShipmentsApi {
                 shipmentId,
                 completeShipmentRequest.getWaybillNo(),
                 completeShipmentRequest.getWaybillEvidenceId(),
-                idempotencyKey));
+                idempotencyKey,
+                Boolean.TRUE.equals(completeShipmentRequest.getAcceptStockShortage())));
         return ResponseEntity.noContent().build();
     }
 

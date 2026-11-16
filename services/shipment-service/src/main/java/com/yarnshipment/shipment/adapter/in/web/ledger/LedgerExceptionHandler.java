@@ -6,6 +6,7 @@ import com.yarnshipment.shipment.domain.fabric.FabricExceedsSentYarnException;
 import com.yarnshipment.shipment.domain.fire.FireSettlementClosedException;
 import com.yarnshipment.shipment.domain.fire.FireSettlementNotFoundException;
 import com.yarnshipment.shipment.domain.fire.InvalidFireSettlementActionException;
+import com.yarnshipment.shipment.domain.stock.CentralStockShortfallException;
 import com.yarnshipment.shipment.domain.stock.InsufficientCentralStockException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -17,9 +18,12 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/** Bakiye, kumaş girişi, iplik dönüşü ve fire dosyası hatalarının ERR-07 cevabı. */
+/**
+ * Bakiye, kumaş girişi, iplik dönüşü, fire dosyası ve merkez stok hatalarının ERR-07 cevabı. Yetersiz merkez stok
+ * sevkiyatı tamamlarken de oluşabildiği için sevkiyat denetleyicilerini de kapsar.
+ */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(basePackages = "com.yarnshipment.shipment.adapter.in.web.ledger")
+@RestControllerAdvice(basePackages = "com.yarnshipment.shipment.adapter.in.web")
 public final class LedgerExceptionHandler {
 
     private final ProblemFactory problems;
@@ -40,6 +44,21 @@ public final class LedgerExceptionHandler {
             InsufficientCentralStockException exception, HttpServletRequest request) {
         ProblemDetail problem = problems.create(request, HttpStatus.CONFLICT, "INSUFFICIENT_CENTRAL_STOCK");
         problem.setProperty("yarnType", exception.yarnType());
+        return problem;
+    }
+
+    @ExceptionHandler(CentralStockShortfallException.class)
+    public ProblemDetail handleShortfall(CentralStockShortfallException exception, HttpServletRequest request) {
+        ProblemDetail problem = problems.create(request, HttpStatus.CONFLICT, "CENTRAL_STOCK_SHORTFALL");
+        problem.setProperty(
+                "shortfalls",
+                exception.shortfalls().stream()
+                        .map(item -> Map.of(
+                                "yarnType",
+                                item.yarnType(),
+                                "missingKg",
+                                item.missingKg().toPlainString()))
+                        .toList());
         return problem;
     }
 

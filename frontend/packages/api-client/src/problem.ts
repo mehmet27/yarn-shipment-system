@@ -8,7 +8,11 @@ export type Problem = {
   detail?: string;
   requestId?: string;
   errors?: readonly FieldError[];
+  /** Yalnızca `CENTRAL_STOCK_SHORTFALL`: stoğu yetmeyen iplikler ve eksik kilo. */
+  shortfalls?: readonly StockShortfall[];
 };
+
+export type StockShortfall = { yarnType: string; missingKg: string };
 
 export type FieldError = { field: string; message: string };
 

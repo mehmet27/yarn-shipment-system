@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
  * sevkiyata gelen ikinci istek yeni kayıt üretmez, başarılı sayılır (API-04). İrsaliye belgesi önce evidence-service'e
  * yüklenir; burada belgenin bu sevkiyata ait geçerli bir irsaliye olduğu denetlenir. Aynı transaction'da sevkiyatın
  * DISPATCH bakiye hareketleri ve AWAITING_FABRIC fire dosyası yazılır (analiz 5.7, KR-12); tekrarlanan istek ikisini de
- * yeniden üretmez.
+ * yeniden üretmez. Merkez stok eksiye düşecekse tamamlama reddedilir.
  */
 @Service
 public class CompleteShipmentService implements CompleteShipmentUseCase {
@@ -33,6 +33,7 @@ public class CompleteShipmentService implements CompleteShipmentUseCase {
     private final CompletionPort completionPort;
     private final EvidenceLookupPort evidence;
     private final DispatchLedgerPort ledger;
+    private final CentralStockShortageCover stockCover;
     private final FireSettlementPort fireSettlements;
     private final Clock clock;
 
@@ -41,12 +42,14 @@ public class CompleteShipmentService implements CompleteShipmentUseCase {
             CompletionPort completionPort,
             EvidenceLookupPort evidence,
             DispatchLedgerPort ledger,
+            CentralStockShortageCover stockCover,
             FireSettlementPort fireSettlements,
             Clock clock) {
         this.shipments = shipments;
         this.completionPort = completionPort;
         this.evidence = evidence;
         this.ledger = ledger;
+        this.stockCover = stockCover;
         this.fireSettlements = fireSettlements;
         this.clock = clock;
     }
@@ -65,6 +68,7 @@ public class CompleteShipmentService implements CompleteShipmentUseCase {
         completionPort.complete(completion, actor.userId());
         BigDecimal sentKg = ledger.recordDispatch(
                 shipment.id(), shipment.subcontractorId(), completion.completedAt(), actor.userId());
+        stockCover.cover(shipment.id(), command, completion.completedAt());
         fireSettlements.open(
                 FireSettlement.open(shipment.id(), shipment.subcontractorId(), sentKg, shipment.fireRate()),
                 completion.completedAt());

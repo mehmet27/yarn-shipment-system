@@ -21,6 +21,12 @@ public interface CentralStockPort {
 
     List<CentralStockRow> findStock();
 
+    /**
+     * Sevkiyatın merkez stoktan düştüğü iplik tanımlarından, düşüşten sonra stoğu eksi kalanlar; satırdaki kilo
+     * düşüşten sonraki (eksi) stoktur. Boş liste: stok yetiyor.
+     */
+    List<CentralStockRow> findShortagesAfterDispatch(UUID shipmentId);
+
     /** Verilen iplik tanımlarından <b>aktif</b> olanların adları; pasif ya da olmayan tanım sonuçta yer almaz. */
     Map<UUID, String> findActiveProductNames(Collection<UUID> productIds);
 

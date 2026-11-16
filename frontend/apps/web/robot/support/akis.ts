@@ -100,6 +100,35 @@ export async function tamamla(mudur: Robot, id: string, irsaliyeNo: string) {
   await expect(mudur.sayfa.locator('main')).toContainText(/tamamlandı/i);
 }
 
+/**
+ * Merkez stok yetmeyen sevkiyatı tamamlamayı dener: önce uyarı çıkar (tamamlanmaz), müdür "Yine de tamamla" ile onaylar.
+ * Uyarı metni döner.
+ */
+export async function stokUyarisiylaTamamla(mudur: Robot, id: string, irsaliyeNo: string) {
+  await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
+  await mudur.sayfa
+    .locator('input[type=file]')
+    .first()
+    .setInputFiles({
+      name: 'irs.jpg',
+      mimeType: 'image/jpeg',
+      buffer: await resim(mudur.sayfa, 5),
+    });
+  await mudur.sayfa.getByText('İrsaliye yüklendi').waitFor();
+  await mudur.sayfa.getByLabel(/İrsaliye no/).fill(irsaliyeNo);
+  await mudur.sayfa.getByRole('button', { name: 'Sevkiyatı tamamla' }).click();
+  const uyari = mudur.sayfa.getByTestId('stock-shortfall');
+  await uyari.waitFor();
+  const metin = await uyari.innerText();
+  mudur.kontrol(
+    'uyarı sevkiyatı tamamlamamış olmalı',
+    !/tamamlandı/i.test(await mudur.sayfa.locator('main').innerText()),
+  );
+  await uyari.getByRole('button', { name: /Yine de tamamla/ }).click();
+  await expect(mudur.sayfa.locator('main')).toContainText(/tamamlandı/i);
+  return metin;
+}
+
 /** Taslaktan tamamlanmışa tüm yol: `kg` kilo iplik, tek çuval grubu. Sevkiyat kimliğini döner. */
 export async function tamamlanmisSevkiyat(
   y: Yonetim,

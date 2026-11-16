@@ -264,6 +264,8 @@ export interface CompleteShipmentRequest {
   waybillNo: string;
   /** evidence-service'e WAYBILL türüyle yüklenen irsaliye belgesinin kimliği */
   waybillEvidenceId: string;
+  /** Merkez iplik stoğu yetmiyorsa (CENTRAL_STOCK_SHORTFALL uyarısı) eksik kilo kadar merkez giriş sistem tarafından yazılarak tamamlanmasının onayı; varsayılan false */
+  acceptStockShortage?: boolean;
 }
 
 export interface CancelShipmentRequest {

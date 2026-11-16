@@ -162,6 +162,8 @@ class CentralStockAdapterTest {
     @Test
     @DisplayName("Sevkiyat düşüşü reçetedeki iplik tanımına (id ya da ad) bağlanır; bilinmeyen metin bağsız kalır")
     void shouldLinkDispatchDeductionToProduct() {
+        stock.saveReceipt(CentralStockMovement.receipt(
+                new CentralStockMovement.Receipt(PRODUCT, YARN, new BigDecimal("100"), null), AT, USER));
         jdbc.update(
                 "INSERT INTO balance_movement (id, subcontractor_id, yarn_type, shipment_id, kind, net_kg,"
                         + " occurred_at, created_by, source_ref) VALUES (gen_random_uuid(), ?, ?, ?, 'DISPATCH', 10,"
@@ -198,8 +200,35 @@ class CentralStockAdapterTest {
                         CentralStockRow::yarnType,
                         row -> row.stockKg().toPlainString())
                 .contains(
-                        org.assertj.core.groups.Tuple.tuple(PRODUCT, YARN, "-15.000"),
+                        org.assertj.core.groups.Tuple.tuple(PRODUCT, YARN, "85.000"),
                         org.assertj.core.groups.Tuple.tuple(null, "Bilinmeyen Metin", "-3.000"));
+    }
+
+    @Test
+    @DisplayName("Sevkiyat düşüşünden sonra stoğu eksi kalan tanım eksik olarak bulunur; stok yetiyorsa boş döner")
+    void shouldFindShortageAfterDispatch() {
+        jdbc.update(
+                "INSERT INTO balance_movement (id, subcontractor_id, yarn_type, shipment_id, kind, net_kg,"
+                        + " occurred_at, created_by, source_ref) VALUES (gen_random_uuid(), ?, ?, ?, 'DISPATCH', 30,"
+                        + " now(), ?, ?)",
+                SUBCONTRACTOR,
+                PRODUCT.toString(),
+                SHIPMENT,
+                USER,
+                "T:9");
+        stock.saveReceipt(CentralStockMovement.receipt(
+                new CentralStockMovement.Receipt(PRODUCT, YARN, new BigDecimal("20"), null), AT, USER));
+        ledger.recordDispatch(SHIPMENT, SUBCONTRACTOR, AT, USER);
+
+        assertThat(stock.findShortagesAfterDispatch(SHIPMENT)).singleElement().satisfies(row -> {
+            assertThat(row.productId()).isEqualTo(PRODUCT);
+            assertThat(row.yarnType()).isEqualTo(YARN);
+            assertThat(row.stockKg()).isEqualByComparingTo("-10");
+        });
+
+        stock.saveReceipt(CentralStockMovement.receipt(
+                new CentralStockMovement.Receipt(PRODUCT, YARN, new BigDecimal("10"), null), AT, USER));
+        assertThat(stock.findShortagesAfterDispatch(SHIPMENT)).isEmpty();
     }
 
     @Test

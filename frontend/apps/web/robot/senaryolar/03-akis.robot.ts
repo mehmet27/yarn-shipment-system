@@ -87,6 +87,12 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     sevkiyatId = mudur.sayfa.url().split('/').pop() ?? '';
   });
 
+  await mudur.adim('müdür: taslak sevkiyatta itiraz/laboratuvar kanıtı yüklenemez', async () => {
+    await mudur.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
+    await mudur.sayfa.getByText('Kilolar', { exact: true }).first().waitFor();
+    await expect(mudur.sayfa.getByText('Ne yükleniyor?')).toHaveCount(0);
+  });
+
   await depo.adim('depo: iki çuval ekler (2 × 50 kg)', async () => {
     await depo.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
     await sekme(depo, 'Çuvallar');

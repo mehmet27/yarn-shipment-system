@@ -31,4 +31,17 @@ describe('EvidenceUpload', () => {
     await screen.findByText('Kilolar');
     expect(screen.queryByRole('button', { name: 'Fotoğraf çek' })).not.toBeInTheDocument();
   });
+
+  it('müdüre taslak sevkiyatta itiraz kanıtı sunulmaz', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/sevkiyat/shp-0001');
+    await screen.findByText('Kilolar');
+    expect(screen.queryByRole('button', { name: 'Fotoğraf çek' })).not.toBeInTheDocument();
+  });
+
+  it('müdüre tamamlanmış sevkiyatta itiraz kanıtı sunulur', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/sevkiyat/shp-0003');
+    expect(await screen.findByRole('button', { name: 'Fotoğraf çek' })).toBeInTheDocument();
+  });
 });

@@ -13,13 +13,24 @@ import { UploadButtons } from './UploadButtons';
 /** İrsaliye yalnızca tamamlama formundan, kendi akışıyla yüklenir. */
 const OWN_FLOW_TYPES: ReadonlySet<EvidenceType> = new Set(['WAYBILL']);
 
+/** Kalite itirazı fotoğrafı ve laboratuvar sonucu yalnızca tamamlanmış sevkiyata eklenir (sunucu da böyle denetler). */
+const CLAIM_TYPES: ReadonlySet<EvidenceType> = new Set(['QUALITY_CLAIM', 'LAB_RESULT']);
+
+export type EvidenceUploadProps = {
+  shipmentId: string;
+  /** Sevkiyat tamamlandı mı; değilse itiraz türleri sunulmaz. */
+  isCompleted: boolean;
+};
+
 /** Kullanıcının izni olan kanıt türleriyle fotoğraf/belge yükler; izni yoksa hiç görünmez. */
-export function EvidenceUpload({ shipmentId }: { shipmentId: string }) {
+export function EvidenceUpload({ shipmentId, isCompleted }: EvidenceUploadProps) {
   const { t } = useTranslation();
   const user = useCurrentUser();
   const allowed = Object.values(EVIDENCE_TYPES).filter(
     (type) =>
-      !OWN_FLOW_TYPES.has(type) && user.data?.permissions.includes(UPLOAD_PERMISSION_BY_TYPE[type]),
+      !OWN_FLOW_TYPES.has(type) &&
+      (isCompleted || !CLAIM_TYPES.has(type)) &&
+      user.data?.permissions.includes(UPLOAD_PERMISSION_BY_TYPE[type]),
   );
   const [selected, setSelected] = useState<EvidenceType>();
   const [problem, setProblem] = useState<FileProblem>();

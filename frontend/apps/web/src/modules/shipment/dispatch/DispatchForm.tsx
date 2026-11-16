@@ -28,6 +28,21 @@ function failureKey(error: unknown): string {
   return 'dispatch.submitFailed';
 }
 
+/** Tartı kaydedildi ama fotoğraf yüklenemedi: tartı tekrar girilemez, fiş dosyadan eklenir. */
+function PhotoFailedNotice({ onContinue }: { onContinue: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <Alert color="orange">
+      <Stack gap="xs">
+        <Text>{t('dispatch.photoFailed')}</Text>
+        <Button variant="default" w="fit-content" onClick={onContinue}>
+          {t('dispatch.continue')}
+        </Button>
+      </Stack>
+    </Alert>
+  );
+}
+
 export type DispatchFormProps = { shipmentId: string; onSaved: () => void };
 
 /** Depo çıkış tartısı: kantar fişi tek formda; net yalnızca brüt ve daradan hesaplanır. */
@@ -35,6 +50,7 @@ export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<DispatchDraft>(EMPTY_DISPATCH_DRAFT);
   const [error, setError] = useState<DispatchError>();
+  const [isPhotoMissing, setPhotoMissing] = useState(false);
   const mutation = useRecordDispatch(shipmentId);
   const weighing = parseDispatchWeighing(draft);
   const submit = () => {
@@ -42,7 +58,15 @@ export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
     setError(validation);
     const request = toDispatchRequest(draft);
     if (request !== undefined && draft.ticket !== undefined) {
-      mutation.mutate({ request, photo: draft.ticket }, { onSuccess: onSaved });
+      mutation.mutate(
+        { request, photo: draft.ticket },
+        {
+          onSuccess: (result) => {
+            if (result.photoUploaded) onSaved();
+            else setPhotoMissing(true);
+          },
+        },
+      );
     }
   };
   return (
@@ -78,9 +102,12 @@ export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
       )}
       {error !== undefined && <Alert color="red">{t(`dispatch.errors.${error}`)}</Alert>}
       {mutation.isError && <Alert color="red">{t(failureKey(mutation.error))}</Alert>}
-      <Button loading={mutation.isPending} onClick={submit}>
-        {t('dispatch.submit')}
-      </Button>
+      {isPhotoMissing && <PhotoFailedNotice onContinue={onSaved} />}
+      {!isPhotoMissing && (
+        <Button loading={mutation.isPending} onClick={submit}>
+          {t('dispatch.submit')}
+        </Button>
+      )}
     </Stack>
   );
 }

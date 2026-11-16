@@ -1,26 +1,29 @@
 import type { DispatchWeighingRequest } from '@iplik/api-client';
 import { recordDispatchWeighing, SHIPMENTS_PATH } from '@iplik/api-client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRef } from 'react';
 import { useUploadEvidence } from '@/modules/evidence';
 
 export type DispatchSubmission = { request: DispatchWeighingRequest; photo: File };
 
+/** `photoUploaded` yanlışsa tartı kaydedildi ama kantar fişi fotoğrafı yüklenemedi. */
+export type DispatchResult = { photoUploaded: boolean };
+
 /**
- * Çıkış tartısını kaydeder. Kantar fişi fotoğrafı ancak kayıt onaylanınca yüklenir (önce fotoğraf, sonra tartı);
- * tartı reddedilirse aynı fotoğraf yeniden yüklenmez. Başarıdan sonra sevkiyat yeniden okunur.
+ * Çıkış tartısını kaydeder. Fotoğraf yalnızca sunucu tartıyı kabul ettikten sonra (tüm kurallar geçince) yüklenir;
+ * reddedilen tartıda sisteme hiçbir şey gitmez. Başarıdan sonra sevkiyat yeniden okunur.
  */
 export function useRecordDispatch(shipmentId: string) {
   const queryClient = useQueryClient();
   const upload = useUploadEvidence(shipmentId);
-  const uploaded = useRef<File | undefined>(undefined);
   return useMutation({
-    mutationFn: async ({ request, photo }: DispatchSubmission) => {
-      if (uploaded.current !== photo) {
+    mutationFn: async ({ request, photo }: DispatchSubmission): Promise<DispatchResult> => {
+      await recordDispatchWeighing(shipmentId, request);
+      try {
         await upload.mutateAsync({ file: photo, evidenceType: 'DISPATCH_SCALE' });
-        uploaded.current = photo;
+        return { photoUploaded: true };
+      } catch {
+        return { photoUploaded: false };
       }
-      return recordDispatchWeighing(shipmentId, request);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [SHIPMENTS_PATH] }),
   });

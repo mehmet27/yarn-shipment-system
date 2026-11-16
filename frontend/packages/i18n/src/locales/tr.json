@@ -312,6 +312,8 @@
     "net": "Net: {{net}}",
     "submit": "Kaydet",
     "back": "Sevkiyata dön",
+    "photoFailed": "Çıkış tartısı kaydedildi ama kantar fişi fotoğrafı yüklenemedi. Sevkiyat dosyasındaki \"Fotoğraf ve belgeler\" bölümünden fişi yeniden ekleyin.",
+    "continue": "Sevkiyat dosyasına git",
     "submitFailed": "Çıkış tartısı kaydedilemedi. Lütfen tekrar deneyin.",
     "notDraft": "Bu sevkiyatın çıkış tartısı artık girilemez.",
     "inconsistent": "Tartı değerleri tutarsız: çuval sayısı, sevkiyata eklenen çuval sayısıyla aynı olmalı. Çuvalları ekleyip tekrar deneyin.",

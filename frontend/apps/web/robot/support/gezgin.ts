@@ -167,6 +167,10 @@ export async function sayfayiGez(
         }
       } else {
         const oncekiMetin = await sayfa.locator('main').innerText();
+        // Anahtar zaten açıksa tıklayınca kapanır (ör. Yetkiler ekranında rolün varsayılan izinleri):
+        // beklenen sonuç "işaretli" değil, "tıklamadan önceki durumun tersi"dir.
+        const oncekiIsaret =
+          oge.tur === 'anahtar' ? await ilk.isChecked().catch(() => undefined) : undefined;
         await ilk.click();
         await sayfa.waitForLoadState('networkidle');
         await sayfa.waitForTimeout(250);
@@ -180,13 +184,18 @@ export async function sayfayiGez(
             oge.tur === 'radyo'
               ? sayfa.getByRole('radio', { name: oge.ad, exact: true })
               : sayfa.getByLabel(oge.ad, { exact: true });
-          robot.kontrol(
-            `'${oge.ad}' seçilince işaretli olmalı`,
-            await girdi
-              .first()
-              .isChecked()
-              .catch(() => true),
-          );
+          const simdi = await girdi
+            .first()
+            .isChecked()
+            .catch(() => undefined);
+          if (oge.tur === 'anahtar' && oncekiIsaret !== undefined) {
+            robot.kontrol(
+              `'${oge.ad}' tıklanınca durumu değişmeli (${oncekiIsaret ? 'açıktı, kapanmalı' : 'kapalıydı, açılmalı'})`,
+              simdi === !oncekiIsaret,
+            );
+          } else {
+            robot.kontrol(`'${oge.ad}' seçilince işaretli olmalı`, simdi ?? true);
+          }
         } else if (/sayfa$/.test(oge.ad)) {
           robot.kontrol(
             `'${oge.ad}' liste içeriğini değiştirmeli`,

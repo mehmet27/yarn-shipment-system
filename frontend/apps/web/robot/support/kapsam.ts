@@ -26,6 +26,8 @@ export const KAPSANAN: Record<string, string> = {
   '/panel/kullanicilar|Göster': '16-sifre-talebi-ve-oturum',
   '/panel/sevkiyat/<id>|Tarihi değiştir': '15-sevkiyat-tarihi',
   '/panel/sevkiyat/<id>|Listeye ekle': '03-akis, 09',
+  '/panel/sevkiyat/<id>|Çıkış tartısını gir':
+    '15-sevkiyat-tarihi, 18-sadelestirme (çuval yokken pasif düğme)',
   '/panel/sevkiyat/<id>|Çuvalları ekle': '03-akis, 09',
   '/panel/sevkiyat/<id>|Sevkiyattan çıkar': '09-sevkiyat-islemleri',
   '/panel/sevkiyat/<id>|Kumaş girişini kaydet': '03-akis, 09',

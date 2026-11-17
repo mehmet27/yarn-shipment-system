@@ -9,12 +9,9 @@ import com.yarnshipment.shipment.application.port.in.weight.ResolveWeightMismatc
 import com.yarnshipment.shipment.application.port.out.WeightDecisionPort;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.InvalidWeightDecisionException;
-import com.yarnshipment.shipment.domain.model.Recipe;
 import com.yarnshipment.shipment.domain.model.Shipment;
-import com.yarnshipment.shipment.domain.model.ShipmentDispatched;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
-import com.yarnshipment.shipment.domain.model.Weighing;
-import java.math.BigDecimal;
+import com.yarnshipment.shipment.domain.model.WeightDecision;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
@@ -23,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Kantar uyuşmazlığındaki sevkiyata müdür karar verir (süreç analizi 5.4): iptal (çuvallar serbest kalır), çuval
- * ekle/çıkar (taslağa döner) ya da reçeteyi tartıya eşitle (yola çıkar). Gerekçe zorunludur.
+ * ekle/çıkar (taslağa döner). Gerekçe zorunludur. Reçete güncelleme tartı kontrolü istediği için ayrı use case'tedir.
  */
 @Service
 public class ResolveWeightMismatchService implements ResolveWeightMismatchUseCase {
@@ -58,6 +55,9 @@ public class ResolveWeightMismatchService implements ResolveWeightMismatchUseCas
         if (shipment.status() != ShipmentStatus.WEIGHT_MISMATCH) {
             throw new InvalidShipmentStatusException(shipment.id(), shipment.status(), ShipmentStatus.DRAFT);
         }
+        if (command.decision() == WeightDecision.UPDATE_RECIPE) {
+            throw new InvalidWeightDecisionException("decision", "use recipe update");
+        }
         Instant now = clock.instant();
         UUID actorId = actor.userId();
         WeightDecisionPort.Audit audit = new WeightDecisionPort.Audit(actorId, now);
@@ -67,27 +67,7 @@ public class ResolveWeightMismatchService implements ResolveWeightMismatchUseCas
                 cancelShipment.cancelShipment(
                         new CancelShipmentCommand(actor, shipment.id(), reason, UUID.randomUUID()));
             case ADD_REMOVE_BAGS -> decisionPort.backToDraft(shipment.id(), reason, audit);
-            case UPDATE_RECIPE -> acceptRecipe(shipment, reason, audit);
+            case UPDATE_RECIPE -> throw new IllegalStateException("handled above");
         }
-    }
-
-    private void acceptRecipe(Shipment shipment, String reason, WeightDecisionPort.Audit audit) {
-        Weighing weighing = shipment.dispatchWeighing();
-        if (weighing == null || shipment.lines().isEmpty()) {
-            throw new InvalidWeightDecisionException("recipe", "no weighing or recipe lines");
-        }
-        BigDecimal measured = weighing.netKg();
-        ShipmentDispatched event = new ShipmentDispatched(
-                shipment.id(),
-                shipment.siteId(),
-                shipment.subcontractorId(),
-                weighing.bagCount(),
-                measured,
-                audit.at());
-        decisionPort.acceptRecipe(
-                new WeightDecisionPort.RecipeAcceptance(
-                        shipment.id(), Recipe.scaleTo(shipment.lines(), measured), measured, event),
-                reason,
-                audit);
     }
 }

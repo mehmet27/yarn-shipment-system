@@ -27,6 +27,21 @@ describe('ShipmentFilePage', () => {
     expect(screen.getByText('Çıkış tartısı henüz girilmedi')).toBeInTheDocument();
   });
 
+  it('taslakta merkez stok yetmiyorsa uyarı çıkar ve kapatılabilir', async () => {
+    renderApp('/panel/sevkiyat/shp-0001');
+    const notice = await screen.findByTestId('stock-notice');
+    expect(notice).toHaveTextContent('Merkez depoda iplik yetmiyor');
+    expect(notice).toHaveTextContent('36/1 Viskon: depoda 0 kg, 1.500 kg eksik.');
+    await userEvent.click(within(notice).getByRole('button', { name: 'Uyarıyı kapat' }));
+    expect(screen.queryByTestId('stock-notice')).not.toBeInTheDocument();
+  });
+
+  it('yola çıkmış sevkiyatta merkez stok kartı görünmez', async () => {
+    renderApp('/panel/sevkiyat/shp-0007');
+    await screen.findByRole('heading', { name: 'SVK-2026-0007' });
+    expect(screen.queryByTestId('stock-notice')).not.toBeInTheDocument();
+  });
+
   it('olmayan sevkiyatta bulunamadı uyarısı gösterir', async () => {
     renderApp('/panel/sevkiyat/yok');
     expect(await screen.findByRole('alert')).toHaveTextContent('Aradığınız sayfa bulunamadı.');

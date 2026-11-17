@@ -1,8 +1,7 @@
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { WaybillUpload } from '@/modules/evidence';
-import { StockShortfallAlert } from './StockShortfallAlert';
-import { Alert, Button, Paper, Stack, Text, TextInput } from '@iplik/ui';
+import { Alert, Button, Icon, SectionCard, Stack, Text, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useCompleteShipment } from '../hooks/useCompleteShipment';
 
@@ -29,16 +28,18 @@ export function CompleteShipmentForm({ shipmentId }: { shipmentId: string }) {
   const [evidenceId, setEvidenceId] = useState<string>();
   const mutation = useCompleteShipment(shipmentId);
   const trimmed = waybillNo.trim();
-  const problem = mutation.isError ? toProblem(mutation.error) : undefined;
-  const shortfalls = problem?.code === 'CENTRAL_STOCK_SHORTFALL' ? problem.shortfalls : undefined;
-  const submit = (acceptStockShortage: boolean) => {
+  // Merkez stok yetmezse eksiği sistem girer; müdürü bekletmez (uyarı sevkiyat oluştururken verilir).
+  const submit = () => {
     if (evidenceId === undefined) return;
-    mutation.mutate({ waybillNo: trimmed, waybillEvidenceId: evidenceId, acceptStockShortage });
+    mutation.mutate({
+      waybillNo: trimmed,
+      waybillEvidenceId: evidenceId,
+      acceptStockShortage: true,
+    });
   };
   return (
-    <Paper withBorder p="md" maw={560}>
-      <Stack>
-        <Text fw={600}>{t('shipment.complete.title')}</Text>
+    <SectionCard title={t('shipment.complete.title')} icon="check" tone="success">
+      <Stack maw={560}>
         <Text size="sm" c="dimmed">
           {t('shipment.complete.hint')}
         </Text>
@@ -52,29 +53,19 @@ export function CompleteShipmentForm({ shipmentId }: { shipmentId: string }) {
             setWaybillNo(event.currentTarget.value);
           }}
         />
-        {mutation.isError && shortfalls !== undefined && (
-          <StockShortfallAlert
-            shortfalls={shortfalls}
-            loading={mutation.isPending}
-            onConfirm={() => {
-              submit(true);
-            }}
-          />
-        )}
-        {mutation.isError && shortfalls === undefined && (
+        {mutation.isError && (
           <Alert color="red">{t(completeErrorKey(toProblem(mutation.error).code))}</Alert>
         )}
         <Button
           w="fit-content"
+          leftSection={<Icon name="check" />}
           disabled={trimmed === '' || evidenceId === undefined}
           loading={mutation.isPending}
-          onClick={() => {
-            submit(false);
-          }}
+          onClick={submit}
         >
           {t('shipment.complete.confirm')}
         </Button>
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }

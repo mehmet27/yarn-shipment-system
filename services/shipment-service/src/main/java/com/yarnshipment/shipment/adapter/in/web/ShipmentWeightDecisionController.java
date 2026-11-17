@@ -2,9 +2,12 @@ package com.yarnshipment.shipment.adapter.in.web;
 
 import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.shipment.adapter.in.web.api.ShipmentWeightDecisionApi;
+import com.yarnshipment.shipment.adapter.in.web.api.model.UpdateRecipeRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.WeightDecisionRequest;
 import com.yarnshipment.shipment.application.port.in.weight.ResolveWeightMismatchCommand;
 import com.yarnshipment.shipment.application.port.in.weight.ResolveWeightMismatchUseCase;
+import com.yarnshipment.shipment.application.port.in.weight.UpdateRecipeCommand;
+import com.yarnshipment.shipment.application.port.in.weight.UpdateRecipeUseCase;
 import com.yarnshipment.shipment.domain.model.WeightDecision;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -16,11 +19,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class ShipmentWeightDecisionController implements ShipmentWeightDecisionApi {
 
     private final ResolveWeightMismatchUseCase resolveUseCase;
+    private final UpdateRecipeUseCase recipeUseCase;
     private final CurrentActorProvider currentActorProvider;
 
     public ShipmentWeightDecisionController(
-            ResolveWeightMismatchUseCase resolveUseCase, CurrentActorProvider currentActorProvider) {
+            ResolveWeightMismatchUseCase resolveUseCase,
+            UpdateRecipeUseCase recipeUseCase,
+            CurrentActorProvider currentActorProvider) {
         this.resolveUseCase = resolveUseCase;
+        this.recipeUseCase = recipeUseCase;
         this.currentActorProvider = currentActorProvider;
     }
 
@@ -31,6 +38,17 @@ public class ShipmentWeightDecisionController implements ShipmentWeightDecisionA
                 currentActorProvider.getCurrentActor(),
                 shipmentId,
                 WeightDecision.valueOf(request.getDecision().name()),
+                request.getReason()));
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('SHIPMENT_CANCEL')")
+    public ResponseEntity<Void> updateRecipeAndDispatch(UUID shipmentId, UpdateRecipeRequest request) {
+        recipeUseCase.updateRecipe(new UpdateRecipeCommand(
+                currentActorProvider.getCurrentActor(),
+                shipmentId,
+                ShipmentCreations.lines(request.getLines()),
                 request.getReason()));
         return ResponseEntity.noContent().build();
     }

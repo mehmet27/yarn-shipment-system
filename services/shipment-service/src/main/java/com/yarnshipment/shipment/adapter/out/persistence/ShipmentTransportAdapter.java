@@ -19,7 +19,7 @@ final class ShipmentTransportAdapter implements ShipmentTransportPort {
             SET driver_id = coalesce(:driverId, driver_id), driver_name = coalesce(:driverName, driver_name),
                 vehicle_id = coalesce(:vehicleId, vehicle_id), plate_no = coalesce(:plateNo, plate_no),
                 updated_at = :at, updated_by = :actor, version = version + 1
-            WHERE id = :id AND status IN ('DRAFT', 'WEIGHT_MISMATCH', 'AWAITING_DELIVERY')""";
+            WHERE id = :id AND status = 'DRAFT'""";
 
     private final JdbcClient jdbc;
 

@@ -154,7 +154,8 @@
       "errors": {
         "INVALID_SHIPMENT_STATUS": "Tamamlanmış sevkiyat iptal edilemez.",
         "unknown": "Sevkiyat iptal edilemedi. Lütfen tekrar deneyin."
-      }
+      },
+      "title": "Sevkiyatı iptal et"
     },
     "file": {
       "tabs": {
@@ -273,12 +274,6 @@
       "waybillUploaded": "İrsaliye yüklendi",
       "waybillNo": "İrsaliye no",
       "confirm": "Sevkiyatı tamamla",
-      "shortfall": {
-        "title": "Merkez depoda iplik stoğu yetmiyor",
-        "item": "{{yarn}}: {{kg}} eksik",
-        "advice": "Doğru yol: depo kullanıcısı önce 'Merkeze iplik girişi' yapar. Mal doğrudan tedarikçiden gidiyorsa sevkiyatı 'Kapıdan aktarma' olarak oluşturun. Yine de tamamlarsanız eksik kilo kadar merkeze sistem girişi yazılır ve stok eksiye düşmez.",
-        "confirm": "Yine de tamamla (eksiği sistem girsin)"
-      },
       "errors": {
         "INVALID_SHIPMENT_STATUS": "Sevkiyat tamamlanabilecek durumda değil; önce çıkış tartısı girilmeli.",
         "INVALID_COMPLETION": "İrsaliye numarası geçersiz.",
@@ -288,24 +283,26 @@
       }
     },
     "weightDecision": {
-      "title": "Müdür kararı",
+      "title": "Müdür kararı: bu sevkiyat için ne yapılsın?",
       "decision": "Karar",
       "reason": "Gerekçe",
       "submit": "Kararı kaydet",
       "options": {
-        "CANCEL": "İptal et",
-        "ADD_REMOVE_BAGS": "Çuval ekle-çıkar",
-        "UPDATE_RECIPE": "İplik listesini güncelle"
+        "ADD_REMOVE_BAGS": "Çuval ekle / çıkar",
+        "UPDATE_RECIPE": "İplik güncelle",
+        "CANCEL": "Sevkiyatı iptal et"
       },
       "hints": {
-        "CANCEL": "Sevkiyat iptal olur, çuvallar serbest kalır.",
         "ADD_REMOVE_BAGS": "Sevkiyat taslağa döner; depo çuvalları düzeltip yeniden tartar.",
-        "UPDATE_RECIPE": "İplik listesindeki kilo tartıya eşitlenir ve sevkiyat yola çıkar."
+        "UPDATE_RECIPE": "İplik listesini tartıya göre düzeltirsiniz. Kilolar tutunca sevkiyat yola çıkar.",
+        "CANCEL": "Sevkiyat iptal olur, çuvallar serbest kalır."
       },
       "errors": {
         "INVALID_SHIPMENT_STATUS": "Sevkiyat artık kantar uyuşmazlığında değil.",
         "unknown": "Karar kaydedilemedi. Lütfen tekrar deneyin."
-      }
+      },
+      "subtitle": "Tartı ile iplik listesi tutmadı; yola çıkmadan önce bir yol seçin.",
+      "goRecipe": "İplik listesini düzelt"
     },
     "managerNote": {
       "title": "Müdürün isteği",
@@ -331,7 +328,8 @@
       "errors": {
         "INVALID_SHIPMENT_STATUS": "Şoför ve araç yalnızca tamamlanmamış sevkiyatta değişir.",
         "unknown": "Şoför ve araç güncellenemedi. Lütfen tekrar deneyin."
-      }
+      },
+      "title": "Şoför ve araç"
     },
     "schedule": {
       "open": "Tarihi değiştir",
@@ -342,7 +340,8 @@
         "INVALID_SHIPMENT_STATUS": "Sevkiyat tarihi yalnızca taslak sevkiyatta değişir.",
         "INVALID_SHIPMENT": "Sevkiyat tarihi bugünden önce olamaz.",
         "unknown": "Tarih güncellenemedi. Lütfen tekrar deneyin."
-      }
+      },
+      "title": "Sevkiyat tarihi"
     }
   },
   "dispatch": {
@@ -1528,6 +1527,38 @@
       "USER_MANAGE": "Kullanıcılar ekranı",
       "SETTINGS_MANAGE": "Görünüm ve kural ayarları",
       "PERMISSION_MANAGE": "Yetkiler ekranı"
+    }
+  },
+  "stockNotice": {
+    "okTitle": "Merkez depoda iplik yeterli",
+    "line": "Depoda {{stock}} · gereken {{needed}}",
+    "shortTitle": "Merkez depoda iplik yetmiyor",
+    "shortItem": "{{yarn}}: depoda {{stock}}, {{missing}} eksik.",
+    "advice": "Sevkiyatı yine de oluşturabilirsiniz; eksik kadar iplik, sevkiyat tamamlanınca merkez depoya sistem tarafından girilir.",
+    "close": "Uyarıyı kapat"
+  },
+  "recipeEdit": {
+    "title": "İplik listesini düzelt",
+    "back": "Sevkiyata dön",
+    "notMismatch": "Bu sevkiyat artık kantar uyuşmazlığında değil.",
+    "linesTitle": "İplik listesi",
+    "linesHint": "Kayıtlı satırlar silinmez, kilosu değiştirilir. Gerekirse yeni satır ekleyin.",
+    "reasonTitle": "Neden değişti?",
+    "reason": "Gerekçe",
+    "submit": "Kaydet ve yola çıkar",
+    "status": {
+      "measured": "Tartılan",
+      "recipe": "İplik listesi toplamı",
+      "diff": "Fark",
+      "fits": "Kilolar tuttu, sevkiyat yola çıkabilir",
+      "notFits": "Kilolar henüz tutmuyor",
+      "fitsHint": "Kaydedince sevkiyat fasoncuya yola çıkar.",
+      "notFitsHint": "İplik listesinin toplamı tartıya uymalı (en çok {{tolerance}} fark olabilir). Kilolar tutmadan kaydedilmez."
+    },
+    "errors": {
+      "RECIPE_WEIGHT_MISMATCH": "Kilolar tartıyı tutmuyor; hiçbir şey kaydedilmedi. İplik kilolarını düzeltip tekrar deneyin.",
+      "INVALID_SHIPMENT_STATUS": "Sevkiyat artık kantar uyuşmazlığında değil.",
+      "unknown": "İplik listesi kaydedilemedi. Lütfen tekrar deneyin."
     }
   }
 }

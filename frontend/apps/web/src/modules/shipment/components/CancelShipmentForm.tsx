@@ -1,6 +1,6 @@
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Paper, Stack, TextInput } from '@iplik/ui';
+import { Alert, Button, Group, Icon, SectionCard, Stack, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useCancelShipment } from '../hooks/useCancelShipment';
 
@@ -24,6 +24,7 @@ export function CancelShipmentForm({ shipmentId }: { shipmentId: string }) {
         color="red"
         variant="outline"
         w="fit-content"
+        leftSection={<Icon name="stop" />}
         onClick={() => {
           setIsOpen(true);
         }}
@@ -33,7 +34,7 @@ export function CancelShipmentForm({ shipmentId }: { shipmentId: string }) {
     );
   }
   return (
-    <Paper withBorder p="sm">
+    <SectionCard title={t('shipment.cancel.title')} icon="stop" tone="danger">
       <Stack>
         <TextInput
           label={t('shipment.cancel.reason')}
@@ -49,6 +50,7 @@ export function CancelShipmentForm({ shipmentId }: { shipmentId: string }) {
         <Group>
           <Button
             color="red"
+            leftSection={<Icon name="stop" />}
             disabled={reason.trim() === ''}
             loading={mutation.isPending}
             onClick={() => {
@@ -67,6 +69,6 @@ export function CancelShipmentForm({ shipmentId }: { shipmentId: string }) {
           </Button>
         </Group>
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }

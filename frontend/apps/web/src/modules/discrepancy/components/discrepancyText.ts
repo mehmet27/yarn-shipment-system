@@ -1,4 +1,4 @@
-import { formatKg, isKilogram } from '@iplik/units';
+import { formatKgText } from '@iplik/units';
 import type { DiscrepancyView } from '@iplik/api-client';
 import { formatDifference } from './formatDifference';
 
@@ -15,20 +15,16 @@ export function ruleLabel(t: Translate, ruleCode: string): string {
 const WEIGHING_PATTERN = /^gross=(\S+) tare=(\S+) net=(\S+)$/;
 const WEIGHING_PARTS = ['shipment.file.gross', 'shipment.file.tare', 'shipment.file.net'];
 
-function kgText(value: string): string {
-  return isKilogram(value) ? formatKg(value) : value;
-}
-
 /** Kuralın ürettiği beklenen/gerçek değeri okunur yazar: kilo "1.000,5 kg", tartı "Brüt … · Dara …". */
 export function formatFactValue(t: Translate, value: string | undefined): string | undefined {
   if (value === undefined) return undefined;
   const weighing = WEIGHING_PATTERN.exec(value);
   if (weighing !== null) {
     return WEIGHING_PARTS.map(
-      (key, index) => `${t(key)} ${kgText(weighing[index + 1] ?? '')}`,
+      (key, index) => `${t(key)} ${formatKgText(weighing[index + 1] ?? '')}`,
     ).join(' · ');
   }
-  return value.includes('.') ? kgText(value) : value;
+  return value.includes('.') ? formatKgText(value) : value;
 }
 
 /** Beklenen/gerçek değer özeti; ikisi de yoksa boş. */

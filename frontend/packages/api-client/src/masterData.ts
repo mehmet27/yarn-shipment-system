@@ -57,6 +57,7 @@ export type {
 export {
   cancelShipment,
   decideWeightMismatch,
+  updateRecipeAndDispatch,
   getShipmentSettings,
   saveShipmentSettings,
   updateShipmentDate,
@@ -71,6 +72,8 @@ export type {
   WeightCheckView,
   WeightDecisionKind,
   WeightDecisionRequest,
+  WeightDecisionChoice,
+  UpdateRecipeRequest,
 } from './generated/shipmentService';
 export { CorrectionTarget, listCorrections, recordCorrection } from './generated/shipmentService';
 export type {

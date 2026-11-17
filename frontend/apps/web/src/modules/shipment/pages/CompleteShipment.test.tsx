@@ -39,7 +39,7 @@ describe('İrsaliyeyle tamamlama', () => {
     expect(screen.queryByRole('button', { name: 'Sevkiyatı tamamla' })).not.toBeInTheDocument();
   });
 
-  it('merkez stok yetmiyorsa uyarı çıkar, müdür onaylayınca sevkiyat tamamlanır', async () => {
+  it('merkez stok yetmese de sevkiyat uyarısız tamamlanır (eksiği sistem girer)', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp(AWAITING_FILE);
     const [fileInput] = await screen.findAllByTestId('upload-file-input');
@@ -48,11 +48,7 @@ describe('İrsaliyeyle tamamlama', () => {
     await screen.findByText('İrsaliye yüklendi');
     await userEvent.type(screen.getByLabelText(/İrsaliye no/), 'STOKYOK-1');
     await userEvent.click(screen.getByRole('button', { name: 'Sevkiyatı tamamla' }));
-    const warning = await screen.findByTestId('stock-shortfall');
-    expect(warning).toHaveTextContent('Pamuk 20/1: 100 kg eksik');
-    expect(warning).toHaveTextContent('Merkeze iplik girişi');
-    expect(warning).toHaveTextContent('Kapıdan aktarma');
-    await userEvent.click(screen.getByRole('button', { name: /Yine de tamamla/ }));
     expect(await screen.findByTestId('shipment-status')).toHaveTextContent('Tamamlandı');
+    expect(screen.queryByTestId('stock-shortfall')).not.toBeInTheDocument();
   });
 });

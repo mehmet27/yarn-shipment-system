@@ -22,16 +22,7 @@ final class ShipmentCreations {
 
     static CreateShipmentCommand toCommand(Actor actor, UUID idempotencyKey, CreateShipmentRequest request) {
         ShipmentParties parties = parties(request);
-        List<RecipeLine> lines = new ArrayList<>();
-        for (RecipeLineInput input : request.getLines()) {
-            lines.add(new RecipeLine(
-                    lines.size() + 1,
-                    input.getYarnTypeId(),
-                    input.getYarnTypeText(),
-                    input.getLotId(),
-                    new BigDecimal(input.getNetKg()),
-                    orderSpec(input)));
-        }
+        List<RecipeLine> lines = lines(request.getLines());
         BigDecimal fireRate = request.getFireRate() == null ? null : new BigDecimal(request.getFireRate());
         return new CreateShipmentCommand(
                 actor,
@@ -42,6 +33,21 @@ final class ShipmentCreations {
                 lines,
                 fireRate,
                 request.getShipmentDate());
+    }
+
+    /** Reçete satırı girdilerini sıraya göre numaralı satırlara çevirir. */
+    static List<RecipeLine> lines(List<RecipeLineInput> inputs) {
+        List<RecipeLine> lines = new ArrayList<>();
+        for (RecipeLineInput input : inputs) {
+            lines.add(new RecipeLine(
+                    lines.size() + 1,
+                    input.getYarnTypeId(),
+                    input.getYarnTypeText(),
+                    input.getLotId(),
+                    new BigDecimal(input.getNetKg()),
+                    orderSpec(input)));
+        }
+        return lines;
     }
 
     private static ShipmentParties parties(CreateShipmentRequest request) {

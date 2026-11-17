@@ -9,6 +9,13 @@ import { UpdateShipmentDateForm } from './UpdateShipmentDateForm';
 import { UpdateShipmentTransportForm } from './UpdateShipmentTransportForm';
 import { WeightDecisionForm } from './WeightDecisionForm';
 
+/** Kantar uyuşmazlığında iptal, karar kartlarındadır; aynı işlem iki yerde durmaz. */
+function withoutDuplicateCancel(actions: readonly ShipmentAction[]): readonly ShipmentAction[] {
+  return actions.includes('RESOLVE_WEIGHT_MISMATCH')
+    ? actions.filter((action) => action !== 'CANCEL')
+    : actions;
+}
+
 /** Sevkiyat dosyasındaki eylemler; yalnızca `allowedActions` listesindekiler görünür (FE-SEC-03). */
 export function ShipmentFileActions({
   shipmentId,
@@ -26,6 +33,7 @@ export function ShipmentFileActions({
   actions: readonly ShipmentAction[];
 }) {
   const { t } = useTranslation();
+  const shown = withoutDuplicateCancel(actions);
   const canRecordDispatch = actions.includes('RECORD_DISPATCH');
   // Çuval eklenmeden tartı girilemez (çuval sayısı eşleşmeli); liste yüklenene kadar düğme açık kalır.
   const bags = useShipmentBags(shipmentId, canRecordDispatch);
@@ -61,7 +69,7 @@ export function ShipmentFileActions({
           plateNo={plateNo}
         />
       )}
-      {actions.includes('CANCEL') && <CancelShipmentForm shipmentId={shipmentId} />}
+      {shown.includes('CANCEL') && <CancelShipmentForm shipmentId={shipmentId} />}
     </>
   );
 }

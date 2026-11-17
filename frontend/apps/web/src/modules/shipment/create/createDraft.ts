@@ -230,6 +230,13 @@ function toRecipeLine(line: RecipeLineDraft): RecipeLineInput | undefined {
   };
 }
 
+/** Tüm satırlar geçerliyse istek satırları; biri geçersizse undefined. */
+export function toRecipeInputs(lines: readonly RecipeLineDraft[]): RecipeLineInput[] | undefined {
+  const inputs = lines.map(toRecipeLine);
+  if (inputs.length === 0 || inputs.some((input) => input === undefined)) return undefined;
+  return inputs.filter((input): input is RecipeLineInput => input !== undefined);
+}
+
 /** Boş tedarikçi "merkez stoktan" demektir; istekte hiç yer almaz. */
 function directTransferFields(draft: CreateDraft): Partial<CreateShipmentRequest> {
   if (draft.sourceKind !== 'DIRECT') return {};

@@ -48,22 +48,22 @@ class UpdateShipmentTransportServiceTest {
     }
 
     @Test
-    @DisplayName("Müdür tamamlanmamış sevkiyatın şoför ve/veya aracını değiştirir; verilmeyen değişmez")
-    void shouldUpdateOpenShipments() {
-        for (ShipmentStatus status :
-                List.of(ShipmentStatus.DRAFT, ShipmentStatus.WEIGHT_MISMATCH, ShipmentStatus.AWAITING_DELIVERY)) {
-            serviceFor(status).updateShipmentTransport(command("Ali Veli", "34 ABC 123"));
-        }
+    @DisplayName("Müdür taslak sevkiyatın şoför ve/veya aracını değiştirir; verilmeyen değişmez")
+    void shouldUpdateDraftShipments() {
+        serviceFor(ShipmentStatus.DRAFT).updateShipmentTransport(command("Ali Veli", "34 ABC 123"));
         serviceFor(ShipmentStatus.DRAFT).updateShipmentTransport(command("Ali Veli", null));
 
-        assertThat(written)
-                .containsExactly("Ali Veli/34 ABC 123", "Ali Veli/34 ABC 123", "Ali Veli/34 ABC 123", "Ali Veli/null");
+        assertThat(written).containsExactly("Ali Veli/34 ABC 123", "Ali Veli/null");
     }
 
     @Test
-    @DisplayName("Tamamlanmış ve iptal edilmiş sevkiyat değişmez")
+    @DisplayName("Taslak dışındaki sevkiyatın şoför ve aracı değişmez")
     void shouldRejectClosedShipments() {
-        for (ShipmentStatus status : List.of(ShipmentStatus.COMPLETED, ShipmentStatus.CANCELLED)) {
+        for (ShipmentStatus status : List.of(
+                ShipmentStatus.WEIGHT_MISMATCH,
+                ShipmentStatus.AWAITING_DELIVERY,
+                ShipmentStatus.COMPLETED,
+                ShipmentStatus.CANCELLED)) {
             UpdateShipmentTransportService service = serviceFor(status);
             assertThatThrownBy(() -> service.updateShipmentTransport(command("Ali Veli", "34 ABC 123")))
                     .isInstanceOf(InvalidShipmentStatusException.class);

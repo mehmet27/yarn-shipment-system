@@ -46,13 +46,9 @@ test('Sevkiyat tarihi: müdür tarih girer, depo tarih gelmeden işlem yapamaz',
       'çıkış tartısı düğmesi görünmemeli',
       (await depo.sayfa.getByRole('link', { name: 'Çıkış tartısını gir' }).count()) === 0,
     );
-    await expect(
-      depo.sayfa.getByText(/Çıkış fotoğrafı, sevkiyat tarihi gelmeden eklenemez/),
-    ).toBeVisible();
     depo.kontrol(
-      'tarih gelmeden: fotoğraf çek ve dosya seç düğmeleri pasif olmalı',
-      (await depo.sayfa.getByRole('button', { name: 'Fotoğraf çek' }).isDisabled()) &&
-        (await depo.sayfa.getByRole('button', { name: 'Dosya seç' }).isDisabled()),
+      'çıkış tartısı girilmeden fotoğraf çek ve dosya seç düğmeleri görünmemeli',
+      (await depo.sayfa.getByRole('button', { name: 'Fotoğraf çek' }).count()) === 0,
     );
     await depo.sayfa.goto(`/panel/sevkiyat/${id}/cikis`);
     await expect(depo.sayfa.getByText(/Bu tarihten önce çuval atanamaz/)).toBeVisible();
@@ -129,11 +125,12 @@ test('Sevkiyat tarihi: müdür tarih girer, depo tarih gelmeden işlem yapamaz',
   );
 
   await depo.adim(
-    'tarih bugüne alındı: tarih uyarısı kalkar, çuvalsız tartı düğmesi pasif kalır',
+    'tarih bugüne alındı: tarih uyarısı kalkar, çuvalsız tartı düğmesi görünmez',
     async () => {
       await depo.sayfa.goto(`/panel/sevkiyat/${id}`);
       await expect(depo.sayfa.getByText(/Bu tarihten önce çuval atanamaz/)).toHaveCount(0);
-      await expect(depo.sayfa.getByRole('button', { name: 'Çıkış tartısını gir' })).toBeDisabled();
+      await expect(depo.sayfa.getByRole('button', { name: 'Çıkış tartısını gir' })).toHaveCount(0);
+      await expect(depo.sayfa.getByRole('link', { name: 'Çıkış tartısını gir' })).toHaveCount(0);
     },
   );
 

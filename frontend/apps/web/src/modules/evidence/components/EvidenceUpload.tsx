@@ -1,6 +1,6 @@
 import type { EvidenceType } from '@iplik/api-client';
 import { EvidenceType as EVIDENCE_TYPES } from '@iplik/api-client';
-import { todayIsoDate, useTranslation } from '@iplik/i18n';
+import { useTranslation } from '@iplik/i18n';
 import { Alert, Paper, Select, Stack, Title } from '@iplik/ui';
 import { useState } from 'react';
 import { useCurrentUser } from '@/modules/auth';
@@ -8,7 +8,6 @@ import { useUploadEvidence } from '../hooks/useUploadEvidence';
 import { ACCEPTED_MIME_TYPES, fileProblem, UPLOAD_PERMISSION_BY_TYPE } from '../uploadTypes';
 import type { FileProblem } from '../uploadTypes';
 import { uploadErrorKey } from '../uploadErrors';
-import { NotDueAlert } from './NotDueAlert';
 import { UploadButtons } from './UploadButtons';
 
 /** İrsaliye yalnızca tamamlama formundan, kendi akışıyla yüklenir. */
@@ -21,27 +20,23 @@ function soleType(allowed: readonly EvidenceType[]): EvidenceType | undefined {
   return allowed.length === 1 ? allowed[0] : undefined;
 }
 
-/** Depo çıkış fotoğrafı sevkiyat gününden önce yüklenemez. */
-function isDispatchPhotoTooEarly(type: EvidenceType | undefined, shipmentDate: string): boolean {
-  return type === 'DISPATCH_SCALE' && shipmentDate > todayIsoDate();
-}
-
 export type EvidenceUploadProps = {
   shipmentId: string;
   /** Sevkiyat tamamlandı mı; değilse itiraz türleri sunulmaz. */
   isCompleted: boolean;
-  /** Sevkiyat günü (YYYY-AA-GG); gün gelmeden çıkış fotoğrafı yüklenemez (sunucu da böyle denetler). */
-  shipmentDate: string;
+  /** Çıkış tartısı girildi mi; kantar fişi fotoğrafı tartıyla birlikte yüklendiği için önce bu türü sunmayız. */
+  isDispatched: boolean;
 };
 
 /** Kullanıcının izni olan kanıt türleriyle fotoğraf/belge yükler; izni yoksa hiç görünmez. */
-export function EvidenceUpload({ shipmentId, isCompleted, shipmentDate }: EvidenceUploadProps) {
+export function EvidenceUpload({ shipmentId, isCompleted, isDispatched }: EvidenceUploadProps) {
   const { t } = useTranslation();
   const user = useCurrentUser();
   const allowed = Object.values(EVIDENCE_TYPES).filter(
     (type) =>
       !OWN_FLOW_TYPES.has(type) &&
       (isCompleted || !CLAIM_TYPES.has(type)) &&
+      (isDispatched || type !== 'DISPATCH_SCALE') &&
       user.data?.permissions.includes(UPLOAD_PERMISSION_BY_TYPE[type]),
   );
   const [selected, setSelected] = useState<EvidenceType>();
@@ -50,7 +45,6 @@ export function EvidenceUpload({ shipmentId, isCompleted, shipmentDate }: Eviden
   // Tek seçenek varsa o seçilidir; birden çoksa yanlış türde yükleme olmasın diye kullanıcı kendisi seçer.
   const evidenceType = selected ?? soleType(allowed);
   if (allowed.length === 0) return null;
-  const isNotDue = isDispatchPhotoTooEarly(evidenceType, shipmentDate);
   const upload = (file: File | null) => {
     if (file === null || evidenceType === undefined) return;
     const found = fileProblem(file, ACCEPTED_MIME_TYPES);
@@ -73,10 +67,9 @@ export function EvidenceUpload({ shipmentId, isCompleted, shipmentDate }: Eviden
         />
         <UploadButtons
           isLoading={mutation.isPending}
-          isDisabled={evidenceType === undefined || isNotDue}
+          isDisabled={evidenceType === undefined}
           onPick={upload}
         />
-        {isNotDue && <NotDueAlert />}
         {problem !== undefined && <Alert color="red">{t(`evidence.errors.${problem}`)}</Alert>}
         {mutation.isError && <Alert color="red">{t(uploadErrorKey(mutation.error))}</Alert>}
         {mutation.isSuccess && <Alert color="green">{t('evidence.done')}</Alert>}

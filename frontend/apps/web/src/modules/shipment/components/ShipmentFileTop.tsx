@@ -34,7 +34,7 @@ export function ShipmentFileTop({ shipment }: { shipment: ShipmentDetail }) {
       <EvidenceUpload
         shipmentId={shipment.shipmentId}
         isCompleted={isCompleted(shipment)}
-        shipmentDate={shipment.shipmentDate}
+        isDispatched={shipment.status !== 'DRAFT'}
       />
     </>
   );

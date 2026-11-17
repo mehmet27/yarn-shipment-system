@@ -714,7 +714,6 @@
       "scaleTicket": "Kantar fişi",
       "waybill": "İrsaliye"
     },
-    "notDue": "Çıkış fotoğrafı, sevkiyat tarihi gelmeden eklenemez.",
     "types": {
       "DISPATCH_SCALE": "Çıkış tartısı",
       "WAYBILL": "İrsaliye",

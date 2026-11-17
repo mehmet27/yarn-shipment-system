@@ -148,9 +148,17 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
     mudur.kontrol('bakiye ekranında UUID görünmemeli', !UUID.test(metin), metin.match(UUID)?.[0]);
     mudur.kontrol('iplik adı hareketlerde görünmeli', metin.includes(iplik));
     mudur.kontrol('"Başka bir kullanıcı" yazmamalı', !/Başka bir kullanıcı/.test(metin));
+    // Tohum verisindeki eski satırın girenini sistem çözemez ("Bir çalışan" doğru yedek metindir);
+    // bu koşuda açılan hareketlerde (robotun iplik adı geçen satırlar) kişi adı çözülmüş olmalı.
+    const satirlar = await mudur.sayfa
+      .locator('tbody tr')
+      .filter({ hasText: iplik })
+      .allInnerTexts();
+    mudur.kontrol('bu koşunun hareket satırları bulundu', satirlar.length > 0);
     mudur.kontrol(
       'işlemi yapan kişinin adı yazmalı, "Bir çalışan" kalmamalı',
-      !/Bir çalışan/.test(metin),
+      satirlar.every((satir) => !/Bir çalışan/.test(satir)),
+      satirlar.find((satir) => /Bir çalışan/.test(satir)),
     );
   });
 

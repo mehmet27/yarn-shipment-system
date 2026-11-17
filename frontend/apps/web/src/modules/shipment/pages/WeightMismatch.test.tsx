@@ -1,5 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
+import { SHIPMENTS_PATH } from '@iplik/api-client';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
@@ -90,7 +92,7 @@ describe('Kantar uyuşmazlığı', () => {
     await userEvent.type(screen.getByLabelText('Dolu araç tartısı (brüt)'), '1.990');
     await userEvent.type(screen.getByLabelText('Boş araç tartısı (dara)'), '17,5');
     await userEvent.type(screen.getByLabelText('Çuval sayısı'), '40');
-    await userEvent.type(screen.getByLabelText(/Eksik gönderim nedeni/), 'Stok yetmedi');
+    await userEvent.type(screen.getByLabelText(/Eksik kilo nedeni/), 'Stok yetmedi');
     await captureTicket();
     expect(
       await screen.findByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
@@ -106,5 +108,40 @@ describe('Kantar uyuşmazlığı', () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat?durum=WEIGHT_MISMATCH');
     expect(await screen.findByRole('link', { name: 'SVK-2026-0045' })).toBeInTheDocument();
+  });
+
+  it('müdür çuval ekle-çıkar derse sevkiyat dosyasında müdürün isteği ve notu görünür', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp(MISMATCH);
+    await userEvent.click(await screen.findByText('Çuval ekle-çıkar'));
+    await userEvent.type(screen.getByLabelText(/Gerekçe/), 'Eksik çuvalı ekleyin');
+    await userEvent.click(screen.getByRole('button', { name: 'Kararı kaydet' }));
+    const note = await screen.findByTestId('manager-decision-note');
+    expect(within(note).getByText(/Yalnızca bunu yapın/)).toBeInTheDocument();
+    expect(within(note).getByText(/Eksik çuvalı ekleyin/)).toBeInTheDocument();
+  });
+
+  it('eksik kilo nedeni yazılmadan gönderilirse sunucunun isteği nedenle gösterilir', async () => {
+    server.use(
+      http.post(`${SHIPMENTS_PATH}/:shipmentId/dispatch-weighing`, () =>
+        HttpResponse.json(
+          { status: 400, code: 'SHORTFALL_REASON_REQUIRED', title: 'Eksik kilonun nedeni gerekli' },
+          { status: 400 },
+        ),
+      ),
+      ...createHandlers('WAREHOUSE'),
+    );
+    renderApp('/panel/sevkiyat/shp-0001/cikis');
+    await screen.findByRole('button', { name: 'Kaydet' });
+    await userEvent.type(screen.getByLabelText('Dolu araç tartısı (brüt)'), '1.990');
+    await userEvent.type(screen.getByLabelText('Boş araç tartısı (dara)'), '17,5');
+    await userEvent.type(screen.getByLabelText('Çuval sayısı'), '40');
+    await captureTicket();
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(
+      await screen.findByText(
+        'Tartılan net kilo beklenenin altında. Eksik kilonun nedenini yazın.',
+      ),
+    ).toBeInTheDocument();
   });
 });

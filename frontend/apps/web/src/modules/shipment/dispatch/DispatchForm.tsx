@@ -27,6 +27,7 @@ function failureKey(error: unknown): string {
   if (code === 'INVALID_SHIPMENT_STATUS') return 'dispatch.notDraft';
   if (code === 'SHIPMENT_NOT_DUE') return 'dispatch.notDue';
   if (code === 'INVALID_DISPATCH') return 'dispatch.inconsistent';
+  if (code === 'SHORTFALL_REASON_REQUIRED') return 'dispatch.shortfallReasonRequired';
   return 'dispatch.submitFailed';
 }
 
@@ -60,6 +61,8 @@ export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
   const [isPhotoMissing, setPhotoMissing] = useState(false);
   const mutation = useRecordDispatch(shipmentId);
   const weighing = parseDispatchWeighing(draft);
+  const isReasonMissing =
+    mutation.isError && toProblem(mutation.error).code === 'SHORTFALL_REASON_REQUIRED';
   const submit = () => {
     setError(validateDispatch(draft));
     sendDispatch(draft, mutation, (isUploaded) => {
@@ -82,6 +85,7 @@ export function DispatchForm({ shipmentId, onSaved }: DispatchFormProps) {
           {...(name === 'shortfallReason' ? { maxLength: 500 } : {})}
           {...(name === 'grossKg' || name === 'tareKg' ? { rightSection: 'kg' } : {})}
           label={t(`dispatch.${name}`)}
+          {...(name === 'shortfallReason' && isReasonMissing ? { error: true } : {})}
           value={draft[name]}
           onChange={(event) => {
             setDraft({ ...draft, [name]: event.currentTarget.value });

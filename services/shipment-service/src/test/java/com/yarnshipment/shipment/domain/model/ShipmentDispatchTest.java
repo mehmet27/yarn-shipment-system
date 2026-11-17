@@ -47,6 +47,21 @@ class ShipmentDispatchTest {
         assertThat(event.dispatchedAt()).isEqualTo(NOW);
     }
 
+    @Test
+    @DisplayName("Tartılan net beklenenin altındaysa eksik kilonun nedeni zorunludur")
+    void shouldRequireShortfallReasonBelowExpected() {
+        Shipment shipment = TestShipments.shipment(ShipmentStatus.DRAFT);
+        BigDecimal gross = new BigDecimal("1990.000");
+        BigDecimal tare = new BigDecimal("18.000");
+
+        assertThatThrownBy(() -> shipment.recordDispatch(new DispatchMeasurement(gross, tare, BAGS), NOW))
+                .isInstanceOf(ShortfallReasonRequiredException.class);
+        assertThat(shipment.recordDispatch(new DispatchMeasurement(gross, tare, BAGS, "Stok yetmedi"), NOW)
+                        .weighing()
+                        .netKg())
+                .isEqualByComparingTo("1972.000");
+    }
+
     @ParameterizedTest
     @EnumSource(value = ShipmentStatus.class, names = "DRAFT", mode = EnumSource.Mode.EXCLUDE)
     @DisplayName("Taslak olmayan sevkiyatta çıkış kaydı reddedilir")

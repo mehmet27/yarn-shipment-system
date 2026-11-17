@@ -22,9 +22,11 @@ import com.yarnshipment.evidence.application.port.out.ShipmentAccessPort.Shipmen
 import com.yarnshipment.evidence.application.port.out.UploadIntentPort;
 import com.yarnshipment.evidence.domain.model.EvidenceType;
 import com.yarnshipment.evidence.domain.model.ShipmentLockedException;
+import com.yarnshipment.evidence.domain.model.ShipmentNotDueException;
 import com.yarnshipment.evidence.domain.model.UploadIntent;
 import com.yarnshipment.evidence.domain.model.UploadNotAllowedException;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
@@ -92,7 +94,7 @@ class RequestUploadServiceTest {
 
         UUID otherSite = UUID.randomUUID();
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
-                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, otherSite, false, false));
+                .thenReturn(TestUploads.snapshot(TestUploads.SHIPMENT_ID, otherSite, false, false));
         assertThatThrownBy(() -> request.requestUpload(command(warehouse, EvidenceType.DISPATCH_SCALE)))
                 .isInstanceOf(OutOfScopeAccessException.class);
         verify(storage, never()).presignUpload(any());
@@ -117,7 +119,7 @@ class RequestUploadServiceTest {
         Actor claimant = TestTokens.actor("quality");
         when(storage.presignUpload(any())).thenReturn(new PresignedUpload("u", Map.of(), TestUploads.expiry()));
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
-                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, true, true));
+                .thenReturn(TestUploads.snapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, true, true));
 
         assertThat(request.requestUpload(command(claimant, EvidenceType.QUALITY_CLAIM))
                         .evidenceId())
@@ -126,14 +128,35 @@ class RequestUploadServiceTest {
                 .isInstanceOf(ShipmentLockedException.class);
 
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
-                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, true, false));
+                .thenReturn(TestUploads.snapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, true, false));
         assertThatThrownBy(() -> request.requestUpload(command(claimant, EvidenceType.QUALITY_CLAIM)))
                 .isInstanceOf(ShipmentLockedException.class);
     }
 
+    @Test
+    @DisplayName("Sevkiyat günü gelmeden depo çıkış fotoğrafı yüklenemez; gün gelince yüklenir")
+    void shouldRejectDispatchPhotoBeforeShipmentDate() {
+        Actor warehouse = TestTokens.actor("warehouse");
+        LocalDate today = TestUploads.SHIPMENT_DATE;
+        when(storage.presignUpload(any())).thenReturn(new PresignedUpload("u", Map.of(), TestUploads.expiry()));
+        when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
+                .thenReturn(new ShipmentSnapshot(
+                        TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, false, false, today.plusDays(1)));
+
+        assertThatThrownBy(() -> request.requestUpload(command(warehouse, EvidenceType.DISPATCH_SCALE)))
+                .isInstanceOf(ShipmentNotDueException.class);
+        verify(storage, never()).presignUpload(any());
+
+        when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
+                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, false, false, today));
+        assertThat(request.requestUpload(command(warehouse, EvidenceType.DISPATCH_SCALE))
+                        .evidenceId())
+                .isNotNull();
+    }
+
     private void openShipment(boolean locked) {
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
-                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, locked, false));
+                .thenReturn(TestUploads.snapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, locked, false));
     }
 
     private static RequestUploadCommand command(Actor actor, EvidenceType type) {

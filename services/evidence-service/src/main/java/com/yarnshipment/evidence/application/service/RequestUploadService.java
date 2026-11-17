@@ -61,6 +61,9 @@ public class RequestUploadService implements RequestUploadUseCase {
             throw new ShipmentLockedException(shipment.shipmentId());
         }
         Instant now = clock.instant();
+        if (file.type().stages().contains(UploadStage.DISPATCH)) {
+            shipment.requireDue(now);
+        }
         UUID evidenceId = UUID.randomUUID();
         String storageKey = UploadIntent.storageKeyOf(now, shipment.shipmentId(), evidenceId);
         PresignedUpload upload = storage.presignUpload(new UploadTarget(storageKey, file.mimeType(), file.sizeBytes()));

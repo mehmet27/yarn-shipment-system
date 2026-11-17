@@ -16,27 +16,34 @@ const OWN_FLOW_TYPES: ReadonlySet<EvidenceType> = new Set(['WAYBILL']);
 /** Kalite itirazı fotoğrafı ve laboratuvar sonucu yalnızca tamamlanmış sevkiyata eklenir (sunucu da böyle denetler). */
 const CLAIM_TYPES: ReadonlySet<EvidenceType> = new Set(['QUALITY_CLAIM', 'LAB_RESULT']);
 
+function soleType(allowed: readonly EvidenceType[]): EvidenceType | undefined {
+  return allowed.length === 1 ? allowed[0] : undefined;
+}
+
 export type EvidenceUploadProps = {
   shipmentId: string;
   /** Sevkiyat tamamlandı mı; değilse itiraz türleri sunulmaz. */
   isCompleted: boolean;
+  /** Çıkış tartısı girildi mi; kantar fişi fotoğrafı tartıyla birlikte yüklendiği için önce bu türü sunmayız. */
+  isDispatched: boolean;
 };
 
 /** Kullanıcının izni olan kanıt türleriyle fotoğraf/belge yükler; izni yoksa hiç görünmez. */
-export function EvidenceUpload({ shipmentId, isCompleted }: EvidenceUploadProps) {
+export function EvidenceUpload({ shipmentId, isCompleted, isDispatched }: EvidenceUploadProps) {
   const { t } = useTranslation();
   const user = useCurrentUser();
   const allowed = Object.values(EVIDENCE_TYPES).filter(
     (type) =>
       !OWN_FLOW_TYPES.has(type) &&
       (isCompleted || !CLAIM_TYPES.has(type)) &&
+      (isDispatched || type !== 'DISPATCH_SCALE') &&
       user.data?.permissions.includes(UPLOAD_PERMISSION_BY_TYPE[type]),
   );
   const [selected, setSelected] = useState<EvidenceType>();
   const [problem, setProblem] = useState<FileProblem>();
   const mutation = useUploadEvidence(shipmentId);
   // Tek seçenek varsa o seçilidir; birden çoksa yanlış türde yükleme olmasın diye kullanıcı kendisi seçer.
-  const evidenceType = selected ?? (allowed.length === 1 ? allowed[0] : undefined);
+  const evidenceType = selected ?? soleType(allowed);
   if (allowed.length === 0) return null;
   const upload = (file: File | null) => {
     if (file === null || evidenceType === undefined) return;

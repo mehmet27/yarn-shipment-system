@@ -16,7 +16,6 @@ import com.yarnshipment.evidence.application.port.in.InvalidateEvidenceCommand;
 import com.yarnshipment.evidence.application.port.out.EvidenceInvalidationPort;
 import com.yarnshipment.evidence.application.port.out.EvidenceStorePort;
 import com.yarnshipment.evidence.application.port.out.ShipmentAccessPort;
-import com.yarnshipment.evidence.application.port.out.ShipmentAccessPort.ShipmentSnapshot;
 import com.yarnshipment.evidence.domain.model.EvidenceFile;
 import com.yarnshipment.evidence.domain.model.EvidenceNotFoundException;
 import com.yarnshipment.evidence.domain.model.EvidenceStatus;
@@ -45,7 +44,7 @@ class InvalidateEvidenceServiceTest {
     void shouldInvalidate() {
         when(store.findEvidence(file.id())).thenReturn(Optional.of(file));
         when(shipments.findAccessible(file.shipmentId()))
-                .thenReturn(new ShipmentSnapshot(file.shipmentId(), TestTokens.SITE_ID, false, false));
+                .thenReturn(TestUploads.snapshot(file.shipmentId(), TestTokens.SITE_ID, false, false));
 
         EvidenceFile result = service.invalidateEvidence(new InvalidateEvidenceCommand(manager, file.id(), "yanlış"));
 
@@ -58,7 +57,7 @@ class InvalidateEvidenceServiceTest {
     void shouldHideFromOthersAndRequireReason() {
         when(store.findEvidence(file.id())).thenReturn(Optional.of(file));
         when(shipments.findAccessible(file.shipmentId()))
-                .thenReturn(new ShipmentSnapshot(file.shipmentId(), TestTokens.SITE_ID, false, false));
+                .thenReturn(TestUploads.snapshot(file.shipmentId(), TestTokens.SITE_ID, false, false));
         InvalidateEvidenceCommand byWarehouse =
                 new InvalidateEvidenceCommand(TestTokens.actor("warehouse"), file.id(), "x");
         InvalidateEvidenceCommand blank = new InvalidateEvidenceCommand(manager, file.id(), " ");

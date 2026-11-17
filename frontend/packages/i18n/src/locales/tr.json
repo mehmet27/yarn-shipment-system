@@ -56,6 +56,7 @@
     "label": "Bildirimler",
     "title": "Karar bekleyen uyuşmazlıklar",
     "empty": "Bekleyen uyuşmazlık yok",
+    "weightTitle": "Kantar uyuşmazlığı: karar bekleyen sevkiyatlar",
     "more": "{{count}} uyuşmazlık daha var",
     "all": "Tüm uyuşmazlıkları gör"
   },
@@ -306,6 +307,11 @@
         "unknown": "Karar kaydedilemedi. Lütfen tekrar deneyin."
       }
     },
+    "managerNote": {
+      "title": "Müdürün isteği",
+      "action": "Müdür çuvalların eklenmesini ya da çıkarılmasını istedi. Yalnızca bunu yapın, sonra çıkış tartısını yeniden girin.",
+      "reason": "Müdürün notu"
+    },
     "pendingDispatches": {
       "title": "Yüklenecek sevkiyat: {{count}}",
       "hint": "Her sevkiyatta önce çuvalları ekleyin, sonra çıkış tartısını girin."
@@ -317,7 +323,7 @@
     "notDue": "Sevkiyat tarihi {{date}}. Bu tarihten önce çuval atanamaz ve çıkış tartısı girilemez.",
     "schedule": {
       "open": "Tarihi değiştir",
-      "label": "Yeni sevkiyat tarihi (şu an {{date}})",
+      "label": "Yeni sevkiyat tarihi",
       "save": "Tarihi güncelle",
       "dismiss": "Vazgeç",
       "errors": {
@@ -347,7 +353,8 @@
     },
     "grossKg": "Dolu araç tartısı (brüt)",
     "tareKg": "Boş araç tartısı (dara)",
-    "shortfallReason": "Eksik gönderim nedeni (isteğe bağlı)",
+    "shortfallReason": "Eksik kilo nedeni (net kilo beklenenin altındaysa zorunlu)",
+    "shortfallReasonRequired": "Tartılan net kilo beklenenin altında. Eksik kilonun nedenini yazın.",
     "mismatchNotice": "Net kilo beklenenle tutmazsa sevkiyat kantar uyuşmazlığına düşer ve müdür karar verir.",
     "notDue": "Sevkiyat tarihi gelmeden çıkış tartısı girilemez."
   },
@@ -719,6 +726,7 @@
       "UPLOAD_NOT_ALLOWED": "Bu dosya türü, boyutu ya da yükleme izni geçerli değil.",
       "SHIPMENT_NOT_FOUND": "Sevkiyat bulunamadı.",
       "SHIPMENT_LOCKED": "Sevkiyat kilitli; artık dosya eklenemiyor.",
+      "SHIPMENT_NOT_DUE": "Sevkiyat tarihi gelmeden çıkış fotoğrafı eklenemez.",
       "UPLOAD_NOT_COMPLETED": "Dosya henüz yüklenmedi. Lütfen tekrar deneyin.",
       "UPLOAD_MISMATCH": "Yüklenen dosya bildirilenle uyuşmuyor. Lütfen yeniden seçin.",
       "SHIPMENT_SERVICE_UNAVAILABLE": "Sevkiyat doğrulanamadı. Lütfen biraz sonra tekrar deneyin.",

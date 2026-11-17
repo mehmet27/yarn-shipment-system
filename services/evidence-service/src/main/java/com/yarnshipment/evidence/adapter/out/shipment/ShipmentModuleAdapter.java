@@ -32,7 +32,8 @@ final class ShipmentModuleAdapter implements ShipmentAccessPort {
                     shipmentId,
                     shipment.siteId(),
                     LOCKED_STATUSES.contains(shipment.status()),
-                    COMPLETED.equals(shipment.status()));
+                    COMPLETED.equals(shipment.status()),
+                    shipment.shipmentDate());
         } catch (ShipmentNotVisibleException exception) {
             throw new ShipmentNotAccessibleException(shipmentId);
         } catch (ModuleUnavailableException exception) {

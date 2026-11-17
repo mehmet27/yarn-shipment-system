@@ -6,6 +6,7 @@ import com.yarnshipment.evidence.domain.model.EvidenceNotFoundException;
 import com.yarnshipment.evidence.domain.model.InvalidationReasonRequiredException;
 import com.yarnshipment.evidence.domain.model.ShipmentLockedException;
 import com.yarnshipment.evidence.domain.model.ShipmentNotAccessibleException;
+import com.yarnshipment.evidence.domain.model.ShipmentNotDueException;
 import com.yarnshipment.evidence.domain.model.ShipmentServiceUnavailableException;
 import com.yarnshipment.evidence.domain.model.SignedFileException;
 import com.yarnshipment.evidence.domain.model.UploadIntentNotFoundException;
@@ -75,6 +76,11 @@ public final class EvidenceExceptionHandler {
     @ExceptionHandler(ShipmentLockedException.class)
     public ProblemDetail handleShipmentLocked(HttpServletRequest request) {
         return problems.create(request, HttpStatus.CONFLICT, "SHIPMENT_LOCKED");
+    }
+
+    @ExceptionHandler(ShipmentNotDueException.class)
+    public ProblemDetail handleShipmentNotDue(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.CONFLICT, "SHIPMENT_NOT_DUE");
     }
 
     @ExceptionHandler(ShipmentServiceUnavailableException.class)

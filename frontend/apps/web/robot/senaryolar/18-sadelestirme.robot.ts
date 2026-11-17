@@ -84,12 +84,13 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
     );
   });
 
-  await depo.adim('çuval yokken: tartı düğmesi pasif ve neden yazılı', async () => {
+  await depo.adim('çuval yokken: tartı düğmesi görünmez, neden yazılı', async () => {
     await depo.sayfa.goto(`/panel/sevkiyat/${id}`);
     await expect(
       depo.sayfa.getByText(/Önce "Çuvallar" sekmesinden çuvalları ekleyin/),
     ).toBeVisible();
-    await expect(depo.sayfa.getByRole('button', { name: 'Çıkış tartısını gir' })).toBeDisabled();
+    await expect(depo.sayfa.getByRole('button', { name: 'Çıkış tartısını gir' })).toHaveCount(0);
+    await expect(depo.sayfa.getByRole('link', { name: 'Çıkış tartısını gir' })).toHaveCount(0);
   });
 
   await cuvalEkle(depo, id, 2, '50');

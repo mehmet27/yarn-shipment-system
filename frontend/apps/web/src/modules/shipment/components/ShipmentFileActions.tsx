@@ -32,9 +32,7 @@ export function ShipmentFileActions({
               {t('shipment.file.bagsFirst')}
             </Text>
           )}
-          {isBagsFirst ? (
-            <Button disabled>{t('shipment.file.recordDispatch')}</Button>
-          ) : (
+          {!isBagsFirst && (
             <Button component={Link} to="cikis" relative="path">
               {t('shipment.file.recordDispatch')}
             </Button>

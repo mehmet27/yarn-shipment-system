@@ -22,7 +22,7 @@ describe('DispatchWeighingPage', () => {
     expect(card).toHaveTextContent('önce çuvalları ekleyin, sonra çıkış tartısını girin');
   });
 
-  it('çuval eklenmemişse tartı düğmesi pasiftir ve önce çuval eklenmesini söyler', async () => {
+  it('çuval eklenmemişse tartı düğmesi görünmez ve önce çuval eklenmesini söyler', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     server.use(
       http.get('/api/v1/shipments/shp-0001/bags', () =>
@@ -35,7 +35,8 @@ describe('DispatchWeighingPage', () => {
         'Önce "Çuvallar" sekmesinden çuvalları ekleyin, sonra tartıyı girin.',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Çıkış tartısını gir' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Çıkış tartısını gir' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Çıkış tartısını gir' })).not.toBeInTheDocument();
   });
 
   it('depo çıkış tartısını kaydeder, sevkiyat Fasoncuya yolda olur', async () => {

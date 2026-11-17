@@ -1,9 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Anchor, Group, Stack, Text } from '@iplik/ui';
 import { Link } from 'react-router';
-import { useShipments } from '../hooks/useShipments';
-
-const LIST_SIZE = 20;
+import { usePendingWeightDecisions } from '../hooks/usePendingWeightDecisions';
 
 /**
  * Kantar uyuşmazlığında karar bekleyen sevkiyatlar. Müdürün panel ana sayfasındaki bildirimdir: yalnızca kararı verme
@@ -11,10 +9,7 @@ const LIST_SIZE = 20;
  */
 export function PendingWeightDecisions() {
   const { t } = useTranslation();
-  const query = useShipments({ status: ['WEIGHT_MISMATCH'], size: LIST_SIZE });
-  const pending = (query.data?.items ?? []).filter((item) =>
-    item.allowedActions.includes('RESOLVE_WEIGHT_MISMATCH'),
-  );
+  const pending = usePendingWeightDecisions();
   if (pending.length === 0) return null;
   return (
     <Alert

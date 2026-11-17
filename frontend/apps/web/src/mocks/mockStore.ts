@@ -4,6 +4,7 @@ import type {
   InternalShipmentView,
   ShipmentStatus,
   Weighing,
+  WeightDecisionKind,
 } from '@iplik/api-client';
 import { isKilogram, sumKg } from '@iplik/units';
 import { resetMockCorrections } from './corrections';
@@ -59,11 +60,22 @@ const DECISION_STATUS: Readonly<Record<string, ShipmentStatus>> = {
 };
 
 /** Müdür kararı: çuval ekle/çıkar taslağa döner; reçete güncellenirse sevkiyat yola çıkar. */
-export function decideMockWeight(shipmentId: string, decision: string): void {
+export function decideMockWeight(
+  shipmentId: string,
+  decision: WeightDecisionKind,
+  reason: string,
+): void {
   const status = DECISION_STATUS[decision] ?? 'DRAFT';
   shipments = shipments.map((shipment) =>
     shipment.shipmentId === shipmentId
-      ? { ...shipment, status, allowedActions: allowedActionsOf(status) }
+      ? {
+          ...shipment,
+          status,
+          allowedActions: allowedActionsOf(status),
+          ...(shipment.weightCheck === undefined
+            ? {}
+            : { weightCheck: { ...shipment.weightCheck, decision, decisionReason: reason } }),
+        }
       : shipment,
   );
 }

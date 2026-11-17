@@ -7,11 +7,18 @@ import { server } from '@/mocks/server';
 import { renderApp } from '@/test/renderApp';
 
 describe('EvidenceUpload', () => {
-  it('izni olan kullanıcıya kamera ve dosya düğmelerini gösterir', async () => {
+  it('çıkış tartısı girilmiş sevkiyatta depoya kamera ve dosya düğmelerini gösterir', async () => {
     server.use(...createHandlers('WAREHOUSE'));
-    renderApp('/panel/sevkiyat/shp-0001');
+    renderApp('/panel/sevkiyat/shp-0045');
     expect(await screen.findByRole('button', { name: 'Fotoğraf çek' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Dosya seç' })).toBeInTheDocument();
+  });
+
+  it('çıkış tartısı girilmeden depoya fotoğraf bölümü sunulmaz; fiş tartıyla birlikte yüklenir', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    renderApp('/panel/sevkiyat/shp-0001');
+    await screen.findByRole('heading', { name: 'SVK-2026-0001' });
+    expect(screen.queryByRole('button', { name: 'Fotoğraf çek' })).not.toBeInTheDocument();
   });
 
   it('yükleme izni olmayan kullanıcıda hiç görünmez', async () => {

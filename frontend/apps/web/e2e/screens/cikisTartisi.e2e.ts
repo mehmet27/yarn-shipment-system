@@ -20,7 +20,11 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
       await expect(
         page.getByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
       ).toBeVisible();
-      await page.getByRole('button', { name: 'Kaydet' }).click();
+      await page.getByRole('button', { name: 'İleri' }).click();
+      await page
+        .getByRole('dialog')
+        .getByRole('button', { name: /^Onayla/ })
+        .click();
       await expect(page.getByTestId('shipment-status')).toHaveText('Fasoncuya yolda');
     },
   );
@@ -28,13 +32,13 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
   test('fiş çekilmeden kaydetmez', async ({ page, openAs }) => {
     await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis');
     await fillFields(page, WEIGHING);
-    await page.getByRole('button', { name: 'Kaydet' }).click();
+    await page.getByRole('button', { name: 'İleri' }).click();
     await expect(
       page.getByText('Devam etmek için kantar fişinin fotoğrafı gerekli.'),
     ).toBeVisible();
   });
 
-  test('fotoğraf, çıkış tartısı kaydedilene kadar sisteme yüklenmez', async ({ page, openAs }) => {
+  test('fotoğraf, çıkış tartısı onaylanana kadar sisteme yüklenmez', async ({ page, openAs }) => {
     await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis');
     let uploads = 0;
     page.on('request', (request) => {
@@ -48,7 +52,13 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
       page.getByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
     ).toBeVisible();
     expect(uploads).toBe(0);
-    await page.getByRole('button', { name: 'Kaydet' }).click();
+    await page.getByRole('button', { name: 'İleri' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    expect(uploads).toBe(0);
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: /^Onayla/ })
+      .click();
     await expect(page.getByTestId('shipment-status')).toHaveText('Fasoncuya yolda');
     expect(uploads).toBe(1);
   });

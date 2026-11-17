@@ -41,7 +41,7 @@ export function RecordTableRow({ kind, record, onEdit }: RecordTableRowProps) {
         <Group gap="xs" wrap="nowrap" justify="flex-end">
           <Button
             variant="default"
-            size="compact-md"
+           
             leftSection={<Icon name="edit" size={16} />}
             onClick={() => {
               onEdit(record);
@@ -51,7 +51,7 @@ export function RecordTableRow({ kind, record, onEdit }: RecordTableRowProps) {
           </Button>
           <Button
             variant="light"
-            size="compact-md"
+           
             color={record.isActive ? 'red' : 'green'}
             loading={guard.isBusy}
             leftSection={<Icon name={record.isActive ? 'stop' : 'check'} size={16} />}

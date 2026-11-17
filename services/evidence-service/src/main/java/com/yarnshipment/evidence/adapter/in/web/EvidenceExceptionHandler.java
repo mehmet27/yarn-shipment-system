@@ -5,8 +5,8 @@ import com.yarnshipment.evidence.domain.model.EvidenceAlreadyInvalidatedExceptio
 import com.yarnshipment.evidence.domain.model.EvidenceNotFoundException;
 import com.yarnshipment.evidence.domain.model.InvalidationReasonRequiredException;
 import com.yarnshipment.evidence.domain.model.ShipmentLockedException;
-import com.yarnshipment.evidence.domain.model.ShipmentNotDueException;
 import com.yarnshipment.evidence.domain.model.ShipmentNotAccessibleException;
+import com.yarnshipment.evidence.domain.model.ShipmentNotDueException;
 import com.yarnshipment.evidence.domain.model.ShipmentServiceUnavailableException;
 import com.yarnshipment.evidence.domain.model.SignedFileException;
 import com.yarnshipment.evidence.domain.model.UploadIntentNotFoundException;

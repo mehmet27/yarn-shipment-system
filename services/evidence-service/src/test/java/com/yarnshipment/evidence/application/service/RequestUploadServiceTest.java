@@ -149,7 +149,9 @@ class RequestUploadServiceTest {
 
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
                 .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, TestTokens.SITE_ID, false, false, today));
-        assertThat(request.requestUpload(command(warehouse, EvidenceType.DISPATCH_SCALE)).evidenceId()).isNotNull();
+        assertThat(request.requestUpload(command(warehouse, EvidenceType.DISPATCH_SCALE))
+                        .evidenceId())
+                .isNotNull();
     }
 
     private void openShipment(boolean locked) {

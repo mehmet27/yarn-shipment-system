@@ -18,8 +18,7 @@ public interface ShipmentAccessPort {
      * @param completed sevkiyat tamamlandı mı; kalite itirazı bundan sonra açılır
      * @param shipmentDate sevkiyat günü; depo çıkış fotoğrafı bu günden önce yüklenemez
      */
-    record ShipmentSnapshot(
-            UUID shipmentId, UUID siteId, boolean locked, boolean completed, LocalDate shipmentDate) {
+    record ShipmentSnapshot(UUID shipmentId, UUID siteId, boolean locked, boolean completed, LocalDate shipmentDate) {
 
         /** Sevkiyat günü fabrikanın takvimine göre sayılır (shipment modülüyle aynı). */
         private static final ZoneId FACTORY_ZONE = ZoneId.of("Europe/Istanbul");

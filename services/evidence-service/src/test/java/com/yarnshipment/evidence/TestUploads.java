@@ -1,10 +1,10 @@
 package com.yarnshipment.evidence;
 
+import com.yarnshipment.evidence.application.port.out.ShipmentAccessPort.ShipmentSnapshot;
 import com.yarnshipment.evidence.domain.model.EvidenceFile;
 import com.yarnshipment.evidence.domain.model.EvidenceType;
 import com.yarnshipment.evidence.domain.model.StoredObject;
 import com.yarnshipment.evidence.domain.model.UploadIntent;
-import com.yarnshipment.evidence.application.port.out.ShipmentAccessPort.ShipmentSnapshot;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -17,6 +17,7 @@ public final class TestUploads {
     public static final Instant NOW = Instant.parse("2026-10-27T09:00:00Z");
     /** {@link #NOW} ile aynı gün: sevkiyat günü gelmiş sayılır. */
     public static final LocalDate SHIPMENT_DATE = LocalDate.of(2026, 10, 27);
+
     public static final long SIZE = 2_048L;
     public static final long TTL_SECONDS = 600L;
     public static final String JPEG = "image/jpeg";

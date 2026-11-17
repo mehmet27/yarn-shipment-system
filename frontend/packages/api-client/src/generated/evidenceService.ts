@@ -129,7 +129,7 @@ export type ForbiddenResponse = Problem;
 export type NotFoundResponse = Problem;
 
 /**
- * Sevkiyat kilitli (SHIPMENT_LOCKED), dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED) ya da kanıt zaten geçersiz kılınmış (EVIDENCE_ALREADY_INVALIDATED)
+ * Sevkiyat kilitli (SHIPMENT_LOCKED), sevkiyat günü gelmemiş (SHIPMENT_NOT_DUE), dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED) ya da kanıt zaten geçersiz kılınmış (EVIDENCE_ALREADY_INVALIDATED)
  */
 export type ConflictResponse = Problem;
 

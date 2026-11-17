@@ -108,21 +108,21 @@ docker compose -f deploy/docker-compose.yml exec -T postgres \
 - Kanıt dosyaları diskte (`EVIDENCE_STORAGE_ROOT`) durur; betik onları silmez, gerekirse ayrıca temizleyin.
 - Sunucuda (`deploy/prod`) aynı komut ilgili compose dosyasıyla çalıştırılır; canlıda önce yedek (`DEPLOY.md`) alın.
 
-## Mevcut veritabanında tüm kullanıcıları ve yetkileri bırakma
+## Mevcut veritabanında kullanıcıları, yetkileri ve tanımları bırakma
 
-Hesapları, şifreleri, rolleri ve Yetkiler ekranını bırakıp **geri kalan her veriyi** (sevkiyatlar, stok/bakiye, fireler, fasoncu/şoför/araç/iplik/kalite/tedarikçi tanımları, partiler, uyuşmazlıklar, kanıt ve denetim kayıtları) silmek için `deploy/postgres/kullanicilar-disinda-sil.sql` kullanılır. Geri alınamaz; önce yedek alın, uygulamayı durdurmanız önerilir.
+Hesapları, şifreleri, rolleri, Yetkiler ekranını ve tüm tanımları (lokasyon, fasoncu, şoför, araç, iplik, kalite sınıfı, tedarikçi, partiler) bırakıp **hareket verisini** (sevkiyatlar, kantar/tartı, stok ve bakiye hareketleri, fireler, uyuşmazlıklar, kanıt ve denetim kayıtları) silmek için `deploy/postgres/hareket-verisini-sil.sql` kullanılır. Geri alınamaz; önce yedek alın, uygulamayı durdurmanız önerilir.
 
 PowerShell (tek satır, depo kökünde):
 
 ```powershell
-Get-Content deploy/postgres/kullanicilar-disinda-sil.sql -Raw -Encoding UTF8 | docker compose -f deploy/docker-compose.yml exec -T postgres psql -U postgres -d yarnshipment -v ON_ERROR_STOP=1 -v onay=SIL
+Get-Content deploy/postgres/hareket-verisini-sil.sql -Raw -Encoding UTF8 | docker compose -f deploy/docker-compose.yml exec -T postgres psql -U postgres -d yarnshipment -v ON_ERROR_STOP=1 -v onay=SIL
 ```
 
-bash: `docker compose -f deploy/docker-compose.yml exec -T postgres psql -U postgres -d yarnshipment -v ON_ERROR_STOP=1 -v onay=SIL < deploy/postgres/kullanicilar-disinda-sil.sql`
+bash: `docker compose -f deploy/docker-compose.yml exec -T postgres psql -U postgres -d yarnshipment -v ON_ERROR_STOP=1 -v onay=SIL < deploy/postgres/hareket-verisini-sil.sql`
 
 - `-v onay=SIL` zorunludur; tek transaction'dır, hata olursa hiçbir şey silinmez. Şema ve Flyway geçmişi kalır.
-- Kalanlar: `app_user` (kilitler ve şifre talepleri temizlenir), `staff_work_area`, `role_permission`, lokasyonlar (`md_site`; hesapların kapsamı bunlara bağlıdır).
-- `-v ayarlari_koru=1` ile `app_setting` (fire oranı, kantar toleransı, firma adı/logo) de kalır; yoksa silinir.
+- Kalanlar: `app_user` (kilitler ve şifre talepleri temizlenir), `staff_work_area`, `role_permission`, tüm `md_*` tanım tabloları, `app_setting`.
+- `-v ayarlari_sil=1` ile `app_setting` (fire oranı, kantar toleransı, firma adı/logo) de silinir.
 - Kanıt dosyaları diskte (`EVIDENCE_STORAGE_ROOT`) kalır; gerekirse ayrıca silin.
 
 ## Uygulamayı çalıştırma (yarnshipment-app)

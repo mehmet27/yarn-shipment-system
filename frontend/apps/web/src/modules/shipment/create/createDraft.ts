@@ -118,10 +118,9 @@ export function parsePositiveKg(input: string): Kilogram | undefined {
 
 const PRICE = /^\d{1,8}([.,]\d{1,4})?$/;
 
-/** Boş fiyat geçerlidir (isteğe bağlı); doluysa en çok 4 ondalıklı, negatif olmayan sayı olmalı. */
+/** Fiyat zorunludur: en çok 4 ondalıklı, negatif olmayan sayı olmalı. */
 export function priceValid(input: string): boolean {
-  const text = input.trim();
-  return text === '' || PRICE.test(text);
+  return PRICE.test(input.trim());
 }
 
 export function lineError(line: RecipeLineDraft): CreateError | undefined {

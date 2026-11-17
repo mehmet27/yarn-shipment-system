@@ -57,7 +57,33 @@ describe('Panel ana sayfası ve raporlar', () => {
     expect(screen.getByText('Açılış bakiyesi yükle')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Fire raporu' }));
     expect(await screen.findByText('SV-2026-0007')).toBeInTheDocument();
-    expect(screen.getByText('%10,00')).toBeInTheDocument();
+    expect(screen.getAllByText('%10,00').length).toBeGreaterThan(0);
+  });
+
+  it('müdür tutar bilgisini görür; her iplik kendi fiyatıyla hesaplandığı ve fiyatsız kilo ayrıca yazıldığı belli olur', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/raporlar');
+    expect(await screen.findByText('Tutar bilgisi')).toBeInTheDocument();
+    expect(await screen.findByTestId('stat-amount-subcontractor-yarn')).toHaveTextContent(
+      '505.000,00 TL',
+    );
+    expect(screen.getByTestId('stat-amount-subcontractor-yarn')).toHaveTextContent(
+      'Fiyatı girilmeyen: 120 kg (tutara katılmadı)',
+    );
+    expect(screen.getByTestId('stat-amount-to-invoice')).toHaveTextContent('96.400,00 TL');
+    expect(screen.getByTestId('stat-amount-to-invoice')).toHaveTextContent(
+      'Her iplik kendi fiyatıyla hesaplandı',
+    );
+    expect(await screen.findByRole('row', { name: /Yıldız Triko/ })).toHaveTextContent(
+      '294.000,00 TL',
+    );
+  });
+
+  it('kalite tutar bilgisini görmez', async () => {
+    server.use(...createHandlers('QUALITY'));
+    renderApp('/panel/raporlar');
+    expect(await screen.findByRole('tab', { name: 'Fasoncular' })).toBeInTheDocument();
+    expect(screen.queryByText('Tutar bilgisi')).not.toBeInTheDocument();
   });
 
   it('rapor yetkisi olmayan kullanıcı raporlar adresinde engellenir', async () => {

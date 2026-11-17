@@ -45,6 +45,7 @@ export function OrderFieldGrid({ line, showErrors, onPatch }: OrderFieldGridProp
       {text('pussFine')}
       <TextInput
         label={t('create.recipe.unitPrice')}
+        withAsterisk
         inputMode="decimal"
         value={line.unitPrice}
         {...(showErrors && !priceValid(line.unitPrice)

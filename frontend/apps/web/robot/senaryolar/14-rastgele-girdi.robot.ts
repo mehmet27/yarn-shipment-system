@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { iplikTanimla } from '../support/akis';
+import { fiyatYaz, iplikTanimla } from '../support/akis';
 import { rolTanimli, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import { damga, iplikSec } from '../support/yardimci';
@@ -126,6 +126,7 @@ test('Rastgele girdi: müdür yeni sevkiyat alanları', async ({ giris }) => {
         .first()
         .fill('ROBOT-fuzz');
       await mudur.sayfa.getByLabel(/Net kg 1/).fill('1');
+      await fiyatYaz(mudur.sayfa);
     },
   );
 });

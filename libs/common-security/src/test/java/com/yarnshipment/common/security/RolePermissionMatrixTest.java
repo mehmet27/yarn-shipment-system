@@ -36,11 +36,21 @@ class RolePermissionMatrixTest {
     }
 
     @Test
-    @DisplayName("Genel müdür yalnızca rapor, bakiye ve ad çözmek için ana veri listesini görür")
+    @DisplayName("Genel müdür yalnızca rapor, tutar, bakiye, merkez stok ve ad çözmek için ana veri listesini görür")
     void shouldLimitGeneralManagerToReadOnly() {
         assertThat(RolePermissionMatrix.permissionsOf(List.of(Role.GENERAL_MANAGER)))
                 .containsExactlyInAnyOrder(
-                        Permission.REPORT_VIEW, Permission.BALANCE_VIEW, Permission.MASTER_DATA_VIEW);
+                        Permission.REPORT_VIEW,
+                        Permission.AMOUNT_VIEW,
+                        Permission.BALANCE_VIEW,
+                        Permission.CENTRAL_STOCK_VIEW,
+                        Permission.MASTER_DATA_VIEW);
+    }
+
+    @Test
+    @DisplayName("Tutarı (TL) yalnızca müdür ve genel müdür görür")
+    void shouldLetOnlyManagersSeeAmounts() {
+        assertThat(rolesHaving(Permission.AMOUNT_VIEW)).containsExactlyInAnyOrder(Role.MANAGER, Role.GENERAL_MANAGER);
     }
 
     @Test
@@ -64,12 +74,12 @@ class RolePermissionMatrixTest {
     }
 
     @Test
-    @DisplayName("Merkez stoğa iplik girişini depo, kumaş girişini kalite yapar; müdür yalnız stoğu görür")
+    @DisplayName("Merkez stoğa iplik girişini depo, kumaş girişini kalite yapar; müdürler yalnız stoğu görür")
     void shouldSplitCentralStockPermissions() {
         assertThat(rolesHaving(Permission.CENTRAL_STOCK_RECORD)).containsExactly(Role.WAREHOUSE);
         assertThat(rolesHaving(Permission.CENTRAL_PRODUCTION_RECORD)).containsExactly(Role.QUALITY);
         assertThat(rolesHaving(Permission.CENTRAL_STOCK_VIEW))
-                .containsExactlyInAnyOrder(Role.WAREHOUSE, Role.QUALITY, Role.MANAGER);
+                .containsExactlyInAnyOrder(Role.WAREHOUSE, Role.QUALITY, Role.MANAGER, Role.GENERAL_MANAGER);
     }
 
     @Test

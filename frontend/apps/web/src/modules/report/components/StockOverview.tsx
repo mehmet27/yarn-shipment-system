@@ -5,6 +5,7 @@ import { usePermission } from '@/modules/auth';
 import { formatKilograms } from '../format';
 import { useYarnVsFabricReport } from '../hooks/useFaconReports';
 import { useCentralStockTotals, useSubcontractorYarn } from '../hooks/useStockOverview';
+import { AmountOverview } from './AmountOverview';
 import { StatCard } from './StatCard';
 import { sumFabricKg, sumInTransitKg } from './stockTotals';
 
@@ -55,6 +56,7 @@ export function StockOverview({ params }: { params: GetDashboardParams }) {
           testId="stat-central-fabric"
         />
       </SimpleGrid>
+      <AmountOverview params={params} />
     </Stack>
   );
 }

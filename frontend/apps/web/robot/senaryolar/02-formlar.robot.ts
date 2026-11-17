@@ -1,6 +1,6 @@
 import { GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
-import { iplikTanimla } from '../support/akis';
+import { fiyatYaz, iplikTanimla } from '../support/akis';
 import { damga, iplikSec, sec } from '../support/yardimci';
 
 /** Geçersiz girişte ekran, nedeni söyleyen bir mesaj göstermeli (genel "tekrar deneyin" yetmez). */
@@ -99,6 +99,7 @@ test('Formlar: müdür yeni sevkiyat formu eksik ve hatalı girişte uyarır', a
         .first()
         .fill('ROBOT-iplik');
       await robot.sayfa.getByLabel(/Net kg 1/).fill(kg);
+      await fiyatYaz(robot.sayfa);
       await robot.sayfa.getByRole('button', { name: 'Taslak oluştur' }).click();
       await nedenliMesajVar(robot, `yeni sevkiyat ${ad}`);
       robot.kontrol(

@@ -2,11 +2,13 @@ package com.yarnshipment.reporting.adapter.in.web;
 
 import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.reporting.adapter.in.web.api.BalanceFireApi;
+import com.yarnshipment.reporting.adapter.in.web.api.model.AmountSummaryView;
 import com.yarnshipment.reporting.adapter.in.web.api.model.BalanceMatrixRowView;
 import com.yarnshipment.reporting.adapter.in.web.api.model.FireRowView;
 import com.yarnshipment.reporting.adapter.in.web.api.model.OpeningImportRequest;
 import com.yarnshipment.reporting.adapter.in.web.api.model.OpeningImportResult;
 import com.yarnshipment.reporting.adapter.in.web.api.model.YarnVsFabricRowView;
+import com.yarnshipment.reporting.application.port.in.GetAmountSummaryUseCase;
 import com.yarnshipment.reporting.application.port.in.ImportOpeningBalanceUseCase;
 import com.yarnshipment.reporting.application.port.in.ListBalanceMatrixUseCase;
 import com.yarnshipment.reporting.application.port.in.ListFireReportUseCase;
@@ -29,6 +31,7 @@ public class BalanceFireController implements BalanceFireApi {
     private final ListFireReportUseCase listFire;
     private final ListYarnVsFabricUseCase listYarnVsFabric;
     private final ListToInvoiceUseCase listToInvoice;
+    private final GetAmountSummaryUseCase getAmountSummary;
     private final ImportOpeningBalanceUseCase importOpening;
     private final CurrentActorProvider currentActorProvider;
 
@@ -37,12 +40,14 @@ public class BalanceFireController implements BalanceFireApi {
             ListFireReportUseCase listFire,
             ListYarnVsFabricUseCase listYarnVsFabric,
             ListToInvoiceUseCase listToInvoice,
+            GetAmountSummaryUseCase getAmountSummary,
             ImportOpeningBalanceUseCase importOpening,
             CurrentActorProvider currentActorProvider) {
         this.listBalanceMatrix = listBalanceMatrix;
         this.listFire = listFire;
         this.listYarnVsFabric = listYarnVsFabric;
         this.listToInvoice = listToInvoice;
+        this.getAmountSummary = getAmountSummary;
         this.importOpening = importOpening;
         this.currentActorProvider = currentActorProvider;
     }
@@ -80,6 +85,13 @@ public class BalanceFireController implements BalanceFireApi {
         return ResponseEntity.ok(listToInvoice.listToInvoice(query(from, to, siteId)).stream()
                 .map(BalanceFireViews::toView)
                 .toList());
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('AMOUNT_VIEW')")
+    public ResponseEntity<AmountSummaryView> getAmountSummary(
+            @Nullable LocalDate from, @Nullable LocalDate to, @Nullable UUID siteId) {
+        return ResponseEntity.ok(BalanceFireViews.toView(getAmountSummary.getAmountSummary(query(from, to, siteId))));
     }
 
     @Override

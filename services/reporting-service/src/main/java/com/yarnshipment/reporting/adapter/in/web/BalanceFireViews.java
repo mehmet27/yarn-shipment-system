@@ -1,9 +1,12 @@
 package com.yarnshipment.reporting.adapter.in.web;
 
+import com.yarnshipment.reporting.adapter.in.web.api.model.AmountSummaryView;
 import com.yarnshipment.reporting.adapter.in.web.api.model.BalanceMatrixRowView;
 import com.yarnshipment.reporting.adapter.in.web.api.model.FireRowView;
 import com.yarnshipment.reporting.adapter.in.web.api.model.OpeningRowRequest;
+import com.yarnshipment.reporting.adapter.in.web.api.model.SubcontractorAmountView;
 import com.yarnshipment.reporting.adapter.in.web.api.model.YarnVsFabricRowView;
+import com.yarnshipment.reporting.domain.model.AmountSummary;
 import com.yarnshipment.reporting.domain.model.BalanceMatrixRow;
 import com.yarnshipment.reporting.domain.model.FireFile;
 import com.yarnshipment.reporting.domain.model.OpeningBalanceRow;
@@ -15,6 +18,24 @@ import java.time.ZoneOffset;
 final class BalanceFireViews {
 
     private BalanceFireViews() {}
+
+    static AmountSummaryView toView(AmountSummary summary) {
+        return new AmountSummaryView(
+                summary.shippedAmount().toPlainString(),
+                summary.shippedUnpricedKg().toPlainString(),
+                summary.toInvoiceAmount().toPlainString(),
+                summary.toInvoiceUnpricedKg().toPlainString(),
+                summary.subcontractorYarnAmount().toPlainString(),
+                summary.subcontractorUnpricedKg().toPlainString(),
+                summary.subcontractors().stream()
+                        .map(row -> new SubcontractorAmountView(
+                                row.subcontractorId(),
+                                row.subcontractorName(),
+                                row.balanceKg().toPlainString(),
+                                row.amount().toPlainString(),
+                                row.unpricedKg().toPlainString()))
+                        .toList());
+    }
 
     static BalanceMatrixRowView toView(BalanceMatrixRow row) {
         return new BalanceMatrixRowView(

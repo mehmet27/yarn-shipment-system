@@ -1,7 +1,7 @@
 import { API_SURESI_MS, SAYFA_SURESI_MS } from '../kurallar/hesap';
 import { IZINLI } from '../kurallar/yetki';
 import { expect, rolTanimli, test } from '../support/robot';
-import { iplikTanimla } from '../support/akis';
+import { fiyatYaz, iplikTanimla } from '../support/akis';
 import { damga, iplikSec } from '../support/yardimci';
 
 type Ozet = { shipments: Record<string, number> };
@@ -136,6 +136,7 @@ test('Dayanıklılık: yenileme, geri/ileri ve çift tıklama veri tekrarlamaz',
       .first()
       .fill(iplik);
     await mudur.sayfa.getByLabel(/Net kg 1/).fill('10');
+    await fiyatYaz(mudur.sayfa);
     await mudur.sayfa.getByRole('button', { name: 'Taslak oluştur' }).dblclick();
     await mudur.sayfa.waitForTimeout(2500);
     const sonra = await mudur.api<Ozet>('/api/v1/reports/dashboard');

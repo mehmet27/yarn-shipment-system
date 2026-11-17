@@ -5,6 +5,8 @@ import { expect, test } from '../support/test';
 async function fillRecipe(page: Page) {
   await page.getByLabel(/ya da listede yoksa yazın/).fill('20 denye likra');
   await page.getByLabel(/Net kg 1/).fill('2.036');
+  await page.getByRole('tab', { name: /Sipariş bilgileri/ }).click();
+  await page.getByLabel(/Birim fiyat/).fill('21,5');
 }
 
 test.describe('Yeni sevkiyat', { tag: '@panel' }, () => {

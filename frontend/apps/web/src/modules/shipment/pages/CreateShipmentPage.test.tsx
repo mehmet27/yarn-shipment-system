@@ -11,9 +11,12 @@ async function pick(label: string, option: string) {
   await userEvent.click(await screen.findByRole('option', { name: option }));
 }
 
-async function fillRecipe(netKg: string) {
+async function fillRecipe(netKg: string, withPrice = true) {
   await userEvent.type(await screen.findByLabelText(/ya da listede yoksa yazın/), '20 denye likra');
   await userEvent.type(screen.getByLabelText(/Net kg 1/), netKg);
+  if (!withPrice) return;
+  await userEvent.click(screen.getByRole('tab', { name: /Sipariş bilgileri/ }));
+  await userEvent.type(screen.getByLabelText(/Birim fiyat/), '21,5');
 }
 
 const LONG_FLOW_TIMEOUT_MS = 20_000;
@@ -84,7 +87,7 @@ describe('CreateShipmentPage', () => {
   it('reçete satırı eklenip silinir, en az bir satır kalır ve toplam canlı güncellenir', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/yeni');
-    await fillRecipe('1.000');
+    await fillRecipe('1.000', false);
     await userEvent.click(screen.getByRole('button', { name: 'Satır ekle' }));
     await userEvent.type(screen.getByLabelText(/Net kg 2/), '500,5');
     expect(screen.getByTestId('recipe-total')).toHaveTextContent('1.500,5 kg');

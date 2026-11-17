@@ -157,6 +157,30 @@ export interface FireRowView {
   invoicedAt?: string | null;
 }
 
+export interface SubcontractorAmountView {
+  subcontractorId: string;
+  subcontractorName: string;
+  balanceKg: string;
+  amount: string;
+  unpricedKg: string;
+}
+
+export interface AmountSummaryView {
+  /** Dönemde yola çıkan iplik tutarı, TL (2 ondalık) */
+  shippedAmount: string;
+  /** Fiyatı girilmemiş, tutara katılmayan kilo */
+  shippedUnpricedKg: string;
+  /** Faturalanacak eksik kilonun tutarı, TL */
+  toInvoiceAmount: string;
+  /** Fiyatı bilinmediği için tutarı hesaplanamayan faturalanacak kilo */
+  toInvoiceUnpricedKg: string;
+  /** Fasoncudaki kalan ipliğin tahmini değeri, TL */
+  subcontractorYarnAmount: string;
+  /** Fiyatı bulunamayan fasoncudaki iplik kilosu */
+  subcontractorUnpricedKg: string;
+  subcontractors: SubcontractorAmountView[];
+}
+
 export interface YarnVsFabricRowView {
   subcontractorId: string;
   subcontractorName: string;
@@ -338,6 +362,21 @@ to?: ToParameter;
 siteId?: SiteIdParameter;
 };
 
+export type GetAmountSummaryParams = {
+/**
+ * Dönem başı (dahil), Europe/Istanbul günü
+ */
+from?: FromParameter;
+/**
+ * Dönem sonu (dahil), Europe/Istanbul günü
+ */
+to?: ToParameter;
+/**
+ * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+ */
+siteId?: SiteIdParameter;
+};
+
 /**
  * @summary Panel ana sayfa özeti
  */
@@ -450,6 +489,20 @@ export const getToInvoiceReport = (
     }
 
 /**
+ * AMOUNT_VIEW gerekir. Her sevkiyat satırının birim fiyatı ayrıdır; tutarlar satır satır (kilo × o satırın fiyatı) toplanır. Fiyatı girilmemiş eski kayıtlar tutara katılmaz, kilosu ayrıca verilir.
+ * @summary Tutar bilgisi (TL)
+ */
+export const getAmountSummary = (
+    params?: GetAmountSummaryParams,
+ ) => {
+      return customInstance<AmountSummaryView>(
+      {url: `/api/v1/reports/amounts`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
  * BALANCE_VIEW gerekir. (fasoncu, iplik cinsi) için OPENING varsa satır atlanır.
  * @summary Açılış bakiyesini OPENING hareketi olarak içe aktarır
  */
@@ -477,4 +530,5 @@ export type GetBalanceMatrixResult = NonNullable<Awaited<ReturnType<typeof getBa
 export type GetFireReportResult = NonNullable<Awaited<ReturnType<typeof getFireReport>>>
 export type GetYarnVsFabricReportResult = NonNullable<Awaited<ReturnType<typeof getYarnVsFabricReport>>>
 export type GetToInvoiceReportResult = NonNullable<Awaited<ReturnType<typeof getToInvoiceReport>>>
+export type GetAmountSummaryResult = NonNullable<Awaited<ReturnType<typeof getAmountSummary>>>
 export type ImportOpeningBalanceResult = NonNullable<Awaited<ReturnType<typeof importOpeningBalance>>>

@@ -5,11 +5,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.yarnshipment.reporting.TestTokens;
+import com.yarnshipment.reporting.application.port.in.GetAmountSummaryUseCase;
 import com.yarnshipment.reporting.application.port.in.ImportOpeningBalanceUseCase;
 import com.yarnshipment.reporting.application.port.in.ListBalanceMatrixUseCase;
 import com.yarnshipment.reporting.application.port.in.ListFireReportUseCase;
 import com.yarnshipment.reporting.application.port.in.ListToInvoiceUseCase;
 import com.yarnshipment.reporting.application.port.in.ListYarnVsFabricUseCase;
+import com.yarnshipment.reporting.domain.model.AmountSummary;
 import com.yarnshipment.reporting.domain.model.BalanceMatrixRow;
 import com.yarnshipment.reporting.domain.model.FireFile;
 import com.yarnshipment.reporting.domain.model.OpeningImportResult;
@@ -47,6 +49,9 @@ class BalanceFireControllerTest {
 
     @MockitoBean
     private ListToInvoiceUseCase listToInvoice;
+
+    @MockitoBean
+    private GetAmountSummaryUseCase getAmountSummary;
 
     @MockitoBean
     private ImportOpeningBalanceUseCase importOpening;
@@ -127,6 +132,36 @@ class BalanceFireControllerTest {
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.imported").isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Tutar bilgisi tutar görme izni olana döner; tutarlar iki ondalıklı dizedir")
+    void shouldReturnAmountSummary() {
+        when(getAmountSummary.getAmountSummary(any()))
+                .thenReturn(new AmountSummary(
+                        new BigDecimal("412300.00"),
+                        BigDecimal.ZERO,
+                        new BigDecimal("96400.00"),
+                        BigDecimal.ZERO,
+                        List.of()));
+
+        MvcTestResult result = get(BASE + "/amounts");
+
+        assertThat(result).hasStatusOk();
+        assertThat(result).bodyJson().extractingPath("$.shippedAmount").isEqualTo("412300.00");
+        assertThat(result).bodyJson().extractingPath("$.toInvoiceAmount").isEqualTo("96400.00");
+    }
+
+    @Test
+    @DisplayName("Tutar bilgisini tutar izni olmayan (depo) göremez: 403")
+    void shouldHideAmountsFromWarehouse() {
+        MvcTestResult result = mvc.get()
+                .uri(BASE + "/amounts")
+                .with(SecurityMockMvcRequestPostProcessors.authentication(TestTokens.CONVERTER.convert(
+                        TestTokens.token("warehouse").build())))
+                .exchange();
+
+        assertThat(result).hasStatus(org.springframework.http.HttpStatus.FORBIDDEN);
     }
 
     private static Jwt manager() {

@@ -50,7 +50,12 @@ public final class RolePermissionMatrix {
         // Rapor ve bakiye ekranları fasoncu/iplik adlarını ana veri listesinden çözer; yalnız okuma izni yeter.
         matrix.put(
                 Role.GENERAL_MANAGER,
-                EnumSet.of(Permission.REPORT_VIEW, Permission.BALANCE_VIEW, Permission.MASTER_DATA_VIEW));
+                EnumSet.of(
+                        Permission.REPORT_VIEW,
+                        Permission.AMOUNT_VIEW,
+                        Permission.BALANCE_VIEW,
+                        Permission.CENTRAL_STOCK_VIEW,
+                        Permission.MASTER_DATA_VIEW));
         matrix.put(Role.SYSTEM, permissionsForSystem());
         return Map.copyOf(matrix);
     }
@@ -123,6 +128,7 @@ public final class RolePermissionMatrix {
                 Permission.DISCREPANCY_VIEW,
                 Permission.AUDIT_VIEW,
                 Permission.REPORT_VIEW,
+                Permission.AMOUNT_VIEW,
                 Permission.FIRE_RATE_EDIT,
                 Permission.INVOICE_MARK,
                 Permission.BALANCE_VIEW,

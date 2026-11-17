@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { expect } from './robot';
 import type { Robot } from './robot';
 import { resim, sec } from './yardimci';
@@ -15,6 +16,18 @@ export async function iplikTanimla(mudur: Robot, ad: string) {
   await pencere.getByLabel('İplik adı *', { exact: true }).fill(ad);
   await pencere.getByRole('button', { name: 'Kaydet' }).click();
   await pencere.waitFor({ state: 'hidden' });
+}
+
+/** Yeni sevkiyat formunda reçete satırının birim fiyatını (zorunlu) "Sipariş bilgileri" sekmesinden yazar. */
+export async function fiyatYaz(sayfa: Page, fiyat = '21,5') {
+  await sayfa
+    .getByRole('tab', { name: /Sipariş bilgileri/ })
+    .first()
+    .click();
+  await sayfa
+    .getByLabel(/Birim fiyat/)
+    .first()
+    .fill(fiyat);
 }
 
 export type Yonetim = { depo: Robot; mudur: Robot };
@@ -49,6 +62,7 @@ export async function taslakAc(
     .first()
     .fill(iplik);
   await mudur.sayfa.getByLabel(/Net kg 1/).fill(kg);
+  await fiyatYaz(mudur.sayfa);
   await mudur.sayfa.getByRole('button', { name: 'Taslak oluştur' }).click();
   await mudur.sayfa.waitForURL(/sevkiyat\/[0-9a-f-]{30,}$/);
   return mudur.sayfa.url().split('/').pop() ?? '';

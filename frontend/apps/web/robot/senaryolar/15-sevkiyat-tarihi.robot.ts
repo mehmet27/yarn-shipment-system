@@ -46,6 +46,14 @@ test('Sevkiyat tarihi: müdür tarih girer, depo tarih gelmeden işlem yapamaz',
       'çıkış tartısı düğmesi görünmemeli',
       (await depo.sayfa.getByRole('link', { name: 'Çıkış tartısını gir' }).count()) === 0,
     );
+    await expect(
+      depo.sayfa.getByText(/Çıkış fotoğrafı, sevkiyat tarihi gelmeden eklenemez/),
+    ).toBeVisible();
+    depo.kontrol(
+      'tarih gelmeden: fotoğraf çek ve dosya seç düğmeleri pasif olmalı',
+      (await depo.sayfa.getByRole('button', { name: 'Fotoğraf çek' }).isDisabled()) &&
+        (await depo.sayfa.getByRole('button', { name: 'Dosya seç' }).isDisabled()),
+    );
     await depo.sayfa.goto(`/panel/sevkiyat/${id}/cikis`);
     await expect(depo.sayfa.getByText(/Bu tarihten önce çuval atanamaz/)).toBeVisible();
     depo.kontrol(
@@ -55,10 +63,28 @@ test('Sevkiyat tarihi: müdür tarih girer, depo tarih gelmeden işlem yapamaz',
   });
 
   await depo.adim(
-    'tarih gelmeden: sunucu çuval atamayı ve çıkış tartısını da reddeder',
+    'tarih gelmeden: sunucu çuval atamayı, çıkış tartısını ve çıkış fotoğrafını da reddeder',
     async () => {
-      for (const yol of ['bags', 'dispatch-weighing']) {
-        const kod = await depo.sayfa.evaluate(async (adres) => {
+      const istekler = [
+        { ad: 'bags', adres: `/api/v1/shipments/${id}/bags`, govde: { weightsKg: ['25.000'] } },
+        {
+          ad: 'dispatch-weighing',
+          adres: `/api/v1/shipments/${id}/dispatch-weighing`,
+          govde: { grossKg: '2000.000', tareKg: '1000.000', bagCount: 1 },
+        },
+        {
+          ad: 'çıkış fotoğrafı',
+          adres: '/api/v1/evidence/uploads',
+          govde: {
+            shipmentId: id,
+            evidenceType: 'DISPATCH_SCALE',
+            mimeType: 'image/jpeg',
+            sizeBytes: 1000,
+          },
+        },
+      ];
+      for (const istek of istekler) {
+        const kod = await depo.sayfa.evaluate(async ({ adres, govde }) => {
           const cerez = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='));
           const yanit = await fetch(adres, {
             method: 'POST',
@@ -67,16 +93,12 @@ test('Sevkiyat tarihi: müdür tarih girer, depo tarih gelmeden işlem yapamaz',
               'Idempotency-Key': crypto.randomUUID(),
               'X-XSRF-TOKEN': decodeURIComponent(cerez?.split('=')[1] ?? ''),
             },
-            body: JSON.stringify(
-              adres.endsWith('/bags')
-                ? { weightsKg: ['25.000'] }
-                : { grossKg: '2000.000', tareKg: '1000.000', bagCount: 1 },
-            ),
+            body: JSON.stringify(govde),
           });
           return `${String(yanit.status)} ${((await yanit.json()) as { code?: string }).code ?? ''}`;
-        }, `/api/v1/shipments/${id}/${yol}`);
+        }, istek);
         depo.kontrol(
-          `${yol}: sunucu 409 SHIPMENT_NOT_DUE dönmeli`,
+          `${istek.ad}: sunucu 409 SHIPMENT_NOT_DUE dönmeli`,
           kod === '409 SHIPMENT_NOT_DUE',
           kod,
         );
@@ -91,6 +113,10 @@ test('Sevkiyat tarihi: müdür tarih girer, depo tarih gelmeden işlem yapamaz',
       await mudur.sayfa.getByRole('button', { name: 'Tarihi değiştir' }).click();
       const alan = mudur.sayfa.getByLabel(/Yeni sevkiyat tarihi/);
       await alan.fill(istanbulGunu(-1));
+      mudur.kontrol(
+        'tarih alanının adı kısa: "(şu an ...)" eki yok',
+        (await mudur.sayfa.getByText(/\(şu an/).count()) === 0,
+      );
       mudur.kontrol(
         'geçmiş tarihle güncelle düğmesi pasif',
         await mudur.sayfa.getByRole('button', { name: 'Tarihi güncelle' }).isDisabled(),

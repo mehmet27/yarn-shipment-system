@@ -29,7 +29,11 @@ export function ShipmentFileTop({ shipment }: { shipment: ShipmentDetail }) {
         shipmentDate={shipment.shipmentDate}
         actions={shipment.allowedActions}
       />
-      <EvidenceUpload shipmentId={shipment.shipmentId} isCompleted={isCompleted(shipment)} />
+      <EvidenceUpload
+        shipmentId={shipment.shipmentId}
+        isCompleted={isCompleted(shipment)}
+        shipmentDate={shipment.shipmentDate}
+      />
     </>
   );
 }

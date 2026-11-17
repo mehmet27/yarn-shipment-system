@@ -12,7 +12,6 @@ import com.yarnshipment.evidence.TestUploads;
 import com.yarnshipment.evidence.application.port.in.ListEvidenceQuery;
 import com.yarnshipment.evidence.application.port.out.EvidenceStorePort;
 import com.yarnshipment.evidence.application.port.out.ShipmentAccessPort;
-import com.yarnshipment.evidence.application.port.out.ShipmentAccessPort.ShipmentSnapshot;
 import com.yarnshipment.evidence.domain.model.EvidenceFile;
 import com.yarnshipment.evidence.domain.model.EvidenceType;
 import java.time.Clock;
@@ -56,6 +55,6 @@ class ListEvidenceServiceTest {
 
     private void snapshot(UUID siteId, boolean completed) {
         when(shipments.findAccessible(TestUploads.SHIPMENT_ID))
-                .thenReturn(new ShipmentSnapshot(TestUploads.SHIPMENT_ID, siteId, false, completed));
+                .thenReturn(TestUploads.snapshot(TestUploads.SHIPMENT_ID, siteId, false, completed));
     }
 }

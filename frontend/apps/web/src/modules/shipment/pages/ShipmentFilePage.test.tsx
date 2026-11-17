@@ -51,6 +51,16 @@ describe('sevkiyat günü', () => {
     expect(screen.queryByRole('link', { name: 'Çıkış tartısını gir' })).not.toBeInTheDocument();
   });
 
+  it('depo, sevkiyat günü gelmeden çıkış fotoğrafı yükleyemez; nedeni yazılır', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    renderApp(`/panel/sevkiyat/${futureShipment().shipmentId}`);
+    expect(
+      await screen.findByText(/Çıkış fotoğrafı, sevkiyat tarihi gelmeden eklenemez/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Fotoğraf çek' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Dosya seç' })).toBeDisabled();
+  });
+
   it('sevkiyat günü gelmiş sevkiyatta depo çıkış tartısı düğmesini görür', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/sevkiyat/shp-0001');

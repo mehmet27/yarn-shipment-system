@@ -1,6 +1,6 @@
 import { toProblem } from '@iplik/api-client';
-import { formatDate, todayIsoDate, useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Paper, Stack, TextInput } from '@iplik/ui';
+import { todayIsoDate, useTranslation } from '@iplik/i18n';
+import { Alert, Button, Group, Stack, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useUpdateShipmentDate } from '../hooks/useUpdateShipmentDate';
 
@@ -33,44 +33,41 @@ export function UpdateShipmentDateForm({ shipmentId, shipmentDate }: UpdateShipm
     );
   }
   return (
-    <Paper withBorder p="sm">
-      <Stack>
+    <Stack gap="xs">
+      <Group align="flex-end" gap="sm">
         <TextInput
           type="date"
-          label={t('shipment.schedule.label', { date: formatDate(shipmentDate) })}
+          label={t('shipment.schedule.label')}
           value={day}
           min={todayIsoDate()}
+          w={190}
           onChange={(event) => {
             setDay(event.currentTarget.value);
           }}
         />
-        {mutation.isError && (
-          <Alert color="red">{t(errorKey(toProblem(mutation.error).code))}</Alert>
-        )}
-        <Group>
-          <Button
-            disabled={day === '' || day < todayIsoDate()}
-            loading={mutation.isPending}
-            onClick={() => {
-              mutation.mutate(day, {
-                onSuccess: () => {
-                  setIsOpen(false);
-                },
-              });
-            }}
-          >
-            {t('shipment.schedule.save')}
-          </Button>
-          <Button
-            variant="default"
-            onClick={() => {
-              setIsOpen(false);
-            }}
-          >
-            {t('shipment.schedule.dismiss')}
-          </Button>
-        </Group>
-      </Stack>
-    </Paper>
+        <Button
+          disabled={day === '' || day < todayIsoDate()}
+          loading={mutation.isPending}
+          onClick={() => {
+            mutation.mutate(day, {
+              onSuccess: () => {
+                setIsOpen(false);
+              },
+            });
+          }}
+        >
+          {t('shipment.schedule.save')}
+        </Button>
+        <Button
+          variant="default"
+          onClick={() => {
+            setIsOpen(false);
+          }}
+        >
+          {t('shipment.schedule.dismiss')}
+        </Button>
+      </Group>
+      {mutation.isError && <Alert color="red">{t(errorKey(toProblem(mutation.error).code))}</Alert>}
+    </Stack>
   );
 }

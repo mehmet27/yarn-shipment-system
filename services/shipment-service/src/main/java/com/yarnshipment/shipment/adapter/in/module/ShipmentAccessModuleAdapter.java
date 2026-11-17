@@ -38,7 +38,10 @@ final class ShipmentAccessModuleAdapter implements ShipmentAccessApi {
                     .getShipment(new GetShipmentQuery(actor, shipmentId))
                     .shipment();
             return new ShipmentSummary(
-                    shipment.id(), shipment.siteId(), shipment.status().name());
+                    shipment.id(),
+                    shipment.siteId(),
+                    shipment.status().name(),
+                    shipment.shipmentDate());
         } catch (ShipmentNotFoundException | AccessDeniedException exception) {
             throw new ShipmentNotVisibleException(shipmentId);
         }

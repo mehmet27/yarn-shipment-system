@@ -28,6 +28,8 @@ export async function fiyatYaz(sayfa: Page, fiyat = '21,5') {
     .getByLabel(/Birim fiyat/)
     .first()
     .fill(fiyat);
+  // Sekme seçimi formda kalır; sonraki adımlar iplik/kilo alanlarını arayacağı için İplik sekmesine dön.
+  await sayfa.getByRole('tab', { name: 'İplik', exact: true }).first().click();
 }
 
 export type Yonetim = { depo: Robot; mudur: Robot };

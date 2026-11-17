@@ -2,7 +2,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Button, Group, Paper, Stack, Tabs, Text } from '@iplik/ui';
 import { useState } from 'react';
 import type { RecipeLineDraft } from './createDraft';
-import { lineError, priceValid } from './createDraft';
+import { lineError } from './createDraft';
 import { OrderFieldGrid } from './OrderFieldGrid';
 import { YarnTabFields } from './YarnTabFields';
 
@@ -27,7 +27,8 @@ export function RecipeLineRow({
   const { t } = useTranslation();
   const error = showErrors ? lineError(line) : undefined;
   const [tab, setTab] = useState<string>('yarn');
-  const active = showErrors && !priceValid(line.unitPrice) ? 'order' : tab;
+  // Sipariş sekmesi yalnızca tek eksik fiyat olduğunda öne alınır; iplik/kilo hatası varsa İplik sekmesi görünür kalır.
+  const active = error === 'linePriceInvalid' ? 'order' : tab;
   return (
     <Paper withBorder p="sm" radius="md">
       <Stack gap="xs">

@@ -10,7 +10,7 @@ export type UpdateShipmentTransportFormProps = {
   plateNo?: string | undefined;
 };
 
-/** Müdür: açık sevkiyatın şoför ve aracını düzeltir; önce "Şoför / araç değiştir" ile form açılır. */
+/** Müdür: taslak sevkiyatın şoför ve aracını düzeltir; önce "Şoför / araç değiştir" ile form açılır. */
 export function UpdateShipmentTransportForm(props: UpdateShipmentTransportFormProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);

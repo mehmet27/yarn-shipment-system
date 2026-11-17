@@ -38,9 +38,9 @@ test('Eksik kilo: neden zorunlu, müdür zilde görür, kararı depoya döner', 
     ).toBeVisible();
   });
 
-  await mudur.adim('müdür çuval ekle-çıkar der; depo isteği ve notu görür', async () => {
+  await mudur.adim('müdür çuval ekle / çıkar der; depo isteği ve notu görür', async () => {
     await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
-    await mudur.sayfa.getByText('Çuval ekle-çıkar', { exact: true }).click();
+    await mudur.sayfa.getByRole('radio', { name: /Çuval ekle/ }).click();
     await mudur.sayfa.getByLabel(/Gerekçe/).fill('Eksik çuvalı ekleyin');
     await mudur.sayfa.getByRole('button', { name: 'Kararı kaydet' }).click();
     await depo.sayfa.goto(`/panel/sevkiyat/${id}`);

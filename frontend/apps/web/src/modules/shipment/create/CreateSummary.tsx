@@ -1,6 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Group, Icon, Paper, Stack, Text } from '@iplik/ui';
-import { calculateFire, formatKgText, isKilogram, parseFireRatePct } from '@iplik/units';
+import { calculateFire, formatKgText, isKilogram, parseFireRatePct, parseKg } from '@iplik/units';
+import { CentralStockNotice } from '../stock/CentralStockNotice';
 import type { CreateDraft, CreateFieldErrors } from './createDraft';
 import { totalNetKg } from './createDraft';
 import { FireRateField } from './FireRateField';
@@ -68,6 +69,14 @@ export function CreateSummary({
           <Text c="dimmed">{t('create.summary.expectedFabric')}</Text>
           <Text fw={700}>{fabric === undefined ? '—' : `≈ ${formatKgText(fabric)}`}</Text>
         </Group>
+        <CentralStockNotice
+          alwaysShow={false}
+          demands={draft.lines.map((line) => ({
+            productId: line.yarn?.value,
+            yarn: line.yarn?.label ?? '',
+            kg: parseKg(line.netKg) ?? '',
+          }))}
+        />
         {failure !== undefined && <Alert color="red">{failure}</Alert>}
         <Button loading={isSubmitting} leftSection={<Icon name="check" />} onClick={onSubmit}>
           {t('create.submit')}

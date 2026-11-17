@@ -50,9 +50,9 @@ export function allowedActionsOf(status: ShipmentStatus): InternalShipmentView['
         'UPDATE_TRANSPORT',
       ];
     case 'WEIGHT_MISMATCH':
-      return ['CANCEL', 'RESOLVE_WEIGHT_MISMATCH', 'UPDATE_TRANSPORT'];
+      return ['CANCEL', 'RESOLVE_WEIGHT_MISMATCH'];
     case 'AWAITING_DELIVERY':
-      return ['COMPLETE', 'CANCEL', 'UPDATE_TRANSPORT'];
+      return ['COMPLETE', 'CANCEL'];
     case 'COMPLETED':
       return ['OPEN_QUALITY_CLAIM', 'CREATE_CORRECTION'];
     case 'CANCELLED':
@@ -78,8 +78,14 @@ function createShipment(index: number): InternalShipmentView {
     plannedBagCount: 40,
     plannedNetKg: kg('1982.500'),
     lines: [
-      { lineNo: 1, yarnTypeId: 'prd-1', yarnTypeText: '36/1 Viskon', netKg: kg('1500.000') },
-      { lineNo: 2, yarnTypeText: '20 denye likra', netKg: kg('482.500') },
+      {
+        lineNo: 1,
+        yarnTypeId: 'prd-1',
+        yarnTypeText: '36/1 Viskon',
+        netKg: kg('1500.000'),
+        unitPrice: '12.5000',
+      },
+      { lineNo: 2, yarnTypeText: '20 denye likra', netKg: kg('482.500'), unitPrice: '10.0000' },
     ],
     fireRate: '0.0400',
     shipmentDate: '2026-10-20',

@@ -44,24 +44,48 @@ describe('Kantar uyuşmazlığı', () => {
     expect(within(recipe).getByText(/Fire oranı: %4/)).toBeInTheDocument();
   });
 
-  it('müdür gerekçesiz karar veremez, gerekçeyle iplik listesini güncelleyince sevkiyat yola çıkar', async () => {
+  it('"İplik güncelle" reçete sayfasına götürür; kilolar tutmadan kaydedilemez, tutunca sevkiyat yola çıkar', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp(MISMATCH);
-    const submit = await screen.findByRole('button', { name: 'Kararı kaydet' });
-    expect(submit).toBeDisabled();
-    await userEvent.click(screen.getByText('İplik listesini güncelle'));
-    await userEvent.type(screen.getByLabelText(/Gerekçe/), 'Fark kabul edildi');
+    await userEvent.click(await screen.findByRole('radio', { name: /İplik güncelle/ }));
+    await userEvent.click(screen.getByRole('link', { name: 'İplik listesini düzelt' }));
+    const status = await screen.findByTestId('recipe-weight-status');
+    expect(status).toHaveTextContent('Kilolar henüz tutmuyor');
+    const submit = screen.getByRole('button', { name: 'Kaydet ve yola çıkar' });
+    await userEvent.type(screen.getByLabelText(/Gerekçe/), 'Reçete düzeltildi');
+    const secondKg = screen.getByLabelText('Net kg 2');
+    await userEvent.clear(secondKg);
+    await userEvent.type(secondKg, '470');
+    expect(await screen.findByTestId('recipe-weight-status')).toHaveTextContent(
+      'Kilolar tuttu, sevkiyat yola çıkabilir',
+    );
     await userEvent.click(submit);
     expect(
       await screen.findByText('Fasoncuya yolda', { selector: '.mantine-Badge-label' }),
     ).toBeInTheDocument();
   });
 
+  it('kilolar tartıyı tutmuyorsa sunucu reddeder ve sevkiyat uyuşmazlıkta kalır', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp(`${MISMATCH}/recete`);
+    await screen.findByTestId('recipe-weight-status');
+    await userEvent.type(screen.getByLabelText(/Gerekçe/), 'Deneme');
+    const secondKg = screen.getByLabelText('Net kg 2');
+    await userEvent.clear(secondKg);
+    await userEvent.type(secondKg, '470');
+    await userEvent.clear(secondKg);
+    await userEvent.type(secondKg, '469,5');
+    expect(screen.getByTestId('recipe-weight-status')).toHaveTextContent('Kilolar henüz tutmuyor');
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet ve yola çıkar' }));
+    expect(await screen.findByTestId('recipe-error')).toHaveTextContent('Kilolar tartıyı tutmuyor');
+    expect(screen.queryByText('Fasoncuya yolda')).not.toBeInTheDocument();
+  });
+
   it('karar paneli üç seçeneği sunar', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp(MISMATCH);
     const panel = await screen.findByTestId('weight-decision');
-    ['İptal et', 'Çuval ekle-çıkar', 'İplik listesini güncelle'].forEach((name) => {
+    ['Sevkiyatı iptal et', 'Çuval ekle / çıkar', 'İplik güncelle'].forEach((name) => {
       expect(within(panel).getByText(name)).toBeInTheDocument();
     });
   });
@@ -77,9 +101,9 @@ describe('Kantar uyuşmazlığı', () => {
   it('müdür uyuşmazlıktaki sevkiyatı iptal edebilir', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp(MISMATCH);
-    await userEvent.click(await screen.findByRole('button', { name: 'İptal et' }));
-    await userEvent.type(screen.getByLabelText('İptal gerekçesi'), 'Araç döndü');
-    await userEvent.click(screen.getByRole('button', { name: 'Sevkiyatı iptal et' }));
+    await userEvent.click(await screen.findByRole('radio', { name: /Sevkiyatı iptal et/ }));
+    await userEvent.type(screen.getByLabelText(/Gerekçe/), 'Araç döndü');
+    await userEvent.click(screen.getByRole('button', { name: 'Kararı kaydet' }));
     expect(
       await screen.findByText('İptal', { selector: '.mantine-Badge-label' }),
     ).toBeInTheDocument();
@@ -115,7 +139,7 @@ describe('Kantar uyuşmazlığı', () => {
   it('müdür çuval ekle-çıkar derse sevkiyat dosyasında müdürün isteği ve notu görünür', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp(MISMATCH);
-    await userEvent.click(await screen.findByText('Çuval ekle-çıkar'));
+    await userEvent.click(await screen.findByRole('radio', { name: /Çuval ekle/ }));
     await userEvent.type(screen.getByLabelText(/Gerekçe/), 'Eksik çuvalı ekleyin');
     await userEvent.click(screen.getByRole('button', { name: 'Kararı kaydet' }));
     const note = await screen.findByTestId('manager-decision-note');

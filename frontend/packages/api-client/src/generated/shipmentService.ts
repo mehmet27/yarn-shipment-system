@@ -481,8 +481,29 @@ export interface WeightCheckView {
   decisionReason?: string;
 }
 
+/**
+ * İptal ya da çuval ekle/çıkar; reçete güncelleme ayrı uçtadır
+ */
+export type WeightDecisionChoice = typeof WeightDecisionChoice[keyof typeof WeightDecisionChoice];
+
+
+export const WeightDecisionChoice = {
+  CANCEL: 'CANCEL',
+  ADD_REMOVE_BAGS: 'ADD_REMOVE_BAGS',
+} as const;
+
 export interface WeightDecisionRequest {
-  decision: WeightDecisionKind;
+  decision: WeightDecisionChoice;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  reason: string;
+}
+
+export interface UpdateRecipeRequest {
+  /** @minItems 1 */
+  lines: RecipeLineInput[];
   /**
      * @minLength 1
      * @maxLength 500
@@ -2323,9 +2344,9 @@ export const updateShipmentDate = (
     }
 
 /**
- * Müdür (SHIPMENT_CREATE). Tamamlanmamış sevkiyatta (taslak, kantar uyuşmazlığı, teslim bekleyen) şoför ve/veya
- * araç değiştirilir. Şoför kimliği ile adı, araç kimliği ile plakası birlikte verilir (400); verilmeyen bilgi
- * değişmez, en az biri verilmelidir. Tamamlanmış ya da iptal edilmiş sevkiyat `INVALID_SHIPMENT_STATUS` döner.
+ * Müdür (SHIPMENT_CREATE). Yalnızca taslak sevkiyatta şoför ve/veya araç değiştirilir
+ * (yola çıkmış ya da kantar uyuşmazlığındaki sevkiyatta değişmez). Şoför kimliği ile adı, araç kimliği ile plakası birlikte verilir (400); verilmeyen bilgi
+ * değişmez, en az biri verilmelidir. Taslak dışındaki sevkiyat `INVALID_SHIPMENT_STATUS` döner.
  * @summary Sevkiyatın şoför ve araç bilgisini düzeltir
  */
 export const updateShipmentTransport = (
@@ -2361,9 +2382,8 @@ export const cancelShipment = (
 
 /**
  * Müdür ya da yönetici (SHIPMENT_CANCEL). `CANCEL`: sevkiyat iptal olur, çuvallar serbest kalır. `ADD_REMOVE_BAGS`:
- * sevkiyat DRAFT'a döner, depo çuvalı düzeltip yeniden tartar (önceki tartım silinmez). `UPDATE_RECIPE`: reçete
- * satırları tartılan net'e orantılı ölçeklenir (yuvarlama farkı son satırda) ve sevkiyat `AWAITING_DELIVERY` olur.
- * Gerekçe zorunludur. Sevkiyat `WEIGHT_MISMATCH` değilse `INVALID_SHIPMENT_STATUS`.
+ * sevkiyat DRAFT'a döner, depo çuvalı düzeltip yeniden tartar (önceki tartım silinmez). Reçeteyi
+ * güncellemek için `PUT /recipe` kullanılır. Gerekçe zorunludur. Sevkiyat `WEIGHT_MISMATCH` değilse `INVALID_SHIPMENT_STATUS`.
  * @summary Kantar uyuşmazlığına karar verir (WEIGHT_MISMATCH)
  */
 export const decideWeightMismatch = (
@@ -2374,6 +2394,26 @@ export const decideWeightMismatch = (
       {url: `/api/v1/shipments/${shipmentId}/weight-decision`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: weightDecisionRequest
+    },
+      );
+    }
+
+/**
+ * Müdür ya da yönetici (SHIPMENT_CANCEL). Satır sırası satır numarasıdır; mevcut satırlar yerinde düzeltilir,
+ * fazlası eklenir, satır silinemez (az satır `INVALID_WEIGHT_DECISION`). Satırların toplamı tartılan net'e kantar
+ * toleransı içinde uyuyorsa reçete kaydedilir ve sevkiyat `AWAITING_DELIVERY` (yolda) olur. Uymuyorsa hiçbir şey
+ * kaydedilmez ve `409 RECIPE_WEIGHT_MISMATCH` döner (`recipeKg`, `measuredKg`, `toleranceKg`). Gerekçe zorunludur.
+ * Sevkiyat `WEIGHT_MISMATCH` değilse `INVALID_SHIPMENT_STATUS`.
+ * @summary Kantar uyuşmazlığındaki sevkiyatın reçetesini düzeltir; tartıyı tutuyorsa yola çıkarır (WEIGHT_MISMATCH)
+ */
+export const updateRecipeAndDispatch = (
+    shipmentId: string,
+    updateRecipeRequest: UpdateRecipeRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/recipe`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updateRecipeRequest
     },
       );
     }
@@ -2560,6 +2600,7 @@ export type UpdateShipmentDateResult = NonNullable<Awaited<ReturnType<typeof upd
 export type UpdateShipmentTransportResult = NonNullable<Awaited<ReturnType<typeof updateShipmentTransport>>>
 export type CancelShipmentResult = NonNullable<Awaited<ReturnType<typeof cancelShipment>>>
 export type DecideWeightMismatchResult = NonNullable<Awaited<ReturnType<typeof decideWeightMismatch>>>
+export type UpdateRecipeAndDispatchResult = NonNullable<Awaited<ReturnType<typeof updateRecipeAndDispatch>>>
 export type GetShipmentSettingsResult = NonNullable<Awaited<ReturnType<typeof getShipmentSettings>>>
 export type SaveShipmentSettingsResult = NonNullable<Awaited<ReturnType<typeof saveShipmentSettings>>>
 export type RecordCorrectionResult = NonNullable<Awaited<ReturnType<typeof recordCorrection>>>

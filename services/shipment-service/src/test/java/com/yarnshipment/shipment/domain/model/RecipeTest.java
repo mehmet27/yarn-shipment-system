@@ -24,24 +24,21 @@ class RecipeTest {
     }
 
     @Test
-    @DisplayName("Satırlar tartıya orantılı ölçeklenir ve toplam tam olarak tartıya eşit olur")
-    void shouldScaleLinesAndKeepExactTotal() {
-        List<RecipeLine> scaled = Recipe.scaleTo(
-                List.of(line(1, "100.000"), line(2, "100.000"), line(THIRD, "100.000")), new BigDecimal("200.000"));
+    @DisplayName("Reçete toplamı tartılan net'ten en çok tolerans kadar farklıysa tartıyı tutar")
+    void shouldFitWeighingWithinTolerance() {
+        List<RecipeLine> lines = List.of(line(1, "1000.000"), line(2, "980.000"));
+        BigDecimal tolerance = new BigDecimal("5.000");
 
-        assertThat(Recipe.totalKg(scaled)).isEqualByComparingTo("200.000");
-        assertThat(scaled)
-                .extracting(RecipeLine::netKg)
-                .allSatisfy(kg -> assertThat(kg).isPositive());
-        assertThat(scaled.get(0).netKg()).isEqualByComparingTo("66.667");
-        assertThat(scaled.get(2).netKg()).isEqualByComparingTo("66.666");
-    }
-
-    @Test
-    @DisplayName("Ölçekleme bir satırı sıfıra indirecekse reddedilir")
-    void shouldRejectScalingToZeroLine() {
-        assertThatThrownBy(() -> Recipe.scaleTo(List.of(line(1, "0.001"), line(2, "100.000")), new BigDecimal("1.000")))
-                .isInstanceOf(InvalidWeightDecisionException.class);
+        assertThat(Recipe.fitsWeighing(lines, new BigDecimal("1980.000"), tolerance))
+                .isTrue();
+        assertThat(Recipe.fitsWeighing(lines, new BigDecimal("1985.000"), tolerance))
+                .isTrue();
+        assertThat(Recipe.fitsWeighing(lines, new BigDecimal("1975.000"), tolerance))
+                .isTrue();
+        assertThat(Recipe.fitsWeighing(lines, new BigDecimal("1985.001"), tolerance))
+                .isFalse();
+        assertThat(Recipe.fitsWeighing(lines, new BigDecimal("1974.999"), tolerance))
+                .isFalse();
     }
 
     @Test

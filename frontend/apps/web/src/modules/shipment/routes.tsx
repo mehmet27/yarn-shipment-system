@@ -5,6 +5,7 @@ import { ExitSlipPage } from './pages/ExitSlipPage';
 import { DispatchWeighingPage } from './pages/DispatchWeighingPage';
 import { ShipmentFilePage } from './pages/ShipmentFilePage';
 import { ShipmentListPage } from './pages/ShipmentListPage';
+import { UpdateRecipePage } from './pages/UpdateRecipePage';
 
 /** /panel altındaki sevkiyat route'ları. */
 export const shipmentPanelRoutes: RouteObject[] = [
@@ -45,6 +46,14 @@ export const shipmentPanelRoutes: RouteObject[] = [
     element: (
       <RequirePermission permission="DISPATCH_RECORD">
         <DispatchWeighingPage />
+      </RequirePermission>
+    ),
+  },
+  {
+    path: 'sevkiyat/:shipmentId/recete',
+    element: (
+      <RequirePermission permission="SHIPMENT_CANCEL">
+        <UpdateRecipePage />
       </RequirePermission>
     ),
   },

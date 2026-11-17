@@ -88,6 +88,7 @@ export {
   assignShipmentBags,
   cancelShipment,
   decideWeightMismatch,
+  updateRecipeAndDispatch,
   getShipmentSettings,
   saveShipmentSettings,
   changeLoginAccountEnabled,
@@ -109,6 +110,8 @@ export type {
   WeightCheckView,
   WeightDecisionKind,
   WeightDecisionRequest,
+  WeightDecisionChoice,
+  UpdateRecipeRequest,
 } from './masterData';
 export type {
   ChangeLoginAccountEnabledRequest,

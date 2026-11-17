@@ -6,9 +6,7 @@ const isText = (value: unknown): value is string => typeof value === 'string' &&
 const problem = (status: number, code: string, title: string) =>
   HttpResponse.json({ status, code, title }, { status });
 
-const OPEN_STATUSES = ['DRAFT', 'WEIGHT_MISMATCH', 'AWAITING_DELIVERY'];
-
-/** Şoför ve araç düzeltme: açık sevkiyatta; en az biri gerekir, verilmeyen alan değişmez. */
+/** Şoför ve araç düzeltme: yalnızca taslakta; en az biri gerekir, verilmeyen alan değişmez. */
 export const updateTransportHandler = http.put(
   `${SHIPMENTS_PATH}/:shipmentId/transport`,
   async ({ params, request }) => {
@@ -20,7 +18,7 @@ export const updateTransportHandler = http.put(
     if (driverName === undefined && plateNo === undefined) {
       return problem(400, 'VALIDATION_FAILED', 'Şoför ya da araç gerekli');
     }
-    if (!OPEN_STATUSES.includes(shipment.status)) {
+    if (shipment.status !== 'DRAFT') {
       return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
     }
     updateMockShipmentTransport(shipment.shipmentId, {

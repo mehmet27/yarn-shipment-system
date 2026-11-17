@@ -10,6 +10,7 @@ import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.InvalidWeightDecisionException;
 import com.yarnshipment.shipment.domain.model.ShipmentNotDueException;
 import com.yarnshipment.shipment.domain.model.ShortfallReasonRequiredException;
+import com.yarnshipment.shipment.domain.weight.RecipeWeightMismatchException;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicatePlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicateSubcontractorException;
 import com.yarnshipment.shipment.masterdata.domain.model.InvalidMasterDataException;
@@ -91,6 +92,16 @@ public final class ShipmentExceptionHandler {
             InvalidWeightDecisionException exception, HttpServletRequest request) {
         ProblemDetail problem = problem(request, HttpStatus.BAD_REQUEST, "INVALID_WEIGHT_DECISION");
         problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
+        return problem;
+    }
+
+    @ExceptionHandler(RecipeWeightMismatchException.class)
+    public ProblemDetail handleRecipeWeightMismatch(
+            RecipeWeightMismatchException exception, HttpServletRequest request) {
+        ProblemDetail problem = problem(request, HttpStatus.CONFLICT, "RECIPE_WEIGHT_MISMATCH");
+        problem.setProperty("recipeKg", exception.recipeKg().toPlainString());
+        problem.setProperty("measuredKg", exception.measuredKg().toPlainString());
+        problem.setProperty("toleranceKg", exception.toleranceKg().toPlainString());
         return problem;
     }
 

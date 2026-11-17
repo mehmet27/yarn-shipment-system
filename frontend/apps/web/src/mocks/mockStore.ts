@@ -111,6 +111,34 @@ export function updateMockShipmentTransport(
   );
 }
 
+/** Reçete düzeltilip tartıyı tutunca sevkiyat yola çıkar (WEIGHT_MISMATCH → AWAITING_DELIVERY). */
+export function updateMockRecipe(
+  shipmentId: string,
+  lines: NonNullable<InternalShipmentView['lines']>,
+  reason: string,
+): void {
+  const status: ShipmentStatus = 'AWAITING_DELIVERY';
+  shipments = shipments.map((shipment) =>
+    shipment.shipmentId === shipmentId
+      ? {
+          ...shipment,
+          lines,
+          status,
+          allowedActions: allowedActionsOf(status),
+          ...(shipment.weightCheck === undefined
+            ? {}
+            : {
+                weightCheck: {
+                  ...shipment.weightCheck,
+                  decision: 'UPDATE_RECIPE' as const,
+                  decisionReason: reason,
+                },
+              }),
+        }
+      : shipment,
+  );
+}
+
 /** Admin düzeltmesi: çıkış tartısı yeni değeriyle değişir (eskisi düzeltme kaydında kalır). */
 export function patchMockShipment(
   shipmentId: string,

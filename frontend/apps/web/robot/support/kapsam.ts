@@ -21,7 +21,7 @@ export const KAPSANAN: Record<string, string> = {
   '/panel/tanimlar|Pasife al': '06-tanimlar-partiler',
   '/panel/raporlar|Satırları yükle': '08-gorunum-raporlar',
   '/panel/sevkiyat/<id>|Sevkiyatı tamamla': '03-akis, 09',
-  '/panel/sevkiyat/<id>|Yine de tamamla (eksiği sistem girsin)': '09-sevkiyat-islemleri',
+  '/panel/sevkiyat/<id>|Kaydet ve yola çıkar': '21-iplik-guncelle',
   '/panel/sevkiyat/<id>|İptal et': '09-sevkiyat-islemleri',
   '/panel/kullanicilar|Göster': '16-sifre-talebi-ve-oturum',
   '/panel/sevkiyat/<id>|Tarihi değiştir': '15-sevkiyat-tarihi',

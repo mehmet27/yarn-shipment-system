@@ -30,7 +30,7 @@ export function RecipeLineRow({
   // Sipariş sekmesi yalnızca tek eksik fiyat olduğunda öne alınır; iplik/kilo hatası varsa İplik sekmesi görünür kalır.
   const active = error === 'linePriceInvalid' ? 'order' : tab;
   return (
-    <Paper withBorder p="sm" radius="md">
+    <Paper withBorder p="sm" radius="md" bg="gray.0" data-testid="recipe-line">
       <Stack gap="xs">
         <Group justify="space-between" wrap="nowrap">
           <Text fw={600}>{t('create.recipe.lineTitle', { index: index + 1 })}</Text>
@@ -41,6 +41,7 @@ export function RecipeLineRow({
           )}
         </Group>
         <Tabs
+          variant="pills"
           value={active}
           onChange={(value) => {
             setTab(value ?? 'yarn');

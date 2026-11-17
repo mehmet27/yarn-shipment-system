@@ -5,6 +5,7 @@ import { ManagerDecisionNote } from './ManagerDecisionNote';
 import { ShipmentFileActions } from './ShipmentFileActions';
 import { ShipmentHeader } from './ShipmentHeader';
 import { WeightCheckPanel } from './WeightCheckPanel';
+import { CentralStockNotice } from '../stock/CentralStockNotice';
 import { findWeightCheck, isCompleted } from './shipmentViews';
 
 /** Dosyanın üstü: başlık, kantar uyuşmazlığı özeti, eylemler ve kanıt yükleme. */
@@ -23,6 +24,16 @@ export function ShipmentFileTop({ shipment }: { shipment: ShipmentDetail }) {
           types={['WAYBILL']}
           title={t('evidence.view.waybill')}
           hideWhenEmpty
+        />
+      )}
+      {(shipment.status === 'DRAFT' || shipment.status === 'WEIGHT_MISMATCH') && (
+        <CentralStockNotice
+          alwaysShow
+          demands={(shipment.lines ?? []).map((line) => ({
+            productId: line.yarnTypeId,
+            yarn: line.yarnTypeName ?? line.yarnTypeText ?? '',
+            kg: line.netKg,
+          }))}
         />
       )}
       <ManagerDecisionNote shipment={shipment} />

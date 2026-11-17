@@ -2,7 +2,7 @@ import {
   cuvalEkle,
   iplikTanimla,
   kumasGir,
-  stokUyarisiylaTamamla,
+  stokYetmeseDeTamamla,
   tamamlanmisSevkiyat,
   taslakAc,
   tartiGir,
@@ -40,7 +40,7 @@ test('Sevkiyat: çuval çıkarma ve taslak iptali', async ({ giris }) => {
   });
 });
 
-test('Sevkiyat: merkez stok yetmiyorsa uyarı çıkar, müdür onaylayınca eksik kadar sistem girişi yazılır', async ({
+test('Sevkiyat: merkez stok yetmiyorsa uyarı oluştururken bir kez çıkar, tamamlarken sorulmaz; eksik kadar sistem girişi yazılır', async ({
   giris,
 }) => {
   const depo = await giris('depo');
@@ -58,19 +58,26 @@ test('Sevkiyat: merkez stok yetmiyorsa uyarı çıkar, müdür onaylayınca eksi
   await cuvalEkle(depo, id, 2, '50');
   await tartiGir(depo, id, '103,5', '3,5', '2');
   await depo.sayfa.waitForURL(new RegExp(`${id}$`), { timeout: 15_000 });
-  await mudur.adim('müdür: stok yetmeyince uyarı görür, onaylayınca tamamlanır', async () => {
-    mudur.beklenen(/409 POST \/api\/v1\/shipments\/[\w-]+\/completion/);
-    const uyari = await stokUyarisiylaTamamla(mudur, id, `${iplik}-IRS`);
-    mudur.kontrol(
-      'uyarı iplik adını ve eksik kiloyu söylemeli',
-      uyari.includes(iplik) && /100 kg/.test(uyari),
-      uyari,
-    );
-    mudur.kontrol(
-      'uyarı iki doğru yolu söylemeli (merkeze iplik girişi, kapıdan aktarma)',
-      /Merkeze iplik girişi/.test(uyari) && /Kapıdan aktarma/.test(uyari),
-      uyari,
-    );
+  await mudur.adim(
+    'müdür: oluştururken stok uyarısını görür, kapatıp açınca yeniden görür',
+    async () => {
+      await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
+      const uyari = mudur.sayfa.getByTestId('stock-notice');
+      await uyari.waitFor();
+      const metin = await uyari.innerText();
+      mudur.kontrol(
+        'uyarı iplik adını ve eksik kiloyu söylemeli',
+        metin.includes(iplik) && /100 kg/.test(metin),
+        metin,
+      );
+      await uyari.getByRole('button', { name: 'Uyarıyı kapat' }).click();
+      await expect(uyari).toHaveCount(0);
+      await mudur.sayfa.reload();
+      await mudur.sayfa.getByTestId('stock-notice').waitFor();
+    },
+  );
+  await mudur.adim('müdür: tamamlarken stok sorusu çıkmaz, sevkiyat tamamlanır', async () => {
+    await stokYetmeseDeTamamla(mudur, id, `${iplik}-IRS`);
   });
   await depo.adim('doğrula: stok eksiye düşmez (0 kg), sistem girişi iz bırakır', async () => {
     const stok = await depo.api<Stok>('/api/v1/central-stock');

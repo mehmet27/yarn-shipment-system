@@ -1859,9 +1859,9 @@ paths:
       operationId: updateShipmentTransport
       summary: Sevkiyatın şoför ve araç bilgisini düzeltir
       description: |
-        Müdür (SHIPMENT_CREATE). Tamamlanmamış sevkiyatta (taslak, kantar uyuşmazlığı, teslim bekleyen) şoför ve/veya
-        araç değiştirilir. Şoför kimliği ile adı, araç kimliği ile plakası birlikte verilir (400); verilmeyen bilgi
-        değişmez, en az biri verilmelidir. Tamamlanmış ya da iptal edilmiş sevkiyat `INVALID_SHIPMENT_STATUS` döner.
+        Müdür (SHIPMENT_CREATE). Yalnızca taslak sevkiyatta şoför ve/veya araç değiştirilir
+        (yola çıkmış ya da kantar uyuşmazlığındaki sevkiyatta değişmez). Şoför kimliği ile adı, araç kimliği ile plakası birlikte verilir (400); verilmeyen bilgi
+        değişmez, en az biri verilmelidir. Taslak dışındaki sevkiyat `INVALID_SHIPMENT_STATUS` döner.
       parameters:
         - name: shipmentId
           in: path
@@ -1934,9 +1934,8 @@ paths:
       summary: Kantar uyuşmazlığına karar verir (WEIGHT_MISMATCH)
       description: |
         Müdür ya da yönetici (SHIPMENT_CANCEL). `CANCEL`: sevkiyat iptal olur, çuvallar serbest kalır. `ADD_REMOVE_BAGS`:
-        sevkiyat DRAFT'a döner, depo çuvalı düzeltip yeniden tartar (önceki tartım silinmez). `UPDATE_RECIPE`: reçete
-        satırları tartılan net'e orantılı ölçeklenir (yuvarlama farkı son satırda) ve sevkiyat `AWAITING_DELIVERY` olur.
-        Gerekçe zorunludur. Sevkiyat `WEIGHT_MISMATCH` değilse `INVALID_SHIPMENT_STATUS`.
+        sevkiyat DRAFT'a döner, depo çuvalı düzeltip yeniden tartar (önceki tartım silinmez). Reçeteyi
+        güncellemek için `PUT /recipe` kullanılır. Gerekçe zorunludur. Sevkiyat `WEIGHT_MISMATCH` değilse `INVALID_SHIPMENT_STATUS`.
       parameters:
         - name: shipmentId
           in: path
@@ -1953,6 +1952,45 @@ paths:
       responses:
         '204':
           description: Karar uygulandı
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+  /api/v1/shipments/{shipmentId}/recipe:
+    put:
+      tags: [ShipmentWeightDecision]
+      operationId: updateRecipeAndDispatch
+      summary: Kantar uyuşmazlığındaki sevkiyatın reçetesini düzeltir; tartıyı tutuyorsa yola çıkarır (WEIGHT_MISMATCH)
+      description: |
+        Müdür ya da yönetici (SHIPMENT_CANCEL). Satır sırası satır numarasıdır; mevcut satırlar yerinde düzeltilir,
+        fazlası eklenir, satır silinemez (az satır `INVALID_WEIGHT_DECISION`). Satırların toplamı tartılan net'e kantar
+        toleransı içinde uyuyorsa reçete kaydedilir ve sevkiyat `AWAITING_DELIVERY` (yolda) olur. Uymuyorsa hiçbir şey
+        kaydedilmez ve `409 RECIPE_WEIGHT_MISMATCH` döner (`recipeKg`, `measuredKg`, `toleranceKg`). Gerekçe zorunludur.
+        Sevkiyat `WEIGHT_MISMATCH` değilse `INVALID_SHIPMENT_STATUS`.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRecipeRequest'
+      responses:
+        '204':
+          description: Reçete güncellendi, sevkiyat yola çıktı
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -2821,12 +2859,29 @@ components:
     WeightDecisionKind:
       type: string
       enum: [CANCEL, ADD_REMOVE_BAGS, UPDATE_RECIPE]
+    WeightDecisionChoice:
+      type: string
+      description: İptal ya da çuval ekle/çıkar; reçete güncelleme ayrı uçtadır
+      enum: [CANCEL, ADD_REMOVE_BAGS]
     WeightDecisionRequest:
       type: object
       required: [decision, reason]
       properties:
         decision:
-          $ref: '#/components/schemas/WeightDecisionKind'
+          $ref: '#/components/schemas/WeightDecisionChoice'
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    UpdateRecipeRequest:
+      type: object
+      required: [lines, reason]
+      properties:
+        lines:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/RecipeLineInput'
         reason:
           type: string
           minLength: 1

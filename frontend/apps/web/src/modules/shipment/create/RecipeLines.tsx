@@ -9,10 +9,12 @@ export type RecipeLinesProps = {
   onChange: (lines: readonly RecipeLineDraft[]) => void;
   /** Gönderim denendikten sonra satır hataları görünür. */
   showErrors: boolean;
+  /** İlk bu kadar satır silinemez (kayıtlı satırlar yalnız düzeltilir); varsayılan 0. */
+  lockedCount?: number;
 };
 
 /** Reçete satırları: iplik cinsi (liste ya da serbest metin), isteğe bağlı lot, net kg; en az bir satır. */
-export function RecipeLines({ lines, onChange, showErrors }: RecipeLinesProps) {
+export function RecipeLines({ lines, onChange, showErrors, lockedCount = 0 }: RecipeLinesProps) {
   const { t } = useTranslation();
   const update = (key: string, patch: Partial<RecipeLineDraft>) => {
     onChange(lines.map((line) => (line.key === key ? { ...line, ...patch } : line)));
@@ -24,7 +26,7 @@ export function RecipeLines({ lines, onChange, showErrors }: RecipeLinesProps) {
           key={line.key}
           line={line}
           index={index}
-          removable={lines.length > 1}
+          removable={lines.length > 1 && index >= lockedCount}
           showErrors={showErrors}
           onPatch={(patch) => {
             update(line.key, patch);

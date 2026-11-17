@@ -37,6 +37,7 @@ import { createReportHandlers } from './reportHandlers';
 import { createSettlementHandlers } from './settlementHandlers';
 import { createStockHandlers } from './stockHandlers';
 import { toBagsView, toHistory } from './shipmentTabs';
+import { updateRecipeHandler } from './recipeHandlers';
 import { updateTransportHandler } from './transportHandlers';
 import { isInScope, toDetailView, toPermittedView, toSummary } from './shipmentViews';
 import { createMockUser } from './users';
@@ -209,24 +210,13 @@ const completeShipmentHandler = http.post(
     const shipment = findMockShipment(params.shipmentId);
     if (shipment === undefined) return notFound();
     const json: unknown = await request.json();
-    const { waybillNo, waybillEvidenceId, acceptStockShortage } =
+    const { waybillNo, waybillEvidenceId } =
       typeof json === 'object' && json !== null ? (json as Record<string, unknown>) : {};
     if (!isNonEmpty(waybillNo) || !isNonEmpty(waybillEvidenceId)) {
       return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
     }
     if (shipment.status !== 'AWAITING_DELIVERY') {
       return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
-    }
-    if (waybillNo.includes('STOKYOK') && acceptStockShortage !== true) {
-      return HttpResponse.json(
-        {
-          status: 409,
-          code: 'CENTRAL_STOCK_SHORTFALL',
-          title: 'Merkez stok yetmiyor',
-          shortfalls: [{ yarnType: 'Pamuk 20/1', missingKg: '100.000' }],
-        },
-        { status: 409 },
-      );
     }
     completeMockShipment(shipment.shipmentId, waybillNo.trim());
     return new HttpResponse(null, { status: 204 });
@@ -295,7 +285,7 @@ function readRecipeLines(value: unknown): RecipeLineInput[] | undefined {
   return lines.every((line) => line !== undefined) ? lines : undefined;
 }
 
-const DECISIONS: readonly WeightDecisionKind[] = ['CANCEL', 'ADD_REMOVE_BAGS', 'UPDATE_RECIPE'];
+const DECISIONS: readonly WeightDecisionKind[] = ['CANCEL', 'ADD_REMOVE_BAGS'];
 
 function readDecisionBody(
   json: unknown,
@@ -403,6 +393,7 @@ export function createHandlers(role: Role) {
     cancelShipmentHandler,
     updateShipmentDateHandler,
     updateTransportHandler,
+    updateRecipeHandler,
     completeShipmentHandler,
     dispatchWeighingHandler,
     weightDecisionHandler,

@@ -1,7 +1,7 @@
 import type { UpdateShipmentTransportRequest } from '@iplik/api-client';
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Icon, Stack, Text } from '@iplik/ui';
+import { Alert, Button, Group, Icon, SectionCard, Stack, Text } from '@iplik/ui';
 import { useState } from 'react';
 import type { MasterOption } from '../hooks/useMasterOptions';
 import { useUpdateShipmentTransport } from '../hooks/useUpdateShipmentTransport';
@@ -45,38 +45,42 @@ export function TransportEditor({
   const [vehicle, setVehicle] = useState<MasterOption>();
   const mutation = useUpdateShipmentTransport(shipmentId);
   return (
-    <Stack gap="xs">
-      <Text size="sm" c="dimmed">
-        {t('shipment.transport.current', {
-          driver: driverName ?? '—',
-          plate: plateNo ?? '—',
-        })}
-      </Text>
-      <TransportFields
-        subcontractorId={subcontractorId}
-        driver={driver}
-        vehicle={vehicle}
-        onDriver={setDriver}
-        onVehicle={setVehicle}
-      />
-      <Group gap="sm">
-        <Button
-          disabled={driver === undefined && vehicle === undefined}
-          loading={mutation.isPending}
-          leftSection={<Icon name="save" />}
-          onClick={() => {
-            mutation.mutate(toRequest(driver, vehicle), {
-              onSuccess: onClose,
-            });
-          }}
-        >
-          {t('shipment.transport.save')}
-        </Button>
-        <Button variant="default" onClick={onClose}>
-          {t('shipment.transport.dismiss')}
-        </Button>
-      </Group>
-      {mutation.isError && <Alert color="red">{t(errorKey(toProblem(mutation.error).code))}</Alert>}
-    </Stack>
+    <SectionCard title={t('shipment.transport.title')} icon="truck" tone="info">
+      <Stack gap="xs">
+        <Text size="sm" c="dimmed">
+          {t('shipment.transport.current', {
+            driver: driverName ?? '—',
+            plate: plateNo ?? '—',
+          })}
+        </Text>
+        <TransportFields
+          subcontractorId={subcontractorId}
+          driver={driver}
+          vehicle={vehicle}
+          onDriver={setDriver}
+          onVehicle={setVehicle}
+        />
+        <Group gap="sm">
+          <Button
+            disabled={driver === undefined && vehicle === undefined}
+            loading={mutation.isPending}
+            leftSection={<Icon name="save" />}
+            onClick={() => {
+              mutation.mutate(toRequest(driver, vehicle), {
+                onSuccess: onClose,
+              });
+            }}
+          >
+            {t('shipment.transport.save')}
+          </Button>
+          <Button variant="default" onClick={onClose}>
+            {t('shipment.transport.dismiss')}
+          </Button>
+        </Group>
+        {mutation.isError && (
+          <Alert color="red">{t(errorKey(toProblem(mutation.error).code))}</Alert>
+        )}
+      </Stack>
+    </SectionCard>
   );
 }

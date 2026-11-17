@@ -2754,6 +2754,12 @@ components:
           pattern: '^-?\d{1,9}\.\d{3}$'
         shortfallReason:
           type: string
+        decision:
+          description: Müdürün kararı; karar verilmediyse yok
+          $ref: '#/components/schemas/WeightDecisionKind'
+        decisionReason:
+          description: Müdürün karar gerekçesi; depo yalnızca istenen işlemi yapar
+          type: string
     WeightDecisionKind:
       type: string
       enum: [CANCEL, ADD_REMOVE_BAGS, UPDATE_RECIPE]
@@ -3448,7 +3454,9 @@ components:
         emptyVehicleKg:
           $ref: '#/components/schemas/Kg'
         shortfallReason:
-          description: Depo eksik yüklüyorsa nedeni (stok yetmedi gibi); müdürün kararına girdi olur
+          description: >-
+            Depo eksik yüklüyorsa nedeni (stok yetmedi gibi); müdürün kararına girdi olur. Tartılan net beklenenin
+            altındaysa zorunludur, yoksa sunucu 400 SHORTFALL_REASON_REQUIRED döner
           type: string
           minLength: 1
           maxLength: 500

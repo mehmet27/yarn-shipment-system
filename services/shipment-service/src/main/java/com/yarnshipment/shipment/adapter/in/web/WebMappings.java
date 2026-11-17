@@ -5,6 +5,7 @@ import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentAction;
 import com.yarnshipment.shipment.adapter.in.web.api.model.ShipmentStatus;
 import com.yarnshipment.shipment.adapter.in.web.api.model.WeighingView;
 import com.yarnshipment.shipment.adapter.in.web.api.model.WeightCheckView;
+import com.yarnshipment.shipment.adapter.in.web.api.model.WeightDecisionKind;
 import com.yarnshipment.shipment.domain.model.OrderSpec;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.Weighing;
@@ -63,7 +64,12 @@ final class WebMappings {
                 .diffKg(check.diffKg()
                         .setScale(KG_SCALE, RoundingMode.UNNECESSARY)
                         .toPlainString())
-                .shortfallReason(check.shortfallReason());
+                .shortfallReason(check.shortfallReason())
+                .decision(
+                        check.decision() == null
+                                ? null
+                                : WeightDecisionKind.valueOf(check.decision().name()))
+                .decisionReason(check.decisionReason());
     }
 
     static String kg(BigDecimal value) {

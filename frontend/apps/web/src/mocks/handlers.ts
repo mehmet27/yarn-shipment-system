@@ -4,6 +4,7 @@ import type {
   Role,
   WeightCheckView,
   Weighing,
+  WeightDecisionKind,
 } from '@iplik/api-client';
 import { ME_PATH, SHIPMENTS_PATH } from '@iplik/api-client';
 import { todayIsoDate } from '@iplik/i18n';
@@ -293,13 +294,16 @@ function readRecipeLines(value: unknown): RecipeLineInput[] | undefined {
   return lines.every((line) => line !== undefined) ? lines : undefined;
 }
 
-const DECISIONS: readonly unknown[] = ['CANCEL', 'ADD_REMOVE_BAGS', 'UPDATE_RECIPE'];
+const DECISIONS: readonly WeightDecisionKind[] = ['CANCEL', 'ADD_REMOVE_BAGS', 'UPDATE_RECIPE'];
 
-function readDecisionBody(json: unknown): { decision: string; reason: string } | undefined {
+function readDecisionBody(
+  json: unknown,
+): { decision: WeightDecisionKind; reason: string } | undefined {
   const { decision, reason } =
     typeof json === 'object' && json !== null ? (json as Record<string, unknown>) : {};
-  if (typeof decision !== 'string' || !DECISIONS.includes(decision)) return undefined;
-  return isNonEmpty(reason) && reason.trim() !== '' ? { decision, reason } : undefined;
+  const kind = DECISIONS.find((candidate) => candidate === decision);
+  if (kind === undefined) return undefined;
+  return isNonEmpty(reason) && reason.trim() !== '' ? { decision: kind, reason } : undefined;
 }
 
 /** Kantar kararı: yalnız WEIGHT_MISMATCH durumunda ve gerekçeyle. */
@@ -313,7 +317,7 @@ const weightDecisionHandler = http.post(
     if (shipment.status !== 'WEIGHT_MISMATCH') {
       return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
     }
-    decideMockWeight(shipment.shipmentId, body.decision);
+    decideMockWeight(shipment.shipmentId, body.decision, body.reason);
     return new HttpResponse(null, { status: 204 });
   },
 );

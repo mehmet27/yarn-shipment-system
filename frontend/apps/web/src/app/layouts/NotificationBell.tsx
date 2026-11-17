@@ -4,12 +4,15 @@ import { ActionIcon, Indicator, Menu, NavIcon, Text } from '@iplik/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { usePermission } from '@/modules/auth';
+import { DiscrepancyMenuItems } from './DiscrepancyMenuItems';
+import { WeightDecisionItems } from './WeightDecisionItems';
+import { usePendingWeightDecisions } from '@/modules/shipment';
 
 const POLL_MS = 60_000;
 const PREVIEW_SIZE = 5;
 const MENU_WIDTH_PX = 320;
 
-/** Üst çubuktaki zil: karar bekleyen (açık) uyuşmazlıkları sayar ve ilk birkaçını listeler. */
+/** Üst çubuktaki zil: kantar kararı bekleyen sevkiyatları ve karar bekleyen (açık) uyuşmazlıkları gösterir. */
 export function NotificationBell() {
   const { t } = useTranslation();
   const canView = usePermission('DISCREPANCY_VIEW');
@@ -19,11 +22,13 @@ export function NotificationBell() {
     enabled: canView,
     refetchInterval: POLL_MS,
   });
+  const weightPending = usePendingWeightDecisions(POLL_MS);
   if (!canView) {
     return null;
   }
-  const total = data?.page.totalElements ?? 0;
+  const discrepancyTotal = data?.page.totalElements ?? 0;
   const items = data?.items ?? [];
+  const total = discrepancyTotal + weightPending.length;
   return (
     <Menu position="bottom-end" width={MENU_WIDTH_PX} shadow="lg" radius="md">
       <Menu.Target>
@@ -34,25 +39,17 @@ export function NotificationBell() {
         </ActionIcon>
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Label>{t('notifications.title')}</Menu.Label>
-        {items.length === 0 && (
+        <WeightDecisionItems shipments={weightPending} />
+        {total === 0 && (
           <Text size="sm" c="dimmed" px="sm" py="xs">
             {t('notifications.empty')}
           </Text>
         )}
-        {items.map((item) => (
-          <Menu.Item key={item.id} component={Link} to={`/panel/uyusmazliklar/${item.id}`}>
-            <Text size="sm" fw={600}>
-              {item.discrepancyNo}
-            </Text>
-            <Text size="xs" c="dimmed">
-              {t(`discrepancy.type.${item.type}`)}
-            </Text>
-          </Menu.Item>
-        ))}
-        {total > items.length && (
+        {discrepancyTotal > 0 && <Menu.Label>{t('notifications.title')}</Menu.Label>}
+        <DiscrepancyMenuItems items={items} />
+        {discrepancyTotal > items.length && (
           <Text size="xs" c="dimmed" px="sm" py={4}>
-            {t('notifications.more', { count: total - items.length })}
+            {t('notifications.more', { count: discrepancyTotal - items.length })}
           </Text>
         )}
         <Menu.Divider />

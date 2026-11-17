@@ -9,4 +9,5 @@ export type { MasterOption } from './hooks/useMasterOptions';
 export { useMasterOptions } from './hooks/useMasterOptions';
 export { useFireRateDefault } from './hooks/useFireRateDefault';
 export { PendingWeightDecisions } from './components/PendingWeightDecisions';
+export { usePendingWeightDecisions } from './hooks/usePendingWeightDecisions';
 export { PendingDispatches } from './components/PendingDispatches';

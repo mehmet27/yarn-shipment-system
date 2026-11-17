@@ -441,6 +441,15 @@ export interface RecipeLineView {
   unitPrice?: string;
 }
 
+export type WeightDecisionKind = typeof WeightDecisionKind[keyof typeof WeightDecisionKind];
+
+
+export const WeightDecisionKind = {
+  CANCEL: 'CANCEL',
+  ADD_REMOVE_BAGS: 'ADD_REMOVE_BAGS',
+  UPDATE_RECIPE: 'UPDATE_RECIPE',
+} as const;
+
 export interface WeightCheckView {
   expectedKg: Kg;
   measuredKg: Kg;
@@ -450,16 +459,11 @@ export interface WeightCheckView {
      */
   diffKg: string;
   shortfallReason?: string;
+  /** Müdürün kararı; karar verilmediyse yok */
+  decision?: WeightDecisionKind;
+  /** Müdürün karar gerekçesi; depo yalnızca istenen işlemi yapar */
+  decisionReason?: string;
 }
-
-export type WeightDecisionKind = typeof WeightDecisionKind[keyof typeof WeightDecisionKind];
-
-
-export const WeightDecisionKind = {
-  CANCEL: 'CANCEL',
-  ADD_REMOVE_BAGS: 'ADD_REMOVE_BAGS',
-  UPDATE_RECIPE: 'UPDATE_RECIPE',
-} as const;
 
 export interface WeightDecisionRequest {
   decision: WeightDecisionKind;
@@ -957,7 +961,7 @@ export interface DispatchWeighingRequest {
   loadedVehicleKg?: Kg;
   emptyVehicleKg?: Kg;
   /**
-     * Depo eksik yüklüyorsa nedeni (stok yetmedi gibi); müdürün kararına girdi olur
+     * Depo eksik yüklüyorsa nedeni (stok yetmedi gibi); müdürün kararına girdi olur. Tartılan net beklenenin altındaysa zorunludur, yoksa sunucu 400 SHORTFALL_REASON_REQUIRED döner
      * @minLength 1
      * @maxLength 500
      */

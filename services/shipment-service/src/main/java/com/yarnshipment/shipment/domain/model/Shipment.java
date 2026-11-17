@@ -148,6 +148,11 @@ public record Shipment(
                 new Weighing(measurement.grossKg(), measurement.tareKg(), measurement.bagCount(), recordedAt);
         WeightCheck check = null;
         BigDecimal expected = planned.netKg();
+        if (expected != null
+                && measurement.shortfallReason() == null
+                && weighing.netKg().compareTo(expected) < 0) {
+            throw new ShortfallReasonRequiredException(id);
+        }
         if (toleranceKg != null && expected != null) {
             WeightCheck candidate = new WeightCheck(
                     measurement.tareKg(), measurement.grossKg(), expected, toleranceKg, measurement.shortfallReason());

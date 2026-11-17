@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import com.yarnshipment.shipment.domain.model.OrderSpec;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.WeightCheck;
+import com.yarnshipment.shipment.domain.model.WeightDecision;
 import com.yarnshipment.shipment.domain.model.WidthType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,7 +29,7 @@ final class ShipmentRecipes {
             WHERE l.shipment_id IN (:ids) ORDER BY l.shipment_id, l.line_no""";
     private static final String LATEST_CHECKS = """
             SELECT DISTINCT ON (shipment_id) shipment_id, empty_kg, loaded_kg, expected_kg, tolerance_kg,
-                   shortfall_reason
+                   shortfall_reason, decision, reason
             FROM weight_check WHERE shipment_id IN (:ids) ORDER BY shipment_id, created_at DESC, id DESC""";
 
     private final Map<UUID, List<RecipeLine>> lines;
@@ -80,12 +81,15 @@ final class ShipmentRecipes {
     }
 
     private static WeightCheck collectCheck(Map<UUID, WeightCheck> checks, ResultSet rs) throws SQLException {
+        String decision = rs.getString("decision");
         WeightCheck check = new WeightCheck(
                 rs.getBigDecimal("empty_kg"),
                 rs.getBigDecimal("loaded_kg"),
                 rs.getBigDecimal("expected_kg"),
                 rs.getBigDecimal("tolerance_kg"),
-                rs.getString("shortfall_reason"));
+                rs.getString("shortfall_reason"),
+                decision == null ? null : WeightDecision.valueOf(decision),
+                rs.getString("reason"));
         checks.put(rs.getObject("shipment_id", UUID.class), check);
         return check;
     }

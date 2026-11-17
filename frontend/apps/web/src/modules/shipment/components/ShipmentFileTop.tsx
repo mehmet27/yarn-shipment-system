@@ -1,6 +1,7 @@
 import type { ShipmentDetail } from '@iplik/api-client';
 import { EvidenceGallery, EvidenceUpload } from '@/modules/evidence';
 import { useTranslation } from '@iplik/i18n';
+import { ManagerDecisionNote } from './ManagerDecisionNote';
 import { ShipmentFileActions } from './ShipmentFileActions';
 import { ShipmentHeader } from './ShipmentHeader';
 import { WeightCheckPanel } from './WeightCheckPanel';
@@ -24,6 +25,7 @@ export function ShipmentFileTop({ shipment }: { shipment: ShipmentDetail }) {
           hideWhenEmpty
         />
       )}
+      <ManagerDecisionNote shipment={shipment} />
       <ShipmentFileActions
         shipmentId={shipment.shipmentId}
         shipmentDate={shipment.shipmentDate}

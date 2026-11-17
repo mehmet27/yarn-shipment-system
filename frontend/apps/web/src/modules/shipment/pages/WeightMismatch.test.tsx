@@ -51,6 +51,12 @@ describe('Kantar uyuşmazlığı', () => {
     expect(submit).toBeDisabled();
     await userEvent.click(screen.getByText('İplik listesini güncelle'));
     await userEvent.type(screen.getByLabelText(/Gerekçe/), 'Fark kabul edildi');
+    expect(screen.getByText('Toplam tartılan net kiloya eşit değil.')).toBeInTheDocument();
+    expect(submit).toBeDisabled();
+    const second = screen.getByLabelText('20 denye likra');
+    await userEvent.clear(second);
+    await userEvent.type(second, '470');
+    expect(screen.getByText('Toplam tartılan net kiloya eşit.')).toBeInTheDocument();
     await userEvent.click(submit);
     expect(
       await screen.findByText('Fasoncuya yolda', { selector: '.mantine-Badge-label' }),

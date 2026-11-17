@@ -1,7 +1,6 @@
 package com.yarnshipment.shipment.domain.model;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,28 +16,31 @@ public final class Recipe {
     }
 
     /**
-     * Satırları tartılan net kiloya orantılı ölçekler; yuvarlama farkı son satıra eklenir, böylece toplam tam olarak
-     * hedeftir. Herhangi bir satır sıfıra inerse {@link InvalidWeightDecisionException}.
+     * Müdürün düzelttiği satır kiloları: her satır için tam bir yeni kilo gelmeli, kilolar pozitif ve en çok 3 ondalık
+     * olmalı, toplam tartılan net'e tam eşit olmalıdır; aksi hâlde {@link InvalidWeightDecisionException}.
      */
-    public static List<RecipeLine> scaleTo(List<RecipeLine> lines, BigDecimal targetKg) {
-        BigDecimal current = totalKg(lines);
-        if (lines.isEmpty() || current.signum() == 0 || targetKg.signum() <= 0) {
-            throw new InvalidWeightDecisionException("recipe", "cannot scale");
+    public static List<RecipeLine> correct(List<RecipeLine> lines, List<LineWeight> corrected, BigDecimal weighedKg) {
+        if (corrected.size() != lines.size()) {
+            throw new InvalidWeightDecisionException("lines", "every line needs a new weight");
         }
-        List<RecipeLine> scaled = new ArrayList<>(lines.size());
-        BigDecimal allocated = BigDecimal.ZERO.setScale(KG_SCALE);
-        for (int i = 0; i < lines.size(); i++) {
-            RecipeLine line = lines.get(i);
-            boolean last = i == lines.size() - 1;
-            BigDecimal kg = last
-                    ? targetKg.subtract(allocated)
-                    : line.netKg().multiply(targetKg).divide(current, KG_SCALE, RoundingMode.HALF_UP);
-            if (kg.signum() <= 0) {
-                throw new InvalidWeightDecisionException("recipe", "line would not stay positive");
+        List<RecipeLine> result = new ArrayList<>(lines.size());
+        for (RecipeLine line : lines) {
+            BigDecimal kg = corrected.stream()
+                    .filter(candidate -> candidate.lineNo() == line.lineNo())
+                    .map(LineWeight::netKg)
+                    .findFirst()
+                    .orElseThrow(() -> new InvalidWeightDecisionException("lines", "unknown line"));
+            if (kg.signum() <= 0 || kg.stripTrailingZeros().scale() > KG_SCALE) {
+                throw new InvalidWeightDecisionException("lines", "weight must be positive with at most 3 decimals");
             }
-            allocated = allocated.add(kg);
-            scaled.add(line.withNetKg(kg));
+            result.add(line.withNetKg(kg.setScale(KG_SCALE)));
         }
-        return scaled;
+        if (totalKg(result).compareTo(weighedKg) != 0) {
+            throw new InvalidWeightDecisionException("lines", "sum differs from weighed net");
+        }
+        return result;
     }
+
+    /** Müdürün düzelttiği bir satırın yeni net kilosu. */
+    public record LineWeight(int lineNo, BigDecimal netKg) {}
 }

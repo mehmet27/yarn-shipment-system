@@ -24,23 +24,40 @@ class RecipeTest {
     }
 
     @Test
-    @DisplayName("Satırlar tartıya orantılı ölçeklenir ve toplam tam olarak tartıya eşit olur")
-    void shouldScaleLinesAndKeepExactTotal() {
-        List<RecipeLine> scaled = Recipe.scaleTo(
-                List.of(line(1, "100.000"), line(2, "100.000"), line(THIRD, "100.000")), new BigDecimal("200.000"));
+    @DisplayName("Müdürün düzelttiği kilolar toplamı tartıya eşitse satırlara yazılır")
+    void shouldApplyCorrectedWeights() {
+        List<RecipeLine> corrected = Recipe.correct(
+                List.of(line(1, "100.000"), line(2, "100.000")),
+                List.of(
+                        new Recipe.LineWeight(1, new BigDecimal("120.500")),
+                        new Recipe.LineWeight(2, new BigDecimal("79.5"))),
+                new BigDecimal("200.000"));
 
-        assertThat(Recipe.totalKg(scaled)).isEqualByComparingTo("200.000");
-        assertThat(scaled)
-                .extracting(RecipeLine::netKg)
-                .allSatisfy(kg -> assertThat(kg).isPositive());
-        assertThat(scaled.get(0).netKg()).isEqualByComparingTo("66.667");
-        assertThat(scaled.get(2).netKg()).isEqualByComparingTo("66.666");
+        assertThat(corrected.get(0).netKg()).isEqualByComparingTo("120.500");
+        assertThat(Recipe.totalKg(corrected)).isEqualByComparingTo("200.000");
     }
 
     @Test
-    @DisplayName("Ölçekleme bir satırı sıfıra indirecekse reddedilir")
-    void shouldRejectScalingToZeroLine() {
-        assertThatThrownBy(() -> Recipe.scaleTo(List.of(line(1, "0.001"), line(2, "100.000")), new BigDecimal("1.000")))
+    @DisplayName("Düzeltilen toplam tartıdan farklıysa, satır eksikse ya da kilo geçersizse reddedilir")
+    void shouldRejectInvalidCorrection() {
+        List<RecipeLine> lines = List.of(line(1, "100.000"), line(2, "100.000"));
+        BigDecimal weighed = new BigDecimal("200.000");
+        Recipe.LineWeight one = new Recipe.LineWeight(1, new BigDecimal("100.000"));
+
+        assertThatThrownBy(() -> Recipe.correct(
+                        lines, List.of(one, new Recipe.LineWeight(2, new BigDecimal("99.999"))), weighed))
+                .isInstanceOf(InvalidWeightDecisionException.class);
+        assertThatThrownBy(() -> Recipe.correct(lines, List.of(one), weighed))
+                .isInstanceOf(InvalidWeightDecisionException.class);
+        assertThatThrownBy(() -> Recipe.correct(
+                        lines, List.of(one, new Recipe.LineWeight(THIRD, new BigDecimal("100.000"))), weighed))
+                .isInstanceOf(InvalidWeightDecisionException.class);
+        assertThatThrownBy(() -> Recipe.correct(
+                        lines,
+                        List.of(
+                                new Recipe.LineWeight(1, new BigDecimal("200.000")),
+                                new Recipe.LineWeight(2, BigDecimal.ZERO)),
+                        weighed))
                 .isInstanceOf(InvalidWeightDecisionException.class);
     }
 

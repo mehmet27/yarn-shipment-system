@@ -106,6 +106,7 @@ export type {
   RecipeLineView,
   WeightCheckView,
   WeightDecisionKind,
+  WeightDecisionLine,
   WeightDecisionRequest,
 } from './masterData';
 export type {

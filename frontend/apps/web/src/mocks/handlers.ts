@@ -4,7 +4,6 @@ import type {
   Role,
   WeightCheckView,
   Weighing,
-  WeightDecisionKind,
 } from '@iplik/api-client';
 import { ME_PATH, SHIPMENTS_PATH } from '@iplik/api-client';
 import { todayIsoDate } from '@iplik/i18n';
@@ -16,12 +15,12 @@ import {
   updateMockShipmentDate,
   addMockShipment,
   completeMockShipment,
-  decideMockWeight,
   findMockShipment,
   listMockShipments,
   recordMockDispatch,
   updateMockShipmentStatus,
 } from './mockStore';
+import { weightDecisionHandler } from './weightDecisionHandler';
 import { createAuditHandlers } from './auditHandlers';
 import { createBrandingHandlers } from './brandingHandlers';
 import { createRolePermissionHandlers } from './rolePermissionHandlers';
@@ -293,34 +292,6 @@ function readRecipeLines(value: unknown): RecipeLineInput[] | undefined {
   const lines = (value as unknown[]).map(readRecipeLine);
   return lines.every((line) => line !== undefined) ? lines : undefined;
 }
-
-const DECISIONS: readonly WeightDecisionKind[] = ['CANCEL', 'ADD_REMOVE_BAGS', 'UPDATE_RECIPE'];
-
-function readDecisionBody(
-  json: unknown,
-): { decision: WeightDecisionKind; reason: string } | undefined {
-  const { decision, reason } =
-    typeof json === 'object' && json !== null ? (json as Record<string, unknown>) : {};
-  const kind = DECISIONS.find((candidate) => candidate === decision);
-  if (kind === undefined) return undefined;
-  return isNonEmpty(reason) && reason.trim() !== '' ? { decision: kind, reason } : undefined;
-}
-
-/** Kantar kararı: yalnız WEIGHT_MISMATCH durumunda ve gerekçeyle. */
-const weightDecisionHandler = http.post(
-  `${SHIPMENTS_PATH}/:shipmentId/weight-decision`,
-  async ({ params, request }) => {
-    const shipment = findMockShipment(params.shipmentId);
-    if (shipment === undefined) return notFound();
-    const body = readDecisionBody(await request.json());
-    if (body === undefined) return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
-    if (shipment.status !== 'WEIGHT_MISMATCH') {
-      return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
-    }
-    decideMockWeight(shipment.shipmentId, body.decision, body.reason);
-    return new HttpResponse(null, { status: 204 });
-  },
-);
 
 const fireRateHandler = http.get('/api/v1/settings/shipment', () =>
   HttpResponse.json({ defaultFireRate: '0.0400', weightToleranceKg: '0.000' }),

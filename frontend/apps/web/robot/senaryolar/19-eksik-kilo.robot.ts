@@ -47,3 +47,34 @@ test('Eksik kilo: neden zorunlu, müdür zilde görür, kararı depoya döner', 
     );
   });
 });
+
+/** "İplik listesini güncelle": müdür her ipliğin kilosunu yazar; toplam tartıya eşit olmadan sevkiyat yola çıkmaz. */
+test('İplik listesi: müdür kiloları tartıya eşitler, ancak o zaman sevkiyat yola çıkar', async ({
+  giris,
+}) => {
+  const depo = await giris('depo');
+  const mudur = await giris('mudur');
+  for (const r of [depo, mudur]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
+  const iplik = damga();
+  const id = await taslakAc(mudur, iplik, '100');
+  await cuvalEkle(depo, id, 2, '50');
+  await tartiGir(depo, id, '1090,000', '1000,000', '2');
+  await depo.sayfa.getByLabel(/Eksik kilo nedeni/).fill('Stok yetmedi');
+  await depo.sayfa.getByRole('button', { name: 'Kaydet' }).click();
+  await expect(depo.sayfa.getByText('Kantar uyuşmazlığı', { exact: true }).first()).toBeVisible();
+
+  await mudur.adim('toplam tartıya eşit değilken karar kaydedilemez', async () => {
+    await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
+    await mudur.sayfa.getByText('İplik listesini güncelle', { exact: true }).click();
+    await mudur.sayfa.getByLabel(/Gerekçe/).fill('Fark kabul edildi');
+    await expect(mudur.sayfa.getByText('Toplam tartılan net kiloya eşit değil.')).toBeVisible();
+    await expect(mudur.sayfa.getByRole('button', { name: 'Kararı kaydet' })).toBeDisabled();
+  });
+
+  await mudur.adim('kilolar tartıya eşitlenince sevkiyat yola çıkar', async () => {
+    await mudur.sayfa.getByLabel(iplik).fill('90');
+    await expect(mudur.sayfa.getByText('Toplam tartılan net kiloya eşit.')).toBeVisible();
+    await mudur.sayfa.getByRole('button', { name: 'Kararı kaydet' }).click();
+    await expect(mudur.sayfa.getByText('Fasoncuya yolda', { exact: true }).first()).toBeVisible();
+  });
+});

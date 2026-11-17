@@ -5,6 +5,8 @@ import type {
   ShipmentStatus,
   Weighing,
   WeightDecisionKind,
+  WeightDecisionLine,
+  RecipeLineView,
 } from '@iplik/api-client';
 import { isKilogram, sumKg } from '@iplik/units';
 import { resetMockCorrections } from './corrections';
@@ -59,22 +61,39 @@ const DECISION_STATUS: Readonly<Record<string, ShipmentStatus>> = {
   UPDATE_RECIPE: 'AWAITING_DELIVERY',
 };
 
+function withCorrectedKg(
+  line: RecipeLineView,
+  corrected: readonly WeightDecisionLine[],
+): RecipeLineView {
+  const match = corrected.find((candidate) => candidate.lineNo === line.lineNo);
+  return match === undefined ? line : { ...line, netKg: match.netKg };
+}
+
 /** Müdür kararı: çuval ekle/çıkar taslağa döner; reçete güncellenirse sevkiyat yola çıkar. */
 export function decideMockWeight(
   shipmentId: string,
-  decision: WeightDecisionKind,
-  reason: string,
+  decision: { kind: WeightDecisionKind; reason: string; lines?: readonly WeightDecisionLine[] },
 ): void {
-  const status = DECISION_STATUS[decision] ?? 'DRAFT';
+  const corrected = decision.lines ?? [];
+  const status = DECISION_STATUS[decision.kind] ?? 'DRAFT';
   shipments = shipments.map((shipment) =>
     shipment.shipmentId === shipmentId
       ? {
           ...shipment,
           status,
           allowedActions: allowedActionsOf(status),
+          ...(corrected.length === 0 || shipment.lines === undefined
+            ? {}
+            : { lines: shipment.lines.map((line) => withCorrectedKg(line, corrected)) }),
           ...(shipment.weightCheck === undefined
             ? {}
-            : { weightCheck: { ...shipment.weightCheck, decision, decisionReason: reason } }),
+            : {
+                weightCheck: {
+                  ...shipment.weightCheck,
+                  decision: decision.kind,
+                  decisionReason: decision.reason,
+                },
+              }),
         }
       : shipment,
   );

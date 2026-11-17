@@ -35,8 +35,7 @@ export interface Problem {
   requestId?: string;
 }
 
-export type DiscrepancyStatus = typeof DiscrepancyStatus[keyof typeof DiscrepancyStatus];
-
+export type DiscrepancyStatus = (typeof DiscrepancyStatus)[keyof typeof DiscrepancyStatus];
 
 export const DiscrepancyStatus = {
   OPEN: 'OPEN',
@@ -45,30 +44,26 @@ export const DiscrepancyStatus = {
   CLOSED: 'CLOSED',
 } as const;
 
-export type DueFilter = typeof DueFilter[keyof typeof DueFilter];
-
+export type DueFilter = (typeof DueFilter)[keyof typeof DueFilter];
 
 export const DueFilter = {
   OVERDUE: 'OVERDUE',
 } as const;
 
-export type DiscrepancyType = typeof DiscrepancyType[keyof typeof DiscrepancyType];
-
+export type DiscrepancyType = (typeof DiscrepancyType)[keyof typeof DiscrepancyType];
 
 export const DiscrepancyType = {
   QUALITY: 'QUALITY',
 } as const;
 
-export type Severity = typeof Severity[keyof typeof Severity];
-
+export type Severity = (typeof Severity)[keyof typeof Severity];
 
 export const Severity = {
   YELLOW: 'YELLOW',
   RED: 'RED',
 } as const;
 
-export type Resolution = typeof Resolution[keyof typeof Resolution];
-
+export type Resolution = (typeof Resolution)[keyof typeof Resolution];
 
 export const Resolution = {
   TOLERANCE: 'TOLERANCE',
@@ -78,8 +73,8 @@ export const Resolution = {
   LIABILITY_ASSIGNED: 'LIABILITY_ASSIGNED',
 } as const;
 
-export type DiscrepancyViewAllowedActionsItem = typeof DiscrepancyViewAllowedActionsItem[keyof typeof DiscrepancyViewAllowedActionsItem];
-
+export type DiscrepancyViewAllowedActionsItem =
+  (typeof DiscrepancyViewAllowedActionsItem)[keyof typeof DiscrepancyViewAllowedActionsItem];
 
 export const DiscrepancyViewAllowedActionsItem = {
   ASSIGN: 'ASSIGN',
@@ -146,9 +141,9 @@ export interface AssignDiscrepancyRequest {
 export interface ResolveDiscrepancyRequest {
   resolution: Resolution;
   /**
-     * @minLength 1
-     * @maxLength 2000
-     */
+   * @minLength 1
+   * @maxLength 2000
+   */
   note: string;
   /** @maxLength 200 */
   liableParty?: string;
@@ -157,8 +152,7 @@ export interface ResolveDiscrepancyRequest {
 /**
  * LAB laboratuvar testidir.
  */
-export type InspectionKind = typeof InspectionKind[keyof typeof InspectionKind];
-
+export type InspectionKind = (typeof InspectionKind)[keyof typeof InspectionKind];
 
 export const InspectionKind = {
   LAB: 'LAB',
@@ -167,24 +161,24 @@ export const InspectionKind = {
 export interface OpenQualityClaimRequest {
   shipmentId: string;
   /**
-     * @minLength 1
-     * @maxLength 2000
-     */
+   * @minLength 1
+   * @maxLength 2000
+   */
   description: string;
   /**
-     * İtiraz edilen kilo; sıfırdan büyük, en çok üç ondalıklı, sevkiyatın net kilosunu aşamaz
-     * @pattern ^\d{1,11}(\.\d{1,3})?$
-     */
+   * İtiraz edilen kilo; sıfırdan büyük, en çok üç ondalıklı, sevkiyatın net kilosunu aşamaz
+   * @pattern ^\d{1,11}(\.\d{1,3})?$
+   */
   claimedKg: string;
   /**
-     * İsteğe bağlı kumaş girişi kimliği (kumaş girişi henüz yok)
-     * @nullable
-     */
+   * İsteğe bağlı kumaş girişi kimliği (kumaş girişi henüz yok)
+   * @nullable
+   */
   fabricReceiptId?: string | null;
   /**
-     * @minItems 1
-     * @maxItems 20
-     */
+   * @minItems 1
+   * @maxItems 20
+   */
   evidenceIds: string[];
 }
 
@@ -196,16 +190,16 @@ export interface RequestInspectionRequest {
 
 export interface RecordInspectionResultRequest {
   /**
-     * @minLength 1
-     * @maxLength 2000
-     */
+   * @minLength 1
+   * @maxLength 2000
+   */
   result: string;
   /** LAB_RESULT kanıtı; lab kontrolünde zorunlu */
   evidenceId?: string;
 }
 
-export type InspectionViewAllowedActionsItem = typeof InspectionViewAllowedActionsItem[keyof typeof InspectionViewAllowedActionsItem];
-
+export type InspectionViewAllowedActionsItem =
+  (typeof InspectionViewAllowedActionsItem)[keyof typeof InspectionViewAllowedActionsItem];
 
 export const InspectionViewAllowedActionsItem = {
   RECORD_RESULT: 'RECORD_RESULT',
@@ -225,8 +219,8 @@ export interface InspectionView {
   allowedActions?: InspectionViewAllowedActionsItem[];
 }
 
-export type QualityClaimViewAllowedActionsItem = typeof QualityClaimViewAllowedActionsItem[keyof typeof QualityClaimViewAllowedActionsItem];
-
+export type QualityClaimViewAllowedActionsItem =
+  (typeof QualityClaimViewAllowedActionsItem)[keyof typeof QualityClaimViewAllowedActionsItem];
 
 export const QualityClaimViewAllowedActionsItem = {
   REQUEST_INSPECTION: 'REQUEST_INSPECTION',
@@ -254,8 +248,8 @@ export interface QualityClaimView {
   allowedActions?: QualityClaimViewAllowedActionsItem[];
 }
 
-export type ShipmentClaimsViewAllowedActionsItem = typeof ShipmentClaimsViewAllowedActionsItem[keyof typeof ShipmentClaimsViewAllowedActionsItem];
-
+export type ShipmentClaimsViewAllowedActionsItem =
+  (typeof ShipmentClaimsViewAllowedActionsItem)[keyof typeof ShipmentClaimsViewAllowedActionsItem];
 
 export const ShipmentClaimsViewAllowedActionsItem = {
   OPEN_CLAIM: 'OPEN_CLAIM',
@@ -325,78 +319,68 @@ export type ClaimNotFoundResponse = Problem;
 export type UnavailableResponse = Problem;
 
 export type ListDiscrepanciesParams = {
-status?: DiscrepancyStatus;
-severity?: Severity;
-assigneeId?: string;
-shipmentId?: string;
-/**
- * OVERDUE ise yalnızca vadesi geçmiş ve hâlâ açık (OPEN, IN_REVIEW) kayıtlar döner.
- */
-due?: DueFilter;
-/**
- * @minimum 0
- */
-page?: number;
-/**
- * @minimum 1
- * @maximum 100
- */
-size?: number;
+  status?: DiscrepancyStatus;
+  severity?: Severity;
+  assigneeId?: string;
+  shipmentId?: string;
+  /**
+   * OVERDUE ise yalnızca vadesi geçmiş ve hâlâ açık (OPEN, IN_REVIEW) kayıtlar döner.
+   */
+  due?: DueFilter;
+  /**
+   * @minimum 0
+   */
+  page?: number;
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  size?: number;
 };
 
 /**
  * Vadesi yakın olan önce gelir; aynı vadede RED, YELLOW'dan önce sıralanır.
  * @summary Uyuşmazlık listesi
  */
-export const listDiscrepancies = (
-    params?: ListDiscrepanciesParams,
- ) => {
-      return customInstance<DiscrepancyPage>(
-      {url: `/api/v1/discrepancies`, method: 'GET',
-        params
-    },
-      );
-    }
+export const listDiscrepancies = (params?: ListDiscrepanciesParams) => {
+  return customInstance<DiscrepancyPage>({ url: `/api/v1/discrepancies`, method: 'GET', params });
+};
 
 /**
  * @summary Uyuşmazlık detayı
  */
-export const getDiscrepancy = (
-    discrepancyId: string,
- ) => {
-      return customInstance<DiscrepancyView>(
-      {url: `/api/v1/discrepancies/${discrepancyId}`, method: 'GET'
-    },
-      );
-    }
+export const getDiscrepancy = (discrepancyId: string) => {
+  return customInstance<DiscrepancyView>({
+    url: `/api/v1/discrepancies/${discrepancyId}`,
+    method: 'GET',
+  });
+};
 
 /**
  * @summary Uyuşmazlık geçmişi (en eskiden yeniye)
  */
-export const listDiscrepancyActivity = (
-    discrepancyId: string,
- ) => {
-      return customInstance<DiscrepancyActivityView[]>(
-      {url: `/api/v1/discrepancies/${discrepancyId}/activity`, method: 'GET'
-    },
-      );
-    }
+export const listDiscrepancyActivity = (discrepancyId: string) => {
+  return customInstance<DiscrepancyActivityView[]>({
+    url: `/api/v1/discrepancies/${discrepancyId}/activity`,
+    method: 'GET',
+  });
+};
 
 /**
  * Yalnızca OPEN ve IN_REVIEW uyuşmazlıklar atanabilir; yeniden atama sorumluyu değiştirir.
  * @summary Uyuşmazlığı bir sorumluya atar ve incelemeye alır
  */
 export const assignDiscrepancy = (
-    discrepancyId: string,
-    assignDiscrepancyRequest: AssignDiscrepancyRequest,
- ) => {
-      return customInstance<DiscrepancyView>(
-      {url: `/api/v1/discrepancies/${discrepancyId}/assign`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: assignDiscrepancyRequest
-    },
-      );
-    }
+  discrepancyId: string,
+  assignDiscrepancyRequest: AssignDiscrepancyRequest,
+) => {
+  return customInstance<DiscrepancyView>({
+    url: `/api/v1/discrepancies/${discrepancyId}/assign`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: assignDiscrepancyRequest,
+  });
+};
 
 /**
  * Çözüm kodu ve not zorunludur. `LIABILITY_ASSIGNED` için sorumlu taraf (`liableParty`) da gerekir.
@@ -404,16 +388,16 @@ export const assignDiscrepancy = (
  * @summary Uyuşmazlığı karara bağlar
  */
 export const resolveDiscrepancy = (
-    discrepancyId: string,
-    resolveDiscrepancyRequest: ResolveDiscrepancyRequest,
- ) => {
-      return customInstance<DiscrepancyView>(
-      {url: `/api/v1/discrepancies/${discrepancyId}/resolve`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: resolveDiscrepancyRequest
-    },
-      );
-    }
+  discrepancyId: string,
+  resolveDiscrepancyRequest: ResolveDiscrepancyRequest,
+) => {
+  return customInstance<DiscrepancyView>({
+    url: `/api/v1/discrepancies/${discrepancyId}/resolve`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: resolveDiscrepancyRequest,
+  });
+};
 
 /**
  * Fabrika personeli (kalite, müdür, admin) tamamlanmış sevkiyat için, tamamlanmadan itibaren 3 iş günü içinde
@@ -422,46 +406,42 @@ export const resolveDiscrepancy = (
  * fotoğraf aynı sevkiyata yüklenmiş olmalıdır. `fabricReceiptId` isteğe bağlıdır (kumaş girişi henüz yok).
  * @summary Kalite itirazı açar
  */
-export const openQualityClaim = (
-    openQualityClaimRequest: OpenQualityClaimRequest,
- ) => {
-      return customInstance<QualityClaimView>(
-      {url: `/api/v1/quality-claims`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: openQualityClaimRequest
-    },
-      );
-    }
+export const openQualityClaim = (openQualityClaimRequest: OpenQualityClaimRequest) => {
+  return customInstance<QualityClaimView>({
+    url: `/api/v1/quality-claims`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: openQualityClaimRequest,
+  });
+};
 
 /**
  * İtiraz süresi, sevkiyatın net kilosu ve açılmış itirazlar (kontrolleriyle). Sevkiyat henüz tamamlanmadıysa
  * `409 QUALITY_CLAIM_NOT_AVAILABLE`.
  * @summary Sevkiyatın itiraz dosyası
  */
-export const getShipmentClaims = (
-    shipmentId: string,
- ) => {
-      return customInstance<ShipmentClaimsView>(
-      {url: `/api/v1/quality-claims/shipments/${shipmentId}`, method: 'GET'
-    },
-      );
-    }
+export const getShipmentClaims = (shipmentId: string) => {
+  return customInstance<ShipmentClaimsView>({
+    url: `/api/v1/quality-claims/shipments/${shipmentId}`,
+    method: 'GET',
+  });
+};
 
 /**
  * Yalnızca karara bağlanmamış itirazda; kalite ve admin.
  * @summary İtiraz için numune ya da lab kontrolü ister
  */
 export const requestInspection = (
-    claimId: string,
-    requestInspectionRequest: RequestInspectionRequest,
- ) => {
-      return customInstance<InspectionView>(
-      {url: `/api/v1/quality-claims/${claimId}/inspections`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: requestInspectionRequest
-    },
-      );
-    }
+  claimId: string,
+  requestInspectionRequest: RequestInspectionRequest,
+) => {
+  return customInstance<InspectionView>({
+    url: `/api/v1/quality-claims/${claimId}/inspections`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: requestInspectionRequest,
+  });
+};
 
 /**
  * Sonuç bir kez girilir. Lab sonucu `LAB_RESULT` belgesiyle gelir; numune karşılaştırmasında belge isteğe
@@ -469,29 +449,32 @@ export const requestInspection = (
  * @summary Kontrol sonucunu girer
  */
 export const recordInspectionResult = (
-    claimId: string,
-    inspectionId: string,
-    recordInspectionResultRequest: RecordInspectionResultRequest,
- ) => {
-      return customInstance<InspectionView>(
-      {url: `/api/v1/quality-claims/${claimId}/inspections/${inspectionId}/result`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: recordInspectionResultRequest
-    },
-      );
-    }
-
+  claimId: string,
+  inspectionId: string,
+  recordInspectionResultRequest: RecordInspectionResultRequest,
+) => {
+  return customInstance<InspectionView>({
+    url: `/api/v1/quality-claims/${claimId}/inspections/${inspectionId}/result`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: recordInspectionResultRequest,
+  });
+};
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
-    type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
-export type ListDiscrepanciesResult = NonNullable<Awaited<ReturnType<typeof listDiscrepancies>>>
-export type GetDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof getDiscrepancy>>>
-export type ListDiscrepancyActivityResult = NonNullable<Awaited<ReturnType<typeof listDiscrepancyActivity>>>
-export type AssignDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof assignDiscrepancy>>>
-export type ResolveDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof resolveDiscrepancy>>>
-export type OpenQualityClaimResult = NonNullable<Awaited<ReturnType<typeof openQualityClaim>>>
-export type GetShipmentClaimsResult = NonNullable<Awaited<ReturnType<typeof getShipmentClaims>>>
-export type RequestInspectionResult = NonNullable<Awaited<ReturnType<typeof requestInspection>>>
-export type RecordInspectionResultResult = NonNullable<Awaited<ReturnType<typeof recordInspectionResult>>>
+export type ListDiscrepanciesResult = NonNullable<Awaited<ReturnType<typeof listDiscrepancies>>>;
+export type GetDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof getDiscrepancy>>>;
+export type ListDiscrepancyActivityResult = NonNullable<
+  Awaited<ReturnType<typeof listDiscrepancyActivity>>
+>;
+export type AssignDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof assignDiscrepancy>>>;
+export type ResolveDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof resolveDiscrepancy>>>;
+export type OpenQualityClaimResult = NonNullable<Awaited<ReturnType<typeof openQualityClaim>>>;
+export type GetShipmentClaimsResult = NonNullable<Awaited<ReturnType<typeof getShipmentClaims>>>;
+export type RequestInspectionResult = NonNullable<Awaited<ReturnType<typeof requestInspection>>>;
+export type RecordInspectionResultResult = NonNullable<
+  Awaited<ReturnType<typeof recordInspectionResult>>
+>;

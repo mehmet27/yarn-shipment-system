@@ -300,10 +300,17 @@
       "hints": {
         "CANCEL": "Sevkiyat iptal olur, çuvallar serbest kalır.",
         "ADD_REMOVE_BAGS": "Sevkiyat taslağa döner; depo çuvalları düzeltip yeniden tartar.",
-        "UPDATE_RECIPE": "İplik listesindeki kilo tartıya eşitlenir ve sevkiyat yola çıkar."
+        "UPDATE_RECIPE": "İplik listesindeki kiloları siz yazarsınız; toplam tartılan net kiloya eşit olunca sevkiyat yola çıkar."
+      },
+      "recipe": {
+        "hint": "Tartılan net kilo {{net}}. Her ipliğin kilosunu yazın; toplam bu kiloya tam eşit olmalı.",
+        "line": "{{no}}. iplik",
+        "equal": "Toplam tartılan net kiloya eşit.",
+        "differs": "Toplam tartılan net kiloya eşit değil."
       },
       "errors": {
         "INVALID_SHIPMENT_STATUS": "Sevkiyat artık kantar uyuşmazlığında değil.",
+        "INVALID_WEIGHT_DECISION": "İplik kiloları geçersiz: toplam tartılan net kiloya eşit olmalı.",
         "unknown": "Karar kaydedilemedi. Lütfen tekrar deneyin."
       }
     },

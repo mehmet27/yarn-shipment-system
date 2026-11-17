@@ -68,6 +68,7 @@ export type {
   ShipmentSettingsView,
   WeightCheckView,
   WeightDecisionKind,
+  WeightDecisionLine,
   WeightDecisionRequest,
 } from './generated/shipmentService';
 export { CorrectionTarget, listCorrections, recordCorrection } from './generated/shipmentService';

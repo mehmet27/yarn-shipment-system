@@ -30,6 +30,11 @@ export function ShipmentFileTop({ shipment }: { shipment: ShipmentDetail }) {
         shipmentId={shipment.shipmentId}
         shipmentDate={shipment.shipmentDate}
         actions={shipment.allowedActions}
+        recipe={
+          weightCheck === undefined
+            ? undefined
+            : { lines: shipment.lines ?? [], measuredKg: weightCheck.measuredKg }
+        }
       />
       <EvidenceUpload
         shipmentId={shipment.shipmentId}

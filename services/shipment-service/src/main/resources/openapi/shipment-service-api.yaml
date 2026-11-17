@@ -1895,8 +1895,8 @@ paths:
       description: |
         Müdür ya da yönetici (SHIPMENT_CANCEL). `CANCEL`: sevkiyat iptal olur, çuvallar serbest kalır. `ADD_REMOVE_BAGS`:
         sevkiyat DRAFT'a döner, depo çuvalı düzeltip yeniden tartar (önceki tartım silinmez). `UPDATE_RECIPE`: reçete
-        satırları tartılan net'e orantılı ölçeklenir (yuvarlama farkı son satırda) ve sevkiyat `AWAITING_DELIVERY` olur.
-        Gerekçe zorunludur. Sevkiyat `WEIGHT_MISMATCH` değilse `INVALID_SHIPMENT_STATUS`.
+        satırlarının kiloları `lines` ile müdürce düzeltilir (her satır için bir kilo, toplam tartılan net'e tam eşit)
+        ve sevkiyat `AWAITING_DELIVERY` olur; toplam tutmazsa `INVALID_WEIGHT_DECISION`. Gerekçe zorunludur. Sevkiyat `WEIGHT_MISMATCH` değilse `INVALID_SHIPMENT_STATUS`.
       parameters:
         - name: shipmentId
           in: path
@@ -2773,6 +2773,21 @@ components:
           type: string
           minLength: 1
           maxLength: 500
+        lines:
+          description: Düzeltilen iplik listesi; yalnızca UPDATE_RECIPE kararında zorunlu
+          type: array
+          default: []
+          items:
+            $ref: '#/components/schemas/WeightDecisionLine'
+    WeightDecisionLine:
+      type: object
+      required: [lineNo, netKg]
+      properties:
+        lineNo:
+          type: integer
+          minimum: 1
+        netKg:
+          $ref: '#/components/schemas/Kg'
     ShipmentSettingsView:
       type: object
       required: [defaultFireRate, weightToleranceKg]

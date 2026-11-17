@@ -17,13 +17,15 @@ import com.yarnshipment.shipment.domain.model.Weighing;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Kantar uyuşmazlığındaki sevkiyata müdür karar verir (süreç analizi 5.4): iptal (çuvallar serbest kalır), çuval
- * ekle/çıkar (taslağa döner) ya da reçeteyi tartıya eşitle (yola çıkar). Gerekçe zorunludur.
+ * ekle/çıkar (taslağa döner) ya da iplik listesini düzelt (müdür her satırın kilosunu yazar, toplam tartılan net'e eşit
+ * olmalıdır; sevkiyat yola çıkar). Gerekçe zorunludur.
  */
 @Service
 public class ResolveWeightMismatchService implements ResolveWeightMismatchUseCase {
@@ -67,11 +69,12 @@ public class ResolveWeightMismatchService implements ResolveWeightMismatchUseCas
                 cancelShipment.cancelShipment(
                         new CancelShipmentCommand(actor, shipment.id(), reason, UUID.randomUUID()));
             case ADD_REMOVE_BAGS -> decisionPort.backToDraft(shipment.id(), reason, audit);
-            case UPDATE_RECIPE -> acceptRecipe(shipment, reason, audit);
+            case UPDATE_RECIPE -> acceptRecipe(shipment, command.lines(), reason, audit);
         }
     }
 
-    private void acceptRecipe(Shipment shipment, String reason, WeightDecisionPort.Audit audit) {
+    private void acceptRecipe(
+            Shipment shipment, List<Recipe.LineWeight> corrected, String reason, WeightDecisionPort.Audit audit) {
         Weighing weighing = shipment.dispatchWeighing();
         if (weighing == null || shipment.lines().isEmpty()) {
             throw new InvalidWeightDecisionException("recipe", "no weighing or recipe lines");
@@ -86,7 +89,7 @@ public class ResolveWeightMismatchService implements ResolveWeightMismatchUseCas
                 audit.at());
         decisionPort.acceptRecipe(
                 new WeightDecisionPort.RecipeAcceptance(
-                        shipment.id(), Recipe.scaleTo(shipment.lines(), measured), measured, event),
+                        shipment.id(), Recipe.correct(shipment.lines(), corrected, measured), measured, event),
                 reason,
                 audit);
     }

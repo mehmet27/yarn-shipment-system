@@ -1,4 +1,4 @@
-import type { ShipmentAction } from '@iplik/api-client';
+import type { RecipeLineView, ShipmentAction } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { ActionBar, Button, Text } from '@iplik/ui';
 import { Link } from 'react-router';
@@ -13,10 +13,13 @@ export function ShipmentFileActions({
   shipmentId,
   shipmentDate,
   actions,
+  recipe,
 }: {
   shipmentId: string;
   shipmentDate: string;
   actions: readonly ShipmentAction[];
+  /** Kantar uyuşmazlığındaki iplik listesi ve tartılan net; karar formu bunu düzeltir. */
+  recipe?: { lines: readonly RecipeLineView[]; measuredKg: string } | undefined;
 }) {
   const { t } = useTranslation();
   const canRecordDispatch = actions.includes('RECORD_DISPATCH');
@@ -39,8 +42,12 @@ export function ShipmentFileActions({
           )}
         </ActionBar>
       )}
-      {actions.includes('RESOLVE_WEIGHT_MISMATCH') && (
-        <WeightDecisionForm shipmentId={shipmentId} />
+      {actions.includes('RESOLVE_WEIGHT_MISMATCH') && recipe !== undefined && (
+        <WeightDecisionForm
+          shipmentId={shipmentId}
+          lines={recipe.lines}
+          measuredKg={recipe.measuredKg}
+        />
       )}
       {actions.includes('COMPLETE') && <CompleteShipmentForm shipmentId={shipmentId} />}
       {actions.includes('UPDATE_SHIPMENT_DATE') && (

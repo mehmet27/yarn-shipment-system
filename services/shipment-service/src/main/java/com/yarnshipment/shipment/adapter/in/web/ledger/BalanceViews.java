@@ -34,8 +34,7 @@ final class BalanceViews {
             UUID createdBy,
             @Nullable String reason) {}
 
-    record MovementPageView(
-            List<MovementView> items, PageMetadataView page, Map<UUID, String> actorNames) {}
+    record MovementPageView(List<MovementView> items, PageMetadataView page, Map<UUID, String> actorNames) {}
 
     static BalanceSummaryView balances(BalanceSummary summary) {
         return new BalanceSummaryView(

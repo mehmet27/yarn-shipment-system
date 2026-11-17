@@ -22,7 +22,7 @@ export function NotificationBell() {
     enabled: canView,
     refetchInterval: POLL_MS,
   });
-  const weightPending = usePendingWeightDecisions(POLL_MS);
+  const weightPending = usePendingWeightDecisions({ pollMs: POLL_MS, isEnabled: canView });
   if (!canView) {
     return null;
   }

@@ -8,6 +8,7 @@ import com.yarnshipment.shipment.domain.balance.Kilograms;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
@@ -33,7 +34,7 @@ final class BalanceViews {
             UUID createdBy,
             @Nullable String reason) {}
 
-    record MovementPageView(List<MovementView> items, PageMetadataView page) {}
+    record MovementPageView(List<MovementView> items, PageMetadataView page, Map<UUID, String> actorNames) {}
 
     static BalanceSummaryView balances(BalanceSummary summary) {
         return new BalanceSummaryView(
@@ -43,7 +44,8 @@ final class BalanceViews {
     static MovementPageView movements(MovementPage page) {
         return new MovementPageView(
                 page.items().stream().map(BalanceViews::movement).toList(),
-                new PageMetadataView(page.number(), page.size(), page.totalElements(), page.totalPages()));
+                new PageMetadataView(page.number(), page.size(), page.totalElements(), page.totalPages()),
+                page.actorNames());
     }
 
     static String kg(BigDecimal value) {

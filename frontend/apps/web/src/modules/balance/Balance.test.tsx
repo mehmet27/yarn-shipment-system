@@ -1,5 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
+import { BALANCES_PATH } from '@iplik/api-client/settlements';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
@@ -14,6 +16,33 @@ describe('Fasoncu bakiyesi', () => {
     expect(within(table).getByText('30/1 Penye')).toBeInTheDocument();
     expect(within(table).getByText('Aydın Örme')).toBeInTheDocument();
     expect(await screen.findByText('Hareket yok.')).toBeInTheDocument();
+  });
+
+  it('hareketi giren kişinin adı yazılır; ad çözülemezse "Bir çalışan"', async () => {
+    const move = {
+      id: 'm1',
+      subcontractorId: 'sub-0',
+      yarnType: '30/1 Penye',
+      kind: 'DISPATCH',
+      netKg: '100',
+      occurredAt: '2026-11-17T08:00:00Z',
+    };
+    server.use(
+      http.get(`${BALANCES_PATH}/movements`, () =>
+        HttpResponse.json({
+          items: [
+            { ...move, createdBy: 'u-1' },
+            { ...move, id: 'm2', createdBy: 'u-2' },
+          ],
+          page: { number: 0, size: 20, totalElements: 2, totalPages: 1 },
+          actorNames: { 'u-1': 'Veli Müdür' },
+        }),
+      ),
+      ...createHandlers('QUALITY'),
+    );
+    renderApp('/panel/bakiye');
+    expect(await screen.findByText('Veli Müdür')).toBeInTheDocument();
+    expect(screen.getByText('Bir çalışan')).toBeInTheDocument();
   });
 
   it('menüde yalnızca izni olana görünür', async () => {

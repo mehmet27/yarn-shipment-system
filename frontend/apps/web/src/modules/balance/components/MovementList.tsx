@@ -23,7 +23,7 @@ export function MovementList({
   const query = useBalanceMovements(filter);
   return (
     <QueryState query={query}>
-      {({ items, page }) =>
+      {({ items, page, actorNames }) =>
         items.length === 0 ? (
           <Text c="dimmed">{t('settlement.balances.movementsEmpty')}</Text>
         ) : (
@@ -46,7 +46,9 @@ export function MovementList({
                       <Table.Td>{t(`settlement.balances.kinds.${move.kind}`)}</Table.Td>
                       <Table.Td>{yarnLabel(move.yarnType)}</Table.Td>
                       <Table.Td>{formatSignedKg(move.netKg)}</Table.Td>
-                      <Table.Td>{move.reason ?? actorLabel(move.createdBy)}</Table.Td>
+                      <Table.Td>
+                        {move.reason ?? actorLabel(move.createdBy, actorNames?.[move.createdBy])}
+                      </Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>

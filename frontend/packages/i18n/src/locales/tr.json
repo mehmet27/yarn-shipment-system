@@ -61,6 +61,10 @@
   },
   "nav": {
     "panel": "Menü",
+    "groups": {
+      "daily": "Günlük işler",
+      "setup": "Tanımlar ve ayarlar"
+    },
     "toggle": "Yan menü",
     "shipments": "Sevkiyatlar",
     "masterData": "Tanımlar",

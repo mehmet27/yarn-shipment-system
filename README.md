@@ -108,6 +108,23 @@ docker compose -f deploy/docker-compose.yml exec -T postgres \
 - Kanıt dosyaları diskte (`EVIDENCE_STORAGE_ROOT`) durur; betik onları silmez, gerekirse ayrıca temizleyin.
 - Sunucuda (`deploy/prod`) aynı komut ilgili compose dosyasıyla çalıştırılır; canlıda önce yedek (`DEPLOY.md`) alın.
 
+## Mevcut veritabanında tüm kullanıcıları ve yetkileri bırakma
+
+Hesapları, şifreleri, rolleri ve Yetkiler ekranını bırakıp **geri kalan her veriyi** (sevkiyatlar, stok/bakiye, fireler, fasoncu/şoför/araç/iplik/kalite/tedarikçi tanımları, partiler, uyuşmazlıklar, kanıt ve denetim kayıtları) silmek için `deploy/postgres/kullanicilar-disinda-sil.sql` kullanılır. Geri alınamaz; önce yedek alın, uygulamayı durdurmanız önerilir.
+
+PowerShell (tek satır, depo kökünde):
+
+```powershell
+Get-Content deploy/postgres/kullanicilar-disinda-sil.sql -Raw -Encoding UTF8 | docker compose -f deploy/docker-compose.yml exec -T postgres psql -U postgres -d yarnshipment -v ON_ERROR_STOP=1 -v onay=SIL
+```
+
+bash: `docker compose -f deploy/docker-compose.yml exec -T postgres psql -U postgres -d yarnshipment -v ON_ERROR_STOP=1 -v onay=SIL < deploy/postgres/kullanicilar-disinda-sil.sql`
+
+- `-v onay=SIL` zorunludur; tek transaction'dır, hata olursa hiçbir şey silinmez. Şema ve Flyway geçmişi kalır.
+- Kalanlar: `app_user` (kilitler ve şifre talepleri temizlenir), `staff_work_area`, `role_permission`, lokasyonlar (`md_site`; hesapların kapsamı bunlara bağlıdır).
+- `-v ayarlari_koru=1` ile `app_setting` (fire oranı, kantar toleransı, firma adı/logo) de kalır; yoksa silinir.
+- Kanıt dosyaları diskte (`EVIDENCE_STORAGE_ROOT`) kalır; gerekirse ayrıca silin.
+
 ## Uygulamayı çalıştırma (yarnshipment-app)
 
 shipment, discrepancy, evidence, reporting ve audit modülleri `services/yarnshipment-app` içinde tek Spring Boot uygulaması olarak çalışır (port `8083`); önünde ayrı bir geçit yoktur, giriş de bu uygulamadadır. Tek `application.yml` ve tek bağlantı havuzu vardır; her şema kendi Flyway'iyle (kendi `flyway_schema_history` tablosu) açılışta kurulur, migration'lar `services/<modül>-service/src/main/resources/db/migration/<şema>/` altındadır. PostgreSQL'i ayrıca kurmanız gerekmez; yukarıdaki Compose yeterlidir.

@@ -28,6 +28,14 @@ final class BalanceFireReader implements BalanceFirePort {
     private static final String MOVEMENT_SITE_FILTER = " AND (site_id IS NULL OR ((:allSites OR site_id IN (:siteIds))"
             + " AND (CAST(:requestedSite AS uuid) IS NULL OR site_id = CAST(:requestedSite AS uuid))))";
 
+    /** Dönemde yola çıkan satırların kilo × kendi fiyatı toplamı; fiyatsız kilo ayrı. */
+    private static final String SHIPPED_AMOUNT_SQL = """
+            SELECT coalesce(sum(l.net_kg * l.unit_price) FILTER (WHERE l.unit_price IS NOT NULL), 0) AS amount,
+                   coalesce(sum(l.net_kg) FILTER (WHERE l.unit_price IS NULL), 0) AS unpriced_kg
+              FROM shipment.shipment_line l
+              JOIN shipment_view s ON s.shipment_id = l.shipment_id
+             WHERE s.dispatched_at >= :start AND s.dispatched_at < :end /*SITE*/""";
+
     /** Fasoncu × iplik cinsi bakiyesi ve o fasoncuya o iplik için son girilen fiyat. */
     private static final String PRICED_BALANCE_SQL = """
             SELECT b.subcontractor_id, b.subcontractor_name, b.balance_kg, p.unit_price
@@ -98,12 +106,7 @@ final class BalanceFireReader implements BalanceFirePort {
 
     @Override
     public ShippedAmount findShippedAmount(ReportPeriod period, ReportScope scope) {
-        String sql = """
-                SELECT coalesce(sum(l.net_kg * l.unit_price) FILTER (WHERE l.unit_price IS NOT NULL), 0) AS amount,
-                       coalesce(sum(l.net_kg) FILTER (WHERE l.unit_price IS NULL), 0) AS unpriced_kg
-                  FROM shipment.shipment_line l
-                  JOIN shipment_view s ON s.shipment_id = l.shipment_id
-                 WHERE s.dispatched_at >= :start AND s.dispatched_at < :end""" + ScopedSql.SITE_FILTER.replace("site_id", "s.site_id");
+        String sql = SHIPPED_AMOUNT_SQL.replace("/*SITE*/", ScopedSql.SITE_FILTER.replace("site_id", "s.site_id"));
         return ScopedSql.withPeriod(ScopedSql.bind(jdbc.sql(sql), scope), period)
                 .query((rs, row) -> new ShippedAmount(rs.getBigDecimal("amount"), rs.getBigDecimal("unpriced_kg")))
                 .single();

@@ -41,6 +41,22 @@ describe('CreateShipmentPage', () => {
   );
 
   it(
+    'fiyat boşken kilo hatası olan satırda İplik sekmesi açık kalır',
+    async () => {
+      server.use(...createHandlers('MANAGER'));
+      renderApp('/panel/sevkiyat/yeni');
+      await pick('Alıcı fasoncu', 'Bursa Tekstil');
+      await userEvent.type(
+        await screen.findByLabelText(/ya da listede yoksa yazın/),
+        '20 denye likra',
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
+      expect(await screen.findByLabelText(/Net kg 1/)).toBeVisible();
+    },
+    LONG_FLOW_TIMEOUT_MS,
+  );
+
+  it(
     'art arda iki tıklama aynı sipariş için tek sevkiyat açar',
     async () => {
       server.use(...createHandlers('MANAGER'));

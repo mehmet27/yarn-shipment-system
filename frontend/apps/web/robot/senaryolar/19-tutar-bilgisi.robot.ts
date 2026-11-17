@@ -34,7 +34,9 @@ test('Tutar bilgisi: fiyat zorunlu; tutarı yalnızca müdür ve genel müdür g
       .fill(`${damga()}-fiyatsiz`);
     await mudur.sayfa.getByLabel(/Net kg 1/).fill('10');
     await mudur.sayfa.getByRole('button', { name: 'Taslak oluştur' }).click();
-    await expect(mudur.sayfa.getByText(/Fiyat yazılmalı/)).toBeVisible();
+    await expect(
+      mudur.sayfa.locator(':text-matches("Fiyat yazılmalı"):visible').first(),
+    ).toBeVisible();
     mudur.kontrol('sevkiyat oluşmamalı', mudur.sayfa.url().endsWith('/yeni'), mudur.sayfa.url());
   });
 

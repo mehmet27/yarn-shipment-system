@@ -225,6 +225,31 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+  /api/v1/reports/amounts:
+    get:
+      tags: [BalanceFire]
+      operationId: getAmountSummary
+      summary: Tutar bilgisi (TL)
+      description: >-
+        AMOUNT_VIEW gerekir. Her sevkiyat satırının birim fiyatı ayrıdır; tutarlar satır satır (kilo × o satırın fiyatı)
+        toplanır. Fiyatı girilmemiş eski kayıtlar tutara katılmaz, kilosu ayrıca verilir.
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Tutar özeti
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmountSummaryView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /api/v1/reports/balance/opening-import:
     post:
       tags: [BalanceFire]
@@ -496,6 +521,29 @@ components:
         status: {type: string, enum: [AWAITING_FABRIC, TO_INVOICE, CLOSED]}
         invoiceNo: {type: string, nullable: true}
         invoicedAt: {type: string, format: date-time, nullable: true}
+    AmountSummaryView:
+      type: object
+      required: [shippedAmount, shippedUnpricedKg, toInvoiceAmount, toInvoiceUnpricedKg, subcontractorYarnAmount, subcontractorUnpricedKg, subcontractors]
+      properties:
+        shippedAmount: {type: string, description: "Dönemde yola çıkan iplik tutarı, TL (2 ondalık)"}
+        shippedUnpricedKg: {type: string, description: "Fiyatı girilmemiş, tutara katılmayan kilo"}
+        toInvoiceAmount: {type: string, description: "Faturalanacak eksik kilonun tutarı, TL"}
+        toInvoiceUnpricedKg: {type: string, description: "Fiyatı bilinmediği için tutarı hesaplanamayan faturalanacak kilo"}
+        subcontractorYarnAmount: {type: string, description: "Fasoncudaki kalan ipliğin tahmini değeri, TL"}
+        subcontractorUnpricedKg: {type: string, description: "Fiyatı bulunamayan fasoncudaki iplik kilosu"}
+        subcontractors:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubcontractorAmountView'
+    SubcontractorAmountView:
+      type: object
+      required: [subcontractorId, subcontractorName, balanceKg, amount, unpricedKg]
+      properties:
+        subcontractorId: {type: string, format: uuid}
+        subcontractorName: {type: string}
+        balanceKg: {type: string}
+        amount: {type: string}
+        unpricedKg: {type: string}
     YarnVsFabricRowView:
       type: object
       required: [subcontractorId, subcontractorName, sentKg, returnedYarnKg, fabricKg, actualFireRate, shortageKg, overLimitShipmentCount, overLimitFireKg]

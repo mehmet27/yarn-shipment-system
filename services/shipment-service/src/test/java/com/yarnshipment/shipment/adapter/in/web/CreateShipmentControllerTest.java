@@ -35,7 +35,7 @@ class CreateShipmentControllerTest {
             + TestTokens.SUBCONTRACTOR_ID + "\", \"subcontractorTitle\": \"Örnek Tekstil\","
             + " \"shipmentDate\": \"2026-10-22\", \"fireRate\": \"0.0500\","
             + " \"lines\": [{\"yarnTypeText\": \"36/1 VİSKON\","
-            + " \"netKg\": \"19488.000\"}]}";
+            + " \"netKg\": \"19488.000\", \"unitPrice\": \"21.5000\"}]}";
 
     private final MockMvcTester mvc;
 
@@ -79,6 +79,16 @@ class CreateShipmentControllerTest {
         boolean fire = new java.math.BigDecimal("0.0500").compareTo(command.fireRate()) == 0;
         boolean day = command.shipmentDate().toString().equals("2026-10-22");
         return header && lines && fire && day;
+    }
+
+    @Test
+    @DisplayName("Birim fiyatsız satır 400 alır: fiyat zorunludur")
+    void shouldRejectMissingUnitPrice() {
+        MvcTestResult result = post(
+                TestTokens.token("manager").build(), VALID_BODY.replace(", \"unitPrice\": \"21.5000\"", ""));
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+        verifyNoInteractions(createShipmentUseCase);
     }
 
     @Test

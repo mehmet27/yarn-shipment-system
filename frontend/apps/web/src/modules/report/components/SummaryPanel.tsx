@@ -4,6 +4,7 @@ import { useDashboard } from '../hooks/useDashboard';
 import type { ReportPanelProps } from './reportPanelProps';
 import { AttentionLists } from './AttentionLists';
 import { DashboardSummary } from './DashboardSummary';
+import { StockOverview } from './StockOverview';
 
 /** Rapor ekranının "Özet" sekmesi: seçili dönemin dashboard verisi. */
 export function SummaryPanel({ params, isEnabled }: ReportPanelProps) {
@@ -13,6 +14,7 @@ export function SummaryPanel({ params, isEnabled }: ReportPanelProps) {
     <QueryState query={query}>
       {(dashboard) => (
         <Stack>
+          <StockOverview params={params} />
           <DashboardSummary dashboard={dashboard} />
           <AttentionLists dashboard={dashboard} />
         </Stack>

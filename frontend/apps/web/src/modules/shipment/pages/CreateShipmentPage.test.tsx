@@ -14,6 +14,8 @@ async function pick(label: string, option: string) {
 async function fillRecipe(netKg: string) {
   await userEvent.type(await screen.findByLabelText(/ya da listede yoksa yazın/), '20 denye likra');
   await userEvent.type(screen.getByLabelText(/Net kg 1/), netKg);
+  await userEvent.click(screen.getByRole('tab', { name: /Sipariş bilgileri/ }));
+  await userEvent.type(screen.getByLabelText(/Birim fiyat/), '21,5');
 }
 
 const LONG_FLOW_TIMEOUT_MS = 20_000;

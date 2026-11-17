@@ -2299,6 +2299,7 @@ components:
         - DISCREPANCY_RESOLVE
         - AUDIT_VIEW
         - REPORT_VIEW
+        - AMOUNT_VIEW
         - FABRIC_RECEIPT_RECORD
         - YARN_RETURN_RECORD
         - FIRE_RATE_EDIT

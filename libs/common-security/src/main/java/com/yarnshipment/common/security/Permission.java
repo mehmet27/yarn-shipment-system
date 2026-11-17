@@ -36,6 +36,8 @@ public enum Permission implements GrantedAuthority {
 
     AUDIT_VIEW(AccessType.READ),
     REPORT_VIEW(AccessType.READ),
+    /** Raporlarda tutar (TL) bilgisini görür: birim fiyatlardan hesaplanan değerler. */
+    AMOUNT_VIEW(AccessType.READ),
 
     /** Kumaş girişi kaydı. */
     FABRIC_RECEIPT_RECORD(AccessType.WRITE),

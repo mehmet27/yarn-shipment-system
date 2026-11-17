@@ -49,13 +49,14 @@ export const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> 
     'DISCREPANCY_VIEW',
     'AUDIT_VIEW',
     'REPORT_VIEW',
+    'AMOUNT_VIEW',
     'FIRE_RATE_EDIT',
     'INVOICE_MARK',
     'BALANCE_VIEW',
     'WEIGHT_MISMATCH_RESOLVE',
     'CENTRAL_STOCK_VIEW',
   ],
-  GENERAL_MANAGER: ['REPORT_VIEW', 'BALANCE_VIEW'],
+  GENERAL_MANAGER: ['REPORT_VIEW', 'AMOUNT_VIEW', 'BALANCE_VIEW', 'CENTRAL_STOCK_VIEW'],
 };
 
 const FULL_NAMES: Readonly<Record<Role, string>> = {

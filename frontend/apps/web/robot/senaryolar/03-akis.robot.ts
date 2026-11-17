@@ -1,6 +1,6 @@
 import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
-import { iplikTanimla, kumasGir } from '../support/akis';
+import { fiyatYaz, iplikTanimla, kumasGir } from '../support/akis';
 import { damga, iplikSec, resim, sec } from '../support/yardimci';
 
 type FireDosyasi = { fireRate: string; sentKg: string; fabricKg: string; status: string };
@@ -86,6 +86,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
       .first()
       .fill(iplik);
     await mudur.sayfa.getByLabel(/Net kg 1/).fill('100');
+    await fiyatYaz(mudur.sayfa);
     await mudur.sayfa.getByRole('button', { name: 'Taslak oluştur' }).click();
     await mudur.sayfa.waitForURL(/sevkiyat\/[0-9a-f-]{30,}$/);
     sevkiyatId = mudur.sayfa.url().split('/').pop() ?? '';

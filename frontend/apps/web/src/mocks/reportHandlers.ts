@@ -1,4 +1,5 @@
 import type {
+  AmountSummaryView,
   BalanceMatrixCell,
   DashboardView,
   FireRowView,
@@ -27,6 +28,31 @@ const MOCK_DASHBOARD: DashboardView = {
       shipmentId: 'shp-0007',
       severity: 'RED',
       dueAt: '2026-11-01T09:00:00Z',
+    },
+  ],
+};
+
+const MOCK_AMOUNTS: AmountSummaryView = {
+  shippedAmount: '412300.00',
+  shippedUnpricedKg: '0.000',
+  toInvoiceAmount: '96400.00',
+  toInvoiceUnpricedKg: '0.000',
+  subcontractorYarnAmount: '505000.00',
+  subcontractorUnpricedKg: '120.000',
+  subcontractors: [
+    {
+      subcontractorId: 'a1b2c3d4-0000-7000-8000-000000000001',
+      subcontractorName: 'Yıldız Triko',
+      balanceKg: '2940.000',
+      amount: '294000.00',
+      unpricedKg: '0.000',
+    },
+    {
+      subcontractorId: 'b2c3d4e5-0000-7000-8000-000000000002',
+      subcontractorName: 'Ay Örme',
+      balanceKg: '2230.000',
+      amount: '211000.00',
+      unpricedKg: '120.000',
     },
   ],
 };
@@ -151,6 +177,7 @@ const MOCK_YARN_VS_FABRIC: YarnVsFabricRowView[] = [
 /** Raporlar yalnızca REPORT_VIEW izniyle; backend gibi izinsizse 403 döner. */
 export function createReportHandlers(permissions: readonly Permission[]) {
   const canView = permissions.includes('REPORT_VIEW');
+  const canSeeAmounts = permissions.includes('AMOUNT_VIEW');
   const denied = () =>
     HttpResponse.json(
       { status: 403, code: 'ACCESS_DENIED', title: 'ACCESS_DENIED' },
@@ -180,6 +207,9 @@ export function createReportHandlers(permissions: readonly Permission[]) {
       canView
         ? HttpResponse.json(MOCK_FIRE.filter((row) => row.status === 'TO_INVOICE'))
         : denied(),
+    ),
+    http.get(`${REPORTS_PATH}/amounts`, () =>
+      canSeeAmounts ? HttpResponse.json(MOCK_AMOUNTS) : denied(),
     ),
     http.post(`${REPORTS_PATH}/balance/opening-import`, async ({ request }) => {
       const body = (await request.json()) as { rows: unknown[] };

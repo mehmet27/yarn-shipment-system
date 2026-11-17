@@ -54,6 +54,6 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
       'CENTRAL_PRODUCTION_RECORD',
     ],
   },
-  { key: 'reporting', permissions: ['REPORT_VIEW', 'AUDIT_VIEW'] },
+  { key: 'reporting', permissions: ['REPORT_VIEW', 'AMOUNT_VIEW', 'AUDIT_VIEW'] },
   { key: 'system', permissions: ['USER_MANAGE', 'SETTINGS_MANAGE', 'PERMISSION_MANAGE'] },
 ];

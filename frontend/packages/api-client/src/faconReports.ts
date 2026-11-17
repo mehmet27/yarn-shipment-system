@@ -42,6 +42,25 @@ export type YarnVsFabricRowView = {
   overLimitFireKg: string;
 };
 
+export type SubcontractorAmountView = {
+  subcontractorId: string;
+  subcontractorName: string;
+  balanceKg: string;
+  amount: string;
+  unpricedKg: string;
+};
+
+/** Tutar bilgisi (TL); her satır kendi birim fiyatıyla hesaplanır, fiyatsız kilo ayrıca verilir. */
+export type AmountSummaryView = {
+  shippedAmount: string;
+  shippedUnpricedKg: string;
+  toInvoiceAmount: string;
+  toInvoiceUnpricedKg: string;
+  subcontractorYarnAmount: string;
+  subcontractorUnpricedKg: string;
+  subcontractors: SubcontractorAmountView[];
+};
+
 export type FireReportParams = GetDashboardParams & { subcontractorId?: string };
 
 export type OpeningImportRow = {
@@ -72,6 +91,9 @@ export const getYarnVsFabricReport = (params?: GetDashboardParams) =>
 
 export const getToInvoiceReport = (params?: GetDashboardParams) =>
   customInstance<FireRowView[]>({ url: `${BASE}/to-invoice`, method: 'GET', params });
+
+export const getAmountSummary = (params?: GetDashboardParams) =>
+  customInstance<AmountSummaryView>({ url: `${BASE}/amounts`, method: 'GET', params });
 
 export const importOpeningBalance = (request: OpeningImportRequest) =>
   customInstance<OpeningImportResponse>({

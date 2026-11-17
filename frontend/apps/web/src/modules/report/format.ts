@@ -29,3 +29,13 @@ export function formatKg3(value: string | number): string {
 export function formatFireRate(value: string | number): string {
   return `%${pct2.format(Number(value) * 100)}`;
 }
+
+const money = new Intl.NumberFormat('tr-TR', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+/** Sunucudan gelen tutar (TL), ör. `"1248000.00"` → `1.248.000,00 TL`. */
+export function formatMoney(value: string | number): string {
+  return `${money.format(Number(value))} TL`;
+}

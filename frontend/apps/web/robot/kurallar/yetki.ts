@@ -48,5 +48,5 @@ export const IZINLI: Record<string, readonly string[]> = {
     '/panel/tanimlar',
     '/panel/partiler',
   ],
-  'genel-mudur': ['/panel', '/panel/raporlar', '/panel/bakiye'],
+  'genel-mudur': ['/panel', '/panel/raporlar', '/panel/bakiye', '/panel/merkez-stok'],
 };

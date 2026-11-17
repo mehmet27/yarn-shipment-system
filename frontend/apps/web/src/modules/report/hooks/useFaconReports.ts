@@ -1,5 +1,6 @@
 import type { FireReportParams, GetDashboardParams, OpeningImportRequest } from '@iplik/api-client';
 import {
+  getAmountSummary,
   getBalanceMatrix,
   getFireReport,
   getToInvoiceReport,
@@ -51,5 +52,15 @@ export function useOpeningImport() {
   return useMutation({
     mutationFn: (request: OpeningImportRequest) => importOpeningBalance(request),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [REPORTS_PATH] }),
+  });
+}
+
+/** Tutar bilgisi (TL); yalnızca tutar görme yetkisi olana sorulur. */
+export function useAmountSummary(params: GetDashboardParams, isEnabled: boolean) {
+  return useQuery({
+    queryKey: [REPORTS_PATH, 'amounts', params],
+    queryFn: () => getAmountSummary(params),
+    enabled: isEnabled,
+    placeholderData: keepPreviousData,
   });
 }

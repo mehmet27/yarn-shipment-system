@@ -4,6 +4,7 @@ import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.shipment.adapter.in.web.api.model.CreateShipmentRequest;
 import com.yarnshipment.shipment.adapter.in.web.api.model.RecipeLineInput;
 import com.yarnshipment.shipment.application.port.in.CreateShipmentCommand;
+import com.yarnshipment.shipment.domain.model.InvalidNewShipmentException;
 import com.yarnshipment.shipment.domain.model.OrderSpec;
 import com.yarnshipment.shipment.domain.model.RecipeLine;
 import com.yarnshipment.shipment.domain.model.ShipmentParties;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /** Sevkiyat oluşturma isteğini uygulama komutuna çevirir. */
 final class ShipmentCreations {
@@ -62,6 +64,18 @@ final class ShipmentCreations {
                 input.getWidthType() == null ? null : WidthType.valueOf(input.getWidthType()),
                 input.getYarnLength(),
                 input.getPussFine(),
-                input.getUnitPrice() == null ? null : new BigDecimal(input.getUnitPrice()));
+                requiredPrice(input.getUnitPrice()));
+    }
+
+    /** Yeni sevkiyatta birim fiyat zorunludur (genel müdürün tutar raporu bu fiyattan hesaplanır). */
+    private static BigDecimal requiredPrice(@Nullable String unitPrice) {
+        if (unitPrice == null || unitPrice.isBlank()) {
+            throw new InvalidNewShipmentException("lines", "unit price required");
+        }
+        try {
+            return new BigDecimal(unitPrice.strip());
+        } catch (NumberFormatException e) {
+            throw new InvalidNewShipmentException("lines", "unit price invalid");
+        }
     }
 }

@@ -47,6 +47,10 @@ export type BalanceMovement = {
   createdBy: string;
   reason?: string;
 };
+/** Hareket sayfası; `actorNames` girenlerin okunur adları, çözülemeyen kişi yoktur. */
+export type MovementPage = Page<BalanceMovement> & {
+  actorNames?: Readonly<Record<string, string>>;
+};
 export type ListMovementsParams = {
   subcontractorId?: string;
   yarnType?: string;
@@ -145,7 +149,7 @@ export const getBalances = (subcontractorId?: string) =>
   });
 
 export const listBalanceMovements = (params: ListMovementsParams) =>
-  customInstance<Page<BalanceMovement>>({
+  customInstance<MovementPage>({
     url: `${BALANCES_PATH}/movements`,
     method: 'GET',
     params,

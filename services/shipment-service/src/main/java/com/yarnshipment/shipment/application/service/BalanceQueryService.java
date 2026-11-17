@@ -7,10 +7,14 @@ import com.yarnshipment.shipment.application.port.in.balance.GetBalancesUseCase;
 import com.yarnshipment.shipment.application.port.in.balance.ListBalanceMovementsUseCase;
 import com.yarnshipment.shipment.application.port.in.balance.ListMovementsQuery;
 import com.yarnshipment.shipment.application.port.in.balance.MovementPage;
+import com.yarnshipment.shipment.application.port.out.ActorNamePort;
 import com.yarnshipment.shipment.application.port.out.ledger.BalanceQueryPort;
+import com.yarnshipment.shipment.domain.balance.BalanceMovement;
 import com.yarnshipment.shipment.domain.balance.Kilograms;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +24,11 @@ public class BalanceQueryService implements GetBalancesUseCase, ListBalanceMovem
 
     private final BalanceQueryPort balances;
 
-    public BalanceQueryService(BalanceQueryPort balances) {
+    private final ActorNamePort actorNames;
+
+    public BalanceQueryService(BalanceQueryPort balances, ActorNamePort actorNames) {
         this.balances = balances;
+        this.actorNames = actorNames;
     }
 
     @Override
@@ -35,6 +42,9 @@ public class BalanceQueryService implements GetBalancesUseCase, ListBalanceMovem
     @Override
     @Transactional(readOnly = true)
     public MovementPage listBalanceMovements(ListMovementsQuery query) {
-        return balances.findMovements(query);
+        MovementPage page = balances.findMovements(query);
+        Map<UUID, String> names = actorNames.namesOf(
+                page.items().stream().map(BalanceMovement::createdBy).distinct().toList());
+        return page.withActorNames(names);
     }
 }

@@ -31,10 +31,7 @@ public class ShipmentTransportController implements ShipmentTransportApi {
                 currentActorProvider.getCurrentActor(),
                 shipmentId,
                 new TransportAssignment(
-                        request.getDriverId(),
-                        request.getDriverName(),
-                        request.getVehicleId(),
-                        request.getPlateNo())));
+                        request.getDriverId(), request.getDriverName(), request.getVehicleId(), request.getPlateNo())));
         return ResponseEntity.noContent().build();
     }
 }

@@ -62,11 +62,13 @@ class CreateShipmentSourceStockTest {
         List<RecipeLine> lines = List.of(line(1, "36/1 VİSKON", "1500.000"), line(2, "20 denye likra", "100.000"));
 
         assertThatThrownBy(() -> service.createShipment(command(UUID.randomUUID(), lines)))
-                .isInstanceOfSatisfying(SourceYarnShortageException.class, error -> assertThat(error.shortages())
-                        .extracting(
-                                SourceYarnShortageException.Shortage::yarnType,
-                                shortage -> shortage.missingKg().toPlainString())
-                        .containsExactly(tuple("36/1 VİSKON", "500.000"), tuple("20 denye likra", "100.000")));
+                .isInstanceOfSatisfying(
+                        SourceYarnShortageException.class,
+                        error -> assertThat(error.shortages())
+                                .extracting(
+                                        SourceYarnShortageException.Shortage::yarnType,
+                                        shortage -> shortage.missingKg().toPlainString())
+                                .containsExactly(tuple("36/1 VİSKON", "500.000"), tuple("20 denye likra", "100.000")));
         assertThat(created).isEmpty();
     }
 

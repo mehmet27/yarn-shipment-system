@@ -14,7 +14,10 @@ import org.jspecify.annotations.Nullable;
  * @param plateNo araç plakası
  */
 public record TransportAssignment(
-        @Nullable UUID driverId, @Nullable String driverName, @Nullable UUID vehicleId, @Nullable String plateNo) {
+        @Nullable UUID driverId,
+        @Nullable String driverName,
+        @Nullable UUID vehicleId,
+        @Nullable String plateNo) {
 
     public TransportAssignment {
         if ((driverId == null) != (driverName == null)) {

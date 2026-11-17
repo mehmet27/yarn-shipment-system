@@ -40,8 +40,7 @@ class AmountSummaryInvoiceTest {
         UUID priced = UUID.randomUUID();
         UUID unpriced = UUID.randomUUID();
         when(toInvoice.listToInvoice(any())).thenReturn(List.of(file(priced), file(unpriced)));
-        when(port.findShippedAmount(any()))
-                .thenReturn(new ShippedAmount(new BigDecimal("1000"), BigDecimal.TEN));
+        when(port.findShippedAmount(any())).thenReturn(new ShippedAmount(new BigDecimal("1000"), BigDecimal.TEN));
         when(port.findAveragePrices(any())).thenReturn(Map.of(priced, new BigDecimal("20.5")));
         when(port.findPricedBalances(any())).thenReturn(List.of());
 

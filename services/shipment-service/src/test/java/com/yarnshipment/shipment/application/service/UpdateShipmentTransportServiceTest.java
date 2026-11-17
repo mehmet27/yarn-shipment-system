@@ -44,10 +44,7 @@ class UpdateShipmentTransportServiceTest {
                 TestTokens.actor("manager"),
                 TestShipments.SHIPMENT_ID,
                 new TransportAssignment(
-                        driverName == null ? null : DRIVER,
-                        driverName,
-                        plateNo == null ? null : VEHICLE,
-                        plateNo));
+                        driverName == null ? null : DRIVER, driverName, plateNo == null ? null : VEHICLE, plateNo));
     }
 
     @Test

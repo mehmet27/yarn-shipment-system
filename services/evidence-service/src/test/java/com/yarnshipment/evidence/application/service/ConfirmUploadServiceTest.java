@@ -67,15 +67,15 @@ class ConfirmUploadServiceTest {
                 .thenReturn(Optional.of(TestUploads.intent(warehouse.userId())));
         when(evidence.findEvidence(TestUploads.EVIDENCE_ID)).thenReturn(Optional.empty());
         when(storage.inspect(any())).thenReturn(Optional.of(TestUploads.stored()));
-        when(evidence.findByShipment(TestUploads.SHIPMENT_ID))
-                .thenReturn(List.of(previousTicket, waybill));
+        when(evidence.findByShipment(TestUploads.SHIPMENT_ID)).thenReturn(List.of(previousTicket, waybill));
 
         confirm.confirmUpload(new ConfirmUploadCommand(warehouse, TestUploads.EVIDENCE_ID));
 
-        verify(invalidations).saveInvalidation(
-                previousTicket.invalidate("Yeni kantar fişi yüklendi"), warehouse.userId(), TestUploads.NOW);
-        verify(invalidations, never()).saveInvalidation(
-                waybill.invalidate("Yeni kantar fişi yüklendi"), warehouse.userId(), TestUploads.NOW);
+        verify(invalidations)
+                .saveInvalidation(
+                        previousTicket.invalidate("Yeni kantar fişi yüklendi"), warehouse.userId(), TestUploads.NOW);
+        verify(invalidations, never())
+                .saveInvalidation(waybill.invalidate("Yeni kantar fişi yüklendi"), warehouse.userId(), TestUploads.NOW);
     }
 
     @Test

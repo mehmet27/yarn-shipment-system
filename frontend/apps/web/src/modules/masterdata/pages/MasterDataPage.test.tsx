@@ -30,7 +30,7 @@ describe('MasterDataPage', () => {
       http.get('/api/v1/balances', () => HttpResponse.json({ items: [], totalKg: '0.000' })),
     );
     renderApp('/panel/tanimlar');
-    const card = await screen.findByRole('group', { name: 'Çorlu Boya' });
+    const card = await screen.findByRole('row', { name: 'Çorlu Boya' });
     await userEvent.click(within(card).getByRole('button', { name: 'Pasife al' }));
     await userEvent.click(await screen.findByRole('switch', { name: 'Pasifleri göster' }));
     expect(await screen.findByText('Eski Dokuma')).toBeInTheDocument();
@@ -57,7 +57,7 @@ describe('MasterDataPage', () => {
       ),
     );
     renderApp('/panel/tanimlar');
-    const card = await screen.findByRole('group', { name: 'Çorlu Boya' });
+    const card = await screen.findByRole('row', { name: 'Çorlu Boya' });
     await userEvent.click(within(card).getByRole('button', { name: 'Pasife al' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('açık bakiyesi var');
     expect(screen.getByText(/1\.200,5 kg/)).toBeInTheDocument();
@@ -85,7 +85,7 @@ describe('MasterDataPage', () => {
       ),
     );
     renderApp('/panel/tanimlar');
-    const card = await screen.findByRole('group', { name: 'Çorlu Boya' });
+    const card = await screen.findByRole('row', { name: 'Çorlu Boya' });
     await userEvent.click(within(card).getByRole('button', { name: 'Pasife al' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Vazgeç' }));
     expect(within(card).getByRole('button', { name: 'Pasife al' })).toBeInTheDocument();
@@ -109,7 +109,7 @@ describe('MasterDataPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(await screen.findByRole('status')).toHaveTextContent('Kayıt eklendi.');
 
-    const card = await screen.findByRole('group', { name: 'Yeni Örme Ltd.' });
+    const card = await screen.findByRole('row', { name: 'Yeni Örme Ltd.' });
     await userEvent.click(within(card).getByRole('button', { name: 'Düzenle' }));
     await userEvent.type(screen.getByLabelText(/Fasoncu adı/), ' A.Ş.');
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
@@ -183,7 +183,7 @@ describe('MasterDataPage', () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('tab', { name: 'Kalite sınıfları' }));
-    const card = await screen.findByRole('group', { name: 'İkinci kalite' });
+    const card = await screen.findByRole('row', { name: 'İkinci kalite' });
     await userEvent.click(within(card).getByRole('button', { name: 'Düzenle' }));
     expect(screen.getByLabelText(/^Kod/)).toBeDisabled();
     await userEvent.clear(screen.getByLabelText(/Sıra/));
@@ -198,9 +198,9 @@ describe('MasterDataPage', () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/tanimlar');
     await userEvent.click(await screen.findByRole('tab', { name: 'İplik tedarikçileri' }));
-    const card = await screen.findByRole('group', { name: 'Şireci' });
+    const card = await screen.findByRole('row', { name: 'Şireci' });
     await userEvent.click(within(card).getByRole('button', { name: 'Pasife al' }));
-    expect(screen.queryByRole('group', { name: 'Şireci' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('row', { name: 'Şireci' })).not.toBeInTheDocument();
   });
 
   it('Yönetici artık bu sayfaya giremez; yetki müdürdedir', async () => {

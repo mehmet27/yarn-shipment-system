@@ -21,6 +21,7 @@ export {
   Loader,
   Menu,
   Modal,
+  Tooltip,
   NavLink,
   NumberInput,
   Pagination,
@@ -68,8 +69,10 @@ export { PageHero } from './components/PageHero';
 export type { PageHeroProps } from './components/PageHero';
 export { ProgressSteps } from './components/ProgressSteps';
 export type { ProgressStepsProps } from './components/ProgressSteps';
+export { SectionCard } from './components/SectionCard';
+export type { SectionCardProps, SectionTone } from './components/SectionCard';
 export { StatCard } from './components/StatCard';
 export type { StatCardProps, StatTone } from './components/StatCard';
 export { BRAND_GRADIENT, BRAND_SIDEBAR_GRADIENT } from './brandGradient';
-export { NavIcon } from './components/NavIcon';
+export { NavIcon, NavIcon as Icon } from './components/NavIcon';
 export type { NavIconName, NavIconProps } from './components/NavIcon';

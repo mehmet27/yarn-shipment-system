@@ -1,6 +1,6 @@
 import type { LotView } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Button, Group, Stack } from '@iplik/ui';
+import { Button, Group, Icon, Stack } from '@iplik/ui';
 import { useState } from 'react';
 import { useSetLotActive } from '../hooks/useLotMutations';
 import { DeactivateLotConfirm } from './DeactivateLotConfirm';
@@ -18,6 +18,7 @@ export function LotActions({ lot, isLocked, onEdit }: LotActionsProps) {
         {!isLocked && (
           <Button
             variant="default"
+            leftSection={<Icon name="edit" size={16} />}
             onClick={() => {
               onEdit(lot);
             }}
@@ -29,6 +30,7 @@ export function LotActions({ lot, isLocked, onEdit }: LotActionsProps) {
           variant={lot.active ? 'subtle' : 'light'}
           color={lot.active ? 'gray' : 'green'}
           loading={mutation.isPending}
+          leftSection={<Icon name={lot.active ? 'stop' : 'check'} size={16} />}
           onClick={() => {
             if (lot.active) setConfirmingOff(true);
             else mutation.mutate({ id: lot.id, isActive: true });

@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Paper, Stack, Text } from '@iplik/ui';
+import { Alert, Button, Group, Icon, Paper, Stack, Text } from '@iplik/ui';
 import { calculateFire, formatKgText, isKilogram, parseFireRatePct } from '@iplik/units';
 import type { CreateDraft, CreateFieldErrors } from './createDraft';
 import { totalNetKg } from './createDraft';
@@ -11,7 +11,8 @@ export type CreateSummaryProps = {
   onChange: (draft: CreateDraft) => void;
   errors: CreateFieldErrors;
   defaultFirePct: string;
-  failureKey: string | undefined;
+  /** Gönderilemeyen formun nedeni (hazır metin); yoksa uyarı gösterilmez. */
+  failure: string | undefined;
   isSubmitting: boolean;
   onSubmit: () => void;
 };
@@ -37,7 +38,7 @@ export function CreateSummary({
   onChange,
   errors,
   defaultFirePct,
-  failureKey,
+  failure,
   isSubmitting,
   onSubmit,
 }: CreateSummaryProps) {
@@ -67,12 +68,13 @@ export function CreateSummary({
           <Text c="dimmed">{t('create.summary.expectedFabric')}</Text>
           <Text fw={700}>{fabric === undefined ? '—' : `≈ ${formatKgText(fabric)}`}</Text>
         </Group>
-        {failureKey !== undefined && <Alert color="red">{t(failureKey)}</Alert>}
-        <Button size="lg" loading={isSubmitting} onClick={onSubmit}>
+        {failure !== undefined && <Alert color="red">{failure}</Alert>}
+        <Button loading={isSubmitting} leftSection={<Icon name="check" />} onClick={onSubmit}>
           {t('create.submit')}
         </Button>
         <Button
           variant="default"
+          leftSection={<Icon name="pdf" />}
           onClick={() => {
             void downloadPdf(draft);
           }}

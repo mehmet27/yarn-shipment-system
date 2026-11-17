@@ -101,6 +101,16 @@ export function updateMockShipmentDate(shipmentId: string, shipmentDate: string)
   );
 }
 
+/** Müdür açık sevkiyatın şoför ve/veya araç bilgisini düzeltir; verilmeyen alan olduğu gibi kalır. */
+export function updateMockShipmentTransport(
+  shipmentId: string,
+  transport: { driverName?: string; plateNo?: string },
+): void {
+  shipments = shipments.map((shipment) =>
+    shipment.shipmentId === shipmentId ? { ...shipment, ...transport } : shipment,
+  );
+}
+
 /** Admin düzeltmesi: çıkış tartısı yeni değeriyle değişir (eskisi düzeltme kaydında kalır). */
 export function patchMockShipment(
   shipmentId: string,

@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, Stack, Switch, TextInput } from '@iplik/ui';
+import { Button, Group, Icon, Switch, TextInput } from '@iplik/ui';
 
 export type RecordToolbarProps = {
   search: string;
@@ -9,7 +9,7 @@ export type RecordToolbarProps = {
   onToggleInactive: (isShowing: boolean) => void;
 };
 
-/** Ekle düğmesi, arama ve "pasifleri göster"; hepsi tek sütunda, parmakla erişilir. */
+/** Ekle düğmesi (solda, ikonlu), arama ve "pasifleri göster"; dar ekranda alt alta dizilir. */
 export function RecordToolbar({
   search,
   isShowingInactive,
@@ -19,12 +19,17 @@ export function RecordToolbar({
 }: RecordToolbarProps) {
   const { t } = useTranslation();
   return (
-    <Stack>
-      <Button onClick={onAdd} w={{ base: '100%', sm: 'fit-content' }}>
+    <Group align="center" gap="md">
+      <Button
+        onClick={onAdd}
+        leftSection={<Icon name="plus" />}
+        w={{ base: '100%', sm: 'fit-content' }}
+      >
         {t('masterData.add')}
       </Button>
       <TextInput
-        maw={{ base: '100%', sm: 420 }}
+        flex={{ base: '1 1 100%', sm: '0 1 360px' }}
+        leftSection={<Icon name="search" size={16} />}
         placeholder={t('masterData.search')}
         aria-label={t('masterData.search')}
         value={search}
@@ -39,6 +44,6 @@ export function RecordToolbar({
           onToggleInactive(event.currentTarget.checked);
         }}
       />
-    </Stack>
+    </Group>
   );
 }

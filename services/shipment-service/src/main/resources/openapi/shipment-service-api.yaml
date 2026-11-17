@@ -24,6 +24,7 @@ tags:
   - name: ShipmentBags
   - name: ShipmentCancellation
   - name: ShipmentSchedule
+  - name: ShipmentTransport
   - name: PasswordRequest
   - name: ShipmentWeightDecision
   - name: ShipmentSettings
@@ -152,7 +153,9 @@ paths:
         Çıkış lokasyonu ve fasoncu ile taslak sevkiyat açar; numara sunucuda üretilir. Lokasyon kullanıcının
         yetkili olduğu lokasyonlardan biri olmalıdır. Şoför ve araç henüz belli değilse hiç gönderilmez; şoför
         kimliği ile adı, araç kimliği ile plakası birlikte gönderilir. Aynı `Idempotency-Key` ile tekrar gönderilen
-        istek yeni sevkiyat açmaz, ilk yanıtı döner.
+        istek yeni sevkiyat açmaz, ilk yanıtı döner. Fasoncudan fasoncuya sevkiyatta (`sourceSubcontractorId`) gönderen
+        fasoncunun bakiyesi istenen iplik kilosunu karşılamıyorsa taslak açılmaz (409 `SOURCE_YARN_SHORTAGE`,
+        `shortfalls` eksik iplikleri ve kiloyu verir).
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -174,6 +177,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
     get:
       tags: [Shipments]
       operationId: listShipments
@@ -457,7 +462,7 @@ paths:
       operationId: listDrivers
       summary: Şoför listesi
       description: |
-        Şoför seçimi için; `subcontractorId` verilirse yalnızca o fasoncunun şoförleri gelir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+        Şoför seçimi için; `subcontractorId` verilirse o fasoncunun şoförleri ile firmanın kendi (merkez) şoförleri birlikte gelir, başka fasoncuların şoförleri gelmez. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
@@ -1848,6 +1853,41 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+  /api/v1/shipments/{shipmentId}/transport:
+    put:
+      tags: [ShipmentTransport]
+      operationId: updateShipmentTransport
+      summary: Sevkiyatın şoför ve araç bilgisini düzeltir
+      description: |
+        Müdür (SHIPMENT_CREATE). Tamamlanmamış sevkiyatta (taslak, kantar uyuşmazlığı, teslim bekleyen) şoför ve/veya
+        araç değiştirilir. Şoför kimliği ile adı, araç kimliği ile plakası birlikte verilir (400); verilmeyen bilgi
+        değişmez, en az biri verilmelidir. Tamamlanmış ya da iptal edilmiş sevkiyat `INVALID_SHIPMENT_STATUS` döner.
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateShipmentTransportRequest'
+      responses:
+        '204':
+          description: Şoför ve araç güncellendi
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
   /api/v1/shipments/{shipmentId}/cancel:
     post:
       tags: [ShipmentCancellation]
@@ -2390,6 +2430,7 @@ components:
         - OPEN_QUALITY_CLAIM
         - CREATE_CORRECTION
         - UPDATE_SHIPMENT_DATE
+        - UPDATE_TRANSPORT
     PageMetadata:
       type: object
       required: [number, size, totalElements, totalPages]
@@ -2588,6 +2629,23 @@ components:
           description: Yeni sevkiyat günü (Türkiye saati); bugün ya da ileri bir gün
           type: string
           format: date
+    UpdateShipmentTransportRequest:
+      type: object
+      properties:
+        driverId:
+          type: string
+          format: uuid
+        driverName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        vehicleId:
+          type: string
+          format: uuid
+        plateNo:
+          type: string
+          minLength: 1
+          maxLength: 20
     CreateShipmentRequest:
       type: object
       required: [siteId, subcontractorId, subcontractorTitle, lines, shipmentDate]

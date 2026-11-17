@@ -89,6 +89,27 @@ describe('sevkiyat günü güncelleme', () => {
     expect(await screen.findByText(formatDate(todayIsoDate()))).toBeInTheDocument();
   });
 
+  it('müdür açık sevkiyatta aracı değiştirir; seçilmeyen şoför aynen kalır', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/sevkiyat/shp-0001');
+    await userEvent.click(await screen.findByRole('button', { name: 'Şoför / araç değiştir' }));
+    expect(screen.getByRole('button', { name: 'Kaydet' })).toBeDisabled();
+    await userEvent.click(screen.getByRole('combobox', { name: 'Yeni araç' }));
+    await userEvent.click(await screen.findByRole('option', { name: /34/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Vazgeç' })).not.toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: 'Şoför / araç değiştir' })).toBeInTheDocument();
+  });
+
+  it('depo şoför/araç değiştiremez', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    renderApp('/panel/sevkiyat/shp-0001');
+    await screen.findByRole('heading', { name: 'SVK-2026-0001' });
+    expect(screen.queryByRole('button', { name: 'Şoför / araç değiştir' })).not.toBeInTheDocument();
+  });
+
   it('depo tarihi değiştiremez; tamamlanmış sevkiyatta da düğme yoktur', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/sevkiyat/shp-0001');

@@ -6,16 +6,23 @@ import { useShipmentBags } from '../hooks/useShipmentBags';
 import { CancelShipmentForm } from './CancelShipmentForm';
 import { CompleteShipmentForm } from './CompleteShipmentForm';
 import { UpdateShipmentDateForm } from './UpdateShipmentDateForm';
+import { UpdateShipmentTransportForm } from './UpdateShipmentTransportForm';
 import { WeightDecisionForm } from './WeightDecisionForm';
 
 /** Sevkiyat dosyasındaki eylemler; yalnızca `allowedActions` listesindekiler görünür (FE-SEC-03). */
 export function ShipmentFileActions({
   shipmentId,
   shipmentDate,
+  subcontractorId,
+  driverName,
+  plateNo,
   actions,
 }: {
   shipmentId: string;
   shipmentDate: string;
+  subcontractorId: string;
+  driverName?: string | undefined;
+  plateNo?: string | undefined;
   actions: readonly ShipmentAction[];
 }) {
   const { t } = useTranslation();
@@ -45,6 +52,14 @@ export function ShipmentFileActions({
       {actions.includes('COMPLETE') && <CompleteShipmentForm shipmentId={shipmentId} />}
       {actions.includes('UPDATE_SHIPMENT_DATE') && (
         <UpdateShipmentDateForm shipmentId={shipmentId} shipmentDate={shipmentDate} />
+      )}
+      {actions.includes('UPDATE_TRANSPORT') && (
+        <UpdateShipmentTransportForm
+          shipmentId={shipmentId}
+          subcontractorId={subcontractorId}
+          driverName={driverName}
+          plateNo={plateNo}
+        />
       )}
       {actions.includes('CANCEL') && <CancelShipmentForm shipmentId={shipmentId} />}
     </>

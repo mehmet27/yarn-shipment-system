@@ -53,13 +53,14 @@ describe('DispatchWeighingPage', () => {
     expect(
       await screen.findByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
     ).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    await userEvent.click(screen.getByRole('button', { name: 'İleri' }));
+    await userEvent.click(await screen.findByRole('button', { name: /^Onayla/ }));
     expect(
       await screen.findByText('Fasoncuya yolda', { selector: '.mantine-Badge-label' }),
     ).toBeInTheDocument();
   });
 
-  it('fotoğraf, çıkış tartısı kaydedilmeden sisteme yüklenmez; Kaydet ile yüklenir', async () => {
+  it('fotoğraf, çıkış tartısı kaydedilmeden sisteme yüklenmez; onaylanınca yüklenir', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     let uploads = 0;
     server.events.on('request:start', ({ request }) => {
@@ -71,7 +72,7 @@ describe('DispatchWeighingPage', () => {
       }
     });
     renderApp('/panel/sevkiyat/shp-0001/cikis');
-    await screen.findByRole('button', { name: 'Kaydet' });
+    await screen.findByRole('button', { name: 'İleri' });
     await fill({
       'Dolu araç tartısı (brüt)': '2.000',
       'Boş araç tartısı (dara)': '17,5',
@@ -82,7 +83,8 @@ describe('DispatchWeighingPage', () => {
       await screen.findByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
     ).toBeInTheDocument();
     expect(uploads).toBe(0);
-    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    await userEvent.click(screen.getByRole('button', { name: 'İleri' }));
+    await userEvent.click(await screen.findByRole('button', { name: /^Onayla/ }));
     expect(
       await screen.findByText('Fasoncuya yolda', { selector: '.mantine-Badge-label' }),
     ).toBeInTheDocument();
@@ -110,14 +112,15 @@ describe('DispatchWeighingPage', () => {
       }
     });
     renderApp('/panel/sevkiyat/shp-0001/cikis');
-    await screen.findByRole('button', { name: 'Kaydet' });
+    await screen.findByRole('button', { name: 'İleri' });
     await fill({
       'Dolu araç tartısı (brüt)': '2.000',
       'Boş araç tartısı (dara)': '17,5',
       'Çuval sayısı': '40',
     });
     await captureTicket();
-    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    await userEvent.click(screen.getByRole('button', { name: 'İleri' }));
+    await userEvent.click(await screen.findByRole('button', { name: /^Onayla/ }));
     expect(await screen.findByText(/Tartı değerleri tutarsız/)).toBeInTheDocument();
     expect(uploads).toBe(0);
     server.events.removeAllListeners();
@@ -126,20 +129,20 @@ describe('DispatchWeighingPage', () => {
   it('hatalı girişte kaydetmeden uyarır', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/sevkiyat/shp-0001/cikis');
-    await userEvent.click(await screen.findByRole('button', { name: 'Kaydet' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'İleri' }));
     expect(await screen.findByText('Kiloyu 1.982,5 biçiminde girin.')).toBeInTheDocument();
   });
 
   it('fiş çekilmeden kaydetmez', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/sevkiyat/shp-0001/cikis');
-    await screen.findByRole('button', { name: 'Kaydet' });
+    await screen.findByRole('button', { name: 'İleri' });
     await fill({
       'Dolu araç tartısı (brüt)': '2.000',
       'Boş araç tartısı (dara)': '17',
       'Çuval sayısı': '40',
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    await userEvent.click(screen.getByRole('button', { name: 'İleri' }));
     expect(
       await screen.findByText('Devam etmek için kantar fişinin fotoğrafı gerekli.'),
     ).toBeInTheDocument();

@@ -34,7 +34,7 @@ final class BalanceFireReader implements BalanceFirePort {
                    coalesce(sum(l.net_kg) FILTER (WHERE l.unit_price IS NULL), 0) AS unpriced_kg
               FROM shipment.shipment_line l
               JOIN shipment_view s ON s.shipment_id = l.shipment_id
-             WHERE s.dispatched_at >= :start AND s.dispatched_at < :end /*SITE*/""";
+             WHERE s.status = 'AWAITING_DELIVERY' /*SITE*/""";
 
     /** Fasoncu × iplik cinsi bakiyesi ve o fasoncuya o iplik için son girilen fiyat. */
     private static final String PRICED_BALANCE_SQL = """
@@ -105,9 +105,9 @@ final class BalanceFireReader implements BalanceFirePort {
     }
 
     @Override
-    public ShippedAmount findShippedAmount(ReportPeriod period, ReportScope scope) {
+    public ShippedAmount findShippedAmount(ReportScope scope) {
         String sql = SHIPPED_AMOUNT_SQL.replace("/*SITE*/", ScopedSql.SITE_FILTER.replace("site_id", "s.site_id"));
-        return ScopedSql.withPeriod(ScopedSql.bind(jdbc.sql(sql), scope), period)
+        return ScopedSql.bind(jdbc.sql(sql), scope)
                 .query((rs, row) -> new ShippedAmount(rs.getBigDecimal("amount"), rs.getBigDecimal("unpriced_kg")))
                 .single();
     }

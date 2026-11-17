@@ -166,7 +166,7 @@ export interface SubcontractorAmountView {
 }
 
 export interface AmountSummaryView {
-  /** Dönemde yola çıkan iplik tutarı, TL (2 ondalık) */
+  /** Şu an yolda olan (irsaliyesi yüklenmemiş) sevkiyatların iplik tutarı, TL (2 ondalık); yolda sevkiyat yoksa 0,00 */
   shippedAmount: string;
   /** Fiyatı girilmemiş, tutara katılmayan kilo */
   shippedUnpricedKg: string;

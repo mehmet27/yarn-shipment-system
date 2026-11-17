@@ -45,8 +45,8 @@ class CreateShipmentServiceTest {
         return new CreatedShipment(TestShipments.SHIPMENT_ID, "SV-1");
     };
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
-    private final CreateShipmentService service =
-            new CreateShipmentService(port, new StubSettingsPort(), new ScopeGuard(event -> {}, clock), clock);
+    private final CreateShipmentService service = new CreateShipmentService(
+            port, new StubSettingsPort(), new StubSourceStockPort(), new ScopeGuard(event -> {}, clock), clock);
     private final Actor warehouse = TestTokens.actor("warehouse");
 
     private CreateShipmentCommand command(UUID siteId) {

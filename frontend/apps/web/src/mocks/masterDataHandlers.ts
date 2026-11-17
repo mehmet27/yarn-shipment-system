@@ -29,19 +29,29 @@ const PATHS: Readonly<Record<MasterKind, string>> = {
 const problem = (status: number, code: string, title: string) =>
   HttpResponse.json({ status, code, title }, { status });
 
+function ownerTitle(subcontractorId: string): string {
+  return listMasterRecords('subcontractor').find((row) => row.id === subcontractorId)?.label ?? '';
+}
+
+function toDriverView({ id, label, isActive, subcontractorId }: MockRecord) {
+  return {
+    id,
+    fullName: label,
+    active: isActive,
+    ...(subcontractorId
+      ? { subcontractorId, subcontractorTitle: ownerTitle(subcontractorId) }
+      : {}),
+  };
+}
+
 /** Sözleşmedeki görünüm alanları: fasoncu `title`, şoför `fullName`, araç `plateNo`, lokasyon `name`. */
 function toView(kind: MasterKind, record: MockRecord) {
-  const { id, label, isActive, subcontractorId } = record;
+  const { id, label, isActive } = record;
   switch (kind) {
     case 'subcontractor':
       return { id, title: label, active: isActive };
     case 'driver':
-      return {
-        id,
-        fullName: label,
-        active: isActive,
-        ...(subcontractorId ? { subcontractorId } : {}),
-      };
+      return toDriverView(record);
     case 'vehicle':
       return { id, plateNo: label, active: isActive };
     case 'site':
@@ -112,7 +122,10 @@ function listHandler(kind: MasterKind, canManage: boolean) {
       (record) =>
         (isIncludingInactive || record.isActive) &&
         matchesQuery(record.label, params.get('q')) &&
-        (ownerId === null || record.subcontractorId === ownerId),
+        // Fasoncuya göre süzülünce merkez şoförleri de gelir (sunucuyla aynı).
+        (ownerId === null ||
+          record.subcontractorId === ownerId ||
+          (kind === 'driver' && record.subcontractorId === undefined)),
     );
     return HttpResponse.json({
       items: matching.slice(page * size, (page + 1) * size).map((record) => toView(kind, record)),

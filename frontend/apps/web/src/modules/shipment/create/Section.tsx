@@ -1,14 +1,20 @@
-import { Paper, Stack, Text } from '@iplik/ui';
+import type { NavIconName } from '@iplik/ui';
+import { SectionCard } from '@iplik/ui';
 import type { ReactNode } from 'react';
 
-/** Başlıklı çerçeveli form kartı. */
-export function Section({ title, children }: { title: string; children: ReactNode }) {
+/** Renkli başlık çubuklu form kartı; formun bölümleri birbirinden net ayrılır. */
+export function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon?: NavIconName;
+  children: ReactNode;
+}) {
   return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap="sm">
-        <Text fw={700}>{title}</Text>
-        {children}
-      </Stack>
-    </Paper>
+    <SectionCard title={title} {...(icon === undefined ? {} : { icon })}>
+      {children}
+    </SectionCard>
   );
 }

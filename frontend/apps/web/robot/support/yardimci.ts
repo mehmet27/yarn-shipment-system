@@ -61,7 +61,7 @@ export const damga = () =>
 /** Metni içeren, düğmesi olan en iç satır/kart kutusu (liste satırlarının ortak yapısı yok). */
 export function satir(sayfa: Page, metin: string, dugme: string | RegExp) {
   return sayfa
-    .locator('main div')
+    .locator('main div, main tr')
     .filter({ hasText: metin })
     .filter({ has: sayfa.getByRole('button', { name: dugme }) })
     .last();

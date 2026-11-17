@@ -43,15 +43,22 @@ class ShipmentAccessPolicyTest {
         // when / then
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.DRAFT), manager))
                 .containsExactlyInAnyOrder(
-                        ShipmentAction.CANCEL, ShipmentAction.CREATE_CORRECTION, ShipmentAction.UPDATE_SHIPMENT_DATE);
+                        ShipmentAction.CANCEL,
+                        ShipmentAction.CREATE_CORRECTION,
+                        ShipmentAction.UPDATE_SHIPMENT_DATE,
+                        ShipmentAction.UPDATE_TRANSPORT);
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.WEIGHT_MISMATCH), manager))
                 .containsExactlyInAnyOrder(
                         ShipmentAction.CANCEL,
                         ShipmentAction.RESOLVE_WEIGHT_MISMATCH,
-                        ShipmentAction.CREATE_CORRECTION);
+                        ShipmentAction.CREATE_CORRECTION,
+                        ShipmentAction.UPDATE_TRANSPORT);
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY), manager))
                 .containsExactlyInAnyOrder(
-                        ShipmentAction.COMPLETE, ShipmentAction.CANCEL, ShipmentAction.CREATE_CORRECTION);
+                        ShipmentAction.COMPLETE,
+                        ShipmentAction.CANCEL,
+                        ShipmentAction.CREATE_CORRECTION,
+                        ShipmentAction.UPDATE_TRANSPORT);
     }
 
     @Test

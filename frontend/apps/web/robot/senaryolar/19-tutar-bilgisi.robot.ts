@@ -52,7 +52,7 @@ test('Tutar bilgisi: fiyat zorunlu; tutarı yalnızca müdür ve genel müdür g
       for (const kart of [
         'Fasoncudaki ipliğin değeri',
         'Faturalanacak tutar',
-        'Yola çıkan ipliğin tutarı',
+        'Yolda olan ipliğin tutarı',
       ]) {
         await expect(rol.sayfa.getByText(kart, { exact: true })).toBeVisible();
       }

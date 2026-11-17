@@ -37,6 +37,7 @@ import { createReportHandlers } from './reportHandlers';
 import { createSettlementHandlers } from './settlementHandlers';
 import { createStockHandlers } from './stockHandlers';
 import { toBagsView, toHistory } from './shipmentTabs';
+import { updateTransportHandler } from './transportHandlers';
 import { isInScope, toDetailView, toPermittedView, toSummary } from './shipmentViews';
 import { createMockUser } from './users';
 
@@ -401,6 +402,7 @@ export function createHandlers(role: Role) {
     createGetShipmentHandler(role),
     cancelShipmentHandler,
     updateShipmentDateHandler,
+    updateTransportHandler,
     completeShipmentHandler,
     dispatchWeighingHandler,
     weightDecisionHandler,

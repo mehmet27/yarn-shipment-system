@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Select } from '@iplik/ui';
+import { Alert, Button, Group, Icon, Select } from '@iplik/ui';
 import { usePanelExport } from '../hooks/usePanelExport';
 import type { ReportTable } from '../export/reportModel';
 
@@ -36,10 +36,14 @@ export function PanelExportBar({
             clearable
           />
         )}
-        <Button variant="default" onClick={() => void run('xlsx')}>
+        <Button
+          variant="default"
+          leftSection={<Icon name="excel" />}
+          onClick={() => void run('xlsx')}
+        >
           {t('report.export.excel')}
         </Button>
-        <Button variant="default" onClick={() => void run('pdf')}>
+        <Button variant="default" leftSection={<Icon name="pdf" />} onClick={() => void run('pdf')}>
           {t('report.export.pdf')}
         </Button>
       </Group>

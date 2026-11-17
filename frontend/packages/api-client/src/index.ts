@@ -98,11 +98,13 @@ export {
   removeShipmentBag,
   setLoginAccountPassword,
   updateShipmentDate,
+  updateShipmentTransport,
 } from './masterData';
 export type {
   RecipeLineInput,
   ShipmentSettingsRequest,
   ShipmentSettingsView,
+  UpdateShipmentTransportRequest,
   RecipeLineView,
   WeightCheckView,
   WeightDecisionKind,

@@ -1,29 +1,28 @@
 import { useTranslation } from '@iplik/i18n';
-import { Badge, Button, Group, Paper, Stack, Text } from '@iplik/ui';
+import { Badge, Button, Group, Icon, Table, Text } from '@iplik/ui';
 import { useDeactivateGuard } from '../hooks/useDeactivateGuard';
 import type { ManagedKind, RecordRow } from '../kinds';
 import { BalanceWarningModal } from './BalanceWarningModal';
 import { RecordCodeLine } from './RecordCodeLine';
 
-export type RecordCardProps = {
+export type RecordTableRowProps = {
   kind: ManagedKind;
   record: RecordRow;
   onEdit: (record: RecordRow) => void;
 };
 
-/** Mobilde tablo yerine kart: ad, durum rozeti ve iki büyük eylem düğmesi. */
-export function RecordCard({ kind, record, onEdit }: RecordCardProps) {
+/** Tablo satırı: ad, ayrıntı (kod / bağlı fasoncu), durum rozeti ve ikonlu iki eylem düğmesi. */
+export function RecordTableRow({ kind, record, onEdit }: RecordTableRowProps) {
   const { t } = useTranslation();
   const guard = useDeactivateGuard(kind);
   return (
-    <Paper withBorder p="md" role="group" aria-label={record.label}>
-      <Stack gap="sm">
-        <Group justify="space-between" wrap="nowrap">
-          <Text fw={600} {...(record.isActive ? {} : { c: 'dimmed' })}>
-            {record.label}
-          </Text>
-          {!record.isActive && <Badge color="gray">{t('masterData.inactive')}</Badge>}
-        </Group>
+    <Table.Tr aria-label={record.label}>
+      <Table.Td>
+        <Text fw={600} {...(record.isActive ? {} : { c: 'dimmed' })}>
+          {record.label}
+        </Text>
+      </Table.Td>
+      <Table.Td>
         {record.code !== undefined && <RecordCodeLine kind={kind} record={record} />}
         {kind === 'driver' && (
           <Text size="sm" c="dimmed">
@@ -32,9 +31,18 @@ export function RecordCard({ kind, record, onEdit }: RecordCardProps) {
               : t('masterData.ownerOf', { title: record.ownerTitle })}
           </Text>
         )}
-        <Group grow maw={{ base: '100%', sm: 360 }}>
+      </Table.Td>
+      <Table.Td>
+        <Badge color={record.isActive ? 'green' : 'gray'} variant="light">
+          {t(record.isActive ? 'masterData.active' : 'masterData.inactive')}
+        </Badge>
+      </Table.Td>
+      <Table.Td>
+        <Group gap="xs" wrap="nowrap" justify="flex-end">
           <Button
             variant="default"
+
+            leftSection={<Icon name="edit" size={16} />}
             onClick={() => {
               onEdit(record);
             }}
@@ -43,8 +51,10 @@ export function RecordCard({ kind, record, onEdit }: RecordCardProps) {
           </Button>
           <Button
             variant="light"
+
             color={record.isActive ? 'red' : 'green'}
             loading={guard.isBusy}
+            leftSection={<Icon name={record.isActive ? 'stop' : 'check'} size={16} />}
             onClick={() => {
               void guard.request(record);
             }}
@@ -52,12 +62,12 @@ export function RecordCard({ kind, record, onEdit }: RecordCardProps) {
             {t(record.isActive ? 'masterData.deactivate' : 'masterData.activate')}
           </Button>
         </Group>
-      </Stack>
-      <BalanceWarningModal
-        warning={guard.warning}
-        onConfirm={guard.confirm}
-        onClose={guard.dismiss}
-      />
-    </Paper>
+        <BalanceWarningModal
+          warning={guard.warning}
+          onConfirm={guard.confirm}
+          onClose={guard.dismiss}
+        />
+      </Table.Td>
+    </Table.Tr>
   );
 }

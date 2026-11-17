@@ -1,4 +1,4 @@
-import { cuvalEkle, taslakAc, tartiGir } from '../support/akis';
+import { cuvalEkle, taslakAc, tartiGir, tartiyiOnayla } from '../support/akis';
 import { expect, test } from '../support/robot';
 import { damga } from '../support/yardimci';
 
@@ -21,7 +21,9 @@ test('Eksik kilo: neden zorunlu, müdür zilde görür, kararı depoya döner', 
     'neden yazılınca kayıt alınır ve sevkiyat kantar uyuşmazlığına düşer',
     async () => {
       await depo.sayfa.getByLabel(/Eksik kilo nedeni/).fill('Stok yetmedi');
-      await depo.sayfa.getByRole('button', { name: 'Kaydet' }).click();
+      await depo.sayfa.getByRole('button', { name: 'İleri' }).click();
+      await expect(depo.sayfa.getByText(/müdüre kantar uyuşmazlığı açılır/)).toBeVisible();
+      await tartiyiOnayla(depo);
       await expect(
         depo.sayfa.getByText('Kantar uyuşmazlığı', { exact: true }).first(),
       ).toBeVisible();

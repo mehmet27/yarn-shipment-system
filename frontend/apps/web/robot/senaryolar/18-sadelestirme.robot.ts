@@ -176,18 +176,28 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
     );
   });
 
-  await kalite.adim('belge yükleme: birden çok tür varsa önce tür seçtirir', async () => {
-    await kalite.sayfa.goto(`/panel/sevkiyat/${tam}`);
-    await kalite.sayfa.waitForLoadState('networkidle');
-    const metin = await kalite.sayfa.locator('main').innerText();
-    kalite.kontrol(
-      '"Ne yükleniyor?" yerine "Yüklenecek belge ne?"',
-      /Yüklenecek belge ne\?/.test(metin),
-    );
-    kalite.kontrol(
-      'tür seçilmeden "Önce türünü seçin" yazmalı',
-      (await kalite.sayfa.getByPlaceholder('Önce türünü seçin').count()) === 1,
-    );
-    await expect(kalite.sayfa.getByRole('button', { name: 'Fotoğraf çek' })).toBeDisabled();
-  });
+  await kalite.adim(
+    'tamamlanmış sevkiyatta kalitede "Fotoğraf ve belgeler / Yüklenecek belge ne?" alanı yok (itiraz sekmesinden girer)',
+    async () => {
+      await kalite.sayfa.goto(`/panel/sevkiyat/${tam}`);
+      await kalite.sayfa.waitForLoadState('networkidle');
+      const metin = await kalite.sayfa.locator('main').innerText();
+      kalite.kontrol(
+        'kalitede "Yüklenecek belge ne?" olmamalı',
+        !/Yüklenecek belge ne\?/.test(metin),
+      );
+      await expect(kalite.sayfa.getByText('Fotoğraf ve belgeler', { exact: true })).toHaveCount(0);
+      await expect(kalite.sayfa.getByRole('button', { name: 'Fotoğraf çek' })).toHaveCount(0);
+    },
+  );
+
+  await mudur.adim(
+    'tamamlanmış sevkiyatta müdürde kalite itirazı / laboratuvar belgesi yükleme alanı gelmez',
+    async () => {
+      await mudur.sayfa.goto(`/panel/sevkiyat/${tam}`);
+      await mudur.sayfa.waitForLoadState('networkidle');
+      await expect(mudur.sayfa.getByText('Yüklenecek belge ne?')).toHaveCount(0);
+      await expect(mudur.sayfa.getByRole('button', { name: 'Fotoğraf çek' })).toHaveCount(0);
+    },
+  );
 });

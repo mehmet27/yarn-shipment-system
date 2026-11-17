@@ -29,13 +29,12 @@ export function ShipmentFileTop({ shipment }: { shipment: ShipmentDetail }) {
       <ShipmentFileActions
         shipmentId={shipment.shipmentId}
         shipmentDate={shipment.shipmentDate}
+        subcontractorId={shipment.subcontractorId}
+        driverName={shipment.driverName}
+        plateNo={shipment.plateNo}
         actions={shipment.allowedActions}
       />
-      <EvidenceUpload
-        shipmentId={shipment.shipmentId}
-        isCompleted={isCompleted(shipment)}
-        isDispatched={shipment.status !== 'DRAFT'}
-      />
+      <EvidenceUpload shipmentId={shipment.shipmentId} isDispatched={shipment.status !== 'DRAFT'} />
     </>
   );
 }

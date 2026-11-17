@@ -32,7 +32,7 @@ class AmountSummaryServiceTest {
     private final BalanceFirePort port = mock(BalanceFirePort.class);
     private final ListToInvoiceUseCase toInvoice = mock(ListToInvoiceUseCase.class);
     private final AmountSummaryService service = new AmountSummaryService(
-            port, new ReportAccess(new ScopeGuard(mock(AuditPublisher.class), CLOCK)), toInvoice, CLOCK);
+            port, new ReportAccess(new ScopeGuard(mock(AuditPublisher.class), CLOCK)), toInvoice);
 
     @Test
     @DisplayName("Lokasyon kapsamı olmayan kullanıcı sıfır tutar görür, sorgu çalışmaz")
@@ -51,7 +51,7 @@ class AmountSummaryServiceTest {
         UUID subA = UUID.randomUUID();
         UUID subB = UUID.randomUUID();
         when(toInvoice.listToInvoice(any())).thenReturn(List.of());
-        when(port.findShippedAmount(any(), any())).thenReturn(new ShippedAmount(BigDecimal.ZERO, BigDecimal.ZERO));
+        when(port.findShippedAmount(any())).thenReturn(new ShippedAmount(BigDecimal.ZERO, BigDecimal.ZERO));
         when(port.findPricedBalances(any()))
                 .thenReturn(List.of(
                         new PricedBalance(subA, "A", new BigDecimal("100"), new BigDecimal("10")),

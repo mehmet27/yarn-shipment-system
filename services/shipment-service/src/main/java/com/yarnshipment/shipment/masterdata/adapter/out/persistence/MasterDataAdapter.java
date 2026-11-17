@@ -27,6 +27,7 @@ final class MasterDataAdapter implements MasterDataQueryPort {
     private static final String DRIVERS =
             "FROM md_driver WHERE (active OR :includeInactive)" + MATCH.formatted("full_name")
                     + " AND (CAST(:subcontractorId AS uuid) IS NULL"
+                    + " OR subcontractor_id IS NULL"
                     + " OR subcontractor_id = CAST(:subcontractorId AS uuid))";
     private static final String VEHICLES =
             "FROM md_vehicle WHERE (active OR :includeInactive)" + MATCH.formatted("plate_no");

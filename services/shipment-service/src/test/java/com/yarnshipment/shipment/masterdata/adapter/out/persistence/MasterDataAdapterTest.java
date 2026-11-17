@@ -42,7 +42,7 @@ class MasterDataAdapterTest {
     }
 
     @Test
-    @DisplayName("Şoförler ada göre sıralı gelir ve fasoncuya göre süzülür")
+    @DisplayName("Şoförler ada göre sıralı gelir; fasoncuya göre süzülünce merkez şoförleri de gelir")
     void shouldListDriversOrderedAndFilteredBySubcontractor() {
         var all = adapter.findDrivers(query(null), null);
         UUID subcontractor = all.items().stream()
@@ -58,7 +58,10 @@ class MasterDataAdapterTest {
                 .filteredOn(driver -> driver.subcontractorId() != null)
                 .isNotEmpty()
                 .allMatch(driver -> driver.subcontractorTitle() != null);
-        assertThat(filtered.items()).isNotEmpty().allMatch(driver -> subcontractor.equals(driver.subcontractorId()));
+        assertThat(filtered.items())
+                .isNotEmpty()
+                .allMatch(driver -> driver.subcontractorId() == null || subcontractor.equals(driver.subcontractorId()));
+        assertThat(filtered.items()).anyMatch(driver -> subcontractor.equals(driver.subcontractorId()));
     }
 
     @Test

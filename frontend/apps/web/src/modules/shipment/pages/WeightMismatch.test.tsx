@@ -88,7 +88,7 @@ describe('Kantar uyuşmazlığı', () => {
   it('depo beklenenden farklı tartı girince sevkiyat kantar uyuşmazlığına düşer', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/sevkiyat/shp-0001/cikis');
-    await screen.findByRole('button', { name: 'Kaydet' });
+    await screen.findByRole('button', { name: 'İleri' });
     await userEvent.type(screen.getByLabelText('Dolu araç tartısı (brüt)'), '1.990');
     await userEvent.type(screen.getByLabelText('Boş araç tartısı (dara)'), '17,5');
     await userEvent.type(screen.getByLabelText('Çuval sayısı'), '40');
@@ -97,7 +97,9 @@ describe('Kantar uyuşmazlığı', () => {
     expect(
       await screen.findByText('Fotoğraf seçildi. Çıkış tartısını kaydedince sisteme yüklenecek.'),
     ).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    await userEvent.click(screen.getByRole('button', { name: 'İleri' }));
+    expect(await screen.findByText(/müdüre kantar uyuşmazlığı açılır/)).toBeInTheDocument();
+    await userEvent.click(await screen.findByRole('button', { name: /^Onayla/ }));
     expect(
       await screen.findByText('Kantar uyuşmazlığı', { selector: '.mantine-Badge-label' }),
     ).toBeInTheDocument();
@@ -121,7 +123,7 @@ describe('Kantar uyuşmazlığı', () => {
     expect(within(note).getByText(/Eksik çuvalı ekleyin/)).toBeInTheDocument();
   });
 
-  it('eksik kilo nedeni yazılmadan gönderilirse sunucunun isteği nedenle gösterilir', async () => {
+  it('eksik kilo nedeni yazılmadan ileri denirse neden istenir ve hiçbir şey kaydedilmez', async () => {
     server.use(
       http.post(`${SHIPMENTS_PATH}/:shipmentId/dispatch-weighing`, () =>
         HttpResponse.json(
@@ -132,12 +134,12 @@ describe('Kantar uyuşmazlığı', () => {
       ...createHandlers('WAREHOUSE'),
     );
     renderApp('/panel/sevkiyat/shp-0001/cikis');
-    await screen.findByRole('button', { name: 'Kaydet' });
+    await screen.findByRole('button', { name: 'İleri' });
     await userEvent.type(screen.getByLabelText('Dolu araç tartısı (brüt)'), '1.990');
     await userEvent.type(screen.getByLabelText('Boş araç tartısı (dara)'), '17,5');
     await userEvent.type(screen.getByLabelText('Çuval sayısı'), '40');
     await captureTicket();
-    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    await userEvent.click(screen.getByRole('button', { name: 'İleri' }));
     expect(
       await screen.findByText(
         'Tartılan net kilo beklenenin altında. Eksik kilonun nedenini yazın.',

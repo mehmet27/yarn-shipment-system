@@ -60,12 +60,14 @@ export {
   getShipmentSettings,
   saveShipmentSettings,
   updateShipmentDate,
+  updateShipmentTransport,
 } from './generated/shipmentService';
 export type {
   RecipeLineInput,
   RecipeLineView,
   ShipmentSettingsRequest,
   ShipmentSettingsView,
+  UpdateShipmentTransportRequest,
   WeightCheckView,
   WeightDecisionKind,
   WeightDecisionRequest,

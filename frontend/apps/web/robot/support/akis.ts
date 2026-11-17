@@ -82,7 +82,20 @@ export async function cuvalEkle(depo: Robot, id: string, adet: number, kg: strin
   await depo.sayfa.getByText(`Sevkiyattaki çuvallar (${String(adet)})`).waitFor();
 }
 
-/** Depo çıkış tartısını girer (kantar fişi fotoğrafıyla). */
+/**
+ * Depo "İleri"ye bastıktan sonra açılan onay penceresinde "Onayla…" der. Pencere açılmazsa (alan uyarısı çıktıysa,
+ * ör. eksik kilo nedeni boş) bir şey yapmaz; uyarıyı çağıran senaryo denetler.
+ */
+export async function tartiyiOnayla(depo: Robot) {
+  const onay = depo.sayfa.getByRole('dialog').getByRole('button', { name: /^Onayla/ });
+  const acildi = await onay
+    .waitFor({ state: 'visible', timeout: 2000 })
+    .then(() => true)
+    .catch(() => false);
+  if (acildi) await onay.click();
+}
+
+/** Depo çıkış tartısını girer (kantar fişi fotoğrafıyla); "İleri" ve onay adımını da yapar. */
 export async function tartiGir(depo: Robot, id: string, brut: string, dara: string, cuval: string) {
   await depo.sayfa.goto(`/panel/sevkiyat/${id}/cikis`);
   await depo.sayfa.getByLabel(/Dolu araç tartısı/).fill(brut);
@@ -96,7 +109,8 @@ export async function tartiGir(depo: Robot, id: string, brut: string, dara: stri
     .getByText(/Fotoğraf seçildi/)
     .first()
     .waitFor();
-  await depo.sayfa.getByRole('button', { name: 'Kaydet' }).click();
+  await depo.sayfa.getByRole('button', { name: 'İleri' }).click();
+  await tartiyiOnayla(depo);
 }
 
 /** Müdür irsaliye yükleyip sevkiyatı tamamlar. */

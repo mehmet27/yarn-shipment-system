@@ -25,6 +25,7 @@ const SEED: Readonly<Record<MasterKind, readonly MockRecord[]>> = {
     { id: 'drv-0', label: 'Şahin Şoför', isActive: true, subcontractorId: 'sub-0' },
     { id: 'drv-1', label: 'Mert Kaya', isActive: true, subcontractorId: 'sub-1' },
     { id: 'drv-2', label: 'Ali Demir', isActive: true, subcontractorId: 'sub-1' },
+    { id: 'drv-3', label: 'Merkez Mehmet', isActive: true },
   ],
   vehicle: [
     { id: 'veh-0', label: '34ABC123', isActive: true },

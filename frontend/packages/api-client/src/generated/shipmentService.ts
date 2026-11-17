@@ -151,6 +151,7 @@ export const ShipmentAction = {
   OPEN_QUALITY_CLAIM: 'OPEN_QUALITY_CLAIM',
   CREATE_CORRECTION: 'CREATE_CORRECTION',
   UPDATE_SHIPMENT_DATE: 'UPDATE_SHIPMENT_DATE',
+  UPDATE_TRANSPORT: 'UPDATE_TRANSPORT',
 } as const;
 
 export interface PageMetadata {
@@ -297,6 +298,21 @@ export interface AssignShipmentBagsResponse {
 export interface UpdateShipmentDateRequest {
   /** Yeni sevkiyat günü (Türkiye saati); bugün ya da ileri bir gün */
   shipmentDate: string;
+}
+
+export interface UpdateShipmentTransportRequest {
+  driverId?: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  driverName?: string;
+  vehicleId?: string;
+  /**
+     * @minLength 1
+     * @maxLength 20
+     */
+  plateNo?: string;
 }
 
 /**
@@ -1424,7 +1440,9 @@ export const changeOwnPassword = (
  * Çıkış lokasyonu ve fasoncu ile taslak sevkiyat açar; numara sunucuda üretilir. Lokasyon kullanıcının
  * yetkili olduğu lokasyonlardan biri olmalıdır. Şoför ve araç henüz belli değilse hiç gönderilmez; şoför
  * kimliği ile adı, araç kimliği ile plakası birlikte gönderilir. Aynı `Idempotency-Key` ile tekrar gönderilen
- * istek yeni sevkiyat açmaz, ilk yanıtı döner.
+ * istek yeni sevkiyat açmaz, ilk yanıtı döner. Fasoncudan fasoncuya sevkiyatta (`sourceSubcontractorId`) gönderen
+ * fasoncunun bakiyesi istenen iplik kilosunu karşılamıyorsa taslak açılmaz (409 `SOURCE_YARN_SHORTAGE`,
+ * `shortfalls` eksik iplikleri ve kiloyu verir).
  * @summary Sevkiyat taslağı oluşturur (DRAFT)
  */
 export const createShipment = (
@@ -1573,7 +1591,7 @@ export const activateSubcontractor = (
     }
 
 /**
- * Şoför seçimi için; `subcontractorId` verilirse yalnızca o fasoncunun şoförleri gelir. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
+ * Şoför seçimi için; `subcontractorId` verilirse o fasoncunun şoförleri ile firmanın kendi (merkez) şoförleri birlikte gelir, başka fasoncuların şoförleri gelmez. Arama `q` ile ad/unvan/plaka içinde yapılır (büyük-küçük harf duyarsız); sonuçlar kapsama göre süzülür.
  * @summary Şoför listesi
  */
 export const listDrivers = (
@@ -2305,6 +2323,24 @@ export const updateShipmentDate = (
     }
 
 /**
+ * Müdür (SHIPMENT_CREATE). Tamamlanmamış sevkiyatta (taslak, kantar uyuşmazlığı, teslim bekleyen) şoför ve/veya
+ * araç değiştirilir. Şoför kimliği ile adı, araç kimliği ile plakası birlikte verilir (400); verilmeyen bilgi
+ * değişmez, en az biri verilmelidir. Tamamlanmış ya da iptal edilmiş sevkiyat `INVALID_SHIPMENT_STATUS` döner.
+ * @summary Sevkiyatın şoför ve araç bilgisini düzeltir
+ */
+export const updateShipmentTransport = (
+    shipmentId: string,
+    updateShipmentTransportRequest: UpdateShipmentTransportRequest,
+ ) => {
+      return customInstance<void>(
+      {url: `/api/v1/shipments/${shipmentId}/transport`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updateShipmentTransportRequest
+    },
+      );
+    }
+
+/**
  * Müdür ya da yönetici (SHIPMENT_CANCEL). Taslak (DRAFT), kantar uyuşmazlığındaki (WEIGHT_MISMATCH) ya da teslim bekleyen (AWAITING_DELIVERY) sevkiyat
  * iptal edilir, ör. kantar farkı nedeniyle durdurulan sevkiyat; gerekçe zorunludur.
  * Zaten iptal edilmiş sevkiyata gelen istek başarılı döner. Tamamlanmış sevkiyat iptal
@@ -2521,6 +2557,7 @@ export type ActivateLotResult = NonNullable<Awaited<ReturnType<typeof activateLo
 export type LockLotQualityResult = NonNullable<Awaited<ReturnType<typeof lockLotQuality>>>
 export type GetShipmentHistoryResult = NonNullable<Awaited<ReturnType<typeof getShipmentHistory>>>
 export type UpdateShipmentDateResult = NonNullable<Awaited<ReturnType<typeof updateShipmentDate>>>
+export type UpdateShipmentTransportResult = NonNullable<Awaited<ReturnType<typeof updateShipmentTransport>>>
 export type CancelShipmentResult = NonNullable<Awaited<ReturnType<typeof cancelShipment>>>
 export type DecideWeightMismatchResult = NonNullable<Awaited<ReturnType<typeof decideWeightMismatch>>>
 export type GetShipmentSettingsResult = NonNullable<Awaited<ReturnType<typeof getShipmentSettings>>>

@@ -39,24 +39,19 @@ describe('EvidenceUpload', () => {
     expect(screen.queryByRole('button', { name: 'Fotoğraf çek' })).not.toBeInTheDocument();
   });
 
-  it('müdüre taslak sevkiyatta itiraz kanıtı sunulmaz', async () => {
+  it('müdüre ve kaliteye tamamlanmış sevkiyatta itiraz/laboratuvar yükleme alanı gelmez', async () => {
     server.use(...createHandlers('MANAGER'));
-    renderApp('/panel/sevkiyat/shp-0001');
+    renderApp('/panel/sevkiyat/shp-0003');
     await screen.findByText('Kilolar');
+    expect(screen.queryByText('Yüklenecek belge ne?')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Fotoğraf çek' })).not.toBeInTheDocument();
   });
 
-  it('müdüre tamamlanmış sevkiyatta itiraz kanıtı sunulur', async () => {
-    server.use(...createHandlers('MANAGER'));
+  it('kalite kullanıcısında "Fotoğraf ve belgeler" bölümü görünmez', async () => {
+    server.use(...createHandlers('QUALITY'));
     renderApp('/panel/sevkiyat/shp-0003');
-    expect(await screen.findByRole('button', { name: 'Fotoğraf çek' })).toBeInTheDocument();
-  });
-
-  it('birden çok belge türü izinliyse tür seçilmeden yükleme düğmeleri pasiftir', async () => {
-    server.use(...createHandlers('MANAGER'));
-    renderApp('/panel/sevkiyat/shp-0003');
-    const button = await screen.findByRole('button', { name: 'Fotoğraf çek' });
-    expect(screen.getByText('Yüklenecek belge ne?')).toBeInTheDocument();
-    expect(button).toBeDisabled();
+    await screen.findByText('Kilolar');
+    expect(screen.queryByText('Fotoğraf ve belgeler')).not.toBeInTheDocument();
+    expect(screen.queryByText('Kantar fişini yenile')).not.toBeInTheDocument();
   });
 });

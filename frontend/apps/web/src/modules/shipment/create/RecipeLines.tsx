@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, Group, Stack, Text } from '@iplik/ui';
+import { Button, Group, Stack } from '@iplik/ui';
 import type { RecipeLineDraft } from './createDraft';
 import { newLine } from './createDraft';
 import { RecipeLineRow } from './RecipeLineRow';
@@ -19,7 +19,6 @@ export function RecipeLines({ lines, onChange, showErrors }: RecipeLinesProps) {
   };
   return (
     <Stack gap="sm" data-testid="recipe-lines">
-      <Text fw={600}>{t('create.recipe.title')}</Text>
       {lines.map((line, index) => (
         <RecipeLineRow
           key={line.key}

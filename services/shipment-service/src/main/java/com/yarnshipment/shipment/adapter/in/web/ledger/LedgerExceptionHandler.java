@@ -8,6 +8,7 @@ import com.yarnshipment.shipment.domain.fire.FireSettlementNotFoundException;
 import com.yarnshipment.shipment.domain.fire.InvalidFireSettlementActionException;
 import com.yarnshipment.shipment.domain.stock.CentralStockShortfallException;
 import com.yarnshipment.shipment.domain.stock.InsufficientCentralStockException;
+import com.yarnshipment.shipment.domain.stock.SourceYarnShortageException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,21 @@ public final class LedgerExceptionHandler {
         problem.setProperty(
                 "shortfalls",
                 exception.shortfalls().stream()
+                        .map(item -> Map.of(
+                                "yarnType",
+                                item.yarnType(),
+                                "missingKg",
+                                item.missingKg().toPlainString()))
+                        .toList());
+        return problem;
+    }
+
+    @ExceptionHandler(SourceYarnShortageException.class)
+    public ProblemDetail handleSourceShortage(SourceYarnShortageException exception, HttpServletRequest request) {
+        ProblemDetail problem = problems.create(request, HttpStatus.CONFLICT, "SOURCE_YARN_SHORTAGE");
+        problem.setProperty(
+                "shortfalls",
+                exception.shortages().stream()
                         .map(item -> Map.of(
                                 "yarnType",
                                 item.yarnType(),

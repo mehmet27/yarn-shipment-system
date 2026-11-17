@@ -6,7 +6,7 @@ test.describe('Tanımlar', { tag: '@panel' }, () => {
     await page.getByRole('button', { name: 'Ekle' }).click();
     await page.getByLabel(/Fasoncu adı/).fill('Yeni Örme Ltd.');
     await page.getByRole('button', { name: 'Kaydet' }).click();
-    await expect(page.getByRole('group', { name: 'Yeni Örme Ltd.' })).toBeVisible();
+    await expect(page.getByRole('row', { name: 'Yeni Örme Ltd.' })).toBeVisible();
   });
 
   // H-09: kayıttan sonra pencere sessizce kapanmaz, başarı bildirimi görünür.
@@ -18,7 +18,7 @@ test.describe('Tanımlar', { tag: '@panel' }, () => {
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByRole('status')).toHaveText('Kayıt eklendi.');
 
-    const card = page.getByRole('group', { name: 'Aydın Örme' });
+    const card = page.getByRole('row', { name: 'Aydın Örme' });
     await card.getByRole('button', { name: 'Düzenle' }).click();
     await page.getByLabel(/Fasoncu adı/).fill('Aydın Örme A.Ş.');
     await page.getByRole('button', { name: 'Kaydet' }).click();
@@ -49,7 +49,7 @@ test.describe('Tanımlar', { tag: '@panel' }, () => {
 
     await plate.fill('06 a 1234');
     await page.getByRole('button', { name: 'Kaydet' }).click();
-    await expect(page.getByRole('group', { name: '06A1234' })).toBeVisible();
+    await expect(page.getByRole('row', { name: '06A1234' })).toBeVisible();
   });
 
   // H-07: aynı ünvan (büyük/küçük harf farkı gözetilmeden) ikinci kez eklenmez.
@@ -59,7 +59,7 @@ test.describe('Tanımlar', { tag: '@panel' }, () => {
     await page.getByLabel(/Fasoncu adı/).fill(' aydın örme ');
     await page.getByRole('button', { name: 'Kaydet' }).click();
     await expect(page.getByText('Bu ünvanla kayıtlı bir fasoncu zaten var.')).toBeVisible();
-    await expect(page.getByRole('group', { name: 'Aydın Örme' })).toHaveCount(1);
+    await expect(page.getByRole('row', { name: 'Aydın Örme' })).toHaveCount(1);
   });
 
   // H-27: diyalog kapatma ve sayfalama okları ekran okuyucuya adıyla okunur.

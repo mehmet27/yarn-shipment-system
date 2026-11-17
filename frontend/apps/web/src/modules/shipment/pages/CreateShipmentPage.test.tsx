@@ -1,6 +1,7 @@
 import { todayIsoDate } from '@iplik/i18n';
 import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
@@ -132,6 +133,47 @@ describe('CreateShipmentPage', () => {
     await userEvent.click(await screen.findByRole('combobox', { name: /Şoför/ }));
     expect(await screen.findByRole('option', { name: 'Şahin Şoför' })).toBeInTheDocument();
     expect(screen.queryByRole('option', { name: 'Mert Kaya' })).not.toBeInTheDocument();
+  });
+
+  it('fasoncu seçilince şoför listesine merkez şoförleri de gelir', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/sevkiyat/yeni');
+    await pick('Alıcı fasoncu', 'Aydın Örme');
+    await userEvent.click(await screen.findByRole('combobox', { name: /Şoför/ }));
+    expect(await screen.findByRole('option', { name: 'Merkez Mehmet' })).toBeInTheDocument();
+    expect(screen.getByText('Merkez şoförleri')).toBeInTheDocument();
+  });
+
+  it('uyarı gösterilen alan düzelince "Taslak oluştur"a basmadan uyarı kalkar', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/sevkiyat/yeni');
+    await userEvent.click(await screen.findByRole('button', { name: 'Taslak oluştur' }));
+    expect(await screen.findByText('Fasoncu seçin.')).toBeInTheDocument();
+    await pick('Alıcı fasoncu', 'Aydın Örme');
+    expect(screen.queryByText('Fasoncu seçin.')).not.toBeInTheDocument();
+  });
+
+  it('gönderen fasoncuda iplik yoksa sunucunun reddi eksik kiloyla gösterilir', async () => {
+    server.use(
+      http.post('/api/v1/shipments', () =>
+        HttpResponse.json(
+          {
+            status: 409,
+            code: 'SOURCE_YARN_SHORTAGE',
+            title: 'x',
+            shortfalls: [{ yarnType: '20 denye likra', missingKg: '36.000' }],
+          },
+          { status: 409 },
+        ),
+      ),
+      ...createHandlers('MANAGER'),
+    );
+    renderApp('/panel/sevkiyat/yeni');
+    await pick('Alıcı fasoncu', 'Bursa Tekstil');
+    await fillRecipe('36');
+    await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
+    expect(await screen.findByText(/elinde yeterli iplik yok/)).toBeInTheDocument();
+    expect(screen.getByText(/20 denye likra: 36 kg eksik/)).toBeInTheDocument();
   });
 
   it('depo yeni sevkiyat açamaz', async () => {

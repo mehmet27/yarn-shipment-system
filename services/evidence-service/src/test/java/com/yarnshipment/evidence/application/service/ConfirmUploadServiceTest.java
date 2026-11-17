@@ -13,16 +13,19 @@ import com.yarnshipment.common.security.scope.ScopeGuard;
 import com.yarnshipment.evidence.TestTokens;
 import com.yarnshipment.evidence.TestUploads;
 import com.yarnshipment.evidence.application.port.in.ConfirmUploadCommand;
+import com.yarnshipment.evidence.application.port.out.EvidenceInvalidationPort;
 import com.yarnshipment.evidence.application.port.out.EvidenceStorePort;
 import com.yarnshipment.evidence.application.port.out.ObjectStoragePort;
 import com.yarnshipment.evidence.application.port.out.UploadIntentPort;
 import com.yarnshipment.evidence.domain.model.EvidenceFile;
+import com.yarnshipment.evidence.domain.model.EvidenceType;
 import com.yarnshipment.evidence.domain.model.StoredObject;
 import com.yarnshipment.evidence.domain.model.UploadIntentNotFoundException;
 import com.yarnshipment.evidence.domain.model.UploadMismatchException;
 import com.yarnshipment.evidence.domain.model.UploadNotCompletedException;
 import java.time.Clock;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -35,8 +38,9 @@ class ConfirmUploadServiceTest {
     private final UploadIntentPort intents = mock(UploadIntentPort.class);
     private final ObjectStoragePort storage = mock(ObjectStoragePort.class);
     private final EvidenceStorePort evidence = mock(EvidenceStorePort.class);
-    private final ConfirmUploadService confirm =
-            new ConfirmUploadService(intents, storage, evidence, new ScopeGuard(event -> {}, CLOCK), CLOCK);
+    private final EvidenceInvalidationPort invalidations = mock(EvidenceInvalidationPort.class);
+    private final ConfirmUploadService confirm = new ConfirmUploadService(
+            intents, storage, evidence, invalidations, new ScopeGuard(event -> {}, CLOCK), CLOCK);
 
     @Test
     @DisplayName("Onay, depodan okunan gerçek özelliklerle kanıtı kaydeder")
@@ -51,6 +55,27 @@ class ConfirmUploadServiceTest {
 
         assertThat(file.stored().sha256()).isEqualTo(TestUploads.SHA);
         verify(evidence).saveEvidence(file);
+    }
+
+    @Test
+    @DisplayName("Yeni kantar fişi onaylanınca önceki geçerli kantar fişi geçersiz olur, diğer türler kalır")
+    void shouldInvalidatePreviousTicket() {
+        Actor warehouse = TestTokens.actor("warehouse");
+        EvidenceFile previousTicket = TestUploads.file(EvidenceType.DISPATCH_SCALE);
+        EvidenceFile waybill = TestUploads.file(EvidenceType.WAYBILL);
+        when(intents.findIntent(TestUploads.EVIDENCE_ID))
+                .thenReturn(Optional.of(TestUploads.intent(warehouse.userId())));
+        when(evidence.findEvidence(TestUploads.EVIDENCE_ID)).thenReturn(Optional.empty());
+        when(storage.inspect(any())).thenReturn(Optional.of(TestUploads.stored()));
+        when(evidence.findByShipment(TestUploads.SHIPMENT_ID)).thenReturn(List.of(previousTicket, waybill));
+
+        confirm.confirmUpload(new ConfirmUploadCommand(warehouse, TestUploads.EVIDENCE_ID));
+
+        verify(invalidations)
+                .saveInvalidation(
+                        previousTicket.invalidate("Yeni kantar fişi yüklendi"), warehouse.userId(), TestUploads.NOW);
+        verify(invalidations, never())
+                .saveInvalidation(waybill.invalidate("Yeni kantar fişi yüklendi"), warehouse.userId(), TestUploads.NOW);
     }
 
     @Test

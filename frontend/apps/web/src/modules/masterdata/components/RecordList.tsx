@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ListPagination, QueryState } from '@/modules/shipment';
 import { useRecords } from '../hooks/useRecords';
 import type { ManagedKind, RecordRow } from '../kinds';
-import { RecordCard } from './RecordCard';
+import { RecordTable } from './RecordTable';
 import { RecordForm } from './RecordForm';
 import { RecordToolbar } from './RecordToolbar';
 import { SavedNotice, useSavedNotice } from './SavedNotice';
@@ -48,9 +48,7 @@ export function RecordList({ kind }: { kind: ManagedKind }) {
             <Text c="dimmed">{t('masterData.empty')}</Text>
           ) : (
             <Stack>
-              {rows.map((record) => (
-                <RecordCard key={record.id} kind={kind} record={record} onEdit={setEditing} />
-              ))}
+              <RecordTable kind={kind} rows={rows} onEdit={setEditing} />
               <Group justify="center">
                 <ListPagination total={totalPages} value={page} onChange={setPage} />
               </Group>

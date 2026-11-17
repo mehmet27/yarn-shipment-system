@@ -1,8 +1,8 @@
-import { formatDate, useTranslation } from '@iplik/i18n';
-import { Alert, Anchor, PageHero, Paper, Stack } from '@iplik/ui';
+import { useTranslation } from '@iplik/i18n';
+import { Anchor, PageHero, Stack } from '@iplik/ui';
 import { Link, useNavigate, useParams } from 'react-router';
 import { QueryState } from '../components/QueryState';
-import { DispatchForm } from '../dispatch/DispatchForm';
+import { DispatchPanel } from '../dispatch/DispatchPanel';
 import { useShipment } from '../hooks/useShipment';
 
 /** Depo çıkış tartısı ekranı; yalnızca backend `RECORD_DISPATCH` aksiyonunu verdiyse form açılır. */
@@ -21,23 +21,12 @@ export function DispatchWeighingPage() {
         {(shipment) => (
           <Stack>
             <PageHero title={t('dispatch.title')} subtitle={shipment.shipmentNo} />
-            {shipment.allowedActions.includes('RECORD_DISPATCH') &&
-            shipment.status !== 'WEIGHT_MISMATCH' ? (
-              <Paper withBorder p="lg" radius="md" maw={560}>
-                <DispatchForm
-                  shipmentId={shipment.shipmentId}
-                  onSaved={() => {
-                    void navigate(back);
-                  }}
-                />
-              </Paper>
-            ) : (
-              <Alert color="yellow">
-                {shipment.status === 'DRAFT'
-                  ? t('shipment.notDue', { date: formatDate(shipment.shipmentDate) })
-                  : t('dispatch.notDraft')}
-              </Alert>
-            )}
+            <DispatchPanel
+              shipment={shipment}
+              onSaved={() => {
+                void navigate(back);
+              }}
+            />
           </Stack>
         )}
       </QueryState>

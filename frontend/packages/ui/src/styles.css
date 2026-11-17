@@ -41,3 +41,75 @@ body {
 .mantine-InputWrapper-description {
   color: var(--mantine-color-gray-7);
 }
+
+/* Denetim yüksekliği: telefonda 44 px dokunma hedefi (FE-UI-07), masaüstünde sıkı 36 px. Yazı telefonda 16 px kalır
+   (iOS, 16 px altındaki alana odaklanınca sayfayı yakınlaştırır). */
+:root {
+  --app-control-height: 2.75rem;
+  --app-control-fz: 1rem;
+  --app-page-bg: color-mix(in srgb, var(--mantine-color-brand-6) 9%, #f3f5f8);
+}
+
+@media (min-width: 48em) {
+  :root {
+    --app-control-height: 2.25rem;
+    --app-control-fz: var(--mantine-font-size-sm);
+  }
+}
+
+body {
+  background: var(--app-page-bg);
+}
+
+.mantine-Button-root[data-size='md'] {
+  --button-height: var(--app-control-height) !important;
+  --button-fz: var(--app-control-fz) !important;
+  --button-padding-x: 1rem !important;
+}
+
+.mantine-Input-wrapper[data-size='md'] {
+  --input-height: var(--app-control-height) !important;
+  --input-fz: var(--app-control-fz) !important;
+}
+
+/* Düğmenin solundaki ikon ile yazı arası. */
+.mantine-Button-section[data-position='left'] {
+  margin-inline-end: 0.5rem;
+}
+
+/* Sekmeler: pasif sekme hafif renkli, etkin sekme beyaz ve üstte marka çizgili; içerik çerçeveli beyaz kutu. */
+.mantine-Tabs-list {
+  gap: 4px;
+}
+
+.mantine-Tabs-tab {
+  background: color-mix(in srgb, var(--mantine-color-brand-6) 7%, white);
+  color: var(--mantine-color-gray-8);
+  font-weight: 600;
+}
+
+.mantine-Tabs-tab[data-active] {
+  background: white;
+  color: var(--mantine-color-brand-8);
+  border-top: 3px solid var(--mantine-color-brand-6);
+}
+
+.mantine-Tabs-panel {
+  background: white;
+  border: 1px solid var(--mantine-color-gray-4);
+  border-top: 0;
+  border-radius: 0 0 var(--mantine-radius-md) var(--mantine-radius-md);
+  padding: var(--mantine-spacing-md);
+  box-shadow: var(--mantine-shadow-xs);
+}
+
+/* Tablo: başlık satırı renkli, satırlar çizgili. */
+.mantine-Table-thead .mantine-Table-th {
+  background: color-mix(in srgb, var(--mantine-color-brand-6) 9%, white);
+  color: var(--mantine-color-brand-9);
+  font-weight: 700;
+}
+
+.mantine-Table-table {
+  --table-striped-color: color-mix(in srgb, var(--mantine-color-brand-6) 4%, white);
+}

@@ -20,3 +20,5 @@ export {
 } from './percentage';
 export { calculateFire } from './fire';
 export type { FireInput, FireResult } from './fire';
+export { compareWeighing } from './weighing';
+export type { WeighingComparison } from './weighing';

@@ -6,12 +6,9 @@ import com.yarnshipment.reporting.application.port.in.ReportQuery;
 import com.yarnshipment.reporting.application.port.out.BalanceFirePort;
 import com.yarnshipment.reporting.domain.model.AmountSummary;
 import com.yarnshipment.reporting.domain.model.FireFile;
-import com.yarnshipment.reporting.domain.model.ReportPeriod;
 import com.yarnshipment.reporting.domain.model.SubcontractorAmount;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Clock;
-import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +16,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Tutar bilgisi: kilolar ile her satırın kendi birim fiyatından hesaplanır. */
+/**
+ * Tutar bilgisi: kilolar ile her satırın kendi birim fiyatından hesaplanır. "Yola çıkan iplik" şu an yolda olan
+ * sevkiyatların tutarıdır; dönem seçimi bu kartı etkilemez.
+ */
 @Service
 public class AmountSummaryService implements GetAmountSummaryUseCase {
 
@@ -28,25 +28,21 @@ public class AmountSummaryService implements GetAmountSummaryUseCase {
     private final BalanceFirePort port;
     private final ReportAccess access;
     private final ListToInvoiceUseCase listToInvoice;
-    private final Clock clock;
 
-    AmountSummaryService(BalanceFirePort port, ReportAccess access, ListToInvoiceUseCase listToInvoice, Clock clock) {
+    AmountSummaryService(BalanceFirePort port, ReportAccess access, ListToInvoiceUseCase listToInvoice) {
         this.port = port;
         this.access = access;
         this.listToInvoice = listToInvoice;
-        this.clock = clock;
     }
 
     @Override
     @Transactional(readOnly = true)
     public AmountSummary getAmountSummary(ReportQuery query) {
-        ReportPeriod period =
-                ReportPeriod.of(query.from(), query.to(), LocalDate.ofInstant(clock.instant(), ReportPeriod.ZONE));
         var scope = access.scopeOf(query);
         if (scope.isEmpty()) {
             return new AmountSummary(ZERO, ZERO, ZERO, ZERO, List.of());
         }
-        var shipped = port.findShippedAmount(period, scope.get());
+        var shipped = port.findShippedAmount(scope.get());
         List<FireFile> toInvoice = listToInvoice.listToInvoice(query);
         Map<UUID, BigDecimal> prices = port.findAveragePrices(
                 toInvoice.stream().map(FireFile::shipmentId).toList());

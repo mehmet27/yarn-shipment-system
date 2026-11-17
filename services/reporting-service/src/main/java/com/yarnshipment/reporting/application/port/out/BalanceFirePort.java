@@ -30,8 +30,11 @@ public interface BalanceFirePort {
     /** Tamamlanma tarihi dönemde olan dosyalar; en yeni önce. */
     List<FireFile> findFireFiles(ReportPeriod period, ReportScope scope, @Nullable UUID subcontractorId);
 
-    /** Dönemde yola çıkan iplik: (fiyatı girilenlerin tutarı, fiyatsız kilo). */
-    ShippedAmount findShippedAmount(ReportPeriod period, ReportScope scope);
+    /**
+     * Şu an yolda olan iplik (çıkış tartısı girilmiş, irsaliyesi henüz yüklenmemiş sevkiyatlar): (fiyatı girilenlerin
+     * tutarı, fiyatsız kilo). Yolda sevkiyat yoksa ikisi de sıfırdır.
+     */
+    ShippedAmount findShippedAmount(ReportScope scope);
 
     /** Sevkiyat başına kilo ağırlıklı ortalama birim fiyat; hiç fiyatı olmayan sevkiyat sonuçta yer almaz. */
     Map<UUID, BigDecimal> findAveragePrices(Collection<UUID> shipmentIds);

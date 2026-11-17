@@ -7,7 +7,7 @@ import { StatCard } from './StatCard';
 
 const CARD_COLUMNS = { base: 1, sm: 3 } as const;
 
-/** Üç tutar kartı: fasoncudaki iplik değeri, faturalanacak tutar, yola çıkan iplik tutarı. */
+/** Üç tutar kartı: fasoncudaki iplik değeri, faturalanacak tutar, yolda olan (henüz teslim edilmemiş) iplik tutarı. */
 export function AmountCards({ summary }: { summary: AmountSummaryView }) {
   const { t } = useTranslation();
   const unpriced = (kg: string) => t('report.amount.unpriced', { kg });

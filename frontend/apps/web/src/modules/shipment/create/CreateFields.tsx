@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Paper, Stack } from '@iplik/ui';
+import { SectionCard, Stack } from '@iplik/ui';
 import type { CreateDraft, CreateFieldErrors } from './createDraft';
 import { RecipeLines } from './RecipeLines';
 import { PartiesFields } from './PartiesFields';
@@ -17,13 +17,13 @@ export function CreateFields({ draft, onChange, errors = {} }: CreateFieldsProps
   const { t } = useTranslation();
   return (
     <Stack>
-      <Section title={t('create.sections.parties')}>
+      <Section title={t('create.sections.parties')} icon="user">
         <PartiesFields draft={draft} onChange={onChange} errors={errors} />
       </Section>
-      <Section title={t('create.source.title')}>
+      <Section title={t('create.source.title')} icon="lots">
         <SourceFields draft={draft} onChange={onChange} errors={errors} />
       </Section>
-      <Paper withBorder p="md" radius="md">
+      <SectionCard title={t('create.recipe.title')} icon="list">
         <RecipeLines
           lines={draft.lines}
           showErrors={errors.lines !== undefined}
@@ -31,7 +31,7 @@ export function CreateFields({ draft, onChange, errors = {} }: CreateFieldsProps
             onChange({ ...draft, lines });
           }}
         />
-      </Paper>
+      </SectionCard>
     </Stack>
   );
 }

@@ -321,6 +321,18 @@
       "hint": "Sevkiyat dosyasını açıp iptal, çuval ekle/çıkar ya da iplik listesini güncelle kararını verin."
     },
     "notDue": "Sevkiyat tarihi {{date}}. Bu tarihten önce çuval atanamaz ve çıkış tartısı girilemez.",
+    "transport": {
+      "open": "Şoför / araç değiştir",
+      "current": "Şu an: şoför {{driver}}, araç {{plate}}. Değiştirmek istediğinizi seçin; boş bıraktığınız alan aynen kalır.",
+      "driver": "Yeni şoför",
+      "vehicle": "Yeni araç",
+      "save": "Kaydet",
+      "dismiss": "Vazgeç",
+      "errors": {
+        "INVALID_SHIPMENT_STATUS": "Şoför ve araç yalnızca tamamlanmamış sevkiyatta değişir.",
+        "unknown": "Şoför ve araç güncellenemedi. Lütfen tekrar deneyin."
+      }
+    },
     "schedule": {
       "open": "Tarihi değiştir",
       "label": "Yeni sevkiyat tarihi",
@@ -339,6 +351,17 @@
     "bagCount": "Çuval sayısı",
     "net": "Net: {{net}}",
     "submit": "Kaydet",
+    "next": "İleri",
+    "confirm": {
+      "title": "Sevkiyatı yola çıkar",
+      "leaves": "Tartıyı onaylarsanız sevkiyat kaydedilir ve fasoncuya yola çıkar.",
+      "expected": "Beklenen net: {{kg}}",
+      "measured": "Tartılan net: {{kg}}",
+      "mismatch": "Tartılan net beklenenden {{diff}} farklı. Onaylarsanız müdüre kantar uyuşmazlığı açılır ve sevkiyat müdür karar verene kadar yola çıkmaz.",
+      "back": "Geri dön",
+      "dispatch": "Onayla, yola çıkar",
+      "openMismatch": "Onayla, müdüre bildir"
+    },
     "back": "Sevkiyata dön",
     "photoFailed": "Çıkış tartısı kaydedildi ama kantar fişi fotoğrafı yüklenemedi. Sevkiyat dosyasındaki \"Fotoğraf ve belgeler\" bölümünden fişi yeniden ekleyin.",
     "continue": "Sevkiyat dosyasına git",
@@ -362,6 +385,8 @@
     "open": "Yeni sevkiyat",
     "title": "Yeni sevkiyat",
     "selectPlaceholder": "Seçin",
+    "centralGroup": "Merkez şoförleri",
+    "ownGroup": "Fasoncunun şoförleri",
     "hint": "Alıcı fasoncuyu, ipliğin nereden çıktığını ve gönderilecek iplikleri girin. Şoför ve araç sonradan da atanabilir.",
     "sections": {
       "parties": "Taraflar",
@@ -384,6 +409,10 @@
     "submit": "Taslak oluştur",
     "back": "Sevkiyatlara dön",
     "failed": "Sevkiyat oluşturulamadı. Lütfen tekrar deneyin.",
+    "sourceShortage": {
+      "title": "Gönderen fasoncunun elinde yeterli iplik yok, sevkiyat oluşturulamaz.",
+      "line": "{{yarn}}: {{kg}} eksik."
+    },
     "invalid": "Seçimler geçersiz. Lütfen kontrol edin.",
     "errors": {
       "subcontractorRequired": "Fasoncu seçin.",
@@ -481,6 +510,11 @@
     },
     "ownerOf": "Fasoncu: {{title}}",
     "noOwner": "Fasoncu yok (kendi şoförümüz)",
+    "columns": {
+      "name": "Ad",
+      "detail": "Ayrıntı",
+      "status": "Durum"
+    },
     "add": "Ekle",
     "edit": "Düzenle",
     "save": "Kaydet",
@@ -497,6 +531,7 @@
     },
     "activate": "Aktifleştir",
     "inactive": "Pasif",
+    "active": "Aktif",
     "showInactive": "Pasifleri göster",
     "empty": "Kayıt yok.",
     "owner": "Fasoncu (isteğe bağlı)",
@@ -686,8 +721,10 @@
   },
   "evidence": {
     "title": "Fotoğraf ve belgeler",
-    "type": "Yüklenecek belge ne?",
-    "typePlaceholder": "Önce türünü seçin",
+    "scale": {
+      "title": "Kantar fişini yenile",
+      "hint": "Yeni bir kantar fişi yüklerseniz öncekisi geçersiz sayılır; yalnızca son yüklenen fiş geçerli olur."
+    },
     "camera": "Fotoğraf çek",
     "file": "Dosya seç",
     "done": "Yüklendi.",
@@ -1076,7 +1113,7 @@
       "title": "Tutar bilgisi",
       "subcontractorYarn": "Fasoncudaki ipliğin değeri",
       "toInvoice": "Faturalanacak tutar",
-      "shipped": "Yola çıkan ipliğin tutarı",
+      "shipped": "Yolda olan ipliğin tutarı",
       "eachOwnPrice": "Her iplik kendi fiyatıyla hesaplandı",
       "unpriced": "Fiyatı girilmeyen: {{kg}} (tutara katılmadı)",
       "bySubcontractor": "Fasoncuda kalan iplik",

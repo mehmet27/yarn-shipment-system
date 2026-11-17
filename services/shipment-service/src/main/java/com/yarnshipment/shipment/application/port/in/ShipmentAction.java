@@ -22,7 +22,11 @@ public enum ShipmentAction {
     OPEN_QUALITY_CLAIM(Permission.QUALITY_CLAIM_OPEN, EnumSet.of(ShipmentStatus.COMPLETED)),
     CREATE_CORRECTION(Permission.CORRECTION_CREATE, EnumSet.complementOf(EnumSet.of(ShipmentStatus.CANCELLED))),
     /** Müdür taslak sevkiyatın gününü değiştirir. */
-    UPDATE_SHIPMENT_DATE(Permission.SHIPMENT_CREATE, EnumSet.of(ShipmentStatus.DRAFT));
+    UPDATE_SHIPMENT_DATE(Permission.SHIPMENT_CREATE, EnumSet.of(ShipmentStatus.DRAFT)),
+    /** Müdür tamamlanmamış sevkiyatın şoför ve araç bilgisini düzeltir. */
+    UPDATE_TRANSPORT(
+            Permission.SHIPMENT_CREATE,
+            EnumSet.of(ShipmentStatus.DRAFT, ShipmentStatus.WEIGHT_MISMATCH, ShipmentStatus.AWAITING_DELIVERY));
 
     private final Permission requiredPermission;
     // Set.copyOf değiştirilemez küme döner; Error Prone bunu tipten çıkaramaz.

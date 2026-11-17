@@ -1,6 +1,6 @@
 import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
-import { fiyatYaz, iplikTanimla, kumasGir } from '../support/akis';
+import { fiyatYaz, iplikTanimla, kumasGir, tartiyiOnayla } from '../support/akis';
 import { damga, iplikSec, resim, sec } from '../support/yardimci';
 
 type FireDosyasi = { fireRate: string; sentKg: string; fabricKg: string; status: string };
@@ -134,12 +134,13 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
       .getByText(/Fotoğraf seçildi/)
       .first()
       .waitFor();
-    await depo.sayfa.getByRole('button', { name: 'Kaydet' }).click();
+    await depo.sayfa.getByRole('button', { name: 'İleri' }).click();
+    await tartiyiOnayla(depo);
     const mesajlar = await depo.mesajlar();
     return { ad, mesajlar };
   };
 
-  await depo.adim("depo: fotoğraf seçilince Kaydet'e kadar sisteme yüklenmez", async () => {
+  await depo.adim('depo: fotoğraf seçilince onaylanana kadar sisteme yüklenmez', async () => {
     let yukleme = 0;
     depo.sayfa.on('request', (istek) => {
       if (istek.method() === 'POST' && /\/api\/v1\/evidence\/uploads$/.test(istek.url())) {
@@ -164,7 +165,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
       .waitFor();
     await depo.sayfa.waitForTimeout(1000);
     depo.kontrol(
-      "Kaydet'ten önce fotoğraf yüklenmemeli",
+      'onaydan önce fotoğraf yüklenmemeli',
       yukleme === 0,
       `yükleme: ${String(yukleme)}`,
     );

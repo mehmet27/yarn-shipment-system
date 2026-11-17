@@ -1,5 +1,5 @@
 import { expect, test } from '../support/robot';
-import { taslakAc } from '../support/akis';
+import { cuvalEkle, taslakAc } from '../support/akis';
 import { damga, istanbulGunu } from '../support/yardimci';
 
 /** Müdür sevkiyat tarihini girer; depo o tarih gelmeden çuval atayamaz ve çıkış tartısı giremez. */
@@ -102,9 +102,23 @@ test('Sevkiyat tarihi: müdür tarih girer, depo tarih gelmeden işlem yapamaz',
     },
   );
 
-  await depo.adim('tarih bugüne alındı: depo çıkış tartısı düğmesini görür', async () => {
-    await depo.sayfa.goto(`/panel/sevkiyat/${id}`);
-    await expect(depo.sayfa.getByRole('link', { name: 'Çıkış tartısını gir' })).toBeVisible();
-    await expect(depo.sayfa.getByText(/Bu tarihten önce çuval atanamaz/)).toHaveCount(0);
-  });
+  await depo.adim(
+    'tarih bugüne alındı: tarih uyarısı kalkar, çuvalsız tartı düğmesi pasif kalır',
+    async () => {
+      await depo.sayfa.goto(`/panel/sevkiyat/${id}`);
+      await expect(depo.sayfa.getByText(/Bu tarihten önce çuval atanamaz/)).toHaveCount(0);
+      await expect(depo.sayfa.getByRole('button', { name: 'Çıkış tartısını gir' })).toBeDisabled();
+    },
+  );
+
+  await cuvalEkle(depo, id, 2, '50');
+
+  await depo.adim(
+    'tarih bugüne alındı: çuvallar eklenince depo çıkış tartısı bağlantısını görür',
+    async () => {
+      await depo.sayfa.goto(`/panel/sevkiyat/${id}`);
+      await expect(depo.sayfa.getByRole('link', { name: 'Çıkış tartısını gir' })).toBeVisible();
+      await expect(depo.sayfa.getByText(/Bu tarihten önce çuval atanamaz/)).toHaveCount(0);
+    },
+  );
 });

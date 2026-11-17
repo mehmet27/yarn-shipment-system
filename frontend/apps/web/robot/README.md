@@ -114,7 +114,11 @@ yalnızca **kalite** karara bağlar. İplik dönüşünü (fasoncudan depoya) ya
 
 Gezgin (`05`) veri değiştirmeyen her şeye kendisi tıklar. **Veri değiştiren bir düğme** (kaydet, sil, iptal, pasife al,
 kilitle…) için `support/kapsam.ts` içine `rota|düğme adı` → senaryo kaydı eklenmelidir; yoksa rapor
-"Kapsam açığı: …" yazar ve robot kırmızı olur. Yani yeni bir düğme eklenince robota senaryo yazmadan yeşil çıkmaz.
+"Kapsam açığı: …" yazar ve robot kırmızı olur. Yani yeni bir düğme eklenince robota senaryo yazmadan yeşil çıkmaz. Koşula bağlı düğmeler (ör. çuval yokken pasif, çuval varken
+bağlantı olan "Çıkış tartısını gir") her iki hâliyle de kapsam kaydına girer; senaryolar iki hâli de denemelidir.
+
+Gezgin **anahtar** (onay kutusu) tıkladığında "işaretli olmalı" demez: tıklamadan önceki durumun **tersi** olmasını bekler
+(rolün varsayılan izni zaten açıksa tıklayınca kapanır).
 
 ## Koşu kuralı
 

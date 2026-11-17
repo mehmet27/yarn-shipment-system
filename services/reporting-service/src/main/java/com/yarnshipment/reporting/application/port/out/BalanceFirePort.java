@@ -7,8 +7,8 @@ import com.yarnshipment.reporting.domain.model.ReportPeriod;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
@@ -24,7 +24,6 @@ public interface BalanceFirePort {
             String subcontractorName,
             BigDecimal balanceKg,
             @Nullable BigDecimal unitPrice) {}
-
 
     List<BalanceMatrixRow> findBalanceMatrix(ReportScope scope);
 

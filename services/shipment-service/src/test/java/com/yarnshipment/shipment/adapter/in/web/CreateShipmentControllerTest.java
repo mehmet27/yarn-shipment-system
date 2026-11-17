@@ -84,8 +84,8 @@ class CreateShipmentControllerTest {
     @Test
     @DisplayName("Birim fiyatsız satır 400 alır: fiyat zorunludur")
     void shouldRejectMissingUnitPrice() {
-        MvcTestResult result = post(
-                TestTokens.token("manager").build(), VALID_BODY.replace(", \"unitPrice\": \"21.5000\"", ""));
+        MvcTestResult result =
+                post(TestTokens.token("manager").build(), VALID_BODY.replace(", \"unitPrice\": \"21.5000\"", ""));
 
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(createShipmentUseCase);

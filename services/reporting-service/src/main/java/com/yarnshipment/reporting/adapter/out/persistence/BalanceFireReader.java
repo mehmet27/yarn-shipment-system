@@ -6,11 +6,11 @@ import com.yarnshipment.reporting.domain.model.BalanceMatrixRow;
 import com.yarnshipment.reporting.domain.model.FireFile;
 import com.yarnshipment.reporting.domain.model.OpeningBalanceRow;
 import com.yarnshipment.reporting.domain.model.ReportPeriod;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -103,8 +103,7 @@ final class BalanceFireReader implements BalanceFirePort {
                        coalesce(sum(l.net_kg) FILTER (WHERE l.unit_price IS NULL), 0) AS unpriced_kg
                   FROM shipment.shipment_line l
                   JOIN shipment_view s ON s.shipment_id = l.shipment_id
-                 WHERE s.dispatched_at >= :start AND s.dispatched_at < :end"""
-                + ScopedSql.SITE_FILTER.replace("site_id", "s.site_id");
+                 WHERE s.dispatched_at >= :start AND s.dispatched_at < :end""" + ScopedSql.SITE_FILTER.replace("site_id", "s.site_id");
         return ScopedSql.withPeriod(ScopedSql.bind(jdbc.sql(sql), scope), period)
                 .query((rs, row) -> new ShippedAmount(rs.getBigDecimal("amount"), rs.getBigDecimal("unpriced_kg")))
                 .single();

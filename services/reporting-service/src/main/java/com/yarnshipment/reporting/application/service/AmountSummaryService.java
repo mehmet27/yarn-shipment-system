@@ -48,8 +48,8 @@ public class AmountSummaryService implements GetAmountSummaryUseCase {
         }
         var shipped = port.findShippedAmount(period, scope.get());
         List<FireFile> toInvoice = listToInvoice.listToInvoice(query);
-        Map<UUID, BigDecimal> prices =
-                port.findAveragePrices(toInvoice.stream().map(FireFile::shipmentId).toList());
+        Map<UUID, BigDecimal> prices = port.findAveragePrices(
+                toInvoice.stream().map(FireFile::shipmentId).toList());
         BigDecimal invoiceAmount = ZERO;
         BigDecimal invoiceUnpriced = ZERO;
         for (FireFile file : toInvoice) {
@@ -94,5 +94,4 @@ public class AmountSummaryService implements GetAmountSummaryUseCase {
     private static BigDecimal money(BigDecimal value) {
         return value.setScale(2, RoundingMode.HALF_UP);
     }
-
 }

@@ -50,8 +50,8 @@ export interface AuditEntity {
   id?: string;
 }
 
-export type AuditRecordViewDecision =
-  (typeof AuditRecordViewDecision)[keyof typeof AuditRecordViewDecision];
+export type AuditRecordViewDecision = typeof AuditRecordViewDecision[keyof typeof AuditRecordViewDecision];
+
 
 export const AuditRecordViewDecision = {
   ALLOWED: 'ALLOWED',
@@ -114,55 +114,64 @@ export type UnauthorizedResponse = Problem;
 export type ForbiddenResponse = Problem;
 
 export type ListAuditRecordsParams = {
-  entityType?: string;
-  entityId?: string;
-  actorUserId?: string;
-  action?: string;
-  sourceService?: string;
-  from?: string;
-  to?: string;
-  /**
-   * @minimum 0
-   */
-  page?: number;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  size?: number;
+entityType?: string;
+entityId?: string;
+actorUserId?: string;
+action?: string;
+sourceService?: string;
+from?: string;
+to?: string;
+/**
+ * @minimum 0
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+size?: number;
 };
 
 export type ListChainChecksParams = {
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  limit?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
 };
 
 /**
  * Süzgeçler birlikte uygulanır. `from` dahil, `to` hariçtir.
  * @summary Denetim kayıtları
  */
-export const listAuditRecords = (params?: ListAuditRecordsParams) => {
-  return customInstance<AuditRecordPage>({ url: `/api/v1/audit-log`, method: 'GET', params });
-};
+export const listAuditRecords = (
+    params?: ListAuditRecordsParams,
+ ) => {
+      return customInstance<AuditRecordPage>(
+      {url: `/api/v1/audit-log`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * En yeni sonuç önce gelir. `ok=false` zincirin bozulduğunu gösterir.
  * @summary Zincir doğrulama sonuçları
  */
-export const listChainChecks = (params?: ListChainChecksParams) => {
-  return customInstance<ChainCheckView[]>({
-    url: `/api/v1/audit-log/chain-checks`,
-    method: 'GET',
-    params,
-  });
-};
+export const listChainChecks = (
+    params?: ListChainChecksParams,
+ ) => {
+      return customInstance<ChainCheckView[]>(
+      {url: `/api/v1/audit-log/chain-checks`, method: 'GET',
+        params
+    },
+      );
+    }
+
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+    type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
-export type ListAuditRecordsResult = NonNullable<Awaited<ReturnType<typeof listAuditRecords>>>;
-export type ListChainChecksResult = NonNullable<Awaited<ReturnType<typeof listChainChecks>>>;
+export type ListAuditRecordsResult = NonNullable<Awaited<ReturnType<typeof listAuditRecords>>>
+export type ListChainChecksResult = NonNullable<Awaited<ReturnType<typeof listChainChecks>>>

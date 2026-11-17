@@ -37,7 +37,8 @@ export interface Problem {
   traceId?: string;
 }
 
-export type EvidenceType = (typeof EvidenceType)[keyof typeof EvidenceType];
+export type EvidenceType = typeof EvidenceType[keyof typeof EvidenceType];
+
 
 export const EvidenceType = {
   DISPATCH_SCALE: 'DISPATCH_SCALE',
@@ -59,7 +60,7 @@ export interface RequestUploadRequest {
 /**
  * PUT isteğinde aynen gönderilecek başlıklar.
  */
-export type UploadTicketViewHeaders = { [key: string]: string };
+export type UploadTicketViewHeaders = {[key: string]: string};
 
 export interface UploadTicketView {
   evidenceId: string;
@@ -69,7 +70,8 @@ export interface UploadTicketView {
   expiresAt: string;
 }
 
-export type EvidenceStatus = (typeof EvidenceStatus)[keyof typeof EvidenceStatus];
+export type EvidenceStatus = typeof EvidenceStatus[keyof typeof EvidenceStatus];
+
 
 export const EvidenceStatus = {
   VALID: 'VALID',
@@ -78,9 +80,9 @@ export const EvidenceStatus = {
 
 export interface InvalidateEvidenceRequest {
   /**
-   * @minLength 1
-   * @maxLength 500
-   */
+     * @minLength 1
+     * @maxLength 500
+     */
   reason: string;
 }
 
@@ -147,32 +149,36 @@ export type UnavailableResponse = Problem;
 export type IdempotencyKeyParameter = string;
 
 export type ListEvidenceParams = {
-  shipmentId: string;
+shipmentId: string;
 };
 
 /**
  * Aynı `Idempotency-Key` ile tekrar gönderilen istek aynı cevabı alır (API-04).
  * @summary Yükleme izni iste
  */
-export const requestEvidenceUpload = (requestUploadRequest: RequestUploadRequest) => {
-  return customInstance<UploadTicketView>({
-    url: `/api/v1/evidence/uploads`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: requestUploadRequest,
-  });
-};
+export const requestEvidenceUpload = (
+    requestUploadRequest: RequestUploadRequest,
+ ) => {
+      return customInstance<UploadTicketView>(
+      {url: `/api/v1/evidence/uploads`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: requestUploadRequest
+    },
+      );
+    }
 
 /**
  * Tekrar çağrılırsa aynı kanıtı döner.
  * @summary Yüklemeyi onayla
  */
-export const confirmEvidenceUpload = (evidenceId: string) => {
-  return customInstance<EvidenceView>({
-    url: `/api/v1/evidence/uploads/${evidenceId}/confirm`,
-    method: 'POST',
-  });
-};
+export const confirmEvidenceUpload = (
+    evidenceId: string,
+ ) => {
+      return customInstance<EvidenceView>(
+      {url: `/api/v1/evidence/uploads/${evidenceId}/confirm`, method: 'POST'
+    },
+      );
+    }
 
 /**
  * Yükleme sırasıyla, isteyenin görmesine izin verilen kanıtların üst verisi. Kör giriş gereği çıkış kantar
@@ -180,21 +186,29 @@ export const confirmEvidenceUpload = (evidenceId: string) => {
  * boş değil). Şoför yalnızca plaka fotoğrafını görür.
  * @summary Sevkiyatın kanıtları
  */
-export const listEvidence = (params: ListEvidenceParams) => {
-  return customInstance<EvidenceListView>({ url: `/api/v1/evidence`, method: 'GET', params });
-};
+export const listEvidence = (
+    params: ListEvidenceParams,
+ ) => {
+      return customInstance<EvidenceListView>(
+      {url: `/api/v1/evidence`, method: 'GET',
+        params
+    },
+      );
+    }
 
 /**
  * Dosyayı doğrudan nesne deposundan okumak için kısa ömürlü (yaklaşık 5 dk) adres. Görme kuralları üst veri
  * ucuyla aynıdır; görünmeyen kanıt EVIDENCE_NOT_FOUND döner. Adres her çağrıda yenilenir, saklanmamalıdır.
  * @summary Kanıt dosyası için imzalı indirme adresi
  */
-export const getEvidenceDownloadUrl = (evidenceId: string) => {
-  return customInstance<EvidenceDownloadView>({
-    url: `/api/v1/evidence/${evidenceId}/download-url`,
-    method: 'GET',
-  });
-};
+export const getEvidenceDownloadUrl = (
+    evidenceId: string,
+ ) => {
+      return customInstance<EvidenceDownloadView>(
+      {url: `/api/v1/evidence/${evidenceId}/download-url`, method: 'GET'
+    },
+      );
+    }
 
 /**
  * Yanlış ya da uygunsuz yüklenen kanıtı gerekçeyle geçersiz sayar (yalnızca admin). Kayıt ve dosya silinmez;
@@ -203,39 +217,39 @@ export const getEvidenceDownloadUrl = (evidenceId: string) => {
  * @summary Kanıtı geçersiz kıl
  */
 export const invalidateEvidence = (
-  evidenceId: string,
-  invalidateEvidenceRequest: InvalidateEvidenceRequest,
-) => {
-  return customInstance<EvidenceView>({
-    url: `/api/v1/evidence/${evidenceId}/invalidate`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: invalidateEvidenceRequest,
-  });
-};
+    evidenceId: string,
+    invalidateEvidenceRequest: InvalidateEvidenceRequest,
+ ) => {
+      return customInstance<EvidenceView>(
+      {url: `/api/v1/evidence/${evidenceId}/invalidate`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: invalidateEvidenceRequest
+    },
+      );
+    }
 
 /**
  * Dosyanın kendisini değil üst verisini döner (tür, sevkiyat, boyut, hash). Sevkiyat isteyene görünmüyorsa
  * kanıt da yoktur (EVIDENCE_NOT_FOUND).
  * @summary Kanıt üst verisi
  */
-export const getEvidence = (evidenceId: string) => {
-  return customInstance<EvidenceView>({ url: `/api/v1/evidence/${evidenceId}`, method: 'GET' });
-};
+export const getEvidence = (
+    evidenceId: string,
+ ) => {
+      return customInstance<EvidenceView>(
+      {url: `/api/v1/evidence/${evidenceId}`, method: 'GET'
+    },
+      );
+    }
+
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+    type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
-export type RequestEvidenceUploadResult = NonNullable<
-  Awaited<ReturnType<typeof requestEvidenceUpload>>
->;
-export type ConfirmEvidenceUploadResult = NonNullable<
-  Awaited<ReturnType<typeof confirmEvidenceUpload>>
->;
-export type ListEvidenceResult = NonNullable<Awaited<ReturnType<typeof listEvidence>>>;
-export type GetEvidenceDownloadUrlResult = NonNullable<
-  Awaited<ReturnType<typeof getEvidenceDownloadUrl>>
->;
-export type InvalidateEvidenceResult = NonNullable<Awaited<ReturnType<typeof invalidateEvidence>>>;
-export type GetEvidenceResult = NonNullable<Awaited<ReturnType<typeof getEvidence>>>;
+export type RequestEvidenceUploadResult = NonNullable<Awaited<ReturnType<typeof requestEvidenceUpload>>>
+export type ConfirmEvidenceUploadResult = NonNullable<Awaited<ReturnType<typeof confirmEvidenceUpload>>>
+export type ListEvidenceResult = NonNullable<Awaited<ReturnType<typeof listEvidence>>>
+export type GetEvidenceDownloadUrlResult = NonNullable<Awaited<ReturnType<typeof getEvidenceDownloadUrl>>>
+export type InvalidateEvidenceResult = NonNullable<Awaited<ReturnType<typeof invalidateEvidence>>>
+export type GetEvidenceResult = NonNullable<Awaited<ReturnType<typeof getEvidence>>>

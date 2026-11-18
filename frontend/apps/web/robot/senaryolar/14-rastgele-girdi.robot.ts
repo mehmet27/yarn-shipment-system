@@ -1,8 +1,8 @@
 import type { Page } from '@playwright/test';
-import { fiyatYaz, iplikTanimla } from '../support/akis';
+import { fiyatYaz, iplikTanimla, tedarikciTanimla } from '../support/akis';
 import { rolTanimli, test } from '../support/robot';
 import type { Robot } from '../support/robot';
-import { damga, iplikSec } from '../support/yardimci';
+import { damga, iplikGirisiDoldur } from '../support/yardimci';
 
 /** Alanlara verilen kötü niyetli ya da uç değerler; sistem çökmemeli, 5xx vermemeli, betik çalıştırmamalı. */
 const METINLER = [
@@ -74,14 +74,18 @@ test('Rastgele girdi: depo iplik girişi alanları', async ({ giris }) => {
   const depo = await giris('depo');
   const mudur = await giris('mudur');
   depo.beklenen(/4\d\d (POST|PUT) /);
-  // İplik serbest metin değil, Tanımlar'dan seçilir; bu yüzden metin fuzz'u yalnızca kilo ve not alanlarına yapılır.
+  // İplik serbest metin değil, Tanımlar'dan seçilir; bu yüzden metin fuzz'u yalnızca kilo, parti no, irsaliye no ve not alanlarına yapılır.
   const iplik = damga();
+  const tedarikci = damga();
   await iplikTanimla(mudur, iplik);
+  await tedarikciTanimla(mudur, tedarikci);
   await dene(
     depo,
     'iplik girişi',
     [
       { etiket: /Gelen net kg/, tur: 'sayi' },
+      { etiket: /^Parti no/, tur: 'metin' },
+      { etiket: /Tedarikçi irsaliye no/, tur: 'metin' },
       { etiket: /Not/, tur: 'metin' },
     ],
     async () => {
@@ -90,8 +94,7 @@ test('Rastgele girdi: depo iplik girişi alanları', async ({ giris }) => {
     async () => {
       await depo.sayfa.goto('/panel/merkez-stok');
       await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
-      await iplikSec(depo.sayfa, /İplik cinsi/, iplik);
-      await depo.sayfa.getByLabel(/Gelen net kg/).fill('1');
+      await iplikGirisiDoldur(depo.sayfa, { iplik, tedarikci, kg: '1' });
     },
   );
 });

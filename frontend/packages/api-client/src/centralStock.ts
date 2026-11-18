@@ -6,6 +6,14 @@ export const CENTRAL_STOCK_PATH = '/api/v1/central-stock';
 export type CentralStockKind = 'YARN_RECEIPT' | 'TO_SUBCONTRACTOR' | 'PRODUCTION';
 /** `productId` boştur: Tanımlar'daki bir iplikle eşlenemeyen eski serbest metin satırı. */
 export type CentralStockRow = { productId?: string; yarnType: string; stockKg: string };
+/** Merkeze iplik girişinin tedarikçi bilgisi; çıkışlarda, sistem girişlerinde ve eski satırlarda yoktur. */
+export type YarnReceiptSource = {
+  supplierId?: string;
+  supplierName: string;
+  lotId?: string;
+  lotNo?: string;
+  waybillNo?: string;
+};
 export type CentralStockMovement = {
   id: string;
   productId?: string;
@@ -14,6 +22,15 @@ export type CentralStockMovement = {
   netKg: string;
   note?: string;
   occurredAt: string;
+  receipt?: YarnReceiptSource;
+};
+/** Bir tedarikçiden bir iplik cinsinden bugüne kadar gelen iplik. */
+export type SupplierReceipt = {
+  supplierId?: string;
+  supplierName: string;
+  productId?: string;
+  yarnType: string;
+  receivedKg: string;
 };
 export type YarnFlow = {
   /** Merkeze girenler ve kapıdan aktarılanlar. */
@@ -33,10 +50,23 @@ export type CentralStock = {
   /** Gelen ipliğin merkez / fasoncu / merkez üretimi dağılımı. */
   flow: YarnFlow;
   movements: CentralStockMovement[];
+  /** Tedarikçi ve iplik cinsi başına gelen iplik; tedarikçi adına göre sıralı. */
+  suppliers: SupplierReceipt[];
 };
 
-/** `productId`: Tanımlar'daki aktif iplik. */
-export type YarnReceiptRequest = { productId: string; netKg: string; note?: string };
+/**
+ * `productId`: Tanımlar'daki aktif iplik, `supplierId`: aktif iplik tedarikçisi. `lotNo` yazılırsa Partiler'deki
+ * partiye bağlanır; parti ilk kez yazılıyorsa `qualityGradeId` (kalite sınıfı) gerekir.
+ */
+export type YarnReceiptRequest = {
+  productId: string;
+  supplierId: string;
+  netKg: string;
+  lotNo?: string;
+  qualityGradeId?: string;
+  waybillNo?: string;
+  note?: string;
+};
 export type CentralProductionRequest = {
   fabricType: string;
   /** Oran olarak, ör. "0.04". */

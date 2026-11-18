@@ -18,6 +18,32 @@ export async function iplikTanimla(mudur: Robot, ad: string) {
   await pencere.waitFor({ state: 'hidden' });
 }
 
+/** Müdür Tanımlar > Kalite sınıfları'na yeni sınıf ekler (merkeze girişte yeni parti açarken seçilir). */
+export async function kaliteSinifiTanimla(mudur: Robot, ad: string) {
+  await mudur.sayfa.goto('/panel/tanimlar');
+  await mudur.sayfa.getByRole('tab', { name: 'Kalite sınıfları', exact: true }).click();
+  await mudur.sayfa.getByRole('button', { name: 'Ekle' }).click();
+  const pencere = mudur.sayfa.getByRole('dialog');
+  await pencere.getByLabel('Kod *', { exact: true }).fill(`RK${ad.replaceAll(/\D/g, '')}`);
+  await pencere.getByLabel('Kalite adı *', { exact: true }).fill(ad);
+  await pencere.getByRole('button', { name: 'Kaydet' }).click();
+  await pencere.waitFor({ state: 'hidden' });
+}
+
+/**
+ * Müdür Tanımlar > İplik tedarikçileri'ne yeni tedarikçi ekler. Merkeze iplik girişi yalnızca Tanımlar'daki aktif
+ * tedarikçiyle yapılır; ad benzersiz olmalıdır.
+ */
+export async function tedarikciTanimla(mudur: Robot, ad: string) {
+  await mudur.sayfa.goto('/panel/tanimlar');
+  await mudur.sayfa.getByRole('tab', { name: 'İplik tedarikçileri', exact: true }).click();
+  await mudur.sayfa.getByRole('button', { name: 'Ekle' }).click();
+  const pencere = mudur.sayfa.getByRole('dialog');
+  await pencere.getByLabel('Tedarikçi adı *', { exact: true }).fill(ad);
+  await pencere.getByRole('button', { name: 'Kaydet' }).click();
+  await pencere.waitFor({ state: 'hidden' });
+}
+
 /** Yeni sevkiyat formunda reçete satırının birim fiyatını (zorunlu) "Sipariş bilgileri" sekmesinden yazar. */
 export async function fiyatYaz(sayfa: Page, fiyat = '21,5') {
   await sayfa

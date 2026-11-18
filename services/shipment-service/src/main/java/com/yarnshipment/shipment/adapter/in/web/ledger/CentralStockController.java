@@ -59,7 +59,11 @@ public class CentralStockController {
         RecordYarnReceiptUseCase.Command command = new RecordYarnReceiptUseCase.Command(
                 currentActorProvider.getCurrentActor(),
                 LedgerRequests.requiredId(request.productId(), "productId"),
+                LedgerRequests.requiredId(request.supplierId(), "supplierId"),
                 LedgerRequests.kg(request.netKg(), "netKg"),
+                request.lotNo(),
+                request.qualityGradeId(),
+                request.waybillNo(),
                 request.note());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CentralStockViews.movement(recordReceipt.recordYarnReceipt(command)));

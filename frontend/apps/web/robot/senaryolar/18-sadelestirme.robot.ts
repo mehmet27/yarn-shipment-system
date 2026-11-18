@@ -1,6 +1,13 @@
-import { cuvalEkle, iplikTanimla, kumasGir, tamamlanmisSevkiyat, taslakAc } from '../support/akis';
+import {
+  cuvalEkle,
+  iplikTanimla,
+  tedarikciTanimla,
+  kumasGir,
+  tamamlanmisSevkiyat,
+  taslakAc,
+} from '../support/akis';
 import { expect, test } from '../support/robot';
-import { damga, iplikSec } from '../support/yardimci';
+import { damga, iplikGirisiDoldur } from '../support/yardimci';
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
@@ -18,6 +25,7 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
   const fasonKalite = await giris('fason-kalite');
   for (const r of [depo, mudur, kalite, fasonKalite]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
   const iplik = damga();
+  const tedarikci = damga();
 
   await depo.adim('menü: başlık "Menü", "Yönetim Paneli" yazmaz', async () => {
     await depo.sayfa.goto('/panel');
@@ -48,6 +56,7 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
 
   await mudur.adim('müdür: ipliği tanımlar, stok girişi için depo hazırlanır', async () => {
     await iplikTanimla(mudur, iplik);
+    await tedarikciTanimla(mudur, tedarikci);
   });
   await mudur.adim('aynı iplik adı ikinci kez eklenemez', async () => {
     await mudur.sayfa.goto('/panel/tanimlar');
@@ -64,8 +73,7 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
   await depo.adim('depo: merkeze iplik girişi', async () => {
     await depo.sayfa.goto('/panel/merkez-stok');
     await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
-    await iplikSec(depo.sayfa, /İplik cinsi/, iplik);
-    await depo.sayfa.getByLabel(/Gelen net kg/).fill('300');
+    await iplikGirisiDoldur(depo.sayfa, { iplik, tedarikci, kg: '300' });
     await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
     await depo.sayfa.getByText('İplik girişi kaydedildi.').waitFor();
   });

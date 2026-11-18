@@ -22,6 +22,8 @@ async function pickYarn(
   await user.click(await screen.findByRole('option', { name }));
 }
 
+const SUPPLIER = /^Tedarikçi(\s*\*)?$/;
+
 describe('Merkez iplik stoku', () => {
   it('depo iplik girişi yapar, stok güncellenir; kumaş formunu görmez', async () => {
     server.use(...createHandlers('WAREHOUSE'));
@@ -33,13 +35,20 @@ describe('Merkez iplik stoku', () => {
     await user.click(screen.getByRole('tab', { name: 'İplik girişi' }));
     const form = screen.getByRole('region', { name: 'Merkeze iplik girişi' });
     await pickYarn(user, /İplik cinsi/, 'Polyester 30/1');
+    await pickYarn(user, SUPPLIER, 'Şireci');
     await user.type(within(form).getByLabelText(/Gelen net kg/), '20000');
+    await user.type(within(form).getByLabelText(/Tedarikçi irsaliye no/), 'IRS-7');
     await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
 
     expect(await screen.findByText('İplik girişi kaydedildi.')).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'Eldeki iplik' }));
     const table = await screen.findByRole('table', { name: 'Merkez iplik stoku' });
     expect(within(table).getByText('Polyester 30/1')).toBeInTheDocument();
+    const suppliers = await screen.findByRole('table', { name: 'Tedarikçiden gelen iplik' });
+    expect(within(suppliers).getByText('Şireci')).toBeInTheDocument();
+    expect(within(suppliers).getAllByText('20.000 kg')).toHaveLength(2);
+    const moves = screen.getByRole('table', { name: 'Son hareketler' });
+    expect(within(moves).getByText('IRS-7')).toBeInTheDocument();
     expect(screen.getByText('Gelen ipliğin dağılımı')).toBeInTheDocument();
     for (const ad of ['Toplam gelen iplik', 'Fasoncularda', 'Kapıdan aktarılan']) {
       expect(screen.getByText(ad)).toBeInTheDocument();
@@ -63,6 +72,7 @@ describe('Merkez iplik stoku', () => {
     await user.click(await screen.findByRole('tab', { name: 'İplik girişi' }));
     const receipt = await screen.findByRole('region', { name: 'Merkeze iplik girişi' });
     await pickYarn(user, /İplik cinsi/, 'Pamuk 20/1');
+    await pickYarn(user, SUPPLIER, 'Karesi');
     await user.type(within(receipt).getByLabelText(/Gelen net kg/), '1000');
     await user.click(within(receipt).getByRole('button', { name: 'İplik girişini kaydet' }));
     await screen.findByText('İplik girişi kaydedildi.');
@@ -119,6 +129,7 @@ describe('Merkez iplik stoku', () => {
     await user.click(await screen.findByRole('tab', { name: 'İplik girişi' }));
     const form = screen.getByRole('region', { name: 'Merkeze iplik girişi' });
     await pickYarn(user, /İplik cinsi/, 'Polyester 30/1');
+    await pickYarn(user, SUPPLIER, 'Şireci');
     await user.type(within(form).getByLabelText(/Gelen net kg/), '10');
     await user.dblClick(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
     // Yanıt çok hızlı gelirse ikinci tıklama boşalmış forma düşer; önemli olan tek kayıt yazılmasıdır.
@@ -128,6 +139,48 @@ describe('Merkez iplik stoku', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 300));
     expect(posts).toBe(1);
+  });
+
+  it('tedarikçi seçilmeden giriş kaydedilmez', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    const user = userEvent.setup();
+    renderApp('/panel/merkez-stok');
+    await user.click(await screen.findByRole('tab', { name: 'İplik girişi' }));
+    const form = screen.getByRole('region', { name: 'Merkeze iplik girişi' });
+    await pickYarn(user, /İplik cinsi/, 'Polyester 30/1');
+    await user.type(within(form).getByLabelText(/Gelen net kg/), '100');
+    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+
+    expect(await screen.findByText('Zorunlu alanları doldurun.')).toBeInTheDocument();
+    expect(screen.queryByText('İplik girişi kaydedildi.')).not.toBeInTheDocument();
+  });
+
+  it('parti no yazılınca kalite sınıfı sorulur; geçersiz parti no gönderilmez', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    const user = userEvent.setup();
+    renderApp('/panel/merkez-stok');
+    await user.click(await screen.findByRole('tab', { name: 'İplik girişi' }));
+    const form = screen.getByRole('region', { name: 'Merkeze iplik girişi' });
+    expect(within(form).queryAllByLabelText(/Kalite sınıfı/)).toHaveLength(0);
+    await pickYarn(user, /İplik cinsi/, 'Polyester 30/1');
+    await pickYarn(user, SUPPLIER, 'Şireci');
+    await user.type(within(form).getByLabelText(/Gelen net kg/), '100');
+
+    await user.type(within(form).getByLabelText(/Parti no/), 'ğ*');
+    expect(within(form).getAllByLabelText(/Kalite sınıfı/).length).toBeGreaterThan(0);
+    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    expect(await screen.findByText(/Parti no harf veya rakamla başlamalı/)).toBeInTheDocument();
+
+    await user.clear(within(form).getByLabelText(/Parti no/));
+    await user.type(within(form).getByLabelText(/Parti no/), 'p-1');
+    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    expect(
+      await screen.findByText(/ilk kez giriliyor; partinin kalite sınıfını seçin/),
+    ).toBeInTheDocument();
+
+    await pickYarn(user, /Kalite sınıfı/, 'A · Birinci kalite');
+    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    expect(await screen.findByText('İplik girişi kaydedildi.')).toBeInTheDocument();
   });
 
   it('müdür stoğu görür ama giriş formu yoktur; genel müdür menüde görmez', async () => {

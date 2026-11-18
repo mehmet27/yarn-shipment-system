@@ -1,5 +1,9 @@
 import type { CurrentUser } from '@iplik/api-client';
-import type { CentralStockMovement, CentralStockRow } from '@iplik/api-client/central-stock';
+import type {
+  CentralStockMovement,
+  CentralStockRow,
+  SupplierReceipt,
+} from '@iplik/api-client/central-stock';
 import { CENTRAL_STOCK_PATH } from '@iplik/api-client/central-stock';
 import { isKilogram, sumKg } from '@iplik/units';
 import { http, HttpResponse } from 'msw';
@@ -16,6 +20,33 @@ const positiveKg = (value: unknown): value is string =>
 /** Tanımlar'daki aktif iplik; pasif ya da olmayan id'yi sunucu reddeder. */
 const activeYarn = (productId: unknown) =>
   listMasterRecords('product').find((p) => p.id === productId && p.isActive);
+
+type ReceiptInput = {
+  product: { id: string; label: string };
+  netKg: string;
+  receipt: NonNullable<CentralStockMovement['receipt']>;
+  hasGrade: boolean;
+};
+
+/** İplik girişi gövdesini okur; iplik ya da tedarikçi aktif değilse ya da kilo geçersizse undefined. */
+function readReceipt(json: unknown): ReceiptInput | undefined {
+  if (!isRecord(json)) return undefined;
+  const product = activeYarn(json.productId);
+  const supplier = listMasterRecords('yarnSupplier').find(
+    (s) => s.id === json.supplierId && s.isActive,
+  );
+  if (product === undefined || supplier === undefined || !positiveKg(json.netKg)) return undefined;
+  return {
+    product,
+    netKg: json.netKg,
+    hasGrade: text(json.qualityGradeId),
+    receipt: {
+      supplierName: supplier.label,
+      ...(text(json.lotNo) ? { lotNo: json.lotNo } : {}),
+      ...(text(json.waybillNo) ? { waybillNo: json.waybillNo } : {}),
+    },
+  };
+}
 
 /** Sahte API'nin merkez iplik stoku uçları; durum her `createStockHandlers` çağrısında sıfırdan başlar. */
 export function createStockHandlers(user: CurrentUser) {
@@ -48,6 +79,22 @@ export function createStockHandlers(user: CurrentUser) {
         ? []
         : [{ productId, yarnType: own[0].yarnType, stockKg: sumKg(own.map((m) => m.netKg)) }];
     });
+  const supplierRows = (): SupplierReceipt[] => {
+    const received = movements.filter((m) => m.kind === 'YARN_RECEIPT' && m.receipt !== undefined);
+    return [...new Set(received.map((m) => `${m.receipt?.supplierName ?? ''}/${m.yarnType}`))].map(
+      (key) => {
+        const own = received.filter(
+          (m) => `${m.receipt?.supplierName ?? ''}/${m.yarnType}` === key,
+        );
+        return {
+          supplierName: own[0]?.receipt?.supplierName ?? '',
+          ...(own[0]?.productId === undefined ? {} : { productId: own[0].productId }),
+          yarnType: own[0]?.yarnType ?? '',
+          receivedKg: sumKg(own.map((m) => m.netKg)),
+        };
+      },
+    );
+  };
   /** Her iplik payını kumaş / (1 - fire) kadar düşer; satır geçersizse undefined. */
   const consume = (yarns: unknown[], fire: number) => {
     const consumed: CentralStockMovement[] = [];
@@ -81,16 +128,19 @@ export function createStockHandlers(user: CurrentUser) {
           ),
         },
         movements,
+        suppliers: supplierRows(),
       });
     }),
     http.post(`${CENTRAL_STOCK_PATH}/yarn-receipts`, async ({ request }) => {
       if (!has('CENTRAL_STOCK_RECORD')) return problem(403, 'ACCESS_DENIED');
-      const json: unknown = await request.json();
-      const product = isRecord(json) ? activeYarn(json.productId) : undefined;
-      if (!isRecord(json) || product === undefined || !positiveKg(json.netKg)) {
-        return problem(400, 'INVALID_LEDGER_INPUT');
+      const input = readReceipt(await request.json());
+      if (input === undefined) return problem(400, 'INVALID_LEDGER_INPUT');
+      if (input.receipt.lotNo !== undefined && !input.hasGrade) {
+        return problem(409, 'YARN_LOT_GRADE_REQUIRED');
       }
-      return HttpResponse.json(add(product, 'YARN_RECEIPT', json.netKg), { status: 201 });
+      const movement = add(input.product, 'YARN_RECEIPT', input.netKg);
+      movement.receipt = input.receipt;
+      return HttpResponse.json(movement, { status: 201 });
     }),
     http.post(`${CENTRAL_STOCK_PATH}/productions`, async ({ request }) => {
       if (!has('CENTRAL_PRODUCTION_RECORD')) return problem(403, 'ACCESS_DENIED');

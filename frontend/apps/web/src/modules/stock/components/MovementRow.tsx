@@ -20,6 +20,9 @@ export function MovementRow({ move }: { move: CentralStock['movements'][number] 
         <DotBadge color={KIND_COLOR[move.kind] ?? 'gray'}>{t(`stock.kinds.${move.kind}`)}</DotBadge>
       </Table.Td>
       <Table.Td>{move.yarnType}</Table.Td>
+      <Table.Td>{move.receipt?.supplierName ?? ''}</Table.Td>
+      <Table.Td>{move.receipt?.lotNo ?? ''}</Table.Td>
+      <Table.Td>{move.receipt?.waybillNo ?? ''}</Table.Td>
       <Table.Td ta="right">
         <Text
           span

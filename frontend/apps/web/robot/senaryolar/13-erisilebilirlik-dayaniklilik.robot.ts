@@ -1,8 +1,8 @@
 import { API_SURESI_MS, SAYFA_SURESI_MS } from '../kurallar/hesap';
 import { IZINLI } from '../kurallar/yetki';
 import { expect, rolTanimli, test } from '../support/robot';
-import { fiyatYaz, iplikTanimla } from '../support/akis';
-import { damga, iplikSec } from '../support/yardimci';
+import { fiyatYaz, iplikTanimla, tedarikciTanimla } from '../support/akis';
+import { damga, iplikGirisiDoldur } from '../support/yardimci';
 
 type Ozet = { shipments: Record<string, number> };
 type Stok = { rows: { yarnType: string; stockKg: string }[] };
@@ -103,12 +103,13 @@ test('Dayanıklılık: yenileme, geri/ileri ve çift tıklama veri tekrarlamaz',
 
   const iplik = damga();
   await iplikTanimla(mudur, iplik);
+  const tedarikci = damga();
+  await tedarikciTanimla(mudur, tedarikci);
   await depo.adim('iplik girişi: çift tıklama tek kayıt oluşturur', async () => {
     const once = await depo.api<Stok>('/api/v1/central-stock');
     await depo.sayfa.goto('/panel/merkez-stok');
     await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
-    await iplikSec(depo.sayfa, /İplik cinsi/, iplik);
-    await depo.sayfa.getByLabel(/Gelen net kg/).fill('10');
+    await iplikGirisiDoldur(depo.sayfa, { iplik, tedarikci, kg: '10' });
     await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).dblclick();
     await depo.sayfa.waitForTimeout(2000);
     const sonra = await depo.api<Stok>('/api/v1/central-stock');

@@ -3,7 +3,9 @@ import {
   listLots,
   listProducts,
   listSubcontractors,
+  listQualityGrades,
   listVehicles,
+  listYarnSuppliers,
 } from '@iplik/api-client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -12,7 +14,8 @@ const OPTION_PAGE_SIZE = 20;
 /** Merkez şoförlerinin grup başlığı anahtarı; seçici bunu çevirip gösterir. */
 export const CENTRAL_GROUP = '__central__';
 
-export type MasterKind = 'subcontractor' | 'driver' | 'vehicle' | 'product' | 'lot';
+export type MasterKind =
+  'subcontractor' | 'driver' | 'vehicle' | 'product' | 'lot' | 'supplier' | 'qualityGrade';
 /** `group` doluysa seçici seçenekleri bu başlık altında gruplar (şoförde "Merkez" ve fasoncu). */
 export type MasterOption = { value: string; label: string; group?: string };
 
@@ -55,6 +58,16 @@ async function fetchOptions(
       return (await listProducts(search)).items.map((row) => ({ value: row.id, label: row.name }));
     case 'lot':
       return (await listLots(search)).items.map((row) => ({ value: row.id, label: row.lotNo }));
+    case 'supplier':
+      return (await listYarnSuppliers(search)).items.map((row) => ({
+        value: row.id,
+        label: row.name,
+      }));
+    case 'qualityGrade':
+      return (await listQualityGrades(search)).items.map((row) => ({
+        value: row.id,
+        label: `${row.code} · ${row.name}`,
+      }));
   }
 }
 

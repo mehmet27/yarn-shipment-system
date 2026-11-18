@@ -83,13 +83,18 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
     /** Kapıdan aktarmada iplik depoya girmez; çıkıştan önce aynı kilo giriş (+) yazılır, stok eksiye düşmez. */
     private static final String CENTRAL_STOCK_DIRECT_IN = """
             INSERT INTO central_stock_movement (id, product_id, yarn_type, kind, net_kg, shipment_id, note, occurred_at,
-                                                created_by, source_ref)
+                                                created_by, source_ref, supplier_id, supplier_name, waybill_no)
             SELECT gen_random_uuid(), p.id, coalesce(p.name, bm.yarn_type), 'YARN_RECEIPT', bm.net_kg, bm.shipment_id,
                    'Kapıdan aktarma: ' || s.direct_transfer_supplier
                        || coalesce(' / ' || s.direct_transfer_waybill_no, ''),
-                   bm.occurred_at, bm.created_by, 'DIRECT_IN:' || bm.source_ref
+                   bm.occurred_at, bm.created_by, 'DIRECT_IN:' || bm.source_ref, sup.id,
+                   coalesce(sup.name, btrim(s.direct_transfer_supplier)), s.direct_transfer_waybill_no
             FROM balance_movement bm
             JOIN shipment s ON s.id = bm.shipment_id AND s.direct_transfer_supplier IS NOT NULL
+            LEFT JOIN LATERAL (
+                SELECT id, name FROM md_yarn_supplier
+                WHERE lower(btrim(name)) = lower(btrim(s.direct_transfer_supplier))
+                ORDER BY id LIMIT 1) sup ON true
             LEFT JOIN LATERAL (
                 SELECT id, name FROM md_product
                 WHERE id::text = bm.yarn_type OR lower(btrim(name)) = lower(btrim(bm.yarn_type))

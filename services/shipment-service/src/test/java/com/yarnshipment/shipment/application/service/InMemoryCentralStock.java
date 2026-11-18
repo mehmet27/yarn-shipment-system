@@ -4,7 +4,10 @@ import com.yarnshipment.shipment.application.port.in.stock.CentralStockRow;
 import com.yarnshipment.shipment.application.port.in.stock.YarnFlow;
 import com.yarnshipment.shipment.application.port.out.ledger.CentralStockPort;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
+import com.yarnshipment.shipment.domain.stock.CentralStockEntry;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
+import com.yarnshipment.shipment.domain.stock.ReceiptDetails;
+import com.yarnshipment.shipment.domain.stock.SupplierReceipt;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,13 +15,17 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /** Testler için bellek içi merkez stok defteri. */
 final class InMemoryCentralStock implements CentralStockPort {
     final Map<UUID, BigDecimal> kg = new LinkedHashMap<>();
     final Map<UUID, String> names = new HashMap<>();
     final List<CentralProduction> productions = new ArrayList<>();
+    final List<ReceiptDetails> receiptDetails = new ArrayList<>();
+    final Map<UUID, String> suppliers = new HashMap<>();
     private final Map<UUID, String> active;
     private List<CentralStockRow> shortages = List.of();
 
@@ -40,7 +47,8 @@ final class InMemoryCentralStock implements CentralStockPort {
     }
 
     @Override
-    public void saveReceipt(CentralStockMovement receipt) {
+    public void saveReceipt(CentralStockMovement receipt, @Nullable ReceiptDetails details) {
+        receiptDetails.add(details);
         names.put(receipt.productId(), receipt.yarnType());
         kg.merge(receipt.productId(), receipt.netKg(), BigDecimal::add);
     }
@@ -72,7 +80,17 @@ final class InMemoryCentralStock implements CentralStockPort {
     }
 
     @Override
-    public List<CentralStockMovement> findRecent(int limit) {
+    public List<CentralStockEntry> findRecent(int limit) {
+        return List.of();
+    }
+
+    @Override
+    public Optional<String> findActiveSupplierName(UUID supplierId) {
+        return Optional.ofNullable(suppliers.get(supplierId));
+    }
+
+    @Override
+    public List<SupplierReceipt> findSupplierReceipts() {
         return List.of();
     }
 

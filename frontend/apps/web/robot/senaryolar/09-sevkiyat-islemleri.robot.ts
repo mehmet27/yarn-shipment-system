@@ -39,6 +39,7 @@ test('Sevkiyat: çuval çıkarma ve taslak iptali', async ({ giris }) => {
   await mudur.adim('iptal: gerekçe yoksa düğme pasif, gerekçeyle iptal edilir', async () => {
     await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
     await mudur.sayfa.getByRole('button', { name: 'İptal et' }).click();
+    await expect(mudur.sayfa.getByText('İptal edilen sevkiyat tekrar açılamaz.')).toBeVisible();
     const gonder = mudur.sayfa.getByRole('button', { name: 'Sevkiyatı iptal et' });
     mudur.kontrol('gerekçesiz iptal düğmesi pasif', await gonder.isDisabled());
     await mudur.sayfa.getByLabel(/İptal gerekçesi/).fill('Robot iptali');
@@ -168,6 +169,11 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
       const once = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
       const kart = await kartAc();
       await kart.getByLabel(/Fatura no/).fill(`F-${iplik}-1`);
+      // Kalandan fazla kilo ekranda reddedilir: neden yazılır, onay sorusu çıkmaz, hiçbir şey kaydedilmez.
+      await kart.getByLabel(/\(kg\)/).fill('9999');
+      await kart.getByRole('button', { name: 'Fatura edildi' }).click();
+      await expect(kart.getByText(/faturası kesilmemiş kilodan fazla olamaz/)).toBeVisible();
+      await expect(kart.getByRole('button', { name: 'Evet, fatura edildi' })).toHaveCount(0);
       await kart.getByLabel(/\(kg\)/).fill('1');
       await kart.getByRole('button', { name: 'Fatura edildi' }).click();
       await kart.getByRole('button', { name: 'Evet, fatura edildi' }).click();
@@ -211,6 +217,7 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
     await kumasGir(fasonKalite, kapali, '98', `${iplik}-K2`);
     await mudur.sayfa.goto(`/panel/sevkiyat/${kapali}`);
     await sekme(mudur, 'Fire dosyası');
+    await expect(mudur.sayfa.getByText(/Kapanan dosyaya kumaş girilemez/)).toBeVisible();
     await mudur.sayfa.getByRole('button', { name: 'Kapat' }).click();
     await mudur.sayfa.waitForTimeout(1500);
     const fire = await mudur.api<Fire>(`/api/v1/shipments/${kapali}/fire-settlement`);
@@ -235,7 +242,8 @@ test('İplik dönüşü ve kanıt geçersiz kılma', async ({ giris }) => {
         'iplik dönüşü formunda Yön seçimi olmamalı',
         (await depo.sayfa.getByLabel('Yön', { exact: true }).count()) === 0,
       );
-      // Sevkiyatta tek iplik gönderildiği için iplik cinsi kendiliğinden seçili gelir.
+      // İplik serbest metin değil, sevkiyatta gönderilenlerden seçilir; tek iplik varsa kendiliğinden seçili gelir.
+      await expect(depo.sayfa.getByLabel(/İplik cinsi/)).not.toHaveValue('');
       await depo.sayfa.getByLabel(/Net kilo/).fill('5000');
       await depo.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
       const mesajlar = await depo.mesajlar();

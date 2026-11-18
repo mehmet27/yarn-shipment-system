@@ -11,10 +11,20 @@ const KNOWN_CODES = [
   'INVALID_LEDGER_INPUT',
   'FABRIC_EXCEEDS_SENT_YARN',
   'FABRIC_YARN_NOT_IN_SHIPMENT',
+  'FIRE_SETTLEMENT_CLOSED',
+  'INVALID_FIRE_SETTLEMENT_ACTION',
 ];
+const ACTION_REASONS = ['NOTHING_TO_INVOICE', 'INVOICE_EXCEEDS_REMAINING', 'FAULTY_KG_REMAINS'];
 
 /** Bilinen hata kodları Türkçe mesaja (`settlement.errors.*`); bilinmeyenler genel mesaja düşer. */
 export function settlementErrorKey(error: unknown): string {
-  const { code } = toProblem(error);
+  const { code, reason } = toProblem(error);
+  if (
+    code === 'INVALID_FIRE_SETTLEMENT_ACTION' &&
+    reason !== undefined &&
+    ACTION_REASONS.includes(reason)
+  ) {
+    return `settlement.errors.${reason}`;
+  }
   return `settlement.errors.${KNOWN_CODES.includes(code) ? code : 'unknown'}`;
 }

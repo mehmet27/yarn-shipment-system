@@ -53,6 +53,11 @@ export function CompleteShipmentForm({ shipmentId }: { shipmentId: string }) {
             setWaybillNo(event.currentTarget.value);
           }}
         />
+        {(trimmed === '' || evidenceId === undefined) && (
+          <Text size="sm" c="dimmed">
+            {t('shipment.complete.missing')}
+          </Text>
+        )}
         {mutation.isError && (
           <Alert color="red">{t(completeErrorKey(toProblem(mutation.error).code))}</Alert>
         )}

@@ -1,17 +1,13 @@
-import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Icon, SectionCard, Stack, TextInput } from '@iplik/ui';
+import { Button, Icon, SectionCard, Stack, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useWeightDecision } from '../hooks/useWeightDecision';
 import type { DecisionOption } from './WeightDecisionCards';
+import { DecisionAlert } from './DecisionAlert';
 import { WeightDecisionCards } from './WeightDecisionCards';
 
 const MAX_REASON_LENGTH = 500;
-
-function errorKey(code: string): string {
-  return `shipment.weightDecision.errors.${code === 'INVALID_SHIPMENT_STATUS' ? code : 'unknown'}`;
-}
 
 /**
  * Müdür kantar uyuşmazlığında seçenek kartlarından birini seçer: çuval ekle-çıkar, iplik güncelle (reçete sayfasına
@@ -54,9 +50,7 @@ export function WeightDecisionForm({ shipmentId }: { shipmentId: string }) {
                 setReason(event.currentTarget.value);
               }}
             />
-            {mutation.isError && (
-              <Alert color="red">{t(errorKey(toProblem(mutation.error).code))}</Alert>
-            )}
+            <DecisionAlert choice={choice} error={mutation.isError ? mutation.error : undefined} />
             <Button
               w="fit-content"
               color={choice === 'CANCEL' ? 'red' : 'brand'}

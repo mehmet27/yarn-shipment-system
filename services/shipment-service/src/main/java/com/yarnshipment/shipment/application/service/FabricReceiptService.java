@@ -20,9 +20,7 @@ import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,6 +63,9 @@ public class FabricReceiptService implements RecordFabricReceiptUseCase, ListFab
                 settlements.lock(shipment.id()).orElseThrow(() -> new FireSettlementNotFoundException(shipment.id()));
         settlement.requireOpen();
         Instant now = clock.instant();
+        if (command.receivedAt() != null) {
+            FabricReceipt.requireNotInFuture(command.receivedAt(), now);
+        }
         BigDecimal netKg = Kilograms.round(command.netKg());
         requireWithinSentYarn(settlement, shipment.id(), netKg);
         FabricReceipt receipt = new FabricReceipt(
@@ -103,10 +104,6 @@ public class FabricReceiptService implements RecordFabricReceiptUseCase, ListFab
         if (given == null) {
             return YarnDistribution.proportional(netKg, balances.findDispatchedByYarn(shipmentId));
         }
-        Map<String, BigDecimal> merged = new LinkedHashMap<>();
-        given.forEach(share -> merged.merge(share.yarnType(), share.netKg(), BigDecimal::add));
-        return merged.entrySet().stream()
-                .map(entry -> new YarnShare(entry.getKey(), entry.getValue()))
-                .toList();
+        return YarnDistribution.explicit(given, balances.findDispatchedByYarn(shipmentId), shipmentId);
     }
 }

@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.adapter.in.web.ledger;
 import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
 import com.yarnshipment.shipment.domain.fabric.FabricExceedsSentYarnException;
+import com.yarnshipment.shipment.domain.fabric.FabricYarnNotInShipmentException;
 import com.yarnshipment.shipment.domain.fire.FireSettlementClosedException;
 import com.yarnshipment.shipment.domain.fire.FireSettlementNotFoundException;
 import com.yarnshipment.shipment.domain.fire.InvalidFireSettlementActionException;
@@ -81,6 +82,11 @@ public final class LedgerExceptionHandler {
     @ExceptionHandler(FabricExceedsSentYarnException.class)
     public ProblemDetail handleFabricExceedsYarn(HttpServletRequest request) {
         return problems.create(request, HttpStatus.CONFLICT, "FABRIC_EXCEEDS_SENT_YARN");
+    }
+
+    @ExceptionHandler(FabricYarnNotInShipmentException.class)
+    public ProblemDetail handleFabricYarnNotInShipment(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.CONFLICT, "FABRIC_YARN_NOT_IN_SHIPMENT");
     }
 
     @ExceptionHandler(FireSettlementNotFoundException.class)

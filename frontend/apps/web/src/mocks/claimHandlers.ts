@@ -115,6 +115,7 @@ export function createClaimHandlers(role: Role) {
         shipmentId: String(params.shipmentId),
         deadlineAt: mockDeadline(),
         windowOpen: true,
+        shipmentNetKg: MOCK_SHIPMENT_NET_KG,
         claims: claims.map(toView),
         allowedActions: has('QUALITY_CLAIM_OPEN') ? ['OPEN_CLAIM'] : [],
       });

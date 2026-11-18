@@ -51,6 +51,13 @@ class DiscrepancyTest {
         assertThat(Objects.requireNonNull(decision).liableParty()).isEqualTo("Nakliyeci");
     }
 
+    @Test
+    @DisplayName("Boşluktan ibaret karar notu reddedilir")
+    void shouldRejectBlankNote() {
+        assertThatThrownBy(() -> new Discrepancy.Decision(Resolution.TOLERANCE, " \t ", null, USER, AT))
+                .isInstanceOf(DiscrepancyNoteRequiredException.class);
+    }
+
     private static Discrepancy.Decision decision(Resolution resolution, @Nullable String liableParty) {
         return new Discrepancy.Decision(resolution, "not", liableParty, USER, AT);
     }

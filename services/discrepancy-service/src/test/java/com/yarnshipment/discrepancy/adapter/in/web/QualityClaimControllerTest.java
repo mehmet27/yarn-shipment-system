@@ -82,6 +82,18 @@ class QualityClaimControllerTest {
     }
 
     @Test
+    @DisplayName("Boş açıklama QUALITY_CLAIM_DESCRIPTION_REQUIRED ile 400 alır")
+    void shouldRejectBlankDescription() {
+        when(openQualityClaim.openQualityClaim(any()))
+                .thenThrow(new ClaimRejectedException(ClaimRejection.DESCRIPTION_REQUIRED, "test"));
+
+        MvcTestResult result = post(CLAIMS, OPEN_BODY, manager());
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("QUALITY_CLAIM_DESCRIPTION_REQUIRED");
+    }
+
+    @Test
     @DisplayName("Fotoğrafsız ya da kilosuz istek 400 alır; kanıt kuralı QUALITY_CLAIM_EVIDENCE_INVALID ile 400 alır")
     void shouldValidateOpenRequest() {
         String noPhoto = OPEN_BODY.replace("\"" + TestClaims.PHOTO + "\"", "");

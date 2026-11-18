@@ -1,0 +1,30 @@
+import type { Kilogram } from '@iplik/units';
+import { findRecipe } from '../components/shipmentViews';
+import { useShipment } from '../hooks/useShipment';
+import { remainingFabricKg, yarnNamesOf } from './fabricLimits';
+import { useFireSettlement } from './hooks';
+
+export type FabricLimits = {
+  /** Bu sevkiyattaki iplik adları. */
+  yarnNames: string[];
+  /** Fire dosyası okunamadıysa tümü undefined; ekran cümleyi gizler. */
+  sentKg: string | undefined;
+  receivedKg: string | undefined;
+  remainingKg: Kilogram | undefined;
+};
+
+/** Kumaş formunun sınırları: sevkiyatın iplik adları ile gönderilen, gelen ve kalan kilo. */
+export function useFabricLimits(shipmentId: string): FabricLimits {
+  const shipment = useShipment(shipmentId).data;
+  const settlement = useFireSettlement(shipmentId).data;
+  const recipe = shipment === undefined ? undefined : findRecipe(shipment);
+  return {
+    yarnNames: recipe === undefined ? [] : yarnNamesOf(recipe.lines),
+    sentKg: settlement?.sentKg,
+    receivedKg: settlement?.fabricKg,
+    remainingKg:
+      settlement === undefined
+        ? undefined
+        : remainingFabricKg(settlement.sentKg, settlement.fabricKg),
+  };
+}

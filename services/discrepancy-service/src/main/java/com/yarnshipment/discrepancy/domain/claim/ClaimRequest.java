@@ -22,6 +22,10 @@ public record ClaimRequest(
 
     public ClaimRequest {
         Objects.requireNonNull(description, "description");
+        description = description.strip();
+        if (description.isEmpty()) {
+            throw new ClaimRejectedException(ClaimRejection.DESCRIPTION_REQUIRED, "description is blank");
+        }
         Objects.requireNonNull(claimedKg, "claimedKg");
         if (claimedKg.signum() <= 0 || claimedKg.stripTrailingZeros().scale() > KG_SCALE) {
             throw new ClaimRejectedException(ClaimRejection.CLAIMED_KG_INVALID, "claimedKg=" + claimedKg);

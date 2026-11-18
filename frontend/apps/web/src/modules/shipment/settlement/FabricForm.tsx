@@ -1,30 +1,23 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Paper, Stack, TextInput, Title } from '@iplik/ui';
-import { useState } from 'react';
+import { Button, Group, Paper, Stack, TextInput, Title } from '@iplik/ui';
+import { FabricConfirm } from './FabricConfirm';
+import { FabricLimitNote } from './FabricLimitNote';
+import { FabricMessages } from './FabricMessages';
 import { FabricYarnRows } from './FabricYarnRows';
-import { useRecordFabricReceipt } from './hooks';
-import type { DraftError } from './settlementDraft';
-import { toFabricRequest } from './settlementDraft';
-import { settlementErrorKey } from './settlementErrors';
-import { useFabricDraft } from './useFabricDraft';
+import { useFabricSubmit } from './useFabricSubmit';
 
-/** Kumaş girişi formu; iplik dağılımı düzenlenebilir, toplamı kumaş kilosuna eşit olmalı. */
+/** Kumaş girişi formu; iplik dağılımı sevkiyattaki ipliklerden seçilir, toplamı kumaş kilosuna eşit olmalı. */
 export function FabricForm({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
-  const { draft, field, setYarn, addYarn, removeYarn, reset } = useFabricDraft();
-  const [error, setError] = useState<DraftError>();
-  const mutation = useRecordFabricReceipt(shipmentId);
-  const submit = () => {
-    const request = toFabricRequest(draft);
-    setError(typeof request === 'string' ? request : undefined);
-    if (typeof request !== 'string') mutation.mutate(request, { onSuccess: reset });
-  };
+  const form = useFabricSubmit(shipmentId);
+  const { draft, field, mutation, request } = form;
   return (
     <Paper withBorder p="md" component="section" aria-label={t('settlement.fabric.title')}>
       <Stack>
         <Title order={3} size="h4">
           {t('settlement.fabric.title')}
         </Title>
+        <FabricLimitNote limits={form.limits} />
         <TextInput
           label={t('settlement.fabric.fabricType')}
           withAsterisk
@@ -35,6 +28,7 @@ export function FabricForm({ shipmentId }: { shipmentId: string }) {
             label={t('settlement.fabric.netKg')}
             inputMode="decimal"
             withAsterisk
+            error={form.isOverLimit ? t('settlement.fabric.exceedsRemaining') : undefined}
             {...field('netKg')}
           />
           <TextInput
@@ -46,15 +40,25 @@ export function FabricForm({ shipmentId }: { shipmentId: string }) {
         <TextInput label={t('settlement.fabric.waybillNo')} withAsterisk {...field('waybillNo')} />
         <FabricYarnRows
           rows={draft.yarns}
-          onChange={setYarn}
-          onAdd={addYarn}
-          onRemove={removeYarn}
+          yarnNames={form.limits.yarnNames}
+          onChange={form.setYarn}
+          onAdd={form.addYarn}
+          onRemove={form.removeYarn}
         />
-        {error !== undefined && <Alert color="red">{t(`settlement.draftErrors.${error}`)}</Alert>}
-        {mutation.isError && <Alert color="red">{t(settlementErrorKey(mutation.error))}</Alert>}
-        <Button w="fit-content" loading={mutation.isPending} onClick={submit}>
-          {t('settlement.fabric.submit')}
-        </Button>
+        <FabricMessages form={form} />
+        {form.isConfirming && typeof request !== 'string' ? (
+          <FabricConfirm
+            fabricType={request.fabricType}
+            netKg={request.netKg}
+            loading={mutation.isPending}
+            onConfirm={form.confirm}
+            onCancel={form.cancel}
+          />
+        ) : (
+          <Button w="fit-content" onClick={form.ask}>
+            {t('settlement.fabric.submit')}
+          </Button>
+        )}
       </Stack>
     </Paper>
   );

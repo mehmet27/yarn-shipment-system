@@ -1,8 +1,8 @@
 import { fireHesapla, kiloEsit } from '../kurallar/hesap';
-import { cuvalEkle, kumasGir, tamamlanmisSevkiyat, taslakAc } from '../support/akis';
+import { cuvalEkle, kararVer, kumasGir, tamamlanmisSevkiyat, taslakAc } from '../support/akis';
 import { expect, test } from '../support/robot';
 import type { Robot } from '../support/robot';
-import { damga, resim, sec } from '../support/yardimci';
+import { damga, resim } from '../support/yardimci';
 
 type Bakiye = {
   items: { subcontractorTitle: string; yarnType: string; balanceKg: string }[];
@@ -262,9 +262,7 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
       await kalite.sayfa.goto('/panel/uyusmazliklar');
       await kalite.sayfa.getByRole('link', { name: new RegExp(no) }).click();
       await kalite.sayfa.getByRole('button', { name: 'Bana ata' }).click();
-      await sec(kalite.sayfa, /^Karar/, 'Talep haklı');
-      await kalite.sayfa.getByLabel(/^Not/).first().fill('Robot: haklı');
-      await kalite.sayfa.getByRole('button', { name: 'Karara bağla' }).click();
+      await kararVer(kalite, 'Talep haklı', 'Robot: haklı');
       await kalite.sayfa.waitForTimeout(2000);
       mudur.kontrol(
         'Başka Dokuma bakiyesi 0 kg (100 − 10 dönüş − 80 kumaş − 10 itiraz)',

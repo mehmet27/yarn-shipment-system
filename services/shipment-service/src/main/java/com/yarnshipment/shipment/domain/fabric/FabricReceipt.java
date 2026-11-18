@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.domain.fabric;
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
 import com.yarnshipment.shipment.domain.balance.Kilograms;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -37,6 +38,7 @@ public record FabricReceipt(
         UUID createdBy) {
 
     public static final int MAX_TEXT_LENGTH = 128;
+    private static final Duration FUTURE_TOLERANCE = Duration.ofMinutes(5);
 
     public FabricReceipt {
         Objects.requireNonNull(id, "id");
@@ -57,6 +59,13 @@ public record FabricReceipt(
         BigDecimal yarnTotal = yarns.stream().map(YarnShare::netKg).reduce(BigDecimal.ZERO, BigDecimal::add);
         if (yarns.isEmpty() || yarnTotal.compareTo(netKg) != 0) {
             throw new InvalidLedgerInputException("yarns");
+        }
+    }
+
+    /** Geliş zamanı şimdiden en fazla 5 dakika ileride olabilir (saat farkı payı); aksi halde geçersizdir. */
+    public static void requireNotInFuture(Instant receivedAt, Instant now) {
+        if (receivedAt.isAfter(now.plus(FUTURE_TOLERANCE))) {
+            throw new InvalidLedgerInputException("receivedAt");
         }
     }
 

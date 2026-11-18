@@ -15,6 +15,7 @@ import com.yarnshipment.shipment.application.port.in.fire.GetFireSettlementUseCa
 import com.yarnshipment.shipment.application.port.in.fire.ListFireSettlementsUseCase;
 import com.yarnshipment.shipment.application.port.in.stock.RequireWorkAreaUseCase;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
+import com.yarnshipment.shipment.domain.fabric.FabricYarnNotInShipmentException;
 import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.fire.FireCalculation;
 import com.yarnshipment.shipment.domain.fire.FireCalculation.Inputs;
@@ -129,6 +130,18 @@ class LedgerControllersTest {
         assertThat(badKg).bodyJson().extractingPath("$.code").isEqualTo("INVALID_LEDGER_INPUT");
         assertThat(missing).hasStatus(HttpStatus.BAD_REQUEST);
         verifyNoInteractions(recordFabricReceiptUseCase);
+    }
+
+    @Test
+    @DisplayName("Sevkiyatta olmayan iplik cinsi FABRIC_YARN_NOT_IN_SHIPMENT koduyla 409 alır")
+    void shouldMapYarnNotInShipment() {
+        when(recordFabricReceiptUseCase.recordFabricReceipt(any()))
+                .thenThrow(new FabricYarnNotInShipmentException(SHIPMENT, "x"));
+
+        MvcTestResult result = post("quality", RECEIPTS, BODY);
+
+        assertThat(result).hasStatus(HttpStatus.CONFLICT);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("FABRIC_YARN_NOT_IN_SHIPMENT");
     }
 
     @Test

@@ -691,16 +691,33 @@
       "note": "Karar notu",
       "liableParty": "Sorumlu taraf"
     },
+    "pending": {
+      "title": "Karar bekleyen uyuşmazlıklar: {{count}}",
+      "due": "Son tarih {{date}}",
+      "all": "Tümünü gör"
+    },
     "assign": {
       "toMe": "Bana ata",
+      "mine": "Bu uyuşmazlık sizde.",
       "notOpen": "Uyuşmazlık artık atanamaz.",
       "failed": "Atama yapılamadı. Lütfen tekrar deneyin."
     },
     "resolve": {
+      "title": "Karar ver",
       "resolution": "Karar",
       "note": "Not",
       "liableParty": "Sorumlu taraf",
       "submit": "Karara bağla",
+      "effect": {
+        "CLAIM_JUSTIFIED": "İtiraz edilen kilo, fasoncunun sorumlu olduğu iplikten düşülür; fire hesabı da buna göre değişir.",
+        "CLAIM_UNJUSTIFIED": "Fasoncunun ipliğinde değişiklik olmaz; uyuşmazlık yalnızca kapatılır.",
+        "LIABILITY_ASSIGNED": "Yazdığınız sorumlu taraf kayda geçer; fasoncunun ipliğinde değişiklik olmaz, uyuşmazlık kapatılır."
+      },
+      "confirmTitle": "Onay: karar kaydı",
+      "confirmText": "Karar: {{resolution}}. Karar geri alınamaz.",
+      "confirmYes": "Evet, kararı kaydet",
+      "confirmNo": "Vazgeç",
+      "noteRequired": "Karar notu boş olamaz. Kararın nedenini yazın.",
       "notOpen": "Uyuşmazlık artık çözülemez.",
       "inspectionPending": "Sonucu girilmemiş numune ya da laboratuvar kontrolü var; önce sonucu girin.",
       "failed": "Karar kaydedilemedi. Lütfen tekrar deneyin."
@@ -807,6 +824,8 @@
       "title": "Yeni kalite itirazı",
       "claimedKg": "İtiraz edilen kilo (kg)",
       "claimedKgHint": "Sevkiyatın net ağırlığını aşamaz; en çok 3 ondalık.",
+      "claimedKgLimit": "En çok {{kg}} yazabilirsiniz.",
+      "claimedKgTooMuch": "Sevkiyatın net ağırlığı {{kg}}; bundan fazla yazamazsınız.",
       "claimedKgInvalid": "0'dan büyük, en çok 3 ondalıklı bir kilo girin.",
       "description": "Sorunu anlatın",
       "photos": "Fotoğraflar",
@@ -835,7 +854,8 @@
     },
     "errors": {
       "QUALITY_CLAIM_NOT_AVAILABLE": "Bu sevkiyata henüz itiraz açılamaz.",
-      "QUALITY_CLAIM_WINDOW_CLOSED": "İtiraz süresi doldu; sevkiyatın tamamlanmasından sonra 3 iş günü içinde açılabilir.",
+      "QUALITY_CLAIM_WINDOW_CLOSED": "Bu sevkiyata şu an itiraz açılamıyor.",
+      "QUALITY_CLAIM_DESCRIPTION_REQUIRED": "Sorunu kısaca anlatın.",
       "CLAIM_EXCEEDS_SHIPMENT_WEIGHT": "İtiraz edilen kilo sevkiyatın net ağırlığını aşıyor.",
       "QUALITY_CLAIM_EXCEEDS_SHIPMENT_WEIGHT": "İtiraz edilen kilo sevkiyatın net ağırlığını aşıyor.",
       "QUALITY_CLAIM_CLAIM_EXCEEDS_SHIPMENT_WEIGHT": "İtiraz edilen kilo sevkiyatın net ağırlığını aşıyor.",
@@ -1261,6 +1281,7 @@
       "FIRE_CLOSE_NOT_APPLICABLE": "Faturalanacak kilosu olan dosya kapatılamaz; fatura bilgisi girin.",
       "ACCESS_DENIED": "Bu işlem için yetkiniz yok.",
       "FABRIC_EXCEEDS_SENT_YARN": "Gelen kumaşın toplamı fasoncuya gönderilen iplikten fazla olamaz.",
+      "FABRIC_YARN_NOT_IN_SHIPMENT": "Bu iplik bu sevkiyatta yok. Listeden seçin.",
       "INVALID_LEDGER_INPUT": "Girilen kilo ya da değer geçersiz: kilo sıfırdan büyük olmalı, dönen iplik gönderilen ipliği aşmamalı.",
       "unknown": "İşlem tamamlanamadı. Lütfen tekrar deneyin."
     },
@@ -1269,7 +1290,8 @@
       "required": "Zorunlu alanları doldurun.",
       "distributionMismatch": "İplik dağılımının toplamı kumaş kilosuna eşit olmalı.",
       "invalidRate": "Fire oranı %0 ile %20 arasında olmalı.",
-      "invalidRollCount": "Top sayısı pozitif tam sayı olmalı."
+      "invalidRollCount": "Top sayısı pozitif tam sayı olmalı.",
+      "exceedsRemaining": "Kumaş kilosu fasoncuya gönderilen ipliğin kalanını aşamaz."
     },
     "fabric": {
       "title": "Kumaş girişi",
@@ -1283,8 +1305,17 @@
       "addYarn": "İplik satırı ekle",
       "removeYarn": "Satırı sil",
       "yarnType": "İplik cinsi",
+      "yarnPlaceholder": "İplik seçin",
+      "noYarnFound": "Seçilebilecek iplik kalmadı",
       "yarnKg": "Kilo",
+      "limitNote": "Fasoncuya {{sent}} iplik gönderildi, şimdiye kadar {{received}} kumaş geldi; en çok {{remaining}} daha girebilirsiniz.",
+      "exceedsRemaining": "Gönderilen ipliğin kalanından fazla kumaş yazamazsınız.",
       "submit": "Kumaş girişini kaydet",
+      "saved": "Kumaş girişi kaydedildi.",
+      "confirmTitle": "Kumaş girişini onayla",
+      "confirmText": "{{kg}} {{type}} kumaş kaydedilecek. Kayıt sonradan değiştirilemez.",
+      "confirmYes": "Evet, kaydet",
+      "confirmNo": "Vazgeç",
       "receivedAt": "Teslim",
       "rolls": "{{count}} top"
     },

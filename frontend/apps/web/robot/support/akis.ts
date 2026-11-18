@@ -165,14 +165,53 @@ export async function tamamlanmisSevkiyat(
   return id;
 }
 
-/** Fasoncu kalite, fasoncudan gelen kumaşı girer (müdür kumaş giremez); formu doldurup kaydeder, sonucu beklemez. */
-export async function kumasGir(fasonKalite: Robot, id: string, kg: string, irsaliyeNo: string) {
+/** Fasoncu kalite kumaş formunu açıp doldurur (iplik satırı eklemez); kaydetmez. */
+export async function kumasFormuDoldur(
+  fasonKalite: Robot,
+  id: string,
+  kg: string,
+  irsaliyeNo: string,
+) {
   await fasonKalite.sayfa.goto(`/panel/sevkiyat/${id}`);
   await fasonKalite.sayfa.getByRole('tab', { name: 'Kumaş girişi', exact: true }).click();
   await fasonKalite.sayfa.waitForTimeout(600);
   await fasonKalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
   await fasonKalite.sayfa.getByLabel(/Kumaş net kilosu/).fill(kg);
   await fasonKalite.sayfa.getByLabel(/İrsaliye no/).fill(irsaliyeNo);
+}
+
+/**
+ * Fasoncu kalite, fasoncudan gelen kumaşı girer (müdür kumaş giremez). Kayıt sonradan değiştirilemediği için
+ * "Kumaş girişini kaydet" önce özet ve "Evet, kaydet" sorar; `onayla` false ise onay verilmez (ör. kilo kalanı aşıyorsa
+ * onay sorusu hiç çıkmaz).
+ */
+export async function kumasGir(
+  fasonKalite: Robot,
+  id: string,
+  kg: string,
+  irsaliyeNo: string,
+  onayla = true,
+) {
+  await kumasFormuDoldur(fasonKalite, id, kg, irsaliyeNo);
   await fasonKalite.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
-  await fasonKalite.sayfa.waitForTimeout(1500);
+  if (!onayla) {
+    await fasonKalite.sayfa.waitForTimeout(1000);
+    return;
+  }
+  await fasonKalite.sayfa.getByRole('button', { name: 'Evet, kaydet' }).click({ timeout: 15_000 });
+  await fasonKalite.sayfa.getByText('Kumaş girişi kaydedildi.').waitFor({ timeout: 15_000 });
+}
+
+/**
+ * Kalite, açık uyuşmazlıkta karar verir. Karar geri alınamadığı için "Karara bağla" önce "Karar geri alınamaz."
+ * diye sorar; `onayla` false ise onay verilmez.
+ */
+export async function kararVer(kalite: Robot, karar: string, not: string, onayla = true) {
+  await sec(kalite.sayfa, /^Karar/, karar);
+  await kalite.sayfa.getByLabel(/^Not/).first().fill(not);
+  await kalite.sayfa.getByRole('button', { name: 'Karara bağla' }).click();
+  await kalite.sayfa.getByText(/Karar geri alınamaz\./).waitFor({ timeout: 15_000 });
+  if (onayla) {
+    await kalite.sayfa.getByRole('button', { name: 'Evet, kararı kaydet' }).click();
+  }
 }

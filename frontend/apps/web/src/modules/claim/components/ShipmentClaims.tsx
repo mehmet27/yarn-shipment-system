@@ -35,6 +35,7 @@ export function ShipmentClaims({
       {canOpen && isOpening && (
         <OpenClaimForm
           shipmentId={shipmentId}
+          shipmentNetKg={view.shipmentNetKg}
           onDone={() => {
             setOpening(false);
           }}

@@ -6,8 +6,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Kumaş kilosunu sevkiyatın reçete oranlarıyla iplik cinslerine dağıtır (analiz 5.8). Dağıtım gram (0,001 kg)
@@ -15,6 +18,8 @@ import java.util.Map;
  * verilir.
  */
 public final class YarnDistribution {
+
+    private static final Locale TURKISH = Locale.forLanguageTag("tr-TR");
 
     private YarnDistribution() {}
 
@@ -47,6 +52,44 @@ public final class YarnDistribution {
                 .filter(portion -> portion.grams.signum() > 0)
                 .map(portion -> new YarnShare(portion.yarnType, new BigDecimal(portion.grams, Kilograms.SCALE)))
                 .toList();
+    }
+
+    /**
+     * Açıkça verilen iplik paylarını sevkiyatta gönderilen cinslerle eşler ve aynı cinsi birleştirir. Boşluk ve
+     * büyük/küçük harf (İ/ı dahil) önemsizdir; ad, gönderilen cinsin yazılışına çevrilir. Sevkiyatın cins bilgisi yoksa
+     * (eski kayıt) adlar denetlenmez.
+     *
+     * @param given istekteki paylar
+     * @param dispatchedKg iplik cinsine göre sevkiyatta gönderilen kg
+     * @param shipmentId sevkiyat (hata iletisi için)
+     * @throws FabricYarnNotInShipmentException cins sevkiyatta gönderilenler arasında yoksa
+     */
+    public static List<YarnShare> explicit(
+            List<YarnShare> given, Map<String, BigDecimal> dispatchedKg, UUID shipmentId) {
+        Map<String, BigDecimal> merged = new LinkedHashMap<>();
+        given.forEach(share -> merged.merge(
+                canonicalName(dispatchedKg, shipmentId, share.yarnType()), share.netKg(), BigDecimal::add));
+        return merged.entrySet().stream()
+                .map(entry -> new YarnShare(entry.getKey(), entry.getValue()))
+                .toList();
+    }
+
+    private static String canonicalName(Map<String, BigDecimal> dispatchedKg, UUID shipmentId, String yarnType) {
+        if (dispatchedKg.isEmpty()) {
+            return yarnType;
+        }
+        return dispatchedKg.keySet().stream()
+                .filter(name -> sameName(name, yarnType))
+                .findFirst()
+                .orElseThrow(() -> new FabricYarnNotInShipmentException(shipmentId, yarnType));
+    }
+
+    private static boolean sameName(String dispatchedName, String given) {
+        String left = dispatchedName.strip();
+        String right = given.strip();
+        return left.equalsIgnoreCase(right)
+                || left.toLowerCase(Locale.ROOT).equals(right.toLowerCase(Locale.ROOT))
+                || left.toLowerCase(TURKISH).equals(right.toLowerCase(TURKISH));
     }
 
     private static BigInteger grams(BigDecimal kg) {

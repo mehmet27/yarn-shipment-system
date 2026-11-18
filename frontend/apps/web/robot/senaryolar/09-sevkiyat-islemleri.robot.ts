@@ -255,6 +255,14 @@ test('Uyuşmazlık: itiraz, lab sonucu ve karar', async ({ giris }) => {
     await kalite.sayfa.goto(`/panel/sevkiyat/${id}`);
     await sekme(kalite, 'Kalite itirazı');
     await kalite.sayfa.getByRole('button', { name: 'Kalite itirazı aç' }).click();
+    const net = (
+      await kalite.api<{ shipmentNetKg: string }>(`/api/v1/quality-claims/shipments/${id}`)
+    ).shipmentNetKg;
+    await expect(kalite.sayfa.getByText(/En çok [\d.,]+ kg yazabilirsiniz\./)).toBeVisible();
+    await kalite.sayfa.getByLabel(/İtiraz edilen kilo/).fill(String(Math.ceil(Number(net)) + 1));
+    await expect(
+      kalite.sayfa.getByText(/Sevkiyatın net ağırlığı [\d.,]+ kg; bundan fazla yazamazsınız\./),
+    ).toBeVisible();
     await kalite.sayfa.getByLabel(/İtiraz edilen kilo/).fill('10');
     await kalite.sayfa.getByLabel(/Sorunu anlatın/).fill('Robot: leke');
     await kalite.sayfa
@@ -270,11 +278,32 @@ test('Uyuşmazlık: itiraz, lab sonucu ve karar', async ({ giris }) => {
     await expect(kalite.sayfa.locator('main')).toContainText(/UY-SV-/);
   });
 
+  await kalite.adim(
+    'ana sayfa: "Karar bekleyen uyuşmazlıklar" listesi (en çok 5, Tümünü gör)',
+    async () => {
+      await kalite.sayfa.goto('/panel');
+      const kart = kalite.sayfa.getByTestId('pending-discrepancies');
+      await expect(kart).toBeVisible();
+      await expect(kart).toContainText(/Karar bekleyen uyuşmazlıklar: \d+/);
+      kalite.kontrol(
+        'listede en çok 5 uyuşmazlık bağlantısı olmalı',
+        (await kart.locator('a[href*="/panel/uyusmazliklar/"]').count()) <= 5,
+      );
+      await expect(kart.getByRole('link', { name: 'Tümünü gör' })).toHaveAttribute(
+        'href',
+        '/panel/uyusmazliklar',
+      );
+      await kart.locator('a[href*="/panel/uyusmazliklar/"]').first().click();
+      await expect(kalite.sayfa.getByRole('heading', { name: 'Karar ver' })).toBeVisible();
+    },
+  );
+
   await kalite.adim('lab sonucu girilir, ardından karar verilir', async () => {
     const no = (await kalite.api<{ shipmentNo: string }>(`/api/v1/shipments/${id}`)).shipmentNo;
     await kalite.sayfa.goto('/panel/uyusmazliklar');
     await kalite.sayfa.getByRole('link', { name: new RegExp(no) }).click();
     await kalite.sayfa.getByRole('button', { name: 'Bana ata' }).click();
+    await expect(kalite.sayfa.getByText('Bu uyuşmazlık sizde.')).toBeVisible();
     await kalite.sayfa.getByLabel(/Talep notu/).fill('Robot: numune');
     await kalite.sayfa.getByRole('button', { name: 'Kontrol iste' }).click();
     await kalite.sayfa.waitForTimeout(1200);
@@ -294,8 +323,16 @@ test('Uyuşmazlık: itiraz, lab sonucu ve karar', async ({ giris }) => {
     await kalite.sayfa.getByRole('button', { name: 'Sonucu kaydet' }).first().click();
     await kalite.sayfa.waitForTimeout(1200);
     await sec(kalite.sayfa, /^Karar/, 'Talep haklı');
+    await expect(kalite.sayfa.getByTestId('resolution-effect')).toContainText(
+      /fasoncunun sorumlu olduğu iplikten düşülür/,
+    );
     await kalite.sayfa.getByLabel(/^Not/).first().fill('Robot: haklı bulundu');
     await kalite.sayfa.getByRole('button', { name: 'Karara bağla' }).click();
+    await expect(kalite.sayfa.getByText(/Karar geri alınamaz\./)).toBeVisible();
+    await kalite.sayfa.getByRole('button', { name: 'Vazgeç' }).click();
+    await expect(kalite.sayfa.getByRole('button', { name: 'Karara bağla' })).toBeVisible();
+    await kalite.sayfa.getByRole('button', { name: 'Karara bağla' }).click();
+    await kalite.sayfa.getByRole('button', { name: 'Evet, kararı kaydet' }).click();
     await expect(kalite.sayfa.locator('main')).toContainText(/ÇÖZÜLDÜ|Çözüldü/);
   });
 });

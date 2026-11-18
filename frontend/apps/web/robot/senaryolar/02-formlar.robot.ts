@@ -1,6 +1,6 @@
-import { GENEL_MESAJ, test } from '../support/robot';
+import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
-import { fiyatYaz, iplikTanimla } from '../support/akis';
+import { fiyatYaz, iplikTanimla, kumasFormuDoldur, tamamlanmisSevkiyat } from '../support/akis';
 import { damga, iplikSec, sec } from '../support/yardimci';
 
 /** Geçersiz girişte ekran, nedeni söyleyen bir mesaj göstermeli (genel "tekrar deneyin" yetmez). */
@@ -75,6 +75,56 @@ test('Formlar: kalite kumaş girişi stokta olmayan iplikle üretimi reddeder', 
       await nedenliMesajVar(robot, `kumaş girişi ${ad}`);
     });
   }
+});
+
+test('Formlar: kumaş girişi ve kalite itirazı kilo sınırını aşınca satırda uyarır', async ({
+  giris,
+}) => {
+  const depo = await giris('depo');
+  const mudur = await giris('mudur');
+  const kalite = await giris('kalite');
+  const fasonKalite = await giris('fason-kalite');
+  for (const r of [depo, mudur, kalite, fasonKalite]) r.beklenen(/4\d\d (POST|GET) /);
+  const id = await tamamlanmisSevkiyat({ depo, mudur }, damga(), '100', '3');
+
+  await fasonKalite.adim('kumaş girişi: iplik satırı seçilmeden kaydedilemez', async () => {
+    await kumasFormuDoldur(fasonKalite, id, '50', `${damga()}-K`);
+    await fasonKalite.sayfa.getByRole('button', { name: 'İplik satırı ekle' }).click();
+    await fasonKalite.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
+    await nedenliMesajVar(fasonKalite, 'kumaş girişi boş iplik satırı');
+    fasonKalite.kontrol(
+      'boş iplik satırında onay sorusu çıkmamalı',
+      (await fasonKalite.sayfa.getByRole('button', { name: 'Evet, kaydet' }).count()) === 0,
+    );
+  });
+
+  await fasonKalite.adim(
+    'kumaş girişi: gönderilen iplikten fazla kilo satırda uyarılır',
+    async () => {
+      await kumasFormuDoldur(fasonKalite, id, '101', `${damga()}-K`);
+      await fasonKalite.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
+      await nedenliMesajVar(fasonKalite, 'kumaş girişi 101 kg');
+      await expect(fasonKalite.sayfa.getByText(/ipliğin kalanından fazla kumaş/)).toBeVisible();
+      fasonKalite.kontrol(
+        'aşan kiloda onay sorusu çıkmamalı',
+        (await fasonKalite.sayfa.getByRole('button', { name: 'Evet, kaydet' }).count()) === 0,
+      );
+    },
+  );
+
+  await kalite.adim(
+    'kalite itirazı: sevkiyat ağırlığından fazla kilo uyarılır, gönder kapalı',
+    async () => {
+      await kalite.sayfa.goto(`/panel/sevkiyat/${id}`);
+      await kalite.sayfa.getByRole('tab', { name: 'Kalite itirazı', exact: true }).click();
+      await kalite.sayfa.getByRole('button', { name: 'Kalite itirazı aç' }).click();
+      await expect(kalite.sayfa.getByText('En çok 100 kg yazabilirsiniz.')).toBeVisible();
+      await kalite.sayfa.getByLabel(/İtiraz edilen kilo/).fill('101');
+      await kalite.sayfa.getByLabel(/Sorunu anlatın/).fill('Robot: fazla kilo');
+      await nedenliMesajVar(kalite, 'itiraz 101 kg');
+      await expect(kalite.sayfa.getByRole('button', { name: 'İtirazı gönder' })).toBeDisabled();
+    },
+  );
 });
 
 test('Formlar: müdür yeni sevkiyat formu eksik ve hatalı girişte uyarır', async ({ giris }) => {

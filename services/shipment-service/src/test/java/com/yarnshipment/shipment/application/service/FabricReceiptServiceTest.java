@@ -11,6 +11,7 @@ import com.yarnshipment.shipment.application.port.in.fabric.RecordFabricReceiptC
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
 import com.yarnshipment.shipment.domain.fabric.FabricExceedsSentYarnException;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
+import com.yarnshipment.shipment.domain.fabric.FabricYarnNotInShipmentException;
 import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.fire.FireCalculation;
 import com.yarnshipment.shipment.domain.fire.FireCalculation.Inputs;
@@ -22,6 +23,7 @@ import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -30,10 +32,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("checkstyle:ClassDataAbstractionCoupling")
+@SuppressWarnings({"checkstyle:ClassDataAbstractionCoupling", "checkstyle:ClassFanOutComplexity"})
 class FabricReceiptServiceTest {
 
     private static final int ROLLS = 5;
+    private static final Duration TOLERANCE = Duration.ofMinutes(5);
     private static final Instant NOW = Instant.parse("2026-11-12T09:00:00Z");
 
     private final InMemoryShipmentQueryPort queryPort = new InMemoryShipmentQueryPort();
@@ -85,16 +88,81 @@ class FabricReceiptServiceTest {
     void shouldRequireExplicitYarnsToSumToNetKg() {
         // when
         FabricReceipt receipt = service.recordFabricReceipt(command(
-                "100", List.of(new YarnShare("A", new BigDecimal("70")), new YarnShare("A", new BigDecimal("30")))));
+                "100",
+                List.of(
+                        new YarnShare("30/1 penye", new BigDecimal("70")),
+                        new YarnShare("30/1 PENYE ", new BigDecimal("30")))));
 
         // then
-        assertThat(receipt.yarns())
-                .singleElement()
-                .satisfies(share -> assertThat(share.netKg()).isEqualByComparingTo("100"));
-        assertThatThrownBy(() ->
-                        service.recordFabricReceipt(command("100", List.of(new YarnShare("A", new BigDecimal("90"))))))
+        assertThat(receipt.yarns()).singleElement().satisfies(share -> {
+            assertThat(share.netKg()).isEqualByComparingTo("100");
+            assertThat(share.yarnType()).isEqualTo("30/1 penye");
+        });
+        assertThatThrownBy(() -> service.recordFabricReceipt(
+                        command("100", List.of(new YarnShare("30/1 penye", new BigDecimal("90"))))))
                 .isInstanceOf(InvalidLedgerInputException.class);
         assertThat(ledger.receipts()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("Sevkiyatta gönderilmemiş iplik cinsi reddedilir; kayıt yazılmaz")
+    void shouldRejectYarnNotInShipment() {
+        assertThatThrownBy(() -> service.recordFabricReceipt(
+                        command("100", List.of(new YarnShare("30/1 penyee", new BigDecimal("100"))))))
+                .isInstanceOf(FabricYarnNotInShipmentException.class);
+        assertThat(ledger.receipts()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Büyük harfle ya da boşluklu yazılan Türkçe cins gönderilen cinsin yazılışına çevrilir")
+    void shouldCanonicaliseTurkishYarnName() {
+        ledger.givenRecipe("İpek ıslak", "100");
+
+        FabricReceipt receipt = service.recordFabricReceipt(
+                command("10", List.of(new YarnShare(" İPEK ISLAK ", new BigDecimal("10")))));
+
+        assertThat(receipt.yarns())
+                .singleElement()
+                .satisfies(share -> assertThat(share.yarnType()).isEqualTo("İpek ıslak"));
+    }
+
+    @Test
+    @DisplayName("Cins bilgisi olmayan eski sevkiyatta iplik adı denetlenmez")
+    void shouldSkipYarnCheckWithoutDispatchData() {
+        RecordingLedgerPorts empty = new RecordingLedgerPorts();
+        FabricReceiptService legacy = new FabricReceiptService(
+                new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
+                empty,
+                settlements,
+                empty,
+                clock);
+
+        FabricReceipt receipt =
+                legacy.recordFabricReceipt(command("10", List.of(new YarnShare("serbest", new BigDecimal("10")))));
+
+        assertThat(receipt.yarns()).extracting(YarnShare::yarnType).containsExactly("serbest");
+    }
+
+    @Test
+    @DisplayName("Geliş zamanı şimdiden 5 dakikadan fazla ileride olamaz; sınırdaki ve geçmiş zaman kabul edilir")
+    void shouldRejectFutureReceivedAt() {
+        assertThatThrownBy(() -> service.recordFabricReceipt(
+                        commandAt(NOW.plus(TOLERANCE).plusSeconds(1))))
+                .isInstanceOfSatisfying(
+                        InvalidLedgerInputException.class,
+                        e -> assertThat(e.field()).isEqualTo("receivedAt"));
+        assertThat(ledger.receipts()).isEmpty();
+
+        FabricReceipt edge = service.recordFabricReceipt(commandAt(NOW.plus(TOLERANCE)));
+        FabricReceipt past = service.recordFabricReceipt(commandAt(NOW.minus(Duration.ofDays(1))));
+
+        assertThat(edge.receivedAt()).isEqualTo(NOW.plus(TOLERANCE));
+        assertThat(past.receivedAt()).isEqualTo(NOW.minus(Duration.ofDays(1)));
+    }
+
+    private RecordFabricReceiptCommand commandAt(Instant receivedAt) {
+        return new RecordFabricReceiptCommand(
+                quality, TestShipments.SHIPMENT_ID, "Süprem", BigDecimal.TEN, ROLLS, "KIR-1", receivedAt, null);
     }
 
     @Test

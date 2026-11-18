@@ -156,6 +156,9 @@ public record Discrepancy(
         public Decision {
             Objects.requireNonNull(resolution, "resolution");
             Objects.requireNonNull(note, "note");
+            if (note.isBlank()) {
+                throw new DiscrepancyNoteRequiredException();
+            }
             Objects.requireNonNull(resolvedBy, "resolvedBy");
             Objects.requireNonNull(resolvedAt, "resolvedAt");
         }

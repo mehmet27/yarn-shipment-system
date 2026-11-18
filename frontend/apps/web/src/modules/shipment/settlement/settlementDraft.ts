@@ -5,13 +5,20 @@ import type {
   YarnReturnRequest,
   YarnShare,
 } from '@iplik/api-client/settlements';
+import type { Kilogram } from '@iplik/units';
 import { parseKg, pctInputToRate, sumKg } from '@iplik/units';
+import { exceedsRemaining } from './fabricLimits';
 
 export const MAX_FIRE_PCT = 20;
 
 /** i18n anahtarı (`settlement.draftErrors.*`). */
 export type DraftError =
-  'invalidKg' | 'required' | 'distributionMismatch' | 'invalidRate' | 'invalidRollCount';
+  | 'invalidKg'
+  | 'required'
+  | 'distributionMismatch'
+  | 'invalidRate'
+  | 'invalidRollCount'
+  | 'exceedsRemaining';
 
 export type YarnRowDraft = { yarnType: string; netKg: string };
 export type FabricDraft = {
@@ -42,13 +49,27 @@ function toShares(rows: readonly YarnRowDraft[]): YarnShare[] | DraftError {
   return shares;
 }
 
-/** Kumaş girişi isteği; iplik satırı yoksa sunucu reçeteyle dağıtır, varsa toplamı kumaş kilosuna eşit olmalı. */
-export function toFabricRequest(draft: FabricDraft): FabricReceiptRequest | DraftError {
-  const netKg = parseKg(draft.netKg);
+function checkFabricFields(draft: FabricDraft, remainingKg?: Kilogram): DraftError | undefined {
   if (draft.fabricType.trim() === '' || draft.waybillNo.trim() === '') return 'required';
+  if (parseKg(draft.netKg) === undefined) return 'invalidKg';
+  if (exceedsRemaining(draft.netKg, remainingKg)) return 'exceedsRemaining';
+  const roll = draft.rollCount.trim();
+  return roll !== '' && !ROLL_PATTERN.test(roll) ? 'invalidRollCount' : undefined;
+}
+
+/**
+ * Kumaş girişi isteği; iplik satırı yoksa sunucu reçeteyle dağıtır, varsa toplamı kumaş kilosuna eşit olmalı.
+ * `remainingKg` bilinirse kumaş kilosu onu aşamaz (sunucu da `FABRIC_EXCEEDS_SENT_YARN` ile reddeder).
+ */
+export function toFabricRequest(
+  draft: FabricDraft,
+  remainingKg?: Kilogram,
+): FabricReceiptRequest | DraftError {
+  const failure = checkFabricFields(draft, remainingKg);
+  const netKg = parseKg(draft.netKg);
+  if (failure !== undefined) return failure;
   if (netKg === undefined) return 'invalidKg';
   const roll = draft.rollCount.trim();
-  if (roll !== '' && !ROLL_PATTERN.test(roll)) return 'invalidRollCount';
   const base: FabricReceiptRequest = {
     fabricType: draft.fabricType.trim(),
     netKg,

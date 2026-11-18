@@ -9,10 +9,10 @@ import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
 import com.yarnshipment.shipment.application.port.out.ShipmentSettingsPort;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
 import com.yarnshipment.shipment.domain.model.DispatchMeasurement;
-import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentDays;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
+import com.yarnshipment.shipment.domain.weight.BagCountMismatchException;
 import com.yarnshipment.shipment.domain.weight.BagWeightMismatchException;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -69,7 +69,7 @@ public class RecordDispatchService implements RecordDispatchUseCase {
     private void requireBagsMatchWeighing(Shipment shipment, DispatchMeasurement measurement, BigDecimal tolerance) {
         List<DispatchBag> bags = bagsPort.findDispatchBags(shipment.id());
         if (bags.size() != measurement.bagCount()) {
-            throw new InvalidDispatchException("bagCount", "differs from assigned bags");
+            throw new BagCountMismatchException(measurement.bagCount(), bags.size());
         }
         BigDecimal bagKg = bags.stream().map(DispatchBag::weightKg).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal netKg = measurement.grossKg().subtract(measurement.tareKg());

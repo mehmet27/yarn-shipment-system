@@ -33,6 +33,7 @@ export function DispatchForm({ shipmentId, plannedNetKg, onSaved }: DispatchForm
         onChange={flow.change}
         weighing={flow.weighing}
         isReasonMissing={flow.isReasonMissing}
+        isShort={flow.comparison?.isShort === true}
       />
       {flow.error !== undefined && <Alert color="red">{t(`dispatch.errors.${flow.error}`)}</Alert>}
       {!flow.isConfirming && failure !== undefined && <Alert color="red">{failure}</Alert>}

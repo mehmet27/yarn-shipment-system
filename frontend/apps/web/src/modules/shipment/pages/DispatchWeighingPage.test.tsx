@@ -179,4 +179,33 @@ describe('DispatchWeighingPage', () => {
       await screen.findByRole('tab', { name: /Çuvallar/, selected: true }),
     ).toBeInTheDocument();
   });
+
+  it('tartıya yazılan çuval sayısı eklenen çuvalları tutmazsa sayıyı söyler ve çuvallar sekmesine götürür', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    assignMockBagWeights('shp-0001', ['991.250', '991.250']);
+    renderApp('/panel/sevkiyat/shp-0001/cikis');
+    await screen.findByRole('button', { name: 'İleri' });
+    await fill({
+      'Dolu araç tartısı (brüt)': '2.000',
+      'Boş araç tartısı (dara)': '17,5',
+      'Çuval sayısı': '3',
+    });
+    await captureTicket();
+    await userEvent.click(screen.getByRole('button', { name: 'İleri' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Çuval sayısı tutmuyor' });
+    expect(dialog).toHaveTextContent('Tartıya 3 çuval yazdınız, ama sevkiyata 2 çuval eklenmiş.');
+    await userEvent.click(within(dialog).getByRole('link', { name: 'Çuvalları kontrol et' }));
+    expect(
+      await screen.findByRole('tab', { name: /Çuvallar/, selected: true }),
+    ).toBeInTheDocument();
+  });
+
+  it('eksik kilo nedeni yalnızca net kilo beklenenin altındayken sorulur', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    renderApp('/panel/sevkiyat/shp-0001/cikis');
+    await screen.findByRole('button', { name: 'İleri' });
+    expect(screen.queryByLabelText(/Eksik kilo nedeni/)).not.toBeInTheDocument();
+    await fill({ 'Dolu araç tartısı (brüt)': '1.990', 'Boş araç tartısı (dara)': '17,5' });
+    expect(await screen.findByLabelText(/Eksik kilo nedeni/)).toBeInTheDocument();
+  });
 });

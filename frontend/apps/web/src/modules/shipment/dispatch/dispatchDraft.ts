@@ -33,7 +33,8 @@ export function parseDispatchWeighing(draft: DispatchDraft): DispatchWeighing | 
   return netKg === undefined ? 'tareExceedsGross' : { grossKg, tareKg, netKg };
 }
 
-function parseBagCount(input: string): number | undefined {
+/** Çuval sayısı alanı: 1 ya da daha büyük tam sayı; aksi halde undefined. */
+export function parseBagCount(input: string): number | undefined {
   const value = Number(input.trim());
   return input.trim() !== '' && Number.isInteger(value) && value >= 1 ? value : undefined;
 }

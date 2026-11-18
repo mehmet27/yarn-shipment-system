@@ -19,6 +19,8 @@ export type DispatchFieldsProps = {
   weighing: DispatchWeighing | undefined;
   /** Eksik kilo nedeni boş bırakıldı (istemci ya da sunucu uyarısı). */
   isReasonMissing: boolean;
+  /** Araç net kilosu beklenenin altında: eksik kilo nedeni yalnızca o zaman sorulur. */
+  isShort: boolean;
 };
 
 /** Tartı alanları, hesaplanan net ve kantar fişi fotoğrafı. */
@@ -27,29 +29,32 @@ export function DispatchFields({
   onChange,
   weighing,
   isReasonMissing,
+  isShort,
 }: DispatchFieldsProps) {
   const { t } = useTranslation();
   return (
     <Stack>
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-        {FIELDS.map(({ name, inputMode }) => (
-          <TextInput
-            key={name}
-            inputMode={inputMode}
-            {...(name === 'shortfallReason'
-              ? { maxLength: 500, style: { gridColumn: '1 / -1' } }
-              : {})}
-            {...(name === 'grossKg' || name === 'tareKg' ? { rightSection: 'kg' } : {})}
-            label={t(`dispatch.${name}`)}
-            {...(name === 'shortfallReason' && isReasonMissing
-              ? { error: t('dispatch.shortfallReasonRequired') }
-              : {})}
-            value={draft[name]}
-            onChange={(event) => {
-              onChange({ ...draft, [name]: event.currentTarget.value });
-            }}
-          />
-        ))}
+        {FIELDS.filter(({ name }) => name !== 'shortfallReason' || isShort || isReasonMissing).map(
+          ({ name, inputMode }) => (
+            <TextInput
+              key={name}
+              inputMode={inputMode}
+              {...(name === 'shortfallReason'
+                ? { maxLength: 500, style: { gridColumn: '1 / -1' } }
+                : {})}
+              {...(name === 'grossKg' || name === 'tareKg' ? { rightSection: 'kg' } : {})}
+              label={t(`dispatch.${name}`)}
+              {...(name === 'shortfallReason' && isReasonMissing
+                ? { error: t('dispatch.shortfallReasonRequired') }
+                : {})}
+              value={draft[name]}
+              onChange={(event) => {
+                onChange({ ...draft, [name]: event.currentTarget.value });
+              }}
+            />
+          ),
+        )}
       </SimpleGrid>
       {weighing !== undefined && (
         <>

@@ -12,10 +12,10 @@ import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
 import com.yarnshipment.shipment.domain.model.DispatchBag;
-import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.ShipmentNotDueException;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
+import com.yarnshipment.shipment.domain.weight.BagCountMismatchException;
 import com.yarnshipment.shipment.domain.weight.BagWeightMismatchException;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -153,9 +153,12 @@ class RecordDispatchServiceTest {
         bagsPort.assigned = TestDispatches.measurement().bagCount() - 1;
 
         assertThatThrownBy(() -> service.recordDispatch(command(warehouse)))
-                .isInstanceOf(InvalidDispatchException.class)
-                .extracting(e -> ((InvalidDispatchException) e).field())
-                .isEqualTo("bagCount");
+                .isInstanceOfSatisfying(BagCountMismatchException.class, exception -> {
+                    assertThat(exception.enteredCount())
+                            .isEqualTo(TestDispatches.measurement().bagCount());
+                    assertThat(exception.bagCount())
+                            .isEqualTo(TestDispatches.measurement().bagCount() - 1);
+                });
         assertThat(commandPort.recordings()).isEmpty();
     }
 

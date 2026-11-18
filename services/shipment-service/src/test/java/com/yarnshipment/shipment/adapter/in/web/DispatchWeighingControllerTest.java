@@ -15,6 +15,7 @@ import com.yarnshipment.shipment.application.port.in.ListShipmentsUseCase;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
 import com.yarnshipment.shipment.domain.model.ShipmentNotDueException;
+import com.yarnshipment.shipment.domain.weight.BagCountMismatchException;
 import com.yarnshipment.shipment.domain.weight.BagWeightMismatchException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -33,6 +34,8 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 /** Çıkış tartımı ucunun sözleşmesi: izin, istek doğrulama ve hata eşlemesi. */
 @WebMvcTest(controllers = ShipmentController.class)
 class DispatchWeighingControllerTest {
+    private static final int ENTERED_COUNT = 40;
+    private static final int ASSIGNED_COUNT = 39;
 
     private static final String URI = "/api/v1/shipments/" + TestShipments.SHIPMENT_ID + "/dispatch-weighing";
     private static final int BAG_COUNT = 40;
@@ -144,5 +147,20 @@ class DispatchWeighingControllerTest {
         assertThat(result).bodyJson().extractingPath("$.bagKg").isEqualTo("1900.000");
         assertThat(result).bodyJson().extractingPath("$.measuredKg").isEqualTo("1982.500");
         assertThat(result).bodyJson().extractingPath("$.toleranceKg").isEqualTo("0");
+    }
+
+    @Test
+    @DisplayName("Çuval sayısı tutmuyorsa 409 BAG_COUNT_MISMATCH ve sayılar döner")
+    void shouldMapBagCountMismatch() {
+        doThrow(new BagCountMismatchException(ENTERED_COUNT, ASSIGNED_COUNT))
+                .when(recordDispatchUseCase)
+                .recordDispatch(any());
+
+        MvcTestResult result = post(TestTokens.token("warehouse").build(), VALID_BODY);
+
+        assertThat(result).hasStatus(HttpStatus.CONFLICT);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("BAG_COUNT_MISMATCH");
+        assertThat(result).bodyJson().extractingPath("$.enteredCount").isEqualTo(ENTERED_COUNT);
+        assertThat(result).bodyJson().extractingPath("$.bagCount").isEqualTo(ASSIGNED_COUNT);
     }
 }

@@ -3,6 +3,9 @@ import { fillFields } from '../support/form';
 import { expect, test } from '../support/test';
 import { captureTicket } from '../support/ticket';
 
+// Kayıt = tartı + fiş yükleme + yeniden okuma; yavaş koşuda 5 sn'yi aşabilir.
+const SAVE_TIMEOUT_MS = 15_000;
+
 const WEIGHING = {
   'Dolu araç tartısı (brüt)': '2.000',
   'Boş araç tartısı (dara)': '17,5',
@@ -28,7 +31,9 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
         .getByRole('dialog')
         .getByRole('button', { name: /^Onayla/ })
         .click();
-      await expect(page.getByTestId('shipment-status')).toHaveText('Fasoncuya yolda');
+      await expect(page.getByTestId('shipment-status')).toHaveText('Fasoncuya yolda', {
+        timeout: SAVE_TIMEOUT_MS,
+      });
     },
   );
 
@@ -64,7 +69,9 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
       .getByRole('dialog')
       .getByRole('button', { name: /^Onayla/ })
       .click();
-    await expect(page.getByTestId('shipment-status')).toHaveText('Fasoncuya yolda');
+    await expect(page.getByTestId('shipment-status')).toHaveText('Fasoncuya yolda', {
+      timeout: SAVE_TIMEOUT_MS,
+    });
     expect(uploads).toBe(1);
   });
 

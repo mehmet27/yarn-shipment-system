@@ -26,10 +26,8 @@ class RolePermissionMatrixTest {
                         Permission.SHIPMENT_CREATE,
                         Permission.SHIPMENT_CANCEL,
                         Permission.SHIPMENT_COMPLETE,
-                        Permission.EVIDENCE_UPLOAD_CLAIM,
                         Permission.EVIDENCE_INVALIDATE,
                         Permission.CORRECTION_CREATE,
-                        Permission.QUALITY_CLAIM_OPEN,
                         Permission.FIRE_RATE_EDIT,
                         Permission.INVOICE_MARK,
                         Permission.WEIGHT_MISMATCH_RESOLVE);

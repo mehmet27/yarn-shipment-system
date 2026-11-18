@@ -11,7 +11,7 @@ const photo = () => new File(['x'.repeat(2000)], 'leke.jpg', { type: 'image/jpeg
 const report = () => new File(['%PDF'], 'rapor.pdf', { type: 'application/pdf' });
 
 describe('Kalite itirazı', () => {
-  async function openForm(role: 'QUALITY' | 'MANAGER', ...extra: RequestHandler[]) {
+  async function openForm(role: 'QUALITY', ...extra: RequestHandler[]) {
     server.use(...extra, ...createHandlers(role));
     renderApp('/panel/sevkiyat/shp-0019');
     await userEvent.click(await screen.findByRole('tab', { name: 'Kalite itirazı' }));
@@ -19,7 +19,7 @@ describe('Kalite itirazı', () => {
     return screen.getByRole('region', { name: 'Yeni kalite itirazı' });
   }
 
-  it.each(['QUALITY', 'MANAGER'] as const)(
+  it.each(['QUALITY'] as const)(
     '%s tamamlanmış sevkiyata kg ile fotoğraflı itiraz açar',
     async (role) => {
       const form = await openForm(role);
@@ -116,11 +116,12 @@ describe('Kalite itirazı', () => {
     expect(within(card).queryByRole('button', { name: 'Sonucu kaydet' })).not.toBeInTheDocument();
   });
 
-  it('müdür itirazları görür ama kontrol isteyemez', async () => {
+  it('müdür itirazları görür ama itiraz açamaz ve kontrol isteyemez', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/shp-0019');
     await userEvent.click(await screen.findByRole('tab', { name: 'Kalite itirazı' }));
     expect(await screen.findByRole('article', { name: 'UY-shp-0019-1' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Kalite itirazı aç' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Kontrol iste' })).not.toBeInTheDocument();
   });
 

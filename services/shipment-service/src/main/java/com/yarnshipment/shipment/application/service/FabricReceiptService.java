@@ -89,7 +89,9 @@ public class FabricReceiptService implements RecordFabricReceiptUseCase, ListFab
         BigDecimal received = receipts.findByShipment(shipmentId).stream()
                 .map(FabricReceipt::netKg)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        settlement.requireFabricWithinSent(received, netKg);
+        // Faturası kesilen iplik de tüketilmiş sayılır: gelen kumaş + faturalanan kilo gönderilen ipliği aşamaz.
+        settlement.requireFabricWithinSent(
+                received.add(settlements.totals(shipmentId).invoicedKg()), netKg);
     }
 
     @Override

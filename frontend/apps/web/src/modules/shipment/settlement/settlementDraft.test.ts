@@ -72,6 +72,8 @@ describe('remainingFabricKg', () => {
     expect(remainingFabricKg('2000.000', '1900.500')).toBe('99.500');
     expect(remainingFabricKg('2000.000', '2100.000')).toBe('0.000');
     expect(remainingFabricKg('abc', '1')).toBeUndefined();
+    // faturalanan kilo kumaş gibi düşer: 200 − 25 − 67
+    expect(remainingFabricKg('200.000', '25.000', '67.000')).toBe('108.000');
   });
 });
 

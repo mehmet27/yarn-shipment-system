@@ -65,7 +65,9 @@ public record FireSettlement(
                 null);
     }
 
-    /** Gelen kumaşın toplamı gönderilen iplik kilosunu aşamaz; aşarsa {@link FabricExceedsSentYarnException}. */
+    /**
+     * Gelen kumaş ve faturası kesilen kilonun toplamı gönderilen iplik kilosunu aşamaz (faturalanan iplik tüketilmiş
+     * sayılır); aşarsa {@link FabricExceedsSentYarnException}. */
     public void requireFabricWithinSent(BigDecimal alreadyReceivedKg, BigDecimal newKg) {
         if (alreadyReceivedKg.add(newKg).compareTo(sentKg) > 0) {
             throw new FabricExceedsSentYarnException(shipmentId);

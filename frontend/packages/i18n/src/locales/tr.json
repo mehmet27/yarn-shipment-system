@@ -1377,6 +1377,7 @@
       "noYarnFound": "Seçilebilecek iplik kalmadı",
       "yarnKg": "Kilo",
       "limitNote": "Fasoncuya {{sent}} iplik gönderildi, şimdiye kadar {{received}} kumaş geldi; en çok {{remaining}} daha girebilirsiniz.",
+      "limitNoteInvoiced": "Fasoncuya {{sent}} iplik gönderildi, {{received}} kumaş geldi, {{invoiced}} için fatura kesildi; en çok {{remaining}} daha girebilirsiniz.",
       "exceedsRemaining": "Gönderilen ipliğin kalanından fazla kumaş yazamazsınız.",
       "submit": "Kumaş girişini kaydet",
       "saved": "Kumaş girişi kaydedildi.",

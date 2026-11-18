@@ -1,6 +1,13 @@
 import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
-import { fiyatYaz, iplikTanimla, kumasGir, tartiyiOnayla } from '../support/akis';
+import {
+  fiyatYaz,
+  iplikTanimla,
+  kararVer,
+  kumasFormuDoldur,
+  kumasGir,
+  tartiyiOnayla,
+} from '../support/akis';
 import { damga, iplikSec, resim, sec } from '../support/yardimci';
 
 type FireDosyasi = { fireRate: string; sentKg: string; fabricKg: string; status: string };
@@ -217,23 +224,85 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
   });
 
   await fasonKalite.adim(
-    'fasoncu kalite: gönderilen ipliği aşan kumaş girişi reddedilmeli',
+    'fasoncu kalite: formun üstünde gönderilen, gelen ve kalan kilo tek cümleyle yazar',
     async () => {
-      await kumasGir(fasonKalite, sevkiyatId, '150', `${iplik}-K1`);
-      const mesajlar = await fasonKalite.mesajlar();
-      fasonKalite.kontrol(
-        'iplikten fazla kumaş nedeniyle reddedilmeli',
-        mesajlar.some((m) => /iplik/i.test(m) && !GENEL_MESAJ.test(m)),
-        mesajlar.join(' | '),
+      await kumasFormuDoldur(fasonKalite, sevkiyatId, '50', `${iplik}-K0`);
+      await expect(fasonKalite.sayfa.getByTestId('fabric-limit-note')).toHaveText(
+        'Fasoncuya 100 kg iplik gönderildi, şimdiye kadar 0 kg kumaş geldi; en çok 100 kg daha girebilirsiniz.',
       );
     },
   );
 
   await fasonKalite.adim(
-    'fasoncu kalite: makul kumaş girişi kaydolur, fire dosyası sayıları tutar',
+    'fasoncu kalite: iplik cinsi serbest metin değil, sevkiyattaki ipliklerden seçilir; seçilen bir daha sunulmaz',
     async () => {
-      await kumasGir(fasonKalite, sevkiyatId, '90', `${iplik}-K2`);
-      await fasonKalite.sayfa.waitForTimeout(1500);
+      const sayfa = fasonKalite.sayfa;
+      await sayfa.getByRole('button', { name: 'İplik satırı ekle' }).click();
+      await sayfa.getByRole('button', { name: 'İplik satırı ekle' }).click();
+      const secimler = sayfa.getByRole('combobox', { name: 'İplik cinsi' });
+      await secimler.nth(0).click();
+      await sayfa.locator('[role=option]:visible').filter({ hasText: iplik }).first().click();
+      await secimler.nth(1).click();
+      fasonKalite.kontrol(
+        'ilk satırda seçilen iplik ikinci satırda sunulmamalı',
+        (await sayfa.locator('[role=option]:visible').filter({ hasText: iplik }).count()) === 0,
+      );
+      await sayfa.keyboard.press('Escape');
+    },
+  );
+
+  await fasonKalite.adim(
+    'fasoncu kalite: gönderilen ipliği aşan kumaş girişi satırda uyarılır, onay sorusu çıkmaz, sunucuya gitmez',
+    async () => {
+      await kumasGir(fasonKalite, sevkiyatId, '150', `${iplik}-K1`, false);
+      const mesajlar = await fasonKalite.mesajlar();
+      fasonKalite.kontrol(
+        'iplikten fazla kumaş nedeniyle alan altında uyarılmalı',
+        mesajlar.some((m) => /iplik/i.test(m) && !GENEL_MESAJ.test(m)),
+        mesajlar.join(' | '),
+      );
+      fasonKalite.kontrol(
+        'aşan kiloda "Evet, kaydet" sorusu çıkmamalı',
+        (await fasonKalite.sayfa.getByRole('button', { name: 'Evet, kaydet' }).count()) === 0,
+      );
+      const fire = await fasonKalite.api<FireDosyasi>(
+        `/api/v1/shipments/${sevkiyatId}/fire-settlement`,
+      );
+      fasonKalite.kontrol('hiç kumaş kaydolmamalı', Number(fire.fabricKg) === 0, fire.fabricKg);
+    },
+  );
+
+  await fasonKalite.adim(
+    'fasoncu kalite: kaydet önce özet ve onay sorar; Vazgeç kaydetmez, onaylanınca kayıt yazılır',
+    async () => {
+      const sayfa = fasonKalite.sayfa;
+      await kumasFormuDoldur(fasonKalite, sevkiyatId, '90', `${iplik}-K2`);
+      await sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
+      await expect(
+        sayfa.getByText(/90 kg Süprem kumaş kaydedilecek\. Kayıt sonradan değiştirilemez\./),
+      ).toBeVisible();
+      await sayfa.getByRole('button', { name: 'Vazgeç' }).click();
+      await expect(sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' })).toBeVisible();
+      const once = await fasonKalite.api<FireDosyasi>(
+        `/api/v1/shipments/${sevkiyatId}/fire-settlement`,
+      );
+      fasonKalite.kontrol(
+        'Vazgeç sonrası kumaş kaydolmamalı',
+        Number(once.fabricKg) === 0,
+        once.fabricKg,
+      );
+      await sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
+      await sayfa.getByRole('button', { name: 'Evet, kaydet' }).click();
+      await expect(sayfa.getByText('Kumaş girişi kaydedildi.')).toBeVisible();
+    },
+  );
+
+  await fasonKalite.adim(
+    'fasoncu kalite: kayıttan sonra kalan kilo cümlesi güncellenir, fire dosyası sayıları tutar',
+    async () => {
+      await expect(fasonKalite.sayfa.getByTestId('fabric-limit-note')).toHaveText(
+        'Fasoncuya 100 kg iplik gönderildi, şimdiye kadar 90 kg kumaş geldi; en çok 10 kg daha girebilirsiniz.',
+      );
       const fire = await fasonKalite.api<FireDosyasi>(
         `/api/v1/shipments/${sevkiyatId}/fire-settlement`,
       );
@@ -281,12 +350,16 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     await kalite.sayfa.goto('/panel/uyusmazliklar');
     await kalite.sayfa.locator('main a[href*="uyusmazliklar/"]').first().click();
     await kalite.sayfa.getByRole('button', { name: 'Bana ata' }).click();
+    await expect(kalite.sayfa.getByText('Bu uyuşmazlık sizde.')).toBeVisible();
+    kalite.kontrol(
+      'atandıktan sonra "Bana ata" düğmesi görünmemeli',
+      (await kalite.sayfa.getByRole('button', { name: 'Bana ata' }).count()) === 0,
+    );
     await kalite.sayfa.getByLabel(/Talep notu/).fill('Robot: numune alın');
     await kalite.sayfa.getByRole('button', { name: 'Kontrol iste' }).click();
     await kalite.sayfa.waitForTimeout(1200);
-    await sec(kalite.sayfa, /^Karar/, 'Talep haksız');
-    await kalite.sayfa.getByLabel(/^Not/).first().fill('Robot kararı');
-    await kalite.sayfa.getByRole('button', { name: 'Karara bağla' }).click();
+    await expect(kalite.sayfa.getByRole('heading', { name: 'Karar ver' })).toBeVisible();
+    await kararVer(kalite, 'Talep haksız', 'Robot kararı');
     const mesajlar = await kalite.mesajlar();
     kalite.kontrol(
       'bekleyen kontrol uyarısı',

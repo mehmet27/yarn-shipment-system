@@ -10,6 +10,7 @@ const KNOWN_CODES = [
   'ACCESS_DENIED',
   'INVALID_LEDGER_INPUT',
   'FABRIC_EXCEEDS_SENT_YARN',
+  'FABRIC_YARN_NOT_IN_SHIPMENT',
 ];
 
 /** Bilinen hata kodları Türkçe mesaja (`settlement.errors.*`); bilinmeyenler genel mesaja düşer. */

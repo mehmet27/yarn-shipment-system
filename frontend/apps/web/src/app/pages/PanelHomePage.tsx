@@ -4,6 +4,7 @@ import { Button, Icon, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
 import { Link } from 'react-router';
 import { Can, useCurrentUser } from '@/modules/auth';
 import type { Permission } from '@iplik/api-client';
+import { PendingDiscrepancies } from '@/modules/discrepancy';
 import { DashboardSection } from '@/modules/report';
 import { PendingDispatches, PendingWeightDecisions } from '@/modules/shipment';
 
@@ -47,6 +48,9 @@ export function PanelHomePage() {
       </Title>
       <Can permission="SHIPMENT_VIEW">
         <PendingWeightDecisions />
+      </Can>
+      <Can permission="DISCREPANCY_RESOLVE">
+        <PendingDiscrepancies />
       </Can>
       <Can permission="DISPATCH_RECORD">
         <PendingDispatches />

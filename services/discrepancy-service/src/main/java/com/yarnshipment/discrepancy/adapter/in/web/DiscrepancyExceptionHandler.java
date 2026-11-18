@@ -7,6 +7,7 @@ import com.yarnshipment.discrepancy.domain.claim.InspectionNotFoundException;
 import com.yarnshipment.discrepancy.domain.claim.QualityClaimNotFoundException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotFoundException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
+import com.yarnshipment.discrepancy.domain.model.DiscrepancyNoteRequiredException;
 import com.yarnshipment.discrepancy.domain.model.LiablePartyRequiredException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.Ordered;
@@ -43,6 +44,11 @@ public final class DiscrepancyExceptionHandler {
         return problems.create(request, HttpStatus.BAD_REQUEST, "LIABLE_PARTY_REQUIRED");
     }
 
+    @ExceptionHandler(DiscrepancyNoteRequiredException.class)
+    public ProblemDetail handleNoteRequired(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.BAD_REQUEST, "DISCREPANCY_NOTE_REQUIRED");
+    }
+
     @ExceptionHandler(QualityClaimNotFoundException.class)
     public ProblemDetail handleClaimNotFound(HttpServletRequest request) {
         return problems.create(request, HttpStatus.NOT_FOUND, "QUALITY_CLAIM_NOT_FOUND");
@@ -58,6 +64,7 @@ public final class DiscrepancyExceptionHandler {
         HttpStatus status = switch (exception.rejection()) {
             case CLAIM_EXCEEDS_SHIPMENT_WEIGHT,
                     CLAIMED_KG_INVALID,
+                    DESCRIPTION_REQUIRED,
                     EVIDENCE_REQUIRED,
                     EVIDENCE_INVALID,
                     RESULT_EVIDENCE_REQUIRED -> HttpStatus.BAD_REQUEST;

@@ -1,4 +1,7 @@
+import type { RecipeLineView } from '@iplik/api-client';
+import type { Kilogram } from '@iplik/units';
 import { describe, expect, it } from 'vitest';
+import { remainingFabricKg, yarnOptionsOf } from './fabricLimits';
 import type { FabricDraft } from './settlementDraft';
 import {
   EMPTY_FABRIC_DRAFT,
@@ -50,6 +53,40 @@ describe('toFabricRequest', () => {
     expect(toFabricRequest({ ...fabric, yarns: [{ yarnType: 'A', netKg: 'x' }] })).toBe(
       'invalidKg',
     );
+  });
+});
+
+describe('toFabricRequest: kalan kilo', () => {
+  it('kumaş kilosu kalan kiloyu aşarsa göndermez, eşitse gönderir', () => {
+    expect(toFabricRequest({ ...fabric, netKg: '1.900' }, '1800.000' as Kilogram)).toBe(
+      'exceedsRemaining',
+    );
+    expect(toFabricRequest({ ...fabric, netKg: '1.900' }, '1900.000' as Kilogram)).toMatchObject({
+      netKg: '1900.000',
+    });
+  });
+});
+
+describe('remainingFabricKg', () => {
+  it('gönderilenden gelen çıkar, 0 altına inmez', () => {
+    expect(remainingFabricKg('2000.000', '1900.500')).toBe('99.500');
+    expect(remainingFabricKg('2000.000', '2100.000')).toBe('0.000');
+    expect(remainingFabricKg('abc', '1')).toBeUndefined();
+  });
+});
+
+describe('yarnOptionsOf', () => {
+  it('değer sunucunun anahtarı, etiket ipliğin adıdır; tekrarları ve boşları atar', () => {
+    const lines = [
+      { lineNo: 1, yarnTypeId: 'prd-1', yarnTypeName: '30/1 Penye', netKg: '1.000' },
+      { lineNo: 2, yarnTypeText: ' 20 denye likra ', netKg: '1.000' },
+      { lineNo: 3, yarnTypeId: 'prd-1', yarnTypeName: '30/1 Penye', netKg: '1.000' },
+      { lineNo: 4, netKg: '1.000' },
+    ] as RecipeLineView[];
+    expect(yarnOptionsOf(lines)).toEqual([
+      { value: 'prd-1', label: '30/1 Penye' },
+      { value: '20 denye likra', label: '20 denye likra' },
+    ]);
   });
 });
 

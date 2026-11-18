@@ -10,6 +10,8 @@ public enum ClaimRejection {
     CLAIM_EXCEEDS_SHIPMENT_WEIGHT,
     /** İtiraz edilen kilo sıfırdan büyük ve en çok üç ondalıklı olmalı. */
     CLAIMED_KG_INVALID,
+    /** İtiraz açıklaması boş olamaz. */
+    DESCRIPTION_REQUIRED,
     /** İtiraz fotoğrafsız açılamaz. */
     EVIDENCE_REQUIRED,
     /** Kanıt bulunamadı, başka sevkiyatın ya da beklenen türde değil. */

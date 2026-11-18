@@ -63,6 +63,17 @@ class ClaimTargetTest {
         }
     }
 
+    @Test
+    @DisplayName("Boş açıklama reddedilir; açıklama kırpılarak saklanır")
+    void shouldRequireDescription() {
+        for (String blank : List.of("", "   ", "\t\n")) {
+            assertThat(TestClaims.rejectionOf(() -> new ClaimRequest(blank, BigDecimal.TEN, null, PHOTO)))
+                    .isEqualTo(ClaimRejection.DESCRIPTION_REQUIRED);
+        }
+        assertThat(new ClaimRequest("  B kalite  ", BigDecimal.TEN, null, PHOTO).description())
+                .isEqualTo("B kalite");
+    }
+
     private static ClaimRequest request(String kg, List<UUID> evidence) {
         return new ClaimRequest("x", new BigDecimal(kg), null, evidence);
     }

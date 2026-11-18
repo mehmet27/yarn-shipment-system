@@ -37,7 +37,7 @@ export function DiscrepancyDetailPage() {
             />
           )}
           {discrepancy.allowedActions?.includes('ASSIGN') && (
-            <AssignToMeButton discrepancyId={discrepancy.id} />
+            <AssignToMeButton discrepancyId={discrepancy.id} assigneeId={discrepancy.assigneeId} />
           )}
           {discrepancy.allowedActions?.includes('RESOLVE') && (
             <ResolveForm discrepancyId={discrepancy.id} />

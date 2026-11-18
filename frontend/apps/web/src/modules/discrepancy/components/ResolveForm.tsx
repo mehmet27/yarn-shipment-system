@@ -1,83 +1,81 @@
-import { Resolution, toProblem } from '@iplik/api-client';
+import type { Resolution } from '@iplik/api-client';
+import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Paper, Select, Stack, TextInput } from '@iplik/ui';
+import { Alert, Paper, Stack, Title } from '@iplik/ui';
 import { useState } from 'react';
 import { useResolveDiscrepancy } from '../hooks/useDecideDiscrepancy';
+import { ResolutionSelect } from './ResolutionSelect';
+import { ResolveActions } from './ResolveActions';
+import { ResolveNoteFields } from './ResolveNoteFields';
 
-const MAX_NOTE_LENGTH = 2000;
-const MAX_PARTY_LENGTH = 200;
-const RESOLUTIONS = Object.values(Resolution);
-/** Uyuşmazlıklar yalnızca kalite itirazıdır; "tolerans içinde" ve "veri hatası" kararları bu akışa uymaz. */
-const OFFERED = RESOLUTIONS.filter((value) => value !== 'TOLERANCE' && value !== 'DATA_ERROR');
-
-function resolutionOptions(t: (key: string) => string) {
-  return OFFERED.map((value) => ({ value, label: t(`discrepancy.resolution.${value}`) }));
-}
+const ERROR_KEYS: Record<string, string> = {
+  DISCREPANCY_NOT_OPEN: 'discrepancy.resolve.notOpen',
+  DISCREPANCY_NOTE_REQUIRED: 'discrepancy.resolve.noteRequired',
+  QUALITY_CLAIM_INSPECTION_PENDING: 'discrepancy.resolve.inspectionPending',
+};
 
 function errorKey(error: unknown): string {
-  const { code } = toProblem(error);
-  if (code === 'DISCREPANCY_NOT_OPEN') return 'discrepancy.resolve.notOpen';
-  return code === 'QUALITY_CLAIM_INSPECTION_PENDING'
-    ? 'discrepancy.resolve.inspectionPending'
-    : 'discrepancy.resolve.failed';
+  return ERROR_KEYS[toProblem(error).code] ?? 'discrepancy.resolve.failed';
 }
 
-/** Karar: çözüm kodu ve not zorunlu; sorumluluk atamasında sorumlu taraf da gerekir. */
+const partyOf = (isRequired: boolean, liableParty: string) =>
+  isRequired ? { liableParty: liableParty.trim() } : {};
+
+/** Karar: çözüm kodu ve not zorunlu; sorumluluk atamasında sorumlu taraf da gerekir. Kayıttan önce onay sorulur. */
 export function ResolveForm({ discrepancyId }: { discrepancyId: string }) {
   const { t } = useTranslation();
-  const [resolution, setResolution] = useState<(typeof RESOLUTIONS)[number]>();
+  const [resolution, setResolution] = useState<Resolution>();
   const [note, setNote] = useState('');
   const [liableParty, setLiableParty] = useState('');
+  const [isConfirming, setConfirming] = useState(false);
   const mutation = useResolveDiscrepancy(discrepancyId);
   const isPartyRequired = resolution === 'LIABILITY_ASSIGNED';
   const canSubmit =
     resolution !== undefined &&
     note.trim() !== '' &&
     (!isPartyRequired || liableParty.trim() !== '');
+  const save = () => {
+    if (resolution === undefined) return;
+    const request = { resolution, note: note.trim(), ...partyOf(isPartyRequired, liableParty) };
+    mutation.mutate(request, {
+      onSettled: () => {
+        setConfirming(false);
+      },
+    });
+  };
   return (
-    <Paper withBorder p="md">
+    <Paper withBorder p="md" component="section">
       <Stack>
-        <Select
-          label={t('discrepancy.resolve.resolution')}
-          data={resolutionOptions(t)}
-          value={resolution ?? null}
+        <Title order={3} size="h4">
+          {t('discrepancy.resolve.title')}
+        </Title>
+        <ResolutionSelect
+          value={resolution}
           onChange={(value) => {
-            setResolution(RESOLUTIONS.find((item) => item === value));
+            setResolution(value);
+            setConfirming(false);
           }}
-          withAsterisk
         />
-        {isPartyRequired && (
-          <TextInput
-            label={t('discrepancy.resolve.liableParty')}
-            maxLength={MAX_PARTY_LENGTH}
-            value={liableParty}
-            onChange={(event) => {
-              setLiableParty(event.currentTarget.value);
-            }}
-            withAsterisk
-          />
-        )}
-        <TextInput
-          label={t('discrepancy.resolve.note')}
-          maxLength={MAX_NOTE_LENGTH}
-          value={note}
-          onChange={(event) => {
-            setNote(event.currentTarget.value);
-          }}
-          withAsterisk
+        <ResolveNoteFields
+          {...{ isPartyRequired, liableParty, note }}
+          onLiableParty={setLiableParty}
+          onNote={setNote}
         />
         {mutation.isError && <Alert color="red">{t(errorKey(mutation.error))}</Alert>}
-        <Button
-          disabled={!canSubmit}
-          loading={mutation.isPending}
-          onClick={() => {
-            if (resolution === undefined) return;
-            const party = isPartyRequired ? { liableParty: liableParty.trim() } : {};
-            mutation.mutate({ resolution, note: note.trim(), ...party });
+        <ResolveActions
+          resolution={resolution}
+          isConfirming={isConfirming}
+          canSubmit={canSubmit}
+          isPending={mutation.isPending}
+          onAsk={() => {
+            mutation.reset();
+            setConfirming(true);
           }}
-        >
-          {t('discrepancy.resolve.submit')}
-        </Button>
+          onConfirm={save}
+          onCancel={() => {
+            setConfirming(false);
+          }}
+        />
       </Stack>
     </Paper>
   );

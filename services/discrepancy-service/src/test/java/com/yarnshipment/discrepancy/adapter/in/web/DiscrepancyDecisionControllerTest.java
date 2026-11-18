@@ -9,6 +9,7 @@ import com.yarnshipment.discrepancy.TestTokens;
 import com.yarnshipment.discrepancy.application.port.in.AssignDiscrepancyUseCase;
 import com.yarnshipment.discrepancy.application.port.in.ResolveDiscrepancyUseCase;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
+import com.yarnshipment.discrepancy.domain.model.DiscrepancyNoteRequiredException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyStatus;
 import com.yarnshipment.discrepancy.domain.model.LiablePartyRequiredException;
 import java.util.UUID;
@@ -72,6 +73,17 @@ class DiscrepancyDecisionControllerTest {
         assertThat(missingParty).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(missingParty).bodyJson().extractingPath("$.code").isEqualTo("LIABLE_PARTY_REQUIRED");
         assertThat(emptyNote).hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    @DisplayName("Boşluktan ibaret not DISCREPANCY_NOTE_REQUIRED ile 400 alır")
+    void shouldRejectBlankNote() {
+        when(resolveDiscrepancy.resolveDiscrepancy(any())).thenThrow(new DiscrepancyNoteRequiredException());
+
+        MvcTestResult result = post(ONE + "/resolve", "{\"resolution\":\"TOLERANCE\",\"note\":\"   \"}", quality());
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("DISCREPANCY_NOTE_REQUIRED");
     }
 
     @Test

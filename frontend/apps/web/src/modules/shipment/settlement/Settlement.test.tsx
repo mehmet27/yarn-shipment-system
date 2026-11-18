@@ -12,6 +12,12 @@ async function openTab(name: string) {
   await userEvent.click(await screen.findByRole('tab', { name }));
 }
 
+function pick<T>(items: readonly T[], index: number): T {
+  const item = items[index];
+  expect(item).toBeDefined();
+  return item as T;
+}
+
 async function recordFabric(kg: string) {
   await openTab('Kumaş girişi');
   const form = await screen.findByRole('region', { name: 'Kumaş girişi' });
@@ -27,6 +33,11 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     renderApp(COMPLETED);
     const form = await recordFabric('1.900');
     await userEvent.click(within(form).getByRole('button', { name: 'Kumaş girişini kaydet' }));
+    expect(
+      within(form).getByText(/1\.900 kg Süprem kumaş kaydedilecek\. Kayıt sonradan/),
+    ).toBeVisible();
+    await userEvent.click(within(form).getByRole('button', { name: 'Evet, kaydet' }));
+    expect(await within(form).findByText('Kumaş girişi kaydedildi.')).toBeInTheDocument();
     expect(await screen.findByText(/Süprem · 1\.900 kg/)).toBeInTheDocument();
     await openTab('Fire dosyası');
     expect(await screen.findByTestId('fire-status')).toHaveTextContent('Faturalanacak');
@@ -39,10 +50,42 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     renderApp(COMPLETED);
     const form = await recordFabric('100');
     await userEvent.click(within(form).getByRole('button', { name: 'İplik satırı ekle' }));
-    await userEvent.type(within(form).getByLabelText('İplik cinsi'), 'Penye');
+    await userEvent.click(within(form).getByRole('combobox', { name: 'İplik cinsi' }));
+    await userEvent.click(await screen.findByRole('option', { name: '36/1 Viskon' }));
     await userEvent.type(within(form).getByLabelText('Kilo'), '60');
     await userEvent.click(within(form).getByRole('button', { name: 'Kumaş girişini kaydet' }));
     expect(await within(form).findByText(/toplamı kumaş kilosuna eşit/)).toBeInTheDocument();
+  });
+
+  it('kumaş formu gönderilen ve gelen kiloyu yazar, kalanı aşan kiloyu göndermez', async () => {
+    server.use(...createHandlers('QUALITY'));
+    renderApp(COMPLETED);
+    const form = await recordFabric('2.500');
+    expect(await within(form).findByTestId('fabric-limit-note')).toHaveTextContent(
+      'Fasoncuya 1.982,5 kg iplik gönderildi, şimdiye kadar 0 kg kumaş geldi; en çok 1.982,5 kg daha girebilirsiniz.',
+    );
+    expect(
+      within(form).getByText(/ipliğin kalanından fazla kumaş yazamazsınız/),
+    ).toBeInTheDocument();
+    await userEvent.click(within(form).getByRole('button', { name: 'Kumaş girişini kaydet' }));
+    expect(within(form).queryByRole('button', { name: 'Evet, kaydet' })).not.toBeInTheDocument();
+  });
+
+  it('iplik satırında yalnız sevkiyattaki iplikler sunulur, seçilen bir daha sunulmaz', async () => {
+    server.use(...createHandlers('QUALITY'));
+    renderApp(COMPLETED);
+    await openTab('Kumaş girişi');
+    const form = await screen.findByRole('region', { name: 'Kumaş girişi' });
+    await userEvent.click(within(form).getByRole('button', { name: 'İplik satırı ekle' }));
+    await userEvent.click(within(form).getByRole('button', { name: 'İplik satırı ekle' }));
+    const combos = within(form).getAllByRole('combobox', { name: 'İplik cinsi' });
+    const [first, second] = [pick(combos, 0), pick(combos, 1)];
+    await userEvent.click(first);
+    expect(await screen.findByRole('option', { name: '20 denye likra' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('option', { name: '36/1 Viskon' }));
+    await userEvent.click(second);
+    expect(await screen.findByRole('option', { name: '20 denye likra' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: '36/1 Viskon' })).not.toBeInTheDocument();
   });
 
   it('müdür iplik dönüşü kaydedemez; sekmede form görünmez ve Yön seçimi yoktur', async () => {

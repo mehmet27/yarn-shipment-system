@@ -23,6 +23,7 @@ import com.yarnshipment.discrepancy.domain.claim.ClaimRejection;
 import com.yarnshipment.discrepancy.domain.claim.Inspection;
 import com.yarnshipment.discrepancy.domain.claim.InspectionKind;
 import com.yarnshipment.discrepancy.domain.model.Discrepancy;
+import com.yarnshipment.discrepancy.domain.model.DiscrepancyNoteRequiredException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyStatus;
 import com.yarnshipment.discrepancy.domain.model.Resolution;
 import java.time.Clock;
@@ -90,6 +91,19 @@ class DiscrepancyDecisionServicesTest {
         assertThat(decision.note()).isEqualTo("tartı hatası");
         assertThat(decision.resolvedBy()).isEqualTo(actor.userId());
         verify(decisions).saveResolution(resolved, actor.userId(), NOW);
+    }
+
+    @Test
+    @DisplayName("Boşluktan ibaret karar notu reddedilir ve karar yazılmaz")
+    void shouldRejectBlankNote() {
+        when(queries.findDiscrepancy(TestDiscrepancies.ID))
+                .thenReturn(Optional.of(TestDiscrepancies.open(TestTokens.SITE_ID)));
+        ResolveDiscrepancyCommand command =
+                new ResolveDiscrepancyCommand(quality(), TestDiscrepancies.ID, Resolution.DATA_ERROR, "   ", null);
+
+        assertThatThrownBy(() -> resolve.resolveDiscrepancy(command))
+                .isInstanceOf(DiscrepancyNoteRequiredException.class);
+        verify(decisions, never()).saveResolution(any(), any(), any());
     }
 
     @Test

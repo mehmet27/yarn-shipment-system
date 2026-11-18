@@ -79,6 +79,10 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
     await expect(kart).toContainText(/Yüklenecek sevkiyat: \d+/);
     await expect(kart).toContainText(/önce çuvalları ekleyin, sonra çıkış tartısını girin/i);
     depo.kontrol(
+      'depo ana sayfasında "Karar bekleyen uyuşmazlıklar" listesi olmamalı (yalnızca karar yetkilisinde)',
+      (await depo.sayfa.getByTestId('pending-discrepancies').count()) === 0,
+    );
+    depo.kontrol(
       'iş listesinde taslak sevkiyatın bağlantısı olmalı',
       (await kart.locator(`a[href$="${id}"]`).count()) === 1,
     );

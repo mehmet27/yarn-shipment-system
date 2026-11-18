@@ -38,14 +38,71 @@ describe('Uyuşmazlık ekranları', () => {
     server.use(...createHandlers('QUALITY'));
     renderApp('/panel/uyusmazliklar/disc-0');
     await userEvent.click(await screen.findByRole('button', { name: 'Bana ata' }));
+    expect(await screen.findByText('Bu uyuşmazlık sizde.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Bana ata' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Karar ver' })).toBeInTheDocument();
     await userEvent.click(await screen.findByRole('combobox', { name: /^Karar/ }));
     expect(screen.queryByRole('option', { name: 'Tolerans içinde' })).not.toBeInTheDocument();
     expect(screen.queryByRole('option', { name: 'Veri hatası' })).not.toBeInTheDocument();
     await userEvent.click(await screen.findByRole('option', { name: 'Talep haksız' }));
-    await userEvent.type(screen.getByLabelText(/^Not/), 'Talep haksız kabul');
+    expect(screen.getByTestId('resolution-effect')).toHaveTextContent('yalnızca kapatılır');
+    const note = screen.getByLabelText(/^Not/);
+    expect(note.tagName).toBe('TEXTAREA');
+    await userEvent.type(note, 'Talep haksız kabul');
     await userEvent.click(screen.getByRole('button', { name: 'Karara bağla' }));
+    expect(screen.getByText(/Karar geri alınamaz\./)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Vazgeç' }));
+    expect(screen.getByRole('button', { name: 'Karara bağla' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Karara bağla' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Evet, kararı kaydet' }));
     expect(await screen.findAllByText('Talep haksız kabul')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: 'Karara bağla' })).not.toBeInTheDocument();
+  });
+
+  it('haklı bulunan itirazda iplikten düşüleceğini söyler', async () => {
+    server.use(...createHandlers('QUALITY'));
+    renderApp('/panel/uyusmazliklar/disc-1');
+    await userEvent.click(await screen.findByRole('combobox', { name: /^Karar/ }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Talep haklı' }));
+    expect(screen.getByTestId('resolution-effect')).toHaveTextContent(/iplikten düşülür/);
+  });
+
+  it('karar notu zorunlu hatasını düz Türkçe gösterir', async () => {
+    server.use(
+      http.post(`${DISCREPANCIES_PATH}/disc-1/resolve`, () =>
+        HttpResponse.json(
+          { status: 400, code: 'DISCREPANCY_NOTE_REQUIRED', title: 'x' },
+          { status: 400 },
+        ),
+      ),
+      ...createHandlers('QUALITY'),
+    );
+    renderApp('/panel/uyusmazliklar/disc-1');
+    await userEvent.click(await screen.findByRole('combobox', { name: /^Karar/ }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Talep haksız' }));
+    await userEvent.type(screen.getByLabelText(/^Not/), 'x');
+    await userEvent.click(screen.getByRole('button', { name: 'Karara bağla' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Evet, kararı kaydet' }));
+    expect(await screen.findByText(/Karar notu boş olamaz/)).toBeInTheDocument();
+  });
+
+  it('kalite ana sayfada karar bekleyen uyuşmazlıkları listeler', async () => {
+    server.use(...createHandlers('QUALITY'));
+    renderApp('/panel');
+    const block = await screen.findByTestId('pending-discrepancies');
+    expect(block).toHaveTextContent('Karar bekleyen uyuşmazlıklar');
+    expect(within(block).getAllByRole('link', { name: /^UY-2026-/ }).length).toBeLessThanOrEqual(5);
+    expect(within(block).getByRole('link', { name: 'Tümünü gör' })).toHaveAttribute(
+      'href',
+      '/panel/uyusmazliklar',
+    );
+  });
+
+  it('depo ana sayfada karar bekleyen uyuşmazlık listesini görmez', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    renderApp('/panel');
+    await screen.findByTestId('pending-dispatches');
+    expect(screen.queryByTestId('pending-discrepancies')).not.toBeInTheDocument();
   });
 
   it('geçmişte işlemi yapanın ve atananın ad soyadını gösterir', async () => {

@@ -48,9 +48,26 @@ describe('Kalite itirazı', () => {
     expect(within(form).getByText(/0'dan büyük/)).toBeInTheDocument();
   });
 
-  it('kilo sevkiyat ağırlığını aşarsa sunucu hatasını Türkçe gösterir', async () => {
+  it('ipucu gerçek sınırı yazar; aşan kiloda alan hatası çıkar ve gönder kapalı kalır', async () => {
     const form = await openForm('QUALITY');
-    await userEvent.type(within(form).getByLabelText(/İtiraz edilen kilo/), '99999');
+    expect(within(form).getByText('En çok 1.982,5 kg yazabilirsiniz.')).toBeInTheDocument();
+    await userEvent.type(within(form).getByLabelText(/İtiraz edilen kilo/), '1.982,6');
+    await userEvent.type(within(form).getByLabelText(/Sorunu anlatın/), 'Nem');
+    await userEvent.upload(within(form).getByTestId('upload-file-input'), photo());
+    await within(form).findByText('1 fotoğraf eklendi.');
+    expect(within(form).getByText(/Sevkiyatın net ağırlığı 1\.982,5 kg/)).toBeInTheDocument();
+    expect(within(form).getByRole('button', { name: 'İtirazı gönder' })).toBeDisabled();
+  });
+
+  it('sunucu kilo aşımını reddederse hatasını Türkçe gösterir', async () => {
+    const reject = http.post('/api/v1/quality-claims', () =>
+      HttpResponse.json(
+        { status: 409, code: 'CLAIM_EXCEEDS_SHIPMENT_WEIGHT', title: 'x' },
+        { status: 409 },
+      ),
+    );
+    const form = await openForm('QUALITY', reject);
+    await userEvent.type(within(form).getByLabelText(/İtiraz edilen kilo/), '10');
     await userEvent.type(within(form).getByLabelText(/Sorunu anlatın/), 'Nem');
     await userEvent.upload(within(form).getByTestId('upload-file-input'), photo());
     await within(form).findByText('1 fotoğraf eklendi.');
@@ -71,7 +88,7 @@ describe('Kalite itirazı', () => {
     await userEvent.upload(within(form).getByTestId('upload-file-input'), photo());
     await within(form).findByText('1 fotoğraf eklendi.');
     await userEvent.click(within(form).getByRole('button', { name: 'İtirazı gönder' }));
-    expect(await within(form).findByText(/İtiraz süresi doldu/)).toBeInTheDocument();
+    expect(await within(form).findByText(/şu an itiraz açılamıyor/)).toBeInTheDocument();
   });
 
   it('tamamlanmamış sevkiyatta itiraz sekmesi görünmez', async () => {

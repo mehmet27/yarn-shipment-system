@@ -15,7 +15,6 @@ import java.util.UUID;
 final class ClaimEvidence {
 
     static final String QUALITY_CLAIM = "QUALITY_CLAIM";
-    static final String LAB_RESULT = "LAB_RESULT";
 
     private final EvidenceLookupPort evidence;
 

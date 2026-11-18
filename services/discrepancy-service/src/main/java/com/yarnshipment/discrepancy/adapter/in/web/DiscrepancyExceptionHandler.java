@@ -3,7 +3,6 @@ package com.yarnshipment.discrepancy.adapter.in.web;
 import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRejectedException;
 import com.yarnshipment.discrepancy.domain.claim.EvidenceServiceUnavailableException;
-import com.yarnshipment.discrepancy.domain.claim.InspectionNotFoundException;
 import com.yarnshipment.discrepancy.domain.claim.QualityClaimNotFoundException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotFoundException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
@@ -54,11 +53,6 @@ public final class DiscrepancyExceptionHandler {
         return problems.create(request, HttpStatus.NOT_FOUND, "QUALITY_CLAIM_NOT_FOUND");
     }
 
-    @ExceptionHandler(InspectionNotFoundException.class)
-    public ProblemDetail handleInspectionNotFound(HttpServletRequest request) {
-        return problems.create(request, HttpStatus.NOT_FOUND, "INSPECTION_NOT_FOUND");
-    }
-
     @ExceptionHandler(ClaimRejectedException.class)
     public ProblemDetail handleClaimRejected(ClaimRejectedException exception, HttpServletRequest request) {
         HttpStatus status = switch (exception.rejection()) {
@@ -66,10 +60,8 @@ public final class DiscrepancyExceptionHandler {
                     CLAIMED_KG_INVALID,
                     DESCRIPTION_REQUIRED,
                     EVIDENCE_REQUIRED,
-                    EVIDENCE_INVALID,
-                    RESULT_EVIDENCE_REQUIRED -> HttpStatus.BAD_REQUEST;
-            case NOT_AVAILABLE, FABRIC_NOT_RECEIVED, WINDOW_CLOSED, INSPECTION_RECORDED, INSPECTION_PENDING ->
-                HttpStatus.CONFLICT;
+                    EVIDENCE_INVALID -> HttpStatus.BAD_REQUEST;
+            case NOT_AVAILABLE, FABRIC_NOT_RECEIVED, WINDOW_CLOSED -> HttpStatus.CONFLICT;
         };
         return problems.create(
                 request, status, "QUALITY_CLAIM_" + exception.rejection().name());

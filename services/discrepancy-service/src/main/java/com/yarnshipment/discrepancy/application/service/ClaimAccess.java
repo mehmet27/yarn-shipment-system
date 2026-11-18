@@ -5,7 +5,6 @@ import com.yarnshipment.common.security.scope.ScopeGuard;
 import com.yarnshipment.common.security.scope.ScopedResource;
 import com.yarnshipment.discrepancy.application.port.in.claim.ClaimFile;
 import com.yarnshipment.discrepancy.application.port.out.DiscrepancyQueryPort;
-import com.yarnshipment.discrepancy.application.port.out.InspectionPort;
 import com.yarnshipment.discrepancy.application.port.out.QualityClaimPort;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRejectedException;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRejection;
@@ -27,17 +26,11 @@ final class ClaimAccess {
 
     private final QualityClaimPort claims;
     private final DiscrepancyQueryPort discrepancies;
-    private final InspectionPort inspections;
     private final ScopeGuard scopeGuard;
 
-    ClaimAccess(
-            QualityClaimPort claims,
-            DiscrepancyQueryPort discrepancies,
-            InspectionPort inspections,
-            ScopeGuard scopeGuard) {
+    ClaimAccess(QualityClaimPort claims, DiscrepancyQueryPort discrepancies, ScopeGuard scopeGuard) {
         this.claims = claims;
         this.discrepancies = discrepancies;
-        this.inspections = inspections;
         this.scopeGuard = scopeGuard;
     }
 
@@ -66,7 +59,7 @@ final class ClaimAccess {
     }
 
     ClaimFile fileOf(QualityClaim claim) {
-        return new ClaimFile(claim, discrepancyOf(claim), inspections.findInspections(claim.discrepancyId()));
+        return new ClaimFile(claim, discrepancyOf(claim));
     }
 
     private Discrepancy discrepancyOf(QualityClaim claim) {

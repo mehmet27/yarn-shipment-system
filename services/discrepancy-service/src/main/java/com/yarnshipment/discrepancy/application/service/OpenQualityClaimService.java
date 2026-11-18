@@ -6,7 +6,6 @@ import com.yarnshipment.discrepancy.application.port.in.claim.OpenQualityClaimCo
 import com.yarnshipment.discrepancy.application.port.in.claim.OpenQualityClaimUseCase;
 import com.yarnshipment.discrepancy.application.port.out.DiscrepancyQueryPort;
 import com.yarnshipment.discrepancy.application.port.out.EvidenceLookupPort;
-import com.yarnshipment.discrepancy.application.port.out.InspectionPort;
 import com.yarnshipment.discrepancy.application.port.out.NewQualityClaim;
 import com.yarnshipment.discrepancy.application.port.out.QualityClaimPort;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRequest;
@@ -34,12 +33,11 @@ public class OpenQualityClaimService implements OpenQualityClaimUseCase {
     public OpenQualityClaimService(
             QualityClaimPort claims,
             DiscrepancyQueryPort discrepancies,
-            InspectionPort inspections,
             EvidenceLookupPort evidence,
             ScopeGuard scopeGuard,
             Clock clock) {
         this.claims = claims;
-        this.access = new ClaimAccess(claims, discrepancies, inspections, scopeGuard);
+        this.access = new ClaimAccess(claims, discrepancies, scopeGuard);
         this.evidence = new ClaimEvidence(evidence);
         this.clock = clock;
     }

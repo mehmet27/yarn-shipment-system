@@ -11,7 +11,6 @@ import { useResolveDraft } from './useResolveDraft';
 const ERROR_KEYS: Record<string, string> = {
   DISCREPANCY_NOT_OPEN: 'discrepancy.resolve.notOpen',
   DISCREPANCY_NOTE_REQUIRED: 'discrepancy.resolve.noteRequired',
-  QUALITY_CLAIM_INSPECTION_PENDING: 'discrepancy.resolve.inspectionPending',
 };
 
 function errorKey(error: unknown): string {

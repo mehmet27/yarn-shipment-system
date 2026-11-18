@@ -130,5 +130,7 @@ class FireFileTest {
 
         assertThat(partlyInvoiced.shortageKg()).isEqualByComparingTo("60");
         assertThat(partlyInvoiced.toInvoiceKg()).isEqualByComparingTo("40");
+        // (1000 - 900 - 20) / 1000
+        assertThat(partlyInvoiced.actualFireRate()).isEqualByComparingTo("0.08");
     }
 }

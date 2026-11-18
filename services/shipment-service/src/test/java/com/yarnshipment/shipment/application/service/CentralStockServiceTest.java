@@ -135,7 +135,9 @@ class CentralStockServiceTest {
         assertThat(details.lotNo()).isEqualTo("P-1");
         assertThat(details.lotId()).isNotNull();
         assertThat(details.waybillNo()).isEqualTo("IRS-7");
-        assertThat(lotRequests).singleElement().satisfies(r -> assertThat(r.lotNo()).isEqualTo("P-1"));
+        assertThat(lotRequests)
+                .singleElement()
+                .satisfies(r -> assertThat(r.lotNo()).isEqualTo("P-1"));
     }
 
     @Test

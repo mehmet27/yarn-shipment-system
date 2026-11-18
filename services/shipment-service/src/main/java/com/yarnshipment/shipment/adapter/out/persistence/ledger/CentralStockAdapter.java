@@ -171,7 +171,10 @@ final class CentralStockAdapter implements CentralStockPort {
 
     @Override
     public Optional<String> findActiveSupplierName(UUID supplierId) {
-        return jdbc.sql(ACTIVE_SUPPLIER).param("id", supplierId).query(String.class).optional();
+        return jdbc.sql(ACTIVE_SUPPLIER)
+                .param("id", supplierId)
+                .query(String.class)
+                .optional();
     }
 
     @Override

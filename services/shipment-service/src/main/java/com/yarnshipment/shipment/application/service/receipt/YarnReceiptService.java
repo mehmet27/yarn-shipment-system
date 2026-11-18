@@ -38,8 +38,8 @@ public class YarnReceiptService implements RecordYarnReceiptUseCase {
     @Override
     @Transactional
     public CentralStockMovement recordYarnReceipt(RecordYarnReceiptUseCase.Command command) {
-        String yarnName = stock.findActiveProductNames(List.of(command.productId()))
-                .get(command.productId());
+        String yarnName =
+                stock.findActiveProductNames(List.of(command.productId())).get(command.productId());
         if (yarnName == null) {
             throw new InvalidLedgerInputException("productId");
         }

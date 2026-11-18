@@ -92,5 +92,6 @@ final class YarnLotAdapter implements YarnLotPort {
         return new ResolvedLot(id, request.lotNo());
     }
 
-    private record ExistingLot(UUID id, String lotNo, UUID productId, @Nullable UUID supplierId) {}
+    private record ExistingLot(
+            UUID id, String lotNo, UUID productId, @Nullable UUID supplierId) {}
 }

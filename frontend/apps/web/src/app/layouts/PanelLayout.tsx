@@ -26,6 +26,9 @@ const NAVBAR_STYLE = {
  * Panel kabuğu: solda boydan boya açık yan menü (üstünde firma adı), sağda ince üst çubuk ve içerik. Telefonda yan
  * menü kapalıdır; firma adı üst çubukta görünür.
  */
+/** Sabit Yardım düğmesi sayfanın son satırlarını örtmesin diye alt boşluk. */
+const HELP_CLEARANCE_PX = 88;
+
 export function PanelLayout() {
   const { t } = useTranslation();
   const [isMobileNavOpen, { toggle: toggleMobileNav, close: closeMobileNav }] = useDisclosure();
@@ -74,7 +77,7 @@ export function PanelLayout() {
             <PanelNav onNavigate={closeMobileNav} />
           </Stack>
         </AppShell.Navbar>
-        <AppShell.Main>
+        <AppShell.Main pb={HELP_CLEARANCE_PX}>
           <Outlet />
         </AppShell.Main>
       </AppShell>

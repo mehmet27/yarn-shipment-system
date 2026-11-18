@@ -144,10 +144,14 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
   });
 
   await mudur.adim('fatura edildi: fatura bilgisiyle kaydolur', async () => {
-    await mudur.sayfa.goto(`/panel/sevkiyat/${faturali}`);
-    await sekme(mudur, 'Fire dosyası');
-    await mudur.sayfa.getByLabel(/Fatura no/).fill(`F-${iplik}`);
-    await mudur.sayfa.getByRole('button', { name: 'Fatura edildi' }).click();
+    await mudur.sayfa.goto('/panel/faturalanacaklar');
+    const kart = mudur.sayfa
+      .getByRole('article')
+      .filter({ hasText: /Faturalanacak kilo/ })
+      .first();
+    await kart.getByRole('button', { name: 'Fatura bilgisini gir' }).click();
+    await kart.getByLabel(/Fatura no/).fill(`F-${iplik}`);
+    await kart.getByRole('button', { name: 'Fatura edildi' }).click();
     await mudur.sayfa.waitForTimeout(1500);
     const fire = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
     mudur.kontrol('durum INVOICED olmalı', fire.status === 'INVOICED', fire.status);

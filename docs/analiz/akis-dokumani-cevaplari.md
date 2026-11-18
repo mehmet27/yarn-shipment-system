@@ -144,8 +144,8 @@ durum "Durum" sütunundadır). Ayrıntılı anlatım için bkz. Süreç analizi 
 
 Zaten uyumlu olanlar: S1, S2, S4, S5, S6, S7, S8, S9, S13, S15, S16, S19, S21.
 
-Sonradan netleşenler: kalite itirazını yalnızca müdür "Haklı" ya da "Haksız" diye karara bağlar (kalite atar ve laboratuvar
-analizi ister); haklı itirazın kilosu faturalanacak kiloya eklenir (S19); fatura Faturalanacaklar ekranından, parça parça ve
+Sonradan netleşenler: kalite itirazını yalnızca müdür "Haklı" ya da "Haksız" diye karara bağlar (kalite yalnızca "Bana ata" ile üstlenir;
+laboratuvar ya da numune kontrolü adımı yoktur); haklı itirazın kilosu faturalanacak kiloya eklenir (S19); fatura Faturalanacaklar ekranından, parça parça ve
 onay adımıyla girilir (S15); itiraz yalnızca girilmiş kumaş için açılır.
 
 ## Sipariş formu – ek cevap 1 (düzeltildi)

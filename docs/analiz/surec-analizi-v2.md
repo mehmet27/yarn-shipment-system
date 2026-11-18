@@ -105,7 +105,7 @@ Excel'de hareketler elle toplandığı için bakiye geç ve hatalı çıkıyor, 
 |---|---|---|
 | **Müdür** (`MANAGER`) | Fason işlerinden sorumlu müdür | Sevkiyat açar (gönderilecek iplikler, fiyat, fire oranı, sevkiyat tarihi), sevkiyat tarihini ve şoför/aracı günceller; kantar uyuşmazlığında karar verir (Çuval ekle / çıkar, İplik güncelle, Sevkiyatı iptal et); irsaliyeyi yükleyip sevkiyatı tamamlar, sevkiyatı iptal eder; fire oranını değiştirir; Faturalanacaklar'dan "Fatura edildi" girer ve faturalanacak kilosu kalmamış fire dosyasını kapatır; kalite itirazını yalnızca "Haklı" ya da "Haksız" diye karara bağlar; Tanımlar ve Partiler ekranlarını yönetir, kanıtı geçersiz kılar; raporları, tutarları (TL), fasoncu bakiyesini ve merkez iplik stokunu görür. **Kumaş girişi ve iplik dönüşü kaydedemez**, kalite itirazı açamaz |
 | **Depo** (`WAREHOUSE`) | Merkez depo sorumlusu | Çuvalları sevkiyata ekler (çuval kilosu yazarak), çıkış tartısını (boş araç, dolu araç, çuval sayısı) ve kantar fişi fotoğrafını girer, tartı beklenenin altındaysa "Eksik kilo nedeni" yazar; **fasoncudan dönen ipliği kaydeder**; merkeze gelen ipliği stoğa yazar (tedarikçi seçmek zorunlu); merkez iplik stokunu görür. Sevkiyat açamaz, bakiye ve raporları görmez |
-| **Kalite** (`QUALITY`) | Fasoncu kalite ve merkez kalite (kullanıcı açılırken "Çalışma alanı" seçilir: Merkez fabrika ya da Fasoncular) | Kalite itirazı açar, uyuşmazlığı üstlenir ("Bana ata"), laboratuvar analizi ister ve sonucunu girer; **karar veremez**. Fasoncudan gelen kumaşı yalnızca **fasoncu kalite** girer; merkez fabrikanın kumaşını ve merkez iplik stokunu yalnızca **merkez kalite** görür ve girer. Partilerin kalitesini kilitler; raporları ve fasoncu bakiyesini görür |
+| **Kalite** (`QUALITY`) | Fasoncu kalite ve merkez kalite (kullanıcı açılırken "Çalışma alanı" seçilir: Merkez fabrika ya da Fasoncular) | Kalite itirazı açar, uyuşmazlığı üstlenir ("Bana ata"); **karar veremez** (laboratuvar ya da numune kontrolü adımı yoktur). Fasoncudan gelen kumaşı yalnızca **fasoncu kalite** girer; merkez fabrikanın kumaşını ve merkez iplik stokunu yalnızca **merkez kalite** görür ve girer. Partilerin kalitesini kilitler; raporları ve fasoncu bakiyesini görür |
 | **Genel müdür** (`GENERAL_MANAGER`) | Üst yönetim | Raporları (tutarlar dahil), fasoncu bakiyesini, Faturalanacaklar listesini ve merkez iplik stokunu salt okunur görür; işlem yapmaz |
 | **Admin** (`ADMIN`) | Sistem yöneticisi | Yalnızca sistemi yönetir: Kullanıcılar (hesap açma, rol, şifre verme), Görünüm (firma adı, renk, logo), Yetkiler ve Denetim kaydı. Sevkiyat, uyuşmazlık, rapor, bakiye ve merkez stok ekranlarını görmez; Tanımlar ve Partiler müdürdedir, admin açamaz |
 | ~~Şoför~~ | — | **Kaldırıldı.** Şoför ve araç yalnızca sevkiyatın üzerinde bilgi olarak yazılır |
@@ -384,10 +384,10 @@ yoksa form açılmaz ve "Kalite itirazı için önce kumaş girişi yapılmalı"
 kumaşın tamamı için itiraz açıldıysa yeni itiraz açılamaz.
 
 **Uyuşmazlık ve karar:** Her itiraz Kırmızı bir kalite uyuşmazlığı açar (hedef kapanış 5 iş günü). Kalite uyuşmazlığı
-"Bana ata" ile üstlenir ve isterse **laboratuvar analizi** ister ("Kontrol iste"); sonucu girerken laboratuvar raporu
-belgesi zorunludur. Kalite **karar veremez**. Kararı yalnızca **müdür** verir ve yalnızca iki seçenek vardır: **"Haklı"**
+"Bana ata" ile üstlenir; laboratuvar ya da numune kontrolü adımı yoktur ("Kontrol iste" ve sonuç girme kaldırıldı).
+Kalite **karar veremez**. Kararı yalnızca **müdür** verir ve yalnızca iki seçenek vardır: **"Haklı"**
 ya da **"Haksız"**; karar notu boş olamaz, "Karara bağla" → "Karar geri alınamaz." → **"Evet, kararı kaydet"** ile kaydedilir.
-Sonucu girilmemiş laboratuvar kontrolü varken karar verilemez. "Haklı, faturalandı" ya da "Sorumluluk atandı" diye
+"Haklı, faturalandı" ya da "Sorumluluk atandı" diye
 bir karar yoktur; fatura bu ekranda girilmez, Faturalanacaklar'dan girilir (5.11).
 
 **Bakiye etkisi:** İtiraz "Haklı" bulunursa itiraz edilen kilo **hem kumaştan hem gönderilen iplikten**
@@ -553,7 +553,7 @@ Kilolar 3 ondalıkla (gram) saklanır ve hesaplanır; ekranda Türkçe biçimde 
 | `app_setting` | Varsayılan fire oranı, kantar toleransı, görünüm ayarları | |
 
 Diğer servisler: `evidence` (kanıt, `WAYBILL` türü dahil; kantar fişi okuma kaldırıldı), `discrepancy` (uyuşmazlık, kalite
-itirazı, laboratuvar analizi), `reporting` (okuma modeli), `audit` (hash zinciri). Çuval servisi (`bag`) kaldırıldı;
+itirazı), `reporting` (okuma modeli), `audit` (hash zinciri). Çuval servisi (`bag`) kaldırıldı;
 çuvallar sevkiyat şemasında `shipment_bag` olarak tutulur.
 
 ### 9.2 Bakiye, kumaş, fire ve stok tabloları
@@ -597,7 +597,7 @@ yetkilerine göre değişir.
 | Faturalanacaklar | Müdür, Kalite, Genel müdür görür; müdür fatura girer | Faturalanacak kilosu kalan dosyalar; "Fatura bilgisini gir" → "Fatura edildi" → "Evet, fatura edildi" |
 | Fasoncu bakiyesi | Müdür, Genel müdür, Kalite | İplik cinsi × fasoncu matrisi, "Yolda" sütunu, hareket dökümü |
 | Merkez iplik stoku | Müdür, Genel müdür, Depo, Merkez kalite | Eldeki iplik, İplik girişi (depo), Kumaş girişi (merkez kalite), tedarikçiden gelen iplik tablosu (5.14) |
-| Uyuşmazlıklar | Kalite, Müdür | Kalite itirazı uyuşmazlıkları; kalite "Bana ata" ve laboratuvar analizi, müdür "Haklı" / "Haksız" kararı; müdür ana sayfasında "Karar bekleyen uyuşmazlıklar" listesi |
+| Uyuşmazlıklar | Kalite, Müdür | Kalite itirazı uyuşmazlıkları; kalite "Bana ata", müdür "Haklı" / "Haksız" kararı; müdür ana sayfasında "Karar bekleyen uyuşmazlıklar" listesi |
 | Raporlar | Kalite, Müdür, Genel müdür | Bölüm 11 |
 | Partiler | Müdür, Kalite | Parti ekle/düzenle (iplik tedarikçisi zorunlu), "Kaliteyi kilitle" |
 | Tanımlar | Müdür | Fasoncular, Şoförler, Araçlar, İplikler, Kalite sınıfları, İplik tedarikçileri |
@@ -680,7 +680,7 @@ Sadeleştirme sürümüyle aşağıdakiler koddan kaldırıldı (sonraki sürüm
 | Sevkiyat dosyasındaki "Düzeltmeler" bölümü, gerekçeli düzeltme kaydı, `CORRECTION_CREATE` izni | Yok; tamamlanan sevkiyat kilitlidir (5.13) |
 | Uyuşmazlık kararlarından "Haklı, faturalandı" ve "Sorumluluk atandı", sorumlu taraf alanı | Yalnızca müdürün "Haklı" / "Haksız" kararı (5.12) |
 | Kalite itirazı için 3 iş günü süre sınırı | Süre sınırı yok (S18) |
-| Numune kontrolü | Kalitenin isteyebileceği kontrol yalnızca laboratuvar analizidir ("Kontrol iste"); sonuç belgesi zorunludur |
+| Numune / laboratuvar kontrolü | Yoktur; kalite yalnızca "Bana ata" ile üstlenir, karar müdürdedir |
 | "Fasoncudan gelen iplik" kaydı | Yalnızca "İplik dönüşü"; eski kayıtlar geçmişte durur |
 | Admin'in sevkiyat, uyuşmazlık, rapor, bakiye, tanım ve parti yetkileri | Admin yalnız sistemi yönetir; tanımlar ve partiler müdürde |
 
@@ -691,7 +691,7 @@ Sadeleştirme sürümüyle aşağıdakiler koddan kaldırıldı (sonraki sürüm
 ### 13.1 Korunanlar
 
 Giriş (uygulamanın kendi giriş sistemi), roller ve izin matrisi, tanımlar, sevkiyat açma, çuval atama, çıkış tartısı,
-iptal, kanıt yükleme altyapısı, kalite itirazı ve laboratuvar analizi, uyuşmazlık yönetimi, denetim zinciri, rapor
+iptal, kanıt yükleme altyapısı, kalite itirazı, uyuşmazlık yönetimi, denetim zinciri, rapor
 servisi, Excel/PDF dışa aktarma, ön yüz kabuğu ve kurulum.
 
 ### 13.2 Geçiş dönemi tamamlandı

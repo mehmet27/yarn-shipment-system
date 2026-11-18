@@ -42,7 +42,7 @@ export function CentralStockPage() {
         }
       />
       <Tabs value={tab} onChange={setTab} keepMounted={false}>
-        <Tabs.List>
+        <Tabs.List style={{ flexWrap: 'wrap', rowGap: 4 }}>
           <Tabs.Tab value="stock">{t('stock.tabs.stock')}</Tabs.Tab>
           {canReceipt && <Tabs.Tab value="receipt">{t('stock.tabs.receipt')}</Tabs.Tab>}
           {canProduction && <Tabs.Tab value="production">{t('stock.tabs.production')}</Tabs.Tab>}

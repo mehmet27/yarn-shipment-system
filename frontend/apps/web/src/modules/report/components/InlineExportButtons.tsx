@@ -14,7 +14,7 @@ export function InlineExportButtons({
   const { t } = useTranslation();
   const { hasFailed, run } = usePanelExport(tables, fileName);
   return (
-    <Group gap="xs" wrap="nowrap" ml="auto" pb={4}>
+    <Group gap="xs" wrap="wrap" ml="auto" pb={4}>
       {hasFailed && (
         <Text size="xs" c="red" role="alert">
           {t('report.export.failed')}

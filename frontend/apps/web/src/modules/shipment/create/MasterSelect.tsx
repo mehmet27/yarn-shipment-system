@@ -85,7 +85,7 @@ export function MasterSelect({
       withAsterisk={isRequired}
       onSearchChange={setSearch}
       nothingFoundMessage="—"
-      comboboxProps={{ withinPortal: true }}
+      comboboxProps={{ withinPortal: true, hideDetached: false }}
     />
   );
 }

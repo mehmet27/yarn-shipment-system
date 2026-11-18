@@ -3,7 +3,7 @@ import { Box, Group, Loader, Paper, Stack, Text } from '@iplik/ui';
 import { useEffect, useRef } from 'react';
 import type { ChatEntry, HelpChatError } from './useHelpChat';
 
-const MESSAGES_STYLE = { flex: 1, overflowY: 'auto' } as const;
+const MESSAGES_STYLE = { flex: 1, minHeight: 0, overflowY: 'auto' } as const;
 const TEXT_STYLE = { whiteSpace: 'pre-wrap' } as const;
 
 type HelpMessagesProps = {

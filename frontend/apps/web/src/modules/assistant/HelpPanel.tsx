@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
-import { ActionIcon, Group, NavIcon, Paper, Text } from '@iplik/ui';
+import { ActionIcon, Group, NavIcon, Paper, Text, useMediaQuery } from '@iplik/ui';
+import { SHORT_SCREEN_QUERY } from './shortScreen';
 import { HelpComposer } from './HelpComposer';
 import { HelpMessages } from './HelpMessages';
 import type { ChatEntry, HelpChatError } from './useHelpChat';
@@ -16,6 +17,8 @@ const PANEL_STYLE = {
   display: 'flex',
   flexDirection: 'column',
 } as const;
+/** Yatay tutulan telefonda (kısa ekran) pencere üst çubuğun altından alta kadar uzar; Yardım düğmesi gizlenir. */
+const SHORT_SCREEN_STYLE = { ...PANEL_STYLE, top: 64, bottom: 8, height: 'auto' } as const;
 
 type HelpPanelProps = {
   entries: readonly ChatEntry[];
@@ -28,13 +31,14 @@ type HelpPanelProps = {
 /** Sohbet penceresi. Konuşma üstteki bileşende durur; pencere kapanıp açılınca kaybolmaz. */
 export function HelpPanel({ entries, error, isSending, onSend, onClose }: HelpPanelProps) {
   const { t } = useTranslation();
+  const isShortScreen = useMediaQuery(SHORT_SCREEN_QUERY);
   return (
     <Paper
       shadow="lg"
       radius="md"
       withBorder
       p="sm"
-      style={PANEL_STYLE}
+      style={isShortScreen ? SHORT_SCREEN_STYLE : PANEL_STYLE}
       role="dialog"
       aria-label={t('assistant.title')}
     >

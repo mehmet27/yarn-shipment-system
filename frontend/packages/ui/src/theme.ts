@@ -140,7 +140,8 @@ const FORM_COMPONENTS: MantineThemeComponents = {
   TextInput: { defaultProps: { size: 'md' } },
   PasswordInput: { defaultProps: { size: 'md' } },
   Textarea: { defaultProps: { size: 'md' } },
-  Select: { defaultProps: { size: 'md' } },
+  // hideDetached kapalı: tam ekran pencerede (telefon) açılır liste hızla gizlenip açılıp seçilemiyordu.
+  Select: { defaultProps: { size: 'md', comboboxProps: { hideDetached: false } } },
   // Artı/eksi okları 44 px'e sığmaz; telefonda sayı klavyesi açılır.
   NumberInput: { defaultProps: { size: 'md', hideControls: true } },
 };

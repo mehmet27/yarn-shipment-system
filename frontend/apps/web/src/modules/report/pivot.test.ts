@@ -103,7 +103,9 @@ describe('açılış bakiyesi ayrıştırma', () => {
   it('Türkçe ve noktalı kiloları çözer', () => {
     expect(parseNetKg('1.982,500')).toBe('1982.500');
     expect(parseNetKg('1982,5')).toBe('1982.500');
-    expect(parseNetKg('12.5')).toBe('12.500');
+    expect(parseNetKg('1.500')).toBe('1500.000');
+    expect(parseNetKg('12.5')).toBeUndefined();
+    expect(parseNetKg('264,5 kg')).toBe('264.500');
     expect(parseNetKg('abc')).toBeUndefined();
   });
   it('satırları eşler, hataları işaretler', () => {

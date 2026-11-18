@@ -25,6 +25,15 @@ export function formatCell(cell: ReportCell): string {
 /** Excel sayı biçimi kodları. */
 export const EXCEL_FORMATS = {
   count: '0',
-  kg: '#,##0.000',
   percent: '0.00%',
 } as const;
+
+const KG_MAX_DECIMALS = 3;
+const KG_ROUND_FACTOR = 1000; // 10 üzeri KG_MAX_DECIMALS
+
+/** Excel kilo biçimi hücrenin değerine göre seçilir: gereksiz sıfır yok (700, 264,5, 2.143,814), ekranla aynı. */
+export function excelKgFormat(value: number): string {
+  const rounded = Math.round(value * KG_ROUND_FACTOR) / KG_ROUND_FACTOR;
+  const decimals = Math.min(KG_MAX_DECIMALS, (String(rounded).split('.')[1] ?? '').length);
+  return decimals === 0 ? '#,##0' : `#,##0.${'0'.repeat(decimals)}`;
+}

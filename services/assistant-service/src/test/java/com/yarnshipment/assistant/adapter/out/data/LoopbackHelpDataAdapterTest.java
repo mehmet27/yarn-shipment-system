@@ -102,6 +102,26 @@ class LoopbackHelpDataAdapterTest {
     }
 
     @Test
+    @DisplayName("Nesne içindeki uzun liste de kısaltılır, diğer alanlar (toplam gibi) aynen kalır")
+    void shouldShortenLongListInsideObject() throws IOException {
+        List<String> rows = new ArrayList<>();
+        for (int i = 0; i < ROWS; i++) {
+            rows.add("{\"n\":" + i + "}");
+        }
+        LoopbackHelpDataAdapter adapter = adapterServing(
+                path -> new Reply(OK, "{\"totalKg\":\"2143.814\",\"movements\":[" + String.join(",", rows) + "]}"));
+        signedIn(COOKIE);
+
+        String result = adapter.read(HelpDataSource.CENTRAL_STOCK, Map.of());
+
+        assertThat(result)
+                .contains("\"totalKg\":\"2143.814\"")
+                .contains("\"toplamSatir\":150")
+                .doesNotContain("{\"n\":100}");
+        assertThat(requests).containsExactly("/api/v1/central-stock");
+    }
+
+    @Test
     @DisplayName("Sevkiyat numarasından kimlik bulunur ve ayrıntı okunur")
     void shouldResolveShipmentNumber() throws IOException {
         LoopbackHelpDataAdapter adapter = adapterServing(path -> path.startsWith("/api/v1/shipments?")

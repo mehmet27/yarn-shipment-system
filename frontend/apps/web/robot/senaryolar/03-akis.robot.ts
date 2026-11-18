@@ -1,12 +1,6 @@
 import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
-import {
-  fiyatYaz,
-  iplikTanimla,
-  kumasFormuDoldur,
-  kumasGir,
-  tartiyiOnayla,
-} from '../support/akis';
+import { fiyatYaz, iplikTanimla, kumasFormuDoldur, kumasGir, tartiyiOnayla } from '../support/akis';
 import { damga, iplikSec, resim, sec } from '../support/yardimci';
 
 type FireDosyasi = { fireRate: string; sentKg: string; fabricKg: string; status: string };

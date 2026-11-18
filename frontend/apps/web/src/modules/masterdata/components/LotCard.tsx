@@ -19,7 +19,7 @@ export function LotCard({ lot, onEdit }: LotCardProps) {
   const { t } = useTranslation();
   const isLocked = lot.qualityLockedAt !== undefined;
   return (
-    <Paper withBorder p="md" role="group" aria-label={lot.lotNo}>
+    <Paper withBorder radius="md" p="md" role="group" aria-label={lot.lotNo}>
       <Stack gap="sm">
         <Group justify="space-between" wrap="nowrap">
           <Text fw={600} {...(lot.active ? {} : { c: 'dimmed' })}>

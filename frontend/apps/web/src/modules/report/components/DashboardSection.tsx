@@ -10,17 +10,16 @@ import { DashboardSummary } from './DashboardSummary';
 import { StockOverview } from './StockOverview';
 import { PeriodSelect } from './PeriodSelect';
 
-/** Panel ana sayfasının dashboard bölümü; yalnızca rapor yetkisi olan kullanıcıya gösterilir. */
+/** Panel ana sayfasının dashboard bölümü: önce karar bekleyenler, sonra dönem özeti; rapor yetkisi gerekir. */
 export function DashboardSection() {
   const { t } = useTranslation();
   const [days, setDays] = useState<PeriodDays>(DEFAULT_PERIOD);
   const query = useDashboard(toPeriodParams(days));
   return (
     <Stack>
+      {query.data === undefined ? null : <AttentionLists dashboard={query.data} />}
       <Group justify="space-between">
-        <Title order={2} size="h3">
-          {t('report.dashboard.title')}
-        </Title>
+        <Title order={2}>{t('report.dashboard.title')}</Title>
         <PeriodSelect value={days} onChange={setDays} />
       </Group>
       <QueryState query={query}>
@@ -28,7 +27,6 @@ export function DashboardSection() {
           <Stack>
             <StockOverview params={toPeriodParams(days)} />
             <DashboardSummary dashboard={dashboard} />
-            <AttentionLists dashboard={dashboard} />
           </Stack>
         )}
       </QueryState>

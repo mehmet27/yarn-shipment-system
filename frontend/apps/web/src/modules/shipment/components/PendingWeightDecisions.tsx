@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Anchor, Group, Stack, Text } from '@iplik/ui';
-import { Link } from 'react-router';
+import { SectionCard, Stack } from '@iplik/ui';
+import { PendingRow } from './PendingRow';
 import { usePendingWeightDecisions } from '../hooks/usePendingWeightDecisions';
 
 /**
@@ -12,24 +12,23 @@ export function PendingWeightDecisions() {
   const pending = usePendingWeightDecisions();
   if (pending.length === 0) return null;
   return (
-    <Alert
-      color="orange"
+    <SectionCard
       title={t('shipment.pendingDecisions.title', { count: pending.length })}
-      data-testid="pending-weight-decisions"
+      description={t('shipment.pendingDecisions.hint')}
+      icon="discrepancies"
+      testId="pending-weight-decisions"
     >
-      <Stack gap="xs">
-        <Text size="sm">{t('shipment.pendingDecisions.hint')}</Text>
+      <Stack gap={0}>
         {pending.map((item) => (
-          <Group key={item.shipmentId} justify="space-between">
-            <Anchor component={Link} to={`/panel/sevkiyat/${item.shipmentId}`}>
-              {item.shipmentNo}
-            </Anchor>
-            <Text size="sm" c="dimmed">
-              {item.subcontractorTitle}
-            </Text>
-          </Group>
+          <PendingRow
+            key={item.shipmentId}
+            to={`/panel/sevkiyat/${item.shipmentId}`}
+            shipmentNo={item.shipmentNo}
+            description={item.subcontractorTitle}
+            color="red"
+          />
         ))}
       </Stack>
-    </Alert>
+    </SectionCard>
   );
 }

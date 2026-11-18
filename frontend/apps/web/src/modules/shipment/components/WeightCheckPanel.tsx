@@ -21,7 +21,7 @@ export function WeightCheckPanel({ check }: { check: WeightCheckView }) {
               <Text size="sm" c="dimmed">
                 {t(`shipment.file.weightCheck.${item.key}`)}
               </Text>
-              <Text fw={700}>{item.value}</Text>
+              <Text fw={600}>{item.value}</Text>
             </Stack>
           ))}
         </SimpleGrid>

@@ -1,13 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import {
-  Button,
-  PageHero,
-  Stack,
-  Text,
-  TextInput,
-  useDebouncedValue,
-  useDisclosure,
-} from '@iplik/ui';
+import { Button, PageHero, Stack, TextInput, useDebouncedValue, useDisclosure } from '@iplik/ui';
 import { useState } from 'react';
 import { type AccountFilter, NO_FILTER } from '../accountFilter';
 import { AccountFilters } from '../components/AccountFilters';
@@ -33,14 +25,10 @@ export function LoginAccountsPage() {
     <Stack>
       <PageHero
         title={t('users.title')}
-        actions={
-          <Button variant="white" color="brand" onClick={open}>
-            {t('users.create.open')}
-          </Button>
-        }
+        subtitle={t('users.intro')}
+        actions={<Button onClick={open}>{t('users.create.open')}</Button>}
       />
       <CreateAccountModal opened={isCreating} onClose={close} />
-      <Text c="dimmed">{t('users.intro')}</Text>
       <TextInput
         type="search"
         aria-label={t('users.search')}

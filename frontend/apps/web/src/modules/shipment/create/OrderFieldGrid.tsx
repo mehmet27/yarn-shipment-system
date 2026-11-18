@@ -25,7 +25,7 @@ export function OrderFieldGrid({ line, showErrors, onPatch }: OrderFieldGridProp
     />
   );
   return (
-    <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xs">
+    <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
       {text('fabricType')}
       {text('lycra')}
       <Select

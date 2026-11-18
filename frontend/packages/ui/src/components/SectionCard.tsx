@@ -13,6 +13,13 @@ const TONE_COLOR: Readonly<Record<SectionTone, string>> = {
   danger: 'red',
 };
 
+const SIGNAL_MIX = '12%';
+
+/** Dikkat şeridinin zemini: iki görünümde de yüzeye hafifçe karışmış renk (koyuda doygun kalmasın). */
+function signalBackground(color: string): string {
+  return `color-mix(in srgb, var(--mantine-color-${color}-filled) ${SIGNAL_MIX}, var(--app-surface))`;
+}
+
 export type SectionCardProps = {
   title: string;
   /** Başlığın solundaki ikon (dekoratif). */
@@ -27,8 +34,8 @@ export type SectionCardProps = {
 };
 
 /**
- * Ayrışan bölüm kartı: renkli başlık çubuğu ve beyaz gövde. Sayfadaki bölümlerin birbirinden net ayrılması ve
- * kullanıcıyı "şimdi ne yapıyorum" sorusuna yönlendirmesi içindir.
+ * Bölüm kartı: girintili (gri) başlık şeridi ve beyaz gövde. Olağan bölümler nötrdür; renk yalnızca dikkat isteyen
+ * bölümde (uyarı, hata, bilgi, başarı) başlık şeridine ve sol kenar çizgisine gelir.
  */
 export function SectionCard({
   title,
@@ -40,11 +47,11 @@ export function SectionCard({
   children,
 }: SectionCardProps) {
   const color = TONE_COLOR[tone];
+  const isSignal = tone !== 'brand';
   return (
     <Paper
       withBorder
       radius="md"
-      shadow="xs"
       component="section"
       aria-label={title}
       data-testid={testId}
@@ -56,20 +63,25 @@ export function SectionCard({
         gap="sm"
         px="md"
         py="xs"
-        bg={`${color}.0`}
+        mih={44}
+        bg={isSignal ? signalBackground(color) : 'var(--app-inset)'}
         style={{
-          borderBottom: `1px solid var(--mantine-color-${color}-2)`,
-          borderLeft: `4px solid var(--mantine-color-${color}-6)`,
+          borderBottom: '1px solid var(--app-line)',
+          boxShadow: isSignal ? `inset 3px 0 0 var(--mantine-color-${color}-6)` : undefined,
         }}
       >
         <Group gap="xs" wrap="nowrap" miw={0}>
           {icon === undefined ? null : (
-            <Box c={`${color}.7`} lh={0}>
+            <Box c={isSignal ? `var(--mantine-color-${color}-light-color)` : 'dimmed'} lh={0}>
               <NavIcon name={icon} />
             </Box>
           )}
           <Stack gap={0} miw={0}>
-            <Text fw={700} c={`${color}.9`} size="sm">
+            <Text
+              fw={600}
+              c={isSignal ? `var(--mantine-color-${color}-light-color)` : 'var(--app-text)'}
+              size="sm"
+            >
               {title}
             </Text>
             {description === undefined ? null : (

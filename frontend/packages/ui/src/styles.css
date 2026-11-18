@@ -1,53 +1,39 @@
-@import '@fontsource-variable/inter/index.css';
+@import '@fontsource-variable/geist/index.css';
 @import '@mantine/core/styles.css';
 
-/* Hafif gri zemin: beyaz kartlar ve girdiler zeminden net ayrılır (özellikle dış mekân/güneş altında). */
-body {
-  background: var(--mantine-color-gray-0);
-}
-
-/* Rozet metni kesilmez: Mantine varsayılanı tek satır ve "…" ile kırpar; uzun metin alt satıra iner. */
-.mantine-Badge-root {
-  height: auto;
-  min-height: var(--badge-height);
-  max-width: 100%;
-  padding-block: 2px;
-}
-
-.mantine-Badge-label {
-  overflow: visible;
-  text-overflow: clip;
-  white-space: normal;
-  text-align: center;
-}
-
-/* Koyu yan menüde üzerine gelinen bağlantı: Mantine varsayılanı açık gri zemin verip beyaz yazıyı siliyordu. */
-.panel-nav-link:not([data-active]):hover,
-.panel-nav-link:not([data-active]):active {
-  background-color: color-mix(in srgb, white 14%, transparent);
-}
-
-/* Soluk yazı ve ipuçları açık zeminde okunur kalsın (WCAG AA ~4.5:1): Mantine varsayılanı gray-6 yetersiz. */
+/*
+ * Yüzey katmanları: zemin ve kart aynı (beyaz), kartı ince çizgi ayırır; girinti (yan menü, kart başlığı, tablo
+ * başlığı) çok açık gri. Koyu görünümde aynı adlar koyu karşılıklarını alır; bileşenler renk kodu yazmaz, bu adları
+ * kullanır.
+ */
 :root {
-  --mantine-color-dimmed: var(--mantine-color-gray-7);
-}
-
-.mantine-Input-input::placeholder,
-.mantine-Select-input::placeholder {
-  color: var(--mantine-color-gray-7);
-  opacity: 1;
-}
-
-.mantine-InputWrapper-description {
-  color: var(--mantine-color-gray-7);
-}
-
-/* Denetim yüksekliği: telefonda 44 px dokunma hedefi (FE-UI-07), masaüstünde sıkı 36 px. Yazı telefonda 16 px kalır
-   (iOS, 16 px altındaki alana odaklanınca sayfayı yakınlaştırır). */
-:root {
+  --app-page-bg: #ffffff;
+  --app-surface: #ffffff;
+  --app-inset: #fafafa;
+  --app-line: #e4e4e7;
+  --app-line-soft: #f4f4f5;
+  --app-control-line: #d4d4d8;
+  --app-frame-bg: #fafafa;
+  --app-text: #09090b;
+  /* Soluk yazı ve ipuçları açık zeminde okunur kalsın (WCAG AA ~4.5:1). */
+  --mantine-color-dimmed: var(--mantine-color-gray-6);
+  /* Denetim yüksekliği: telefonda 44 px dokunma hedefi (FE-UI-07), masaüstünde sıkı 36 px. Yazı telefonda 16 px kalır
+     (iOS, 16 px altındaki alana odaklanınca sayfayı yakınlaştırır). */
   --app-control-height: 2.75rem;
   --app-control-fz: 1rem;
-  --app-page-bg: color-mix(in srgb, var(--mantine-color-brand-6) 9%, #f3f5f8);
+}
+
+:root[data-mantine-color-scheme='dark'] {
+  --app-page-bg: #09090b;
+  --app-surface: #09090b;
+  --app-inset: #141416;
+  --app-line: #27272a;
+  --app-line-soft: #1c1c1f;
+  --app-control-line: #3f3f46;
+  --app-frame-bg: #0c0c0e;
+  --app-text: #fafafa;
+  --mantine-color-dimmed: var(--mantine-color-dark-2);
+  --mantine-color-body: #09090b;
 }
 
 @media (min-width: 48em) {
@@ -59,12 +45,88 @@ body {
 
 body {
   background: var(--app-page-bg);
+  color: var(--app-text);
+  /* Kilo, tutar ve tarih sütunları alt alta hizalı okunur. */
+  font-variant-numeric: tabular-nums;
+}
+
+.mantine-Paper-root[data-with-border] {
+  border-color: var(--app-line);
+}
+
+/* Rozet: küçük harf, kesilmeyen metin. Mantine varsayılanı büyük harf ve tek satırdır. */
+.mantine-Badge-root {
+  height: auto;
+  min-height: var(--badge-height);
+  max-width: 100%;
+  padding-block: 2px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+.mantine-Badge-label {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  text-align: center;
+}
+
+/* Telefonda yan menü üst çubuğun altından açılır; üst çubuktaki menü düğmesi görünür ve basılabilir kalır. */
+@media (max-width: 47.99em) {
+  .panel-navbar {
+    top: var(--app-shell-header-height, 56px);
+    height: calc(100dvh - var(--app-shell-header-height, 56px));
+  }
+}
+
+/* Yan menü bağlantısı: soluk yazı; etkin olan girintili zeminde ve koyu yazıyla belirir. */
+.panel-nav-link {
+  color: var(--mantine-color-dimmed);
+  border-radius: var(--mantine-radius-sm);
+}
+
+.panel-nav-link:not([data-active]):hover,
+.panel-nav-link:not([data-active]):active {
+  background-color: color-mix(in srgb, var(--app-text) 6%, transparent);
+  color: var(--app-text);
+}
+
+.panel-nav-link[data-active],
+.panel-nav-link[data-active]:hover {
+  background-color: color-mix(in srgb, var(--app-text) 8%, transparent);
+  color: var(--app-text);
+}
+
+.mantine-Paper-root {
+  background: var(--app-surface);
+}
+
+.mantine-Input-input::placeholder,
+.mantine-Select-input::placeholder {
+  color: var(--mantine-color-dimmed);
+  opacity: 1;
+}
+
+.mantine-InputWrapper-description {
+  color: var(--mantine-color-dimmed);
 }
 
 .mantine-Button-root[data-size='md'] {
   --button-height: var(--app-control-height) !important;
   --button-fz: var(--app-control-fz) !important;
-  --button-padding-x: 1rem !important;
+  --button-padding-x: 0.875rem !important;
+}
+
+.mantine-Button-root {
+  font-weight: 600;
+}
+
+/* İkincil düğme (default): beyaz zemin, belirgin kenar; ana eylemle yarışmaz. */
+.mantine-Button-root[data-variant='default'] {
+  border-color: var(--app-control-line);
+  background: var(--app-surface);
+  color: var(--app-text);
 }
 
 .mantine-Input-wrapper[data-size='md'] {
@@ -72,44 +134,90 @@ body {
   --input-fz: var(--app-control-fz) !important;
 }
 
+/* Salt okunur ve kapalı alanlar girintili zeminde durur: doldurulacak alan beyaz, bilgi alanı gri. */
+.mantine-Input-input:disabled,
+.mantine-Input-input[readonly]:not([aria-haspopup]) {
+  background: var(--app-inset);
+  color: var(--mantine-color-dimmed);
+  opacity: 1;
+}
+
 /* Düğmenin solundaki ikon ile yazı arası. */
 .mantine-Button-section[data-position='left'] {
   margin-inline-end: 0.5rem;
 }
 
-/* Sekmeler: pasif sekme hafif renkli, etkin sekme beyaz ve üstte marka çizgili; içerik çerçeveli beyaz kutu. */
+/* Sekmeler: alt çizgili şerit; dar ekranda satır atlamaz, yana kayar. İçerik çerçeveli beyaz kutu. */
 .mantine-Tabs-list {
-  gap: 4px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 2px;
+}
+
+.mantine-Tabs-list::before {
+  border-color: var(--app-line);
 }
 
 .mantine-Tabs-tab {
-  background: color-mix(in srgb, var(--mantine-color-brand-6) 7%, white);
-  color: var(--mantine-color-gray-8);
+  flex-shrink: 0;
   font-weight: 600;
 }
 
-.mantine-Tabs-tab[data-active] {
-  background: white;
-  color: var(--mantine-color-brand-8);
-  border-top: 3px solid var(--mantine-color-brand-6);
+.mantine-Tabs-tab[data-variant='default'] {
+  color: var(--mantine-color-dimmed);
+  padding-inline: var(--mantine-spacing-md);
 }
 
-.mantine-Tabs-panel {
-  background: white;
-  border: 1px solid var(--mantine-color-gray-4);
-  border-top: 0;
-  border-radius: 0 0 var(--mantine-radius-md) var(--mantine-radius-md);
+.mantine-Tabs-tab[data-variant='default'][data-active] {
+  color: var(--app-text);
+  border-color: var(--app-text);
+}
+
+.mantine-Tabs-root[data-variant='default'] > .mantine-Tabs-panel {
+  background: var(--app-surface);
+  border: 1px solid var(--app-line);
+  border-radius: var(--mantine-radius-md);
+  margin-top: var(--mantine-spacing-sm);
   padding: var(--mantine-spacing-md);
-  box-shadow: var(--mantine-shadow-xs);
 }
 
-/* Tablo: başlık satırı renkli, satırlar çizgili. */
-.mantine-Table-thead .mantine-Table-th {
-  background: color-mix(in srgb, var(--mantine-color-brand-6) 9%, white);
-  color: var(--mantine-color-brand-9);
-  font-weight: 700;
-}
-
+/* Tablo: başlık satırı girintili zeminde ve soluk; satırlar ince çizgiyle ayrılır. */
 .mantine-Table-table {
-  --table-striped-color: color-mix(in srgb, var(--mantine-color-brand-6) 4%, white);
+  --table-border-color: var(--app-line-soft);
+}
+
+.mantine-Table-thead .mantine-Table-th {
+  background: var(--app-inset);
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mantine-Table-thead {
+  border-bottom: 1px solid var(--app-line);
+}
+
+/* Pencere başlığı gövdeden çizgiyle ayrılır. */
+.mantine-Modal-header {
+  border-bottom: 1px solid var(--app-line-soft);
+}
+
+.mantine-Modal-title {
+  font-weight: 600;
+}
+
+.mantine-Modal-body:not(:only-child) {
+  padding-top: var(--mantine-spacing-md);
+}
+
+/* Koyu görünümde ana renk beyazdır; etkin sayfa numarası okunsun diye yazısı koyu olur. */
+:root[data-mantine-color-scheme='dark'] .mantine-Pagination-control[data-active] {
+  color: var(--mantine-color-black);
+}
+
+/* Sayı hücreleri: son hücrenin sağ çizgisi çizilmez; satır dolmadığında boş alanda yalnız çizgi kalmasın. */
+.app-stat-grid > :last-child {
+  box-shadow: 0 1px 0 var(--app-line) !important;
 }

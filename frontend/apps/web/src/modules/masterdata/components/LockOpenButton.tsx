@@ -6,7 +6,7 @@ export function LockOpenButton({ onOpen }: { onOpen: () => void }) {
   const { t } = useTranslation();
   return (
     <Stack gap={4}>
-      <Button color="orange" variant="light" onClick={onOpen}>
+      <Button variant="default" onClick={onOpen}>
         {t('lots.lock.open')}
       </Button>
       <Text size="xs" c="dimmed">

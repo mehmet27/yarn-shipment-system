@@ -1,6 +1,7 @@
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import type { CentralStock } from '@iplik/api-client/central-stock';
-import { Badge, Table, Text } from '@iplik/ui';
+import { Table, Text } from '@iplik/ui';
+import { DotBadge } from '@iplik/ui';
 import { formatSignedKg } from '@/modules/shipment';
 
 const KIND_COLOR: Record<string, string> = {
@@ -14,15 +15,21 @@ export function MovementRow({ move }: { move: CentralStock['movements'][number] 
   const { t } = useTranslation();
   return (
     <Table.Tr>
-      <Table.Td>{formatDateTime(move.occurredAt)}</Table.Td>
-      <Table.Td>
-        <Badge variant="light" color={KIND_COLOR[move.kind] ?? 'gray'}>
-          {t(`stock.kinds.${move.kind}`)}
-        </Badge>
+      <Table.Td style={{ whiteSpace: 'nowrap' }}>{formatDateTime(move.occurredAt)}</Table.Td>
+      <Table.Td style={{ whiteSpace: 'nowrap' }}>
+        <DotBadge color={KIND_COLOR[move.kind] ?? 'gray'}>{t(`stock.kinds.${move.kind}`)}</DotBadge>
       </Table.Td>
       <Table.Td>{move.yarnType}</Table.Td>
-      <Table.Td>
-        <Text span c={move.netKg.startsWith('-') ? 'red.7' : 'green.8'} fw={600}>
+      <Table.Td ta="right">
+        <Text
+          span
+          c={
+            move.netKg.startsWith('-')
+              ? 'var(--mantine-color-red-light-color)'
+              : 'var(--mantine-color-green-light-color)'
+          }
+          fw={600}
+        >
           {formatSignedKg(move.netKg)}
         </Text>
       </Table.Td>

@@ -1,6 +1,7 @@
 import type { AuditRecordView } from '@iplik/api-client/audit';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Badge, Group, Paper, Stack, Text } from '@iplik/ui';
+import { Group, Paper, Stack, Text } from '@iplik/ui';
+import { DotBadge } from '@iplik/ui';
 import { AuditActor } from './AuditActor';
 import { useActionLabel, useEntityLabel, useServiceLabel } from './auditText';
 
@@ -19,13 +20,15 @@ export function AuditCards({
   return (
     <Stack gap="sm">
       {records.map((record) => (
-        <Paper key={record.id} withBorder p="md">
+        <Paper key={record.id} withBorder radius="md" p="md">
           <Stack gap={4}>
             <Group justify="space-between" wrap="nowrap" align="flex-start">
               <Text fw={600} title={record.action}>
                 {actionLabel(record.action)}
               </Text>
-              {record.decision === 'DENIED' ? <Badge color="red">{t('audit.denied')}</Badge> : null}
+              {record.decision === 'DENIED' ? (
+                <DotBadge color="red">{t('audit.denied')}</DotBadge>
+              ) : null}
             </Group>
             <Text size="sm" c="dimmed">
               {formatDateTime(record.occurredAt)}

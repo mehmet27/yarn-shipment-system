@@ -210,6 +210,15 @@ test('Şifre değiştirme: kullanıcı kendi şifresini menüden değiştirir', 
     await sayfa.getByRole('link', { name: 'Vazgeç' }).click();
     await sayfa.waitForURL((adres) => !/sifre-degistir/.test(adres.pathname));
   });
+  await admin.adim('menüden koyu görünüme geçilir ve açık görünüme dönülür', async () => {
+    const gorunum = () => sayfa.locator('html').getAttribute('data-mantine-color-scheme');
+    await sayfa.getByRole('button', { name: ad }).click();
+    await sayfa.getByRole('menuitem', { name: 'Koyu görünüme geç' }).click();
+    await expect.poll(gorunum).toBe('dark');
+    await sayfa.getByRole('button', { name: ad }).click();
+    await sayfa.getByRole('menuitem', { name: 'Açık görünüme geç' }).click();
+    await expect.poll(gorunum).toBe('light');
+  });
   await admin.adim('hatalı mevcut şifre ve zayıf yeni şifre nedeniyle reddedilir', async () => {
     await sayfa.getByRole('button', { name: ad }).click();
     await sayfa.getByRole('menuitem', { name: 'Şifremi değiştir' }).click();

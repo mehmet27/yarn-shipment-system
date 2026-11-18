@@ -1,11 +1,13 @@
 import type { GetDashboardParams } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Title } from '@iplik/ui';
+import { SectionCard } from '@iplik/ui';
 import { usePermission } from '@/modules/auth';
 import { QueryState } from '@/modules/shipment';
 import { useAmountSummary } from '../hooks/useFaconReports';
 import { AmountCards } from './AmountCards';
 import { AmountSubcontractorTable } from './AmountSubcontractorTable';
+import { CardBleed } from './CardBleed';
+import { GroupLabel } from './GroupLabel';
 
 /** Tutar bilgisi: yalnızca müdür ve genel müdür görür. Tutarlar her satırın kendi birim fiyatıyla hesaplanır. */
 export function AmountOverview({ params }: { params: GetDashboardParams }) {
@@ -14,21 +16,16 @@ export function AmountOverview({ params }: { params: GetDashboardParams }) {
   const query = useAmountSummary(params, canView);
   if (!canView) return null;
   return (
-    <Stack data-testid="amount-overview">
-      <Title order={2} size="h3">
-        {t('report.amount.title')}
-      </Title>
+    <SectionCard title={t('report.amount.title')} icon="invoices" testId="amount-overview">
       <QueryState query={query}>
         {(summary) => (
-          <Stack>
+          <CardBleed>
             <AmountCards summary={summary} />
-            <Title order={3} size="h4">
-              {t('report.amount.bySubcontractor')}
-            </Title>
+            <GroupLabel>{t('report.amount.bySubcontractor')}</GroupLabel>
             <AmountSubcontractorTable summary={summary} />
-          </Stack>
+          </CardBleed>
         )}
       </QueryState>
-    </Stack>
+    </SectionCard>
   );
 }

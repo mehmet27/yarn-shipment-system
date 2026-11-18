@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
-import { Anchor, Group, Paper, Stack, Text, Title } from '@iplik/ui';
-import { Link } from 'react-router';
+import { SectionCard, Stack } from '@iplik/ui';
+import { PendingRow } from './PendingRow';
 import { useShipments } from '../hooks/useShipments';
 
 const LIST_SIZE = 20;
@@ -17,25 +17,23 @@ export function PendingDispatches() {
   );
   if (pending.length === 0) return null;
   return (
-    <Paper withBorder p="md" data-testid="pending-dispatches">
-      <Stack gap="xs">
-        <Title order={2} size="h4">
-          {t('shipment.pendingDispatches.title', { count: pending.length })}
-        </Title>
-        <Text size="sm" c="dimmed">
-          {t('shipment.pendingDispatches.hint')}
-        </Text>
+    <SectionCard
+      title={t('shipment.pendingDispatches.title', { count: pending.length })}
+      description={t('shipment.pendingDispatches.hint')}
+      icon="truck"
+      testId="pending-dispatches"
+    >
+      <Stack gap={0}>
         {pending.map((item) => (
-          <Group key={item.shipmentId} justify="space-between">
-            <Anchor component={Link} to={`/panel/sevkiyat/${item.shipmentId}`}>
-              {item.shipmentNo}
-            </Anchor>
-            <Text size="sm" c="dimmed">
-              {item.subcontractorTitle}
-            </Text>
-          </Group>
+          <PendingRow
+            key={item.shipmentId}
+            to={`/panel/sevkiyat/${item.shipmentId}`}
+            shipmentNo={item.shipmentNo}
+            description={item.subcontractorTitle}
+            color="yellow"
+          />
         ))}
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }

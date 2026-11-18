@@ -29,7 +29,7 @@ export function AccountActions({ account }: { account: LoginAccountView }) {
   const errorCode = enabledMutation.isError ? toProblem(enabledMutation.error).code : undefined;
   return (
     <Stack gap={4}>
-      <Group gap="xs" wrap="nowrap">
+      <Group gap="xs" wrap="nowrap" justify="flex-end">
         {hasChangeableRole(account) && (
           <Button
             variant="default"

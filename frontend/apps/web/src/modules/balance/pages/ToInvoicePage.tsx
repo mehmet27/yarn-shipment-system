@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Anchor, Paper, Stack, Text, Title } from '@iplik/ui';
+import { Anchor, Box, Group, PageHero, Paper, Stack, Text } from '@iplik/ui';
 import { formatKgText, formatPercentText, ListPagination, QueryState } from '@/modules/shipment';
 import { useState } from 'react';
 import { Link } from 'react-router';
@@ -12,39 +12,47 @@ export function ToInvoicePage() {
   const query = useToInvoice(page);
   return (
     <Stack>
-      <Title order={1}>{t('settlement.toInvoice.title')}</Title>
-      <Text c="dimmed">{t('settlement.toInvoice.subtitle')}</Text>
+      <PageHero
+        title={t('settlement.toInvoice.title')}
+        subtitle={t('settlement.toInvoice.subtitle')}
+      />
       <QueryState query={query}>
         {({ items, page: info }) =>
           items.length === 0 ? (
             <Text c="dimmed">{t('settlement.toInvoice.empty')}</Text>
           ) : (
             <Stack>
-              {items.map((row) => (
-                <Paper
-                  key={row.shipmentId}
-                  withBorder
-                  p="md"
-                  component="article"
-                  aria-label={row.shipmentNo}
-                >
-                  <Stack gap="xs">
-                    <Anchor component={Link} to={`/panel/sevkiyat/${row.shipmentId}`} fw={600}>
-                      {row.shipmentNo}
-                    </Anchor>
-                    <Text size="sm">{row.subcontractorTitle}</Text>
-                    <Text size="sm" c="dimmed">
-                      {t('settlement.toInvoice.sent')} {formatKgText(row.sentKg)} ·{' '}
-                      {t('settlement.toInvoice.fabric')} {formatKgText(row.fabricKg)} ·{' '}
-                      {t('settlement.toInvoice.expected')} {formatKgText(row.expectedFabricKg)}
-                    </Text>
-                    <Text fw={600}>
-                      {t('settlement.toInvoice.faulty')} {formatKgText(row.faultyKg)} ·{' '}
-                      {t('settlement.toInvoice.fire')} {formatPercentText(row.actualFirePercent)}
-                    </Text>
-                  </Stack>
-                </Paper>
-              ))}
+              <Paper withBorder style={{ overflow: 'hidden' }}>
+                {items.map((row, index) => (
+                  <Box
+                    key={row.shipmentId}
+                    component="article"
+                    aria-label={row.shipmentNo}
+                    p="md"
+                    style={{
+                      borderTop: index === 0 ? undefined : '1px solid var(--app-line-soft)',
+                    }}
+                  >
+                    <Stack gap={4}>
+                      <Group justify="space-between" gap="xs">
+                        <Anchor component={Link} to={`/panel/sevkiyat/${row.shipmentId}`} fw={600}>
+                          {row.shipmentNo}
+                        </Anchor>
+                        <Text size="sm">{row.subcontractorTitle}</Text>
+                      </Group>
+                      <Text size="sm" c="dimmed">
+                        {t('settlement.toInvoice.sent')} {formatKgText(row.sentKg)} ·{' '}
+                        {t('settlement.toInvoice.fabric')} {formatKgText(row.fabricKg)} ·{' '}
+                        {t('settlement.toInvoice.expected')} {formatKgText(row.expectedFabricKg)}
+                      </Text>
+                      <Text fw={600}>
+                        {t('settlement.toInvoice.faulty')} {formatKgText(row.faultyKg)} ·{' '}
+                        {t('settlement.toInvoice.fire')} {formatPercentText(row.actualFirePercent)}
+                      </Text>
+                    </Stack>
+                  </Box>
+                ))}
+              </Paper>
               {info.totalPages > 1 && (
                 <ListPagination total={info.totalPages} value={page} onChange={setPage} />
               )}

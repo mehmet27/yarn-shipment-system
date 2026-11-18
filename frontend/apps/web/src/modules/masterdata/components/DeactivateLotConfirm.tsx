@@ -17,15 +17,15 @@ export function DeactivateLotConfirm({
 }: DeactivateLotConfirmProps) {
   const { t } = useTranslation();
   return (
-    <Paper withBorder p="sm">
+    <Paper withBorder radius="md" p="sm" bg="var(--app-inset)">
       <Stack gap="sm">
         <Text size="sm">{t('lots.deactivateQuestion', { lotNo })}</Text>
-        <Group grow>
-          <Button color="red" loading={isLoading} onClick={onConfirm}>
-            {t('lots.deactivateConfirm')}
-          </Button>
+        <Group justify="flex-end">
           <Button variant="default" onClick={onCancel}>
             {t('lots.lock.dismiss')}
+          </Button>
+          <Button color="red" loading={isLoading} onClick={onConfirm}>
+            {t('lots.deactivateConfirm')}
           </Button>
         </Group>
       </Stack>

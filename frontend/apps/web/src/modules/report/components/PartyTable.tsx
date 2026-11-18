@@ -26,15 +26,15 @@ export function PartyTable({ partyHeaders, rows }: PartyTableProps) {
   }
   return (
     <Table.ScrollContainer minWidth={520}>
-      <Table striped>
+      <Table>
         <Table.Thead>
           <Table.Tr>
             {partyHeaders.map((header, index) => (
               <Table.Th key={`${String(index)}-${header}`}>{header}</Table.Th>
             ))}
-            <Table.Th>{t('report.parties.shipments')}</Table.Th>
-            <Table.Th>{t('report.parties.discrepant')}</Table.Th>
-            <Table.Th>{t('report.parties.rate')}</Table.Th>
+            <Table.Th ta="right">{t('report.parties.shipments')}</Table.Th>
+            <Table.Th ta="right">{t('report.parties.discrepant')}</Table.Th>
+            <Table.Th ta="right">{t('report.parties.rate')}</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -43,18 +43,18 @@ export function PartyTable({ partyHeaders, rows }: PartyTableProps) {
               {row.parties.map((party, index) => (
                 <Table.Td key={`${String(index)}-${partyHeaders[index] ?? ''}`}>{party}</Table.Td>
               ))}
-              <Table.Td>{row.shipmentCount}</Table.Td>
-              <Table.Td>{row.discrepantShipmentCount}</Table.Td>
-              <Table.Td>{formatPercent(row.discrepancyRate)}</Table.Td>
+              <Table.Td ta="right">{row.shipmentCount}</Table.Td>
+              <Table.Td ta="right">{row.discrepantShipmentCount}</Table.Td>
+              <Table.Td ta="right">{formatPercent(row.discrepancyRate)}</Table.Td>
             </Table.Tr>
           ))}
         </Table.Tbody>
         <Table.Tfoot>
-          <Table.Tr fw={700} data-testid="party-total">
+          <Table.Tr fw={600} data-testid="party-total">
             <Table.Td colSpan={partyHeaders.length}>{t('report.export.total')}</Table.Td>
-            <Table.Td>{totals.shipments}</Table.Td>
-            <Table.Td>{totals.discrepant}</Table.Td>
-            <Table.Td>{formatPercent(totals.rate.toFixed(2))}</Table.Td>
+            <Table.Td ta="right">{totals.shipments}</Table.Td>
+            <Table.Td ta="right">{totals.discrepant}</Table.Td>
+            <Table.Td ta="right">{formatPercent(totals.rate.toFixed(2))}</Table.Td>
           </Table.Tr>
         </Table.Tfoot>
       </Table>

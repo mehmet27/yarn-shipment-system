@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Group, PageHero, Stack } from '@iplik/ui';
+import { Group, PageHero, Paper, Stack } from '@iplik/ui';
 import { useState } from 'react';
 import { LogoControl } from '../components/LogoControl';
 import { loadLogo, saveLogo } from '../logo';
@@ -18,24 +18,29 @@ export function ReportsPage() {
   return (
     <Stack>
       <PageHero title={t('report.title')} subtitle={t('report.intro')} />
-      <Group align="flex-start">
-        <PeriodSelect value={days} onChange={setDays} />
-        <DateRangeInputs value={range} onChange={setRange} hasError={hasRangeError} />
-      </Group>
-      <LogoControl
-        logo={logo}
-        onChange={(next) => {
-          setLogo(next);
-          saveLogo(next);
-        }}
-      />
-      <ExportToolbar
-        params={params}
-        isOnlyDiscrepant={isOnlyDiscrepant}
-        onIsOnlyDiscrepantChange={setIsOnlyDiscrepant}
-        isDisabled={hasRangeError}
-        logo={logo}
-      />
+      <Paper withBorder p="md">
+        <Stack gap="sm">
+          <Group align="flex-start" gap="sm">
+            <PeriodSelect value={days} onChange={setDays} />
+            <DateRangeInputs value={range} onChange={setRange} hasError={hasRangeError} />
+          </Group>
+          <ExportToolbar
+            params={params}
+            isOnlyDiscrepant={isOnlyDiscrepant}
+            onIsOnlyDiscrepantChange={setIsOnlyDiscrepant}
+            isDisabled={hasRangeError}
+            logo={logo}
+          >
+            <LogoControl
+              logo={logo}
+              onChange={(next) => {
+                setLogo(next);
+                saveLogo(next);
+              }}
+            />
+          </ExportToolbar>
+        </Stack>
+      </Paper>
       <ReportTabs params={params} isOnlyDiscrepant={isOnlyDiscrepant} />
     </Stack>
   );

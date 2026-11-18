@@ -3,7 +3,15 @@ import { useTranslation } from '@iplik/i18n';
 import { Alert, Loader, Modal, UnstyledButton, useDisclosure } from '@iplik/ui';
 import { useEvidenceUrl } from '../hooks/useEvidenceQueries';
 
-const THUMB_SIZE = 120;
+const THUMB_STYLE = {
+  display: 'block',
+  width: '100%',
+  aspectRatio: '1 / 1',
+  objectFit: 'cover',
+  borderRadius: 'var(--mantine-radius-sm)',
+  border: '1px solid var(--app-line)',
+  background: 'var(--app-inset)',
+} as const;
 
 /** Dosya adresi alınamazsa (süre, yetki, depo) küçük bir uyarı gösterilir. */
 export function EvidenceImageThumb({ evidence }: { evidence: EvidenceView }) {
@@ -15,12 +23,12 @@ export function EvidenceImageThumb({ evidence }: { evidence: EvidenceView }) {
   if (url.isError) return <Alert color="red">{t('evidence.view.loadFailed')}</Alert>;
   return (
     <>
-      <UnstyledButton onClick={open} aria-label={t('evidence.view.enlarge', { type: label })}>
-        <img
-          src={url.data.url}
-          alt={label}
-          style={{ width: THUMB_SIZE, height: THUMB_SIZE, objectFit: 'cover', borderRadius: 4 }}
-        />
+      <UnstyledButton
+        w="100%"
+        onClick={open}
+        aria-label={t('evidence.view.enlarge', { type: label })}
+      >
+        <img src={url.data.url} alt={label} style={THUMB_STYLE} />
       </UnstyledButton>
       <Modal opened={isOpen} onClose={close} title={label} size="xl">
         <img src={url.data.url} alt={label} style={{ maxWidth: '100%', maxHeight: '75vh' }} />

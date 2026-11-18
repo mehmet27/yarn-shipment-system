@@ -44,8 +44,10 @@ export function TypedEvidenceUpload({
     );
   };
   return (
-    <Stack>
-      <Text fw={600}>{label}</Text>
+    <Stack gap="xs">
+      <Text fw={500} size="sm">
+        {label}
+      </Text>
       <UploadButtons isLoading={mutation.isPending} onPick={pick} />
       {problem !== undefined && <Alert color="red">{t(`evidence.errors.${problem}`)}</Alert>}
       {mutation.isError && <Alert color="red">{t(uploadErrorKey(mutation.error))}</Alert>}

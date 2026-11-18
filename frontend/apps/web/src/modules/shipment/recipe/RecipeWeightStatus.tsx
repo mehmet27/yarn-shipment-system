@@ -33,7 +33,7 @@ export function RecipeWeightStatus({ recipeKg, measuredKg, toleranceKg }: Props)
               <Text size="sm" c="dimmed">
                 {t(`recipeEdit.status.${item.key}`)}
               </Text>
-              <Text fw={700}>{item.value}</Text>
+              <Text fw={600}>{item.value}</Text>
             </Stack>
           ))}
         </SimpleGrid>

@@ -1,6 +1,6 @@
 import type { ShipmentClaimsView } from '@iplik/api-client';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Button, Stack, Text } from '@iplik/ui';
+import { Button, EmptyState, Stack, Text } from '@iplik/ui';
 import { useState } from 'react';
 import { ClaimCard } from './ClaimCard';
 import { OpenClaimForm } from './OpenClaimForm';
@@ -19,7 +19,7 @@ export function ShipmentClaims({
   const deadline = formatDateTime(view.deadlineAt);
   return (
     <Stack>
-      <Text c="dimmed">
+      <Text c="dimmed" size="sm">
         {t(view.windowOpen ? 'claim.window.open' : 'claim.window.closed', { deadline })}
       </Text>
       {canOpen && !isOpening && (
@@ -41,7 +41,7 @@ export function ShipmentClaims({
           }}
         />
       )}
-      {view.claims.length === 0 && <Text c="dimmed">{t('claim.empty')}</Text>}
+      {view.claims.length === 0 && <EmptyState title={t('claim.empty')} />}
       {view.claims.map((claim) => (
         <ClaimCard key={claim.id} claim={claim} />
       ))}

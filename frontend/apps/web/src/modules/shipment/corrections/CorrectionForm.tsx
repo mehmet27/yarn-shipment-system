@@ -1,7 +1,7 @@
 import type { CorrectionTarget, InternalShipmentView } from '@iplik/api-client';
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Paper, Select, Stack, TextInput } from '@iplik/ui';
+import { Alert, Button, Paper, Select, SimpleGrid, Stack, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useRecordCorrection } from '../hooks/useCorrections';
 import type { CorrectionDraft, CorrectionError } from './correctionDraft';
@@ -66,7 +66,7 @@ export function CorrectionForm({ shipment }: { shipment: InternalShipmentView })
   };
   return (
     <Paper withBorder p="md">
-      <Stack>
+      <Stack maw={560}>
         <Select
           label={t('shipment.correction.target')}
           data={targets.map((value) => ({
@@ -80,10 +80,10 @@ export function CorrectionForm({ shipment }: { shipment: InternalShipmentView })
           withAsterisk
         />
         {draft.target !== undefined && (
-          <Group grow>
+          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
             <TextInput label={t('shipment.file.gross')} inputMode="decimal" {...text('grossKg')} />
             <TextInput label={t('shipment.file.tare')} inputMode="decimal" {...text('tareKg')} />
-          </Group>
+          </SimpleGrid>
         )}
         <TextInput
           label={t('shipment.correction.reason')}

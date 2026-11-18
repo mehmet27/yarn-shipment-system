@@ -10,7 +10,7 @@ export function FieldValueText({
   text: (field: FieldValue) => string;
 }) {
   return 'value' in field ? (
-    <Text fw={700} size="xl">
+    <Text fw={600} size="xl">
       {text(field)}
     </Text>
   ) : (

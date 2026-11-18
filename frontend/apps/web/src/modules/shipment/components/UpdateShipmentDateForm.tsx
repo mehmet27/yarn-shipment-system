@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, Icon } from '@iplik/ui';
+import { Box, Button, Icon } from '@iplik/ui';
 import { useState } from 'react';
 import { UpdateShipmentDateEditor } from './UpdateShipmentDateEditor';
 
@@ -12,8 +12,7 @@ export function UpdateShipmentDateForm({ shipmentId, shipmentDate }: UpdateShipm
   if (!isOpen) {
     return (
       <Button
-        variant="light"
-        w="fit-content"
+        variant="default"
         leftSection={<Icon name="calendar" />}
         onClick={() => {
           setIsOpen(true);
@@ -24,12 +23,14 @@ export function UpdateShipmentDateForm({ shipmentId, shipmentDate }: UpdateShipm
     );
   }
   return (
-    <UpdateShipmentDateEditor
-      shipmentId={shipmentId}
-      shipmentDate={shipmentDate}
-      onClose={() => {
-        setIsOpen(false);
-      }}
-    />
+    <Box w="100%">
+      <UpdateShipmentDateEditor
+        shipmentId={shipmentId}
+        shipmentDate={shipmentDate}
+        onClose={() => {
+          setIsOpen(false);
+        }}
+      />
+    </Box>
   );
 }

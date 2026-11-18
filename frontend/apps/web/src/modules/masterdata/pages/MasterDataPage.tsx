@@ -10,9 +10,9 @@ export function MasterDataPage() {
     <Stack>
       <PageHero title={t('masterData.title')} />
       <Tabs defaultValue={MANAGED_KINDS[0]} keepMounted={false}>
-        <Tabs.List>
+        <Tabs.List style={{ flexWrap: 'nowrap', overflowX: 'auto', overflowY: 'hidden' }}>
           {MANAGED_KINDS.map((kind) => (
-            <Tabs.Tab key={kind} value={kind}>
+            <Tabs.Tab key={kind} value={kind} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
               {t(`masterData.kinds.${kind}.tab`)}
             </Tabs.Tab>
           ))}

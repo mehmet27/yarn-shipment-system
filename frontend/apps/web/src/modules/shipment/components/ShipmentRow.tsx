@@ -11,7 +11,7 @@ export function ShipmentRow({ shipment }: { shipment: ShipmentSummary }) {
   return (
     <Table.Tr>
       <Table.Td style={{ whiteSpace: 'nowrap' }}>
-        <Anchor component={Link} to={`/panel/sevkiyat/${shipment.shipmentId}`}>
+        <Anchor component={Link} to={`/panel/sevkiyat/${shipment.shipmentId}`} fw={600}>
           {shipment.shipmentNo}
         </Anchor>
       </Table.Td>
@@ -21,9 +21,7 @@ export function ShipmentRow({ shipment }: { shipment: ShipmentSummary }) {
           <ShipmentProgress status={shipment.status} />
         </Stack>
       </Table.Td>
-      <Table.Td c="brand.8" fw={500}>
-        {t(`shipment.nextStep.${shipment.status}`)}
-      </Table.Td>
+      <Table.Td>{t(`shipment.nextStep.${shipment.status}`)}</Table.Td>
       <Table.Td>{shipment.subcontractorTitle}</Table.Td>
       <Table.Td>{shipment.driverName}</Table.Td>
       <Table.Td style={{ whiteSpace: 'nowrap' }}>{shipment.plateNo}</Table.Td>

@@ -1,6 +1,6 @@
 import { SHIPMENT_STATUSES } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Button, PageHero, Paper, Select, Stack, Text } from '@iplik/ui';
+import { Button, PageHero, Select, Stack, Text } from '@iplik/ui';
 import { Can } from '@/modules/auth';
 import { Link } from 'react-router';
 import { ListPagination } from '../components/ListPagination';
@@ -28,25 +28,23 @@ export function ShipmentListPage() {
         title={t('shipment.list.title')}
         actions={
           <Can permission="SHIPMENT_CREATE">
-            <Button component={Link} to="/panel/sevkiyat/yeni" variant="white" color="brand">
+            <Button component={Link} to="/panel/sevkiyat/yeni">
               {t('create.open')}
             </Button>
           </Can>
         }
       />
-      <Paper p="md" withBorder>
-        <Select
-          label={t('shipment.list.statusFilter')}
-          placeholder={t('shipment.list.allStatuses')}
-          data={statusOptions}
-          value={filter.status ?? null}
-          onChange={(value) => {
-            filter.setStatus(SHIPMENT_STATUSES.find((status) => status === value));
-          }}
-          clearable
-          maw={320}
-        />
-      </Paper>
+      <Select
+        aria-label={t('shipment.list.statusFilter')}
+        placeholder={t('shipment.list.allStatuses')}
+        data={statusOptions}
+        value={filter.status ?? null}
+        onChange={(value) => {
+          filter.setStatus(SHIPMENT_STATUSES.find((status) => status === value));
+        }}
+        clearable
+        maw={280}
+      />
       <QueryState query={query}>
         {(page) =>
           page.items.length === 0 ? (

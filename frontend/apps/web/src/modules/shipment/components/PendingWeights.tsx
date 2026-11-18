@@ -14,8 +14,8 @@ export function PendingWeights({
 }) {
   const { t } = useTranslation();
   return weights.map((kg, index) => (
-    <Paper key={`${String(index)}-${kg}`} withBorder px="sm" py={4}>
-      <Group justify="space-between">
+    <Paper key={`${String(index)}-${kg}`} bg="var(--app-inset)" px="sm" py={4}>
+      <Group justify="space-between" wrap="nowrap">
         <Text>
           {t('shipment.bags.seq', { seq: firstSeq + index })} · {formatKgText(kg)}
         </Text>

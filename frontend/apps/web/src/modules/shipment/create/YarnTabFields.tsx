@@ -11,11 +11,11 @@ type YarnTabFieldsProps = {
   onPatch: (patch: Partial<RecipeLineDraft>) => void;
 };
 
-/** Satırın İplik sekmesi: cins, lot ve net kg yan yana. */
+/** Satırın İplik sekmesi: cins ile serbest metin, altında lot ve net kg. */
 export function YarnTabFields({ line, index, error, onPatch }: YarnTabFieldsProps) {
   const { t } = useTranslation();
   return (
-    <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xs">
+    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
       <YarnCell line={line} index={index} onPatch={onPatch} />
       <MasterSelect
         kind="lot"

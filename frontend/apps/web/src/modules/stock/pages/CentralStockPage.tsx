@@ -1,5 +1,5 @@
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Button, Group, Stack, Tabs, Text, Title } from '@iplik/ui';
+import { Button, PageHero, Stack, Tabs, Text } from '@iplik/ui';
 import { useState } from 'react';
 import { usePermission } from '@/modules/auth';
 import { InlineExportButtons } from '@/modules/report';
@@ -19,24 +19,28 @@ export function CentralStockPage() {
   const [tab, setTab] = useState<string | null>('stock');
   return (
     <Stack>
-      <Group justify="space-between" align="flex-start">
-        <Stack gap={0}>
-          <Title order={1}>{t('stock.title')}</Title>
-          <Text c="dimmed">{t('stock.subtitle')}</Text>
-        </Stack>
-        <Stack gap={2} align="flex-end">
-          <Button variant="default" loading={query.isFetching} onClick={() => void query.refetch()}>
-            {t('stock.refresh')}
-          </Button>
-          {query.dataUpdatedAt > 0 && (
-            <Text size="xs" c="dimmed">
-              {t('stock.updatedAt', {
-                at: formatDateTime(new Date(query.dataUpdatedAt).toISOString()),
-              })}
-            </Text>
-          )}
-        </Stack>
-      </Group>
+      <PageHero
+        title={t('stock.title')}
+        subtitle={t('stock.subtitle')}
+        actions={
+          <Stack gap={2} align="flex-end">
+            <Button
+              variant="default"
+              loading={query.isFetching}
+              onClick={() => void query.refetch()}
+            >
+              {t('stock.refresh')}
+            </Button>
+            {query.dataUpdatedAt > 0 && (
+              <Text size="xs" c="dimmed">
+                {t('stock.updatedAt', {
+                  at: formatDateTime(new Date(query.dataUpdatedAt).toISOString()),
+                })}
+              </Text>
+            )}
+          </Stack>
+        }
+      />
       <Tabs value={tab} onChange={setTab} keepMounted={false}>
         <Tabs.List>
           <Tabs.Tab value="stock">{t('stock.tabs.stock')}</Tabs.Tab>

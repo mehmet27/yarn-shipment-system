@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Group, SegmentedControl, Select } from '@iplik/ui';
+import { Box, Group, SegmentedControl, Select } from '@iplik/ui';
 import { type AccountFilter, type StatusFilter } from '../accountFilter';
 import { STAFF_ROLES } from '../staffRoles';
 
@@ -21,16 +21,18 @@ const STATUS_KEYS: Record<StatusFilter, string> = {
 export function AccountFilters({ value, onChange }: AccountFiltersProps) {
   const { t } = useTranslation();
   return (
-    <Group gap="sm">
-      <SegmentedControl
-        aria-label={t('users.filter.status')}
-        value={value.status}
-        data={STATUSES.map((status) => ({ value: status, label: t(STATUS_KEYS[status]) }))}
-        onChange={(status) => {
-          const next = STATUSES.find((candidate) => candidate === status);
-          if (next !== undefined) onChange({ ...value, status: next });
-        }}
-      />
+    <Group gap="sm" align="center">
+      <Box maw="100%" style={{ overflowX: 'auto' }}>
+        <SegmentedControl
+          aria-label={t('users.filter.status')}
+          value={value.status}
+          data={STATUSES.map((status) => ({ value: status, label: t(STATUS_KEYS[status]) }))}
+          onChange={(status) => {
+            const next = STATUSES.find((candidate) => candidate === status);
+            if (next !== undefined) onChange({ ...value, status: next });
+          }}
+        />
+      </Box>
       <Select
         aria-label={t('users.filter.role')}
         placeholder={t('users.filter.allRoles')}

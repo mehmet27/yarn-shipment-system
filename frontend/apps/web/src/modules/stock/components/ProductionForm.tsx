@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Paper, Stack, Text, TextInput, Title } from '@iplik/ui';
+import { Alert, Button, SectionCard, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import { formatKgText } from '@iplik/units';
 import { ProductionYarnRows } from './ProductionYarnRows';
 import { productionTotalKg } from '../stockDraft';
@@ -12,15 +12,18 @@ export function ProductionForm() {
   const { draft, field, setYarn, addYarn, removeYarn, error, submit, mutation } =
     useProductionSubmit();
   return (
-    <Paper withBorder p="md" component="section" aria-label={t('stock.production.title')}>
+    <SectionCard title={t('stock.production.title')} icon="lots">
       <Stack>
-        <Title order={3} size="h4">
-          {t('stock.production.title')}
-        </Title>
         <Text size="sm" c="dimmed">
           {t('stock.production.hint')}
         </Text>
-        <TextInput label={t('stock.production.fabricType')} withAsterisk {...field('fabricType')} />
+        <SimpleGrid cols={{ base: 1, sm: 3 }}>
+          <TextInput
+            label={t('stock.production.fabricType')}
+            withAsterisk
+            {...field('fabricType')}
+          />
+        </SimpleGrid>
         <ProductionYarnRows
           rows={draft.yarns}
           onChange={setYarn}
@@ -30,7 +33,7 @@ export function ProductionForm() {
         <Text size="sm">
           {t('stock.production.total', { kg: formatKgText(productionTotalKg(draft)) })}
         </Text>
-        <Group grow align="flex-start">
+        <SimpleGrid cols={{ base: 1, sm: 3 }}>
           <TextInput
             label={t('stock.production.firePct')}
             inputMode="decimal"
@@ -43,7 +46,7 @@ export function ProductionForm() {
             {...field('rollCount')}
           />
           <TextInput label={t('stock.production.waybillNo')} {...field('waybillNo')} />
-        </Group>
+        </SimpleGrid>
         {error !== undefined && <Alert color="red">{t(`stock.draftErrors.${error}`)}</Alert>}
         {mutation.isSuccess && error === undefined && (
           <Alert color="green">{t('stock.production.saved')}</Alert>
@@ -53,6 +56,6 @@ export function ProductionForm() {
           {t('stock.production.submit')}
         </Button>
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }

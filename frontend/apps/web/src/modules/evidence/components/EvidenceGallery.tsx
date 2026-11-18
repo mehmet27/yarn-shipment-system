@@ -1,6 +1,6 @@
 import type { EvidenceType } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Center, Loader, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
+import { Alert, Center, EmptyState, Loader, SectionCard, SimpleGrid } from '@iplik/ui';
 import { useShipmentEvidence } from '../hooks/useEvidenceQueries';
 import { EVIDENCE_COLUMNS } from './evidenceColumns';
 import { EvidenceItem } from './EvidenceItem';
@@ -31,10 +31,9 @@ export function EvidenceGallery({ shipmentId, types, title, hideWhenEmpty }: Evi
     .toSorted((a, b) => b.uploadedAt.localeCompare(a.uploadedAt));
   if (items.length === 0 && hideWhenEmpty === true) return null;
   return (
-    <Stack gap="xs">
-      {title !== undefined && <Title order={4}>{title}</Title>}
+    <SectionCard title={title ?? t('evidence.title')}>
       {items.length === 0 ? (
-        <Text c="dimmed">{t('evidence.view.empty')}</Text>
+        <EmptyState title={t('evidence.view.empty')} />
       ) : (
         <SimpleGrid cols={EVIDENCE_COLUMNS}>
           {items.map((item) => (
@@ -42,6 +41,6 @@ export function EvidenceGallery({ shipmentId, types, title, hideWhenEmpty }: Evi
           ))}
         </SimpleGrid>
       )}
-    </Stack>
+    </SectionCard>
   );
 }

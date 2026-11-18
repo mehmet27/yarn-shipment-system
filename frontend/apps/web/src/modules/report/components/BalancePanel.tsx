@@ -22,24 +22,24 @@ export function BalancePanel({ params, isEnabled }: ReportPanelProps) {
               {t('report.balance.note')}
             </Text>
             <Table.ScrollContainer minWidth={560}>
-              <Table striped>
+              <Table>
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>{t('report.parties.subcontractor')}</Table.Th>
-                    <Table.Th>{t('report.parties.shipments')}</Table.Th>
-                    <Table.Th>{t('report.export.dispatched')}</Table.Th>
-                    <Table.Th>{t('report.export.delivered')}</Table.Th>
-                    <Table.Th>{t('report.export.inTransit')}</Table.Th>
+                    <Table.Th ta="right">{t('report.parties.shipments')}</Table.Th>
+                    <Table.Th ta="right">{t('report.export.dispatched')}</Table.Th>
+                    <Table.Th ta="right">{t('report.export.delivered')}</Table.Th>
+                    <Table.Th ta="right">{t('report.export.inTransit')}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
                   {rows.map((row) => (
                     <Table.Tr key={row.subcontractorId}>
                       <Table.Td>{nameOf(row.subcontractorId)}</Table.Td>
-                      <Table.Td>{row.shipmentCount}</Table.Td>
-                      <Table.Td>{formatKilograms(row.dispatchedKg)}</Table.Td>
-                      <Table.Td>{formatKilograms(row.deliveredKg)}</Table.Td>
-                      <Table.Td>{formatKilograms(row.inTransitKg)}</Table.Td>
+                      <Table.Td ta="right">{row.shipmentCount}</Table.Td>
+                      <Table.Td ta="right">{formatKilograms(row.dispatchedKg)}</Table.Td>
+                      <Table.Td ta="right">{formatKilograms(row.deliveredKg)}</Table.Td>
+                      <Table.Td ta="right">{formatKilograms(row.inTransitKg)}</Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>

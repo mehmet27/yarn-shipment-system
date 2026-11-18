@@ -110,3 +110,9 @@ export function createBrandPalette(hex: string): MantineColorsTuple {
     darker(DARK_MIX_RATIOS[1]),
   ];
 }
+
+/** Koyu görünüm için paletin tersi: açık tonlar koyu zeminde yazı, koyu tonlar zemin olur. */
+export function reversePalette(palette: MantineColorsTuple): MantineColorsTuple {
+  const [a, b, c, d, e, f, g, h, i, j] = palette;
+  return [j, i, h, g, f, e, d, c, b, a];
+}

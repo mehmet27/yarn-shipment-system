@@ -16,10 +16,8 @@ export function ChangePasswordActions({
 }: ChangePasswordActionsProps) {
   const { t } = useTranslation();
   return (
-    <Group justify="space-between">
-      {isCancelHidden ? (
-        <span />
-      ) : (
+    <Group justify="flex-end">
+      {isCancelHidden ? null : (
         <Button component={Link} to="/" variant="default">
           {t('auth.changePassword.cancel')}
         </Button>

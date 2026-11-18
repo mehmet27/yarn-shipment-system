@@ -1,11 +1,13 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Paper, Stack, Text, TextInput, Title } from '@iplik/ui';
+import { Alert, Button, SectionCard, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useRecordYarnReturn } from './hooks';
 import type { DraftError } from './settlementDraft';
 import { toReturnRequest } from './settlementDraft';
 import { settlementErrorKey } from './settlementErrors';
 import { useReturnDraft } from './useReturnDraft';
+
+const NUMBER_STYLES = { input: { textAlign: 'right' } } as const;
 
 export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
@@ -18,20 +20,20 @@ export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
     if (typeof request !== 'string') mutation.mutate(request, { onSuccess: reset });
   };
   return (
-    <Paper withBorder p="md" component="section" aria-label={t('settlement.yarn.title')}>
+    <SectionCard title={t('settlement.yarn.title')}>
       <Stack>
-        <Title order={3} size="h4">
-          {t('settlement.yarn.title')}
-        </Title>
-        <TextInput label={t('settlement.yarn.yarnType')} withAsterisk {...field('yarnType')} />
-        <TextInput label={t('settlement.yarn.lotId')} {...field('lotId')} />
-        <TextInput
-          label={t('settlement.yarn.netKg')}
-          inputMode="decimal"
-          withAsterisk
-          {...field('netKg')}
-        />
-        <TextInput label={t('settlement.yarn.waybillNo')} {...field('waybillNo')} />
+        <SimpleGrid cols={{ base: 1, sm: 2 }}>
+          <TextInput label={t('settlement.yarn.yarnType')} withAsterisk {...field('yarnType')} />
+          <TextInput label={t('settlement.yarn.lotId')} {...field('lotId')} />
+          <TextInput
+            label={t('settlement.yarn.netKg')}
+            inputMode="decimal"
+            styles={NUMBER_STYLES}
+            withAsterisk
+            {...field('netKg')}
+          />
+          <TextInput label={t('settlement.yarn.waybillNo')} {...field('waybillNo')} />
+        </SimpleGrid>
         <Text size="sm" c="dimmed">
           {t('settlement.yarn.returnNote')}
         </Text>
@@ -41,6 +43,6 @@ export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
           {t('settlement.yarn.submit')}
         </Button>
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }

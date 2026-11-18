@@ -29,7 +29,7 @@ export function LogoControl({ logo, onChange }: LogoControlProps) {
         onChange={(file) => void pick(file)}
       >
         {(props) => (
-          <Button variant="subtle" size="md" {...props}>
+          <Button variant="subtle" {...props}>
             {logo === null ? t('report.logo.add') : t('report.logo.change')}
           </Button>
         )}

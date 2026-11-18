@@ -6,7 +6,7 @@ import type {
 } from '@iplik/api-client';
 import { describe, expect, it } from 'vitest';
 import { buildTables } from './buildTables';
-import { formatCell } from './formatCell';
+import { excelKgFormat, formatCell } from './formatCell';
 import type { ReportBundle, ReportCell, ReportMeta, ReportTable } from './reportModel';
 import { filterRows, partyTotals } from './reportModel';
 import {
@@ -237,5 +237,13 @@ describe('Excel çıktısı', () => {
     expect(reportFileName('2026-10-05', '2026-11-03', 'xlsx')).toBe(
       'rapor_2026-10-05_2026-11-03.xlsx',
     );
+  });
+});
+
+describe('Excel kilo biçimi', () => {
+  it('gereksiz sıfır yazmaz', () => {
+    expect(excelKgFormat(700)).toBe('#,##0');
+    expect(excelKgFormat(264.5)).toBe('#,##0.0');
+    expect(excelKgFormat(2143.814)).toBe('#,##0.000');
   });
 });

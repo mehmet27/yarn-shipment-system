@@ -10,14 +10,11 @@ export type ParsedLine = {
   error?: 'format' | 'unknown' | 'kg';
 };
 
-/** `1.982,500` / `1982,5` / `1982.5` → "1982.500"; geçersizse undefined. */
+/** Türkçe kilo kuralı (`1.982,5`, `1982,5`, `1.500` = 1500, `1,5`); nokta yalnızca binlik ayırıcıdır. Geçersizse undefined. */
 export function parseNetKg(input: string): string | undefined {
-  const value = input.trim().replace(/\s|kg$/gi, '');
-  if (!/^-?\d[\d.,]*$/.test(value)) return undefined;
-  let normalized = value;
-  if (value.includes(',')) normalized = value.replace(/\./g, '').replace(',', '.');
-  else if (/^-?\d{1,3}(\.\d{3})+$/.test(value)) normalized = value.replace(/\./g, '');
-  const number = Number(normalized);
+  const value = input.trim().replace(/\s*kg$/i, '');
+  if (!/^(\d{1,3}(\.\d{3})+|\d+)(,\d{1,3})?$/.test(value)) return undefined;
+  const number = Number(value.replaceAll('.', '').replace(',', '.'));
   return Number.isFinite(number) ? number.toFixed(KG_DECIMALS) : undefined;
 }
 

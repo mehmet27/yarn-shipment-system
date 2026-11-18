@@ -1,6 +1,6 @@
 import type { Cell, SheetData } from 'write-excel-file/browser';
 import writeXlsxFile from 'write-excel-file/browser';
-import { EXCEL_FORMATS, formatCell } from './formatCell';
+import { EXCEL_FORMATS, excelKgFormat, formatCell } from './formatCell';
 import type { ReportCell, ReportTable } from './reportModel';
 
 const MIN_COLUMN_WIDTH = 12;
@@ -22,7 +22,7 @@ function toExcelCell(cell: ReportCell, bold: boolean): Cell {
     case 'count':
       return { type: Number, value: cell.value, format: EXCEL_FORMATS.count, ...style };
     case 'kg':
-      return { type: Number, value: cell.value, format: EXCEL_FORMATS.kg, ...style };
+      return { type: Number, value: cell.value, format: excelKgFormat(cell.value), ...style };
     case 'percent':
       return { type: Number, value: cell.value, format: EXCEL_FORMATS.percent, ...style };
   }

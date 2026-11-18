@@ -368,6 +368,14 @@
     "continue": "Sevkiyat dosyasına git",
     "submitFailed": "Çıkış tartısı kaydedilemedi. Lütfen tekrar deneyin.",
     "notDraft": "Bu sevkiyatın çıkış tartısı artık girilemez.",
+    "bagMismatch": {
+      "title": "Çuvallar araç kilosunu tutmuyor",
+      "body": "Girdiğiniz çuvalların toplamı {{bagKg}}, ama araç net kilosu {{measuredKg}}.",
+      "blocked": "{{diff}} fark var. Çuvallar ya da tartı düzelmeden sevkiyat yola çıkamaz.",
+      "checkBags": "Çuvalları kontrol et",
+      "fixWeighing": "Tartıyı düzelt",
+      "alert": "Çuvalların toplamı araç net kilosunu tutmuyor. Çuvalları kontrol edin ya da tartıyı düzeltin."
+    },
     "inconsistent": "Tartı değerleri tutarsız: çuval sayısı, sevkiyata eklenen çuval sayısıyla aynı olmalı. Çuvalları ekleyip tekrar deneyin.",
     "errors": {
       "invalidKg": "Kiloyu 1.982,5 biçiminde girin.",

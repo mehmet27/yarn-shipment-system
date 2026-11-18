@@ -9,6 +9,7 @@ export function failureKey(error: unknown): string {
   if (code === 'SHIPMENT_NOT_DUE') return 'dispatch.notDue';
   if (code === 'INVALID_DISPATCH') return 'dispatch.inconsistent';
   if (code === 'SHORTFALL_REASON_REQUIRED') return 'dispatch.shortfallReasonRequired';
+  if (code === 'BAG_WEIGHT_MISMATCH') return 'dispatch.bagMismatch.alert';
   return 'dispatch.submitFailed';
 }
 
@@ -18,7 +19,10 @@ type DispatchMutation = ReturnType<typeof useRecordDispatch>;
 export function sendDispatch(
   draft: DispatchDraft,
   mutation: DispatchMutation,
-  done: (isPhotoUploaded: boolean) => void,
+  callbacks: {
+    done: (isPhotoUploaded: boolean) => void;
+    rejected: (error: unknown) => void;
+  },
 ) {
   const request = toDispatchRequest(draft);
   if (request === undefined || draft.ticket === undefined) return;
@@ -26,8 +30,9 @@ export function sendDispatch(
     { request, photo: draft.ticket },
     {
       onSuccess: (result) => {
-        done(result.photoUploaded);
+        callbacks.done(result.photoUploaded);
       },
+      onError: callbacks.rejected,
     },
   );
 }

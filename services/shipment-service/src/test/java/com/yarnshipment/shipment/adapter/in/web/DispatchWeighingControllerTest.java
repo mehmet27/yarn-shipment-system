@@ -15,6 +15,7 @@ import com.yarnshipment.shipment.application.port.in.ListShipmentsUseCase;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
 import com.yarnshipment.shipment.domain.model.ShipmentNotDueException;
+import com.yarnshipment.shipment.domain.weight.BagWeightMismatchException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
@@ -126,5 +127,22 @@ class DispatchWeighingControllerTest {
         assertThat(result).hasStatus(HttpStatus.CONFLICT);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("SHIPMENT_NOT_DUE");
         assertThat(result).bodyJson().extractingPath("$.shipmentDate").isEqualTo("2026-12-01");
+    }
+
+    @Test
+    @DisplayName("Çuvallar araç net kilosunu tutmuyorsa 409 BAG_WEIGHT_MISMATCH ve kilolar döner")
+    void shouldMapBagWeightMismatch() {
+        doThrow(new BagWeightMismatchException(
+                        new BigDecimal("1900.000"), new BigDecimal("1982.500"), new BigDecimal("0")))
+                .when(recordDispatchUseCase)
+                .recordDispatch(any());
+
+        MvcTestResult result = post(TestTokens.token("warehouse").build(), VALID_BODY);
+
+        assertThat(result).hasStatus(HttpStatus.CONFLICT);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("BAG_WEIGHT_MISMATCH");
+        assertThat(result).bodyJson().extractingPath("$.bagKg").isEqualTo("1900.000");
+        assertThat(result).bodyJson().extractingPath("$.measuredKg").isEqualTo("1982.500");
+        assertThat(result).bodyJson().extractingPath("$.toleranceKg").isEqualTo("0");
     }
 }

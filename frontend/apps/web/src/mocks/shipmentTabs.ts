@@ -6,6 +6,7 @@ import type {
   ShipmentBagsResponse,
   StatusChangeView,
 } from '@iplik/api-client';
+import { assignedMockBagWeights } from './mockStore';
 
 const HOUR_MS = 3_600_000;
 
@@ -35,6 +36,14 @@ export function toHistory(shipment: InternalShipmentView): StatusChangeView[] {
 
 function dispatchBags(shipment: InternalShipmentView): DispatchBagView[] {
   const count = shipment.dispatchWeighing?.bagCount ?? 0;
+  const assigned = assignedMockBagWeights(shipment.shipmentId);
+  if (count === 0) {
+    return assigned.map((weightKg, index) => ({
+      seqNo: index + 1,
+      weightKg,
+      assignedAt: shipment.createdAt,
+    }));
+  }
   return Array.from({ length: count }, (_, index) => ({
     seqNo: index + 1,
     weightKg: '50.000',

@@ -7,11 +7,16 @@ import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
 import com.yarnshipment.shipment.application.port.out.DispatchCommandPort;
 import com.yarnshipment.shipment.application.port.out.ShipmentBagsPort;
 import com.yarnshipment.shipment.application.port.out.ShipmentSettingsPort;
+import com.yarnshipment.shipment.domain.model.DispatchBag;
+import com.yarnshipment.shipment.domain.model.DispatchMeasurement;
 import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentDays;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
+import com.yarnshipment.shipment.domain.weight.BagWeightMismatchException;
+import java.math.BigDecimal;
 import java.time.Clock;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Depo çıkış tartımı; sevkiyat teslim bekliyor durumuna geçer. Net, beklenen net'ten kantar toleransından fazla
  * saparsa sevkiyat bunun yerine WEIGHT_MISMATCH olur ve müdür karar verir. Sevkiyat DRAFT'tan çıktıysa ve tartım
  * zaten varsa ikinci istek yeni kayıt üretmez, ilk sonuç (204) tekrar döner (API-04). Tartılan çuval sayısı
- * sevkiyata atanmış çuval sayısına eşit olmalıdır.
+ * sevkiyata atanmış çuval sayısına eşit, çuvalların kilo toplamı da araç net kilosuna (kantar toleransı içinde)
+ * eşit olmalıdır; aksi halde hiçbir şey yazılmaz ve depo çuvalları kontrol eder.
  */
 @Service
 public class RecordDispatchService implements RecordDispatchUseCase {
@@ -52,17 +58,24 @@ public class RecordDispatchService implements RecordDispatchUseCase {
             return;
         }
         shipment.requireDue(ShipmentDays.today(clock));
-        if (shipment.status() == ShipmentStatus.DRAFT
-                && bagsPort.findDispatchBags(shipment.id()).size()
-                        != command.measurement().bagCount()) {
-            throw new InvalidDispatchException("bagCount", "differs from assigned bags");
+        BigDecimal tolerance = settingsPort.find().weightToleranceKg();
+        if (shipment.status() == ShipmentStatus.DRAFT) {
+            requireBagsMatchWeighing(shipment, command.measurement(), tolerance);
         }
         dispatchCommandPort.recordDispatch(
-                shipment.recordDispatch(
-                        command.measurement(),
-                        clock.instant(),
-                        settingsPort.find().weightToleranceKg()),
-                actor.userId());
+                shipment.recordDispatch(command.measurement(), clock.instant(), tolerance), actor.userId());
+    }
+
+    private void requireBagsMatchWeighing(Shipment shipment, DispatchMeasurement measurement, BigDecimal tolerance) {
+        List<DispatchBag> bags = bagsPort.findDispatchBags(shipment.id());
+        if (bags.size() != measurement.bagCount()) {
+            throw new InvalidDispatchException("bagCount", "differs from assigned bags");
+        }
+        BigDecimal bagKg = bags.stream().map(DispatchBag::weightKg).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal netKg = measurement.grossKg().subtract(measurement.tareKg());
+        if (bagKg.subtract(netKg).abs().compareTo(tolerance) > 0) {
+            throw new BagWeightMismatchException(bagKg, netKg, tolerance);
+        }
     }
 
     private boolean isRepeatedRequest(Shipment shipment) {

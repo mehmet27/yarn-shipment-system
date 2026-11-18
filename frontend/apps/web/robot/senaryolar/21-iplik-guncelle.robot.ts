@@ -13,7 +13,7 @@ test('İplik güncelle: kilolar tartıyı tutmadan yola çıkmaz, tutunca yola �
   const mudur = await giris('mudur');
   for (const r of [depo, mudur]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
   const id = await taslakAc(mudur, damga(), '100');
-  await cuvalEkle(depo, id, 2, '50');
+  await cuvalEkle(depo, id, 2, '45');
 
   await depo.adim(
     'çuval toplamının altında tartı: sevkiyat kantar uyuşmazlığına düşer',

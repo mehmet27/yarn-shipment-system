@@ -9,9 +9,10 @@ import type {
 import { ME_PATH, SHIPMENTS_PATH } from '@iplik/api-client';
 import { todayIsoDate } from '@iplik/i18n';
 import type { Kilogram } from '@iplik/units';
-import { calculateNetKg, isKilogram, subtractKg } from '@iplik/units';
+import { calculateNetKg, isKilogram, subtractKg, sumKg } from '@iplik/units';
 import { http, HttpResponse } from 'msw';
 import {
+  assignedMockBagWeights,
   assignMockBagWeights,
   updateMockShipmentDate,
   addMockShipment,
@@ -223,6 +224,30 @@ const completeShipmentHandler = http.post(
   },
 );
 
+/** Çuval toplamı araç net kilosunu tutmuyorsa 409 BAG_WEIGHT_MISMATCH. */
+function bagMismatchResponse(shipmentId: string, netKg: string): Response | undefined {
+  const bagKg = sumKg(assignedMockBagWeights(shipmentId));
+  if (bagKg === netKg) return undefined;
+  return HttpResponse.json(
+    {
+      status: 409,
+      code: 'BAG_WEIGHT_MISMATCH',
+      title: 'Çuval toplamı araç net kilosunu tutmuyor',
+      bagKg,
+      measuredKg: netKg,
+      toleranceKg: '0.000',
+    },
+    { status: 409 },
+  );
+}
+
+function dispatchPrecondition(shipment: InternalShipmentView): Response | undefined {
+  if (shipment.status !== 'DRAFT') return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
+  return shipment.shipmentDate > todayIsoDate()
+    ? problem(409, 'SHIPMENT_NOT_DUE', 'Sevkiyat günü gelmedi')
+    : undefined;
+}
+
 /** Depo çıkış tartısı: DRAFT → AWAITING_DELIVERY. */
 const dispatchWeighingHandler = http.post(
   `${SHIPMENTS_PATH}/:shipmentId/dispatch-weighing`,
@@ -231,13 +256,11 @@ const dispatchWeighingHandler = http.post(
     if (shipment === undefined) return notFound();
     const body = readDispatchBody(await request.json());
     if (body === undefined) return problem(400, 'VALIDATION_FAILED', 'Geçersiz istek');
-    if (shipment.status !== 'DRAFT') {
-      return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
-    }
-    if (shipment.shipmentDate > todayIsoDate()) {
-      return problem(409, 'SHIPMENT_NOT_DUE', 'Sevkiyat günü gelmedi');
-    }
+    const blocked = dispatchPrecondition(shipment);
+    if (blocked !== undefined) return blocked;
     const weighing = toMockWeighing(body);
+    const mismatch = bagMismatchResponse(shipment.shipmentId, weighing.netKg);
+    if (mismatch !== undefined) return mismatch;
     const expected = shipment.plannedNetKg;
     const diff = expected === undefined ? undefined : subtractKg(weighing.netKg, expected);
     if (expected !== undefined && diff !== undefined && !diff.eq(0)) {

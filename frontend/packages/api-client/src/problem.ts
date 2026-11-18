@@ -12,6 +12,8 @@ export type Problem = {
   shortfalls?: readonly StockShortfall[];
   /** Yalnızca `RECIPE_WEIGHT_MISMATCH`: reçete toplamı, tartılan net ve kantar toleransı (kg metni). */
   recipeKg?: string;
+  /** Yalnızca `BAG_WEIGHT_MISMATCH`: çuvalların toplamı; `measuredKg` araç net kilosu, `toleranceKg` kantar toleransıdır. */
+  bagKg?: string;
   measuredKg?: string;
   toleranceKg?: string;
 };

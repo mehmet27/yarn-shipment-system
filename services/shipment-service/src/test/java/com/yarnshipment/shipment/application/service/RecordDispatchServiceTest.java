@@ -16,6 +16,7 @@ import com.yarnshipment.shipment.domain.model.InvalidDispatchException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.ShipmentNotDueException;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
+import com.yarnshipment.shipment.domain.weight.BagWeightMismatchException;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -37,7 +38,7 @@ class RecordDispatchServiceTest {
     private final RecordingDispatchCommandPort commandPort = new RecordingDispatchCommandPort();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final FixedBagCountPort bagsPort =
-            new FixedBagCountPort(TestDispatches.measurement().bagCount());
+            new FixedBagCountPort(TestDispatches.measurement().bagCount(), new BigDecimal("1982.500"));
     private final StubSettingsPort settings = new StubSettingsPort();
     private final RecordDispatchService service = new RecordDispatchService(
             ServiceTestSupport.loader(queryPort, clock), commandPort, bagsPort, settings, clock);
@@ -74,6 +75,7 @@ class RecordDispatchServiceTest {
     void shouldFlagMismatchOutsideTolerance() {
         queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
         ServiceTestSupport.saveTolerance(settings, "0.400");
+        bagsPort.totalKg = new BigDecimal("1983.000");
 
         service.recordDispatch(ServiceTestSupport.dispatchCommand(
                 warehouse, KEY, ServiceTestSupport.measurement("2001.000", "Stok yetmedi")));
@@ -91,6 +93,7 @@ class RecordDispatchServiceTest {
     void shouldAcceptDifferenceWithinTolerance() {
         queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
         ServiceTestSupport.saveTolerance(settings, "0.500");
+        bagsPort.totalKg = new BigDecimal("1983.000");
 
         service.recordDispatch(
                 ServiceTestSupport.dispatchCommand(warehouse, KEY, ServiceTestSupport.measurement("2001.000", null)));
@@ -156,18 +159,51 @@ class RecordDispatchServiceTest {
         assertThat(commandPort.recordings()).isEmpty();
     }
 
+    @Test
+    @DisplayName("Çuvalların toplamı araç net kilosunu tutmuyorsa kayıt reddedilir ve kilolar hatada taşınır")
+    void shouldRejectBagWeightMismatch() {
+        queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
+        bagsPort.totalKg = new BigDecimal("1900.000");
+
+        assertThatThrownBy(() -> service.recordDispatch(command(warehouse)))
+                .isInstanceOfSatisfying(BagWeightMismatchException.class, exception -> {
+                    assertThat(exception.bagKg()).isEqualByComparingTo("1900.000");
+                    assertThat(exception.measuredKg()).isEqualByComparingTo("1982.500");
+                    assertThat(exception.toleranceKg()).isEqualByComparingTo("0");
+                });
+        assertThat(commandPort.recordings()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Çuval toplamı ile net arasındaki fark kantar toleransı içindeyse kayıt geçer")
+    void shouldAcceptBagWeightWithinTolerance() {
+        queryPort.add(TestShipments.shipment(ShipmentStatus.DRAFT));
+        ServiceTestSupport.saveTolerance(settings, "0.500");
+        bagsPort.totalKg = new BigDecimal("1982.000");
+
+        service.recordDispatch(command(warehouse));
+
+        assertThat(commandPort.recordings()).hasSize(1);
+    }
+
+    /** `count` çuval döner; son çuval, toplamı `totalKg` yapacak kiloyu taşır. */
     private static final class FixedBagCountPort implements ShipmentBagsPort {
         private int assigned;
+        private BigDecimal totalKg;
 
-        FixedBagCountPort(int assigned) {
+        FixedBagCountPort(int assigned, BigDecimal totalKg) {
             this.assigned = assigned;
+            this.totalKg = totalKg;
         }
 
         @Override
         public List<DispatchBag> findDispatchBags(UUID shipmentId) {
             List<DispatchBag> bags = new ArrayList<>();
+            BigDecimal rest = totalKg;
             for (int index = 0; index < assigned; index++) {
-                bags.add(new DispatchBag(index + 1, BigDecimal.TEN, NOW));
+                BigDecimal weight = index == assigned - 1 ? rest : BigDecimal.ONE;
+                rest = rest.subtract(weight);
+                bags.add(new DispatchBag(index + 1, weight, NOW));
             }
             return bags;
         }

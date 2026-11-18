@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Tabs, Text } from '@iplik/ui';
+import { useSearchParams } from 'react-router';
 import { EvidenceGallery } from '@/modules/evidence';
 import { ClaimsTabTrigger, QualityClaimsSection } from '@/modules/claim';
 import { CorrectionsTab, useCanSeeCorrections } from '../corrections/CorrectionsTab';
@@ -11,14 +12,19 @@ import type { ShipmentDetail } from '@iplik/api-client';
 import { isCompleted } from './shipmentViews';
 import { WeightsPanel } from './WeightsPanel';
 
+/** Çıkış tartısı uyarısı çuvallar sekmesini bu adresle açar (`?sekme=cuvallar`). */
+export const BAGS_TAB_QUERY = 'sekme=cuvallar';
+
 /** Sevkiyat dosyasının sekmeleri; düzeltmeler yalnızca tamamlanıp kilitlenen sevkiyatta sunulur, öncesinde boş kalmasın. */
 export function ShipmentFileTabs({ shipment }: { shipment: ShipmentDetail }) {
   const { t } = useTranslation();
   const shipmentId = shipment.shipmentId;
+  const [params] = useSearchParams();
+  const firstTab = params.get('sekme') === 'cuvallar' ? 'bags' : 'weights';
   const canSeeCorrections =
     useCanSeeCorrections() && isCompleted(shipment) && shipment.audience === 'INTERNAL';
   return (
-    <Tabs defaultValue="weights" keepMounted={false}>
+    <Tabs defaultValue={firstTab} keepMounted={false}>
       <Tabs.List>
         <Tabs.Tab value="weights">{t('shipment.file.tabs.weights')}</Tabs.Tab>
         <Tabs.Tab value="bags">{t('shipment.file.tabs.bags')}</Tabs.Tab>

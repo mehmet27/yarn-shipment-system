@@ -3,6 +3,7 @@ import { Anchor, Box, Group, PageHero, Paper, Stack, Text } from '@iplik/ui';
 import { formatKgText, formatPercentText, ListPagination, QueryState } from '@/modules/shipment';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { InvoiceAction } from '../components/InvoiceAction';
 import { useToInvoice } from '../hooks/useFireSettlements';
 
 /** Faturalanacaklar: hatalı kilosu olan ve faturası bekleyen fire dosyaları (TO_INVOICE). */
@@ -49,6 +50,7 @@ export function ToInvoicePage() {
                         {t('settlement.toInvoice.faulty')} {formatKgText(row.faultyKg)} ·{' '}
                         {t('settlement.toInvoice.fire')} {formatPercentText(row.actualFirePercent)}
                       </Text>
+                      <InvoiceAction shipmentId={row.shipmentId} />
                     </Stack>
                   </Box>
                 ))}

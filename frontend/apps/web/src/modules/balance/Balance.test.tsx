@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { BALANCES_PATH } from '@iplik/api-client/settlements';
@@ -74,5 +74,22 @@ describe('Faturalanacaklar', () => {
     expect(within(card).getByText(/Faturalanacak kilo 3,2 kg/)).toBeInTheDocument();
     await userEvent.click(within(card).getByRole('link', { name: 'SVK-2026-0003' }));
     expect(router.state.location.pathname).toBe('/panel/sevkiyat/shp-0003');
+  });
+
+  it('müdür satırdan fatura bilgisini girer; dosya listeden düşer', async () => {
+    addMockReceipt(
+      'shp-0003',
+      { fabricType: 'Süprem', netKg: '1900', waybillNo: 'K-1' },
+      'user-quality',
+    );
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/faturalanacaklar');
+    const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
+    await userEvent.click(within(card).getByRole('button', { name: 'Fatura bilgisini gir' }));
+    await userEvent.type(within(card).getByLabelText(/Fatura no/), 'F-1');
+    await userEvent.click(within(card).getByRole('button', { name: 'Fatura edildi' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('article', { name: 'SVK-2026-0003' })).not.toBeInTheDocument();
+    });
   });
 });

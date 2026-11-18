@@ -4,6 +4,7 @@ export { useActorLabel } from './components/useActorLabel';
 export { useYarnLabel } from './components/useYarnLabel';
 export { ListPagination } from './components/ListPagination';
 export { formatKgText, formatPercentText, formatSignedKg } from './settlement/format';
+export { InvoiceForm } from './settlement/InvoiceForm';
 export { MasterSelect } from './create/MasterSelect';
 export type { MasterOption } from './hooks/useMasterOptions';
 export { useMasterOptions } from './hooks/useMasterOptions';

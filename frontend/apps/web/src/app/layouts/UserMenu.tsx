@@ -9,6 +9,7 @@ import {
   UnstyledButton,
   useColorSchemeToggle,
 } from '@iplik/ui';
+import { clearHelpChat } from '@/modules/assistant';
 import { useCurrentUser } from '@/modules/auth';
 import { UserMenuProfile } from './UserMenuProfile';
 
@@ -17,6 +18,7 @@ const MENU_WIDTH_PX = 280;
 const TOUCH_TARGET_PX = 44;
 
 async function logoutAndRedirect(): Promise<void> {
+  clearHelpChat();
   // Tam sayfa yönlendirmesi: önbellekteki kullanıcı verisi ve izinler bellekten de silinir.
   window.location.assign(await logout());
 }

@@ -4,13 +4,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { server } from '@/mocks/server';
 import { HelpAssistant } from './HelpAssistant';
+import { clearHelpChat } from './helpChatStorage';
 
 function renderAssistant() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  render(
+  return render(
     <UiProvider env="test">
       <QueryClientProvider client={queryClient}>
         <HelpAssistant />
@@ -24,6 +25,10 @@ function answerStatus(available: boolean) {
 }
 
 describe('HelpAssistant', () => {
+  beforeEach(() => {
+    clearHelpChat();
+  });
+
   it('sunucuda anahtar yoksa balon görünmez', async () => {
     answerStatus(false);
     renderAssistant();
@@ -96,5 +101,31 @@ describe('HelpAssistant', () => {
     await userEvent.type(screen.getByRole('textbox', { name: 'Sorunuzu yazın' }), 'Merhaba{Enter}');
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Şu an cevap veremiyorum');
+  });
+
+  it('pencere kapanıp açılınca ve sayfa yenilenince sohbet durur; çıkışta silinir', async () => {
+    answerStatus(true);
+    server.use(
+      http.post(`${ASSISTANT_PATH}/ask`, () => HttpResponse.json({ answer: 'Çuvalı Depo ekler.' })),
+    );
+    const { unmount } = renderAssistant();
+    await userEvent.click(await screen.findByRole('button', { name: 'Yardım' }));
+    await userEvent.type(
+      screen.getByRole('textbox', { name: 'Sorunuzu yazın' }),
+      'Çuval kim ekler?{Enter}',
+    );
+    expect(await screen.findByText('Çuvalı Depo ekler.')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Yardımı kapat' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Yardım' }));
+    expect(screen.getByText('Çuvalı Depo ekler.')).toBeInTheDocument();
+
+    unmount();
+    renderAssistant();
+    await userEvent.click(await screen.findByRole('button', { name: 'Yardım' }));
+    expect(screen.getByText('Çuval kim ekler?')).toBeInTheDocument();
+
+    clearHelpChat();
+    expect(window.sessionStorage.getItem('yardim-sohbeti')).toBeNull();
   });
 });

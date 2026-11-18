@@ -1475,7 +1475,9 @@
       "faulty": "Faturalanacak kilo",
       "fire": "Fire",
       "status": "Durum",
-      "open": "Dosyayı aç"
+      "open": "Dosyayı aç",
+      "enterInvoice": "Fatura bilgisini gir",
+      "cancelInvoice": "Vazgeç"
     }
   },
   "stock": {

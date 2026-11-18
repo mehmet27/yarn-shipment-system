@@ -1,11 +1,8 @@
-import type { RecordInspectionResultRequest, RequestInspectionRequest } from '@iplik/api-client';
 import {
   DISCREPANCIES_PATH,
   getShipmentClaims,
   openQualityClaim,
   QUALITY_CLAIMS_PATH,
-  recordInspectionResult,
-  requestInspection,
 } from '@iplik/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -32,23 +29,6 @@ export function useOpenClaim(shipmentId: string) {
   const refresh = useRefresh();
   return useMutation({
     mutationFn: (input: OpenClaimInput) => openQualityClaim({ shipmentId, ...input }),
-    onSuccess: refresh,
-  });
-}
-
-export function useRequestInspection(claimId: string) {
-  const refresh = useRefresh();
-  return useMutation({
-    mutationFn: (request: RequestInspectionRequest) => requestInspection(claimId, request),
-    onSuccess: refresh,
-  });
-}
-
-export function useRecordInspectionResult(claimId: string, inspectionId: string) {
-  const refresh = useRefresh();
-  return useMutation({
-    mutationFn: (request: RecordInspectionResultRequest) =>
-      recordInspectionResult(claimId, inspectionId, request),
     onSuccess: refresh,
   });
 }

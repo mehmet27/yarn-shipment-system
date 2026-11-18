@@ -4,15 +4,13 @@ import { formatKg, isKilogram } from '@iplik/units';
 import { Group, Paper, Stack, Text, Title } from '@iplik/ui';
 import { DotBadge as StatusDotBadge } from '@iplik/ui';
 import { EvidenceByIds } from '@/modules/evidence';
-import { InspectionItem } from './InspectionItem';
-import { RequestInspectionForm } from './RequestInspectionForm';
 
 function formatClaimKg(value: string): string {
   const kg = isKilogram(value) ? value : undefined;
   return kg === undefined ? value : formatKg(kg);
 }
 
-/** Tek itiraz: uyuşmazlık no ve durumu, itiraz edilen kilo, açıklama, fotoğraf sayısı ve numune/lab adımları. */
+/** Tek itiraz: uyuşmazlık no ve durumu, itiraz edilen kilo, açıklama, fotoğraf sayısı ve karar. */
 export function ClaimCard({ claim }: { claim: QualityClaimView }) {
   const { t } = useTranslation();
   return (
@@ -48,17 +46,6 @@ export function ClaimCard({ claim }: { claim: QualityClaimView }) {
           <Text size="sm" c="dimmed">
             {t('claim.card.adjustedKg')}: {formatClaimKg(claim.claimedKg)}
           </Text>
-        )}
-        {claim.inspections.map((inspection) => (
-          <InspectionItem
-            key={inspection.id}
-            claimId={claim.id}
-            shipmentId={claim.shipmentId}
-            inspection={inspection}
-          />
-        ))}
-        {claim.allowedActions?.includes('REQUEST_INSPECTION') && (
-          <RequestInspectionForm claimId={claim.id} />
         )}
       </Stack>
     </Paper>

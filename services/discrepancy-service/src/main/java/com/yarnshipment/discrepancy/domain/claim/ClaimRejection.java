@@ -1,6 +1,6 @@
 package com.yarnshipment.discrepancy.domain.claim;
 
-/** Kalite itirazı ya da kontrol isteğinin reddedilme nedeni; problem kodu {@code QUALITY_CLAIM_<ad>} olur. */
+/** Kalite itirazının reddedilme nedeni; problem kodu {@code QUALITY_CLAIM_<ad>} olur. */
 public enum ClaimRejection {
     /** Sevkiyat tamamlanmadı ya da çıkış kilosu bilinmiyor. */
     NOT_AVAILABLE,
@@ -17,10 +17,5 @@ public enum ClaimRejection {
     /** İtiraz fotoğrafsız açılamaz. */
     EVIDENCE_REQUIRED,
     /** Kanıt bulunamadı, başka sevkiyatın ya da beklenen türde değil. */
-    EVIDENCE_INVALID,
-    /** Kontrol sonucu zaten girildi. */
-    INSPECTION_RECORDED,
-    /** Lab sonucu belgesiz girilemez. */
-    RESULT_EVIDENCE_REQUIRED,
-    INSPECTION_PENDING
+    EVIDENCE_INVALID
 }

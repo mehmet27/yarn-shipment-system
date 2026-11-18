@@ -204,7 +204,7 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
   );
 
   await mudur.adim(
-    'tamamlanmış sevkiyatta müdürde kalite itirazı / laboratuvar belgesi yükleme alanı gelmez',
+    'tamamlanmış sevkiyatta müdürde kalite itirazı yükleme alanı gelmez',
     async () => {
       await mudur.sayfa.goto(`/panel/sevkiyat/${tam}`);
       await mudur.sayfa.waitForLoadState('networkidle');

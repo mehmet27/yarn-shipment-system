@@ -17,8 +17,7 @@ info:
 
     Kalite itirazı (ön analiz, Bölüm 10): fasoncu teslimden sonraki 3 iş günü içinde, teslimde okuttuğu çuvallar için
     fotoğraflı itiraz açar. İtiraz Kırmızı bir `QUALITY` uyuşmazlığıdır ve diğer uyuşmazlıklar gibi atanır ve
-    `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır. Kalite, karardan önce numune ya da lab kontrolü
-    isteyebilir ve sonucu (lab için belgeyle) girer.
+    `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır.
 servers:
   - url: /
 tags:
@@ -260,78 +259,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '409':
           $ref: '#/components/responses/ClaimConflict'
-  /api/v1/quality-claims/{claimId}/inspections:
-    post:
-      tags: [QualityClaims]
-      operationId: requestInspection
-      summary: İtiraz için numune ya da lab kontrolü ister
-      description: Yalnızca karara bağlanmamış itirazda; kalite ve admin.
-      parameters:
-        - $ref: '#/components/parameters/ClaimId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RequestInspectionRequest'
-      responses:
-        '201':
-          description: İstenen kontrol
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InspectionView'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/ClaimNotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-  /api/v1/quality-claims/{claimId}/inspections/{inspectionId}/result:
-    post:
-      tags: [QualityClaims]
-      operationId: recordInspectionResult
-      summary: Kontrol sonucunu girer
-      description: |
-        Sonuç bir kez girilir. Lab sonucu `LAB_RESULT` belgesiyle gelir; numune karşılaştırmasında belge isteğe
-        bağlıdır. Belge aynı sevkiyata yüklenmiş olmalıdır.
-      parameters:
-        - $ref: '#/components/parameters/ClaimId'
-        - name: inspectionId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RecordInspectionResultRequest'
-      responses:
-        '200':
-          description: Sonuçlanan kontrol
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InspectionView'
-        '400':
-          $ref: '#/components/responses/ClaimBadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/ClaimNotFound'
-        '409':
-          $ref: '#/components/responses/ClaimConflict'
-        '503':
-          $ref: '#/components/responses/Unavailable'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -395,13 +323,13 @@ components:
     ClaimConflict:
       description: >-
         İtiraz şu an yapılamıyor (QUALITY_CLAIM_NOT_AVAILABLE, QUALITY_CLAIM_WINDOW_CLOSED,
-        QUALITY_CLAIM_INSPECTION_RECORDED, DISCREPANCY_NOT_OPEN)
+        DISCREPANCY_NOT_OPEN)
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
     ClaimNotFound:
-      description: İtiraz ya da kontrol yok (QUALITY_CLAIM_NOT_FOUND, INSPECTION_NOT_FOUND)
+      description: İtiraz yok (QUALITY_CLAIM_NOT_FOUND)
       content:
         application/problem+json:
           schema:
@@ -581,10 +509,6 @@ components:
         liableParty:
           type: string
           maxLength: 200
-    InspectionKind:
-      type: string
-      description: LAB laboratuvar testidir.
-      enum: [LAB]
     OpenQualityClaimRequest:
       type: object
       required: [shipmentId, description, claimedKg, evidenceIds]
@@ -613,61 +537,6 @@ components:
           items:
             type: string
             format: uuid
-    RequestInspectionRequest:
-      type: object
-      required: [kind]
-      properties:
-        kind:
-          $ref: '#/components/schemas/InspectionKind'
-        note:
-          type: string
-          maxLength: 2000
-    RecordInspectionResultRequest:
-      type: object
-      required: [result]
-      properties:
-        result:
-          type: string
-          minLength: 1
-          maxLength: 2000
-        evidenceId:
-          type: string
-          format: uuid
-          description: LAB_RESULT kanıtı; lab kontrolünde zorunlu
-    InspectionView:
-      type: object
-      required: [id, kind, requestedBy, requestedAt]
-      properties:
-        id:
-          type: string
-          format: uuid
-        kind:
-          $ref: '#/components/schemas/InspectionKind'
-        requestNote:
-          type: string
-        requestedBy:
-          type: string
-          format: uuid
-        requestedAt:
-          type: string
-          format: date-time
-        result:
-          type: string
-        resultEvidenceId:
-          type: string
-          format: uuid
-        performedBy:
-          type: string
-          format: uuid
-        performedAt:
-          type: string
-          format: date-time
-        allowedActions:
-          type: array
-          description: Bu kullanıcının bu kontrolde yapabileceği eylemler (FE-SEC-03)
-          items:
-            type: string
-            enum: [RECORD_RESULT]
     QualityClaimView:
       type: object
       required:
@@ -682,7 +551,6 @@ components:
         - openedBy
         - openedAt
         - deadlineAt
-        - inspections
       properties:
         id:
           type: string
@@ -725,16 +593,6 @@ components:
         deadlineAt:
           type: string
           format: date-time
-        inspections:
-          type: array
-          items:
-            $ref: '#/components/schemas/InspectionView'
-        allowedActions:
-          type: array
-          description: Bu kullanıcının bu itirazda yapabileceği eylemler (FE-SEC-03)
-          items:
-            type: string
-            enum: [REQUEST_INSPECTION]
     ShipmentClaimsView:
       type: object
       required: [shipmentId, deadlineAt, windowOpen, receivedKg, claimableKg, claims]

@@ -8,7 +8,6 @@ import { server } from '@/mocks/server';
 import { renderApp } from '@/test/renderApp';
 
 const photo = () => new File(['x'.repeat(2000)], 'leke.jpg', { type: 'image/jpeg' });
-const report = () => new File(['%PDF'], 'rapor.pdf', { type: 'application/pdf' });
 
 describe('Kalite itirazı', () => {
   async function openForm(role: 'QUALITY', ...extra: RequestHandler[]) {
@@ -138,31 +137,12 @@ describe('Kalite itirazı', () => {
     expect(screen.queryByRole('tab', { name: 'Kalite itirazı' })).not.toBeInTheDocument();
   });
 
-  it('kalite lab analizi ister, raporla sonucu kaydeder', async () => {
-    server.use(...createHandlers('QUALITY'));
-    renderApp('/panel/sevkiyat/shp-0019');
-    await userEvent.click(await screen.findByRole('tab', { name: 'Kalite itirazı' }));
-    const card = await screen.findByRole('article', { name: 'UY-shp-0019-1' });
-    await userEvent.type(within(card).getByLabelText('Talep notu'), 'Nem analizi iste');
-    await userEvent.click(within(card).getByRole('button', { name: 'Kontrol iste' }));
-    expect(await within(card).findByText('Sonuç bekleniyor')).toBeInTheDocument();
-    const save = within(card).getByRole('button', { name: 'Sonucu kaydet' });
-    await userEvent.type(within(card).getByLabelText(/^Sonuç/), 'Nem oranı yüksek');
-    expect(save).toBeDisabled();
-    await userEvent.upload(within(card).getByTestId('upload-file-input'), report());
-    await userEvent.click(await within(card).findByRole('button', { name: 'Sonucu kaydet' }));
-    expect(await within(card).findByText('Sonuçlandı')).toBeInTheDocument();
-    expect(await within(card).findByLabelText('Laboratuvar sonucu')).toBeInTheDocument();
-    expect(within(card).queryByRole('button', { name: 'Sonucu kaydet' })).not.toBeInTheDocument();
-  });
-
-  it('müdür itirazları görür ama itiraz açamaz ve kontrol isteyemez', async () => {
+  it('müdür itirazları görür ama itiraz açamaz', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/shp-0019');
     await userEvent.click(await screen.findByRole('tab', { name: 'Kalite itirazı' }));
     expect(await screen.findByRole('article', { name: 'UY-shp-0019-1' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Kalite itirazı aç' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Kontrol iste' })).not.toBeInTheDocument();
   });
 
   it('kalite uyuşmazlığının detayında itiraz dosyasını gösterir', async () => {

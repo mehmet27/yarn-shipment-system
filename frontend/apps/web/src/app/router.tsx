@@ -50,12 +50,12 @@ const routes: RouteObject[] = [
       ...stockPanelRoutes,
     ],
   },
-  { path: '/giris', element: <LoginPage brand={<BrandMark />} /> },
+  { path: '/giris', element: <LoginPage brand={<BrandMark linked={false} />} /> },
   {
     path: '/sifre-degistir',
     element: (
       <RequireAuth errorFallback={<ErrorPage reason="unexpected" />} allowPasswordChangeRequired>
-        <ChangePasswordPage brand={<BrandMark />} />
+        <ChangePasswordPage brand={<BrandMark linked={false} />} />
       </RequireAuth>
     ),
   },

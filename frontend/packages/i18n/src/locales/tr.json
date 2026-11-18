@@ -401,7 +401,8 @@
     },
     "summary": {
       "total": "Toplam net",
-      "expectedFabric": "Beklenen kumaş"
+      "expectedFabric": "Beklenen kumaş",
+      "afterFire": "fire %{{rate}}"
     },
     "siteMissing": "Lokasyonunuz belirlenemedi; sevkiyat oluşturulamıyor. Yöneticinize başvurun.",
     "subcontractor": "Alıcı fasoncu",

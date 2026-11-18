@@ -2,16 +2,13 @@ import { useTranslation } from '@iplik/i18n';
 import { Alert, Box, Button, Group, Icon, SectionCard, Stack, Text } from '@iplik/ui';
 import { calculateFire, formatKgText, isKilogram, parseFireRatePct, parseKg } from '@iplik/units';
 import { CentralStockNotice } from '../stock/CentralStockNotice';
-import type { CreateDraft, CreateFieldErrors } from './createDraft';
+import type { CreateDraft } from './createDraft';
 import { totalNetKg } from './createDraft';
-import { FireRateField } from './FireRateField';
 import { TotalBox } from './TotalBox';
 import { useOrderFormPdf } from './useOrderFormPdf';
 
 export type CreateSummaryProps = {
   draft: CreateDraft;
-  onChange: (draft: CreateDraft) => void;
-  errors: CreateFieldErrors;
   defaultFirePct: string;
   /** Gönderilemeyen formun nedeni (hazır metin); yoksa uyarı gösterilmez. */
   failure: string | undefined;
@@ -34,11 +31,9 @@ function expectedFabric(total: string, firePct: string): string | undefined {
   }).expectedFabricKg;
 }
 
-/** Toplam, fire, beklenen kumaş ve gönderme düğmesi; geniş ekranda sağda yapışkan durur. */
+/** Toplam, beklenen kumaş ve gönderme düğmesi (fire oranı reçete kartında girilir); geniş ekranda sağda yapışkan durur. */
 export function CreateSummary({
   draft,
-  onChange,
-  errors,
   defaultFirePct,
   failure,
   isSubmitting,
@@ -54,15 +49,11 @@ export function CreateSummary({
       <SectionCard title={t('create.sections.summary')} icon="list">
         <Stack gap="sm">
           <TotalBox text={t('create.recipe.total', { total: formatKgText(total) })} />
-          <FireRateField
-            value={firePct}
-            errorCode={errors.fireRate}
-            onChange={(fireRatePct) => {
-              onChange({ ...draft, fireRatePct });
-            }}
-          />
-          <Group justify="space-between">
-            <Text c="dimmed">{t('create.summary.expectedFabric')}</Text>
+          <Group justify="space-between" wrap="nowrap">
+            <Text c="dimmed">
+              {t('create.summary.expectedFabric')} (
+              {t('create.summary.afterFire', { rate: firePct })})
+            </Text>
             <Text fw={600}>{fabric === undefined ? '—' : `≈ ${formatKgText(fabric)}`}</Text>
           </Group>
           <CentralStockNotice

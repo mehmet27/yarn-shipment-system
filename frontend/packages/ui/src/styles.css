@@ -9,7 +9,7 @@
 :root {
   --app-page-bg: #ffffff;
   --app-surface: #ffffff;
-  --app-inset: #fafafa;
+  --app-inset: #f4f4f5;
   --app-line: #e4e4e7;
   --app-line-soft: #f4f4f5;
   --app-control-line: #d4d4d8;
@@ -26,7 +26,7 @@
 :root[data-mantine-color-scheme='dark'] {
   --app-page-bg: #09090b;
   --app-surface: #09090b;
-  --app-inset: #141416;
+  --app-inset: #1a1a1d;
   --app-line: #27272a;
   --app-line-soft: #1c1c1f;
   --app-control-line: #3f3f46;

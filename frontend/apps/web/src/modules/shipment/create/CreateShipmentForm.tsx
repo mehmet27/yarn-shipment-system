@@ -64,13 +64,11 @@ export function CreateShipmentForm({ onCreated }: CreateShipmentFormProps) {
   return (
     <Group align="flex-start" gap="md" wrap="wrap">
       <Box flex="1 1 560px" miw={0}>
-        <CreateFields draft={draft} onChange={change} errors={fieldErrors} />
+        <CreateFields {...{ draft, errors: fieldErrors, defaultFirePct }} onChange={change} />
       </Box>
       <Box flex="1 1 300px" maw={{ base: '100%', lg: 360 }} w="100%">
         <CreateSummary
           draft={draft}
-          onChange={change}
-          errors={fieldErrors}
           defaultFirePct={defaultFirePct}
           failure={failureText(t, isSiteMissing, mutation.isError ? mutation.error : undefined)}
           isSubmitting={mutation.isPending}

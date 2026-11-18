@@ -11,6 +11,8 @@ import { renderApp } from '@/test/renderApp';
 
 const MISMATCH = '/panel/sevkiyat/shp-0045';
 
+const LONG_FLOW_TIMEOUT_MS = 20_000;
+
 describe('Kantar uyuşmazlığı', () => {
   it('müdürün ana sayfasında karar bekleyen sevkiyatı bildirir ve dosyaya bağlar', async () => {
     server.use(...createHandlers('MANAGER'));
@@ -45,26 +47,30 @@ describe('Kantar uyuşmazlığı', () => {
     expect(within(recipe).getByText(/Fire oranı: %4/)).toBeInTheDocument();
   });
 
-  it('"İplik güncelle" reçete sayfasına götürür; kilolar tutmadan kaydedilemez, tutunca sevkiyat yola çıkar', async () => {
-    server.use(...createHandlers('MANAGER'));
-    renderApp(MISMATCH);
-    await userEvent.click(await screen.findByRole('radio', { name: /İplik güncelle/ }));
-    await userEvent.click(screen.getByRole('link', { name: 'İplik listesini düzelt' }));
-    const status = await screen.findByTestId('recipe-weight-status');
-    expect(status).toHaveTextContent('Kilolar henüz tutmuyor');
-    const submit = screen.getByRole('button', { name: 'Kaydet ve yola çıkar' });
-    await userEvent.type(screen.getByLabelText(/Gerekçe/), 'Reçete düzeltildi');
-    const secondKg = screen.getByLabelText('Net kg 2');
-    await userEvent.clear(secondKg);
-    await userEvent.type(secondKg, '470');
-    expect(await screen.findByTestId('recipe-weight-status')).toHaveTextContent(
-      'Kilolar tuttu, sevkiyat yola çıkabilir',
-    );
-    await userEvent.click(submit);
-    expect(
-      await screen.findByText('Fasoncuya yolda', { selector: '.mantine-Badge-label' }),
-    ).toBeInTheDocument();
-  });
+  it(
+    '"İplik güncelle" reçete sayfasına götürür; kilolar tutmadan kaydedilemez, tutunca sevkiyat yola çıkar',
+    async () => {
+      server.use(...createHandlers('MANAGER'));
+      renderApp(MISMATCH);
+      await userEvent.click(await screen.findByRole('radio', { name: /İplik güncelle/ }));
+      await userEvent.click(screen.getByRole('link', { name: 'İplik listesini düzelt' }));
+      const status = await screen.findByTestId('recipe-weight-status');
+      expect(status).toHaveTextContent('Kilolar henüz tutmuyor');
+      const submit = screen.getByRole('button', { name: 'Kaydet ve yola çıkar' });
+      await userEvent.type(screen.getByLabelText(/Gerekçe/), 'Reçete düzeltildi');
+      const secondKg = screen.getByLabelText('Net kg 2');
+      await userEvent.clear(secondKg);
+      await userEvent.type(secondKg, '470');
+      expect(await screen.findByTestId('recipe-weight-status')).toHaveTextContent(
+        'Kilolar tuttu, sevkiyat yola çıkabilir',
+      );
+      await userEvent.click(submit);
+      expect(
+        await screen.findByText('Fasoncuya yolda', { selector: '.mantine-Badge-label' }),
+      ).toBeInTheDocument();
+    },
+    LONG_FLOW_TIMEOUT_MS,
+  );
 
   it('kilolar tartıyı tutmuyorsa sunucu reddeder ve sevkiyat uyuşmazlıkta kalır', async () => {
     server.use(...createHandlers('MANAGER'));

@@ -5,7 +5,7 @@ export type LotDraft = {
   lotNo: string;
   productId: string;
   qualityGradeId: string;
-  /** İsteğe bağlı; boş string tedarikçisiz demektir. */
+  /** Zorunlu: tedarikçi olmadan iplik olmaz. */
   yarnSupplierId: string;
   productionDate: string;
 };
@@ -23,11 +23,12 @@ export const EMPTY_LOT: LotDraft = {
   productionDate: '',
 };
 
-/** Zorunlu alanlar; tedarikçi isteğe bağlıdır. */
+/** Zorunlu alanlar. */
 export const LOT_FIELDS: readonly LotField[] = [
   'lotNo',
   'productId',
   'qualityGradeId',
+  'yarnSupplierId',
   'productionDate',
 ];
 

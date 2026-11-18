@@ -856,8 +856,8 @@ export interface LotCreateRequest {
   productId: string;
   qualityGradeId: string;
   productionDate: string;
-  /** İsteğe bağlı iplik tedarikçisi; etkin olmalıdır. Kalite kilitlenmeden önce verilebilir */
-  yarnSupplierId?: string;
+  /** İplik tedarikçisi; zorunlu ve etkin olmalıdır (tedarikçisiz iplik olmaz). Kalite kilitlenince değişmez */
+  yarnSupplierId: string;
 }
 
 export interface LotUpdateRequest {
@@ -870,8 +870,8 @@ export interface LotUpdateRequest {
   productId: string;
   qualityGradeId: string;
   productionDate: string;
-  /** İsteğe bağlı iplik tedarikçisi; etkin olmalıdır. Kalite kilitlenmeden önce verilebilir */
-  yarnSupplierId?: string;
+  /** İplik tedarikçisi; zorunlu ve etkin olmalıdır (tedarikçisiz iplik olmaz). Kalite kilitlenince değişmez */
+  yarnSupplierId: string;
 }
 
 export interface LotView {

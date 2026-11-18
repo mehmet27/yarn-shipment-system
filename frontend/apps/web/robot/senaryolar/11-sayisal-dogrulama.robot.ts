@@ -1,5 +1,12 @@
 import { fireHesapla, kiloEsit } from '../kurallar/hesap';
-import { cuvalEkle, kararVer, kumasGir, tamamlanmisSevkiyat, taslakAc } from '../support/akis';
+import {
+  cuvalEkle,
+  kararVer,
+  kumasGir,
+  tamamlanmisSevkiyat,
+  taslakAc,
+  tedarikciTanimla,
+} from '../support/akis';
 import { expect, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import { damga, resim } from '../support/yardimci';
@@ -58,6 +65,7 @@ test('Sayısal doğrulama: başka fasoncudan ve kapıdan aktarma sevkiyatı baki
   for (const r of [depo, mudur]) r.beklenen(/4\d\d (POST|PUT) /);
   const iplik = damga();
   const y = { depo, mudur };
+  const kapiTedarikci = `Kapı ${iplik}`;
 
   await mudur.adim('açılış bakiyesi: Örnek Tekstil elinde 200 kg iplik tutar', async () => {
     const once = await anlik(mudur);
@@ -97,10 +105,11 @@ test('Sayısal doğrulama: başka fasoncudan ve kapıdan aktarma sevkiyatı baki
   await mudur.adim(
     'kapıdan aktarma 100 kg: alıcı +100; merkez stok net değişmez (giriş ve çıkış)',
     async () => {
+      await tedarikciTanimla(mudur, kapiTedarikci);
       const once = await anlik(mudur);
       await tamamlanmisSevkiyat(y, `${iplik}-K`, '100', '3', {
         tur: 'kapi',
-        tedarikci: 'ROBOT Tedarikçi',
+        tedarikci: kapiTedarikci,
       });
       const sonra = await anlik(mudur);
       mudur.kontrol(

@@ -3271,7 +3271,8 @@ components:
           $ref: '#/components/schemas/PageMetadata'
     LotCreateRequest:
       type: object
-      required: [siteId, lotNo, productId, qualityGradeId, productionDate]
+      required: [siteId, lotNo, productId, qualityGradeId, productionDate,
+        yarnSupplierId]
       properties:
         siteId:
           type: string
@@ -3293,10 +3294,11 @@ components:
         yarnSupplierId:
           type: string
           format: uuid
-          description: İsteğe bağlı iplik tedarikçisi; etkin olmalıdır. Kalite kilitlenmeden önce verilebilir
+          description: İplik tedarikçisi; zorunlu ve etkin olmalıdır (tedarikçisiz iplik olmaz). Kalite kilitlenince değişmez
     LotUpdateRequest:
       type: object
-      required: [lotNo, productId, qualityGradeId, productionDate]
+      required: [lotNo, productId, qualityGradeId, productionDate,
+        yarnSupplierId]
       properties:
         lotNo:
           type: string
@@ -3315,7 +3317,7 @@ components:
         yarnSupplierId:
           type: string
           format: uuid
-          description: İsteğe bağlı iplik tedarikçisi; etkin olmalıdır. Kalite kilitlenmeden önce verilebilir
+          description: İplik tedarikçisi; zorunlu ve etkin olmalıdır (tedarikçisiz iplik olmaz). Kalite kilitlenince değişmez
     LotView:
       type: object
       required: [id, siteId, siteName, lotNo, productId, productCode, productName, qualityGradeId, qualityGradeCode,

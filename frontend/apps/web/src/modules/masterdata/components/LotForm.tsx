@@ -39,12 +39,7 @@ export function LotForm({ lot, onClose, onSaved }: LotFormProps) {
         />
         <LotChoiceField field="productId" data={catalog.data?.products ?? []} draft={draft} />
         <LotChoiceField field="qualityGradeId" data={catalog.data?.grades ?? []} draft={draft} />
-        <LotChoiceField
-          field="yarnSupplierId"
-          data={catalog.data?.suppliers ?? []}
-          draft={draft}
-          isOptional
-        />
+        <LotChoiceField field="yarnSupplierId" data={catalog.data?.suppliers ?? []} draft={draft} />
         <TextInput
           type="date"
           label={t('lots.fields.productionDate')}

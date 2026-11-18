@@ -44,8 +44,10 @@ class LotServicesTest {
     private static final UUID LOT = UUID.fromString("0192f0a0-0000-7000-8000-000000000101");
     private static final UUID PRODUCT = UUID.fromString("0192f0a0-0000-7000-8000-000000000201");
     private static final UUID GRADE = UUID.fromString("0192f0a0-0000-7000-8000-000000000211");
+    private static final UUID SUPPLIER = UUID.fromString("0192f0a0-0000-7000-8000-000000000221");
     private static final UUID OTHER_SITE = UUID.fromString("0192f0a0-0000-7000-8000-000000000002");
-    private static final LotDetails DETAILS = new LotDetails("p-1", PRODUCT, GRADE, LocalDate.parse("2026-10-29"));
+    private static final LotDetails DETAILS =
+            new LotDetails("p-1", PRODUCT, GRADE, LocalDate.parse("2026-10-29"), SUPPLIER);
 
     private final LotPort lots = mock(LotPort.class);
     private final LotEventPort events = mock(LotEventPort.class);
@@ -104,6 +106,23 @@ class LotServicesTest {
     }
 
     @Test
+    @DisplayName("Tedarikçisiz parti açılamaz: tedarikçi olmadan iplik olmaz")
+    void shouldRejectLotWithoutSupplier() {
+        // given
+        Actor manager = TestTokens.actor("manager");
+        givenValidReferences();
+        when(lots.activeSiteExists(TestTokens.SITE_ID)).thenReturn(true);
+        LotDetails withoutSupplier = new LotDetails("P-4", PRODUCT, GRADE, LocalDate.parse("2026-10-29"));
+
+        // when / then
+        assertThatThrownBy(() -> management.createLot(manager, TestTokens.SITE_ID, withoutSupplier))
+                .isInstanceOf(InvalidMasterDataException.class)
+                .extracting(e -> ((InvalidMasterDataException) e).field())
+                .isEqualTo("yarnSupplierId");
+        verify(lots, never()).insertLot(any(), any(), any());
+    }
+
+    @Test
     @DisplayName("Pasif iplik, pasif kalite ya da ileri tarihli üretim reddedilir")
     void shouldRejectInvalidReferences() {
         // given
@@ -111,7 +130,8 @@ class LotServicesTest {
         when(lots.activeSiteExists(TestTokens.SITE_ID)).thenReturn(true);
         when(lots.activeProductExists(PRODUCT)).thenReturn(false);
         when(lots.activeQualityGradeExists(GRADE)).thenReturn(true);
-        LotDetails future = new LotDetails("P-2", PRODUCT, GRADE, LocalDate.parse("2026-10-31"));
+        when(lots.activeYarnSupplierExists(SUPPLIER)).thenReturn(true);
+        LotDetails future = new LotDetails("P-2", PRODUCT, GRADE, LocalDate.parse("2026-10-31"), SUPPLIER);
 
         // when / then
         assertThatThrownBy(() -> management.createLot(manager, TestTokens.SITE_ID, DETAILS))
@@ -213,6 +233,7 @@ class LotServicesTest {
     private void givenValidReferences() {
         when(lots.activeProductExists(PRODUCT)).thenReturn(true);
         when(lots.activeQualityGradeExists(GRADE)).thenReturn(true);
+        when(lots.activeYarnSupplierExists(SUPPLIER)).thenReturn(true);
     }
 
     private static ProductionLot lot(@Nullable Instant lockedAt) {

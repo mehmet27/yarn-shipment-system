@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { expect } from './robot';
 import type { Robot } from './robot';
-import { resim, sec } from './yardimci';
+import { resim, sec, tedarikciSec } from './yardimci';
 
 /**
  * Müdür Tanımlar > İplikler'e yeni iplik ekler. Merkez stok girişi ve kumaş girişi yalnızca Tanımlar'daki aktif iplikle
@@ -60,7 +60,7 @@ export async function fiyatYaz(sayfa: Page, fiyat = '21,5') {
 
 export type Yonetim = { depo: Robot; mudur: Robot };
 
-/** Müdür taslağı açar; sevkiyat kimliğini döner. */
+/** Kapıdan aktarmada `tedarikci`, Tanımlar > İplik tedarikçileri'nde tanımlı olmalıdır. */
 export type Kaynak =
   { tur: 'merkez' } | { tur: 'fason'; gonderen: string } | { tur: 'kapi'; tedarikci: string };
 
@@ -80,7 +80,8 @@ export async function taslakAc(
     await sec(mudur.sayfa, /Gönderen fasoncu/, kaynak.gonderen);
   } else if (kaynak.tur === 'kapi') {
     await mudur.sayfa.locator('label').filter({ hasText: 'Kapıdan aktarma' }).first().click();
-    await mudur.sayfa.getByLabel(/^Tedarikçi/).fill(kaynak.tedarikci);
+    // Tedarikçi serbest metin değil; Tanımlar'daki aktif kayıttan seçilir (önce tedarikciTanimla).
+    await tedarikciSec(mudur.sayfa, kaynak.tedarikci);
   }
   await mudur.sayfa.getByLabel(/Fire oranı/).fill(fire);
   // Sevkiyat tarihi formda bugünle gelir; verilirse o güne ayarlanır.

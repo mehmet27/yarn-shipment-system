@@ -37,8 +37,10 @@ class LotManagementControllerTest {
     private static final UUID PRODUCT = UUID.fromString("0192f0a0-0000-7000-8000-000000000201");
     private static final UUID GRADE = UUID.fromString("0192f0a0-0000-7000-8000-000000000211");
     private static final String URI = "/api/v1/master-data/lots";
+    private static final UUID SUPPLIER = UUID.fromString("0192f0a0-0000-7000-8000-000000000221");
     private static final String BODY = "{\"siteId\":\"" + TestTokens.SITE_ID + "\",\"lotNo\":\"p-1\",\"productId\":\""
-            + PRODUCT + "\",\"qualityGradeId\":\"" + GRADE + "\",\"productionDate\":\"2026-10-10\"}";
+            + PRODUCT + "\",\"qualityGradeId\":\"" + GRADE + "\",\"yarnSupplierId\":\"" + SUPPLIER
+            + "\",\"productionDate\":\"2026-10-10\"}";
     private static final Instant LOCKED_AT = Instant.parse("2026-10-11T08:00:00Z");
 
     private final MockMvcTester mvc;
@@ -118,7 +120,7 @@ class LotManagementControllerTest {
         return new ProductionLot(
                 LOT,
                 TestTokens.SITE_ID,
-                new LotDetails("P-1", PRODUCT, GRADE, LocalDate.parse("2026-10-10")),
+                new LotDetails("P-1", PRODUCT, GRADE, LocalDate.parse("2026-10-10"), SUPPLIER),
                 new ProductionLot.Labels("Merkez Fabrika", "PES-30-1", "Polyester 30/1", "A", "Birinci kalite"),
                 lockedAt,
                 true);

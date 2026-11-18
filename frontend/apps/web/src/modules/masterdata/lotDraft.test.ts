@@ -5,7 +5,7 @@ const VALID = {
   lotNo: 'p-2026-1',
   productId: 'prd-0',
   qualityGradeId: 'grd-a',
-  yarnSupplierId: '',
+  yarnSupplierId: 'sup-0',
   productionDate: '2026-10-10',
 };
 
@@ -20,6 +20,12 @@ describe('validateLot', () => {
       lotNo: 'invalidLotNo',
     });
     expect(validateLot(VALID, '2026-10-09')).toEqual({ productionDate: 'futureDate' });
+  });
+
+  it('tedarikçisiz partiyi reddeder', () => {
+    expect(validateLot({ ...VALID, yarnSupplierId: '' }, '2026-10-30')).toEqual({
+      yarnSupplierId: 'required',
+    });
   });
 
   it('yerel günü YYYY-MM-DD verir', () => {

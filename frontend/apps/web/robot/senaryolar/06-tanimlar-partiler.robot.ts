@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, rolTanimli, test } from '../support/robot';
+import { tedarikciTanimla } from '../support/akis';
 import { damga, satir, sec } from '../support/yardimci';
 
 const TANIMLAR = [
@@ -79,6 +80,11 @@ test('Partiler: müdür parti ekler, düzenler, kalitesini kilitler, pasife alı
   const mudur = await giris('mudur');
   mudur.beklenen(/4\d\d (POST|PUT|PATCH) \/api\/v1\/master-data/);
   const no = `P-${damga().slice(-8)}`;
+  // Tedarikçi olmadan parti açılmaz: önce Tanımlar'a tedarikçi eklenir.
+  const tedarikci = `Parti ${damga().slice(-6)}`;
+  await mudur.adim('parti: tedarikçi tanımlanır', async () => {
+    await tedarikciTanimla(mudur, tedarikci);
+  });
   // Lot seçicisi önbelleğe alınır; sayfa yenilenmeden yeni parti eklenince seçicide görünmelidir.
   await mudur.adim('parti: sevkiyat formunun lot seçicisi önbelleğe alınır', async () => {
     await mudur.sayfa.goto('/panel/sevkiyat/yeni');
@@ -91,12 +97,21 @@ test('Partiler: müdür parti ekler, düzenler, kalitesini kilitler, pasife alı
     await mudur.sayfa.getByRole('button', { name: 'Ekle' }).click();
     await mudur.sayfa.getByRole('dialog').getByRole('button', { name: 'Kaydet' }).click();
     mudur.kontrol('boş parti uyarı vermeli', (await mudur.mesajlar()).length > 0);
+    mudur.kontrol(
+      'tedarikçi seçilmeden parti açılamaz (alan uyarısı)',
+      await mudur.sayfa
+        .getByRole('dialog')
+        .getByText('Bu alan boş olamaz.')
+        .count()
+        .then((adet) => adet >= 5),
+    );
   });
   await mudur.adim('parti: ekle', async () => {
     const pencere = mudur.sayfa.getByRole('dialog');
     await pencere.getByLabel('Parti numarası *', { exact: true }).fill(no);
     await sec(mudur.sayfa, /^İplik \*/, '', pencere);
     await sec(mudur.sayfa, /^Kalite sınıfı/, '', pencere);
+    await sec(mudur.sayfa, /^İplik tedarikçisi/, tedarikci, pencere);
     await pencere.getByLabel(/Üretim tarihi/).fill('2026-11-01');
     await pencere.getByRole('button', { name: 'Kaydet' }).click();
     await expect(mudur.sayfa.getByText(no).first()).toBeVisible();

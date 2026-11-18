@@ -1,6 +1,12 @@
 import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
-import { fiyatYaz, iplikTanimla, kumasFormuDoldur, tamamlanmisSevkiyat } from '../support/akis';
+import {
+  fiyatYaz,
+  iplikTanimla,
+  kumasFormuDoldur,
+  kumasGir,
+  tamamlanmisSevkiyat,
+} from '../support/akis';
 import { damga, iplikSec, sec } from '../support/yardimci';
 
 /** Geçersiz girişte ekran, nedeni söyleyen bir mesaj göstermeli (genel "tekrar deneyin" yetmez). */
@@ -112,16 +118,29 @@ test('Formlar: kumaş girişi ve kalite itirazı kilo sınırını aşınca sat�
     },
   );
 
+  await kalite.adim('kalite itirazı: kumaş girişi yokken form açılmaz, nedeni yazar', async () => {
+    await kalite.sayfa.goto(`/panel/sevkiyat/${id}`);
+    await kalite.sayfa.getByRole('tab', { name: 'Kalite itirazı', exact: true }).click();
+    await expect(kalite.sayfa.getByText(/önce kumaş girişi yapılmalı/)).toBeVisible();
+    await expect(kalite.sayfa.getByRole('button', { name: 'Kalite itirazı aç' })).toHaveCount(0);
+  });
+
+  await fasonKalite.adim('kumaş girişi: 60 kg kumaş kaydedilir', async () => {
+    await kumasGir(fasonKalite, id, '60', `${damga()}-K2`);
+  });
+
   await kalite.adim(
-    'kalite itirazı: sevkiyat ağırlığından fazla kilo uyarılır, gönder kapalı',
+    'kalite itirazı: girilen kumaştan fazla kilo uyarılır, gönder kapalı',
     async () => {
       await kalite.sayfa.goto(`/panel/sevkiyat/${id}`);
       await kalite.sayfa.getByRole('tab', { name: 'Kalite itirazı', exact: true }).click();
       await kalite.sayfa.getByRole('button', { name: 'Kalite itirazı aç' }).click();
-      await expect(kalite.sayfa.getByText('En çok 100 kg yazabilirsiniz.')).toBeVisible();
-      await kalite.sayfa.getByLabel(/İtiraz edilen kilo/).fill('101');
+      await expect(
+        kalite.sayfa.getByText('Girilen kumaşa göre en çok 60 kg yazabilirsiniz.'),
+      ).toBeVisible();
+      await kalite.sayfa.getByLabel(/İtiraz edilen kilo/).fill('61');
       await kalite.sayfa.getByLabel(/Sorunu anlatın/).fill('Robot: fazla kilo');
-      await nedenliMesajVar(kalite, 'itiraz 101 kg');
+      await nedenliMesajVar(kalite, 'itiraz 61 kg');
       await expect(kalite.sayfa.getByRole('button', { name: 'İtirazı gönder' })).toBeDisabled();
     },
   );

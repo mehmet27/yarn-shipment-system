@@ -266,8 +266,10 @@ export interface ShipmentClaimsView {
   /** İtirazın açılabileceği son an (tamamlanma + 3 iş günü) */
   deadlineAt: string;
   windowOpen: boolean;
-  /** Sevkiyatın çıkış net kilosu (üç ondalık); itiraz edilen kilo bunu aşamaz */
-  shipmentNetKg: string;
+  /** Sevkiyata girilmiş kumaşın toplam net kilosu (üç ondalık); kumaş girilmemişse 0.000 */
+  receivedKg: string;
+  /** İtiraz edilebilecek kilo (üç ondalık); girilmiş kumaştan haksız bulunmamış itirazlar çıkarılır */
+  claimableKg: string;
   claims: QualityClaimView[];
   /** Bu kullanıcının bu sevkiyatta yapabileceği eylemler (FE-SEC-03) */
   allowedActions?: ShipmentClaimsViewAllowedActionsItem[];

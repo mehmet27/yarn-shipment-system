@@ -16,7 +16,8 @@ import org.jspecify.annotations.Nullable;
  * @param subcontractorId sevkiyatın fasoncusu (ana veri); bilinmiyorsa boş
  * @param shipmentNo sevkiyat numarası; uyuşmazlık numarasında kullanılır
  * @param completedAt sevkiyatın tamamlanma zamanı; itiraz süresi buradan sayılır
- * @param netKg sevkiyatın çıkış net kilosu; itiraz edilen kilo bunu aşamaz
+ * @param receivedKg sevkiyata girilmiş kumaşın toplam net kilosu; kumaş girişi yoksa sıfır
+ * @param claimedKg haksız bulunmamış (açık ya da haklı) itirazların toplam kilosu
  */
 public record ClaimTarget(
         UUID shipmentId,
@@ -24,7 +25,8 @@ public record ClaimTarget(
         @Nullable UUID subcontractorId,
         @Nullable String shipmentNo,
         Instant completedAt,
-        BigDecimal netKg) {
+        BigDecimal receivedKg,
+        BigDecimal claimedKg) {
 
     /**
      * Hedef süre: tamamlanmadan itibaren 3 iş günü. İtiraz açmak için süre sınırı yoktur (iş birimi kararı, akış
@@ -39,7 +41,13 @@ public record ClaimTarget(
         Objects.requireNonNull(shipmentId, "shipmentId");
         Objects.requireNonNull(siteId, "siteId");
         Objects.requireNonNull(completedAt, "completedAt");
-        Objects.requireNonNull(netKg, "netKg");
+        Objects.requireNonNull(receivedKg, "receivedKg");
+        Objects.requireNonNull(claimedKg, "claimedKg");
+    }
+
+    /** İtiraz edilebilecek kilo: girilmiş kumaştan, daha önce itiraz edilen kilo çıkarılır; sıfırın altına inmez. */
+    public BigDecimal claimableKg() {
+        return receivedKg.subtract(claimedKg).max(BigDecimal.ZERO);
     }
 
     /** Hedef tarih; itirazın açılmasını sınırlamaz. */
@@ -57,7 +65,10 @@ public record ClaimTarget(
         if (!isOpenAt(now)) {
             throw new ClaimRejectedException(ClaimRejection.WINDOW_CLOSED, "shipmentId=" + shipmentId);
         }
-        if (request.claimedKg().compareTo(netKg) > 0) {
+        if (receivedKg.signum() == 0) {
+            throw new ClaimRejectedException(ClaimRejection.FABRIC_NOT_RECEIVED, "shipmentId=" + shipmentId);
+        }
+        if (request.claimedKg().compareTo(claimableKg()) > 0) {
             throw new ClaimRejectedException(ClaimRejection.CLAIM_EXCEEDS_SHIPMENT_WEIGHT, "shipmentId=" + shipmentId);
         }
         if (request.evidenceIds().isEmpty()) {

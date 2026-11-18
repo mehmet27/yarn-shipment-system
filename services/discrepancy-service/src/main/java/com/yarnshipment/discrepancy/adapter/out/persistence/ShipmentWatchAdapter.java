@@ -42,6 +42,10 @@ final class ShipmentWatchAdapter implements ShipmentWatchPort {
             UPDATE shipment_watch
                SET closed_at = :at, updated_at = :at, updated_by = :actor, version = version + 1
              WHERE shipment_id = :shipmentId AND closed_at IS NULL""";
+    private static final String INSERT_FABRIC = """
+            INSERT INTO fabric_receipt_watch (receipt_id, shipment_id, net_kg, received_at, created_at, created_by)
+            VALUES (:receiptId, :shipmentId, :netKg, :at, :at, :actor)
+            ON CONFLICT (receipt_id) DO NOTHING""";
     private static final String COLUMNS = "shipment_id, shipment_no, site_id, subcontractor_id, dispatched_at";
     private static final String FIND = "SELECT " + COLUMNS + " FROM shipment_watch WHERE shipment_id = :shipmentId";
 
@@ -81,6 +85,17 @@ final class ShipmentWatchAdapter implements ShipmentWatchPort {
     @Override
     public void recordClosed(UUID shipmentId, Instant closedAt) {
         mark(SET_CLOSED, shipmentId, closedAt);
+    }
+
+    @Override
+    public void recordFabricReceived(UUID shipmentId, UUID receiptId, BigDecimal netKg, Instant receivedAt) {
+        jdbc.sql(INSERT_FABRIC)
+                .param("receiptId", receiptId)
+                .param("shipmentId", shipmentId)
+                .param("netKg", netKg)
+                .param("at", Timestamp.from(receivedAt))
+                .param("actor", SYSTEM_ACTOR)
+                .update();
     }
 
     @Override

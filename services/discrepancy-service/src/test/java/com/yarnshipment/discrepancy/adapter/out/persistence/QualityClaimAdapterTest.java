@@ -9,6 +9,7 @@ import com.yarnshipment.discrepancy.domain.claim.QualityClaim;
 import com.yarnshipment.discrepancy.domain.model.Discrepancy;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyType;
 import com.yarnshipment.events.discrepancy.DiscrepancyOpened;
+import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -68,7 +69,8 @@ class QualityClaimAdapterTest {
         assertThat(target.siteId()).isEqualTo(TestComparisons.SITE);
         assertThat(target.subcontractorId()).isEqualTo(TestComparisons.SUBCONTRACTOR);
         assertThat(target.completedAt()).isEqualTo(TestComparisons.RECEIVED_AT);
-        assertThat(target.netKg()).isEqualByComparingTo(TestComparisons.DISPATCH_KG);
+        assertThat(target.receivedKg()).isEqualByComparingTo(TestComparisons.DISPATCH_KG);
+        assertThat(target.claimedKg()).isEqualByComparingTo("0");
         assertThat(claims.findTarget(UUID.randomUUID())).isEmpty();
     }
 
@@ -92,6 +94,24 @@ class QualityClaimAdapterTest {
                 .extracting(activity -> activity.actionType())
                 .containsExactly("OPENED", "CLAIM_EVIDENCE");
         assertThat(events.count(DiscrepancyOpened.TYPE)).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("Aynı kumaş kaydı tekrar gelirse bir kez sayılır; açık itiraz kalan kiloyu düşürür")
+    void shouldCountFabricOnceAndSubtractOpenClaims() {
+        watch.recordFabricReceived(
+                TestComparisons.SHIPMENT,
+                SeededClaims.FABRIC_RECEIPT,
+                TestComparisons.DISPATCH_KG,
+                TestComparisons.RECEIVED_AT);
+        SeededClaims.open(claims);
+
+        ClaimTarget target = claims.findTarget(TestComparisons.SHIPMENT).orElseThrow();
+
+        assertThat(target.receivedKg()).isEqualByComparingTo(TestComparisons.DISPATCH_KG);
+        assertThat(target.claimedKg()).isEqualByComparingTo("120.5");
+        assertThat(target.claimableKg())
+                .isEqualByComparingTo(TestComparisons.DISPATCH_KG.subtract(new BigDecimal("120.5")));
     }
 
     @Test

@@ -25,5 +25,8 @@ public interface ShipmentWatchPort {
     /** Tamamlanan ya da iptal edilen sevkiyat. */
     void recordClosed(UUID shipmentId, Instant closedAt);
 
+    /** Sevkiyata kumaş girildi; aynı kumaş kaydı tekrar gelirse ikinci kez sayılmaz. */
+    void recordFabricReceived(UUID shipmentId, UUID receiptId, BigDecimal netKg, Instant receivedAt);
+
     Optional<WatchedShipment> findShipment(UUID shipmentId);
 }

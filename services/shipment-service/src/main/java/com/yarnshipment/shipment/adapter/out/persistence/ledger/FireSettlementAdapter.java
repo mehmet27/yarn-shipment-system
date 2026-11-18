@@ -44,8 +44,7 @@ final class FireSettlementAdapter implements FireSettlementPort {
                 AS claim_kg,
             coalesce((SELECT sum(fr.net_kg) FROM fabric_lot fr
                       WHERE fr.shipment_id = f.shipment_id AND fr.source = 'SUBCONTRACTOR'), 0) AS fabric_kg,
-            greatest(0, coalesce((SELECT -sum(m.net_kg) FROM balance_movement m
-                                  WHERE m.shipment_id = f.shipment_id AND m.kind = 'INVOICE'), 0)) AS invoiced_kg,
+            coalesce((SELECT sum(i.kg) FROM fire_invoice i WHERE i.shipment_id = f.shipment_id), 0) AS invoiced_kg,
             coalesce((SELECT sum(c.claimed_kg) FROM fire_claim c WHERE c.shipment_id = f.shipment_id), 0)
                 AS pending_claim_kg,
             coalesce((SELECT sum(i.claim_kg) FROM fire_invoice i WHERE i.shipment_id = f.shipment_id), 0)

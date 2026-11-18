@@ -1,6 +1,6 @@
 -- Haklı kalite itirazı kilosu bakiyeden hemen düşmez, faturalanacak kiloya eklenir (shipment.fire_claim):
 --  * claim_kg: fire hesabındaki I; eski itirazlar (CLAIM_ADJUSTMENT) ile faturayla düşülecek itirazlar birlikte.
---  * invoiced_kg: yalnız eksik kumaşı karşılayan fatura kilosu (fire yüzdesi ve kalan eksik buna göre hesaplanır).
+--  * invoiced_kg: yalnız eksik kumaşı karşılayan fatura kilosu (itirazı karşılayan kısım bakiye hareketi yazmaz; fire yüzdesi ve kalan eksik buna göre hesaplanır).
 --  * claim_to_invoice_kg: itirazdan henüz faturalanmamış kilo.
 CREATE OR REPLACE VIEW fire_file_view AS
 SELECT f.shipment_id,
@@ -17,7 +17,7 @@ SELECT f.shipment_id,
        (f.invoiced_on::timestamp AT TIME ZONE 'Europe/Istanbul') AS invoiced_at,
        coalesce(s.locked_at, f.created_at) AS completed_at,
        (coalesce(cl.claim_kg, 0) + coalesce(pc.pending_claim_kg, 0))::numeric(14, 3) AS claim_kg,
-       (coalesce(iv.invoiced_kg, 0) - coalesce(ci.claim_invoiced_kg, 0))::numeric(14, 3) AS invoiced_kg,
+       coalesce(iv.invoiced_kg, 0)::numeric(14, 3) AS invoiced_kg,
        greatest(0, coalesce(pc.pending_claim_kg, 0) - coalesce(ci.claim_invoiced_kg, 0))::numeric(14, 3)
            AS claim_to_invoice_kg
 FROM shipment.fire_settlement f

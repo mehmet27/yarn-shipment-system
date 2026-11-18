@@ -11,6 +11,7 @@ import com.anthropic.models.messages.OutputConfig;
 import com.anthropic.models.messages.StopReason;
 import com.anthropic.models.messages.TextBlock;
 import com.anthropic.models.messages.TextBlockParam;
+import com.yarnshipment.assistant.application.port.out.HelpDataPort;
 import com.yarnshipment.assistant.application.port.out.HelpModelPort;
 import com.yarnshipment.assistant.domain.model.ChatMessage;
 import com.yarnshipment.assistant.domain.model.HelpUnavailableException;
@@ -32,11 +33,16 @@ final class AnthropicHelpModelAdapter implements HelpModelPort {
 
     private static final Logger LOG = LoggerFactory.getLogger(AnthropicHelpModelAdapter.class);
 
+    /** Bir cevap için modelin en çok kaç kez canlı veri isteyebileceği; döngü sonsuza gitmesin. */
+    private static final int MAX_TOOL_ROUNDS = 6;
+
     private final HelpProperties properties;
+    private final HelpDataPort data;
     private @Nullable AnthropicClient client;
 
-    AnthropicHelpModelAdapter(HelpProperties properties) {
+    AnthropicHelpModelAdapter(HelpProperties properties, HelpDataPort data) {
         this.properties = properties;
+        this.data = data;
     }
 
     @Override
@@ -50,13 +56,17 @@ final class AnthropicHelpModelAdapter implements HelpModelPort {
             throw new HelpUnavailableException("ANTHROPIC_API_KEY is not set");
         }
         try {
-            Message response = client().messages().create(request(knowledge, userContext, conversation));
-            LOG.debug(
-                    "Help answer: input={} output={} cacheRead={} cacheWrite={}",
-                    response.usage().inputTokens(),
-                    response.usage().outputTokens(),
-                    response.usage().cacheReadInputTokens().orElse(0L),
-                    response.usage().cacheCreationInputTokens().orElse(0L));
+            MessageCreateParams.Builder builder = request(knowledge, userContext, conversation);
+            Message response = send(builder);
+            for (int round = 0; round < MAX_TOOL_ROUNDS && wantsData(response); round++) {
+                builder.addMessage(response);
+                builder.addUserMessageOfContentBlockParams(response.content().stream()
+                        .map(ContentBlock::toolUse)
+                        .flatMap(Optional::stream)
+                        .map(use -> HelpTools.toolResult(use, data))
+                        .toList());
+                response = send(builder);
+            }
             return textOf(response);
         } catch (AnthropicException e) {
             LOG.warn("Help assistant model call failed: {}", e.getClass().getSimpleName());
@@ -64,10 +74,26 @@ final class AnthropicHelpModelAdapter implements HelpModelPort {
         }
     }
 
-    private MessageCreateParams request(String knowledge, String userContext, List<ChatMessage> conversation) {
+    private Message send(MessageCreateParams.Builder builder) {
+        Message response = client().messages().create(builder.build());
+        LOG.debug(
+                "Help answer: input={} output={} cacheRead={} cacheWrite={}",
+                response.usage().inputTokens(),
+                response.usage().outputTokens(),
+                response.usage().cacheReadInputTokens().orElse(0L),
+                response.usage().cacheCreationInputTokens().orElse(0L));
+        return response;
+    }
+
+    private static boolean wantsData(Message response) {
+        return response.stopReason().filter(StopReason.TOOL_USE::equals).isPresent();
+    }
+
+    private MessageCreateParams.Builder request(String knowledge, String userContext, List<ChatMessage> conversation) {
         MessageCreateParams.Builder builder = MessageCreateParams.builder()
                 .model(properties.model())
                 .maxTokens(properties.maxOutputTokens())
+                .addTool(HelpTools.readDataTool())
                 .outputConfig(
                         OutputConfig.builder().effort(OutputConfig.Effort.LOW).build())
                 .systemOfTextBlockParams(List.of(
@@ -84,7 +110,7 @@ final class AnthropicHelpModelAdapter implements HelpModelPort {
                 case ASSISTANT -> builder.addAssistantMessage(message.text());
             }
         }
-        return builder.build();
+        return builder;
     }
 
     private static String textOf(Message response) {

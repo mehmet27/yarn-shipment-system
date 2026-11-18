@@ -165,10 +165,16 @@ arayüz sunucusu `/api` isteklerini ona iletir) konuşur.
 ## assistant-service (yardım asistanı)
 
 Sağ alttaki **Yardım** balonu: kullanıcı uygulamayı nasıl kullanacağını sorar, cevabı Claude Haiku (`claude-haiku-5-5`) verir.
-Asistan yalnızca **bilgi verir**; veri okumaz, hiçbir kaydı değiştiremez. Cevap, soran kullanıcının rolüne göre verilir.
+Asistan **bilgi verir ve canlı veriyi salt okur**; hiçbir kaydı değiştiremez. Cevap, soran kullanıcının rolüne göre verilir.
 
 - **Bilgi kaynağı:** `docs/` altındaki süreç analizi, akış cevapları, yetki analizi ve giriş hesabı belgeleri derleme sırasında pakete
   girer (`services/assistant-service/pom.xml` → `help/`). Yeni belge öğretmek için pom'a bir `include` satırı eklenir.
+- **Canlı veri (salt okunur):** model `veri_oku` aracıyla sevkiyat, bakiye, fire, faturalanacak ve tutar bilgisini sorgular
+  ("1 aylık toplam iplik sevkiyatımız ne?", "SHP-0010 neden bekliyor?"). Araç yalnızca tanımlı GET uçlarına (`HelpDataSource`) gider ve
+  **soran kullanıcının oturum çerezini** iletir; her uçtaki yetki ve kapsam denetimi aynen işler, yani kullanıcının göremediği veri
+  (ör. Kalite için TL tutarları) asistana da gelmez, "yetkisi yok" döner. Uzun listeler 100 satıra kısaltılır; bir cevapta en çok 6
+  araç turu vardır. Yeni bir kaynak açmak için `HelpDataSource`'a bir satır eklenir. Adres: `yarnshipment.help.data-base-url`
+  (varsayılan uygulamanın kendisi).
 - **Maliyet:** sabit belgeler ve kurallar istemin başında önbelleğe alınır (1 saat); cevap en çok 2048 token, düşük çaba; kullanıcı
   saatte en çok 30 soru sorabilir. Ayarlar: `yarnshipment.help.*` (`application.yml`).
 - **Anahtar:** yalnızca ortam değişkeni `ANTHROPIC_API_KEY`. Boşsa asistan kapalıdır ve balon görünmez. Yerelde `deploy/.env`

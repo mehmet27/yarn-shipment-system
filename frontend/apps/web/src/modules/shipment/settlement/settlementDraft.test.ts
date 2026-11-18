@@ -1,7 +1,7 @@
 import type { RecipeLineView } from '@iplik/api-client';
 import type { Kilogram } from '@iplik/units';
 import { describe, expect, it } from 'vitest';
-import { remainingFabricKg, yarnNamesOf } from './fabricLimits';
+import { remainingFabricKg, yarnOptionsOf } from './fabricLimits';
 import type { FabricDraft } from './settlementDraft';
 import {
   EMPTY_FABRIC_DRAFT,
@@ -75,15 +75,18 @@ describe('remainingFabricKg', () => {
   });
 });
 
-describe('yarnNamesOf', () => {
-  it('liste adını, yoksa yazılan metni alır; tekrarları ve boşları atar', () => {
+describe('yarnOptionsOf', () => {
+  it('değer sunucunun anahtarı, etiket ipliğin adıdır; tekrarları ve boşları atar', () => {
     const lines = [
-      { lineNo: 1, yarnTypeName: '30/1 Penye', yarnTypeText: 'x', netKg: '1.000' },
+      { lineNo: 1, yarnTypeId: 'prd-1', yarnTypeName: '30/1 Penye', netKg: '1.000' },
       { lineNo: 2, yarnTypeText: ' 20 denye likra ', netKg: '1.000' },
-      { lineNo: 3, yarnTypeName: '30/1 Penye', netKg: '1.000' },
+      { lineNo: 3, yarnTypeId: 'prd-1', yarnTypeName: '30/1 Penye', netKg: '1.000' },
       { lineNo: 4, netKg: '1.000' },
     ] as RecipeLineView[];
-    expect(yarnNamesOf(lines)).toEqual(['30/1 Penye', '20 denye likra']);
+    expect(yarnOptionsOf(lines)).toEqual([
+      { value: 'prd-1', label: '30/1 Penye' },
+      { value: '20 denye likra', label: '20 denye likra' },
+    ]);
   });
 });
 

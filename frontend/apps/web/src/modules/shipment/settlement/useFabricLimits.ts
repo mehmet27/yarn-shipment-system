@@ -1,12 +1,13 @@
 import type { Kilogram } from '@iplik/units';
+import type { YarnOption } from './fabricLimits';
 import { findRecipe } from '../components/shipmentViews';
 import { useShipment } from '../hooks/useShipment';
-import { remainingFabricKg, yarnNamesOf } from './fabricLimits';
+import { remainingFabricKg, yarnOptionsOf } from './fabricLimits';
 import { useFireSettlement } from './hooks';
 
 export type FabricLimits = {
-  /** Bu sevkiyattaki iplik adları. */
-  yarnNames: string[];
+  /** Bu sevkiyattaki iplikler. */
+  yarnNames: YarnOption[];
   /** Fire dosyası okunamadıysa tümü undefined; ekran cümleyi gizler. */
   sentKg: string | undefined;
   receivedKg: string | undefined;
@@ -19,7 +20,7 @@ export function useFabricLimits(shipmentId: string): FabricLimits {
   const settlement = useFireSettlement(shipmentId).data;
   const recipe = shipment === undefined ? undefined : findRecipe(shipment);
   return {
-    yarnNames: recipe === undefined ? [] : yarnNamesOf(recipe.lines),
+    yarnNames: recipe === undefined ? [] : yarnOptionsOf(recipe.lines),
     sentKg: settlement?.sentKg,
     receivedKg: settlement?.fabricKg,
     remainingKg:

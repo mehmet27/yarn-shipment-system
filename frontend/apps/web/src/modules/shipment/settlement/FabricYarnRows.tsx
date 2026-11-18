@@ -1,20 +1,21 @@
 import { useTranslation } from '@iplik/i18n';
 import { Button, Group, Select, Stack, Text, TextInput } from '@iplik/ui';
+import type { YarnOption } from './fabricLimits';
 import type { YarnRowDraft } from './settlementDraft';
 
 export type FabricYarnRowsProps = {
   rows: readonly YarnRowDraft[];
-  /** Bu sevkiyattaki iplik adları; satırlarda bunlardan biri seçilir. */
-  yarnNames: readonly string[];
+  /** Bu sevkiyattaki iplikler; satırlarda bunlardan biri seçilir. */
+  yarnNames: readonly YarnOption[];
   onChange: (index: number, patch: Partial<YarnRowDraft>) => void;
   onAdd: () => void;
   onRemove: (index: number) => void;
 };
 
 /** Başka satırda seçilmiş iplik tekrar sunulmaz. */
-function optionsFor(names: readonly string[], rows: readonly YarnRowDraft[], index: number) {
+function optionsFor(names: readonly YarnOption[], rows: readonly YarnRowDraft[], index: number) {
   const taken = new Set(rows.filter((_, i) => i !== index).map((row) => row.yarnType));
-  return names.filter((name) => !taken.has(name));
+  return names.filter((name) => !taken.has(name.value));
 }
 
 /** İplik dağılımı satırları; boş bırakılırsa sunucu reçeteyle dağıtır. */

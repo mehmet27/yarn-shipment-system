@@ -4,12 +4,21 @@ import { isKilogram, parseKg, subtractKg } from '@iplik/units';
 
 const KG_SCALE = 3;
 
-/** Sevkiyattaki iplik adları (sunucunun sakladığı ad: listeden seçilenin adı, yoksa yazılan metin); tekrarsız. */
-export function yarnNamesOf(lines: readonly RecipeLineView[]): string[] {
-  const names = lines
-    .map((line) => (line.yarnTypeName ?? line.yarnTypeText ?? '').trim())
-    .filter((name) => name !== '');
-  return [...new Set(names)];
+export type YarnOption = { value: string; label: string };
+
+/**
+ * Sevkiyattaki iplikler. `value` sunucunun bakiyede sakladığı anahtardır (yazılan metin, yoksa listeden seçilen
+ * ipliğin kimliği); `label` ekranda görünen addır. Aynı iplik bir kez sunulur.
+ */
+export function yarnOptionsOf(lines: readonly RecipeLineView[]): YarnOption[] {
+  const options = new Map<string, string>();
+  for (const line of lines) {
+    const text = (line.yarnTypeText ?? '').trim();
+    const value = text === '' ? (line.yarnTypeId ?? '') : text;
+    const label = (line.yarnTypeName ?? '').trim() || text;
+    if (value !== '' && label !== '' && !options.has(value)) options.set(value, label);
+  }
+  return [...options].map(([value, label]) => ({ value, label }));
 }
 
 /** Gönderilen iplikten gelen kumaş çıkınca girilebilecek kalan kilo; 0'ın altına inmez, sayı geçersizse undefined. */

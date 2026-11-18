@@ -169,7 +169,7 @@ Asistan yalnızca **bilgi verir**; veri okumaz, hiçbir kaydı değiştiremez. C
 
 - **Bilgi kaynağı:** `docs/` altındaki süreç analizi, akış cevapları, yetki analizi ve giriş hesabı belgeleri derleme sırasında pakete
   girer (`services/assistant-service/pom.xml` → `help/`). Yeni belge öğretmek için pom'a bir `include` satırı eklenir.
-- **Maliyet:** sabit belgeler ve kurallar istemin başında önbelleğe alınır (1 saat); cevap en çok 1024 token, düşük çaba; kullanıcı
+- **Maliyet:** sabit belgeler ve kurallar istemin başında önbelleğe alınır (1 saat); cevap en çok 2048 token, düşük çaba; kullanıcı
   saatte en çok 30 soru sorabilir. Ayarlar: `yarnshipment.help.*` (`application.yml`).
 - **Anahtar:** yalnızca ortam değişkeni `ANTHROPIC_API_KEY`. Boşsa asistan kapalıdır ve balon görünmez. Yerelde `deploy/.env`
   dosyasına yazılır (git'e girmez; `yerel-sifirla` bu dosyayı uygulamaya aktarır); üretimde `deploy/prod/.env`. Anahtarı koda, depoya ya da

@@ -96,7 +96,7 @@ yarnshipment:
     # kapalıdır ve balon görünmez. Maliyet: sabit belgeler önbelleğe alınır, cevap uzunluğu sınırlıdır.
     api-key: ${ANTHROPIC_API_KEY:}
     model: ${HELP_MODEL:claude-haiku-5-5}
-    max-output-tokens: 1024
+    max-output-tokens: 2048
     timeout: 60s
   audit:
     chain-verification:

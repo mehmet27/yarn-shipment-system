@@ -1,4 +1,5 @@
 import { setupWorker } from 'msw/browser';
+import { createAssistantHandlers } from './assistantHandlers';
 import { createHandlers } from './handlers';
 import { MOCK_ROLES } from './users';
 
@@ -8,4 +9,4 @@ function readMockRole() {
   return MOCK_ROLES.find((role) => role === requested) ?? 'ADMIN';
 }
 
-export const worker = setupWorker(...createHandlers(readMockRole()));
+export const worker = setupWorker(...createHandlers(readMockRole()), ...createAssistantHandlers());

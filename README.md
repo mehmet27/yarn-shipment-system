@@ -162,6 +162,20 @@ Yöneticinin verdiği geçici şifreyle giren kişi şifresini değiştirmeden h
 yönetici yeni şifre verince kişinin açık oturumları kapanır. Tarayıcı yalnızca uygulamayla (`8083`; geliştirmede `5173`
 arayüz sunucusu `/api` isteklerini ona iletir) konuşur.
 
+## assistant-service (yardım asistanı)
+
+Sağ alttaki **Yardım** balonu: kullanıcı uygulamayı nasıl kullanacağını sorar, cevabı Claude Haiku (`claude-haiku-5-5`) verir.
+Asistan yalnızca **bilgi verir**; veri okumaz, hiçbir kaydı değiştiremez. Cevap, soran kullanıcının rolüne göre verilir.
+
+- **Bilgi kaynağı:** `docs/` altındaki süreç analizi, akış cevapları, yetki analizi ve giriş hesabı belgeleri derleme sırasında pakete
+  girer (`services/assistant-service/pom.xml` → `help/`). Yeni belge öğretmek için pom'a bir `include` satırı eklenir.
+- **Maliyet:** sabit belgeler ve kurallar istemin başında önbelleğe alınır (1 saat); cevap en çok 1024 token, düşük çaba; kullanıcı
+  saatte en çok 30 soru sorabilir. Ayarlar: `yarnshipment.help.*` (`application.yml`).
+- **Anahtar:** yalnızca ortam değişkeni `ANTHROPIC_API_KEY`. Boşsa asistan kapalıdır ve balon görünmez. Yerelde `deploy/.env`
+  dosyasına yazılır (git'e girmez; `yerel-sifirla` bu dosyayı uygulamaya aktarır); üretimde `deploy/prod/.env`. Anahtarı koda, depoya ya da
+  sohbete yazmayın.
+- **Uçlar:** `GET /api/v1/assistant/status` (balon gösterilsin mi), `POST /api/v1/assistant/ask` (giriş yapmış herkes).
+
 ## common-events (süreç içi olay yolu)
 
 Modüller arası olaylar tek süreçte taşınır; Kafka ve `outbox_event` yoktur. Bir modül `DomainEventPublisher.publish` ile olay yayınlar; `InProcessDomainEventPublisher` olayı kayıtlı `DomainEventConsumer`'lara iletir. `BEFORE_COMMIT` tüketiciler (audit, uyuşmazlık, sevkiyat defteri) üreten işlemle aynı transaction'da çalışır ve hata verirse iş işlemi geri alınır; `AFTER_COMMIT` tüketiciler commit'ten sonra kendi transaction'ında çalışır.

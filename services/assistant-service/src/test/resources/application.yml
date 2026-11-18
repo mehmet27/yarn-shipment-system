@@ -1,0 +1,20 @@
+# assistant modülünün dilim testleri için ayarlar; üretim ayarı yarnshipment-app içindedir.
+spring:
+  messages:
+    basename: assistant-messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+  jackson:
+    default-property-inclusion: non_null
+  mvc:
+    problemdetails:
+      enabled: true
+yarnshipment:
+  security:
+    # Testler oturum çerezi yerine doğrudan kimlik verir.
+    csrf-enabled: false
+  help:
+    api-key: ""
+    model: claude-haiku-5-5
+    max-output-tokens: 1024
+    timeout: 60s

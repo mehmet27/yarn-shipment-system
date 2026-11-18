@@ -25,7 +25,7 @@ spring:
           time_zone: UTC
   messages:
     # Modül başına bir paket; aynı anahtar birden çok pakette varsa soldaki kazanır.
-    basename: shipment-messages,discrepancy-messages,evidence-messages,reporting-messages,audit-messages
+    basename: shipment-messages,discrepancy-messages,evidence-messages,reporting-messages,audit-messages,assistant-messages
     encoding: UTF-8
     fallback-to-system-locale: false
   jackson:
@@ -91,6 +91,13 @@ yarnshipment:
       signing-key: ${EVIDENCE_STORAGE_SIGNING_KEY}
       upload-url-ttl: 10m
       download-url-ttl: 5m
+  help:
+    # Yardım asistanı (sağ alttaki "Yardım" balonu). Anahtar yalnızca ortam değişkeniyle verilir (SEC-14); boşsa asistan
+    # kapalıdır ve balon görünmez. Maliyet: sabit belgeler önbelleğe alınır, cevap uzunluğu sınırlıdır.
+    api-key: ${ANTHROPIC_API_KEY:}
+    model: ${HELP_MODEL:claude-haiku-5-5}
+    max-output-tokens: 1024
+    timeout: 60s
   audit:
     chain-verification:
       cron: ${AUDIT_CHAIN_VERIFICATION_CRON:0 0 3 * * *}

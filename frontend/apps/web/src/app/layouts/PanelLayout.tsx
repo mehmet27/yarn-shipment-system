@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { AppShell, Box, Group, Stack, Text, useDisclosure } from '@iplik/ui';
+import { HelpAssistant } from '@/modules/assistant';
 import { BrandMark } from '@/modules/branding';
 import { Outlet } from 'react-router';
 import { NavToggles } from './NavToggles';
@@ -30,51 +31,54 @@ export function PanelLayout() {
   const [isMobileNavOpen, { toggle: toggleMobileNav, close: closeMobileNav }] = useDisclosure();
   const [isDesktopNavOpen, { toggle: toggleDesktopNav }] = useDisclosure(true);
   return (
-    <AppShell
-      layout="alt"
-      header={{ height: HEADER_HEIGHT_PX }}
-      navbar={{
-        width: NAVBAR_WIDTH_PX,
-        breakpoint: MOBILE_ONLY,
-        collapsed: { mobile: !isMobileNavOpen, desktop: !isDesktopNavOpen },
-      }}
-      padding={{ base: 'md', sm: 'lg' }}
-    >
-      <AppShell.Header style={HEADER_STYLE}>
-        <Group h="100%" px="md" justify="space-between" wrap="nowrap">
-          <Group wrap="nowrap" miw={0}>
-            <NavToggles
-              isMobileOpen={isMobileNavOpen}
-              isDesktopOpen={isDesktopNavOpen}
-              onToggleMobile={toggleMobileNav}
-              onToggleDesktop={toggleDesktopNav}
-            />
-            <Box hiddenFrom={MOBILE_ONLY} miw={0}>
+    <>
+      <AppShell
+        layout="alt"
+        header={{ height: HEADER_HEIGHT_PX }}
+        navbar={{
+          width: NAVBAR_WIDTH_PX,
+          breakpoint: MOBILE_ONLY,
+          collapsed: { mobile: !isMobileNavOpen, desktop: !isDesktopNavOpen },
+        }}
+        padding={{ base: 'md', sm: 'lg' }}
+      >
+        <AppShell.Header style={HEADER_STYLE}>
+          <Group h="100%" px="md" justify="space-between" wrap="nowrap">
+            <Group wrap="nowrap" miw={0}>
+              <NavToggles
+                isMobileOpen={isMobileNavOpen}
+                isDesktopOpen={isDesktopNavOpen}
+                onToggleMobile={toggleMobileNav}
+                onToggleDesktop={toggleDesktopNav}
+              />
+              <Box hiddenFrom={MOBILE_ONLY} miw={0}>
+                <BrandMark />
+              </Box>
+            </Group>
+            <Group gap="xs" wrap="nowrap">
+              <NotificationBell />
+              <UserMenu />
+            </Group>
+          </Group>
+        </AppShell.Header>
+        <AppShell.Navbar p="sm" style={NAVBAR_STYLE} className="panel-navbar">
+          <Group h={NAV_BRAND_HEIGHT_PX} px="xs" wrap="nowrap" visibleFrom={MOBILE_ONLY}>
+            <Box visibleFrom={MOBILE_ONLY} miw={0}>
               <BrandMark />
             </Box>
           </Group>
-          <Group gap="xs" wrap="nowrap">
-            <NotificationBell />
-            <UserMenu />
-          </Group>
-        </Group>
-      </AppShell.Header>
-      <AppShell.Navbar p="sm" style={NAVBAR_STYLE} className="panel-navbar">
-        <Group h={NAV_BRAND_HEIGHT_PX} px="xs" wrap="nowrap" visibleFrom={MOBILE_ONLY}>
-          <Box visibleFrom={MOBILE_ONLY} miw={0}>
-            <BrandMark />
-          </Box>
-        </Group>
-        <Stack gap={2} mt="xs">
-          <Text size="xs" fw={500} c="dimmed" px="sm" py="xs">
-            {t('nav.panel')}
-          </Text>
-          <PanelNav onNavigate={closeMobileNav} />
-        </Stack>
-      </AppShell.Navbar>
-      <AppShell.Main>
-        <Outlet />
-      </AppShell.Main>
-    </AppShell>
+          <Stack gap={2} mt="xs">
+            <Text size="xs" fw={500} c="dimmed" px="sm" py="xs">
+              {t('nav.panel')}
+            </Text>
+            <PanelNav onNavigate={closeMobileNav} />
+          </Stack>
+        </AppShell.Navbar>
+        <AppShell.Main>
+          <Outlet />
+        </AppShell.Main>
+      </AppShell>
+      <HelpAssistant />
+    </>
   );
 }

@@ -16,6 +16,7 @@ type Fire = {
   status: string;
   fabricKg: string;
   faultyKg: string;
+  actualFirePercent: string;
   invoicedKg: string;
   remainingKg: string;
 };
@@ -164,6 +165,7 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
   await mudur.adim(
     'fatura edildi (parça): kalandan az kilo için fatura girilir, dosya açık kalır, kalan azalır',
     async () => {
+      const once = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
       const kart = await kartAc();
       await kart.getByLabel(/Fatura no/).fill(`F-${iplik}-1`);
       await kart.getByLabel(/\(kg\)/).fill('1');
@@ -176,6 +178,11 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
           Number(fire.invoicedKg) === 1 &&
           Math.abs(Number(fire.remainingKg) - (Number(fire.faultyKg) - 1)) < 0.001,
         JSON.stringify(fire),
+      );
+      mudur.kontrol(
+        'gerçekleşen fire faturalanan kilo kadar düşer: (T − K − 1) / T',
+        Number(fire.actualFirePercent) < Number(once.actualFirePercent),
+        `${once.actualFirePercent} → ${fire.actualFirePercent}`,
       );
     },
   );

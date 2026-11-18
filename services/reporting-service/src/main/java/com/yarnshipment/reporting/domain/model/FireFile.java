@@ -81,9 +81,9 @@ public record FireFile(
         return expected.setScale(KG_SCALE, RoundingMode.HALF_UP);
     }
 
-    /** Gerçekleşen fire = (T − K) / T, kesir, 4 ondalık; T ≤ 0 ise 0. */
+    /** Gerçekleşen fire = (T − K − faturalanan) / T, kesir, 4 ondalık; T ≤ 0 ise 0. Faturalanan kilo fireden düşer. */
     public BigDecimal actualFireRate() {
-        return actualFireRate(baseKg(), netFabricKg());
+        return actualFireRate(baseKg(), netFabricKg().add(invoicedKg));
     }
 
     public static BigDecimal actualFireRate(BigDecimal baseKg, BigDecimal fabricKg) {
@@ -98,9 +98,9 @@ public record FireFile(
         return shortageKg().signum() > 0;
     }
 
-    /** Toplam fire kilosu T − K; fire sınırı içinde ya da dışında, kumaşta kaybolan iplik. */
+    /** Toplam fire kilosu T − K − faturalanan; fire sınırı içinde ya da dışında, kumaşta kaybolan iplik. */
     public BigDecimal fireKg() {
-        return baseKg().subtract(netFabricKg()).setScale(KG_SCALE, RoundingMode.HALF_UP);
+        return baseKg().subtract(netFabricKg()).subtract(invoicedKg).setScale(KG_SCALE, RoundingMode.HALF_UP);
     }
 
     /** H = max(0, B − (K − I)), 3 ondalık. Ara yuvarlama yapılmaz. */

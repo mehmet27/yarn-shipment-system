@@ -160,6 +160,18 @@ function statusOf(
   return hasFabric ? 'TO_INVOICE' : 'AWAITING_FABRIC';
 }
 
+/** Faturalanan kilo kumaş gibi sayılır: fire = (T − K − faturalanan) / T. */
+function firePercentAfterInvoice(
+  baseKg: string,
+  fabric: { netKg: string }[],
+  invoicedKg: string,
+): string {
+  const base = Number(baseKg);
+  if (base <= 0) return '0.00';
+  const received = fabric.reduce((sum, r) => sum + Number(r.netKg), 0);
+  return (((base - received - Number(invoicedKg)) / base) * 100).toFixed(2);
+}
+
 export function getMockSettlement(shipmentId: string): FireSettlement {
   const returned = listMockReturns(shipmentId).filter((r) => r.direction === 'RETURN');
   const fabric = listMockReceipts(shipmentId);
@@ -188,6 +200,7 @@ export function getMockSettlement(shipmentId: string): FireSettlement {
     claimKg: ZERO,
     fabricKg,
     ...result,
+    actualFirePercent: firePercentAfterInvoice(result.baseKg, fabric, invoicedKg),
     invoicedKg,
     remainingKg: toKg(remaining),
     yarns: [{ yarnType: DEFAULT_YARN, dispatchedKg: sentKg }],

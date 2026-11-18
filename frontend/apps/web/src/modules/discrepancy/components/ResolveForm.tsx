@@ -1,10 +1,9 @@
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Paper, Stack, Title } from '@iplik/ui';
-import { useRefreshDiscrepancies, useResolveDiscrepancy } from '../hooks/useDecideDiscrepancy';
+import { useResolveDiscrepancy } from '../hooks/useDecideDiscrepancy';
 import { ResolutionSelect } from './ResolutionSelect';
 import { ResolveActions } from './ResolveActions';
-import { ResolveInvoiceFailed } from './ResolveInvoiceFailed';
 import { ResolveDraftFields } from './ResolveDraftFields';
 import { useResolveChoices } from './useResolveChoices';
 import { useResolveDraft } from './useResolveDraft';
@@ -20,8 +19,8 @@ function errorKey(error: unknown): string {
 }
 
 /**
- * Karar: çözüm ve not zorunlu; sorumluluk atamasında sorumlu taraf, "haklı, faturalandı"da fatura bilgisi
- * de gerekir. Müdür yalnızca haklı/haksız der. Kayıttan önce onay sorulur.
+ * Karar: çözüm ve not zorunlu; sorumluluk atamasında sorumlu taraf da gerekir. Müdür yalnızca haklı/haksız der.
+ * Haklı karar faturalanacak kiloya eklenir; fatura Faturalanacaklar'dan girilir. Kayıttan önce onay sorulur.
  */
 export function ResolveForm({
   discrepancyId,
@@ -31,22 +30,18 @@ export function ResolveForm({
   shipmentId: string;
 }) {
   const { t } = useTranslation();
-  const { isManager, choices } = useResolveChoices(shipmentId);
+  const { isManager, choices } = useResolveChoices();
   const draft = useResolveDraft();
   const mutation = useResolveDiscrepancy(discrepancyId, shipmentId);
-  const refresh = useRefreshDiscrepancies();
   const save = () => {
-    const input = draft.toInput();
-    if (input === undefined) return;
-    mutation.mutate(input, {
+    const request = draft.toRequest();
+    if (request === undefined) return;
+    mutation.mutate(request, {
       onSettled: () => {
         draft.setConfirming(false);
       },
     });
   };
-  if (mutation.data?.isInvoiceFailed === true) {
-    return <ResolveInvoiceFailed shipmentId={shipmentId} onDone={() => void refresh()} />;
-  }
   return (
     <Paper withBorder p="md" component="section">
       <Stack>
@@ -63,7 +58,6 @@ export function ResolveForm({
         {mutation.isError && <Alert color="red">{t(errorKey(mutation.error))}</Alert>}
         <ResolveActions
           choice={draft.choice}
-          invoiceNo={draft.invoice.invoiceNo}
           isConfirming={draft.isConfirming}
           canSubmit={draft.canSubmit}
           isPending={mutation.isPending}

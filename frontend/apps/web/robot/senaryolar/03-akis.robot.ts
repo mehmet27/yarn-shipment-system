@@ -397,9 +397,9 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
         .click();
       const secenekler = await mudur.sayfa.locator('[role=option]:visible').allInnerTexts();
       mudur.kontrol(
-        'seçenekler yalnız "Haklı" ve "Haksız" (fatura bekleyen dosyada "Haklı, faturalandı") olmalı',
+        'seçenekler yalnız "Haklı" ve "Haksız" olmalı (fatura bu ekranda girilmez)',
         secenekler.length > 0 &&
-          secenekler.every((s) => /^(Haklı, faturalandı|Haklı|Haksız)$/.test(s.trim())) &&
+          secenekler.every((s) => /^(Haklı|Haksız)$/.test(s.trim())) &&
           secenekler.some((s) => s.trim() === 'Haksız'),
         secenekler.join(' | '),
       );

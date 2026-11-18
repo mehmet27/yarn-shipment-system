@@ -739,22 +739,16 @@
       "liableParty": "Sorumlu taraf",
       "submit": "Karara bağla",
       "choice": {
-        "CLAIM_JUSTIFIED_INVOICED": "Haklı, faturalandı",
         "CLAIM_JUSTIFIED": "Haklı",
         "CLAIM_UNJUSTIFIED": "Haksız"
       },
       "effect": {
-        "CLAIM_JUSTIFIED_INVOICED": "İtiraz haklı sayılır ve girdiğiniz fatura kaydedilir; faturalanacak kilonun itiraz edilen kısmı zaten kumaşla düşüldüğü için ipliğinden yalnızca hatalı kilo düşer. Bu işlem geri alınamaz.",
         "CLAIM_JUSTIFIED": "İtiraz edilen kilo faturalanacak kiloya eklenir; müdür fatura kesince faturaya girer; iplik ikinci kez düşülmez, çünkü hatalı gelen kumaş zaten gelen kumaşın içindedir. Fire hesabı da buna göre değişir.",
         "CLAIM_UNJUSTIFIED": "Fasoncunun ipliğinde değişiklik olmaz; uyuşmazlık yalnızca kapatılır.",
         "LIABILITY_ASSIGNED": "Yazdığınız sorumlu taraf kayda geçer; fasoncunun ipliğinde değişiklik olmaz, uyuşmazlık kapatılır."
       },
       "confirmTitle": "Onay: karar kaydı",
       "confirmText": "Karar: {{resolution}}. Karar geri alınamaz.",
-      "confirmTextInvoice": "Karar: haklı. Fatura {{no}} kaydedilecek. Bu işlem geri alınamaz.",
-      "invoiceFailed": "Karar kaydedildi ama fatura kaydedilemedi. Faturayı sevkiyat dosyasındaki fire sekmesinden girin.",
-      "invoiceFailedOpen": "Sevkiyat dosyasını aç",
-      "invoiceFailedDone": "Tamam",
       "confirmYes": "Evet, kararı kaydet",
       "confirmNo": "Vazgeç",
       "noteRequired": "Karar notu boş olamaz. Kararın nedenini yazın.",

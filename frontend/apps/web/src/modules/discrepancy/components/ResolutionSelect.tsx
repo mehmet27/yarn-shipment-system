@@ -1,12 +1,12 @@
+import type { Resolution } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Select, Text } from '@iplik/ui';
-import type { ResolveChoice } from './resolveChoices';
 
 export type ResolutionSelectProps = {
-  choices: ResolveChoice[];
+  choices: Resolution[];
   isManager: boolean;
-  value: ResolveChoice | undefined;
-  onChange: (value: ResolveChoice | undefined) => void;
+  value: Resolution | undefined;
+  onChange: (value: Resolution | undefined) => void;
 };
 
 /** Karar seçimi; altında seçilen kararın ne yaptığını tek cümleyle anlatır. */

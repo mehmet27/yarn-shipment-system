@@ -17,8 +17,8 @@ public final class BagWeightMismatchException extends RuntimeException {
     private final transient BigDecimal toleranceKg;
 
     public BagWeightMismatchException(BigDecimal bagKg, BigDecimal measuredKg, BigDecimal toleranceKg) {
-        super("Bag total does not match vehicle net bagKg=" + bagKg + " measuredKg=" + measuredKg
-                + " toleranceKg=" + toleranceKg);
+        super("Bag total does not match vehicle net bagKg=" + bagKg + " measuredKg=" + measuredKg + " toleranceKg="
+                + toleranceKg);
         this.bagKg = bagKg;
         this.measuredKg = measuredKg;
         this.toleranceKg = toleranceKg;

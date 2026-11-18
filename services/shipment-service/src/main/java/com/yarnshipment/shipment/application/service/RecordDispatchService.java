@@ -66,8 +66,7 @@ public class RecordDispatchService implements RecordDispatchUseCase {
                 shipment.recordDispatch(command.measurement(), clock.instant(), tolerance), actor.userId());
     }
 
-    private void requireBagsMatchWeighing(
-            Shipment shipment, DispatchMeasurement measurement, BigDecimal tolerance) {
+    private void requireBagsMatchWeighing(Shipment shipment, DispatchMeasurement measurement, BigDecimal tolerance) {
         List<DispatchBag> bags = bagsPort.findDispatchBags(shipment.id());
         if (bags.size() != measurement.bagCount()) {
             throw new InvalidDispatchException("bagCount", "differs from assigned bags");

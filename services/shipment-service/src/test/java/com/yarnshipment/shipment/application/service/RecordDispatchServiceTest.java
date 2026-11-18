@@ -37,8 +37,8 @@ class RecordDispatchServiceTest {
     private final InMemoryShipmentQueryPort queryPort = new InMemoryShipmentQueryPort();
     private final RecordingDispatchCommandPort commandPort = new RecordingDispatchCommandPort();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
-    private final FixedBagCountPort bagsPort = new FixedBagCountPort(
-            TestDispatches.measurement().bagCount(), new BigDecimal("1982.500"));
+    private final FixedBagCountPort bagsPort =
+            new FixedBagCountPort(TestDispatches.measurement().bagCount(), new BigDecimal("1982.500"));
     private final StubSettingsPort settings = new StubSettingsPort();
     private final RecordDispatchService service = new RecordDispatchService(
             ServiceTestSupport.loader(queryPort, clock), commandPort, bagsPort, settings, clock);

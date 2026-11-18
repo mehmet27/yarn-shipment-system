@@ -1,5 +1,5 @@
 import { todayIsoDate, useTranslation } from '@iplik/i18n';
-import { Button, Stack, Text, Textarea, TextInput } from '@iplik/ui';
+import { Button, SectionCard, SimpleGrid, Stack, Text, Textarea, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useCurrentUser } from '@/modules/auth';
 import { useOpeningImport } from '../hooks/useFaconReports';
@@ -25,38 +25,42 @@ export function OpeningImportForm() {
   const valid = lines.flatMap((line) => (line.row === undefined ? [] : [line.row]));
   const errors = lines.filter((line) => line.error !== undefined);
   return (
-    <Stack>
-      <Text fw={600}>{t('report.opening.title')}</Text>
-      <Text size="sm" c="dimmed">
-        {t('report.opening.hint')}
-      </Text>
-      <TextInput
-        type="date"
-        label={t('report.opening.asOf')}
-        value={asOf}
-        onChange={(event) => {
-          setAsOf(event.currentTarget.value);
-        }}
-      />
-      <Textarea
-        label={t('report.opening.data')}
-        minRows={5}
-        value={input}
-        onChange={(event) => {
-          setInput(event.currentTarget.value);
-        }}
-      />
-      {valid.length > 0 && <OpeningPreview rows={valid} />}
-      <OpeningMessages errors={errors} mutation={mutation} />
-      <Button
-        disabled={valid.length === 0 || errors.length > 0 || asOf === ''}
-        loading={mutation.isPending}
-        onClick={() => {
-          mutation.mutate({ asOf, rows: valid });
-        }}
-      >
-        {t('report.opening.submit', { count: valid.length })}
-      </Button>
-    </Stack>
+    <SectionCard title={t('report.opening.title')} icon="upload">
+      <Stack>
+        <Text size="sm" c="dimmed">
+          {t('report.opening.hint')}
+        </Text>
+        <SimpleGrid cols={{ base: 1, sm: 3 }}>
+          <TextInput
+            type="date"
+            label={t('report.opening.asOf')}
+            value={asOf}
+            onChange={(event) => {
+              setAsOf(event.currentTarget.value);
+            }}
+          />
+        </SimpleGrid>
+        <Textarea
+          label={t('report.opening.data')}
+          minRows={5}
+          value={input}
+          onChange={(event) => {
+            setInput(event.currentTarget.value);
+          }}
+        />
+        {valid.length > 0 && <OpeningPreview rows={valid} />}
+        <OpeningMessages errors={errors} mutation={mutation} />
+        <Button
+          w="fit-content"
+          disabled={valid.length === 0 || errors.length > 0 || asOf === ''}
+          loading={mutation.isPending}
+          onClick={() => {
+            mutation.mutate({ asOf, rows: valid });
+          }}
+        >
+          {t('report.opening.submit', { count: valid.length })}
+        </Button>
+      </Stack>
+    </SectionCard>
   );
 }

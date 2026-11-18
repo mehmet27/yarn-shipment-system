@@ -19,7 +19,14 @@ export function ActivityFeed({ items, label }: ActivityFeedProps) {
       {items.map((item) => (
         <List.Item key={item.id}>
           <Group gap="sm" wrap="nowrap" align="flex-start">
-            <Box aria-hidden w={10} h={10} mt={6} bg="brand.7" style={{ borderRadius: '50%' }} />
+            <Box
+              aria-hidden
+              w={10}
+              h={10}
+              mt={6}
+              bg="var(--app-text)"
+              style={{ borderRadius: '50%' }}
+            />
             <Box>
               <Text fw={600}>{item.title}</Text>
               <Text size="xs" c="dimmed">

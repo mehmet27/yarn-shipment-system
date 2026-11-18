@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import type { CentralStock } from '@iplik/api-client/central-stock';
-import { Select, Table, Text } from '@iplik/ui';
+import { Paper, Select, Table, Text } from '@iplik/ui';
 import { useState } from 'react';
 import { MovementRow } from './MovementRow';
 
@@ -22,24 +22,26 @@ export function MovementRows({ movements }: { movements: CentralStock['movements
         value={kind}
         onChange={setKind}
       />
-      <Table.ScrollContainer minWidth={480}>
-        <Table striped aria-label={t('stock.movements')}>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>{t('stock.date')}</Table.Th>
-              <Table.Th>{t('stock.kind')}</Table.Th>
-              <Table.Th>{t('stock.yarnType')}</Table.Th>
-              <Table.Th>{t('stock.kg')}</Table.Th>
-              <Table.Th>{t('stock.note')}</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {visible.map((move) => (
-              <MovementRow key={move.id} move={move} />
-            ))}
-          </Table.Tbody>
-        </Table>
-      </Table.ScrollContainer>
+      <Paper withBorder style={{ overflow: 'hidden' }}>
+        <Table.ScrollContainer minWidth={480}>
+          <Table aria-label={t('stock.movements')}>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>{t('stock.date')}</Table.Th>
+                <Table.Th style={{ whiteSpace: 'nowrap' }}>{t('stock.kind')}</Table.Th>
+                <Table.Th>{t('stock.yarnType')}</Table.Th>
+                <Table.Th ta="right">{t('stock.kg')}</Table.Th>
+                <Table.Th>{t('stock.note')}</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {visible.map((move) => (
+                <MovementRow key={move.id} move={move} />
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
+      </Paper>
     </>
   );
 }

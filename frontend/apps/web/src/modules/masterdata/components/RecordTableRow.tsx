@@ -1,9 +1,9 @@
 import { useTranslation } from '@iplik/i18n';
-import { Badge, Button, Group, Icon, Table, Text } from '@iplik/ui';
-import { useDeactivateGuard } from '../hooks/useDeactivateGuard';
+import { Table, Text } from '@iplik/ui';
+import { DotBadge } from '@iplik/ui';
 import type { ManagedKind, RecordRow } from '../kinds';
-import { BalanceWarningModal } from './BalanceWarningModal';
 import { RecordCodeLine } from './RecordCodeLine';
+import { RecordRowActions } from './RecordRowActions';
 
 export type RecordTableRowProps = {
   kind: ManagedKind;
@@ -11,10 +11,9 @@ export type RecordTableRowProps = {
   onEdit: (record: RecordRow) => void;
 };
 
-/** Tablo satırı: ad, ayrıntı (kod / bağlı fasoncu), durum rozeti ve ikonlu iki eylem düğmesi. */
+/** Tablo satırı: ad, ayrıntı (kod / bağlı fasoncu), durum rozeti ve sağa yaslı eylemler. */
 export function RecordTableRow({ kind, record, onEdit }: RecordTableRowProps) {
   const { t } = useTranslation();
-  const guard = useDeactivateGuard(kind);
   return (
     <Table.Tr aria-label={record.label}>
       <Table.Td>
@@ -32,41 +31,13 @@ export function RecordTableRow({ kind, record, onEdit }: RecordTableRowProps) {
           </Text>
         )}
       </Table.Td>
-      <Table.Td>
-        <Badge color={record.isActive ? 'green' : 'gray'} variant="light">
+      <Table.Td style={{ whiteSpace: 'nowrap' }}>
+        <DotBadge color={record.isActive ? 'green' : 'gray'}>
           {t(record.isActive ? 'masterData.active' : 'masterData.inactive')}
-        </Badge>
+        </DotBadge>
       </Table.Td>
       <Table.Td>
-        <Group gap="xs" wrap="nowrap" justify="flex-end">
-          <Button
-            variant="default"
-
-            leftSection={<Icon name="edit" size={16} />}
-            onClick={() => {
-              onEdit(record);
-            }}
-          >
-            {t('masterData.edit')}
-          </Button>
-          <Button
-            variant="light"
-
-            color={record.isActive ? 'red' : 'green'}
-            loading={guard.isBusy}
-            leftSection={<Icon name={record.isActive ? 'stop' : 'check'} size={16} />}
-            onClick={() => {
-              void guard.request(record);
-            }}
-          >
-            {t(record.isActive ? 'masterData.deactivate' : 'masterData.activate')}
-          </Button>
-        </Group>
-        <BalanceWarningModal
-          warning={guard.warning}
-          onConfirm={guard.confirm}
-          onClose={guard.dismiss}
-        />
+        <RecordRowActions kind={kind} record={record} onEdit={onEdit} />
       </Table.Td>
     </Table.Tr>
   );

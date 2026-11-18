@@ -10,9 +10,7 @@ export function QualityClaimsSection({ shipmentId }: { shipmentId: string }) {
   const query = useShipmentClaims(shipmentId);
   return (
     <Stack>
-      <Title order={2} size="h3">
-        {t('claim.title')}
-      </Title>
+      <Title order={2}>{t('claim.title')}</Title>
       {query.isPending && (
         <Center py="md">
           <Loader />

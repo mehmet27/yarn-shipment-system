@@ -6,12 +6,30 @@ import { ExitSlipBody } from '../components/ExitSlipBody';
 import { useShipment } from '../hooks/useShipment';
 import { useShipmentBags } from '../hooks/useShipmentBags';
 
-/** Yazdırırken menü ve üst bar gizlenir; yalnızca fiş basılır. */
+/** Yazdırırken menü ve üst bar gizlenir; yalnızca fiş basılır. Koyu görünümde bile kâğıt beyaz, yazı siyah kalır. */
 const PRINT_CSS = `
 @media print {
   header, nav, .no-print { display: none !important; }
   main { padding: 0 !important; margin: 0 !important; }
+  :root, :root[data-mantine-color-scheme] {
+    color-scheme: light !important;
+    --app-surface: #fff !important;
+    --app-inset: #fff !important;
+    --app-text: #000 !important;
+    --app-line: #000 !important;
+    --app-line-soft: #000 !important;
+    --mantine-color-body: #fff !important;
+    --mantine-color-text: #000 !important;
+    --mantine-color-dimmed: #000 !important;
+  }
+  html, body, main { background: #fff !important; color: #000 !important; }
   .exit-slip { border: 0 !important; padding: 0 !important; }
+  .exit-slip, .exit-slip * {
+    background: transparent !important;
+    color: #000 !important;
+    border-color: #000 !important;
+    box-shadow: none !important;
+  }
 }`;
 
 /** Ambar Çıkış Fişi: sevkiyattaki çuvallar sıra no + kg olarak, toplamıyla yazdırılır. */

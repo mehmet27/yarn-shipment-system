@@ -1,66 +1,72 @@
 import { useTranslation } from '@iplik/i18n';
-import {
-  AppShell,
-  BRAND_GRADIENT,
-  BRAND_SIDEBAR_GRADIENT,
-  Burger,
-  Group,
-  Stack,
-  Text,
-  useDisclosure,
-} from '@iplik/ui';
+import { AppShell, Box, Group, Stack, Text, useDisclosure } from '@iplik/ui';
 import { BrandMark } from '@/modules/branding';
 import { Outlet } from 'react-router';
+import { NavToggles } from './NavToggles';
 import { NotificationBell } from './NotificationBell';
 import { PanelNav } from './PanelNav';
 import { UserMenu } from './UserMenu';
 
+/** Bu genişliğin altı telefon düzenidir. */
+const MOBILE_ONLY = 'sm';
 const HEADER_HEIGHT_PX = 56;
 const NAVBAR_WIDTH_PX = 248;
+const NAV_BRAND_HEIGHT_PX = 44;
+const HEADER_STYLE = {
+  background: 'var(--app-surface)',
+  borderBottom: '1px solid var(--app-line)',
+} as const;
+const NAVBAR_STYLE = {
+  background: 'var(--app-frame-bg)',
+  borderRight: '1px solid var(--app-line)',
+} as const;
 
-/** Masaüstü kabuğu: koyu marka yan menüsü, gradient üst bar, geniş içerik. */
+/**
+ * Panel kabuğu: solda boydan boya açık yan menü (üstünde firma adı), sağda ince üst çubuk ve içerik. Telefonda yan
+ * menü kapalıdır; firma adı üst çubukta görünür.
+ */
 export function PanelLayout() {
   const { t } = useTranslation();
   const [isMobileNavOpen, { toggle: toggleMobileNav, close: closeMobileNav }] = useDisclosure();
   const [isDesktopNavOpen, { toggle: toggleDesktopNav }] = useDisclosure(true);
   return (
     <AppShell
+      layout="alt"
       header={{ height: HEADER_HEIGHT_PX }}
       navbar={{
         width: NAVBAR_WIDTH_PX,
-        breakpoint: 'sm',
+        breakpoint: MOBILE_ONLY,
         collapsed: { mobile: !isMobileNavOpen, desktop: !isDesktopNavOpen },
       }}
-      padding="md"
+      padding={{ base: 'md', sm: 'lg' }}
     >
-      <AppShell.Header c="white" style={{ background: BRAND_GRADIENT }}>
-        <Group h="100%" px="md" justify="space-between">
-          <Group>
-            <Burger
-              opened={isMobileNavOpen}
-              onClick={toggleMobileNav}
-              hiddenFrom="sm"
-              color="white"
-              aria-label={t('nav.toggle')}
+      <AppShell.Header style={HEADER_STYLE}>
+        <Group h="100%" px="md" justify="space-between" wrap="nowrap">
+          <Group wrap="nowrap" miw={0}>
+            <NavToggles
+              isMobileOpen={isMobileNavOpen}
+              isDesktopOpen={isDesktopNavOpen}
+              onToggleMobile={toggleMobileNav}
+              onToggleDesktop={toggleDesktopNav}
             />
-            <Burger
-              opened={isDesktopNavOpen}
-              onClick={toggleDesktopNav}
-              visibleFrom="sm"
-              color="white"
-              aria-label={t('nav.toggle')}
-            />
-            <BrandMark />
+            <Box hiddenFrom={MOBILE_ONLY} miw={0}>
+              <BrandMark />
+            </Box>
           </Group>
-          <Group gap="sm" wrap="nowrap">
+          <Group gap="xs" wrap="nowrap">
             <NotificationBell />
             <UserMenu />
           </Group>
         </Group>
       </AppShell.Header>
-      <AppShell.Navbar p="sm" c="white" style={{ background: BRAND_SIDEBAR_GRADIENT, border: 0 }}>
-        <Stack gap={4}>
-          <Text size="xs" fw={700} tt="uppercase" lts="0.08em" c="brand.2" px="sm" py="xs">
+      <AppShell.Navbar p="sm" style={NAVBAR_STYLE} className="panel-navbar">
+        <Group h={NAV_BRAND_HEIGHT_PX} px="xs" wrap="nowrap" visibleFrom={MOBILE_ONLY}>
+          <Box visibleFrom={MOBILE_ONLY} miw={0}>
+            <BrandMark />
+          </Box>
+        </Group>
+        <Stack gap={2} mt="xs">
+          <Text size="xs" fw={500} c="dimmed" px="sm" py="xs">
             {t('nav.panel')}
           </Text>
           <PanelNav onNavigate={closeMobileNav} />

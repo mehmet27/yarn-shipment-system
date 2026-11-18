@@ -21,7 +21,7 @@ export function AccountIdentity({ account }: { account: LoginAccountView }) {
           {account.fullName ?? account.username}
         </Text>
         {me?.userId === account.id && (
-          <Badge size="sm" variant="light" color="gray">
+          <Badge size="sm" variant="outline" color="gray">
             {t('users.you')}
           </Badge>
         )}

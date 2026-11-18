@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Modal, Stack, TextInput, useMediaQuery } from '@iplik/ui';
+import { Alert, Button, Group, Modal, Stack, TextInput, useMediaQuery } from '@iplik/ui';
 import { useRecordDraft } from '../hooks/useRecordDraft';
 import type { ManagedKind, RecordRow } from '../kinds';
 import { isCodedKind } from '../kinds';
@@ -61,9 +61,11 @@ export function RecordForm({ kind, record, onClose, onSaved }: RecordFormProps) 
         )}
         {kind === 'driver' && <OwnerSelect value={draft.owner} onChange={draft.setOwner} />}
         {errors.form !== undefined && <Alert color="red">{t(errors.form)}</Alert>}
-        <Button loading={draft.isPending} onClick={draft.submit}>
-          {t('masterData.save')}
-        </Button>
+        <Group justify="flex-end">
+          <Button loading={draft.isPending} onClick={draft.submit}>
+            {t('masterData.save')}
+          </Button>
+        </Group>
       </Stack>
     </Modal>
   );

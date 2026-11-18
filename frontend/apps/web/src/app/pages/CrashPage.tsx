@@ -13,7 +13,7 @@ export function CrashPage() {
         <Text size="lg" ta="center">
           {t('error.crashed')}
         </Text>
-        <Group>
+        <Group justify="center">
           <Button
             onClick={() => {
               window.location.reload();

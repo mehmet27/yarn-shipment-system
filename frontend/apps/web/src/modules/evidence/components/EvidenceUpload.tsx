@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Paper, Stack, Text, Title } from '@iplik/ui';
+import { Alert, SectionCard, Stack, Text } from '@iplik/ui';
 import { useState } from 'react';
 import { useCurrentUser } from '@/modules/auth';
 import { useUploadEvidence } from '../hooks/useUploadEvidence';
@@ -33,9 +33,8 @@ export function EvidenceUpload({ shipmentId, isDispatched }: EvidenceUploadProps
     if (found === undefined) mutation.mutate({ file, evidenceType: 'DISPATCH_SCALE' });
   };
   return (
-    <Paper withBorder p="md">
+    <SectionCard title={t('evidence.scale.title')}>
       <Stack>
-        <Title order={4}>{t('evidence.scale.title')}</Title>
         <Text size="sm" c="dimmed">
           {t('evidence.scale.hint')}
         </Text>
@@ -44,6 +43,6 @@ export function EvidenceUpload({ shipmentId, isDispatched }: EvidenceUploadProps
         {mutation.isError && <Alert color="red">{t(uploadErrorKey(mutation.error))}</Alert>}
         {mutation.isSuccess && <Alert color="green">{t('evidence.done')}</Alert>}
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }

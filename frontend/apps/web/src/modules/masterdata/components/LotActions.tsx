@@ -14,7 +14,7 @@ export function LotActions({ lot, isLocked, onEdit }: LotActionsProps) {
   const [isConfirmingOff, setConfirmingOff] = useState(false);
   return (
     <Stack gap="sm">
-      <Group grow>
+      <Group gap="xs" wrap="nowrap" justify="flex-end">
         {!isLocked && (
           <Button
             variant="default"
@@ -27,7 +27,7 @@ export function LotActions({ lot, isLocked, onEdit }: LotActionsProps) {
           </Button>
         )}
         <Button
-          variant={lot.active ? 'subtle' : 'light'}
+          variant="subtle"
           color={lot.active ? 'gray' : 'green'}
           loading={mutation.isPending}
           leftSection={<Icon name={lot.active ? 'stop' : 'check'} size={16} />}

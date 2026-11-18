@@ -1,7 +1,8 @@
 import type { QualityClaimView } from '@iplik/api-client';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { formatKg, isKilogram } from '@iplik/units';
-import { Badge, Group, Paper, Stack, Text, Title } from '@iplik/ui';
+import { Group, Paper, Stack, Text, Title } from '@iplik/ui';
+import { DotBadge as StatusDotBadge } from '@iplik/ui';
 import { EvidenceByIds } from '@/modules/evidence';
 import { InspectionItem } from './InspectionItem';
 import { RequestInspectionForm } from './RequestInspectionForm';
@@ -15,14 +16,21 @@ function formatClaimKg(value: string): string {
 export function ClaimCard({ claim }: { claim: QualityClaimView }) {
   const { t } = useTranslation();
   return (
-    <Paper withBorder p="md" component="article" aria-label={claim.discrepancyNo}>
+    <Paper
+      withBorder
+      p="md"
+      radius="md"
+      bg="var(--app-surface)"
+      component="article"
+      aria-label={claim.discrepancyNo}
+    >
       <Stack gap="xs">
         <Group justify="space-between">
           <Title order={4}>{claim.discrepancyNo}</Title>
-          <Badge variant="light">{t(`discrepancy.status.${claim.status}`)}</Badge>
+          <StatusDotBadge color="blue">{t(`discrepancy.status.${claim.status}`)}</StatusDotBadge>
         </Group>
         <Text>{claim.description}</Text>
-        <Text size="sm">
+        <Text size="sm" fw={500}>
           {t('claim.card.claimedKg')}: {formatClaimKg(claim.claimedKg)}
         </Text>
         <Text size="sm" c="dimmed">

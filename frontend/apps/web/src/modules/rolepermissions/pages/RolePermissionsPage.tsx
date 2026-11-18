@@ -17,9 +17,16 @@ export function RolePermissionsPage() {
           keepMounted={false}
           variant="pills"
         >
-          <Tabs.List aria-label={t('permissions.roleTabs')}>
+          <Tabs.List
+            aria-label={t('permissions.roleTabs')}
+            style={{ flexWrap: 'nowrap', overflowX: 'auto' }}
+          >
             {view.roles.map((row) => (
-              <Tabs.Tab key={row.role} value={row.role}>
+              <Tabs.Tab
+                key={row.role}
+                value={row.role}
+                style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+              >
                 {t(`users.role.${row.role}`)}
               </Tabs.Tab>
             ))}

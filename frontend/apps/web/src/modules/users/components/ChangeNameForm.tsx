@@ -1,7 +1,7 @@
 import type { LoginAccountView } from '@iplik/api-client';
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Stack, Text, TextInput } from '@iplik/ui';
+import { Alert, Button, Group, Stack, Text, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useChangeAccountName } from '../hooks/useAccountMutations';
 
@@ -41,15 +41,17 @@ export function ChangeNameForm({
         data-autofocus
       />
       {mutation.isError && <Alert color="red">{t(errorKey(mutation.error))}</Alert>}
-      <Button
-        loading={mutation.isPending}
-        disabled={isInvalid || isUnchanged}
-        onClick={() => {
-          mutation.mutate(trimmed, { onSuccess: onClose });
-        }}
-      >
-        {t('users.changeName.submit')}
-      </Button>
+      <Group justify="flex-end">
+        <Button
+          loading={mutation.isPending}
+          disabled={isInvalid || isUnchanged}
+          onClick={() => {
+            mutation.mutate(trimmed, { onSuccess: onClose });
+          }}
+        >
+          {t('users.changeName.submit')}
+        </Button>
+      </Group>
     </Stack>
   );
 }

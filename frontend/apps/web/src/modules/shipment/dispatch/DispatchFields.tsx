@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Text, TextInput } from '@iplik/ui';
+import { SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import { formatKg } from '@iplik/units';
 import { TicketCapture } from '@/modules/evidence';
 import type { DispatchDraft, DispatchWeighing } from './dispatchDraft';
@@ -31,25 +31,31 @@ export function DispatchFields({
   const { t } = useTranslation();
   return (
     <Stack>
-      {FIELDS.map(({ name, inputMode }) => (
-        <TextInput
-          key={name}
-          inputMode={inputMode}
-          {...(name === 'shortfallReason' ? { maxLength: 500 } : {})}
-          {...(name === 'grossKg' || name === 'tareKg' ? { rightSection: 'kg' } : {})}
-          label={t(`dispatch.${name}`)}
-          {...(name === 'shortfallReason' && isReasonMissing
-            ? { error: t('dispatch.shortfallReasonRequired') }
-            : {})}
-          value={draft[name]}
-          onChange={(event) => {
-            onChange({ ...draft, [name]: event.currentTarget.value });
-          }}
-        />
-      ))}
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+        {FIELDS.map(({ name, inputMode }) => (
+          <TextInput
+            key={name}
+            inputMode={inputMode}
+            {...(name === 'shortfallReason'
+              ? { maxLength: 500, style: { gridColumn: '1 / -1' } }
+              : {})}
+            {...(name === 'grossKg' || name === 'tareKg' ? { rightSection: 'kg' } : {})}
+            label={t(`dispatch.${name}`)}
+            {...(name === 'shortfallReason' && isReasonMissing
+              ? { error: t('dispatch.shortfallReasonRequired') }
+              : {})}
+            value={draft[name]}
+            onChange={(event) => {
+              onChange({ ...draft, [name]: event.currentTarget.value });
+            }}
+          />
+        ))}
+      </SimpleGrid>
       {weighing !== undefined && (
         <>
-          <Text fw={700}>{t('dispatch.net', { net: formatKg(weighing.netKg) })}</Text>
+          <Text fw={600} fz="xl">
+            {t('dispatch.net', { net: formatKg(weighing.netKg) })}
+          </Text>
           <TicketCapture
             file={draft.ticket}
             onFileChange={(ticket) => {

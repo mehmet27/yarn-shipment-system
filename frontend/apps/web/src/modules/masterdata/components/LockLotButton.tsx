@@ -22,7 +22,7 @@ export function LockLotButton({ lot }: { lot: LotView }) {
   }
   const code = mutation.isError ? toProblem(mutation.error).code : undefined;
   return (
-    <Paper withBorder p="sm">
+    <Paper withBorder radius="md" p="sm" bg="var(--app-inset)">
       <Stack gap="sm">
         <Text size="sm">
           {t('lots.lock.question', { lotNo: lot.lotNo, grade: lot.qualityGradeCode })}
@@ -36,16 +36,7 @@ export function LockLotButton({ lot }: { lot: LotView }) {
             )}
           </Alert>
         )}
-        <Group grow>
-          <Button
-            color="orange"
-            loading={mutation.isPending}
-            onClick={() => {
-              mutation.mutate(lot.id);
-            }}
-          >
-            {t('lots.lock.confirm')}
-          </Button>
+        <Group justify="flex-end">
           <Button
             variant="default"
             onClick={() => {
@@ -54,6 +45,15 @@ export function LockLotButton({ lot }: { lot: LotView }) {
             }}
           >
             {t('lots.lock.dismiss')}
+          </Button>
+          <Button
+            color="orange"
+            loading={mutation.isPending}
+            onClick={() => {
+              mutation.mutate(lot.id);
+            }}
+          >
+            {t('lots.lock.confirm')}
           </Button>
         </Group>
       </Stack>

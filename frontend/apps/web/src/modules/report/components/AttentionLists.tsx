@@ -1,38 +1,53 @@
 import type { DashboardView } from '@iplik/api-client';
-import { useTranslation } from '@iplik/i18n';
-import { formatDateTime } from '@iplik/i18n';
-import { Anchor, Badge, Group, Paper, Stack, Text, Title } from '@iplik/ui';
+import { formatDateTime, useTranslation } from '@iplik/i18n';
+import { Anchor, Group, SectionCard, Stack, Text } from '@iplik/ui';
 import { Link } from 'react-router';
+import { CardBleed } from './CardBleed';
+import { DotBadge } from '@iplik/ui';
 
-/** Vadesi geçen uyuşmazlıklar (ön analiz Bölüm 13). */
+/** Vadesi geçen uyuşmazlıklar (ön analiz Bölüm 13): müdürün kararını bekleyen iş, sayfanın en üstünde durur. */
 export function AttentionLists({ dashboard }: { dashboard: DashboardView }) {
   const { t } = useTranslation();
+  const items = dashboard.overdueDiscrepancies;
   return (
-    <Stack>
-      <Title order={2} size="h3">
-        {t('report.dashboard.overdueList')}
-      </Title>
-      {dashboard.overdueDiscrepancies.length === 0 ? (
+    <SectionCard
+      title={t('report.dashboard.overdueList')}
+      icon="discrepancies"
+      tone={items.length === 0 ? 'brand' : 'danger'}
+    >
+      {items.length === 0 ? (
         <Text c="dimmed">{t('report.dashboard.noOverdue')}</Text>
       ) : (
-        dashboard.overdueDiscrepancies.map((item) => (
-          <Paper key={item.discrepancyId} withBorder p="sm">
-            <Group justify="space-between">
-              <Anchor component={Link} to={`/panel/uyusmazliklar/${item.discrepancyId}`}>
-                {item.discrepancyNo}
-              </Anchor>
-              <Group gap="xs">
-                <Badge color={item.severity === 'RED' ? 'red' : 'yellow'}>
-                  {t(`discrepancy.severity.${item.severity}`)}
-                </Badge>
-                <Text size="sm" c="dimmed">
-                  {t('report.dashboard.dueAt', { at: formatDateTime(item.dueAt) })}
-                </Text>
+        <CardBleed>
+          <Stack gap={0}>
+            {items.map((item, index) => (
+              <Group
+                key={item.discrepancyId}
+                justify="space-between"
+                px="md"
+                py="xs"
+                style={{ borderTop: index === 0 ? undefined : '1px solid var(--app-line-soft)' }}
+              >
+                <Anchor
+                  component={Link}
+                  to={`/panel/uyusmazliklar/${item.discrepancyId}`}
+                  c="var(--app-text)"
+                >
+                  {item.discrepancyNo}
+                </Anchor>
+                <Group gap="xs">
+                  <DotBadge color={item.severity === 'RED' ? 'red' : 'yellow'}>
+                    {t(`discrepancy.severity.${item.severity}`)}
+                  </DotBadge>
+                  <Text size="sm" c="dimmed">
+                    {t('report.dashboard.dueAt', { at: formatDateTime(item.dueAt) })}
+                  </Text>
+                </Group>
               </Group>
-            </Group>
-          </Paper>
-        ))
+            ))}
+          </Stack>
+        </CardBleed>
       )}
-    </Stack>
+    </SectionCard>
   );
 }

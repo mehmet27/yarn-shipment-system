@@ -1,48 +1,34 @@
 import { Box, Group, Stack, Text, Title } from '@mantine/core';
 import type { ReactNode } from 'react';
-import { BRAND_GRADIENT } from '../brandGradient';
-
-const OVERLAP_PADDING_PX = 64;
-const OVERLAP_OFFSET_PX = 40;
 
 export type PageHeroProps = {
   title: string;
   subtitle?: string;
   /** Sağ üst eylemler (örn. "Yeni sevkiyat"). */
   actions?: ReactNode;
-  /** Başlığın altına taşan içerik (özet kartları). */
+  /** Başlığın altındaki içerik (özet kartları). */
   children?: ReactNode;
 };
 
-/** Sayfa başlığı: marka renginden türeyen gradient zemin; içerik altına taşar. */
+/**
+ * Sayfa başlığı: sade başlık, altında tek satır yönlendirme, sağda sayfanın ana eylemi. Zemin kutusu yoktur; başlık
+ * doğrudan sayfa zemininde durur, böylece ekrandaki tek dolgulu renk ana eylem düğmesi olur.
+ */
 export function PageHero({ title, subtitle, actions, children }: PageHeroProps) {
   return (
-    <Box>
-      <Box
-        c="white"
-        px="lg"
-        pt="lg"
-        pb={children === undefined ? 'lg' : OVERLAP_PADDING_PX}
-        style={{
-          background: BRAND_GRADIENT,
-          borderRadius: 'var(--mantine-radius-lg)',
-        }}
-      >
-        <Group justify="space-between" align="flex-start">
-          <Stack gap={2}>
-            <Title order={1} fz={{ base: 22, sm: 26 }}>
-              {title}
-            </Title>
-            {subtitle === undefined ? null : (
-              <Text c="brand.1" size="sm">
-                {subtitle}
-              </Text>
-            )}
-          </Stack>
-          {actions}
-        </Group>
-      </Box>
-      {children === undefined ? null : <Box mt={-OVERLAP_OFFSET_PX}>{children}</Box>}
-    </Box>
+    <Stack gap="md">
+      <Group justify="space-between" align="flex-end" gap="sm">
+        <Stack gap={2} miw={0} style={{ flex: '1 1 16rem' }}>
+          <Title order={1}>{title}</Title>
+          {subtitle === undefined ? null : (
+            <Text c="dimmed" size="sm" maw="46rem">
+              {subtitle}
+            </Text>
+          )}
+        </Stack>
+        {actions}
+      </Group>
+      {children === undefined ? null : <Box>{children}</Box>}
+    </Stack>
   );
 }

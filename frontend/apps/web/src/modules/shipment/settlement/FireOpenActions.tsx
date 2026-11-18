@@ -16,13 +16,11 @@ export function FireOpenActions({ settlement }: { settlement: FireSettlement }) 
   const canInvoice = canMark && hasFabric && hasFault;
   const canClose = canMark && hasFabric && !hasFault;
   return (
-    <Stack>
+    <Stack gap="lg">
       {canEditRate && <FireRateForm key={settlement.fireRate} settlement={settlement} />}
       {canInvoice && (
         <Stack>
-          <Title order={3} size="h4">
-            {t('settlement.fire.invoiceTitle')}
-          </Title>
+          <Title order={3}>{t('settlement.fire.invoiceTitle')}</Title>
           <InvoiceForm shipmentId={settlement.shipmentId} />
         </Stack>
       )}

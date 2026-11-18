@@ -20,14 +20,16 @@ export function ShipmentsPanel({ params, isEnabled, isOnlyDiscrepant = false }: 
               {t('report.shipments.limitNote')}
             </Text>
             <Table.ScrollContainer minWidth={720}>
-              <Table striped>
+              <Table>
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>{t('report.export.shipmentNo')}</Table.Th>
                     <Table.Th>{t('report.parties.subcontractor')}</Table.Th>
-                    <Table.Th>{t('report.export.status')}</Table.Th>
-                    <Table.Th>{t('report.dashboard.dispatchNet')}</Table.Th>
-                    <Table.Th>{t('report.dashboard.deliveryNet')}</Table.Th>
+                    <Table.Th style={{ whiteSpace: 'nowrap' }}>
+                      {t('report.export.status')}
+                    </Table.Th>
+                    <Table.Th ta="right">{t('report.dashboard.dispatchNet')}</Table.Th>
+                    <Table.Th ta="right">{t('report.dashboard.deliveryNet')}</Table.Th>
                     <Table.Th>{t('report.export.createdAt')}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>

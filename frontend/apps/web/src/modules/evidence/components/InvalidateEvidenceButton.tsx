@@ -22,7 +22,7 @@ export function InvalidateEvidenceButton({ evidenceId }: { evidenceId: string })
   const trimmed = reason.trim();
   return (
     <Can permission="EVIDENCE_INVALIDATE">
-      <Button size="compact-xs" color="red" variant="light" onClick={open}>
+      <Button size="compact-xs" color="red" variant="subtle" onClick={open}>
         {t('evidence.invalidate.button')}
       </Button>
       <Modal opened={isOpen} onClose={close} title={t('evidence.invalidate.title')}>

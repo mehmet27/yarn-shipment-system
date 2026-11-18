@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, TextInput } from '@iplik/ui';
+import { TextInput } from '@iplik/ui';
+import { Fragment } from 'react';
 import type { RecipeLineDraft } from './createDraft';
 import { MasterSelect } from './MasterSelect';
 
@@ -9,11 +10,11 @@ type YarnCellProps = {
   onPatch: (patch: Partial<RecipeLineDraft>) => void;
 };
 
-/** İplik cinsi: listeden seçim ya da serbest metin; seçim varken metin kapalıdır. */
+/** İplik cinsi: listeden seçim ve yanında serbest metin; seçim varken metin kapalıdır. Izgaraya iki hücre verir. */
 export function YarnCell({ line, index, onPatch }: YarnCellProps) {
   const { t } = useTranslation();
   return (
-    <Stack gap="xs">
+    <Fragment>
       <MasterSelect
         kind="product"
         label={`${t('create.recipe.yarnType')} ${String(index + 1)}`}
@@ -31,6 +32,6 @@ export function YarnCell({ line, index, onPatch }: YarnCellProps) {
           onPatch({ yarnText: event.currentTarget.value });
         }}
       />
-    </Stack>
+    </Fragment>
   );
 }

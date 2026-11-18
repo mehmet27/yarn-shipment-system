@@ -1,6 +1,6 @@
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Stack } from '@iplik/ui';
+import { Alert, Button, Group, Stack } from '@iplik/ui';
 import { useState } from 'react';
 import { useCreateAccount } from '../hooks/useAccountMutations';
 import { EMPTY_DRAFT, invalidFields, toSubmission } from '../accountDraft';
@@ -35,7 +35,9 @@ export function CreateAccountForm({ onClose }: { onClose: () => void }) {
     return (
       <Stack>
         <Alert color="green">{t('users.create.sent', { username: draft.username })}</Alert>
-        <Button onClick={onClose}>{t('masterData.loginAccount.close')}</Button>
+        <Group justify="flex-end">
+          <Button onClick={onClose}>{t('masterData.loginAccount.close')}</Button>
+        </Group>
       </Stack>
     );
   }
@@ -46,17 +48,19 @@ export function CreateAccountForm({ onClose }: { onClose: () => void }) {
     <Stack>
       <AccountFields draft={draft} onChange={change} errorText={errorText} />
       {mutation.isError && <Alert color="red">{t(errorKey(mutation.error))}</Alert>}
-      <Button
-        loading={mutation.isPending}
-        onClick={() => {
-          setSubmitted(true);
-          const submission = toSubmission(draft);
-          if (invalid.size > 0 || submission === undefined) return;
-          mutation.mutate(submission);
-        }}
-      >
-        {t('users.create.submit')}
-      </Button>
+      <Group justify="flex-end">
+        <Button
+          loading={mutation.isPending}
+          onClick={() => {
+            setSubmitted(true);
+            const submission = toSubmission(draft);
+            if (invalid.size > 0 || submission === undefined) return;
+            mutation.mutate(submission);
+          }}
+        >
+          {t('users.create.submit')}
+        </Button>
+      </Group>
     </Stack>
   );
 }

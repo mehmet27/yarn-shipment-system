@@ -42,6 +42,7 @@ export {
   UnstyledButton,
 } from '@mantine/core';
 export { Box } from '@mantine/core';
+export { useColorSchemeToggle } from './useColorSchemeToggle';
 export { useDebouncedValue, useDisclosure, useMediaQuery } from '@mantine/hooks';
 export { ErrorBoundary } from './ErrorBoundary';
 export type { ErrorBoundaryProps } from './ErrorBoundary';
@@ -59,6 +60,8 @@ export { ActionBar } from './components/ActionBar';
 export type { ActionBarProps } from './components/ActionBar';
 export { ActivityFeed } from './components/ActivityFeed';
 export type { ActivityFeedProps, ActivityItem } from './components/ActivityFeed';
+export { DotBadge } from './components/DotBadge';
+export type { DotBadgeProps } from './components/DotBadge';
 export { EmptyState } from './components/EmptyState';
 export type { EmptyStateProps } from './components/EmptyState';
 export { ListGroupHeader } from './components/ListGroupHeader';
@@ -73,6 +76,5 @@ export { SectionCard } from './components/SectionCard';
 export type { SectionCardProps, SectionTone } from './components/SectionCard';
 export { StatCard } from './components/StatCard';
 export type { StatCardProps, StatTone } from './components/StatCard';
-export { BRAND_GRADIENT, BRAND_SIDEBAR_GRADIENT } from './brandGradient';
 export { NavIcon, NavIcon as Icon } from './components/NavIcon';
 export type { NavIconName, NavIconProps } from './components/NavIcon';

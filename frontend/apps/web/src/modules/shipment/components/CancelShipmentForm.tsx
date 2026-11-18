@@ -22,7 +22,7 @@ export function CancelShipmentForm({ shipmentId }: { shipmentId: string }) {
     return (
       <Button
         color="red"
-        variant="outline"
+        variant="subtle"
         w="fit-content"
         leftSection={<Icon name="stop" />}
         onClick={() => {
@@ -35,7 +35,7 @@ export function CancelShipmentForm({ shipmentId }: { shipmentId: string }) {
   }
   return (
     <SectionCard title={t('shipment.cancel.title')} icon="stop" tone="danger">
-      <Stack>
+      <Stack maw={560}>
         <TextInput
           label={t('shipment.cancel.reason')}
           maxLength={MAX_REASON_LENGTH}

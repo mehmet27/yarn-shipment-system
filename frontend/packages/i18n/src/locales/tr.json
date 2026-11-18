@@ -4,6 +4,8 @@
     "loading": "Yükleniyor…",
     "logout": "Çıkış yap",
     "changePassword": "Şifremi değiştir",
+    "darkMode": "Koyu görünüme geç",
+    "lightMode": "Açık görünüme geç",
     "mfaOn": "✓ İki adımlı doğrulama açık"
   },
   "auth": {

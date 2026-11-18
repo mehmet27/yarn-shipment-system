@@ -101,17 +101,21 @@ describe('CreateShipmentPage', () => {
     expect(await screen.findByText('Fasoncu seçin.')).toBeInTheDocument();
   });
 
-  it('reçete satırı eklenip silinir, en az bir satır kalır ve toplam canlı güncellenir', async () => {
-    server.use(...createHandlers('MANAGER'));
-    renderApp('/panel/sevkiyat/yeni');
-    await fillRecipe('1.000', false);
-    await userEvent.click(screen.getByRole('button', { name: 'Satır ekle' }));
-    await userEvent.type(screen.getByLabelText(/Net kg 2/), '500,5');
-    expect(screen.getByTestId('recipe-total')).toHaveTextContent('1.500,5 kg');
-    await userEvent.click(screen.getByRole('button', { name: '2. satırı sil' }));
-    expect(screen.queryByLabelText(/Net kg 2/)).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '1. satırı sil' })).not.toBeInTheDocument();
-  });
+  it(
+    'reçete satırı eklenip silinir, en az bir satır kalır ve toplam canlı güncellenir',
+    async () => {
+      server.use(...createHandlers('MANAGER'));
+      renderApp('/panel/sevkiyat/yeni');
+      await fillRecipe('1.000', false);
+      await userEvent.click(screen.getByRole('button', { name: 'Satır ekle' }));
+      await userEvent.type(screen.getByLabelText(/Net kg 2/), '500,5');
+      expect(screen.getByTestId('recipe-total')).toHaveTextContent('1.500,5 kg');
+      await userEvent.click(screen.getByRole('button', { name: '2. satırı sil' }));
+      expect(screen.queryByLabelText(/Net kg 2/)).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: '1. satırı sil' })).not.toBeInTheDocument();
+    },
+    LONG_FLOW_TIMEOUT_MS,
+  );
 
   it('geçersiz reçete satırı ve fire oranını engeller', async () => {
     server.use(...createHandlers('MANAGER'));

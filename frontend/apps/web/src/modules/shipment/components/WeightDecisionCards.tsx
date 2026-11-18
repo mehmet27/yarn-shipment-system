@@ -5,8 +5,8 @@ import { Box, Group, Icon, SimpleGrid, Stack, Text, UnstyledButton } from '@ipli
 export type DecisionOption = 'ADD_REMOVE_BAGS' | 'UPDATE_RECIPE' | 'CANCEL';
 
 const OPTIONS: readonly { value: DecisionOption; icon: NavIconName; color: string }[] = [
-  { value: 'ADD_REMOVE_BAGS', icon: 'edit', color: 'blue' },
-  { value: 'UPDATE_RECIPE', icon: 'list', color: 'teal' },
+  { value: 'ADD_REMOVE_BAGS', icon: 'edit', color: 'brand' },
+  { value: 'UPDATE_RECIPE', icon: 'list', color: 'brand' },
   { value: 'CANCEL', icon: 'stop', color: 'red' },
 ];
 
@@ -35,8 +35,10 @@ export function WeightDecisionCards({ value, onChange }: Props) {
             p="sm"
             style={{
               borderRadius: 'var(--mantine-radius-md)',
-              border: `2px solid var(--mantine-color-${option.color}-${isSelected ? '6' : '2'})`,
-              background: isSelected ? `var(--mantine-color-${option.color}-0)` : undefined,
+              border: `2px solid ${isSelected ? `var(--mantine-color-${option.color}-6)` : 'var(--app-line)'}`,
+              background: isSelected
+                ? `var(--mantine-color-${option.color}-0)`
+                : 'var(--app-surface)',
             }}
           >
             <Group gap="xs" wrap="nowrap" align="flex-start">
@@ -44,7 +46,7 @@ export function WeightDecisionCards({ value, onChange }: Props) {
                 <Icon name={option.icon} />
               </Box>
               <Stack gap={2}>
-                <Text fw={700} size="sm">
+                <Text fw={600} size="sm">
                   {t(`shipment.weightDecision.options.${option.value}`)}
                 </Text>
                 <Text size="xs" c="dimmed">

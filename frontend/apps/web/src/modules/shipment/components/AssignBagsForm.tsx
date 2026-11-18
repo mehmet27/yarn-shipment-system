@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { parseKg } from '@iplik/units';
-import { Button, Stack } from '@iplik/ui';
+import { Button, Paper, Stack } from '@iplik/ui';
 import { useState } from 'react';
 import { useAssignBags } from '../hooks/useAssignBags';
 import { AssignResult } from './AssignResult';
@@ -45,19 +45,21 @@ export function AssignBagsForm({
     );
   };
   return (
-    <Stack>
-      <WeightEntry value={input} isInvalid={isInvalid} onChange={setInput} onAdd={add} />
-      <PendingWeights
-        weights={weights}
-        firstSeq={assignedCount + 1}
-        onRemove={(index) => {
-          setWeights(weights.filter((_, position) => position !== index));
-        }}
-      />
-      <AssignResult error={mutation.error} count={mutation.data?.assignedCount} />
-      <Button disabled={weights.length === 0} loading={mutation.isPending} onClick={submit}>
-        {t('shipment.bags.assign.submit', { count: weights.length })}
-      </Button>
-    </Stack>
+    <Paper withBorder p="md">
+      <Stack>
+        <WeightEntry value={input} isInvalid={isInvalid} onChange={setInput} onAdd={add} />
+        <PendingWeights
+          weights={weights}
+          firstSeq={assignedCount + 1}
+          onRemove={(index) => {
+            setWeights(weights.filter((_, position) => position !== index));
+          }}
+        />
+        <AssignResult error={mutation.error} count={mutation.data?.assignedCount} />
+        <Button disabled={weights.length === 0} loading={mutation.isPending} onClick={submit}>
+          {t('shipment.bags.assign.submit', { count: weights.length })}
+        </Button>
+      </Stack>
+    </Paper>
   );
 }

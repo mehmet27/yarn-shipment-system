@@ -10,7 +10,13 @@ export function RoleBadges({ account }: RoleBadgesProps) {
   return (
     <Group gap={4}>
       {account.roles.map((role) => (
-        <Badge key={role} variant="light">
+        <Badge
+          key={role}
+          variant="outline"
+          color="gray"
+          c="var(--app-text)"
+          style={{ borderColor: 'var(--app-line)' }}
+        >
           {t(`users.role.${role}`)}
         </Badge>
       ))}

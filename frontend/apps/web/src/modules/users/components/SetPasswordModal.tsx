@@ -1,7 +1,7 @@
 import type { LoginAccountView } from '@iplik/api-client';
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Modal, PasswordInput, Stack, Text } from '@iplik/ui';
+import { Alert, Button, Group, Modal, PasswordInput, Stack, Text } from '@iplik/ui';
 import { useState } from 'react';
 import { MIN_PASSWORD_LENGTH } from '../accountDraft';
 import { useSetAccountPassword } from '../hooks/useAccountMutations';
@@ -41,7 +41,9 @@ export function SetPasswordModal({ account, opened, onClose }: SetPasswordModalP
             <Alert color="green">
               {t('users.setPassword.done', { username: account.username })}
             </Alert>
-            <Button onClick={dismiss}>{t('masterData.loginAccount.close')}</Button>
+            <Group justify="flex-end">
+              <Button onClick={dismiss}>{t('masterData.loginAccount.close')}</Button>
+            </Group>
           </>
         ) : (
           <>
@@ -57,15 +59,17 @@ export function SetPasswordModal({ account, opened, onClose }: SetPasswordModalP
             />
             <PasswordTools password={password} onGenerate={setPassword} />
             {mutation.isError && <Alert color="red">{t(errorKey(mutation.error))}</Alert>}
-            <Button
-              loading={mutation.isPending}
-              disabled={password.length < MIN_PASSWORD_LENGTH}
-              onClick={() => {
-                mutation.mutate(password);
-              }}
-            >
-              {t('users.setPassword.submit')}
-            </Button>
+            <Group justify="flex-end">
+              <Button
+                loading={mutation.isPending}
+                disabled={password.length < MIN_PASSWORD_LENGTH}
+                onClick={() => {
+                  mutation.mutate(password);
+                }}
+              >
+                {t('users.setPassword.submit')}
+              </Button>
+            </Group>
           </>
         )}
       </Stack>

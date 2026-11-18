@@ -14,9 +14,9 @@ export function SummaryPanel({ params, isEnabled }: ReportPanelProps) {
     <QueryState query={query}>
       {(dashboard) => (
         <Stack>
+          <AttentionLists dashboard={dashboard} />
           <StockOverview params={params} />
           <DashboardSummary dashboard={dashboard} />
-          <AttentionLists dashboard={dashboard} />
         </Stack>
       )}
     </QueryState>

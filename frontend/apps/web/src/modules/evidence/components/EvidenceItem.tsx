@@ -1,8 +1,9 @@
 import type { EvidenceView } from '@iplik/api-client';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Badge, Group, Paper, Stack, Text } from '@iplik/ui';
+import { Group, Paper, Stack, Text } from '@iplik/ui';
 import { EvidenceFileLink } from './EvidenceFileLink';
 import { EvidenceImageThumb } from './EvidenceImageThumb';
+import { DotBadge as StatusDotBadge } from '@iplik/ui';
 import { InvalidateEvidenceButton } from './InvalidateEvidenceButton';
 
 const isImage = (mimeType: string) => mimeType.startsWith('image/');
@@ -12,16 +13,20 @@ export function EvidenceItem({ evidence }: { evidence: EvidenceView }) {
   const { t } = useTranslation();
   const isInvalid = evidence.status === 'INVALIDATED';
   return (
-    <Paper withBorder p="sm" aria-label={t(`evidence.types.${evidence.evidenceType}`)}>
+    <Paper
+      withBorder
+      p="sm"
+      radius="md"
+      bg="var(--app-surface)"
+      aria-label={t(`evidence.types.${evidence.evidenceType}`)}
+    >
       <Stack gap="xs">
         <Group justify="space-between" wrap="nowrap">
           <Text fw={600} size="sm">
             {t(`evidence.types.${evidence.evidenceType}`)}
           </Text>
           {isInvalid && (
-            <Badge color="red" variant="light">
-              {t('evidence.view.invalidated')}
-            </Badge>
+            <StatusDotBadge color="red">{t('evidence.view.invalidated')}</StatusDotBadge>
           )}
         </Group>
         <div style={isInvalid ? { opacity: 0.5 } : undefined}>
@@ -36,7 +41,7 @@ export function EvidenceItem({ evidence }: { evidence: EvidenceView }) {
         </Text>
         {!isInvalid && <InvalidateEvidenceButton evidenceId={evidence.id} />}
         {isInvalid && evidence.invalidatedReason !== undefined && (
-          <Text size="xs" c="red">
+          <Text size="xs" c="var(--mantine-color-red-light-color)">
             {t('evidence.view.reason')}: {evidence.invalidatedReason}
           </Text>
         )}

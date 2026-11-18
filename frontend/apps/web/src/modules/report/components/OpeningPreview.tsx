@@ -14,7 +14,7 @@ export function OpeningPreview({ rows }: { rows: OpeningImportRow[] }) {
           <Table.Tr>
             <Table.Th>{t('report.parties.subcontractor')}</Table.Th>
             <Table.Th>{t('report.matrix.yarnType')}</Table.Th>
-            <Table.Th>{t('report.opening.netKg')}</Table.Th>
+            <Table.Th ta="right">{t('report.opening.netKg')}</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -22,7 +22,7 @@ export function OpeningPreview({ rows }: { rows: OpeningImportRow[] }) {
             <Table.Tr key={`${String(index)}-${row.subcontractorId}-${row.yarnType}`}>
               <Table.Td>{row.subcontractorName}</Table.Td>
               <Table.Td>{row.yarnType}</Table.Td>
-              <Table.Td>{formatKg3(row.netKg)}</Table.Td>
+              <Table.Td ta="right">{formatKg3(row.netKg)}</Table.Td>
             </Table.Tr>
           ))}
         </Table.Tbody>

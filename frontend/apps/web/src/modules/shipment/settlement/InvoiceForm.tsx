@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Stack, Text, TextInput } from '@iplik/ui';
+import { Alert, Button, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useMarkInvoiced } from './hooks';
 import type { DraftError } from './settlementDraft';
@@ -25,7 +25,7 @@ export function InvoiceForm({ shipmentId }: { shipmentId: string }) {
   };
   return (
     <Stack>
-      <Group grow align="flex-start">
+      <SimpleGrid cols={{ base: 1, sm: 2 }}>
         <TextInput
           label={t('settlement.fire.invoiceNo')}
           withAsterisk
@@ -43,7 +43,7 @@ export function InvoiceForm({ shipmentId }: { shipmentId: string }) {
             setInvoicedOn(event.currentTarget.value);
           }}
         />
-      </Group>
+      </SimpleGrid>
       <TextInput
         label={t('settlement.fire.invoiceNote')}
         value={note}

@@ -22,7 +22,7 @@ export function BrandingForm({ branding }: BrandingFormProps) {
   const { draft, error, isSaved, mutation, change, submit } = useBrandingDraft(branding);
   return (
     <SimpleGrid cols={{ base: 1, md: 2 }}>
-      <Paper withBorder p="md">
+      <Paper withBorder radius="md" p="md">
         <Stack>
           <TextInput
             label={t('branding.companyName')}
@@ -53,10 +53,7 @@ export function BrandingForm({ branding }: BrandingFormProps) {
           />
           {mutation.isError && <Alert color="red">{t(failureKey(mutation.error))}</Alert>}
           {isSaved && <Alert color="green">{t('branding.saved')}</Alert>}
-          <Group>
-            <Button loading={mutation.isPending} onClick={submit}>
-              {t('branding.submit')}
-            </Button>
+          <Group justify="flex-end">
             <Button
               variant="default"
               onClick={() => {
@@ -64,6 +61,9 @@ export function BrandingForm({ branding }: BrandingFormProps) {
               }}
             >
               {t('branding.reset')}
+            </Button>
+            <Button loading={mutation.isPending} onClick={submit}>
+              {t('branding.submit')}
             </Button>
           </Group>
         </Stack>

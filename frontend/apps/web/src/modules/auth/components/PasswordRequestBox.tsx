@@ -21,7 +21,7 @@ export function PasswordRequestBox({ username }: PasswordRequestBoxProps) {
       <Text size="sm">{t('auth.passwordRequest.hint')}</Text>
       {mutation.isError && <Alert color="red">{t('auth.passwordRequest.failed')}</Alert>}
       <Button
-        variant="light"
+        variant="default"
         loading={mutation.isPending}
         onClick={() => {
           mutation.mutate(username);

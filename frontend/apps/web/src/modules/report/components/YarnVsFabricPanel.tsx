@@ -34,30 +34,30 @@ export function YarnVsFabricPanel({ params, isEnabled }: ReportPanelProps) {
               <Text c="dimmed">{t('report.fire.empty')}</Text>
             ) : (
               <Table.ScrollContainer minWidth={820}>
-                <Table striped>
+                <Table>
                   <Table.Thead>
                     <Table.Tr>
                       <Table.Th>{t('report.parties.subcontractor')}</Table.Th>
-                      <Table.Th>{t('report.fire.sent')}</Table.Th>
-                      <Table.Th>{t('report.fire.returnedYarn')}</Table.Th>
-                      <Table.Th>{t('report.fire.fabric')}</Table.Th>
-                      <Table.Th>{t('report.fire.actualFireRate')}</Table.Th>
-                      <Table.Th>{t('report.fire.shortage')}</Table.Th>
-                      <Table.Th>{t('report.fire.overLimitCount')}</Table.Th>
-                      <Table.Th>{t('report.fire.overLimitFire')}</Table.Th>
+                      <Table.Th ta="right">{t('report.fire.sent')}</Table.Th>
+                      <Table.Th ta="right">{t('report.fire.returnedYarn')}</Table.Th>
+                      <Table.Th ta="right">{t('report.fire.fabric')}</Table.Th>
+                      <Table.Th ta="right">{t('report.fire.actualFireRate')}</Table.Th>
+                      <Table.Th ta="right">{t('report.fire.shortage')}</Table.Th>
+                      <Table.Th ta="right">{t('report.fire.overLimitCount')}</Table.Th>
+                      <Table.Th ta="right">{t('report.fire.overLimitFire')}</Table.Th>
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>
                     {rows.map((row) => (
                       <Table.Tr key={row.subcontractorId}>
                         <Table.Td>{row.subcontractorName}</Table.Td>
-                        <Table.Td>{formatKg3(row.sentKg)}</Table.Td>
-                        <Table.Td>{formatKg3(row.returnedYarnKg)}</Table.Td>
-                        <Table.Td>{formatKg3(row.fabricKg)}</Table.Td>
-                        <Table.Td>{formatFireRate(row.actualFireRate)}</Table.Td>
-                        <Table.Td>{formatKg3(row.shortageKg)}</Table.Td>
-                        <Table.Td>{row.overLimitShipmentCount}</Table.Td>
-                        <Table.Td>{formatKg3(row.overLimitFireKg)}</Table.Td>
+                        <Table.Td ta="right">{formatKg3(row.sentKg)}</Table.Td>
+                        <Table.Td ta="right">{formatKg3(row.returnedYarnKg)}</Table.Td>
+                        <Table.Td ta="right">{formatKg3(row.fabricKg)}</Table.Td>
+                        <Table.Td ta="right">{formatFireRate(row.actualFireRate)}</Table.Td>
+                        <Table.Td ta="right">{formatKg3(row.shortageKg)}</Table.Td>
+                        <Table.Td ta="right">{row.overLimitShipmentCount}</Table.Td>
+                        <Table.Td ta="right">{formatKg3(row.overLimitFireKg)}</Table.Td>
                       </Table.Tr>
                     ))}
                   </Table.Tbody>

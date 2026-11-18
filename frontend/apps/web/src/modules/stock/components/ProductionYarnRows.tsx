@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, Group, Stack, Text, TextInput } from '@iplik/ui';
+import { Button, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import { MasterSelect } from '@/modules/shipment';
 import type { YarnLineDraft } from '../stockDraft';
 
@@ -19,7 +19,7 @@ export function ProductionYarnRows({ rows, onChange, onAdd, onRemove }: Producti
       {rows.map((row, index) => (
         // Satırın kimliği yok; yalnız sondan eklenir ve sırayla silinir.
         // eslint-disable-next-line react/no-array-index-key -- kimliksiz taslak satırı
-        <Group key={index} grow align="flex-end">
+        <SimpleGrid key={index} cols={{ base: 1, sm: 3 }} style={{ alignItems: 'end' }}>
           <MasterSelect
             kind="product"
             label={`${t('stock.production.yarnType')} ${String(index + 1)}`}
@@ -45,7 +45,7 @@ export function ProductionYarnRows({ rows, onChange, onAdd, onRemove }: Producti
           >
             {t('stock.production.removeYarn')}
           </Button>
-        </Group>
+        </SimpleGrid>
       ))}
       <Button variant="default" w="fit-content" onClick={onAdd}>
         {t('stock.production.addYarn')}

@@ -5,14 +5,14 @@ export type ListGroupHeaderProps = {
   count: number;
 };
 
-/** Gruplu liste başlığı: "İŞLEM BEKLEYEN  4". */
+/** Gruplu liste başlığı: "İşlem bekleyen  4". */
 export function ListGroupHeader({ label, count }: ListGroupHeaderProps) {
   return (
-    <Group justify="space-between" px="md" py="xs" bg="gray.0">
-      <Text size="xs" fw={700} c="dimmed" tt="uppercase" lts="0.06em">
+    <Group justify="space-between" px="md" py="xs" bg="var(--app-inset)">
+      <Text size="sm" fw={600}>
         {label}
       </Text>
-      <Text size="xs" fw={700} c="dimmed">
+      <Text size="sm" fw={600} c="dimmed">
         {count}
       </Text>
     </Group>

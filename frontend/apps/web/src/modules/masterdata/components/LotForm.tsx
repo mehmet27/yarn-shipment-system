@@ -1,6 +1,6 @@
 import type { LotView } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Modal, Stack, TextInput, useMediaQuery } from '@iplik/ui';
+import { Alert, Button, Group, Modal, Stack, TextInput, useMediaQuery } from '@iplik/ui';
 import { useLotDraft } from '../hooks/useLotDraft';
 import { useCatalogChoices } from '../hooks/useLots';
 import { errorOf, LotChoiceField } from './LotChoiceField';
@@ -56,9 +56,11 @@ export function LotForm({ lot, onClose, onSaved }: LotFormProps) {
           withAsterisk
         />
         {formError !== undefined && <Alert color="red">{formError}</Alert>}
-        <Button loading={draft.isPending} onClick={draft.submit}>
-          {t('masterData.save')}
-        </Button>
+        <Group justify="flex-end">
+          <Button loading={draft.isPending} onClick={draft.submit}>
+            {t('masterData.save')}
+          </Button>
+        </Group>
       </Stack>
     </Modal>
   );

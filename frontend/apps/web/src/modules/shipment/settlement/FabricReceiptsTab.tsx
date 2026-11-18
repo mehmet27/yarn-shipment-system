@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Text } from '@iplik/ui';
+import { EmptyState, Stack } from '@iplik/ui';
 import { usePermission } from '@/modules/auth';
 import { QueryState } from '../components/QueryState';
 import { FabricForm } from './FabricForm';
@@ -17,7 +17,7 @@ export function FabricReceiptsTab({ shipmentId }: { shipmentId: string }) {
       <QueryState query={query}>
         {(receipts) =>
           receipts.length === 0 ? (
-            <Text c="dimmed">{t('settlement.fabric.empty')}</Text>
+            <EmptyState title={t('settlement.fabric.empty')} />
           ) : (
             <Stack>
               {receipts.map((receipt) => (

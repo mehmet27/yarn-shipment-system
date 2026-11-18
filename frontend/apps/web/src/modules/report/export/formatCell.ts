@@ -25,6 +25,14 @@ export function formatCell(cell: ReportCell): string {
 /** Excel sayı biçimi kodları. */
 export const EXCEL_FORMATS = {
   count: '0',
-  kg: '#,##0.000',
   percent: '0.00%',
 } as const;
+
+/** Excel kilo biçimi hücrenin değerine göre seçilir: gereksiz sıfır yok (700, 264,5, 2.143,814), ekranla aynı. */
+export function excelKgFormat(value: number): string {
+  const decimals = Math.min(
+    3,
+    (String(Math.round(value * 1000) / 1000).split('.')[1] ?? '').length,
+  );
+  return decimals === 0 ? '#,##0' : `#,##0.${'0'.repeat(decimals)}`;
+}

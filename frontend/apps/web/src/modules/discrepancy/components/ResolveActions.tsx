@@ -1,10 +1,13 @@
-import type { Resolution } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Button } from '@iplik/ui';
+import type { ResolveChoice } from './resolveChoices';
+import { JUSTIFIED_INVOICED } from './resolveChoices';
 import { ResolveConfirm } from './ResolveConfirm';
 
 export type ResolveActionsProps = {
-  resolution: Resolution | undefined;
+  choice: ResolveChoice | undefined;
+  /** "Haklı, faturalandı" onayında söylenen fatura numarası. */
+  invoiceNo: string;
   isConfirming: boolean;
   canSubmit: boolean;
   isPending: boolean;
@@ -16,10 +19,17 @@ export type ResolveActionsProps = {
 /** "Karara bağla" önce satır içi onay sorar; karar geri alınamaz. */
 export function ResolveActions(props: ResolveActionsProps) {
   const { t } = useTranslation();
-  if (props.isConfirming && props.resolution !== undefined) {
+  const { choice } = props;
+  if (props.isConfirming && choice !== undefined) {
     return (
       <ResolveConfirm
-        resolutionLabel={t(`discrepancy.resolution.${props.resolution}`)}
+        text={
+          choice === JUSTIFIED_INVOICED
+            ? t('discrepancy.resolve.confirmTextInvoice', { no: props.invoiceNo.trim() })
+            : t('discrepancy.resolve.confirmText', {
+                resolution: t(`discrepancy.resolution.${choice}`),
+              })
+        }
         loading={props.isPending}
         onConfirm={props.onConfirm}
         onCancel={props.onCancel}

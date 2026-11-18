@@ -125,6 +125,7 @@ public final class RolePermissionMatrix {
                 Permission.EVIDENCE_INVALIDATE,
                 Permission.CORRECTION_CREATE,
                 Permission.DISCREPANCY_VIEW,
+                Permission.DISCREPANCY_DECIDE,
                 Permission.AUDIT_VIEW,
                 Permission.REPORT_VIEW,
                 Permission.AMOUNT_VIEW,

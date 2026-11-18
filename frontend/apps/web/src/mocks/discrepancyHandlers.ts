@@ -25,15 +25,17 @@ function readResolve(json: unknown): ResolveDiscrepancyRequest | undefined {
     : { resolution: known, note };
 }
 
-/** Uyuşmazlık uçları; karar eylemleri yalnızca DISCREPANCY_RESOLVE izniyle ve açık uyuşmazlıkta görünür. */
+/** Uyuşmazlık uçları; karar eylemleri DISCREPANCY_RESOLVE (tüm kararlar) ya da DISCREPANCY_DECIDE (yalnız haklı/haksız) izniyle ve açık uyuşmazlıkta görünür. */
 export function createDiscrepancyHandlers(permissions: readonly Permission[], userId: string) {
   const canView = permissions.includes('DISCREPANCY_VIEW');
   const canResolve = permissions.includes('DISCREPANCY_RESOLVE');
+  const canDecide = canResolve || permissions.includes('DISCREPANCY_DECIDE');
   const view = (id: unknown) => {
     const item = findMockDiscrepancy(id);
     if (item === undefined) return undefined;
-    const isDecidable = canResolve && (item.status === 'OPEN' || item.status === 'IN_REVIEW');
-    return { ...item, allowedActions: isDecidable ? (['ASSIGN', 'RESOLVE'] as const) : [] };
+    const isOpen = item.status === 'OPEN' || item.status === 'IN_REVIEW';
+    const actions = canResolve ? (['ASSIGN', 'RESOLVE'] as const) : (['RESOLVE'] as const);
+    return { ...item, allowedActions: canDecide && isOpen ? actions : [] };
   };
   return [
     http.get(DISCREPANCIES_PATH, ({ request }) => {
@@ -78,10 +80,13 @@ export function createDiscrepancyHandlers(permissions: readonly Permission[], us
     }),
     http.post(`${DISCREPANCIES_PATH}/:id/resolve`, async ({ params, request }) => {
       const item = findMockDiscrepancy(params.id);
-      if (!canResolve) return problem(403, 'ACCESS_DENIED');
+      if (!canDecide) return problem(403, 'ACCESS_DENIED');
       if (item === undefined) return problem(404, 'DISCREPANCY_NOT_FOUND');
       const body = readResolve(await request.json());
       if (body === undefined) return problem(400, 'INVALID_REQUEST');
+      const isClaimDecision =
+        body.resolution === 'CLAIM_JUSTIFIED' || body.resolution === 'CLAIM_UNJUSTIFIED';
+      if (!canResolve && !isClaimDecision) return problem(403, 'ACCESS_DENIED');
       if (item.status !== 'OPEN' && item.status !== 'IN_REVIEW') {
         return problem(409, 'DISCREPANCY_NOT_OPEN');
       }

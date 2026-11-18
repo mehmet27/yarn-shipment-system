@@ -40,7 +40,7 @@ export function DiscrepancyDetailPage() {
             <AssignToMeButton discrepancyId={discrepancy.id} assigneeId={discrepancy.assigneeId} />
           )}
           {discrepancy.allowedActions?.includes('RESOLVE') && (
-            <ResolveForm discrepancyId={discrepancy.id} />
+            <ResolveForm discrepancyId={discrepancy.id} shipmentId={discrepancy.shipmentId} />
           )}
           <ActivityList discrepancyId={discrepancy.id} />
         </Stack>

@@ -346,6 +346,32 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     },
   );
 
+  await mudur.adim(
+    'müdür: kalite itirazını görür; yalnız haklı / haksız kararı verebilir, atama ve sorumluluk kararı yok',
+    async () => {
+      await mudur.sayfa.goto('/panel/uyusmazliklar');
+      await mudur.sayfa.locator('main a[href*="uyusmazliklar/"]').first().click();
+      await expect(mudur.sayfa.getByRole('heading', { name: 'Karar ver' })).toBeVisible();
+      mudur.kontrol(
+        'müdürde "Bana ata" düğmesi olmamalı',
+        (await mudur.sayfa.getByRole('button', { name: 'Bana ata' }).count()) === 0,
+      );
+      await mudur.sayfa
+        .getByLabel(/^Karar/)
+        .first()
+        .click();
+      const secenekler = await mudur.sayfa.locator('[role=option]:visible').allInnerTexts();
+      mudur.kontrol(
+        'seçenekler yalnız "Haklı" ve "Haksız" (fatura bekleyen dosyada "Haklı, faturalandı") olmalı',
+        secenekler.length > 0 &&
+          secenekler.every((s) => /^(Haklı, faturalandı|Haklı|Haksız)$/.test(s.trim())) &&
+          secenekler.some((s) => s.trim() === 'Haksız'),
+        secenekler.join(' | '),
+      );
+      await mudur.sayfa.keyboard.press('Escape');
+    },
+  );
+
   await kalite.adim('kalite: lab kontrolü beklerken karar verilememeli', async () => {
     await kalite.sayfa.goto('/panel/uyusmazliklar');
     await kalite.sayfa.locator('main a[href*="uyusmazliklar/"]').first().click();

@@ -5,19 +5,61 @@ import { parseKg, pctInputToRate, sumKg } from '@iplik/units';
 export const MAX_FIRE_PCT = 20;
 
 /** i18n anahtarı (`stock.draftErrors.*`). */
-export type StockDraftError = 'required' | 'invalidKg' | 'invalidRate' | 'invalidRollCount';
+export type StockDraftError =
+  'required' | 'invalidKg' | 'invalidRate' | 'invalidRollCount' | 'invalidLotNo' | 'invalidWaybill';
 
 /** İplik, Tanımlar'daki aktif iplik listesinden seçilir; serbest metin yoktur. */
 export type YarnLineDraft = { product: MasterOption | undefined; netKg: string };
-export type ReceiptDraft = { product: MasterOption | undefined; netKg: string; note: string };
-export const EMPTY_RECEIPT_DRAFT: ReceiptDraft = { product: undefined, netKg: '', note: '' };
+/** Parti numarası yazılırsa partiye bağlanır; parti ilk kez yazılıyorsa kalite sınıfı da seçilir. */
+export type ReceiptDraft = {
+  product: MasterOption | undefined;
+  supplier: MasterOption | undefined;
+  netKg: string;
+  lotNo: string;
+  qualityGrade: MasterOption | undefined;
+  waybillNo: string;
+  note: string;
+};
+export const EMPTY_RECEIPT_DRAFT: ReceiptDraft = {
+  product: undefined,
+  supplier: undefined,
+  netKg: '',
+  lotNo: '',
+  qualityGrade: undefined,
+  waybillNo: '',
+  note: '',
+};
+
+/** Sunucudaki parti numarası kuralının aynısı: harf/rakamla başlar, en çok 40 karakter, yalnızca A-Z 0-9 + . _ / -. */
+const LOT_NO_PATTERN = /^[A-Z0-9][A-Z0-9+._/-]{0,39}$/;
+const MAX_WAYBILL_LENGTH = 128;
+
+/** Parti, irsaliye ve not: boş olanlar isteğe yazılmaz; geçersizse hata anahtarı. */
+function toReceiptOptionals(
+  draft: ReceiptDraft,
+): Pick<YarnReceiptRequest, 'lotNo' | 'qualityGradeId' | 'waybillNo' | 'note'> | StockDraftError {
+  const lotNo = draft.lotNo.trim().toUpperCase();
+  if (lotNo !== '' && !LOT_NO_PATTERN.test(lotNo)) return 'invalidLotNo';
+  const waybillNo = draft.waybillNo.trim();
+  if (waybillNo.length > MAX_WAYBILL_LENGTH) return 'invalidWaybill';
+  const note = draft.note.trim();
+  return {
+    ...(lotNo === '' ? {} : { lotNo }),
+    ...(lotNo === '' || draft.qualityGrade === undefined
+      ? {}
+      : { qualityGradeId: draft.qualityGrade.value }),
+    ...(waybillNo === '' ? {} : { waybillNo }),
+    ...(note === '' ? {} : { note }),
+  };
+}
 
 export function toReceiptRequest(draft: ReceiptDraft): YarnReceiptRequest | StockDraftError {
   const netKg = parseKg(draft.netKg);
-  if (draft.product === undefined) return 'required';
+  if (draft.product === undefined || draft.supplier === undefined) return 'required';
   if (netKg === undefined) return 'invalidKg';
-  const note = draft.note.trim();
-  return { productId: draft.product.value, netKg, ...(note === '' ? {} : { note }) };
+  const optionals = toReceiptOptionals(draft);
+  if (typeof optionals === 'string') return optionals;
+  return { productId: draft.product.value, supplierId: draft.supplier.value, netKg, ...optionals };
 }
 
 export type ProductionDraft = {

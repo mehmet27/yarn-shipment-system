@@ -6,6 +6,7 @@ import { formatKilograms } from '../format';
 import { useYarnVsFabricReport } from '../hooks/useFaconReports';
 import { useCentralStockTotals, useSubcontractorYarn } from '../hooks/useStockOverview';
 import { AmountOverview } from './AmountOverview';
+import { SupplierReceipts } from './SupplierReceipts';
 import { CardBleed } from './CardBleed';
 import { StatCard } from './StatCard';
 import { StatGrid } from './StatGrid';
@@ -58,6 +59,11 @@ export function StockOverview({ params }: { params: GetDashboardParams }) {
           </StatGrid>
         </CardBleed>
       </SectionCard>
+      {central === undefined ? null : (
+        <SectionCard title={t('stock.suppliers.title')} icon="download">
+          <SupplierReceipts suppliers={central.suppliers} />
+        </SectionCard>
+      )}
       <AmountOverview params={params} />
     </>
   );

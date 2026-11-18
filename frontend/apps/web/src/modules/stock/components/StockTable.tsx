@@ -1,6 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import type { CentralStock } from '@iplik/api-client/central-stock';
 import { Alert, Stack, Title } from '@iplik/ui';
+import { SupplierReceipts } from '@/modules/report';
 import { MovementRows } from './MovementRows';
 import { StockRows } from './StockRows';
 import { StockSummary } from './StockSummary';
@@ -20,6 +21,8 @@ export function StockTable({ stock }: { stock: CentralStock }) {
         <Alert color="yellow">{`${t('stock.negativeWarning')} (${negative.join(', ')})`}</Alert>
       )}
       <StockRows stock={stock} />
+      <Title order={2}>{t('stock.suppliers.title')}</Title>
+      <SupplierReceipts suppliers={stock.suppliers} />
       <Title order={2}>{t('stock.movements')}</Title>
       <MovementRows movements={stock.movements} />
     </Stack>

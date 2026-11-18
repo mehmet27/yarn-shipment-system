@@ -26,6 +26,21 @@ export async function iplikSec(sayfa: Page, etiket: string | RegExp, ad: string)
     .click({ timeout: 15_000 });
 }
 
+/** Merkeze iplik girişindeki tedarikçi seçici (Tanımlar > İplik tedarikçileri'ndeki aktif kayıtlar). */
+export async function tedarikciSec(sayfa: Page, ad: string) {
+  await iplikSec(sayfa, /^Tedarikçi\s*\*$/, ad);
+}
+
+/** Merkeze iplik girişi formunda iplik, tedarikçi ve kiloyu doldurur (kaydetmez). */
+export async function iplikGirisiDoldur(
+  sayfa: Page,
+  alanlar: { iplik: string; tedarikci: string; kg: string },
+) {
+  await iplikSec(sayfa, /İplik cinsi/, alanlar.iplik);
+  await tedarikciSec(sayfa, alanlar.tedarikci);
+  await sayfa.getByLabel(/Gelen net kg/).fill(alanlar.kg);
+}
+
 /** Sunucuya yüklenebilecek, sahte ama gerçekçi bir JPEG (kantar fişi, irsaliye, itiraz fotoğrafı). */
 export async function resim(sayfa: Page, tohum = 1): Promise<Buffer> {
   // Her fotoğraf benzersiz olmalı: aynı dosyanın yeniden yüklenmesi sistemde 'kanıt tekrar kullanımı' olayı üretir.

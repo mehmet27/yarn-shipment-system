@@ -3,6 +3,7 @@ import { Alert, Button, SectionCard, SimpleGrid, Stack, Text, TextInput } from '
 import { MasterSelect } from '@/modules/shipment';
 import { stockErrorKey } from '../stockErrors';
 import { useReceiptSubmit } from '../useReceiptSubmit';
+import { ReceiptLotFields } from './ReceiptLotFields';
 
 /** Merkeze gelen ipliği stoğa yazar. */
 export function YarnReceiptForm() {
@@ -28,8 +29,21 @@ export function YarnReceiptForm() {
             {...field('netKg')}
           />
         </SimpleGrid>
+        <MasterSelect
+          kind="supplier"
+          label={t('stock.receipt.supplier')}
+          isRequired
+          value={draft.supplier}
+          onChange={(supplier) => {
+            setDraft((current) => ({ ...current, supplier }));
+          }}
+        />
         <Text size="xs" c="dimmed">
           {t('stock.receipt.yarnHint')}
+        </Text>
+        <ReceiptLotFields draft={draft} setDraft={setDraft} field={field} />
+        <Text size="xs" c="dimmed">
+          {t('stock.receipt.lotHint')}
         </Text>
         <TextInput label={t('stock.receipt.note')} {...field('note')} />
         {error !== undefined && <Alert color="red">{t(`stock.draftErrors.${error}`)}</Alert>}

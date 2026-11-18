@@ -7,6 +7,7 @@ import type {
 } from '@iplik/api-client/settlements';
 import type { Kilogram } from '@iplik/units';
 import { parseKg, pctInputToRate, sumKg } from '@iplik/units';
+import type { MasterOption } from '../hooks/useMasterOptions';
 import { exceedsRemaining } from './fabricLimits';
 
 export const MAX_FIRE_PCT = 20;
@@ -88,13 +89,14 @@ export function toFabricRequest(
 
 export type YarnReturnDraft = {
   yarnType: string;
-  lotId: string;
+  /** Parti, Partiler'den (merkeze iplik girişinde yazılan partiler dahil) seçilir. */
+  lot: MasterOption | undefined;
   netKg: string;
   waybillNo: string;
 };
 export const EMPTY_RETURN_DRAFT: YarnReturnDraft = {
   yarnType: '',
-  lotId: '',
+  lot: undefined,
   netKg: '',
   waybillNo: '',
 };
@@ -103,12 +105,11 @@ export function toReturnRequest(draft: YarnReturnDraft): YarnReturnRequest | Dra
   const netKg = parseKg(draft.netKg);
   if (draft.yarnType.trim() === '') return 'required';
   if (netKg === undefined) return 'invalidKg';
-  const lotId = draft.lotId.trim();
   const waybillNo = draft.waybillNo.trim();
   return {
     yarnType: draft.yarnType.trim(),
     netKg,
-    ...(lotId === '' ? {} : { lotId }),
+    ...(draft.lot === undefined ? {} : { lotId: draft.lot.value }),
     ...(waybillNo === '' ? {} : { waybillNo }),
   };
 }

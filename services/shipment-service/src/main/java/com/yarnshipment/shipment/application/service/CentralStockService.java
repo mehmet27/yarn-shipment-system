@@ -5,7 +5,6 @@ import com.yarnshipment.shipment.application.port.in.stock.CentralStockOverview;
 import com.yarnshipment.shipment.application.port.in.stock.CentralStockRow;
 import com.yarnshipment.shipment.application.port.in.stock.GetCentralStockUseCase;
 import com.yarnshipment.shipment.application.port.in.stock.RecordCentralProductionUseCase;
-import com.yarnshipment.shipment.application.port.in.stock.RecordYarnReceiptUseCase;
 import com.yarnshipment.shipment.application.port.out.ledger.CentralStockPort;
 import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.balance.Kilograms;
@@ -26,13 +25,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Merkez iplik stoku: giriş eklenir, fasoncuya sevkiyat tamamlanınca düşer (defter kancası) ve merkez fabrikada
+ * Merkez iplik stoku: fasoncuya sevkiyat tamamlanınca düşer (defter kancası) ve merkez fabrikada
  * üretilen kumaş tükettiği ipliği fire ile düşer. Stok eksiye düşse de kayıt yapılır (doğrudan fasoncuya giden
  * ipliğin girişi henüz yapılmamış olabilir); ekran eksi stoğu uyarır.
  */
 @Service
-public class CentralStockService
-        implements RecordYarnReceiptUseCase, RecordCentralProductionUseCase, GetCentralStockUseCase {
+public class CentralStockService implements RecordCentralProductionUseCase, GetCentralStockUseCase {
 
     private static final int RECENT_LIMIT = 50;
 
@@ -46,19 +44,6 @@ public class CentralStockService
         this.products = new ActiveYarnProducts(stock);
         this.events = events;
         this.clock = clock;
-    }
-
-    @Override
-    @Transactional
-    public CentralStockMovement recordYarnReceipt(RecordYarnReceiptUseCase.Command command) {
-        String yarnName = products.nameOf(command.productId(), "productId");
-        CentralStockMovement receipt = CentralStockMovement.receipt(
-                new CentralStockMovement.Receipt(command.productId(), yarnName, command.netKg(), command.note()),
-                clock.instant(),
-                command.actor().userId());
-        stock.saveReceipt(receipt);
-        events.yarnReceiptRecorded(receipt);
-        return receipt;
     }
 
     @Override
@@ -111,6 +96,11 @@ public class CentralStockService
         List<CentralStockRow> rows = stock.findStock();
         BigDecimal total = rows.stream().map(CentralStockRow::stockKg).reduce(Kilograms.ZERO, BigDecimal::add);
         return new CentralStockOverview(
-                rows, total, stock.findProducedFabricKg(), stock.findYarnFlow(), stock.findRecent(RECENT_LIMIT));
+                rows,
+                total,
+                stock.findProducedFabricKg(),
+                stock.findYarnFlow(),
+                stock.findRecent(RECENT_LIMIT),
+                stock.findSupplierReceipts());
     }
 }

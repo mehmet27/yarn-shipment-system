@@ -1515,9 +1515,14 @@
     "receipt": {
       "title": "Merkeze iplik girişi",
       "yarnType": "İplik cinsi",
-      "yarnHint": "İplik cinsi Tanımlar'daki aktif iplikler arasından seçilir; listede yoksa müdür Tanımlar'dan iplik eklemelidir.",
+      "yarnHint": "İplik cinsi ve tedarikçi Tanımlar'daki aktif kayıtlardan seçilir; listede yoksa müdür Tanımlar'dan eklemelidir.",
+      "supplier": "Tedarikçi",
       "netKg": "Gelen net kg",
-      "note": "Not (irsaliye vb.)",
+      "lotNo": "Parti no (isteğe bağlı)",
+      "waybillNo": "Tedarikçi irsaliye no (isteğe bağlı)",
+      "qualityGrade": "Kalite sınıfı (yeni parti için)",
+      "lotHint": "Parti no yazarsanız parti kaydedilir ve sevkiyatta, iplik dönüşünde bu partiyi seçebilirsiniz. Parti ilk kez yazılıyorsa kalite sınıfını da seçin.",
+      "note": "Not",
       "submit": "İplik girişini kaydet",
       "saved": "İplik girişi kaydedildi."
     },
@@ -1537,15 +1542,27 @@
       "submit": "Kumaşı kaydet",
       "saved": "Kumaş girişi kaydedildi."
     },
+    "suppliers": {
+      "title": "Tedarikçiden gelen iplik",
+      "supplier": "Tedarikçi",
+      "receivedKg": "Gelen kg",
+      "empty": "Henüz tedarikçi bilgisiyle iplik girişi yok."
+    },
     "draftErrors": {
       "required": "Zorunlu alanları doldurun.",
       "invalidKg": "Kilo sıfırdan büyük, en çok 3 ondalıklı ve en çok 100.000 olmalı.",
       "invalidRate": "Fire yüzdesi 0 ile 20 arasında olmalı.",
+      "invalidLotNo": "Parti no harf veya rakamla başlamalı; yalnızca harf, rakam ve + . _ / - içerebilir (en çok 40 karakter).",
+      "invalidWaybill": "İrsaliye no en çok 128 karakter olabilir.",
       "invalidRollCount": "Top sayısı pozitif tam sayı olmalı."
     },
     "errors": {
       "invalid": "Girilen değerler geçersiz: kilo sıfırdan büyük ve en çok 100.000 olmalı.",
       "insufficient": "Merkez stokta bu iplikten yeterli kilo yok. Önce 'Merkeze iplik girişi' ile ipliği girin; iplik cinsi girişteki yazımla aynı olmalı.",
+      "lotGradeRequired": "Bu parti no ilk kez giriliyor; partinin kalite sınıfını seçin.",
+      "lotOtherYarn": "Bu parti no başka bir iplik cinsine ait.",
+      "lotOtherSupplier": "Bu parti no başka bir tedarikçiye ait.",
+      "lotNoSite": "Parti açabileceğiniz bir lokasyonunuz yok; parti no'suz kaydedin ya da müdüre bildirin.",
       "unknown": "Kayıt yapılamadı, tekrar deneyin."
     },
     "negativeWarning": "Bazı iplik cinslerinde stok eksiye düştü; doğrudan fasoncuya giden ipliğin girişi eksik olabilir.",

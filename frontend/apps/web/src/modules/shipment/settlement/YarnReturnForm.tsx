@@ -1,6 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, SectionCard, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import { useState } from 'react';
+import { MasterSelect } from '../create/MasterSelect';
 import { useRecordYarnReturn } from './hooks';
 import type { DraftError } from './settlementDraft';
 import { toReturnRequest } from './settlementDraft';
@@ -11,7 +12,7 @@ const NUMBER_STYLES = { input: { textAlign: 'right' } } as const;
 
 export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
-  const { draft, field, reset } = useReturnDraft();
+  const { draft, field, setLot, reset } = useReturnDraft();
   const [error, setError] = useState<DraftError>();
   const mutation = useRecordYarnReturn(shipmentId);
   const submit = () => {
@@ -24,7 +25,12 @@ export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
       <Stack>
         <SimpleGrid cols={{ base: 1, sm: 2 }}>
           <TextInput label={t('settlement.yarn.yarnType')} withAsterisk {...field('yarnType')} />
-          <TextInput label={t('settlement.yarn.lotId')} {...field('lotId')} />
+          <MasterSelect
+            kind="lot"
+            label={t('settlement.yarn.lotId')}
+            value={draft.lot}
+            onChange={setLot}
+          />
           <TextInput
             label={t('settlement.yarn.netKg')}
             inputMode="decimal"

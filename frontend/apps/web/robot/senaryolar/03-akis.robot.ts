@@ -3,12 +3,13 @@ import type { Robot } from '../support/robot';
 import {
   fiyatYaz,
   iplikTanimla,
+  tedarikciTanimla,
   kararVer,
   kumasFormuDoldur,
   kumasGir,
   tartiyiOnayla,
 } from '../support/akis';
-import { damga, iplikSec, resim, sec } from '../support/yardimci';
+import { damga, iplikGirisiDoldur, iplikSec, resim, sec } from '../support/yardimci';
 
 type FireDosyasi = { fireRate: string; sentKg: string; fabricKg: string; status: string };
 type Sevkiyat = { fireRate: string; status: string };
@@ -22,6 +23,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
   giris,
 }) => {
   const iplik = damga();
+  const tedarikci = damga();
   const depo = await giris('depo');
   const kalite = await giris('kalite');
   const mudur = await giris('mudur');
@@ -34,14 +36,14 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     "müdür: ipliği Tanımlar'a ekler (stok girişi yalnızca tanımlı iplikle)",
     async () => {
       await iplikTanimla(mudur, iplik);
+      await tedarikciTanimla(mudur, tedarikci);
     },
   );
 
   await depo.adim('depo: merkeze iplik girişi (listeden seçim)', async () => {
     await depo.sayfa.goto('/panel/merkez-stok');
     await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
-    await iplikSec(depo.sayfa, /İplik cinsi/, iplik);
-    await depo.sayfa.getByLabel(/Gelen net kg/).fill('200');
+    await iplikGirisiDoldur(depo.sayfa, { iplik, tedarikci, kg: '200' });
     await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
     await depo.sayfa.getByText('İplik girişi kaydedildi.').waitFor();
     await depo.sayfa.getByRole('tab', { name: 'Eldeki iplik' }).click();

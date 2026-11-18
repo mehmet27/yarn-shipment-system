@@ -102,10 +102,10 @@ describe('toReturnRequest', () => {
       toReturnRequest({
         yarnType: '30/1',
         netKg: '5,5',
-        lotId: ' L1 ',
+        lot: { value: 'lot-1', label: 'L1' },
         waybillNo: 'W1',
       }),
-    ).toMatchObject({ lotId: 'L1', waybillNo: 'W1', netKg: '5.500' });
+    ).toMatchObject({ lotId: 'lot-1', waybillNo: 'W1', netKg: '5.500' });
   });
 
   it('eksik cins ve geçersiz kiloyu reddeder', () => {

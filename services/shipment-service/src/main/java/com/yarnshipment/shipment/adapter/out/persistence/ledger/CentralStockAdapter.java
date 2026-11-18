@@ -4,8 +4,11 @@ import com.yarnshipment.shipment.application.port.in.stock.CentralStockRow;
 import com.yarnshipment.shipment.application.port.in.stock.YarnFlow;
 import com.yarnshipment.shipment.application.port.out.ledger.CentralStockPort;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
+import com.yarnshipment.shipment.domain.stock.CentralStockEntry;
 import com.yarnshipment.shipment.domain.stock.CentralStockKind;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
+import com.yarnshipment.shipment.domain.stock.ReceiptDetails;
+import com.yarnshipment.shipment.domain.stock.SupplierReceipt;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,7 +17,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
@@ -24,9 +29,10 @@ final class CentralStockAdapter implements CentralStockPort {
 
     private static final String INSERT_MOVEMENT = """
             INSERT INTO central_stock_movement (id, product_id, yarn_type, kind, net_kg, production_id, fabric_kg, note,
-                                                occurred_at, created_by, source_ref)
+                                                occurred_at, created_by, source_ref, supplier_id, supplier_name,
+                                                lot_id, waybill_no)
             VALUES (:id, :productId, :yarnType, :kind, :netKg, :productionId, :fabricKg, :note, :occurredAt, :createdBy,
-                    :sourceRef)""";
+                    :sourceRef, :supplierId, :supplierName, :lotId, :waybillNo)""";
     private static final String INSERT_PRODUCTION = """
             INSERT INTO fabric_lot (id, source, fabric_type, net_kg, fire_rate, roll_count, waybill_no, occurred_at,
                                     created_by)
@@ -61,9 +67,23 @@ final class CentralStockAdapter implements CentralStockPort {
                   WHERE kind = 'PRODUCTION') AS used_kg""";
     private static final String RECENT = """
             SELECT m.id, m.product_id, coalesce(p.name, m.yarn_type) AS yarn_type, m.kind, m.net_kg, m.production_id,
-                   m.fabric_kg, m.note, m.occurred_at, m.created_by
-            FROM central_stock_movement m LEFT JOIN md_product p ON p.id = m.product_id
+                   m.fabric_kg, m.note, m.occurred_at, m.created_by, m.supplier_id,
+                   coalesce(sup.name, m.supplier_name) AS supplier_name, m.lot_id, l.lot_no, m.waybill_no
+            FROM central_stock_movement m
+            LEFT JOIN md_product p ON p.id = m.product_id
+            LEFT JOIN md_yarn_supplier sup ON sup.id = m.supplier_id
+            LEFT JOIN md_production_lot l ON l.id = m.lot_id
             ORDER BY m.occurred_at DESC, m.id DESC LIMIT ?""";
+    private static final String ACTIVE_SUPPLIER = "SELECT name FROM md_yarn_supplier WHERE id = :id AND active";
+    private static final String SUPPLIER_RECEIPTS = """
+            SELECT m.supplier_id, coalesce(sup.name, m.supplier_name) AS supplier_name, m.product_id,
+                   coalesce(p.name, m.yarn_type) AS yarn_type, sum(m.net_kg) AS received_kg
+            FROM central_stock_movement m
+            LEFT JOIN md_product p ON p.id = m.product_id
+            LEFT JOIN md_yarn_supplier sup ON sup.id = m.supplier_id
+            WHERE m.kind = 'YARN_RECEIPT' AND m.supplier_name IS NOT NULL
+            GROUP BY m.supplier_id, coalesce(sup.name, m.supplier_name), m.product_id, coalesce(p.name, m.yarn_type)
+            ORDER BY lower(coalesce(sup.name, m.supplier_name)), sum(m.net_kg) DESC, coalesce(p.name, m.yarn_type)""";
 
     private final JdbcClient jdbc;
 
@@ -72,8 +92,8 @@ final class CentralStockAdapter implements CentralStockPort {
     }
 
     @Override
-    public void saveReceipt(CentralStockMovement receipt) {
-        insert(receipt, "RECEIPT:" + receipt.id());
+    public void saveReceipt(CentralStockMovement receipt, @Nullable ReceiptDetails details) {
+        insert(receipt, "RECEIPT:" + receipt.id(), details);
     }
 
     @Override
@@ -88,7 +108,7 @@ final class CentralStockAdapter implements CentralStockPort {
                 .param("producedAt", Timestamp.from(production.producedAt()))
                 .param("createdBy", production.createdBy())
                 .update();
-        consumptions.forEach(movement -> insert(movement, "PRODUCTION:" + movement.id()));
+        consumptions.forEach(movement -> insert(movement, "PRODUCTION:" + movement.id(), null));
     }
 
     @Override
@@ -145,8 +165,38 @@ final class CentralStockAdapter implements CentralStockPort {
     }
 
     @Override
-    public List<CentralStockMovement> findRecent(int limit) {
-        return jdbc.sql(RECENT).param(limit).query((rs, i) -> toMovement(rs)).list();
+    public List<CentralStockEntry> findRecent(int limit) {
+        return jdbc.sql(RECENT).param(limit).query((rs, i) -> toEntry(rs)).list();
+    }
+
+    @Override
+    public Optional<String> findActiveSupplierName(UUID supplierId) {
+        return jdbc.sql(ACTIVE_SUPPLIER).param("id", supplierId).query(String.class).optional();
+    }
+
+    @Override
+    public List<SupplierReceipt> findSupplierReceipts() {
+        return jdbc.sql(SUPPLIER_RECEIPTS)
+                .query((rs, i) -> new SupplierReceipt(
+                        rs.getObject("supplier_id", UUID.class),
+                        rs.getString("supplier_name"),
+                        rs.getObject("product_id", UUID.class),
+                        rs.getString("yarn_type"),
+                        rs.getBigDecimal("received_kg")))
+                .list();
+    }
+
+    private static CentralStockEntry toEntry(ResultSet rs) throws SQLException {
+        String supplierName = rs.getString("supplier_name");
+        ReceiptDetails details = supplierName == null
+                ? null
+                : new ReceiptDetails(
+                        rs.getObject("supplier_id", UUID.class),
+                        supplierName,
+                        rs.getObject("lot_id", UUID.class),
+                        rs.getString("lot_no"),
+                        rs.getString("waybill_no"));
+        return new CentralStockEntry(toMovement(rs), details);
     }
 
     private static CentralStockMovement toMovement(ResultSet rs) throws SQLException {
@@ -163,7 +213,7 @@ final class CentralStockAdapter implements CentralStockPort {
                 rs.getObject("created_by", UUID.class));
     }
 
-    private void insert(CentralStockMovement movement, String sourceRef) {
+    private void insert(CentralStockMovement movement, String sourceRef, @Nullable ReceiptDetails details) {
         jdbc.sql(INSERT_MOVEMENT)
                 .param("id", movement.id())
                 .param("productId", movement.productId())
@@ -176,6 +226,10 @@ final class CentralStockAdapter implements CentralStockPort {
                 .param("occurredAt", Timestamp.from(movement.occurredAt()))
                 .param("createdBy", movement.createdBy())
                 .param("sourceRef", sourceRef)
+                .param("supplierId", details == null ? null : details.supplierId())
+                .param("supplierName", details == null ? null : details.supplierName())
+                .param("lotId", details == null ? null : details.lotId())
+                .param("waybillNo", details == null ? null : details.waybillNo())
                 .update();
     }
 }

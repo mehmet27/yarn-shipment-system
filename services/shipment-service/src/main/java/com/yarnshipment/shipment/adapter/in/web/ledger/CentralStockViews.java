@@ -2,7 +2,9 @@ package com.yarnshipment.shipment.adapter.in.web.ledger;
 
 import com.yarnshipment.shipment.application.port.in.stock.CentralStockOverview;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
+import com.yarnshipment.shipment.domain.stock.CentralStockEntry;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
+import com.yarnshipment.shipment.domain.stock.ReceiptDetails;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -22,7 +24,23 @@ final class CentralStockViews {
             String kind,
             String netKg,
             @Nullable String note,
-            Instant occurredAt) {}
+            Instant occurredAt,
+            @Nullable ReceiptView receipt) {}
+
+    /** İplik girişinin tedarikçi bilgisi. */
+    record ReceiptView(
+            @Nullable UUID supplierId,
+            String supplierName,
+            @Nullable UUID lotId,
+            @Nullable String lotNo,
+            @Nullable String waybillNo) {}
+
+    record SupplierReceiptView(
+            @Nullable UUID supplierId,
+            String supplierName,
+            @Nullable UUID productId,
+            String yarnType,
+            String receivedKg) {}
 
     record YarnFlowView(
             String receivedKg, String directTransferKg, String atSubcontractorsKg, String usedInCentralProductionKg) {}
@@ -32,7 +50,8 @@ final class CentralStockViews {
             String totalKg,
             String producedFabricKg,
             YarnFlowView flow,
-            List<CentralStockMovementView> movements) {}
+            List<CentralStockMovementView> movements,
+            List<SupplierReceiptView> suppliers) {}
 
     record CentralProductionView(
             UUID id, String fabricType, String netKg, String fireRate, List<CentralStockMovementView> consumptions) {}
@@ -50,10 +69,36 @@ final class CentralStockViews {
                         BalanceViews.kg(overview.flow().directTransferKg()),
                         BalanceViews.kg(overview.flow().atSubcontractorsKg()),
                         BalanceViews.kg(overview.flow().usedInCentralProductionKg())),
-                overview.recent().stream().map(CentralStockViews::movement).toList());
+                overview.recent().stream().map(CentralStockViews::entry).toList(),
+                overview.suppliers().stream()
+                        .map(row -> new SupplierReceiptView(
+                                row.supplierId(),
+                                row.supplierName(),
+                                row.productId(),
+                                row.yarnType(),
+                                BalanceViews.kg(row.receivedKg())))
+                        .toList());
+    }
+
+    static CentralStockMovementView entry(CentralStockEntry entry) {
+        ReceiptDetails details = entry.receipt();
+        return movement(
+                entry.movement(),
+                details == null
+                        ? null
+                        : new ReceiptView(
+                                details.supplierId(),
+                                details.supplierName(),
+                                details.lotId(),
+                                details.lotNo(),
+                                details.waybillNo()));
     }
 
     static CentralStockMovementView movement(CentralStockMovement movement) {
+        return movement(movement, null);
+    }
+
+    private static CentralStockMovementView movement(CentralStockMovement movement, @Nullable ReceiptView receipt) {
         return new CentralStockMovementView(
                 movement.id(),
                 movement.productId(),
@@ -61,7 +106,8 @@ final class CentralStockViews {
                 movement.kind().name(),
                 BalanceViews.kg(movement.netKg()),
                 movement.note(),
-                movement.occurredAt());
+                movement.occurredAt(),
+                receipt);
     }
 
     static CentralProductionView production(CentralProduction production) {

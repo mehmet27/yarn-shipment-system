@@ -38,7 +38,11 @@ final class LedgerRequests {
     /** Merkeze iplik girişi gövdesi. */
     record YarnReceiptRequest(
             @Nullable UUID productId,
+            @Nullable UUID supplierId,
             @Nullable String netKg,
+            @Nullable String lotNo,
+            @Nullable UUID qualityGradeId,
+            @Nullable String waybillNo,
             @Nullable String note) {}
 
     /** Merkez kumaşın tükettiği iplik tanımı. */

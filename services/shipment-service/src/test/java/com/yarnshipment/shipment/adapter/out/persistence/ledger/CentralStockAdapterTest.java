@@ -8,6 +8,7 @@ import com.yarnshipment.shipment.application.port.in.stock.CentralStockRow;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
 import com.yarnshipment.shipment.domain.stock.ProductShare;
+import com.yarnshipment.shipment.domain.stock.ReceiptDetails;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -102,6 +103,38 @@ class CentralStockAdapterTest {
 
         // then
         assertThat(stockOf(BalanceLedgerAdapter.UNSPECIFIED_YARN)).isEqualByComparingTo("-34032");
+    }
+
+    @Test
+    @DisplayName("Giriş tedarikçi ve irsaliyeyle yazılır; tedarikçi başına gelen iplik toplanır")
+    void shouldSumReceiptsPerSupplier() {
+        // given
+        UUID supplier = UUID.fromString("0192f0a0-0000-7000-8000-00000000e001");
+        jdbc.update(
+                "INSERT INTO md_yarn_supplier (id, name, active, created_at, created_by) VALUES (?, ?, true, now(), ?)",
+                supplier,
+                "Şireci",
+                USER);
+        for (String kg : List.of("100", "50")) {
+            stock.saveReceipt(
+                    CentralStockMovement.receipt(
+                            new CentralStockMovement.Receipt(PRODUCT, YARN, new BigDecimal(kg), null), AT, USER),
+                    new ReceiptDetails(supplier, "Şireci", null, null, "IRS-1"));
+        }
+        stock.saveReceipt(CentralStockMovement.receipt(
+                new CentralStockMovement.Receipt(PRODUCT, YARN, new BigDecimal("7"), null), AT, USER));
+
+        // then
+        assertThat(stock.findSupplierReceipts()).singleElement().satisfies(row -> {
+            assertThat(row.supplierName()).isEqualTo("Şireci");
+            assertThat(row.receivedKg()).isEqualByComparingTo("150");
+        });
+        assertThat(stock.findRecent(RECENT_LIMIT))
+                .anySatisfy(entry -> assertThat(entry.receipt())
+                        .isNotNull()
+                        .extracting(ReceiptDetails::waybillNo)
+                        .isEqualTo("IRS-1"));
+        assertThat(stock.findActiveSupplierName(supplier)).contains("Şireci");
     }
 
     @Test

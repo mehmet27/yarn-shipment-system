@@ -3,18 +3,28 @@ package com.yarnshipment.shipment.application.port.out.ledger;
 import com.yarnshipment.shipment.application.port.in.stock.CentralStockRow;
 import com.yarnshipment.shipment.application.port.in.stock.YarnFlow;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
+import com.yarnshipment.shipment.domain.stock.CentralStockEntry;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
+import com.yarnshipment.shipment.domain.stock.ReceiptDetails;
+import com.yarnshipment.shipment.domain.stock.SupplierReceipt;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /** Merkez iplik stoku defteri. */
 public interface CentralStockPort {
 
-    /** Merkeze iplik girişini yazar. */
-    void saveReceipt(CentralStockMovement receipt);
+    /** Tedarikçisiz iplik girişini (sistem girişi) yazar. */
+    default void saveReceipt(CentralStockMovement receipt) {
+        saveReceipt(receipt, null);
+    }
+
+    /** Merkeze iplik girişini ve tedarikçi bilgisini yazar. */
+    void saveReceipt(CentralStockMovement receipt, @Nullable ReceiptDetails details);
 
     /** Üretimi ve tükettiği iplikleri yazar. */
     void saveProduction(CentralProduction production, List<CentralStockMovement> consumptions);
@@ -33,7 +43,13 @@ public interface CentralStockPort {
     /** Gelen ipliğin merkezde / fasoncularda / üretimde dağılımı. */
     YarnFlow findYarnFlow();
 
-    List<CentralStockMovement> findRecent(int limit);
+    List<CentralStockEntry> findRecent(int limit);
+
+    /** Aktif iplik tedarikçisinin adı; tanım yoksa ya da pasifse boş. */
+    Optional<String> findActiveSupplierName(UUID supplierId);
+
+    /** Tedarikçi ve iplik cinsi başına bugüne kadar gelen iplik. */
+    List<SupplierReceipt> findSupplierReceipts();
 
     /** Merkez fabrikada bugüne kadar üretilen toplam kumaş (kg). */
     BigDecimal findProducedFabricKg();

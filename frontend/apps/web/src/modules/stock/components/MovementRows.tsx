@@ -23,13 +23,16 @@ export function MovementRows({ movements }: { movements: CentralStock['movements
         onChange={setKind}
       />
       <Paper withBorder style={{ overflow: 'hidden' }}>
-        <Table.ScrollContainer minWidth={480}>
+        <Table.ScrollContainer minWidth={720}>
           <Table aria-label={t('stock.movements')}>
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>{t('stock.date')}</Table.Th>
                 <Table.Th style={{ whiteSpace: 'nowrap' }}>{t('stock.kind')}</Table.Th>
                 <Table.Th>{t('stock.yarnType')}</Table.Th>
+                <Table.Th>{t('stock.suppliers.supplier')}</Table.Th>
+                <Table.Th>{t('stock.receipt.lotNo')}</Table.Th>
+                <Table.Th>{t('stock.receipt.waybillNo')}</Table.Th>
                 <Table.Th ta="right">{t('stock.kg')}</Table.Th>
                 <Table.Th>{t('stock.note')}</Table.Th>
               </Table.Tr>

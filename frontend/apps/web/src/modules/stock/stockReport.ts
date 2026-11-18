@@ -5,6 +5,9 @@ import { kg, text } from '@/modules/report';
 
 type Translate = (key: string) => string;
 
+const YARN_TYPE_KEY = 'stock.yarnType';
+const SUPPLIER_KEY = 'stock.suppliers.supplier';
+
 /** Ekrandaki merkez stok ve hareketleri Excel/PDF indirmesi için tablo modeline çevirir. */
 export function stockReportTables(stock: CentralStock, t: Translate): ReportTable[] {
   const { flow } = stock;
@@ -22,16 +25,28 @@ export function stockReportTables(stock: CentralStock, t: Translate): ReportTabl
     },
     {
       title: t('stock.title'),
-      headers: [t('stock.yarnType'), t('stock.stockKg')],
+      headers: [t(YARN_TYPE_KEY), t('stock.stockKg')],
       rows: stock.rows.map((row) => [text(row.yarnType), kg(row.stockKg)]),
       total: [text(t('stock.total')), kg(stock.totalKg)],
+    },
+    {
+      title: t('stock.suppliers.title'),
+      headers: [t(SUPPLIER_KEY), t(YARN_TYPE_KEY), t('stock.suppliers.receivedKg')],
+      rows: stock.suppliers.map((row) => [
+        text(row.supplierName),
+        text(row.yarnType),
+        kg(row.receivedKg),
+      ]),
     },
     {
       title: t('stock.movements'),
       headers: [
         t('stock.date'),
         t('stock.kind'),
-        t('stock.yarnType'),
+        t(YARN_TYPE_KEY),
+        t(SUPPLIER_KEY),
+        t('stock.receipt.lotNo'),
+        t('stock.receipt.waybillNo'),
         t('stock.kg'),
         t('stock.note'),
       ],
@@ -39,6 +54,9 @@ export function stockReportTables(stock: CentralStock, t: Translate): ReportTabl
         text(formatDateTime(move.occurredAt)),
         text(t(`stock.kinds.${move.kind}`)),
         text(move.yarnType),
+        text(move.receipt?.supplierName ?? ''),
+        text(move.receipt?.lotNo ?? ''),
+        text(move.receipt?.waybillNo ?? ''),
         kg(move.netKg),
         text(move.note ?? ''),
       ]),

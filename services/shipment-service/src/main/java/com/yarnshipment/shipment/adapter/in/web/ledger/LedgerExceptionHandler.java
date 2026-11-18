@@ -10,6 +10,7 @@ import com.yarnshipment.shipment.domain.fire.InvalidFireSettlementActionExceptio
 import com.yarnshipment.shipment.domain.stock.CentralStockShortfallException;
 import com.yarnshipment.shipment.domain.stock.InsufficientCentralStockException;
 import com.yarnshipment.shipment.domain.stock.SourceYarnShortageException;
+import com.yarnshipment.shipment.domain.stock.YarnLotConflictException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,11 @@ public final class LedgerExceptionHandler {
         ProblemDetail problem = problems.create(request, HttpStatus.BAD_REQUEST, "INVALID_LEDGER_INPUT");
         problem.setProperty("errors", List.of(Map.of("field", exception.field(), "message", "invalid")));
         return problem;
+    }
+
+    @ExceptionHandler(YarnLotConflictException.class)
+    public ProblemDetail handleYarnLotConflict(YarnLotConflictException exception, HttpServletRequest request) {
+        return problems.create(request, HttpStatus.CONFLICT, exception.code());
     }
 
     @ExceptionHandler(InsufficientCentralStockException.class)

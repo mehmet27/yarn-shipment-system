@@ -4,9 +4,15 @@ import {
   kiloMetni as kg,
   uretimIplikDusumu,
 } from '../kurallar/hesap';
-import { iplikTanimla, kumasGir, tamamlanmisSevkiyat } from '../support/akis';
+import {
+  iplikTanimla,
+  kaliteSinifiTanimla,
+  tedarikciTanimla,
+  kumasGir,
+  tamamlanmisSevkiyat,
+} from '../support/akis';
 import { expect, test } from '../support/robot';
-import { damga, iplikSec } from '../support/yardimci';
+import { damga, iplikGirisiDoldur, iplikSec, sec } from '../support/yardimci';
 
 type Dashboard = {
   shipments: Record<string, number>;
@@ -18,6 +24,12 @@ type Bakiye = {
 };
 type Stok = {
   rows: { yarnType: string; stockKg: string }[];
+  suppliers: { supplierName: string; yarnType: string; receivedKg: string }[];
+  movements: {
+    kind: string;
+    yarnType: string;
+    receipt?: { supplierName: string; lotNo?: string; waybillNo?: string };
+  }[];
   totalKg: string;
   producedFabricKg: string;
 };
@@ -54,6 +66,10 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
   const fasonKalite = await giris('fason-kalite');
   for (const r of [depo, kalite, mudur, fasonKalite]) r.beklenen(/4\d\d (POST|PUT) /);
   const iplik = damga();
+  const tedarikci = damga();
+  const sinif = damga();
+  const parti = `rb-${damga().replaceAll(/\D/g, '')}`;
+  const irsaliye = `IRS-${damga().replaceAll(/\D/g, '')}`;
   const satirBul = (b: Bakiye) =>
     b.items.find((i) => i.yarnType === iplik && i.subcontractorTitle === 'Başka Dokuma Ltd.');
 
@@ -75,13 +91,17 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
 
   await mudur.adim("müdür: ipliği Tanımlar'a ekler", async () => {
     await iplikTanimla(mudur, iplik);
+    await tedarikciTanimla(mudur, tedarikci);
+    await kaliteSinifiTanimla(mudur, sinif);
   });
 
   await depo.adim('doğrula: iplik girişi stoğu tam 200 kg artırır', async () => {
     await depo.sayfa.goto('/panel/merkez-stok');
     await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
-    await iplikSec(depo.sayfa, /İplik cinsi/, iplik);
-    await depo.sayfa.getByLabel(/Gelen net kg/).fill('200');
+    await iplikGirisiDoldur(depo.sayfa, { iplik, tedarikci, kg: '200' });
+    await depo.sayfa.getByLabel(/^Parti no/).fill(parti);
+    await sec(depo.sayfa, /^Kalite sınıfı/, sinif);
+    await depo.sayfa.getByLabel(/Tedarikçi irsaliye no/).fill(irsaliye);
     await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
     await depo.sayfa.getByRole('tab', { name: 'Eldeki iplik' }).click();
     await expect(depo.sayfa.locator('main')).toContainText(`${iplik}`);
@@ -89,6 +109,32 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
     depo.kontrol(
       'API: iplik stoğu 200 kg',
       yakin(Number(stok.rows.find((r) => r.yarnType === iplik)?.stockKg ?? 0), 200),
+    );
+    const tedarikciSatiri = stok.suppliers.find(
+      (r) => r.supplierName === tedarikci && r.yarnType === iplik,
+    );
+    depo.kontrol(
+      'API: tedarikçiden gelen iplik 200 kg',
+      yakin(Number(tedarikciSatiri?.receivedKg ?? 0), 200),
+      JSON.stringify(tedarikciSatiri),
+    );
+    const giris = stok.movements.find(
+      (m) => m.kind === 'YARN_RECEIPT' && m.receipt?.supplierName === tedarikci,
+    );
+    depo.kontrol(
+      'API: giriş hareketi parti (büyük harfe çevrilmiş) ve irsaliye no taşımalı',
+      giris?.receipt?.lotNo === parti.toUpperCase() && giris.receipt.waybillNo === irsaliye,
+      JSON.stringify(giris?.receipt),
+    );
+    const partiler = await mudur.api<{ items: { lotNo: string; yarnSupplierName?: string }[] }>(
+      `/api/v1/master-data/lots?q=${encodeURIComponent(parti)}`,
+    );
+    depo.kontrol(
+      "giriş partiyi Partiler'e açmalı (tedarikçisiyle)",
+      partiler.items.some(
+        (p) => p.lotNo === parti.toUpperCase() && p.yarnSupplierName === tedarikci,
+      ),
+      JSON.stringify(partiler.items),
     );
     depo.kontrol(
       'API: toplam stok 200 kg arttı',

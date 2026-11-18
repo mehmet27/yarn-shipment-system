@@ -244,3 +244,49 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
     );
   });
 });
+
+/**
+ * Kaldırılan ve tek kurala bağlanan şeyler: sevkiyat dosyasında "Düzeltmeler" sekmesi yoktur; kilolar her ekranda tek Türkçe
+ * biçimle yazılır (binlik nokta, ondalık virgül, gereksiz sıfır yok: 2.143,814 kg, 264,5 kg, 700 kg).
+ */
+test('Sadeleştirme: Düzeltmeler sekmesi yok, kilolar tek biçimde yazılır', async ({ giris }) => {
+  const depo = await giris('depo');
+  const mudur = await giris('mudur');
+  for (const r of [depo, mudur]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
+  const iplik = damga();
+  await iplikTanimla(mudur, iplik);
+  const id = await tamamlanmisSevkiyat({ depo, mudur }, iplik, '1500', '3');
+
+  await mudur.adim('sevkiyat dosyasında "Düzeltmeler" sekmesi yok', async () => {
+    await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
+    await mudur.sayfa.waitForLoadState('networkidle');
+    await expect(mudur.sayfa.getByRole('tab', { name: 'Düzeltmeler' })).toHaveCount(0);
+  });
+
+  // Gereksiz sıfırlı (1.234,500 kg), noktalı ondalık (12.5 kg) ya da binlik ayırıcısız (1500 kg) yazım hatadır.
+  const HATALI_KILO = /(\d,\d*0 kg|\d\.\d{1,2} kg|(?<![\d.,])\d{4,}(,\d+)? kg)/g;
+  const ekranlar = [
+    `/panel/sevkiyat/${id}`,
+    '/panel/bakiye',
+    '/panel/merkez-stok',
+    '/panel/faturalanacaklar',
+    '/panel/raporlar',
+  ];
+  for (const yol of ekranlar)
+    await mudur.adim(`kilo biçimi: ${yol}`, async () => {
+      await mudur.sayfa.goto(yol);
+      await mudur.sayfa.waitForLoadState('networkidle');
+      const sekmeler = await mudur.sayfa.getByRole('tab').all();
+      const metinler = [await mudur.sayfa.locator('main').innerText()];
+      for (const sekme of sekmeler) {
+        await sekme.click();
+        metinler.push(await mudur.sayfa.locator('main').innerText());
+      }
+      const hatali = [...new Set(metinler.flatMap((m) => m.match(HATALI_KILO) ?? []))];
+      mudur.kontrol(
+        `${yol}: kilolar tek biçimle yazılmalı (1.234,5 kg)`,
+        hatali.length === 0,
+        hatali.join(' | '),
+      );
+    });
+});

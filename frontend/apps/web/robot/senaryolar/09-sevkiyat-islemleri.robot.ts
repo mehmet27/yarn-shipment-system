@@ -168,6 +168,11 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
       const once = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
       const kart = await kartAc();
       await kart.getByLabel(/Fatura no/).fill(`F-${iplik}-1`);
+      // Kalandan fazla kilo ekranda reddedilir: neden yazılır, onay sorusu çıkmaz, hiçbir şey kaydedilmez.
+      await kart.getByLabel(/\(kg\)/).fill('9999');
+      await kart.getByRole('button', { name: 'Fatura edildi' }).click();
+      await expect(kart.getByText(/faturası kesilmemiş kilodan fazla olamaz/)).toBeVisible();
+      await expect(kart.getByRole('button', { name: 'Evet, fatura edildi' })).toHaveCount(0);
       await kart.getByLabel(/\(kg\)/).fill('1');
       await kart.getByRole('button', { name: 'Fatura edildi' }).click();
       await kart.getByRole('button', { name: 'Evet, fatura edildi' }).click();
@@ -235,7 +240,8 @@ test('İplik dönüşü ve kanıt geçersiz kılma', async ({ giris }) => {
         'iplik dönüşü formunda Yön seçimi olmamalı',
         (await depo.sayfa.getByLabel('Yön', { exact: true }).count()) === 0,
       );
-      // Sevkiyatta tek iplik gönderildiği için iplik cinsi kendiliğinden seçili gelir.
+      // İplik serbest metin değil, sevkiyatta gönderilenlerden seçilir; tek iplik varsa kendiliğinden seçili gelir.
+      await expect(depo.sayfa.getByLabel(/İplik cinsi/)).not.toHaveValue('');
       await depo.sayfa.getByLabel(/Net kilo/).fill('5000');
       await depo.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
       const mesajlar = await depo.mesajlar();

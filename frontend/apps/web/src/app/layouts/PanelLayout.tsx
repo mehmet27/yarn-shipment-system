@@ -1,14 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import {
-  AppShell,
-  BRAND_GRADIENT,
-  BRAND_SIDEBAR_GRADIENT,
-  Burger,
-  Group,
-  Stack,
-  Text,
-  useDisclosure,
-} from '@iplik/ui';
+import { AppShell, Burger, FRAME_BACKGROUND, Group, Stack, Text, useDisclosure } from '@iplik/ui';
 import { BrandMark } from '@/modules/branding';
 import { Outlet } from 'react-router';
 import { NotificationBell } from './NotificationBell';
@@ -16,9 +7,9 @@ import { PanelNav } from './PanelNav';
 import { UserMenu } from './UserMenu';
 
 const HEADER_HEIGHT_PX = 56;
-const NAVBAR_WIDTH_PX = 248;
+const NAVBAR_WIDTH_PX = 240;
 
-/** Masaüstü kabuğu: koyu marka yan menüsü, gradient üst bar, geniş içerik. */
+/** Masaüstü kabuğu: koyu marka çerçevesi (üst bar ve yan menü aynı düz ton), taş grisi zeminde geniş içerik. */
 export function PanelLayout() {
   const { t } = useTranslation();
   const [isMobileNavOpen, { toggle: toggleMobileNav, close: closeMobileNav }] = useDisclosure();
@@ -33,7 +24,7 @@ export function PanelLayout() {
       }}
       padding="md"
     >
-      <AppShell.Header c="white" style={{ background: BRAND_GRADIENT }}>
+      <AppShell.Header c="white" style={{ background: FRAME_BACKGROUND }}>
         <Group h="100%" px="md" justify="space-between">
           <Group>
             <Burger
@@ -58,9 +49,9 @@ export function PanelLayout() {
           </Group>
         </Group>
       </AppShell.Header>
-      <AppShell.Navbar p="sm" c="white" style={{ background: BRAND_SIDEBAR_GRADIENT, border: 0 }}>
+      <AppShell.Navbar p="sm" c="white" style={{ background: FRAME_BACKGROUND, border: 0 }}>
         <Stack gap={4}>
-          <Text size="xs" fw={700} tt="uppercase" lts="0.08em" c="brand.2" px="sm" py="xs">
+          <Text size="xs" fw={600} c="brand.2" px="sm" py="xs">
             {t('nav.panel')}
           </Text>
           <PanelNav onNavigate={closeMobileNav} />

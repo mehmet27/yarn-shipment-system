@@ -30,7 +30,7 @@ export function StatCard({ label, value, tone = 'neutral', icon, hint }: StatCar
           <Text size="sm" c="dimmed">
             {label}
           </Text>
-          <Text fz={28} fw={700} lh={1.2}>
+          <Text fz={24} fw={600} lh={1.25}>
             {value}
           </Text>
           {hint === undefined ? null : (

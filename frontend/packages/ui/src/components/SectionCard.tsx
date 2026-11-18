@@ -27,8 +27,8 @@ export type SectionCardProps = {
 };
 
 /**
- * Ayrışan bölüm kartı: renkli başlık çubuğu ve beyaz gövde. Sayfadaki bölümlerin birbirinden net ayrılması ve
- * kullanıcıyı "şimdi ne yapıyorum" sorusuna yönlendirmesi içindir.
+ * Bölüm kartı: girintili (gri) başlık şeridi ve beyaz gövde. Olağan bölümler nötrdür; renk yalnızca dikkat isteyen
+ * bölümde (uyarı, hata, bilgi, başarı) başlık şeridine ve sol kenar çizgisine gelir.
  */
 export function SectionCard({
   title,
@@ -40,11 +40,11 @@ export function SectionCard({
   children,
 }: SectionCardProps) {
   const color = TONE_COLOR[tone];
+  const isSignal = tone !== 'brand';
   return (
     <Paper
       withBorder
       radius="md"
-      shadow="xs"
       component="section"
       aria-label={title}
       data-testid={testId}
@@ -56,20 +56,21 @@ export function SectionCard({
         gap="sm"
         px="md"
         py="xs"
-        bg={`${color}.0`}
+        mih={44}
+        bg={isSignal ? `${color}.0` : 'var(--app-inset)'}
         style={{
-          borderBottom: `1px solid var(--mantine-color-${color}-2)`,
-          borderLeft: `4px solid var(--mantine-color-${color}-6)`,
+          borderBottom: `1px solid ${isSignal ? `var(--mantine-color-${color}-2)` : 'var(--app-line)'}`,
+          boxShadow: isSignal ? `inset 3px 0 0 var(--mantine-color-${color}-6)` : undefined,
         }}
       >
         <Group gap="xs" wrap="nowrap" miw={0}>
           {icon === undefined ? null : (
-            <Box c={`${color}.7`} lh={0}>
+            <Box c={isSignal ? `${color}.8` : 'gray.7'} lh={0}>
               <NavIcon name={icon} />
             </Box>
           )}
           <Stack gap={0} miw={0}>
-            <Text fw={700} c={`${color}.9`} size="sm">
+            <Text fw={600} c={isSignal ? `${color}.9` : 'gray.9'} size="sm">
               {title}
             </Text>
             {description === undefined ? null : (

@@ -2,12 +2,12 @@ import type { ShipmentDetail } from '@iplik/api-client';
 import { formatDate, useTranslation } from '@iplik/i18n';
 import { Button, Group, Paper, ProgressSteps, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
 import { Link } from 'react-router';
+import { NextStepBand } from './NextStepBand';
 import { NotDueNotice } from './NotDueNotice';
 import { findDriverName } from './shipmentViews';
 import { useFieldText } from './useFieldText';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
 import { PROGRESS_STATUSES, toProgressDone } from './progressSteps';
-import { toStatusColor } from './statusColor';
 
 export type ShipmentHeaderProps = {
   shipment: ShipmentDetail;
@@ -31,19 +31,15 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
     },
   ];
   return (
-    <Paper
-      withBorder
-      p="md"
-      style={{ borderTop: `4px solid var(--mantine-color-${toStatusColor(shipment.status)}-5)` }}
-    >
-      <Stack>
-        <Group>
-          <Title order={1} size="h2">
-            {shipment.shipmentNo}
-          </Title>
-          <ShipmentStatusBadge status={shipment.status} />
+    <Paper withBorder style={{ overflow: 'hidden' }}>
+      <Stack gap="md" p="md">
+        <Group justify="space-between" gap="sm">
+          <Group gap="sm">
+            <Title order={1}>{shipment.shipmentNo}</Title>
+            <ShipmentStatusBadge status={shipment.status} />
+          </Group>
           {shipment.status !== 'CANCELLED' && (
-            <Button component={Link} to="ambar-cikis-fisi" relative="path" variant="light">
+            <Button component={Link} to="ambar-cikis-fisi" relative="path" variant="default">
               {t('shipment.exitSlip.open')}
             </Button>
           )}
@@ -56,20 +52,18 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
           />
         )}
         <NotDueNotice shipment={shipment} />
-        <Text c="brand.8" fw={600}>
-          {t('shipment.progress.current', { step: t(`shipment.nextStep.${shipment.status}`) })}
-        </Text>
-        <SimpleGrid cols={{ base: 2, md: 4 }}>
-          {facts.map(({ labelKey, value }) => (
-            <Stack key={labelKey} gap={2}>
-              <Text size="sm" c="dimmed">
-                {t(labelKey)}
-              </Text>
-              <Text fw={500}>{value}</Text>
-            </Stack>
-          ))}
-        </SimpleGrid>
       </Stack>
+      <NextStepBand status={shipment.status} />
+      <SimpleGrid cols={{ base: 2, md: 4 }} p="md">
+        {facts.map(({ labelKey, value }) => (
+          <Stack key={labelKey} gap={2}>
+            <Text size="xs" c="dimmed">
+              {t(labelKey)}
+            </Text>
+            <Text fw={500}>{value}</Text>
+          </Stack>
+        ))}
+      </SimpleGrid>
     </Paper>
   );
 }

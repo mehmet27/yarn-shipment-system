@@ -10,7 +10,17 @@ export type EmptyStateProps = {
 /** Boş liste ve "kaydedilmedi" durumları için tek tip gösterim. */
 export function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
-    <Stack align="center" gap="xs" py="xl" ta="center">
+    <Stack
+      align="center"
+      gap="xs"
+      py="xl"
+      px="md"
+      ta="center"
+      style={{
+        border: '1px dashed var(--mantine-color-gray-4)',
+        borderRadius: 'var(--mantine-radius-md)',
+      }}
+    >
       <Text fw={600}>{title}</Text>
       {description === undefined ? null : (
         <Text size="sm" c="dimmed">

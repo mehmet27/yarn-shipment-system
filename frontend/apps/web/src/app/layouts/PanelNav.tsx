@@ -127,7 +127,7 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
   return visibleGroups.map((group) => (
     <div key={group}>
       {visibleGroups.length > 1 && (
-        <Text size="xs" fw={700} tt="uppercase" lts="0.08em" c="brand.2" px="sm" pt="sm" pb={4}>
+        <Text size="xs" fw={600} c="brand.2" px="sm" pt="md" pb={4}>
           {t(`nav.groups.${group}`)}
         </Text>
       )}
@@ -142,9 +142,7 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
             leftSection={<NavIcon name={item.icon} />}
             active={pathname.startsWith(item.to)}
             className="panel-nav-link"
-            c="white"
-            variant="filled"
-            color="brand.6"
+            variant="subtle"
             styles={NAV_LINK_STYLES}
           />
         );

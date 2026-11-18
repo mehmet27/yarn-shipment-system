@@ -8,10 +8,10 @@ export type ProgressStepProps = {
   current: number;
 };
 
-const CIRCLE_SIZE_PX = 32;
-const LINE_TOP_PX = 15;
-const LINE_HEIGHT_PX = 3;
-const BOLD = 700;
+const CIRCLE_SIZE_PX = 28;
+const LINE_TOP_PX = 13;
+const LINE_HEIGHT_PX = 2;
+const BOLD = 600;
 
 /** Adım çubuğunun tek adımı: numara dairesi, önceki adıma bağlanan çizgi ve ad. */
 export function ProgressStep({ label, index, current }: ProgressStepProps) {
@@ -48,7 +48,8 @@ export function ProgressStep({ label, index, current }: ProgressStepProps) {
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 1,
-          boxShadow: isCurrent ? '0 0 0 5px var(--mantine-color-brand-1)' : undefined,
+          fontSize: 'var(--mantine-font-size-sm)',
+          boxShadow: isCurrent ? '0 0 0 4px var(--mantine-color-brand-1)' : undefined,
         }}
       >
         {index + 1}

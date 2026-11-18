@@ -744,8 +744,8 @@
         "CLAIM_UNJUSTIFIED": "Haksız"
       },
       "effect": {
-        "CLAIM_JUSTIFIED_INVOICED": "İtiraz haklı sayılır ve girdiğiniz fatura kaydedilir; faturalanacak kilonun tamamı fasoncunun ipliğinden düşer. Bu işlem geri alınamaz.",
-        "CLAIM_JUSTIFIED": "İtiraz edilen kilo faturalanacak kiloya eklenir; müdür fatura kesince fasoncunun ipliğinden düşer. Fire hesabı da buna göre değişir.",
+        "CLAIM_JUSTIFIED_INVOICED": "İtiraz haklı sayılır ve girdiğiniz fatura kaydedilir; faturalanacak kilonun itiraz edilen kısmı zaten kumaşla düşüldüğü için ipliğinden yalnızca hatalı kilo düşer. Bu işlem geri alınamaz.",
+        "CLAIM_JUSTIFIED": "İtiraz edilen kilo faturalanacak kiloya eklenir; müdür fatura kesince faturaya girer; iplik ikinci kez düşülmez, çünkü hatalı gelen kumaş zaten gelen kumaşın içindedir. Fire hesabı da buna göre değişir.",
         "CLAIM_UNJUSTIFIED": "Fasoncunun ipliğinde değişiklik olmaz; uyuşmazlık yalnızca kapatılır.",
         "LIABILITY_ASSIGNED": "Yazdığınız sorumlu taraf kayda geçer; fasoncunun ipliğinde değişiklik olmaz, uyuşmazlık kapatılır."
       },

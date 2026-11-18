@@ -5,6 +5,7 @@ import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement.InvoiceContext;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement.InvoiceShare;
+import com.yarnshipment.shipment.domain.fabric.YarnDistribution;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.LinkedHashMap;
@@ -76,7 +77,20 @@ final class FireInvoiceAdapter implements FireInvoicePort {
                 invoice.invoiceNo(),
                 invoice.at(),
                 invoice.invoicedBy());
-        invoice.lines().forEach(line -> writer.append(BalanceMovement.invoice(line, context)));
+        deductYarn(invoice, total, context);
+    }
+
+    /** İtiraz kilosu kumaş girişinde zaten düşüldüğü için faturanın yalnızca eksik kısmı bakiyeden düşer. */
+    private void deductYarn(InvoiceRecord invoice, BigDecimal total, InvoiceContext context) {
+        BigDecimal deductible = total.subtract(invoice.claimKg());
+        if (deductible.signum() <= 0) {
+            return;
+        }
+        Map<String, BigDecimal> recipe = new LinkedHashMap<>();
+        invoice.lines().forEach(line -> recipe.merge(line.yarnType(), line.netKg(), BigDecimal::add));
+        YarnDistribution.proportional(deductible, recipe)
+                .forEach(share -> writer.append(
+                        BalanceMovement.invoice(new InvoiceShare(share.yarnType(), share.netKg()), context)));
     }
 
     @Override

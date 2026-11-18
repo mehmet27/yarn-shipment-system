@@ -285,7 +285,7 @@ elle "bakiye düzeltme" yoktur, hata düzeltme hareketiyle giderilir.
 | `FABRIC_RECEIPT` | − | Kumaş girişi | Tüketilen iplik kilosu kadar |
 | `YARN_RETURN` | − | Fasoncudan depoya dönen iplik (S6, S9); kaydı yalnızca depo girer | Fire tabanından da düşer |
 | `YARN_FROM_SUBCONTRACTOR` | − | Fasoncudan gelen (onun stoğundan alınan) iplik (S6) | 15.11.2026'dan beri yeni kayıt açılmaz (depo fasoncu stoğundan iplik girmez); yalnızca eski kayıtlar geçmişte kalır |
-| `CLAIM_ADJUSTMENT` | ± | Kalite itirazının karara bağlanması | Bölüm 5.12 |
+| `CLAIM_ADJUSTMENT` | ± | Eski kayıtlar (yeni itirazlar bakiye hareketi yazmaz) | Bölüm 5.12 |
 | `OPENING` | + | Excel'den açılış bakiyesi | Bir kez, geçişte |
 | `CORRECTION` | ± | Gerekçeli düzeltme | Eski hareket silinmez, ters hareket yazılır |
 
@@ -335,12 +335,14 @@ girilen kumaştan haksız bulunmamış itirazların kilosu çıkarılarak bulunu
 (`QUALITY_CLAIM_FABRIC_NOT_RECEIVED`).
 
 **[Bugün] Bakiye etkisi:** İtiraz haklı bulunursa itiraz edilen kilo **hem kumaştan hem gönderilen iplikten**
-sayılır, böylece fire hesabı sapmaz (fire tabanı T = G − D − I). Açık fire dosyasında kilo bakiyeden **hemen
-düşülmez**: dosyada faturalanacak kiloya eklenir (`fire_claim`); müdür fatura kesince faturalanan kilo fasoncunun
-iplik bakiyesinden düşer (`INVOICE`). Fatura önce itirazdan kalan kiloyu karşılar, fazlası eksik kumaşa gider;
-itirazı karşılayan kısım fire yüzdesine ve kumaş girişi sınırına girmez. Dosya yoksa ya da kapanmışsa (fatura
-bekleyemez) kilo eskisi gibi hemen düşülür (`CLAIM_ADJUSTMENT`). Örnek: 1.000 kg iplik, 100 kg itirazlı → fire
-tabanı 900 kg, beklenen kumaş 900 × 0,96 = 864 kg; faturalanacak 100 kg.
+sayılır, böylece fire hesabı sapmaz (fire tabanı T = G − D − I). Kilo bakiyeden **hemen düşülmez**; dosyada
+faturalanacak kiloya eklenir (`fire_claim`). Dosya kapanmış ya da faturalanmışsa itiraz dosyayı yeniden
+faturalanacak yapar (süre sınırı yoktur). Hatalı gelen kumaş, girilen kumaş K'nın içindedir ve bakiyeden K olarak
+zaten düşülmüştür; bu yüzden müdür fatura kesince faturanın itirazı karşılayan kısmı bakiyeyi **ikinci kez
+düşürmez** (`fire_invoice.claim_kg`), yalnızca eksik kilo `INVOICE` ile düşer. Fatura önce itirazdan kalan kiloyu
+karşılar, fazlası eksik kumaşa gider; itirazı karşılayan kısım fire yüzdesine ve kumaş girişi sınırına girmez.
+Nihai bakiye = G − D − K − faturalanan eksik kilo. Örnek: 1.000 kg iplik, 100 kg itirazlı → fire tabanı 900 kg,
+beklenen kumaş 900 × 0,96 = 864 kg; faturalanacak 100 kg, bakiye etkisi 0.
 
 > Not: S5 ile itirazı fasoncu değil fabrika personeli açar. İtirazın fasoncu-çuval yerine **kumaş partisi**
 > üzerinden açılması gerekebilir; Bölüm 15, A5.

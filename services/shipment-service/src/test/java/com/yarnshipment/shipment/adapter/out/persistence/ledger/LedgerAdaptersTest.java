@@ -360,9 +360,25 @@ class LedgerAdaptersTest {
                 AT));
 
         // then
-        assertThat(balanceOf("(reçetesiz)")).isEqualByComparingTo("33972");
+        assertThat(balanceOf("(reçetesiz)")).isEqualByComparingTo("34032");
         assertThat(fireSettlements.totals(SHIPMENT).claimInvoicedKg()).isEqualByComparingTo("60");
         assertThat(fireSettlements.totals(SHIPMENT).shortageInvoicedKg()).isEqualByComparingTo("0");
+
+        // when: 80 kg fatura, 40 kg itirazı karşılar, 40 kg eksik kilodur
+        fireInvoices.recordInvoice(new FireInvoicePort.InvoiceRecord(
+                SHIPMENT,
+                SUBCONTRACTOR,
+                "F-10",
+                LocalDate.parse("2026-11-13"),
+                null,
+                List.of(new BalanceMovement.InvoiceShare("(reçetesiz)", new BigDecimal("80"))),
+                new BigDecimal("40"),
+                USER,
+                AT));
+
+        // then: yalnızca eksik kilo düşer; itiraz kilosu kumaş girişinde zaten düşülmüştür
+        assertThat(balanceOf("(reçetesiz)")).isEqualByComparingTo("33992");
+        assertThat(fireSettlements.totals(SHIPMENT).shortageInvoicedKg()).isEqualByComparingTo("40");
     }
 
     @Test

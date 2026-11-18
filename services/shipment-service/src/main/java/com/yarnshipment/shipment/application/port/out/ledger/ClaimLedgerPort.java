@@ -1,25 +1,17 @@
 package com.yarnshipment.shipment.application.port.out.ledger;
 
-import com.yarnshipment.shipment.domain.balance.BalanceMovement;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 
-/** Haklı itirazın bakiye hareketlerini defterine yazar. */
+/** Haklı itirazı fire dosyasına faturalanacak kilo olarak yazar. */
 public interface ClaimLedgerPort {
-
-    /** Sevkiyatın fasoncusu; sevkiyat yoksa ya da fasoncusuz ise boş. */
-    Optional<UUID> findSubcontractor(UUID shipmentId);
 
     /**
      * Haklı itirazın kilosunu bakiyeden düşmeden fire dosyasına faturalanacak kilo olarak yazar; aynı uyuşmazlık
      * tekrar gelirse dokunmaz.
      */
     void recordInvoiceableClaim(InvoiceableClaim claim);
-
-    /** Hareketi ekler; aynı kaynak daha önce yazılmışsa dokunmaz. */
-    void append(BalanceMovement movement);
 
     /**
      * Faturayla bakiyeden düşülecek haklı itiraz.

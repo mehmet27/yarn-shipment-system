@@ -268,7 +268,7 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
       await kararVer(kalite, 'Talep haklı', 'Robot: haklı');
       await kalite.sayfa.waitForTimeout(2000);
       mudur.kontrol(
-        'Başka Dokuma bakiyesi 10 kg kalır (100 − 10 dönüş − 80 kumaş); itiraz fatura kesilince düşer',
+        'Başka Dokuma bakiyesi 10 kg kalır (100 − 10 dönüş − 80 kumaş); itiraz kilosu kumaşla zaten düştü',
         kiloEsit(bakiyeOf((await anlik(mudur)).bakiye, BASKA, iplik), 10),
         String(bakiyeOf((await anlik(mudur)).bakiye, BASKA, iplik)),
       );
@@ -291,7 +291,7 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
   );
 
   await mudur.adim(
-    'müdür faturayı girince faturalanan kilo (itiraz dahil) fasoncunun bakiyesinden düşer',
+    'müdür faturayı girince yalnızca hatalı kilo bakiyeden düşer; itiraz kilosu kumaş girişinde zaten düşülmüştür',
     async () => {
       const once = bakiyeOf((await anlik(mudur)).bakiye, BASKA, iplik);
       const f = await fire();
@@ -304,8 +304,8 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
       await mudur.sayfa.waitForTimeout(1500);
       const sonra = bakiyeOf((await anlik(mudur)).bakiye, BASKA, iplik);
       mudur.kontrol(
-        `bakiye ${once} → ${sonra}: faturalanan ${f.remainingKg} kg düşer`,
-        kiloEsit(once - sonra, Number(f.remainingKg)),
+        `bakiye ${once} → ${sonra}: yalnızca hatalı kilo (${f.remainingKg} − ${f.claimRemainingKg}) düşer`,
+        kiloEsit(once - sonra, Number(f.remainingKg) - Number(f.claimRemainingKg)),
         JSON.stringify(f),
       );
       const bitti = await fire();

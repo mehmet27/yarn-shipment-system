@@ -12,13 +12,13 @@ export function PendingRow({ item, isFirst }: { item: DiscrepancyView; isFirst: 
   return (
     <Group
       justify="space-between"
-      wrap="nowrap"
-      gap="sm"
+      wrap="wrap"
+      gap="xs"
       px="md"
       py="xs"
       style={{ borderTop: isFirst ? undefined : '1px solid var(--app-line-soft)' }}
     >
-      <Group gap="sm" wrap="nowrap" miw={0}>
+      <Group gap="sm" wrap="nowrap" miw={0} maw="100%">
         <Box
           aria-hidden
           w={DOT_SIZE_PX}

@@ -347,14 +347,14 @@ test('Uyuşmazlık: itiraz, lab sonucu ve karar', async ({ giris }) => {
     await expect(kalite.sayfa.locator('main')).toContainText(/UY-SV-/);
   });
 
-  await kalite.adim(
-    'ana sayfa: "Karar bekleyen uyuşmazlıklar" listesi (en çok 5, Tümünü gör)',
+  await mudur.adim(
+    'müdür ana sayfa: "Karar bekleyen uyuşmazlıklar" listesi (en çok 5, Tümünü gör)',
     async () => {
-      await kalite.sayfa.goto('/panel');
-      const kart = kalite.sayfa.getByTestId('pending-discrepancies');
+      await mudur.sayfa.goto('/panel');
+      const kart = mudur.sayfa.getByTestId('pending-discrepancies');
       await expect(kart).toBeVisible();
       await expect(kart).toContainText(/Karar bekleyen uyuşmazlıklar: \d+/);
-      kalite.kontrol(
+      mudur.kontrol(
         'listede en çok 5 uyuşmazlık bağlantısı olmalı',
         (await kart.locator('a[href*="/panel/uyusmazliklar/"]').count()) <= 5,
       );
@@ -363,11 +363,11 @@ test('Uyuşmazlık: itiraz, lab sonucu ve karar', async ({ giris }) => {
         '/panel/uyusmazliklar',
       );
       await kart.locator('a[href*="/panel/uyusmazliklar/"]').first().click();
-      await expect(kalite.sayfa.getByRole('heading', { name: 'Karar ver' })).toBeVisible();
+      await expect(mudur.sayfa.getByRole('heading', { name: 'Karar ver' })).toBeVisible();
     },
   );
 
-  await kalite.adim('lab sonucu girilir, ardından karar verilir', async () => {
+  await kalite.adim('kalite: lab sonucunu girer', async () => {
     const no = (await kalite.api<{ shipmentNo: string }>(`/api/v1/shipments/${id}`)).shipmentNo;
     await kalite.sayfa.goto('/panel/uyusmazliklar');
     await kalite.sayfa.getByRole('link', { name: new RegExp(no) }).click();
@@ -391,17 +391,21 @@ test('Uyuşmazlık: itiraz, lab sonucu ve karar', async ({ giris }) => {
     await kalite.sayfa.waitForTimeout(1500);
     await kalite.sayfa.getByRole('button', { name: 'Sonucu kaydet' }).first().click();
     await kalite.sayfa.waitForTimeout(1200);
-    await sec(kalite.sayfa, /^Karar/, 'Talep haklı');
-    await expect(kalite.sayfa.getByTestId('resolution-effect')).toContainText(
+  });
+
+  await mudur.adim('müdür: sonuç girildikten sonra haklı kararını verir', async () => {
+    await mudur.sayfa.goto(kalite.sayfa.url());
+    await sec(mudur.sayfa, /^Karar/, 'Haklı');
+    await expect(mudur.sayfa.getByTestId('resolution-effect')).toContainText(
       /faturalanacak kiloya eklenir/,
     );
-    await kalite.sayfa.getByLabel(/^Not/).first().fill('Robot: haklı bulundu');
-    await kalite.sayfa.getByRole('button', { name: 'Karara bağla' }).click();
-    await expect(kalite.sayfa.getByText(/Karar geri alınamaz\./)).toBeVisible();
-    await kalite.sayfa.getByRole('button', { name: 'Vazgeç' }).click();
-    await expect(kalite.sayfa.getByRole('button', { name: 'Karara bağla' })).toBeVisible();
-    await kalite.sayfa.getByRole('button', { name: 'Karara bağla' }).click();
-    await kalite.sayfa.getByRole('button', { name: 'Evet, kararı kaydet' }).click();
-    await expect(kalite.sayfa.locator('main')).toContainText(/ÇÖZÜLDÜ|Çözüldü/);
+    await mudur.sayfa.getByLabel(/^Not/).first().fill('Robot: haklı bulundu');
+    await mudur.sayfa.getByRole('button', { name: 'Karara bağla' }).click();
+    await expect(mudur.sayfa.getByText(/Karar geri alınamaz\./)).toBeVisible();
+    await mudur.sayfa.getByRole('button', { name: 'Vazgeç' }).click();
+    await expect(mudur.sayfa.getByRole('button', { name: 'Karara bağla' })).toBeVisible();
+    await mudur.sayfa.getByRole('button', { name: 'Karara bağla' }).click();
+    await mudur.sayfa.getByRole('button', { name: 'Evet, kararı kaydet' }).click();
+    await expect(mudur.sayfa.locator('main')).toContainText(/ÇÖZÜLDÜ|Çözüldü/);
   });
 });

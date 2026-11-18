@@ -265,7 +265,8 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
       await kalite.sayfa.goto('/panel/uyusmazliklar');
       await kalite.sayfa.getByRole('link', { name: new RegExp(no) }).click();
       await kalite.sayfa.getByRole('button', { name: 'Bana ata' }).click();
-      await kararVer(kalite, 'Talep haklı', 'Robot: haklı');
+      await mudur.sayfa.goto(kalite.sayfa.url());
+      await kararVer(mudur, 'Haklı', 'Robot: haklı');
       await kalite.sayfa.waitForTimeout(2000);
       mudur.kontrol(
         'Başka Dokuma bakiyesi 10 kg kalır (100 − 10 dönüş − 80 kumaş); itiraz kilosu kumaşla zaten düştü',

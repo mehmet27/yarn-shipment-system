@@ -96,11 +96,11 @@ final class DiscrepancyViews {
         if (!discrepancy.status().isUnresolved()) {
             return List.of();
         }
-        if (actor.hasPermission(Permission.DISCREPANCY_RESOLVE)) {
-            return List.of(DiscrepancyView.AllowedActionsEnum.ASSIGN, DiscrepancyView.AllowedActionsEnum.RESOLVE);
+        if (actor.hasPermission(Permission.DISCREPANCY_DECIDE)) {
+            return List.of(DiscrepancyView.AllowedActionsEnum.RESOLVE);
         }
-        return actor.hasPermission(Permission.DISCREPANCY_DECIDE)
-                ? List.of(DiscrepancyView.AllowedActionsEnum.RESOLVE)
+        return actor.hasPermission(Permission.DISCREPANCY_RESOLVE)
+                ? List.of(DiscrepancyView.AllowedActionsEnum.ASSIGN)
                 : List.of();
     }
 

@@ -104,7 +104,7 @@ Excel'de hareketler elle toplandığı için bakiye geç ve hatalı çıkıyor, 
 |---|---|---|
 | **Müdür** (`MANAGER`) | Fason işlerinden sorumlu müdür | Sevkiyat açar, reçeteyi ve fire oranını girer; kantar uyuşmazlığında karar verir (iptal / çuval ekle-çıkar); irsaliyeyi yükleyip tamamlar; kumaş girişini ve iplik dönüşünü onaylar **[Yapılacak]**; "fatura edildi" işaretler **[Yapılacak]**; raporları görür |
 | **Depo** (`WAREHOUSE`) | Merkez depo sorumlusu | Çuvalları sevkiyata atar, kantar fişiyle çıkış tartısını girer; eksik gönderimde neden yazar **[Yapılacak]** |
-| **Kalite** (`QUALITY`) | Depo-kalite ve dışarı-kalite | Kalite itirazı açar, numune/lab sonucunu girer, uyuşmazlığı karara bağlar (müdür de kalite itirazını yalnızca haklı / haksız diye kapatabilir (fatura Faturalanacaklar'dan girilir)); gelen kumaşı kaydeder **[Yapılacak]** |
+| **Kalite** (`QUALITY`) | Depo-kalite ve dışarı-kalite | Kalite itirazı açar, numune/lab sonucunu girer; karar veremez. Kalite itirazını yalnızca müdür haklı / haksız diye kapatır (haklıda fatura Faturalanacaklar'dan girilir); gelen kumaşı kaydeder **[Yapılacak]** |
 | **Genel müdür** **[Yapılacak]** | Üst yönetim | Yalnızca rapor ve bakiye görür; işlem yapmaz |
 | **Admin** (`ADMIN`) | Sistem yöneticisi | Tanımlar, kullanıcılar, ayarlar, gerekçeli düzeltme, kanıt geçersiz kılma |
 | ~~Şoför~~ | — | **Kaldırıldı.** Şoför ve araç yalnızca sevkiyatın üzerinde bilgi olarak yazılır |
@@ -328,7 +328,7 @@ Bkz. Bölüm 8. Fire **sevkiyat** üzerinden hesaplanır (S2); oran sevkiyatta s
 - Kalite (geçiş döneminde fasoncu hesabı da), **tamamlanmış** sevkiyatın çuvalları için itiraz açar; açıklama ve en
   az bir fotoğraf zorunludur. Pencere tamamlanmadan itibaren 3 iş günüdür.
 - Her itiraz Kırmızı bir kalite uyuşmazlığı açar; kalite numune ya da lab kontrolü ister, sonucu girer
-  (lab sonucunda belge zorunlu), uyuşmazlık `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır.
+  (lab sonucunda belge zorunlu), uyuşmazlık müdür tarafından `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır.
 
 **[Bugün] Kumaş girişi şartı:** İtiraz yalnızca girilmiş kumaş için açılır. İtiraz edilebilecek kilo, sevkiyata
 girilen kumaştan haksız bulunmamış itirazların kilosu çıkarılarak bulunur; kumaş girişi yoksa itiraz açılamaz

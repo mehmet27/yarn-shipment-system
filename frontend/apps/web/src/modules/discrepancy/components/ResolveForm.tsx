@@ -2,10 +2,10 @@ import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Paper, Stack, Title } from '@iplik/ui';
 import { useResolveDiscrepancy } from '../hooks/useDecideDiscrepancy';
+import { RESOLUTIONS } from './resolveChoices';
 import { ResolutionSelect } from './ResolutionSelect';
 import { ResolveActions } from './ResolveActions';
 import { ResolveDraftFields } from './ResolveDraftFields';
-import { useResolveChoices } from './useResolveChoices';
 import { useResolveDraft } from './useResolveDraft';
 
 const ERROR_KEYS: Record<string, string> = {
@@ -30,7 +30,6 @@ export function ResolveForm({
   shipmentId: string;
 }) {
   const { t } = useTranslation();
-  const { isManager, choices } = useResolveChoices();
   const draft = useResolveDraft();
   const mutation = useResolveDiscrepancy(discrepancyId, shipmentId);
   const save = () => {
@@ -48,12 +47,7 @@ export function ResolveForm({
         <Title order={3} size="h4">
           {t('discrepancy.resolve.title')}
         </Title>
-        <ResolutionSelect
-          choices={choices}
-          isManager={isManager}
-          value={draft.choice}
-          onChange={draft.setChoice}
-        />
+        <ResolutionSelect choices={RESOLUTIONS} value={draft.choice} onChange={draft.setChoice} />
         <ResolveDraftFields draft={draft} />
         {mutation.isError && <Alert color="red">{t(errorKey(mutation.error))}</Alert>}
         <ResolveActions

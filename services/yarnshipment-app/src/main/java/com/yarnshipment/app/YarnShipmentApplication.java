@@ -12,7 +12,8 @@ import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGe
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * yarnshipment-app giriş noktası: shipment, discrepancy, evidence, reporting ve audit modülleri tek süreçte açılır.
+ * yarnshipment-app giriş noktası: shipment, discrepancy, evidence, reporting, audit ve assistant modülleri tek
+ * süreçte açılır.
  *
  * <p>Modüller ayrı Maven modülleridir ve her biri kendi paketinde yaşar; bean adları paket adıyla birlikte üretilir,
  * çünkü modüller aynı sınıf adını (ör. {@code UuidV7Generator}) kendi içlerinde tutabilir. Varlık ve repository
@@ -26,7 +27,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
             "com.yarnshipment.discrepancy",
             "com.yarnshipment.evidence",
             "com.yarnshipment.reporting",
-            "com.yarnshipment.audit"
+            "com.yarnshipment.audit",
+            "com.yarnshipment.assistant"
         },
         nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class)
 @AutoConfigurationPackage(basePackages = "com.yarnshipment")

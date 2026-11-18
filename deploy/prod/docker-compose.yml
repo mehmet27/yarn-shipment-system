@@ -77,6 +77,8 @@ services:
       # Kanıt dosyaları bu birime yazılır (yedeklenecek yer, bkz. DEPLOY.md); adresleri bu anahtarla uygulama imzalar.
       EVIDENCE_STORAGE_ROOT: /data/evidence
       EVIDENCE_STORAGE_SIGNING_KEY: ${EVIDENCE_STORAGE_SIGNING_KEY:?.env içinde EVIDENCE_STORAGE_SIGNING_KEY tanımlayın}
+      # Yardım asistanı: anahtar yalnızca sunucuda durur; boşsa asistan kapalıdır.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     volumes:
       - evidence-data:/data/evidence
     depends_on:

@@ -40,6 +40,10 @@
         </dependency>
         <dependency>
             <groupId>com.yarnshipment</groupId>
+            <artifactId>assistant-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.yarnshipment</groupId>
             <artifactId>common-events</artifactId>
         </dependency>
         <dependency>

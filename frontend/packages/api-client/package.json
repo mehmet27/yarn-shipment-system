@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./assistant": "./src/assistant.ts",
     "./audit": "./src/audit.ts",
     "./branding": "./src/branding.ts",
     "./central-stock": "./src/centralStock.ts",

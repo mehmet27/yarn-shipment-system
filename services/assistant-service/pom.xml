@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Yardım asistanı: proje dokümanlarını bilen, kullanıcının rolüne göre cevap veren sohbet servisi. Cevabı Claude Haiku'dan
+  alır; veritabanına dokunmaz, veri değiştirmez. API anahtarı yalnızca ortam değişkenindedir.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.yarnshipment</groupId>
+        <artifactId>yarn-shipment-system</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>assistant-service</artifactId>
+    <name>assistant-service</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yarnshipment</groupId>
+            <artifactId>common-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.yarnshipment</groupId>
+            <artifactId>common-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.anthropic</groupId>
+            <artifactId>anthropic-java</artifactId>
+            <version>${anthropic-java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.yarnshipment</groupId>
+            <artifactId>common-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Testlerde kimlik bilgisini taşıyan Jwt sınıfı (TestTokens); üretim kodu JWT kullanmaz. -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-jose</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!--
+              Asistanın bildiği belgeler: depodaki doküman dosyaları pakete help/ altında girer, böylece asistan ile
+              dokümanlar birlikte güncel kalır. Yeni belge öğretmek için buraya bir satır eklenir.
+            -->
+            <resource>
+                <targetPath>help</targetPath>
+                <directory>${maven.multiModuleProjectDirectory}/docs</directory>
+                <includes>
+                    <include>analiz/surec-analizi-v2.md</include>
+                    <include>analiz/akis-dokumani-cevaplari.md</include>
+                    <include>yetkilendirme/yetkilendirme-teknik-analizi.md</include>
+                    <include>yonetim/giris-hesabi-acma.md</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+</project>

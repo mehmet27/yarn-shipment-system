@@ -54,6 +54,22 @@
     "crashed": "Sayfa yüklenemedi. Bağlantınızı kontrol edip yeniden deneyin.",
     "retry": "Yeniden dene"
   },
+  "assistant": {
+    "open": "Yardım",
+    "title": "Yardım",
+    "close": "Yardımı kapat",
+    "welcome": "Merhaba! Uygulamayı nasıl kullanacağınızı bana sorabilirsiniz. Örneğin: \"Çuval nasıl eklenir?\"",
+    "notice": "Yardım yalnızca bilgi verir, kayıtlarınızı değiştirmez. Cevaplar yanlış olabilir.",
+    "placeholder": "Sorunuzu yazın",
+    "send": "Gönder",
+    "thinking": "Cevap hazırlanıyor…",
+    "you": "Siz",
+    "helper": "Yardım",
+    "errors": {
+      "rateLimited": "Kısa sürede çok soru sordunuz. Biraz sonra tekrar deneyin.",
+      "unavailable": "Şu an cevap veremiyorum. Biraz sonra tekrar deneyin."
+    }
+  },
   "notifications": {
     "label": "Bildirimler",
     "title": "Karar bekleyen uyuşmazlıklar",

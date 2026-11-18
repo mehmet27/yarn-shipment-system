@@ -24,13 +24,32 @@ export function FireFigures({ settlement }: { settlement: FireSettlement }) {
           label={t('settlement.fire.expected')}
           value={formatKgText(settlement.expectedFabricKg)}
         />
-        <FireFact label={t('settlement.fire.faulty')} value={formatKgText(settlement.faultyKg)} />
+        <FireFact
+          label={t('settlement.fire.faulty')}
+          value={formatKgText(settlement.remainingKg)}
+        />
         <FireFact
           label={t('settlement.fire.actual')}
           value={formatPercentText(settlement.actualFirePercent)}
         />
         <FireFact label={t('settlement.fire.rate')} value={formatFireRate(settlement.fireRate)} />
       </SimpleGrid>
+      {settlement.invoices.length > 0 && (
+        <Stack gap={2} data-testid="fire-invoices">
+          <Text size="sm" fw={600}>
+            {t('settlement.fire.invoicedList', { kg: formatKgText(settlement.invoicedKg) })}
+          </Text>
+          {settlement.invoices.map((entry) => (
+            <Text key={entry.invoiceNo} size="sm" c="dimmed">
+              {t('settlement.fire.invoiceLine', {
+                no: entry.invoiceNo,
+                date: entry.invoicedOn,
+                kg: formatKgText(entry.kg),
+              })}
+            </Text>
+          ))}
+        </Stack>
+      )}
       <Box component="details">
         <Text component="summary" size="sm" c="dimmed" style={{ cursor: 'pointer' }}>
           {t('settlement.fire.details')}

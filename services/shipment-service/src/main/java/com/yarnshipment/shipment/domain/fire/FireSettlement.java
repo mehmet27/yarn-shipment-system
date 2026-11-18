@@ -103,7 +103,10 @@ public record FireSettlement(
         return withStatus(FireSettlementStatus.TO_INVOICE);
     }
 
-    /** Yalnız hatalı kg sıfırdan büyük ve kumaş girmiş dosya faturalanır; işaret geri alınamaz (KR-16). */
+    /**
+     * Yalnız faturalanmamış hatalı kg kalan ve kumaş girmiş dosya faturalanır. Fatura kilosu kalandan büyük olamaz;
+     * kalanın tamamı faturalanınca dosya INVOICED olur (geri alınamaz, KR-16), eksik kalırsa dosya açık kalır.
+     */
     public FireSettlement markInvoiced(FireCalculation calculation, Invoice invoice, UUID by) {
         requireOpen();
         if (status != FireSettlementStatus.TO_INVOICE || !calculation.hasFaultyKg()) {
@@ -112,6 +115,16 @@ public record FireSettlement(
         String number = invoice.invoiceNo().strip();
         if (number.isEmpty() || number.length() > MAX_INVOICE_NO_LENGTH) {
             throw new InvalidLedgerInputException("invoiceNo");
+        }
+        BigDecimal kg = invoice.kg() == null ? calculation.remainingKg() : invoice.kg();
+        if (kg.signum() <= 0) {
+            throw new InvalidLedgerInputException("kg");
+        }
+        if (kg.compareTo(calculation.remainingKg()) > 0) {
+            throw new InvalidFireSettlementActionException(shipmentId, "INVOICE_EXCEEDS_REMAINING");
+        }
+        if (kg.compareTo(calculation.remainingKg()) < 0) {
+            return this;
         }
         return new FireSettlement(
                 shipmentId,
@@ -153,9 +166,17 @@ public record FireSettlement(
      * @param invoiceNo ERP fatura numarası
      * @param invoicedOn fatura tarihi
      * @param note isteğe bağlı not
+     * @param kg faturalanan toplam kilo; boşsa kalan kilonun tamamı
      */
     public record Invoice(
             String invoiceNo,
             LocalDate invoicedOn,
-            @Nullable String note) {}
+            @Nullable String note,
+            @Nullable BigDecimal kg) {
+
+        /** Kalan kilonun tamamını faturalayan kayıt. */
+        public Invoice(String invoiceNo, LocalDate invoicedOn, @Nullable String note) {
+            this(invoiceNo, invoicedOn, note, null);
+        }
+    }
 }

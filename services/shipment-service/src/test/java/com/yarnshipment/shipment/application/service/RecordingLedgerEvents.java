@@ -37,7 +37,7 @@ final class RecordingLedgerEvents implements LedgerEventPort {
     }
 
     @Override
-    public void fireInvoiced(FireSettlement settlement, UUID actorId, Instant at) {
+    public void fireInvoiced(UUID shipmentId, FireSettlement.Invoice invoice, UUID actorId, Instant at) {
         names.add("fireInvoiced");
     }
 

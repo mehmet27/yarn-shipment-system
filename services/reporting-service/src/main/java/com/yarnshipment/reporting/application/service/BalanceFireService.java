@@ -65,7 +65,7 @@ public class BalanceFireService
     @Transactional(readOnly = true)
     public List<FireFile> listToInvoice(ReportQuery query) {
         return listFire(query, null).stream()
-                .filter(f -> "TO_INVOICE".equals(f.status()) && f.shortageKg().signum() > 0)
+                .filter(f -> "TO_INVOICE".equals(f.status()) && f.toInvoiceKg().signum() > 0)
                 .toList();
     }
 

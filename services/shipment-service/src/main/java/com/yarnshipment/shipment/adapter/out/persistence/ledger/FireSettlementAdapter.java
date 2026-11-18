@@ -41,7 +41,9 @@ final class FireSettlementAdapter implements FireSettlementPort {
             greatest(0, coalesce((SELECT -sum(m.net_kg) FROM balance_movement m
                                   WHERE m.shipment_id = f.shipment_id AND m.kind = 'CLAIM_ADJUSTMENT'), 0)) AS claim_kg,
             coalesce((SELECT sum(fr.net_kg) FROM fabric_lot fr
-                      WHERE fr.shipment_id = f.shipment_id AND fr.source = 'SUBCONTRACTOR'), 0) AS fabric_kg""";
+                      WHERE fr.shipment_id = f.shipment_id AND fr.source = 'SUBCONTRACTOR'), 0) AS fabric_kg,
+            greatest(0, coalesce((SELECT -sum(m.net_kg) FROM balance_movement m
+                                  WHERE m.shipment_id = f.shipment_id AND m.kind = 'INVOICE'), 0)) AS invoiced_kg""";
     private static final String INSERT_RATE_CHANGE = """
             INSERT INTO fire_rate_change (id, shipment_id, old_rate, new_rate, reason, changed_by, changed_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)""";
@@ -183,7 +185,10 @@ final class FireSettlementAdapter implements FireSettlementPort {
 
     private static FireTotals toTotals(ResultSet rs) throws SQLException {
         return new FireTotals(
-                rs.getBigDecimal("returned_kg"), rs.getBigDecimal("claim_kg"), rs.getBigDecimal("fabric_kg"));
+                rs.getBigDecimal("returned_kg"),
+                rs.getBigDecimal("claim_kg"),
+                rs.getBigDecimal("fabric_kg"),
+                rs.getBigDecimal("invoiced_kg"));
     }
 
     private record Filter(String where, Map<String, Object> params) {}

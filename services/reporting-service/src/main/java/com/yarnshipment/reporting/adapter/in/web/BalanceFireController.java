@@ -83,7 +83,7 @@ public class BalanceFireController implements BalanceFireApi {
     public ResponseEntity<List<FireRowView>> getToInvoiceReport(
             @Nullable LocalDate from, @Nullable LocalDate to, @Nullable UUID siteId) {
         return ResponseEntity.ok(listToInvoice.listToInvoice(query(from, to, siteId)).stream()
-                .map(BalanceFireViews::toView)
+                .map(BalanceFireViews::toInvoiceView)
                 .toList());
     }
 

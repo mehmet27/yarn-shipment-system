@@ -1,6 +1,8 @@
 package com.yarnshipment.shipment.application.service;
 
+import com.yarnshipment.shipment.application.port.in.fire.InvoiceEntry;
 import com.yarnshipment.shipment.application.port.in.fire.ListFireSettlementsQuery;
+import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
 import java.math.BigDecimal;
@@ -13,10 +15,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 /** Fire dosyası portunun bellek içi sahtesi; toplamlar testin verdiği değerlerdir. */
-final class InMemoryFireSettlementPort implements FireSettlementPort {
+final class InMemoryFireSettlementPort implements FireSettlementPort, FireInvoicePort {
 
     private final Map<UUID, FireSettlement> byShipment = new HashMap<>();
     private final List<RateChange> rateChanges = new ArrayList<>();
+    private final List<InvoiceRecord> recorded = new ArrayList<>();
+    private Map<String, BigDecimal> dispatched = Map.of();
     private FireTotals totals = new FireTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 
     void givenTotals(String returnedKg, String claimKg, String fabricKg) {
@@ -66,6 +70,47 @@ final class InMemoryFireSettlementPort implements FireSettlementPort {
         return byShipment.values().stream()
                 .map(settlement -> new ListedSettlement(settlement, "SV-1", "Örnek Tekstil", totals))
                 .toList();
+    }
+
+    @Override
+    public Map<String, BigDecimal> dispatchedByYarn(UUID shipmentId) {
+        return dispatched;
+    }
+
+    @Override
+    public boolean invoiceExists(UUID shipmentId, String invoiceNo) {
+        return recorded.stream()
+                .anyMatch(
+                        i -> i.shipmentId().equals(shipmentId) && i.invoiceNo().equals(invoiceNo));
+    }
+
+    @Override
+    public void recordInvoice(InvoiceRecord invoice) {
+        recorded.add(invoice);
+        BigDecimal kg = invoice.lines().stream().map(l -> l.netKg()).reduce(BigDecimal.ZERO, BigDecimal::add);
+        totals = new FireTotals(
+                totals.returnedKg(),
+                totals.claimKg(),
+                totals.fabricKg(),
+                totals.invoicedKg().add(kg));
+    }
+
+    @Override
+    public List<InvoiceEntry> invoices(UUID shipmentId) {
+        return recorded.stream()
+                .map(i -> new InvoiceEntry(
+                        i.invoiceNo(),
+                        i.invoicedOn(),
+                        i.lines().stream().map(l -> l.netKg()).reduce(BigDecimal.ZERO, BigDecimal::add)))
+                .toList();
+    }
+
+    List<InvoiceRecord> recorded() {
+        return recorded;
+    }
+
+    void givenDispatched(Map<String, BigDecimal> byYarn) {
+        dispatched = byYarn;
     }
 
     @Override

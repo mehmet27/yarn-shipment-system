@@ -52,6 +52,17 @@ function readReceipt(json: unknown): FabricReceiptRequest | undefined {
   return shares.length === yarns.length ? { ...base, yarns: shares } : undefined;
 }
 
+/** Fatura satırları; yoksa boş liste (kalan kilo tümüyle faturalanır), bozuksa undefined. */
+function readInvoiceLines(json: unknown): { yarnType: string; netKg: string }[] | undefined {
+  if (json === undefined) return [];
+  if (!Array.isArray(json)) return undefined;
+  const lines = json.filter(
+    (y): y is { yarnType: string; netKg: string } =>
+      isRecord(y) && text(y.yarnType) && positiveKg(y.netKg),
+  );
+  return lines.length === json.length ? lines : undefined;
+}
+
 function readReturn(json: unknown): YarnReturnRequest | undefined {
   if (!isRecord(json) || !text(json.yarnType) || !positiveKg(json.netKg)) return undefined;
   if (json.direction !== undefined && json.direction !== 'RETURN') return undefined;
@@ -61,6 +72,28 @@ function readReturn(json: unknown): YarnReturnRequest | undefined {
     ...(text(json.lotId) ? { lotId: json.lotId } : {}),
     ...(text(json.waybillNo) ? { waybillNo: json.waybillNo } : {}),
   };
+}
+
+/** "Fatura edildi" isteğini işler; kilo kalandan fazlaysa ya da dosya kapalıysa 409 döner. */
+function invoiceResponse(id: string, json: unknown, userId: string) {
+  if (!isRecord(json) || !text(json.invoiceNo) || !text(json.invoicedOn)) {
+    return problem(400, 'VALIDATION_FAILED');
+  }
+  const remaining = Number(getMockSettlement(id).remainingKg);
+  if (isMockClosed(id) || remaining <= 0) return problem(409, 'FIRE_INVOICE_NOT_APPLICABLE');
+  const lines = readInvoiceLines(json.lines);
+  if (lines === undefined) return problem(400, 'VALIDATION_FAILED');
+  if (lines.reduce((sum, line) => sum + Number(line.netKg), 0) > remaining + 0.0005) {
+    return problem(409, 'FIRE_INVOICE_NOT_APPLICABLE');
+  }
+  markMockInvoiced(id, {
+    invoiceNo: json.invoiceNo.trim(),
+    invoicedAt: json.invoicedOn,
+    ...(text(json.note) ? { invoiceNote: json.note.trim() } : {}),
+    lines,
+    userId,
+  });
+  return HttpResponse.json(getMockSettlement(id));
 }
 
 /** Sahte API'nin fire dosyası, kumaş, iplik dönüşü ve bakiye uçları; izinler backend matrisini taklit eder. */
@@ -170,26 +203,14 @@ export function createSettlementHandlers(user: CurrentUser) {
       if (!has('INVOICE_MARK')) return problem(403, 'ACCESS_DENIED');
       const failure = completed(id);
       if (failure !== undefined) return failure;
-      const json: unknown = await request.json();
-      if (!isRecord(json) || !text(json.invoiceNo) || !text(json.invoicedOn)) {
-        return problem(400, 'VALIDATION_FAILED');
-      }
-      if (isMockClosed(id) || Number(getMockSettlement(id).faultyKg) <= 0) {
-        return problem(409, 'FIRE_INVOICE_NOT_APPLICABLE');
-      }
-      markMockInvoiced(id, {
-        invoiceNo: json.invoiceNo.trim(),
-        invoicedAt: json.invoicedOn,
-        ...(text(json.note) ? { invoiceNote: json.note.trim() } : {}),
-      });
-      return HttpResponse.json(getMockSettlement(id));
+      return invoiceResponse(id, await request.json(), user.userId);
     }),
     http.post(url('fire-settlement/close'), ({ params }) => {
       const id = String(params.shipmentId);
       if (!has('INVOICE_MARK')) return problem(403, 'ACCESS_DENIED');
       const failure = completed(id);
       if (failure !== undefined) return failure;
-      if (isMockClosed(id) || Number(getMockSettlement(id).faultyKg) > 0) {
+      if (isMockClosed(id) || Number(getMockSettlement(id).remainingKg) > 0) {
         return problem(409, 'FIRE_CLOSE_NOT_APPLICABLE');
       }
       closeMockFile(id);
@@ -216,6 +237,8 @@ export function createSettlementHandlers(user: CurrentUser) {
           expectedFabricKg: settlement.expectedFabricKg,
           faultyKg: settlement.faultyKg,
           actualFirePercent: settlement.actualFirePercent,
+          invoicedKg: settlement.invoicedKg,
+          remainingKg: settlement.remainingKg,
         }));
       return HttpResponse.json({
         items: rows.slice(page * size, (page + 1) * size),

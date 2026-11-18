@@ -9,8 +9,10 @@ import com.yarnshipment.shipment.application.port.in.balance.BalanceRow;
 import com.yarnshipment.shipment.application.port.in.balance.ListMovementsQuery;
 import com.yarnshipment.shipment.application.port.in.balance.MovementPage;
 import com.yarnshipment.shipment.application.port.in.fire.ListFireSettlementsQuery;
+import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort.FireTotals;
 import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
+import com.yarnshipment.shipment.domain.balance.BalanceMovement;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
 import com.yarnshipment.shipment.domain.fabric.ReturnDirection;
 import com.yarnshipment.shipment.domain.fabric.YarnReturn;
@@ -19,6 +21,7 @@ import com.yarnshipment.shipment.domain.fire.FireSettlement;
 import com.yarnshipment.shipment.domain.fire.FireSettlementStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,9 +45,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
     BalanceLedgerAdapter.class,
     FabricReceiptAdapter.class,
     YarnReturnAdapter.class,
-    FireSettlementAdapter.class
+    FireSettlementAdapter.class,
+    FireInvoiceAdapter.class
 })
-@SuppressWarnings("checkstyle:ClassFanOutComplexity")
+@SuppressWarnings({"checkstyle:ClassFanOutComplexity", "checkstyle:ClassDataAbstractionCoupling"})
 class LedgerAdaptersTest {
 
     private static final UUID SHIPMENT = UUID.fromString("0192f0a0-0000-7000-8000-000000000701");
@@ -91,6 +95,9 @@ class LedgerAdaptersTest {
 
     @Autowired
     private FireSettlementAdapter fireSettlements;
+
+    @Autowired
+    private FireInvoiceAdapter fireInvoices;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -282,6 +289,36 @@ class LedgerAdaptersTest {
                 .isInstanceOf(DataAccessException.class);
         assertThatThrownBy(() -> jdbc.update("DELETE FROM balance_movement WHERE shipment_id = ?", SHIPMENT))
                 .isInstanceOf(DataAccessException.class);
+    }
+
+    @Test
+    @DisplayName("Fatura iplik başına INVOICE hareketi olarak bakiyeden düşer; faturalanan kilo toplamlarda görünür")
+    void shouldDeductInvoicedKgFromBalance() {
+        // given
+        ledger.recordDispatch(SHIPMENT, SUBCONTRACTOR, AT, USER);
+        fireSettlements.open(FireSettlement.open(SHIPMENT, SUBCONTRACTOR, new BigDecimal("34032")), AT);
+
+        // when
+        fireInvoices.recordInvoice(new FireInvoicePort.InvoiceRecord(
+                SHIPMENT,
+                SUBCONTRACTOR,
+                "F-1",
+                LocalDate.parse("2026-11-12"),
+                "ERP",
+                List.of(new BalanceMovement.InvoiceShare("(reçetesiz)", new BigDecimal("20"))),
+                USER,
+                AT));
+
+        // then
+        assertThat(balanceOf("(reçetesiz)")).isEqualByComparingTo("34012");
+        assertThat(fireSettlements.totals(SHIPMENT).invoicedKg()).isEqualByComparingTo("20");
+        assertThat(fireInvoices.invoiceExists(SHIPMENT, "F-1")).isTrue();
+        assertThat(fireInvoices.invoiceExists(SHIPMENT, "F-2")).isFalse();
+        assertThat(fireInvoices.invoices(SHIPMENT)).singleElement().satisfies(entry -> {
+            assertThat(entry.invoiceNo()).isEqualTo("F-1");
+            assertThat(entry.kg()).isEqualByComparingTo("20");
+        });
+        assertThat(fireInvoices.dispatchedByYarn(SHIPMENT)).containsKey("(reçetesiz)");
     }
 
     @Test

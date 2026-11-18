@@ -13,9 +13,10 @@ import org.jspecify.annotations.Nullable;
  * @param returnedYarnKg D, dönen iplik
  * @param fabricKg K, gelen kumaş
  * @param claimKg I, haklı kalite itirazı kilosu
+ * @param invoicedKg şimdiye kadar faturalanan kilo (parça parça fatura)
  * @param fireRate f, kesir (0,0400)
  */
-@SuppressWarnings("checkstyle:RecordComponentNumber")
+@SuppressWarnings({"checkstyle:RecordComponentNumber", "checkstyle:ParameterNumber"})
 public record FireFile(
         UUID shipmentId,
         String shipmentNo,
@@ -28,10 +29,41 @@ public record FireFile(
         String status,
         @Nullable String invoiceNo,
         @Nullable Instant invoicedAt,
-        BigDecimal claimKg) {
+        BigDecimal claimKg,
+        BigDecimal invoicedKg) {
 
     public static final int KG_SCALE = 3;
     public static final int RATE_SCALE = 4;
+
+    /** Faturalanmış kilosu olmayan dosya. */
+    public FireFile(
+            UUID shipmentId,
+            String shipmentNo,
+            UUID subcontractorId,
+            String subcontractorName,
+            BigDecimal sentKg,
+            BigDecimal returnedYarnKg,
+            BigDecimal fabricKg,
+            BigDecimal fireRate,
+            String status,
+            @Nullable String invoiceNo,
+            @Nullable Instant invoicedAt,
+            BigDecimal claimKg) {
+        this(
+                shipmentId,
+                shipmentNo,
+                subcontractorId,
+                subcontractorName,
+                sentKg,
+                returnedYarnKg,
+                fabricKg,
+                fireRate,
+                status,
+                invoiceNo,
+                invoicedAt,
+                claimKg,
+                BigDecimal.ZERO);
+    }
 
     /** T = G − D − I. */
     public BigDecimal baseKg() {
@@ -75,5 +107,10 @@ public record FireFile(
     public BigDecimal shortageKg() {
         BigDecimal exact = baseKg().multiply(BigDecimal.ONE.subtract(fireRate)).subtract(netFabricKg());
         return exact.max(BigDecimal.ZERO).setScale(KG_SCALE, RoundingMode.HALF_UP);
+    }
+
+    /** Henüz faturalanmamış kilo: max(0, H − faturalanan), 3 ondalık. */
+    public BigDecimal toInvoiceKg() {
+        return shortageKg().subtract(invoicedKg).max(BigDecimal.ZERO).setScale(KG_SCALE, RoundingMode.HALF_UP);
     }
 }

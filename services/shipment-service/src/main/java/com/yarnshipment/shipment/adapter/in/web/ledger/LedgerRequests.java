@@ -61,7 +61,8 @@ final class LedgerRequests {
     record InvoiceRequest(
             @Nullable String invoiceNo,
             @Nullable LocalDate invoicedOn,
-            @Nullable String note) {}
+            @Nullable String note,
+            @Nullable List<YarnShareRequest> lines) {}
 
     static String required(@Nullable String value, String field) {
         if (value == null || value.isBlank()) {

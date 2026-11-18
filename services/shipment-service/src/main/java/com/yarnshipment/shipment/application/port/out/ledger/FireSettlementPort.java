@@ -38,8 +38,15 @@ public interface FireSettlementPort {
      * @param returnedKg D, dönen iplik
      * @param claimKg I, haklı itiraz
      * @param fabricKg K, gelen kumaş
+     * @param invoicedKg şimdiye kadar faturalanan kilo
      */
-    record FireTotals(BigDecimal returnedKg, BigDecimal claimKg, BigDecimal fabricKg) {}
+    record FireTotals(BigDecimal returnedKg, BigDecimal claimKg, BigDecimal fabricKg, BigDecimal invoicedKg) {
+
+        /** Faturalanmış kilosu olmayan toplamlar. */
+        public FireTotals(BigDecimal returnedKg, BigDecimal claimKg, BigDecimal fabricKg) {
+            this(returnedKg, claimKg, fabricKg, BigDecimal.ZERO);
+        }
+    }
 
     /** Fire oranı değişikliğinin denetim kaydı. */
     record RateChange(

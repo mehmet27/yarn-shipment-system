@@ -93,6 +93,21 @@ public record BalanceMovement(
                 "CLAIM:" + context.discrepancyId() + ":" + share.yarnType());
     }
 
+    /** Fasoncuya kesilen faturanın bir iplik cinsine düşen kilosu bakiyeden düşer; kilo pozitif verilir. */
+    public static BalanceMovement invoice(InvoiceShare share, InvoiceContext context) {
+        return new BalanceMovement(
+                UUID.randomUUID(),
+                context.subcontractorId(),
+                new YarnRef(share.yarnType(), null),
+                context.shipmentId(),
+                MovementKind.INVOICE,
+                share.netKg().negate(),
+                context.at(),
+                context.createdBy(),
+                "Fatura " + context.invoiceNo(),
+                "INVOICE:" + context.shipmentId() + ":" + context.invoiceNo() + ":" + share.yarnType());
+    }
+
     /** Fasoncudan fasoncuya sevkiyatta gönderen fasoncunun bakiyesinden aynı kilo düşer. */
     public static BalanceMovement transferOut(UUID source, DispatchLine line, DispatchContext context) {
         return consumption(new Consumption(
@@ -106,6 +121,12 @@ public record BalanceMovement(
                 context.createdBy(),
                 "TRANSFER:" + context.shipmentId() + ":" + line.lineNo()));
     }
+
+    /** Faturanın bağlamı: hangi fasoncu, sevkiyat, fatura numarası, ne zaman, kim. */
+    public record InvoiceContext(UUID subcontractorId, UUID shipmentId, String invoiceNo, Instant at, UUID createdBy) {}
+
+    /** Faturalanan kilonun bir iplik cinsine düşen payı, pozitif. */
+    public record InvoiceShare(String yarnType, BigDecimal netKg) {}
 
     /** Haklı itirazın bağlamı: hangi uyuşmazlık, fasoncu, sevkiyat, ne zaman, kim. */
     public record ClaimContext(UUID discrepancyId, UUID subcontractorId, UUID shipmentId, Instant at, UUID createdBy) {}

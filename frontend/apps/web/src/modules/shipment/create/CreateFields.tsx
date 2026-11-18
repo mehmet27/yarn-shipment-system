@@ -1,6 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack } from '@iplik/ui';
+import { Divider, Stack } from '@iplik/ui';
 import type { CreateDraft, CreateFieldErrors } from './createDraft';
+import { FireRateField } from './FireRateField';
 import { RecipeLines } from './RecipeLines';
 import { PartiesFields } from './PartiesFields';
 import { Section } from './Section';
@@ -10,10 +11,12 @@ export type CreateFieldsProps = {
   draft: CreateDraft;
   onChange: (draft: CreateDraft) => void;
   errors?: CreateFieldErrors;
+  /** Ayarlardaki varsayılan fire oranı (%); taslakta girilmemişse bu gösterilir. */
+  defaultFirePct: string;
 };
 
-/** Üç kart: taraflar (alıcı, şoför, araç), iplik kaynağı ve reçete satırları. */
-export function CreateFields({ draft, onChange, errors = {} }: CreateFieldsProps) {
+/** Üç kart: taraflar (alıcı, şoför, araç), iplik kaynağı; reçete satırları ve fire oranı. */
+export function CreateFields({ draft, onChange, errors = {}, defaultFirePct }: CreateFieldsProps) {
   const { t } = useTranslation();
   return (
     <Stack>
@@ -24,13 +27,23 @@ export function CreateFields({ draft, onChange, errors = {} }: CreateFieldsProps
         <SourceFields draft={draft} onChange={onChange} errors={errors} />
       </Section>
       <Section title={t('create.recipe.title')} icon="list" step={3}>
-        <RecipeLines
-          lines={draft.lines}
-          showErrors={errors.lines !== undefined}
-          onChange={(lines) => {
-            onChange({ ...draft, lines });
-          }}
-        />
+        <Stack gap="md">
+          <RecipeLines
+            lines={draft.lines}
+            showErrors={errors.lines !== undefined}
+            onChange={(lines) => {
+              onChange({ ...draft, lines });
+            }}
+          />
+          <Divider color="var(--app-line)" />
+          <FireRateField
+            value={draft.fireRatePct ?? defaultFirePct}
+            errorCode={errors.fireRate}
+            onChange={(fireRatePct) => {
+              onChange({ ...draft, fireRatePct });
+            }}
+          />
+        </Stack>
       </Section>
     </Stack>
   );

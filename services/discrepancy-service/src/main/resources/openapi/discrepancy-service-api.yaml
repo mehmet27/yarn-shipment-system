@@ -737,7 +737,7 @@ components:
             enum: [REQUEST_INSPECTION]
     ShipmentClaimsView:
       type: object
-      required: [shipmentId, deadlineAt, windowOpen, shipmentNetKg, claims]
+      required: [shipmentId, deadlineAt, windowOpen, receivedKg, claimableKg, claims]
       properties:
         shipmentId:
           type: string
@@ -748,10 +748,14 @@ components:
           description: İtirazın açılabileceği son an (tamamlanma + 3 iş günü)
         windowOpen:
           type: boolean
-        shipmentNetKg:
+        receivedKg:
           type: string
-          description: Sevkiyatın çıkış net kilosu (üç ondalık); itiraz edilen kilo bunu aşamaz
+          description: Sevkiyata girilmiş kumaşın toplam net kilosu (üç ondalık); kumaş girilmemişse 0.000
           example: '1982.500'
+        claimableKg:
+          type: string
+          description: İtiraz edilebilecek kilo (üç ondalık); girilmiş kumaştan haksız bulunmamış itirazlar çıkarılır
+          example: '1782.500'
         claims:
           type: array
           items:

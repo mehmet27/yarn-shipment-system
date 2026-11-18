@@ -68,7 +68,8 @@ public final class DiscrepancyExceptionHandler {
                     EVIDENCE_REQUIRED,
                     EVIDENCE_INVALID,
                     RESULT_EVIDENCE_REQUIRED -> HttpStatus.BAD_REQUEST;
-            case NOT_AVAILABLE, WINDOW_CLOSED, INSPECTION_RECORDED, INSPECTION_PENDING -> HttpStatus.CONFLICT;
+            case NOT_AVAILABLE, FABRIC_NOT_RECEIVED, WINDOW_CLOSED, INSPECTION_RECORDED, INSPECTION_PENDING ->
+                HttpStatus.CONFLICT;
         };
         return problems.create(
                 request, status, "QUALITY_CLAIM_" + exception.rejection().name());

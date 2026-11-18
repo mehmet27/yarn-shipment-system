@@ -1,22 +1,22 @@
 import type { Kilogram } from '@iplik/units';
 import { isKilogram, parseKg, subtractKg } from '@iplik/units';
 
-/** Sunucunun dönen sevkiyat net kilosu geçerliyse sınır olarak kullanılır. */
-export function limitOf(shipmentNetKg: string): Kilogram | undefined {
-  return isKilogram(shipmentNetKg) ? shipmentNetKg : undefined;
+/** Sunucunun döndüğü itiraz edilebilir kilo geçerliyse sınır olarak kullanılır. */
+export function limitOf(claimableKg: string): Kilogram | undefined {
+  return isKilogram(claimableKg) ? claimableKg : undefined;
 }
 
-/** İtiraz edilen kilo sevkiyatın net kilosunu aşıyor mu? Sınır bilinmiyorsa false. */
+/** İtiraz edilen kilo, itiraz edilebilir kiloyu aşıyor mu? Sınır bilinmiyorsa false. */
 export function exceedsShipmentKg(claimedKg: Kilogram, limit: Kilogram | undefined): boolean {
   return limit !== undefined && subtractKg(claimedKg, limit).gt(0);
 }
 
 const isZero = (kg: string) => Number(kg) === 0;
 
-/** Yazılan itiraz kilosunun durumu: geçerli kilo, biçim hatası ve sevkiyat sınırı aşımı. */
-export function claimKgState(kgText: string, shipmentNetKg: string) {
+/** Yazılan itiraz kilosunun durumu: geçerli kilo, biçim hatası ve itiraz edilebilir kilo aşımı. */
+export function claimKgState(kgText: string, claimableKg: string) {
   const claimedKg = parseKg(kgText);
-  const limit = limitOf(shipmentNetKg);
+  const limit = limitOf(claimableKg);
   const isZeroOrUnreadable = claimedKg === undefined || isZero(claimedKg);
   return {
     claimedKg,

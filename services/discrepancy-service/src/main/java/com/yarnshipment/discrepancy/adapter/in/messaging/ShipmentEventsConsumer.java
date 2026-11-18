@@ -2,11 +2,14 @@ package com.yarnshipment.discrepancy.adapter.in.messaging;
 
 import com.yarnshipment.common.events.DomainEventConsumer;
 import com.yarnshipment.common.events.IncomingEvent;
+import com.yarnshipment.discrepancy.application.port.in.RecordFabricReceiptCommand;
+import com.yarnshipment.discrepancy.application.port.in.RecordFabricReceiptUseCase;
 import com.yarnshipment.discrepancy.application.port.in.RegisterShipmentCommand;
 import com.yarnshipment.discrepancy.application.port.in.RegisterShipmentUseCase;
 import com.yarnshipment.discrepancy.application.port.in.TrackShipmentCommand;
 import com.yarnshipment.discrepancy.application.port.in.TrackShipmentCommand.Milestone;
 import com.yarnshipment.discrepancy.application.port.in.TrackShipmentUseCase;
+import com.yarnshipment.events.shipment.FabricReceived;
 import com.yarnshipment.events.shipment.ShipmentCancelled;
 import com.yarnshipment.events.shipment.ShipmentCompleted;
 import com.yarnshipment.events.shipment.ShipmentCreated;
@@ -18,8 +21,8 @@ import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Sevkiyat olaylarını (oluşturma, çıkış, tamamlanma, iptal) zaman ve fotoğraf kuralları için izler; taşıyıcıdan
- * bağımsızdır. Diğer olaylar kullanılmaz ve yok sayılır.
+ * Sevkiyat olaylarını (oluşturma, çıkış, tamamlanma, iptal, kumaş girişi) zaman, fotoğraf ve itiraz kilosu kuralları
+ * için izler; taşıyıcıdan bağımsızdır. Diğer olaylar kullanılmaz ve yok sayılır.
  *
  * <p>Teslim: {@link Delivery#BEFORE_COMMIT}. Sevkiyat kaydı bu modülün kural işinin girdisidir; tüketici hatasında
  * sevkiyat işlemi geri alınır, böylece iki modül birbirinden ayrışmaz.
@@ -34,10 +37,15 @@ final class ShipmentEventsConsumer implements DomainEventConsumer {
 
     private final RegisterShipmentUseCase registerShipmentUseCase;
     private final TrackShipmentUseCase trackShipmentUseCase;
+    private final RecordFabricReceiptUseCase recordFabricReceiptUseCase;
 
-    ShipmentEventsConsumer(RegisterShipmentUseCase registerShipmentUseCase, TrackShipmentUseCase trackShipmentUseCase) {
+    ShipmentEventsConsumer(
+            RegisterShipmentUseCase registerShipmentUseCase,
+            TrackShipmentUseCase trackShipmentUseCase,
+            RecordFabricReceiptUseCase recordFabricReceiptUseCase) {
         this.registerShipmentUseCase = registerShipmentUseCase;
         this.trackShipmentUseCase = trackShipmentUseCase;
+        this.recordFabricReceiptUseCase = recordFabricReceiptUseCase;
     }
 
     @Override
@@ -61,6 +69,11 @@ final class ShipmentEventsConsumer implements DomainEventConsumer {
             case ShipmentCancelled.TYPE -> {
                 ShipmentCancelled cancelled = EVENT_READER.readValue(event.data(), ShipmentCancelled.class);
                 track(cancelled.shipmentId(), Milestone.CLOSED, cancelled.cancelledAt());
+            }
+            case FabricReceived.TYPE -> {
+                FabricReceived received = EVENT_READER.readValue(event.data(), FabricReceived.class);
+                recordFabricReceiptUseCase.recordFabricReceipt(new RecordFabricReceiptCommand(
+                        received.shipmentId(), received.receiptId(), received.netKg(), received.receivedAt()));
             }
             default -> {
                 // Bu servisin kullanmadığı sevkiyat olayı.

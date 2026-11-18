@@ -82,11 +82,19 @@ function targetProblem(shipmentId: unknown, role: Role): Response | undefined {
   return shipment.status === 'COMPLETED' ? undefined : problem(409, 'QUALITY_CLAIM_NOT_AVAILABLE');
 }
 
+/** Girilmiş kumaştan haksız bulunmamış itirazların kilosu çıkarılır (backend ClaimTarget.claimableKg). */
+function claimableOf(shipmentId: string): string {
+  const claimed = listMockClaims(shipmentId)
+    .filter((claim) => claim.resolution !== 'CLAIM_UNJUSTIFIED')
+    .reduce((sum, claim) => sum + Number(claim.claimedKg), 0);
+  return Math.max(0, Number(MOCK_SHIPMENT_NET_KG) - claimed).toFixed(3);
+}
+
 function claimProblem(request: OpenQualityClaimRequest): Response | undefined {
   if (request.evidenceIds.length === 0) return problem(400, 'QUALITY_CLAIM_EVIDENCE_REQUIRED');
   const { claimedKg } = request;
-  const net = MOCK_SHIPMENT_NET_KG;
-  return isKilogram(claimedKg) && subtractKg(claimedKg, net).gt(0)
+  const net = claimableOf(request.shipmentId);
+  return isKilogram(claimedKg) && isKilogram(net) && subtractKg(claimedKg, net).gt(0)
     ? problem(409, 'CLAIM_EXCEEDS_SHIPMENT_WEIGHT')
     : undefined;
 }
@@ -115,7 +123,8 @@ export function createClaimHandlers(role: Role) {
         shipmentId: String(params.shipmentId),
         deadlineAt: mockDeadline(),
         windowOpen: true,
-        shipmentNetKg: MOCK_SHIPMENT_NET_KG,
+        receivedKg: MOCK_SHIPMENT_NET_KG,
+        claimableKg: claimableOf(String(params.shipmentId)),
         claims: claims.map(toView),
         allowedActions: has('QUALITY_CLAIM_OPEN') ? ['OPEN_CLAIM'] : [],
       });

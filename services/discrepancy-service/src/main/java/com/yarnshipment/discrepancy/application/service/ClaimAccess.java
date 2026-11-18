@@ -41,7 +41,7 @@ final class ClaimAccess {
         this.scopeGuard = scopeGuard;
     }
 
-    /** Tamamlanmamış ya da çıkış kilosu bilinmeyen sevkiyata itiraz açılamaz. */
+    /** Tamamlanmamış sevkiyata itiraz açılamaz. */
     ClaimTarget loadTarget(Actor actor, UUID shipmentId, String action) {
         ClaimTarget target = claims.findTarget(shipmentId)
                 .orElseThrow(

@@ -9,7 +9,7 @@ import java.util.UUID;
 /** Kalite itirazı okuma ve yazımları. */
 public interface QualityClaimPort {
 
-    /** Tamamlanmış ve çıkış kilosu bilinen sevkiyat; yoksa boş. */
+    /** Tamamlanmış sevkiyat, girilmiş kumaş ve açık itiraz kiloları ile; yoksa boş. */
     Optional<ClaimTarget> findTarget(UUID shipmentId);
 
     /** Sevkiyatın itirazları, açılış sırasıyla. */

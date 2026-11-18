@@ -50,13 +50,53 @@ describe('Kalite itirazı', () => {
 
   it('ipucu gerçek sınırı yazar; aşan kiloda alan hatası çıkar ve gönder kapalı kalır', async () => {
     const form = await openForm('QUALITY');
-    expect(within(form).getByText('En çok 1.982,5 kg yazabilirsiniz.')).toBeInTheDocument();
-    await userEvent.type(within(form).getByLabelText(/İtiraz edilen kilo/), '1.982,6');
+    expect(
+      within(form).getByText('Girilen kumaşa göre en çok 1.862,5 kg yazabilirsiniz.'),
+    ).toBeInTheDocument();
+    await userEvent.type(within(form).getByLabelText(/İtiraz edilen kilo/), '1.862,6');
     await userEvent.type(within(form).getByLabelText(/Sorunu anlatın/), 'Nem');
     await userEvent.upload(within(form).getByTestId('upload-file-input'), photo());
     await within(form).findByText('1 fotoğraf eklendi.');
-    expect(within(form).getByText(/Sevkiyatın net ağırlığı 1\.982,5 kg/)).toBeInTheDocument();
+    expect(within(form).getByText(/İtiraz edilebilecek kilo 1\.862,5 kg/)).toBeInTheDocument();
     expect(within(form).getByRole('button', { name: 'İtirazı gönder' })).toBeDisabled();
+  });
+
+  it('kumaş girişi yoksa itiraz formu açılmaz ve nedeni yazılır', async () => {
+    const noFabric = http.get('/api/v1/quality-claims/shipments/:shipmentId', () =>
+      HttpResponse.json({
+        shipmentId: 'shp-0019',
+        deadlineAt: '2026-10-29T09:00:00Z',
+        windowOpen: true,
+        receivedKg: '0.000',
+        claimableKg: '0.000',
+        claims: [],
+        allowedActions: ['OPEN_CLAIM'],
+      }),
+    );
+    server.use(noFabric, ...createHandlers('QUALITY'));
+    renderApp('/panel/sevkiyat/shp-0019');
+    await userEvent.click(await screen.findByRole('tab', { name: 'Kalite itirazı' }));
+    expect(await screen.findByText(/önce kumaş girişi yapılmalı/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Kalite itirazı aç' })).not.toBeInTheDocument();
+  });
+
+  it('girilen kumaşın tamamına itiraz açıldıysa yeni itiraz açılmaz', async () => {
+    const allClaimed = http.get('/api/v1/quality-claims/shipments/:shipmentId', () =>
+      HttpResponse.json({
+        shipmentId: 'shp-0019',
+        deadlineAt: '2026-10-29T09:00:00Z',
+        windowOpen: true,
+        receivedKg: '100.000',
+        claimableKg: '0.000',
+        claims: [],
+        allowedActions: ['OPEN_CLAIM'],
+      }),
+    );
+    server.use(allClaimed, ...createHandlers('QUALITY'));
+    renderApp('/panel/sevkiyat/shp-0019');
+    await userEvent.click(await screen.findByRole('tab', { name: 'Kalite itirazı' }));
+    expect(await screen.findByText(/tamamı için itiraz açıldı/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Kalite itirazı aç' })).not.toBeInTheDocument();
   });
 
   it('sunucu kilo aşımını reddederse hatasını Türkçe gösterir', async () => {
@@ -72,7 +112,7 @@ describe('Kalite itirazı', () => {
     await userEvent.upload(within(form).getByTestId('upload-file-input'), photo());
     await within(form).findByText('1 fotoğraf eklendi.');
     await userEvent.click(within(form).getByRole('button', { name: 'İtirazı gönder' }));
-    expect(await within(form).findByText(/net ağırlığını aşıyor/)).toBeInTheDocument();
+    expect(await within(form).findByText(/itiraz edilebilecek kiloyu aşıyor/)).toBeInTheDocument();
   });
 
   it('süre dolduysa sunucu hatasını Türkçe gösterir', async () => {

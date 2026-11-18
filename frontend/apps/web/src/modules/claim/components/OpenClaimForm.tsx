@@ -12,18 +12,18 @@ const MAX_DESCRIPTION_LENGTH = 2000;
 export type OpenClaimFormProps = {
   shipmentId: string;
   /** Sevkiyatın çıkış net kilosu; itiraz edilen kilo bunu aşamaz. */
-  shipmentNetKg: string;
+  claimableKg: string;
   onDone: () => void;
 };
 
 /** Kalite itirazı (kg ile): itiraz edilen kilo, açıklama ve en az bir fotoğraf zorunlu (analiz Bölüm 10). */
-export function OpenClaimForm({ shipmentId, shipmentNetKg, onDone }: OpenClaimFormProps) {
+export function OpenClaimForm({ shipmentId, claimableKg, onDone }: OpenClaimFormProps) {
   const { t } = useTranslation();
   const [kgText, setKgText] = useState('');
   const [description, setDescription] = useState('');
   const [evidenceIds, setEvidenceIds] = useState<string[]>([]);
   const mutation = useOpenClaim(shipmentId);
-  const kg = claimKgState(kgText, shipmentNetKg);
+  const kg = claimKgState(kgText, claimableKg);
   const { claimedKg } = kg;
   const canSubmit =
     kg.isUsable && !kg.isOverLimit && description.trim() !== '' && evidenceIds.length > 0;

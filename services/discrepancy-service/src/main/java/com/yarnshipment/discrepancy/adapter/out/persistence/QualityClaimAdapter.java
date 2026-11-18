@@ -25,9 +25,15 @@ final class QualityClaimAdapter implements QualityClaimPort {
     static final String CLAIM_EVIDENCE = "CLAIM_EVIDENCE";
 
     private static final String TARGET = """
-            SELECT shipment_id, site_id, subcontractor_id, shipment_no, completed_at, dispatch_net_kg
-              FROM shipment_watch
-             WHERE shipment_id = :shipmentId AND completed_at IS NOT NULL AND dispatch_net_kg IS NOT NULL""";
+            SELECT w.shipment_id, w.site_id, w.subcontractor_id, w.shipment_no, w.completed_at,
+                   (SELECT COALESCE(SUM(f.net_kg), 0) FROM fabric_receipt_watch f
+                     WHERE f.shipment_id = w.shipment_id) AS received_kg,
+                   (SELECT COALESCE(SUM(q.claimed_kg), 0) FROM quality_claim q
+                      JOIN discrepancy d ON d.id = q.discrepancy_id
+                     WHERE q.shipment_id = w.shipment_id
+                       AND d.resolution IS DISTINCT FROM 'CLAIM_UNJUSTIFIED') AS claimed_kg
+              FROM shipment_watch w
+             WHERE w.shipment_id = :shipmentId AND w.completed_at IS NOT NULL""";
     private static final String CLAIM = """
             SELECT id, discrepancy_id, shipment_id, subcontractor_id, opened_by, opened_at, deadline_at, description,
                    claimed_kg, fabric_receipt_id
@@ -57,7 +63,8 @@ final class QualityClaimAdapter implements QualityClaimPort {
                         ClaimRows.optionalUuid(rs, "subcontractor_id"),
                         rs.getString("shipment_no"),
                         ClaimRows.requiredInstant(rs, "completed_at"),
-                        Objects.requireNonNull(rs.getBigDecimal("dispatch_net_kg"), "dispatch_net_kg")))
+                        Objects.requireNonNull(rs.getBigDecimal("received_kg"), "received_kg"),
+                        Objects.requireNonNull(rs.getBigDecimal("claimed_kg"), "claimed_kg")))
                 .optional();
     }
 

@@ -16,6 +16,7 @@ final class SeededClaims {
     static final UUID ACTOR = SeededDiscrepancies.ACTOR;
     static final UUID PHOTO = UUID.fromString("0192f0a0-0000-7000-8000-0000000c0003");
     static final Instant OPENED_AT = Instant.parse("2026-10-26T09:00:00Z");
+    static final UUID FABRIC_RECEIPT = UUID.fromString("0192f0a0-0000-7000-8000-0000000c00f1");
     private static final long DAY = 86_400L;
     private static final long HALF_DAY = 43_200L;
     private static final long LATE_BY = 30 * DAY;
@@ -28,6 +29,8 @@ final class SeededClaims {
         Instant dispatched = TestComparisons.RECEIVED_AT.minusSeconds(HALF_DAY);
         watch.recordDispatched(TestComparisons.SHIPMENT, dispatched, TestComparisons.DISPATCH_KG);
         watch.recordCompleted(TestComparisons.SHIPMENT, TestComparisons.RECEIVED_AT);
+        watch.recordFabricReceived(
+                TestComparisons.SHIPMENT, FABRIC_RECEIPT, TestComparisons.DISPATCH_KG, TestComparisons.RECEIVED_AT);
     }
 
     static QualityClaim open(QualityClaimAdapter claims) {

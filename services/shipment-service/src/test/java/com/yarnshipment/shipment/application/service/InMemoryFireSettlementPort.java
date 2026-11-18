@@ -27,6 +27,10 @@ final class InMemoryFireSettlementPort implements FireSettlementPort, FireInvoic
         totals = new FireTotals(new BigDecimal(returnedKg), new BigDecimal(claimKg), new BigDecimal(fabricKg));
     }
 
+    void givenInvoiced(String invoicedKg) {
+        totals = new FireTotals(totals.returnedKg(), totals.claimKg(), totals.fabricKg(), new BigDecimal(invoicedKg));
+    }
+
     void put(FireSettlement settlement) {
         byShipment.put(settlement.shipmentId(), settlement);
     }

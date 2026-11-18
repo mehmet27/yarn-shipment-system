@@ -6,11 +6,14 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.yarnshipment.common.events.IncomingEvent;
 import com.yarnshipment.discrepancy.TestComparisons;
+import com.yarnshipment.discrepancy.application.port.in.RecordFabricReceiptCommand;
+import com.yarnshipment.discrepancy.application.port.in.RecordFabricReceiptUseCase;
 import com.yarnshipment.discrepancy.application.port.in.RegisterShipmentCommand;
 import com.yarnshipment.discrepancy.application.port.in.RegisterShipmentUseCase;
 import com.yarnshipment.discrepancy.application.port.in.TrackShipmentCommand;
 import com.yarnshipment.discrepancy.application.port.in.TrackShipmentCommand.Milestone;
 import com.yarnshipment.discrepancy.application.port.in.TrackShipmentUseCase;
+import com.yarnshipment.events.shipment.FabricReceived;
 import com.yarnshipment.events.shipment.ShipmentCancelled;
 import com.yarnshipment.events.shipment.ShipmentCompleted;
 import com.yarnshipment.events.shipment.ShipmentCreated;
@@ -30,7 +33,8 @@ class ShipmentEventsConsumerTest {
 
     private final RegisterShipmentUseCase register = mock(RegisterShipmentUseCase.class);
     private final TrackShipmentUseCase track = mock(TrackShipmentUseCase.class);
-    private final ShipmentEventsConsumer consumer = new ShipmentEventsConsumer(register, track);
+    private final RecordFabricReceiptUseCase fabric = mock(RecordFabricReceiptUseCase.class);
+    private final ShipmentEventsConsumer consumer = new ShipmentEventsConsumer(register, track, fabric);
 
     @Test
     @DisplayName("Oluşturma olayı sevkiyatı numarası, lokasyonu ve fasoncusuyla izlemeye alır")
@@ -78,11 +82,29 @@ class ShipmentEventsConsumerTest {
     }
 
     @Test
+    @DisplayName("Kumaş girişi olayı girilen kumaş kilosu olarak izlenir")
+    void shouldRecordFabricReceipt() {
+        UUID receipt = UUID.fromString("0192f0a0-0000-7000-8000-0000000c00f2");
+
+        consumer.consume(record(
+                FabricReceived.TYPE,
+                ("{\"shipmentId\":\"%s\",\"receiptId\":\"%s\",\"fabricType\":\"Süprem\","
+                                + "\"netKg\":25.5,\"receivedAt\":\"2026-10-23T09:00:00Z\"}")
+                        .formatted(TestComparisons.SHIPMENT, receipt),
+                Map.of()));
+
+        verify(fabric)
+                .recordFabricReceipt(
+                        new RecordFabricReceiptCommand(TestComparisons.SHIPMENT, receipt, new BigDecimal("25.5"), AT));
+        verifyNoInteractions(register, track);
+    }
+
+    @Test
     @DisplayName("Kullanılmayan sevkiyat olayları hiçbir use case'e gitmez")
     void shouldIgnoreOtherEvents() {
         consumer.consume(record("com.yarnshipment.shipment.shipment-loaded.v1", "{}", Map.of()));
 
-        verifyNoInteractions(register, track);
+        verifyNoInteractions(register, track, fabric);
     }
 
     private static IncomingEvent record(String type, String payload, Map<String, String> headers) {

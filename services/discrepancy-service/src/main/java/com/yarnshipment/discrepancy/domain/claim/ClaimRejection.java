@@ -6,7 +6,9 @@ public enum ClaimRejection {
     NOT_AVAILABLE,
     /** Teslimden sonraki itiraz süresi doldu. */
     WINDOW_CLOSED,
-    /** İtiraz edilen kilo sevkiyatın net kilosunu aşıyor. */
+    /** Sevkiyata henüz kumaş girişi yapılmadı; girilmemiş kumaşa itiraz açılamaz. */
+    FABRIC_NOT_RECEIVED,
+    /** İtiraz edilen kilo, girilmiş kumaştan daha önce itiraz edilen kilo çıkarılınca kalanı aşıyor. */
     CLAIM_EXCEEDS_SHIPMENT_WEIGHT,
     /** İtiraz edilen kilo sıfırdan büyük ve en çok üç ondalıklı olmalı. */
     CLAIMED_KG_INVALID,

@@ -184,6 +184,11 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
         Number(fire.actualFirePercent) < Number(once.actualFirePercent),
         `${once.actualFirePercent} → ${fire.actualFirePercent}`,
       );
+      await fasonKalite.sayfa.goto(`/panel/sevkiyat/${faturali}`);
+      await fasonKalite.sayfa.getByRole('tab', { name: 'Kumaş girişi', exact: true }).click();
+      await expect(fasonKalite.sayfa.getByTestId('fabric-limit-note')).toContainText(
+        '1 kg için fatura kesildi',
+      );
     },
   );
 
@@ -295,20 +300,35 @@ test('Uyuşmazlık: itiraz, lab sonucu ve karar', async ({ giris }) => {
   const depo = await giris('depo');
   const mudur = await giris('mudur');
   const kalite = await giris('kalite');
-  for (const r of [depo, mudur, kalite]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
-  const id = await tamamlanmisSevkiyat({ depo, mudur }, damga(), '100', '3');
+  const fasonKalite = await giris('fason-kalite');
+  for (const r of [depo, mudur, kalite, fasonKalite]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
+  const damgaNo = damga();
+  const id = await tamamlanmisSevkiyat({ depo, mudur }, damgaNo, '100', '3');
+
+  await kalite.adim('kumaş girişi yokken itiraz açılamaz, nedeni yazar', async () => {
+    await kalite.sayfa.goto(`/panel/sevkiyat/${id}`);
+    await sekme(kalite, 'Kalite itirazı');
+    await expect(kalite.sayfa.getByText(/önce kumaş girişi yapılmalı/)).toBeVisible();
+    await expect(kalite.sayfa.getByRole('button', { name: 'Kalite itirazı aç' })).toHaveCount(0);
+  });
+
+  await fasonKalite.adim('fasoncu kalite 90 kg kumaş girer', async () => {
+    await kumasGir(fasonKalite, id, '90', `${damgaNo}-K`);
+  });
 
   await kalite.adim('itiraz aç', async () => {
     await kalite.sayfa.goto(`/panel/sevkiyat/${id}`);
     await sekme(kalite, 'Kalite itirazı');
     await kalite.sayfa.getByRole('button', { name: 'Kalite itirazı aç' }).click();
     const net = (
-      await kalite.api<{ shipmentNetKg: string }>(`/api/v1/quality-claims/shipments/${id}`)
-    ).shipmentNetKg;
-    await expect(kalite.sayfa.getByText(/En çok [\d.,]+ kg yazabilirsiniz\./)).toBeVisible();
+      await kalite.api<{ claimableKg: string }>(`/api/v1/quality-claims/shipments/${id}`)
+    ).claimableKg;
+    await expect(
+      kalite.sayfa.getByText(/Girilen kumaşa göre en çok [\d.,]+ kg yazabilirsiniz\./),
+    ).toBeVisible();
     await kalite.sayfa.getByLabel(/İtiraz edilen kilo/).fill(String(Math.ceil(Number(net)) + 1));
     await expect(
-      kalite.sayfa.getByText(/Sevkiyatın net ağırlığı [\d.,]+ kg; bundan fazla yazamazsınız\./),
+      kalite.sayfa.getByText(/İtiraz edilebilecek kilo [\d.,]+ kg; bundan fazla yazamazsınız\./),
     ).toBeVisible();
     await kalite.sayfa.getByLabel(/İtiraz edilen kilo/).fill('10');
     await kalite.sayfa.getByLabel(/Sorunu anlatın/).fill('Robot: leke');

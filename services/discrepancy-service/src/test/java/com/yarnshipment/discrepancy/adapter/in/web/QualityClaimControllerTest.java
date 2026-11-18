@@ -134,7 +134,8 @@ class QualityClaimControllerTest {
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().extractingPath("$.allowedActions[0]").isEqualTo("OPEN_CLAIM");
-        assertThat(result).bodyJson().extractingPath("$.shipmentNetKg").isEqualTo("2000.000");
+        assertThat(result).bodyJson().extractingPath("$.receivedKg").isEqualTo("2000.000");
+        assertThat(result).bodyJson().extractingPath("$.claimableKg").isEqualTo("2000.000");
         assertThat(result).bodyJson().doesNotHavePath("$.deliveredKeys");
         assertThat(result).bodyJson().extractingPath("$.claims[0].claimedKg").isEqualTo("120.500");
     }

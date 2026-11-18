@@ -7,7 +7,7 @@ export type ClaimedKgFieldProps = {
   value: string;
   onChange: (value: string) => void;
   isInvalid: boolean;
-  /** Sevkiyatın net kilosu; biliniyorsa ipucu ve aşım hatası gerçek sınırı yazar. */
+  /** İtiraz edilebilir kilo; biliniyorsa ipucu ve aşım hatası gerçek sınırı yazar. */
   limit: Kilogram | undefined;
   isOverLimit: boolean;
 };

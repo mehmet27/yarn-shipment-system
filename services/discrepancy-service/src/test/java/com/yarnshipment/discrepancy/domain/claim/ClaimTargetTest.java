@@ -26,7 +26,8 @@ class ClaimTargetTest {
             TestComparisons.SUBCONTRACTOR,
             TestComparisons.SHIPMENT_NO,
             FRIDAY,
-            NET_KG);
+            NET_KG,
+            new BigDecimal("500.000"));
 
     @Test
     @DisplayName("Hedef tarih 3 iş günüdür (hafta sonu sayılmaz) ama itiraz süresi sınırsızdır")
@@ -37,20 +38,45 @@ class ClaimTargetTest {
     }
 
     @Test
+    @DisplayName("İtiraz edilebilecek kilo girilmiş kumaştan açık itirazlar çıkarılarak bulunur")
+    void shouldSubtractOpenClaimsFromReceivedFabric() {
+        assertThat(target.claimableKg()).isEqualByComparingTo("1500.000");
+        target.requireClaimable(request("1500", PHOTO), FRIDAY);
+        assertThat(rejectionOf(request("1500.001", PHOTO), FRIDAY))
+                .isEqualTo(ClaimRejection.CLAIM_EXCEEDS_SHIPMENT_WEIGHT);
+    }
+
+    @Test
+    @DisplayName("Kumaş girişi yapılmamış sevkiyata itiraz açılamaz")
+    void shouldRejectClaimBeforeFabricReceived() {
+        ClaimTarget noFabric = new ClaimTarget(
+                TestComparisons.SHIPMENT,
+                TestComparisons.SITE,
+                TestComparisons.SUBCONTRACTOR,
+                TestComparisons.SHIPMENT_NO,
+                FRIDAY,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO);
+
+        assertThat(TestClaims.rejectionOf(() -> noFabric.requireClaimable(request("1", PHOTO), FRIDAY)))
+                .isEqualTo(ClaimRejection.FABRIC_NOT_RECEIVED);
+    }
+
+    @Test
     @DisplayName("Süre içinde, kilosu aşmayan ve fotoğraflı itiraz kabul edilir; kilo üç ondalığa tamamlanır")
     void shouldAcceptValidClaim() {
-        ClaimRequest request = new ClaimRequest("B kalite çıktı", new BigDecimal("2000"), null, PHOTO);
+        ClaimRequest request = new ClaimRequest("B kalite çıktı", new BigDecimal("1500"), null, PHOTO);
 
         target.requireClaimable(request, FRIDAY);
 
-        assertThat(request.claimedKg()).isEqualTo(new BigDecimal("2000.000"));
+        assertThat(request.claimedKg()).isEqualTo(new BigDecimal("1500.000"));
     }
 
     @Test
     @DisplayName("Sevkiyat kilosunu aşan ya da fotoğrafsız itiraz reddedilir; geç kalmak red nedeni değildir")
     void shouldRejectInvalidClaims() {
         target.requireClaimable(request("10", PHOTO), WEDNESDAY_NOON.plusSeconds(1));
-        assertThat(rejectionOf(request("2000.001", PHOTO), FRIDAY))
+        assertThat(rejectionOf(request("1500.001", PHOTO), FRIDAY))
                 .isEqualTo(ClaimRejection.CLAIM_EXCEEDS_SHIPMENT_WEIGHT);
         assertThat(rejectionOf(request("10", List.of()), FRIDAY)).isEqualTo(ClaimRejection.EVIDENCE_REQUIRED);
     }

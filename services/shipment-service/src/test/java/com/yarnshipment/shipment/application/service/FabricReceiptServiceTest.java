@@ -177,6 +177,17 @@ class FabricReceiptServiceTest {
     }
 
     @Test
+    @DisplayName("Faturası kesilen iplik tüketilmiş sayılır: gelen kumaş ve faturalanan kilo gönderilen ipliği aşamaz")
+    void shouldCountInvoicedKgAsConsumedYarn() {
+        settlements.givenInvoiced("300");
+
+        assertThatThrownBy(() -> service.recordFabricReceipt(command("700.001", null)))
+                .isInstanceOf(FabricExceedsSentYarnException.class);
+        assertThat(ledger.receipts()).isEmpty();
+        assertThat(service.recordFabricReceipt(command("700", null)).netKg()).isEqualByComparingTo("700");
+    }
+
+    @Test
     @DisplayName("Tamamlanmamış sevkiyata kumaş girişi yapılamaz")
     void shouldRejectUncompletedShipment() {
         // given

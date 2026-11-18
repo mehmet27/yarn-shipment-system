@@ -33,7 +33,8 @@ public final class TestClaims {
                 TestTokens.SUBCONTRACTOR_ID,
                 TestComparisons.SHIPMENT_NO,
                 RECEIVED_AT,
-                TestComparisons.DISPATCH_KG);
+                TestComparisons.DISPATCH_KG,
+                BigDecimal.ZERO);
     }
 
     public static QualityClaim claim() {

@@ -22,10 +22,7 @@ public class ResolveDiscrepancyService implements ResolveDiscrepancyUseCase {
     private final Clock clock;
 
     public ResolveDiscrepancyService(
-            DiscrepancyQueryPort queryPort,
-            DiscrepancyDecisionPort decisionPort,
-            ScopeGuard scopeGuard,
-            Clock clock) {
+            DiscrepancyQueryPort queryPort, DiscrepancyDecisionPort decisionPort, ScopeGuard scopeGuard, Clock clock) {
         this.decisionPort = decisionPort;
         this.access = new DiscrepancyAccess(queryPort, scopeGuard);
         this.clock = clock;

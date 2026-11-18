@@ -22,10 +22,7 @@ public class GetShipmentClaimsService implements GetShipmentClaimsUseCase {
     private final Clock clock;
 
     public GetShipmentClaimsService(
-            QualityClaimPort claims,
-            DiscrepancyQueryPort discrepancies,
-            ScopeGuard scopeGuard,
-            Clock clock) {
+            QualityClaimPort claims, DiscrepancyQueryPort discrepancies, ScopeGuard scopeGuard, Clock clock) {
         this.claims = claims;
         this.access = new ClaimAccess(claims, discrepancies, scopeGuard);
         this.clock = clock;

@@ -28,10 +28,7 @@ final class ClaimAccess {
     private final DiscrepancyQueryPort discrepancies;
     private final ScopeGuard scopeGuard;
 
-    ClaimAccess(
-            QualityClaimPort claims,
-            DiscrepancyQueryPort discrepancies,
-            ScopeGuard scopeGuard) {
+    ClaimAccess(QualityClaimPort claims, DiscrepancyQueryPort discrepancies, ScopeGuard scopeGuard) {
         this.claims = claims;
         this.discrepancies = discrepancies;
         this.scopeGuard = scopeGuard;

@@ -37,7 +37,7 @@ final class ClaimPorts {
                 .thenReturn(Optional.of(
                         new EvidenceRef(TestClaims.PHOTO, TestDiscrepancies.SHIPMENT, ClaimEvidence.QUALITY_CLAIM)));
         when(evidence.findEvidence(TestClaims.OTHER_DOCUMENT))
-                .thenReturn(Optional.of(new EvidenceRef(
-                        TestClaims.OTHER_DOCUMENT, TestDiscrepancies.SHIPMENT, "OTHER")));
+                .thenReturn(
+                        Optional.of(new EvidenceRef(TestClaims.OTHER_DOCUMENT, TestDiscrepancies.SHIPMENT, "OTHER")));
     }
 }

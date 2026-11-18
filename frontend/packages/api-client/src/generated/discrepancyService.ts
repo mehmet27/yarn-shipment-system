@@ -16,8 +16,7 @@
  *
  * Kalite itirazı (ön analiz, Bölüm 10): fasoncu teslimden sonraki 3 iş günü içinde, teslimde okuttuğu çuvallar için
  * fotoğraflı itiraz açar. İtiraz Kırmızı bir `QUALITY` uyuşmazlığıdır ve diğer uyuşmazlıklar gibi atanır ve
- * `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır. Kalite, karardan önce numune ya da lab kontrolü
- * isteyebilir ve sonucu (lab için belgeyle) girer.
+ * `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır.
  *
  * OpenAPI spec version: 1.0.0
  */

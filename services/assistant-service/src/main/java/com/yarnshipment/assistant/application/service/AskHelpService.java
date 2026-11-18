@@ -11,11 +11,14 @@ import com.yarnshipment.assistant.domain.model.HelpUnavailableException;
 import com.yarnshipment.assistant.domain.model.Speaker;
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.common.security.Role;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
-/** Soruyu, kullanıcının rolü ve proje dokümanlarıyla birlikte modele iletir. Hiçbir veriye dokunmaz. */
+/** Soruyu, kullanıcının rolü ve proje dokümanlarıyla birlikte modele iletir. Hiçbir veriyi değiştirmez. */
 @Service
 final class AskHelpService implements AskHelpUseCase, GetHelpStatusUseCase {
 
@@ -24,14 +27,18 @@ final class AskHelpService implements AskHelpUseCase, GetHelpStatusUseCase {
 
     static final int MAX_HISTORY_MESSAGE_LENGTH = 2000;
 
+    private static final ZoneId ISTANBUL = ZoneId.of("Europe/Istanbul");
+
     private final HelpKnowledgePort knowledge;
     private final HelpModelPort model;
     private final QuestionRateLimiter rateLimiter;
+    private final Clock clock;
 
-    AskHelpService(HelpKnowledgePort knowledge, HelpModelPort model, QuestionRateLimiter rateLimiter) {
+    AskHelpService(HelpKnowledgePort knowledge, HelpModelPort model, QuestionRateLimiter rateLimiter, Clock clock) {
         this.knowledge = knowledge;
         this.model = model;
         this.rateLimiter = rateLimiter;
+        this.clock = clock;
     }
 
     @Override
@@ -47,7 +54,10 @@ final class AskHelpService implements AskHelpUseCase, GetHelpStatusUseCase {
         if (!rateLimiter.tryAcquire(command.actor().userId())) {
             throw new HelpRateLimitedException("question limit reached");
         }
-        return model.complete(knowledge.documents(), UserContext.describe(command.actor()), conversation(command));
+        return model.complete(
+                knowledge.documents(),
+                UserContext.describe(command.actor(), LocalDate.now(clock.withZone(ISTANBUL))),
+                conversation(command));
     }
 
     private static List<ChatMessage> conversation(AskHelpCommand command) {
@@ -79,12 +89,13 @@ final class AskHelpService implements AskHelpUseCase, GetHelpStatusUseCase {
 
         private UserContext() {}
 
-        static String describe(Actor actor) {
+        static String describe(Actor actor, LocalDate today) {
             StringBuilder text = new StringBuilder("Şu an soran kullanıcının rolleri: ");
             text.append(String.join(
                     ", ",
                     actor.roles().stream().map(UserContext::label).sorted().toList()));
-            text.append(".\nCevabı bu role göre ver: rolün yapamadığı bir işi sorarsa bunu yapabilecek rolü söyle.");
+            text.append(".\nBugünün tarihi: ").append(today).append(" (Europe/Istanbul).");
+            text.append("\nCevabı bu role göre ver: rolün yapamadığı bir işi sorarsa bunu yapabilecek rolü söyle.");
             return text.toString();
         }
 

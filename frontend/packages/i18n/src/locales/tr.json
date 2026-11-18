@@ -58,7 +58,7 @@
     "open": "Yardım",
     "title": "Yardım",
     "close": "Yardımı kapat",
-    "welcome": "Merhaba! Uygulamayı nasıl kullanacağınızı bana sorabilirsiniz. Örneğin: \"Çuval nasıl eklenir?\"",
+    "welcome": "Merhaba! Uygulamayı nasıl kullanacağınızı bana sorabilirsiniz. Güncel durumu da sorabilirsiniz. Örneğin: \"Çuval nasıl eklenir?\" ya da \"Bu ay kaç kilo iplik gönderdik?\"",
     "notice": "Yardım yalnızca bilgi verir, kayıtlarınızı değiştirmez. Cevaplar yanlış olabilir.",
     "placeholder": "Sorunuzu yazın",
     "send": "Gönder",

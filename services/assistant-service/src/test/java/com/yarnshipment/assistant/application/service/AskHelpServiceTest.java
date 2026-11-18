@@ -27,7 +27,8 @@ class AskHelpServiceTest {
     private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-11-18T10:00:00Z"), ZoneOffset.UTC);
 
     private final RecordingModel model = new RecordingModel(true);
-    private final AskHelpService service = new AskHelpService(() -> "BELGELER", model, new QuestionRateLimiter(CLOCK));
+    private final AskHelpService service =
+            new AskHelpService(() -> "BELGELER", model, new QuestionRateLimiter(CLOCK), CLOCK);
 
     @Test
     @DisplayName("Belgeler, rol bilgisi ve soru modele iletilir")
@@ -38,7 +39,7 @@ class AskHelpServiceTest {
 
         assertThat(answer).isEqualTo("cevap");
         assertThat(model.knowledge).isEqualTo("BELGELER");
-        assertThat(model.userContext).contains("Depo");
+        assertThat(model.userContext).contains("Depo").contains("Bugünün tarihi: 2026-11-18");
         assertThat(model.conversation).containsExactly(new ChatMessage(Speaker.USER, "Çuval nasıl eklenir?"));
     }
 
@@ -72,7 +73,7 @@ class AskHelpServiceTest {
     @DisplayName("Anahtar tanımlı değilse asistan kapalıdır ve soru reddedilir")
     void shouldBeUnavailableWithoutKey() {
         AskHelpService closed =
-                new AskHelpService(() -> "BELGELER", new RecordingModel(false), new QuestionRateLimiter(CLOCK));
+                new AskHelpService(() -> "BELGELER", new RecordingModel(false), new QuestionRateLimiter(CLOCK), CLOCK);
 
         assertThat(closed.isAvailable()).isFalse();
         assertThatThrownBy(() -> closed.ask(new AskHelpCommand(TestTokens.actor("manager"), "soru", List.of())))

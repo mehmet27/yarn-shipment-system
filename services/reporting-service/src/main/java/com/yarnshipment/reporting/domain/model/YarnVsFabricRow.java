@@ -46,7 +46,7 @@ public record YarnVsFabricRow(
                 sent,
                 returned,
                 fabric,
-                FireFile.actualFireRate(sent.subtract(returned), fabric),
+                FireFile.actualFireRate(sent.subtract(returned), fabric.add(sum(group, FireFile::invoicedKg))),
                 shortage.setScale(FireFile.KG_SCALE, RoundingMode.HALF_UP),
                 over.size(),
                 sum(over, FireFile::fireKg).setScale(FireFile.KG_SCALE, RoundingMode.HALF_UP));

@@ -108,4 +108,21 @@ class FireCalculationTest {
         assertThat(result.actualFirePercent()).isEqualByComparingTo("0");
         assertThat(result.faultyKg()).isEqualByComparingTo("0");
     }
+
+    @Test
+    @DisplayName("Faturalanan kilo gerçekleşen fireden düşer; eksik kilo değişmez")
+    void shouldSubtractInvoicedKgFromActualFire() {
+        // G=200, f=%4, K=25: B=192, E=H=167, fire=%87,5; 67 kg faturalanınca fire %54, kalan 100 kg
+        FireCalculation result = FireCalculation.of(new Inputs(
+                new BigDecimal("200"),
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                new BigDecimal("25"),
+                new BigDecimal("0.04"),
+                new BigDecimal("67")));
+
+        assertThat(result.faultyKg()).isEqualByComparingTo("167");
+        assertThat(result.remainingKg()).isEqualByComparingTo("100");
+        assertThat(result.actualFirePercent()).isEqualByComparingTo("54.00");
+    }
 }

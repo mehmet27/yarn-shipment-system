@@ -9,6 +9,8 @@ import java.math.RoundingMode;
  * Bir sevkiyatın fire hesabı (analiz 8.1). Ara hesapta yuvarlama yapılmaz; yalnız sonuç 3 ondalığa, yüzde 2 ondalığa
  * {@code HALF_UP} ile yuvarlanır (8.3).
  *
+ * Faturası kesilen kilo (F) kumaş gibi hesaba katılır: fire = (T - (K - I) - F) / T. Eksik kilo (E, H) değişmez.
+ *
  * <pre>
  * T = G - D - I          B = T x (1 - f)        E = B - (K - I)
  * H = max(0, E)          fire = (T - (K - I)) / T
@@ -56,7 +58,7 @@ public record FireCalculation(
         BigDecimal netFabric = fabricKg.subtract(claimKg);
         BigDecimal shortage = expected.subtract(netFabric);
         BigDecimal faulty = shortage.signum() > 0 ? shortage : BigDecimal.ZERO;
-        BigDecimal percent = firePercent(base, netFabric);
+        BigDecimal percent = firePercent(base, netFabric.add(inputs.invoicedKg()));
         BigDecimal roundedFaulty = Kilograms.round(faulty);
         BigDecimal invoiced = Kilograms.round(inputs.invoicedKg());
         BigDecimal remaining = roundedFaulty.subtract(invoiced).max(BigDecimal.ZERO);

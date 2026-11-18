@@ -28,7 +28,6 @@ tags:
   - name: PasswordRequest
   - name: ShipmentWeightDecision
   - name: ShipmentSettings
-  - name: ShipmentCorrection
   - name: MasterData
   - name: SubcontractorManagement
   - name: DriverManagement
@@ -2049,74 +2048,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-  /api/v1/shipments/{shipmentId}/corrections:
-    post:
-      tags: [ShipmentCorrection]
-      operationId: recordCorrection
-      summary: Çıkış tartımını gerekçeyle düzeltir
-      description: |
-        Yalnızca Admin (CORRECTION_CREATE). Tamamlanıp kilitlenmiş sevkiyatta da çalışır (rapor 7.8). Kayıt
-        güncellenmez: yeni satır eklenir, eski değer hem eski satırda hem düzeltme kaydında saklanır. Tartım
-        düzeltmesinde brüt ve dara birlikte gönderilir; çuval sayısı ve tartım zamanı aynen kalır. Düzeltilecek kayıt
-        yoksa, yeni değer eskisiyle aynıysa ya da gerekçe boşsa `INVALID_CORRECTION`; kayıt bu arada başka
-        düzeltmeyle değiştiyse `CORRECTION_CONFLICT`. Aynı
-        `Idempotency-Key` ile tekrar gelen istek düzeltmeyi yeniden uygulamaz, ilk kaydı döner.
-      parameters:
-        - name: shipmentId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - $ref: '#/components/parameters/IdempotencyKey'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RecordCorrectionRequest'
-      responses:
-        '201':
-          description: Düzeltme kaydedildi
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CorrectionView'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-    get:
-      tags: [ShipmentCorrection]
-      operationId: listCorrections
-      summary: Sevkiyatın düzeltme kayıtları, eskiden yeniye
-      description: Admin ve yönetici (CORRECTION_CREATE ya da AUDIT_VIEW); eski ve yeni değer birlikte döner.
-      parameters:
-        - name: shipmentId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Düzeltmeler
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CorrectionListResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
   /api/v1/shipments/{shipmentId}/bags:
     post:
       tags: [ShipmentBags]
@@ -2285,8 +2216,7 @@ components:
         Sevkiyatın durumu bu işleme izin vermiyor (INVALID_SHIPMENT_STATUS) ya da çuval kullanılamıyor
         (BAG_NOT_AVAILABLE, BAG_ALREADY_RESERVED) ya da plaka başka araçta kullanılıyor (DUPLICATE_PLATE) ya da
         fasoncu ünvanı kullanılmış (DUPLICATE_SUBCONTRACTOR) ya da kod / parti numarası kullanılmış (DUPLICATE_CODE)
-        ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da düzeltilecek kayıt bu arada
-        değişti (CORRECTION_CONFLICT) ya da sevkiyat günü gelmedi (SHIPMENT_NOT_DUE)
+        ya da partinin kalitesi kilitli (LOT_QUALITY_LOCKED) ya da sevkiyat günü gelmedi (SHIPMENT_NOT_DUE)
       content:
         application/problem+json:
           schema:
@@ -2374,7 +2304,6 @@ components:
         - EVIDENCE_UPLOAD_CLAIM
         - EVIDENCE_VIEW
         - EVIDENCE_INVALIDATE
-        - CORRECTION_CREATE
         - QUALITY_CLAIM_OPEN
         - DISCREPANCY_VIEW
         - DISCREPANCY_RESOLVE
@@ -2470,7 +2399,6 @@ components:
         - RESOLVE_WEIGHT_MISMATCH
         - COMPLETE
         - OPEN_QUALITY_CLAIM
-        - CREATE_CORRECTION
         - UPDATE_SHIPMENT_DATE
         - UPDATE_TRANSPORT
     PageMetadata:
@@ -2559,63 +2487,6 @@ components:
         weighedAt:
           type: string
           format: date-time
-    CorrectionTarget:
-      description: |
-        Düzeltilen kayıt: çıkış tartımı (brüt ve dara)
-      type: string
-      enum: [DISPATCH_WEIGHING]
-    RecordCorrectionRequest:
-      description: Brüt ve dara tartım düzeltmesinde zorunludur; eksikse 400 INVALID_CORRECTION döner.
-      type: object
-      required: [target, reason]
-      properties:
-        target:
-          $ref: '#/components/schemas/CorrectionTarget'
-        grossKg:
-          $ref: '#/components/schemas/Kg'
-        tareKg:
-          $ref: '#/components/schemas/Kg'
-        reason:
-          type: string
-          minLength: 1
-          maxLength: 500
-    CorrectionView:
-      description: |
-        Bir düzeltme. Değerler `gross=… tare=… net=…` biçimindedir (kilo, üç ondalık).
-      type: object
-      required: [id, target, reason, status, requestedBy, createdAt]
-      properties:
-        id:
-          type: string
-          format: uuid
-        target:
-          $ref: '#/components/schemas/CorrectionTarget'
-        oldValue:
-          type: string
-        newValue:
-          type: string
-        reason:
-          type: string
-        status:
-          type: string
-          enum: [PENDING, APPROVED, REJECTED]
-        requestedBy:
-          type: string
-          format: uuid
-        approvedBy:
-          type: string
-          format: uuid
-        createdAt:
-          type: string
-          format: date-time
-    CorrectionListResponse:
-      type: object
-      required: [items]
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/CorrectionView'
     CompleteShipmentRequest:
       type: object
       required: [waybillNo, waybillEvidenceId]

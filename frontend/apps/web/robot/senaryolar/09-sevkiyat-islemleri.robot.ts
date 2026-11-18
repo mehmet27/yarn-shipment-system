@@ -218,7 +218,7 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
   });
 });
 
-test('İplik dönüşü, düzeltme ve kanıt geçersiz kılma', async ({ giris }) => {
+test('İplik dönüşü ve kanıt geçersiz kılma', async ({ giris }) => {
   const depo = await giris('depo');
   const mudur = await giris('mudur');
   const kalite = await giris('kalite');
@@ -262,18 +262,6 @@ test('İplik dönüşü, düzeltme ve kanıt geçersiz kılma', async ({ giris }
       await expect(mudur.sayfa.locator('main')).toContainText(/Dönüş/);
     },
   );
-
-  await mudur.adim('düzeltme: müdür gerekçeyle çıkış tartısını düzeltir', async () => {
-    await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
-    await sekme(mudur, 'Düzeltmeler');
-    await mudur.sayfa.getByRole('button', { name: 'Düzeltmeyi kaydet' }).click();
-    const bos = await mudur.mesajlar();
-    mudur.kontrol('boş düzeltme uyarı vermeli', bos.length > 0);
-    await sec(mudur.sayfa, /Ne düzeltilecek/, '');
-    await mudur.sayfa.getByLabel(/Gerekçe/).fill('Robot: yanlış girildi');
-    await mudur.sayfa.getByRole('button', { name: 'Düzeltmeyi kaydet' }).click();
-    await mudur.sayfa.waitForTimeout(1200);
-  });
 
   await mudur.adim('kanıt geçersiz kıl', async () => {
     await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);

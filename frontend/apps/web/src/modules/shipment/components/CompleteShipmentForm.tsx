@@ -20,7 +20,7 @@ function completeErrorKey(code: string): string {
 
 /**
  * Yönetici: sevkiyat fasoncuya ulaşınca irsaliyeyi yükler, irsaliye numarasını yazar ve sevkiyatı
- * tamamlar. Tamamlanan sevkiyat kilitlenir; değişiklik yalnızca düzeltme kaydıyla yapılır.
+ * tamamlar. Tamamlanan sevkiyat kilitlenir.
  */
 export function CompleteShipmentForm({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();

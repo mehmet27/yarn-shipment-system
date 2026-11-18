@@ -43,7 +43,6 @@ export const PERMISSIONS_BY_ROLE: Readonly<Record<Role, readonly Permission[]>> 
     'DISPATCH_VIEW',
     'EVIDENCE_VIEW',
     'EVIDENCE_INVALIDATE',
-    'CORRECTION_CREATE',
     'DISCREPANCY_VIEW',
     'DISCREPANCY_DECIDE',
     'AUDIT_VIEW',

@@ -120,6 +120,7 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Oranı kaydet' }));
     await userEvent.type(await screen.findByLabelText(/Fatura no/), 'FTR-7');
     await userEvent.click(screen.getByRole('button', { name: 'Fatura edildi' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Evet, fatura edildi' }));
     expect(await screen.findByText(/Fatura FTR-7/)).toBeInTheDocument();
     expect(screen.getByTestId('fire-status')).toHaveTextContent('Faturalandı');
     expect(screen.queryByRole('button', { name: 'Oranı kaydet' })).not.toBeInTheDocument();

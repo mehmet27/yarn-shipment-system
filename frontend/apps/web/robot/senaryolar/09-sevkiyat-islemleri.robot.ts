@@ -170,6 +170,7 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
       await kart.getByLabel(/Fatura no/).fill(`F-${iplik}-1`);
       await kart.getByLabel(/\(kg\)/).fill('1');
       await kart.getByRole('button', { name: 'Fatura edildi' }).click();
+      await kart.getByRole('button', { name: 'Evet, fatura edildi' }).click();
       await mudur.sayfa.waitForTimeout(1500);
       const fire = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
       mudur.kontrol(
@@ -196,6 +197,7 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
     const kart = await kartAc();
     await kart.getByLabel(/Fatura no/).fill(`F-${iplik}-2`);
     await kart.getByRole('button', { name: 'Fatura edildi' }).click();
+    await kart.getByRole('button', { name: 'Evet, fatura edildi' }).click();
     await mudur.sayfa.waitForTimeout(1500);
     const fire = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
     mudur.kontrol(

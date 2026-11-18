@@ -301,6 +301,7 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
       await kart.getByRole('button', { name: 'Fatura bilgisini gir' }).click();
       await kart.getByLabel(/Fatura no/).fill(`F-${iplik}`);
       await kart.getByRole('button', { name: 'Fatura edildi' }).click();
+      await kart.getByRole('button', { name: 'Evet, fatura edildi' }).click();
       await mudur.sayfa.waitForTimeout(1500);
       const sonra = bakiyeOf((await anlik(mudur)).bakiye, BASKA, iplik);
       mudur.kontrol(

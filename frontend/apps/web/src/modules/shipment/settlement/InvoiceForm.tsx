@@ -1,14 +1,18 @@
 import type { FireSettlement } from '@iplik/api-client/settlements';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
+import { Alert, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import { findRecipe } from '../components/shipmentViews';
 import { useYarnLabel } from '../components/useYarnLabel';
 import { useShipment } from '../hooks/useShipment';
 import { yarnOptionsOf } from './fabricLimits';
 import { formatKgText } from './format';
+import { InvoiceConfirm } from './InvoiceConfirm';
 import { InvoiceYarnRows } from './InvoiceYarnRows';
 import { settlementErrorKey } from './settlementErrors';
 import { useInvoiceDraft } from './useInvoiceDraft';
+
+const yarnNames = (recipe: ReturnType<typeof findRecipe>) =>
+  new Map((recipe === undefined ? [] : yarnOptionsOf(recipe.lines)).map((o) => [o.value, o.label]));
 
 /**
  * "Fatura edildi" kaydı (INVOICE_MARK): fatura ERP'de kesilmiştir; müdür fatura no, tarih ve hangi iplikten kaç kilo
@@ -19,10 +23,8 @@ export function InvoiceForm({ settlement }: { settlement: FireSettlement }) {
   const yarnLabel = useYarnLabel();
   const shipment = useShipment(settlement.shipmentId).data;
   const recipe = shipment === undefined ? undefined : findRecipe(shipment);
-  const names = new Map(
-    (recipe === undefined ? [] : yarnOptionsOf(recipe.lines)).map((o) => [o.value, o.label]),
-  );
-  const { fields, set, error, mutation, submit } = useInvoiceDraft(settlement);
+  const names = yarnNames(recipe);
+  const { fields, set, error, mutation, submit, confirmation } = useInvoiceDraft(settlement);
   return (
     <Stack>
       <Text data-testid="invoice-remaining">
@@ -66,9 +68,13 @@ export function InvoiceForm({ settlement }: { settlement: FireSettlement }) {
       </Text>
       {error !== undefined && <Alert color="red">{t(`settlement.draftErrors.${error}`)}</Alert>}
       {mutation.isError && <Alert color="red">{t(settlementErrorKey(mutation.error))}</Alert>}
-      <Button w="fit-content" loading={mutation.isPending} onClick={submit}>
-        {t('settlement.fire.invoiceSubmit')}
-      </Button>
+      <InvoiceConfirm
+        isOpen={confirmation.isOpen}
+        loading={mutation.isPending}
+        onSubmit={submit}
+        onConfirm={confirmation.confirm}
+        onCancel={confirmation.cancel}
+      />
     </Stack>
   );
 }

@@ -271,7 +271,7 @@ components:
             $ref: '#/components/schemas/Problem'
     Conflict:
       description: >-
-        Sevkiyat kilitli (SHIPMENT_LOCKED), sevkiyat günü gelmemiş (SHIPMENT_NOT_DUE), dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED) ya da kanıt zaten geçersiz
+        Sevkiyat kilitli (SHIPMENT_LOCKED), sevkiyat günü gelmemiş (SHIPMENT_NOT_DUE), sevkiyat yola çıktığı için kantar fişi yenilenemiyor (SHIPMENT_DEPARTED), dosya henüz yüklenmemiş (UPLOAD_NOT_COMPLETED) ya da kanıt zaten geçersiz
         kılınmış (EVIDENCE_ALREADY_INVALIDATED)
       content:
         application/problem+json:

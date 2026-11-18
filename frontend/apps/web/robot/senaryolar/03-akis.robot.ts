@@ -196,6 +196,41 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     );
   });
 
+  await depo.adim(
+    'depo: yola çıkmış sevkiyatta kantar fişi yenilenemez (ekranda yok, sunucu 409)',
+    async () => {
+      await depo.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
+      await depo.sayfa.waitForLoadState('networkidle');
+      depo.kontrol(
+        '"Kantar fişini yenile" bölümü görünmemeli',
+        (await depo.sayfa.getByText('Kantar fişini yenile').count()) === 0,
+      );
+      const kod = await depo.sayfa.evaluate(async (id) => {
+        const cerez = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='));
+        const yanit = await fetch('/api/v1/evidence/uploads', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Idempotency-Key': crypto.randomUUID(),
+            'X-XSRF-TOKEN': decodeURIComponent(cerez?.split('=')[1] ?? ''),
+          },
+          body: JSON.stringify({
+            shipmentId: id,
+            evidenceType: 'DISPATCH_SCALE',
+            mimeType: 'image/jpeg',
+            sizeBytes: 1000,
+          }),
+        });
+        return `${String(yanit.status)} ${((await yanit.json()) as { code?: string }).code ?? ''}`;
+      }, sevkiyatId);
+      depo.kontrol(
+        'yola çıkmış sevkiyatta fiş yenileme 409 SHIPMENT_DEPARTED dönmeli',
+        kod === '409 SHIPMENT_DEPARTED',
+        kod,
+      );
+    },
+  );
+
   await mudur.adim('müdür: irsaliyeyle sevkiyatı tamamlar', async () => {
     await mudur.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
     await mudur.sayfa

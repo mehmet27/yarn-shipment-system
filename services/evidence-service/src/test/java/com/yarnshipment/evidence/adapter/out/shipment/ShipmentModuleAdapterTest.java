@@ -33,12 +33,17 @@ class ShipmentModuleAdapterTest {
         when(api.findVisibleShipment(SHIPMENT))
                 .thenReturn(new ShipmentSummary(SHIPMENT, SITE, "COMPLETED", DATE))
                 .thenReturn(new ShipmentSummary(SHIPMENT, SITE, "CANCELLED", DATE))
-                .thenReturn(new ShipmentSummary(SHIPMENT, SITE, "IN_TRANSIT", DATE));
+                .thenReturn(new ShipmentSummary(SHIPMENT, SITE, "IN_TRANSIT", DATE))
+                .thenReturn(new ShipmentSummary(SHIPMENT, SITE, "AWAITING_DELIVERY", DATE));
 
-        assertThat(adapter.findAccessible(SHIPMENT)).isEqualTo(new ShipmentSnapshot(SHIPMENT, SITE, true, true, DATE));
-        assertThat(adapter.findAccessible(SHIPMENT)).isEqualTo(new ShipmentSnapshot(SHIPMENT, SITE, true, false, DATE));
+        assertThat(adapter.findAccessible(SHIPMENT))
+                .isEqualTo(new ShipmentSnapshot(SHIPMENT, SITE, true, true, DATE, true));
+        assertThat(adapter.findAccessible(SHIPMENT))
+                .isEqualTo(new ShipmentSnapshot(SHIPMENT, SITE, true, false, DATE, true));
         assertThat(adapter.findAccessible(SHIPMENT))
                 .isEqualTo(new ShipmentSnapshot(SHIPMENT, SITE, false, false, DATE));
+        assertThat(adapter.findAccessible(SHIPMENT))
+                .isEqualTo(new ShipmentSnapshot(SHIPMENT, SITE, false, false, DATE, true));
     }
 
     @Test

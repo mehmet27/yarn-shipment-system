@@ -62,6 +62,11 @@ public final class TestUploads {
         return EvidenceFile.confirm(intent, stored(), NOW);
     }
 
+    /** Verilen kullanıcının yüklediği, onaylı kantar fişi. */
+    public static EvidenceFile scaleTicketBy(UUID uploader) {
+        return EvidenceFile.confirm(intent(uploader), stored(), NOW);
+    }
+
     public static StoredObject stored() {
         return new StoredObject(SIZE, SHA, JPEG);
     }

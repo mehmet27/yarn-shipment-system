@@ -17,6 +17,7 @@ final class ShipmentModuleAdapter implements ShipmentAccessPort {
 
     private static final Set<String> LOCKED_STATUSES = Set.of("COMPLETED", "CANCELLED");
     private static final String COMPLETED = "COMPLETED";
+    private static final Set<String> DEPARTED_STATUSES = Set.of("AWAITING_DELIVERY", "COMPLETED", "CANCELLED");
 
     private final ShipmentAccessApi shipmentApi;
 
@@ -33,7 +34,8 @@ final class ShipmentModuleAdapter implements ShipmentAccessPort {
                     shipment.siteId(),
                     LOCKED_STATUSES.contains(shipment.status()),
                     COMPLETED.equals(shipment.status()),
-                    shipment.shipmentDate());
+                    shipment.shipmentDate(),
+                    DEPARTED_STATUSES.contains(shipment.status()));
         } catch (ShipmentNotVisibleException exception) {
             throw new ShipmentNotAccessibleException(shipmentId);
         } catch (ModuleUnavailableException exception) {

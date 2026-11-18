@@ -751,7 +751,7 @@
     "title": "Fotoğraf ve belgeler",
     "scale": {
       "title": "Kantar fişini yenile",
-      "hint": "Yeni bir kantar fişi yüklerseniz öncekisi geçersiz sayılır; yalnızca son yüklenen fiş geçerli olur."
+      "hint": "Yeni bir kantar fişi yüklerseniz öncekisi geçersiz sayılır; yalnızca son yüklenen fiş geçerli olur. Yalnızca sizin yüklediğiniz ve henüz yola çıkmamış sevkiyatlarda yenileyebilirsiniz."
     },
     "camera": "Fotoğraf çek",
     "file": "Dosya seç",
@@ -792,6 +792,8 @@
       "SHIPMENT_NOT_FOUND": "Sevkiyat bulunamadı.",
       "SHIPMENT_LOCKED": "Sevkiyat kilitli; artık dosya eklenemiyor.",
       "SHIPMENT_NOT_DUE": "Sevkiyat tarihi gelmeden çıkış fotoğrafı eklenemez.",
+      "SHIPMENT_DEPARTED": "Sevkiyat yola çıktı; kantar fişi artık yenilenemez.",
+      "SCALE_TICKET_NOT_OWN": "Bu kantar fişini yalnızca ilk yükleyen kişi yenileyebilir.",
       "UPLOAD_NOT_COMPLETED": "Dosya henüz yüklenmedi. Lütfen tekrar deneyin.",
       "UPLOAD_MISMATCH": "Yüklenen dosya bildirilenle uyuşmuyor. Lütfen yeniden seçin.",
       "SHIPMENT_SERVICE_UNAVAILABLE": "Sevkiyat doğrulanamadı. Lütfen biraz sonra tekrar deneyin.",

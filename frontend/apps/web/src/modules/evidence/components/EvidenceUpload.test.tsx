@@ -21,6 +21,14 @@ describe('EvidenceUpload', () => {
     expect(screen.queryByRole('button', { name: 'Fotoğraf çek' })).not.toBeInTheDocument();
   });
 
+  it('kantar fişi yüklenmiş ve yola çıkmış sevkiyatta depoya yenileme bölümü sunulmaz', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    renderApp('/panel/sevkiyat/shp-0007');
+    await screen.findByText('Kilolar');
+    await screen.findByText(/Kantar fişi|Fotoğraf ve belgeler/);
+    expect(screen.queryByText('Kantar fişini yenile')).not.toBeInTheDocument();
+  });
+
   it('yükleme izni olmayan kullanıcıda hiç görünmez', async () => {
     server.use(...createHandlers('MANAGER'));
     const user = createMockUser('MANAGER');

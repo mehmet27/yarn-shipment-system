@@ -15,6 +15,7 @@ import com.yarnshipment.evidence.TestTokens;
 import com.yarnshipment.evidence.TestUploads;
 import com.yarnshipment.evidence.application.port.in.RequestUploadCommand;
 import com.yarnshipment.evidence.application.port.in.UploadTicket;
+import com.yarnshipment.evidence.application.port.out.EvidenceStorePort;
 import com.yarnshipment.evidence.application.port.out.ObjectStoragePort;
 import com.yarnshipment.evidence.application.port.out.ObjectStoragePort.PresignedUpload;
 import com.yarnshipment.evidence.application.port.out.ShipmentAccessPort;
@@ -39,10 +40,11 @@ class RequestUploadServiceTest {
     private static final Clock CLOCK = Clock.fixed(TestUploads.NOW, ZoneOffset.UTC);
 
     private final ShipmentAccessPort shipments = mock(ShipmentAccessPort.class);
+    private final EvidenceStorePort evidence = mock(EvidenceStorePort.class);
     private final UploadIntentPort intents = mock(UploadIntentPort.class);
     private final ObjectStoragePort storage = mock(ObjectStoragePort.class);
-    private final RequestUploadService request =
-            new RequestUploadService(shipments, intents, storage, new ScopeGuard(event -> {}, CLOCK), CLOCK);
+    private final RequestUploadService request = new RequestUploadService(
+            shipments, new ScaleTicketRefresh(evidence), intents, storage, new ScopeGuard(event -> {}, CLOCK), CLOCK);
 
     @Test
     @DisplayName("İstek, tür ve boyutu imzaya bağlar; bekleyen yüklemeyi isteyenin adına kaydeder")

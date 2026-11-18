@@ -11,7 +11,7 @@ export type FabricLimits = {
   /** Fire dosyası okunamadıysa tümü undefined; ekran cümleyi gizler. */
   sentKg: string | undefined;
   receivedKg: string | undefined;
-  /** Faturası kesilen kilo; kumaş gibi sayılır. */
+  /** Eksik kumaş için faturası kesilen kilo; kumaş gibi sayılır (itirazı karşılayan fatura kısmı sayılmaz). */
   invoicedKg: string | undefined;
   remainingKg: Kilogram | undefined;
 };
@@ -25,10 +25,10 @@ export function useFabricLimits(shipmentId: string): FabricLimits {
     yarnNames: recipe === undefined ? [] : yarnOptionsOf(recipe.lines),
     sentKg: settlement?.sentKg,
     receivedKg: settlement?.fabricKg,
-    invoicedKg: settlement?.invoicedKg,
+    invoicedKg: settlement?.shortageInvoicedKg,
     remainingKg:
       settlement === undefined
         ? undefined
-        : remainingFabricKg(settlement.sentKg, settlement.fabricKg, settlement.invoicedKg),
+        : remainingFabricKg(settlement.sentKg, settlement.fabricKg, settlement.shortageInvoicedKg),
   };
 }

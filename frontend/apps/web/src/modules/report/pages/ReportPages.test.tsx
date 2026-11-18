@@ -16,10 +16,8 @@ describe('Panel ana sayfası ve raporlar', () => {
     expect(await screen.findByTestId('stat-total')).toHaveTextContent('12');
     expect(screen.getByTestId('stat-open')).toHaveTextContent('3');
     expect(screen.getByTestId('stat-overdue')).toHaveTextContent('1');
-    expect(screen.getByRole('link', { name: 'UY-2026-0001' })).toHaveAttribute(
-      'href',
-      '/panel/uyusmazliklar/disc-0',
-    );
+    const [link] = await screen.findAllByRole('link', { name: 'UY-2026-0001' });
+    expect(link).toHaveAttribute('href', '/panel/uyusmazliklar/disc-0');
   });
 
   it('rapor yetkisi olmayan kullanıcıya dashboard göstermez ve çağırmaz', async () => {

@@ -39,7 +39,9 @@ final class FireViews {
             String faultyKg,
             String actualFirePercent,
             String invoicedKg,
-            String remainingKg) {}
+            String remainingKg,
+            String claimRemainingKg,
+            String shortageInvoicedKg) {}
 
     record InvoiceMarkView(
             @Nullable String invoiceNo,
@@ -81,7 +83,9 @@ final class FireViews {
                         BalanceViews.kg(calc.faultyKg()),
                         calc.actualFirePercent().toPlainString(),
                         BalanceViews.kg(calc.invoicedKg()),
-                        BalanceViews.kg(calc.remainingKg())),
+                        BalanceViews.kg(calc.remainingKg()),
+                        BalanceViews.kg(calc.claimRemainingKg()),
+                        BalanceViews.kg(calc.shortageInvoicedKg())),
                 new InvoiceMarkView(
                         settlement.invoiceNo(),
                         settlement.invoicedOn(),

@@ -104,7 +104,7 @@ Excel'de hareketler elle toplandığı için bakiye geç ve hatalı çıkıyor, 
 |---|---|---|
 | **Müdür** (`MANAGER`) | Fason işlerinden sorumlu müdür | Sevkiyat açar, reçeteyi ve fire oranını girer; kantar uyuşmazlığında karar verir (iptal / çuval ekle-çıkar); irsaliyeyi yükleyip tamamlar; kumaş girişini ve iplik dönüşünü onaylar **[Yapılacak]**; "fatura edildi" işaretler **[Yapılacak]**; raporları görür |
 | **Depo** (`WAREHOUSE`) | Merkez depo sorumlusu | Çuvalları sevkiyata atar, kantar fişiyle çıkış tartısını girer; eksik gönderimde neden yazar **[Yapılacak]** |
-| **Kalite** (`QUALITY`) | Depo-kalite ve dışarı-kalite | Kalite itirazı açar, numune/lab sonucunu girer, uyuşmazlığı karara bağlar (müdür de kalite itirazını yalnızca haklı / haklı-faturalandı / haksız diye kapatabilir); gelen kumaşı kaydeder **[Yapılacak]** |
+| **Kalite** (`QUALITY`) | Depo-kalite ve dışarı-kalite | Kalite itirazı açar, numune/lab sonucunu girer; karar veremez. Kalite itirazını yalnızca müdür haklı / haksız diye kapatır (haklıda fatura Faturalanacaklar'dan girilir); gelen kumaşı kaydeder **[Yapılacak]** |
 | **Genel müdür** **[Yapılacak]** | Üst yönetim | Yalnızca rapor ve bakiye görür; işlem yapmaz |
 | **Admin** (`ADMIN`) | Sistem yöneticisi | Tanımlar, kullanıcılar, ayarlar, gerekçeli düzeltme, kanıt geçersiz kılma |
 | ~~Şoför~~ | — | **Kaldırıldı.** Şoför ve araç yalnızca sevkiyatın üzerinde bilgi olarak yazılır |
@@ -285,7 +285,7 @@ elle "bakiye düzeltme" yoktur, hata düzeltme hareketiyle giderilir.
 | `FABRIC_RECEIPT` | − | Kumaş girişi | Tüketilen iplik kilosu kadar |
 | `YARN_RETURN` | − | Fasoncudan depoya dönen iplik (S6, S9); kaydı yalnızca depo girer | Fire tabanından da düşer |
 | `YARN_FROM_SUBCONTRACTOR` | − | Fasoncudan gelen (onun stoğundan alınan) iplik (S6) | 15.11.2026'dan beri yeni kayıt açılmaz (depo fasoncu stoğundan iplik girmez); yalnızca eski kayıtlar geçmişte kalır |
-| `CLAIM_ADJUSTMENT` | ± | Kalite itirazının karara bağlanması | Bölüm 5.12 |
+| `CLAIM_ADJUSTMENT` | ± | Eski kayıtlar (yeni itirazlar bakiye hareketi yazmaz) | Bölüm 5.12 |
 | `OPENING` | + | Excel'den açılış bakiyesi | Bir kez, geçişte |
 | `CORRECTION` | ± | Gerekçeli düzeltme | Eski hareket silinmez, ters hareket yazılır |
 
@@ -328,11 +328,21 @@ Bkz. Bölüm 8. Fire **sevkiyat** üzerinden hesaplanır (S2); oran sevkiyatta s
 - Kalite (geçiş döneminde fasoncu hesabı da), **tamamlanmış** sevkiyatın çuvalları için itiraz açar; açıklama ve en
   az bir fotoğraf zorunludur. Pencere tamamlanmadan itibaren 3 iş günüdür.
 - Her itiraz Kırmızı bir kalite uyuşmazlığı açar; kalite numune ya da lab kontrolü ister, sonucu girer
-  (lab sonucunda belge zorunlu), uyuşmazlık `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır.
+  (lab sonucunda belge zorunlu), uyuşmazlık müdür tarafından `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır.
+
+**[Bugün] Kumaş girişi şartı:** İtiraz yalnızca girilmiş kumaş için açılır. İtiraz edilebilecek kilo, sevkiyata
+girilen kumaştan haksız bulunmamış itirazların kilosu çıkarılarak bulunur; kumaş girişi yoksa itiraz açılamaz
+(`QUALITY_CLAIM_FABRIC_NOT_RECEIVED`).
 
 **[Bugün] Bakiye etkisi:** İtiraz haklı bulunursa itiraz edilen kilo **hem kumaştan hem gönderilen iplikten**
-düşülür (`CLAIM_ADJUSTMENT`), böylece fire hesabı sapmaz. Örnek: 1.000 kg iplik, 100 kg itirazlı → fire tabanı
-900 kg, beklenen kumaş 900 × 0,96 = 864 kg.
+sayılır, böylece fire hesabı sapmaz (fire tabanı T = G − D − I). Kilo bakiyeden **hemen düşülmez**; dosyada
+faturalanacak kiloya eklenir (`fire_claim`). Dosya kapanmış ya da faturalanmışsa itiraz dosyayı yeniden
+faturalanacak yapar (süre sınırı yoktur). Hatalı gelen kumaş, girilen kumaş K'nın içindedir ve bakiyeden K olarak
+zaten düşülmüştür; bu yüzden müdür fatura kesince faturanın itirazı karşılayan kısmı bakiyeyi **ikinci kez
+düşürmez** (`fire_invoice.claim_kg`), yalnızca eksik kilo `INVOICE` ile düşer. Fatura önce itirazdan kalan kiloyu
+karşılar, fazlası eksik kumaşa gider; itirazı karşılayan kısım fire yüzdesine ve kumaş girişi sınırına girmez.
+Nihai bakiye = G − D − K − faturalanan eksik kilo. Örnek: 1.000 kg iplik, 100 kg itirazlı → fire tabanı 900 kg,
+beklenen kumaş 900 × 0,96 = 864 kg; faturalanacak 100 kg, bakiye etkisi 0.
 
 > Not: S5 ile itirazı fasoncu değil fabrika personeli açar. İtirazın fasoncu-çuval yerine **kumaş partisi**
 > üzerinden açılması gerekebilir; Bölüm 15, A5.
@@ -415,7 +425,7 @@ Bir sevkiyat `s` için:
 ```
 G  = gönderilen net kg            (çıkış tartısı neti; reçete satırları toplamı buna eşittir)
 D  = dönen iplik net kg           (YARN_RETURN toplamı, bu sevkiyata bağlı)
-I  = haklı itiraz kg              (CLAIM_ADJUSTMENT toplamı)
+I  = haklı itiraz kg              (CLAIM_ADJUSTMENT toplamı + fire_claim toplamı)
 f  = sevkiyatın fire oranı        (varsayılan 0,04)
 K  = gelen kumaş net kg           (FABRIC_RECEIPT toplamı)
 

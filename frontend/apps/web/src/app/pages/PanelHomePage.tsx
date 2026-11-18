@@ -47,7 +47,7 @@ export function PanelHomePage() {
       <Can permission="SHIPMENT_VIEW">
         <PendingWeightDecisions />
       </Can>
-      <Can permission="DISCREPANCY_RESOLVE">
+      <Can permission="DISCREPANCY_DECIDE">
         <PendingDiscrepancies />
       </Can>
       <Can permission="DISPATCH_RECORD">

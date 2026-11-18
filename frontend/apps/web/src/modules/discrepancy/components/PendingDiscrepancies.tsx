@@ -7,7 +7,7 @@ import { PendingRow } from './PendingRow';
 const SHOWN = 5;
 
 /**
- * Kalitenin ana sayfadaki iş listesi: karar bekleyen uyuşmazlıklar. Yalnızca karar verme yetkisi olan kullanıcıya
+ * Müdürün ana sayfadaki iş listesi: karar bekleyen uyuşmazlıklar. Yalnızca karar verme yetkisi olan kullanıcıya
  * görünür; bekleyen yoksa hiçbir şey çizmez.
  */
 export function PendingDiscrepancies() {

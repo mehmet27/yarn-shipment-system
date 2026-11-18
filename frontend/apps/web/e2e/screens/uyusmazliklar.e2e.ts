@@ -14,13 +14,19 @@ test.describe('Uyuşmazlıklar', { tag: '@panel' }, () => {
     await expect(page).toHaveURL(/durum=RESOLVED/);
   });
 
+  test('kalite açık uyuşmazlığı bana atar ama karar veremez', async ({ page, openAs }) => {
+    await openAs('QUALITY', '/panel/uyusmazliklar/disc-0');
+    await page.getByRole('button', { name: 'Bana ata' }).click();
+    await expect(page.getByText('Bu uyuşmazlık sizde.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Karar ver' })).toHaveCount(0);
+  });
+
   test(
-    'açık uyuşmazlığı bana atar ve notla karara bağlar',
+    'müdür açık uyuşmazlığı notla karara bağlar',
     { tag: '@smoke' },
     async ({ page, openAs }) => {
-      await openAs('QUALITY', '/panel/uyusmazliklar/disc-0');
-      await page.getByRole('button', { name: 'Bana ata' }).click();
-      await pick(page, /^Karar/, 'Talep haksız');
+      await openAs('MANAGER', '/panel/uyusmazliklar/disc-0');
+      await pick(page, /^Karar/, 'Haksız');
       await page.getByLabel(/^Not/).fill('Talep haksız kabul');
       await page.getByRole('button', { name: 'Karara bağla' }).click();
       await page.getByRole('button', { name: 'Evet, kararı kaydet' }).click();

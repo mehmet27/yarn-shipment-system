@@ -28,15 +28,21 @@ public final class InvoiceShares {
         List<YarnShare> yarns = command.lines().isEmpty()
                 ? YarnDistribution.proportional(calculation.remainingKg(), details.yarns())
                 : YarnDistribution.explicit(command.lines(), details.yarns(), shipmentId);
+        List<InvoiceShare> lines = yarns.stream()
+                .map(share -> new InvoiceShare(share.yarnType(), share.netKg()))
+                .toList();
+        BigDecimal claimKg = lines.stream()
+                .map(InvoiceShare::netKg)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .min(calculation.claimRemainingKg());
         return new InvoiceRecord(
                 shipmentId,
                 details.settlement().subcontractorId(),
                 command.invoiceNo().strip(),
                 command.invoicedOn(),
                 command.note(),
-                yarns.stream()
-                        .map(share -> new InvoiceShare(share.yarnType(), share.netKg()))
-                        .toList(),
+                lines,
+                claimKg,
                 command.actor().userId(),
                 at);
     }

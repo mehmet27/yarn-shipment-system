@@ -25,7 +25,11 @@ public interface FireInvoicePort {
     /** Sevkiyata girilen faturalar, eskisi önce. */
     List<InvoiceEntry> invoices(UUID shipmentId);
 
-    /** Yazılacak fatura: iplik başına kiloları ve fasoncu bakiyesine yazılacak bağlam. */
+    /**
+     * Yazılacak fatura: iplik başına kiloları ve fasoncu bakiyesine yazılacak bağlam.
+     *
+     * @param claimKg toplam kilonun haklı itirazı karşılayan kısmı (kalan itiraz kilosu önce karşılanır)
+     */
     record InvoiceRecord(
             UUID shipmentId,
             UUID subcontractorId,
@@ -33,6 +37,7 @@ public interface FireInvoicePort {
             LocalDate invoicedOn,
             @Nullable String note,
             List<InvoiceShare> lines,
+            BigDecimal claimKg,
             UUID invoicedBy,
             Instant at) {}
 }

@@ -120,6 +120,7 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Oranı kaydet' }));
     await userEvent.type(await screen.findByLabelText(/Fatura no/), 'FTR-7');
     await userEvent.click(screen.getByRole('button', { name: 'Fatura edildi' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Evet, fatura edildi' }));
     expect(await screen.findByText(/Fatura FTR-7/)).toBeInTheDocument();
     expect(screen.getByTestId('fire-status')).toHaveTextContent('Faturalandı');
     expect(screen.queryByRole('button', { name: 'Oranı kaydet' })).not.toBeInTheDocument();
@@ -144,10 +145,13 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     renderApp(COMPLETED);
     await openTab('İplik dönüşü');
     const form = await screen.findByRole('region', { name: 'İplik dönüşü (fasoncudan depoya)' });
-    await userEvent.type(within(form).getByLabelText(/İplik cinsi/), '30/1 Penye');
+    // İplik cinsi serbest yazılmaz; sevkiyatta gönderilen iplikler arasından seçilir.
+    await userEvent.click(await within(form).findByRole('combobox', { name: /İplik cinsi/ }));
+    expect(screen.queryByRole('option', { name: '30/1 Penye' })).not.toBeInTheDocument();
+    await userEvent.click(await screen.findByRole('option', { name: '36/1 Viskon' }));
     await userEvent.type(within(form).getByLabelText(/Net kilo/), '25');
     await userEvent.click(within(form).getByRole('button', { name: 'Hareketi kaydet' }));
-    expect(await screen.findByText(/Dönüş · 30\/1 Penye · 25 kg/)).toBeInTheDocument();
+    expect(await screen.findByText(/Dönüş · 36\/1 Viskon · 25 kg/)).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Kumaş girişi' })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Fire dosyası' })).not.toBeInTheDocument();
   });

@@ -25,17 +25,17 @@ function readResolve(json: unknown): ResolveDiscrepancyRequest | undefined {
     : { resolution: known, note };
 }
 
-/** Uyuşmazlık uçları; karar eylemleri DISCREPANCY_RESOLVE (tüm kararlar) ya da DISCREPANCY_DECIDE (yalnız haklı/haksız) izniyle ve açık uyuşmazlıkta görünür. */
+/** Uyuşmazlık uçları; atama DISCREPANCY_RESOLVE (kalite), karar DISCREPANCY_DECIDE (müdür; yalnız haklı/haksız) izniyle ve açık uyuşmazlıkta görünür. */
 export function createDiscrepancyHandlers(permissions: readonly Permission[], userId: string) {
   const canView = permissions.includes('DISCREPANCY_VIEW');
   const canResolve = permissions.includes('DISCREPANCY_RESOLVE');
-  const canDecide = canResolve || permissions.includes('DISCREPANCY_DECIDE');
+  const canDecide = permissions.includes('DISCREPANCY_DECIDE');
   const view = (id: unknown) => {
     const item = findMockDiscrepancy(id);
     if (item === undefined) return undefined;
     const isOpen = item.status === 'OPEN' || item.status === 'IN_REVIEW';
-    const actions = canResolve ? (['ASSIGN', 'RESOLVE'] as const) : (['RESOLVE'] as const);
-    return { ...item, allowedActions: canDecide && isOpen ? actions : [] };
+    const actions = canDecide ? (['RESOLVE'] as const) : (['ASSIGN'] as const);
+    return { ...item, allowedActions: (canDecide || canResolve) && isOpen ? actions : [] };
   };
   return [
     http.get(DISCREPANCIES_PATH, ({ request }) => {
@@ -86,7 +86,7 @@ export function createDiscrepancyHandlers(permissions: readonly Permission[], us
       if (body === undefined) return problem(400, 'INVALID_REQUEST');
       const isClaimDecision =
         body.resolution === 'CLAIM_JUSTIFIED' || body.resolution === 'CLAIM_UNJUSTIFIED';
-      if (!canResolve && !isClaimDecision) return problem(403, 'ACCESS_DENIED');
+      if (!isClaimDecision) return problem(403, 'ACCESS_DENIED');
       if (item.status !== 'OPEN' && item.status !== 'IN_REVIEW') {
         return problem(409, 'DISCREPANCY_NOT_OPEN');
       }

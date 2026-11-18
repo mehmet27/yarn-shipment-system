@@ -9,6 +9,7 @@ import com.yarnshipment.shipment.application.port.in.balance.BalanceRow;
 import com.yarnshipment.shipment.application.port.in.balance.ListMovementsQuery;
 import com.yarnshipment.shipment.application.port.in.balance.MovementPage;
 import com.yarnshipment.shipment.application.port.in.fire.ListFireSettlementsQuery;
+import com.yarnshipment.shipment.application.port.out.ledger.ClaimLedgerPort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort.FireTotals;
 import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
@@ -46,7 +47,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
     FabricReceiptAdapter.class,
     YarnReturnAdapter.class,
     FireSettlementAdapter.class,
-    FireInvoiceAdapter.class
+    FireInvoiceAdapter.class,
+    ClaimLedgerAdapter.class
 })
 @SuppressWarnings({"checkstyle:ClassFanOutComplexity", "checkstyle:ClassDataAbstractionCoupling"})
 class LedgerAdaptersTest {
@@ -98,6 +100,9 @@ class LedgerAdaptersTest {
 
     @Autowired
     private FireInvoiceAdapter fireInvoices;
+
+    @Autowired
+    private ClaimLedgerAdapter claims;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -306,6 +311,7 @@ class LedgerAdaptersTest {
                 LocalDate.parse("2026-11-12"),
                 "ERP",
                 List.of(new BalanceMovement.InvoiceShare("(reçetesiz)", new BigDecimal("20"))),
+                BigDecimal.ZERO,
                 USER,
                 AT));
 
@@ -319,6 +325,60 @@ class LedgerAdaptersTest {
             assertThat(entry.kg()).isEqualByComparingTo("20");
         });
         assertThat(fireInvoices.dispatchedByYarn(SHIPMENT)).containsKey("(reçetesiz)");
+    }
+
+    @Test
+    @DisplayName(
+            "Faturayla düşülecek itiraz bakiyeyi değiştirmez; faturanın itirazı karşılayan kısmı toplamlarda görünür")
+    void shouldCountInvoiceableClaimAndItsInvoicedPart() {
+        // given
+        ledger.recordDispatch(SHIPMENT, SUBCONTRACTOR, AT, USER);
+        fireSettlements.open(FireSettlement.open(SHIPMENT, SUBCONTRACTOR, new BigDecimal("34032")), AT);
+        UUID discrepancy = UUID.randomUUID();
+        ClaimLedgerPort.InvoiceableClaim claim =
+                new ClaimLedgerPort.InvoiceableClaim(discrepancy, SHIPMENT, new BigDecimal("100"), AT, USER);
+
+        // when: aynı itiraz iki kez gelse de bir kez yazılır
+        claims.recordInvoiceableClaim(claim);
+        claims.recordInvoiceableClaim(claim);
+
+        // then: bakiye değişmez, itiraz fire dosyasında faturalanacak olarak görünür
+        assertThat(balanceOf("(reçetesiz)")).isEqualByComparingTo("34032");
+        assertThat(fireSettlements.totals(SHIPMENT).claimKg()).isEqualByComparingTo("100");
+        assertThat(fireSettlements.totals(SHIPMENT).pendingClaimKg()).isEqualByComparingTo("100");
+
+        // when: 60 kg fatura, hepsi itirazı karşılar
+        fireInvoices.recordInvoice(new FireInvoicePort.InvoiceRecord(
+                SHIPMENT,
+                SUBCONTRACTOR,
+                "F-9",
+                LocalDate.parse("2026-11-12"),
+                null,
+                List.of(new BalanceMovement.InvoiceShare("(reçetesiz)", new BigDecimal("60"))),
+                new BigDecimal("60"),
+                USER,
+                AT));
+
+        // then
+        assertThat(balanceOf("(reçetesiz)")).isEqualByComparingTo("34032");
+        assertThat(fireSettlements.totals(SHIPMENT).claimInvoicedKg()).isEqualByComparingTo("60");
+        assertThat(fireSettlements.totals(SHIPMENT).shortageInvoicedKg()).isEqualByComparingTo("0");
+
+        // when: 80 kg fatura, 40 kg itirazı karşılar, 40 kg eksik kilodur
+        fireInvoices.recordInvoice(new FireInvoicePort.InvoiceRecord(
+                SHIPMENT,
+                SUBCONTRACTOR,
+                "F-10",
+                LocalDate.parse("2026-11-13"),
+                null,
+                List.of(new BalanceMovement.InvoiceShare("(reçetesiz)", new BigDecimal("80"))),
+                new BigDecimal("40"),
+                USER,
+                AT));
+
+        // then: yalnızca eksik kilo düşer; itiraz kilosu kumaş girişinde zaten düşülmüştür
+        assertThat(balanceOf("(reçetesiz)")).isEqualByComparingTo("33992");
+        assertThat(fireSettlements.totals(SHIPMENT).shortageInvoicedKg()).isEqualByComparingTo("40");
     }
 
     @Test

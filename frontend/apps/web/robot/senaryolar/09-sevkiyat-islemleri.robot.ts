@@ -39,6 +39,7 @@ test('Sevkiyat: çuval çıkarma ve taslak iptali', async ({ giris }) => {
   await mudur.adim('iptal: gerekçe yoksa düğme pasif, gerekçeyle iptal edilir', async () => {
     await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);
     await mudur.sayfa.getByRole('button', { name: 'İptal et' }).click();
+    await expect(mudur.sayfa.getByText('İptal edilen sevkiyat tekrar açılamaz.')).toBeVisible();
     const gonder = mudur.sayfa.getByRole('button', { name: 'Sevkiyatı iptal et' });
     mudur.kontrol('gerekçesiz iptal düğmesi pasif', await gonder.isDisabled());
     await mudur.sayfa.getByLabel(/İptal gerekçesi/).fill('Robot iptali');
@@ -216,6 +217,7 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
     await kumasGir(fasonKalite, kapali, '98', `${iplik}-K2`);
     await mudur.sayfa.goto(`/panel/sevkiyat/${kapali}`);
     await sekme(mudur, 'Fire dosyası');
+    await expect(mudur.sayfa.getByText(/Kapanan dosyaya kumaş girilemez/)).toBeVisible();
     await mudur.sayfa.getByRole('button', { name: 'Kapat' }).click();
     await mudur.sayfa.waitForTimeout(1500);
     const fire = await mudur.api<Fire>(`/api/v1/shipments/${kapali}/fire-settlement`);

@@ -244,7 +244,10 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
         buffer: await resim(mudur.sayfa, 5),
       });
     await mudur.sayfa.getByText('İrsaliye yüklendi').waitFor();
+    await expect(mudur.sayfa.getByText(/irsaliye numarasını yazın\./)).toBeVisible();
+    await expect(mudur.sayfa.getByText(/sonradan değiştirilemez/)).toBeVisible();
     await mudur.sayfa.getByLabel(/İrsaliye no/).fill(`${iplik}-IRS`);
+    await expect(mudur.sayfa.getByText('Tamamlamak için irsaliye dosyasını')).toHaveCount(0);
     await mudur.sayfa.getByRole('button', { name: 'Sevkiyatı tamamla' }).click();
     await expect(mudur.sayfa.locator('main')).toContainText(/tamamlandı/i);
   });

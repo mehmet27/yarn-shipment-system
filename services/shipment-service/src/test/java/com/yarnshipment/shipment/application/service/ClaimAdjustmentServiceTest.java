@@ -8,8 +8,11 @@ import com.yarnshipment.shipment.application.port.in.balance.MovementPage;
 import com.yarnshipment.shipment.application.port.in.claim.RecordClaimAdjustmentCommand;
 import com.yarnshipment.shipment.application.port.out.ledger.BalanceQueryPort;
 import com.yarnshipment.shipment.application.port.out.ledger.ClaimLedgerPort;
+import com.yarnshipment.shipment.application.port.out.ledger.ClaimLedgerPort.InvoiceableClaim;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement;
 import com.yarnshipment.shipment.domain.balance.MovementKind;
+import com.yarnshipment.shipment.domain.fire.FireSettlement;
+import com.yarnshipment.shipment.domain.fire.FireSettlementStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -30,7 +33,8 @@ class ClaimAdjustmentServiceTest {
     private static final Instant AT = Instant.parse("2026-11-12T09:00:00Z");
 
     private final Ledger ledger = new Ledger();
-    private final ClaimAdjustmentService service = new ClaimAdjustmentService(ledger, ledger);
+    private final InMemoryFireSettlementPort settlements = new InMemoryFireSettlementPort();
+    private final ClaimAdjustmentService service = new ClaimAdjustmentService(ledger, ledger, settlements);
 
     private RecordClaimAdjustmentCommand command(String kg) {
         return new RecordClaimAdjustmentCommand(UUID.randomUUID(), SHIPMENT, new BigDecimal(kg), AT, USER);
@@ -57,6 +61,42 @@ class ClaimAdjustmentServiceTest {
     }
 
     @Test
+    @DisplayName("Açık fire dosyasında haklı itiraz bakiyeden düşülmez, faturalanacak kilo olarak yazılır")
+    void shouldRecordInvoiceableClaimForOpenFile() {
+        ledger.subcontractor = SUBCONTRACTOR;
+        ledger.dispatched.put("30/1 Penye", new BigDecimal("1000.000"));
+        settlements.put(FireSettlement.open(SHIPMENT, SUBCONTRACTOR, new BigDecimal("1000"))
+                .afterFabricReceipt());
+
+        service.recordClaimAdjustment(command("100.000"));
+
+        assertThat(ledger.appended).isEmpty();
+        assertThat(ledger.invoiceable).containsExactly(new BigDecimal("100.000"));
+    }
+
+    @Test
+    @DisplayName("Kapanmış fire dosyasında fatura beklenemeyeceği için kilo bakiyeden hemen düşülür")
+    void shouldDeductImmediatelyWhenFileIsClosed() {
+        ledger.subcontractor = SUBCONTRACTOR;
+        ledger.dispatched.put("30/1 Penye", new BigDecimal("1000.000"));
+        settlements.put(new FireSettlement(
+                SHIPMENT,
+                SUBCONTRACTOR,
+                FireSettlementStatus.CLOSED,
+                new BigDecimal("0.0400"),
+                new BigDecimal("1000"),
+                null,
+                null,
+                null,
+                null));
+
+        service.recordClaimAdjustment(command("100.000"));
+
+        assertThat(ledger.invoiceable).isEmpty();
+        assertThat(ledger.appended).hasSize(1);
+    }
+
+    @Test
     @DisplayName("Fasoncusuz ya da hiç gönderilmemiş sevkiyatta düşülecek bakiye olmadığından hareket yazılmaz")
     void shouldWriteNothingWithoutDispatchedBalance() {
         ledger.subcontractor = SUBCONTRACTOR;
@@ -74,6 +114,12 @@ class ClaimAdjustmentServiceTest {
         private @Nullable UUID subcontractor;
         private final Map<String, BigDecimal> dispatched = new LinkedHashMap<>();
         private final List<BalanceMovement> appended = new ArrayList<>();
+        private final List<BigDecimal> invoiceable = new ArrayList<>();
+
+        @Override
+        public void recordInvoiceableClaim(InvoiceableClaim claim) {
+            invoiceable.add(claim.claimedKg());
+        }
 
         @Override
         public Optional<UUID> findSubcontractor(UUID shipmentId) {

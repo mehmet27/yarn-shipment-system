@@ -125,4 +125,36 @@ class FireCalculationTest {
         assertThat(result.remainingKg()).isEqualByComparingTo("100");
         assertThat(result.actualFirePercent()).isEqualByComparingTo("54.00");
     }
+
+    @Test
+    @DisplayName("Faturayla düşülecek haklı itiraz kilosu faturalanacak kiloya eklenir; fatura önce itirazı karşılar")
+    void shouldAddPendingClaimToInvoiceableKg() {
+        // G=1000, f=%4, I=100 (faturayla düşülecek), K=964: T=900, B=864, E=0 → eksik yok, faturalanacak 100
+        FireCalculation open = withClaim("0", "0");
+        assertThat(open.faultyKg()).isEqualByComparingTo("0");
+        assertThat(open.remainingKg()).isEqualByComparingTo("100");
+        assertThat(open.claimRemainingKg()).isEqualByComparingTo("100");
+        assertThat(open.hasFaultyKg()).isTrue();
+
+        // 60 kg faturalandı, hepsi itirazı karşıladı: kalan 40; fire yüzdesi değişmez (eksik kumaşı karşılamaz)
+        FireCalculation partial = withClaim("60", "60");
+        assertThat(partial.remainingKg()).isEqualByComparingTo("40");
+        assertThat(partial.shortageInvoicedKg()).isEqualByComparingTo("0");
+        assertThat(partial.actualFirePercent()).isEqualByComparingTo(open.actualFirePercent());
+
+        // tamamı faturalandı: kalan yok
+        assertThat(withClaim("100", "100").remainingKg()).isEqualByComparingTo("0");
+    }
+
+    private static FireCalculation withClaim(String invoicedKg, String claimInvoicedKg) {
+        return FireCalculation.of(new Inputs(
+                new BigDecimal("1000"),
+                BigDecimal.ZERO,
+                new BigDecimal("100"),
+                new BigDecimal("964"),
+                new BigDecimal("0.04"),
+                new BigDecimal(invoicedKg),
+                new BigDecimal("100"),
+                new BigDecimal(claimInvoicedKg)));
+    }
 }

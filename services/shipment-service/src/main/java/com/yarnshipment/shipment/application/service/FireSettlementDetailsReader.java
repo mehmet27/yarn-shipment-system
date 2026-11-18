@@ -51,6 +51,8 @@ public final class FireSettlementDetailsReader {
                 totals.claimKg(),
                 totals.fabricKg(),
                 settlement.fireRate(),
-                totals.invoicedKg()));
+                totals.invoicedKg(),
+                totals.pendingClaimKg(),
+                totals.claimInvoicedKg()));
     }
 }

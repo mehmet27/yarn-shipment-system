@@ -330,9 +330,17 @@ Bkz. Bölüm 8. Fire **sevkiyat** üzerinden hesaplanır (S2); oran sevkiyatta s
 - Her itiraz Kırmızı bir kalite uyuşmazlığı açar; kalite numune ya da lab kontrolü ister, sonucu girer
   (lab sonucunda belge zorunlu), uyuşmazlık `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır.
 
+**[Bugün] Kumaş girişi şartı:** İtiraz yalnızca girilmiş kumaş için açılır. İtiraz edilebilecek kilo, sevkiyata
+girilen kumaştan haksız bulunmamış itirazların kilosu çıkarılarak bulunur; kumaş girişi yoksa itiraz açılamaz
+(`QUALITY_CLAIM_FABRIC_NOT_RECEIVED`).
+
 **[Bugün] Bakiye etkisi:** İtiraz haklı bulunursa itiraz edilen kilo **hem kumaştan hem gönderilen iplikten**
-düşülür (`CLAIM_ADJUSTMENT`), böylece fire hesabı sapmaz. Örnek: 1.000 kg iplik, 100 kg itirazlı → fire tabanı
-900 kg, beklenen kumaş 900 × 0,96 = 864 kg.
+sayılır, böylece fire hesabı sapmaz (fire tabanı T = G − D − I). Açık fire dosyasında kilo bakiyeden **hemen
+düşülmez**: dosyada faturalanacak kiloya eklenir (`fire_claim`); müdür fatura kesince faturalanan kilo fasoncunun
+iplik bakiyesinden düşer (`INVOICE`). Fatura önce itirazdan kalan kiloyu karşılar, fazlası eksik kumaşa gider;
+itirazı karşılayan kısım fire yüzdesine ve kumaş girişi sınırına girmez. Dosya yoksa ya da kapanmışsa (fatura
+bekleyemez) kilo eskisi gibi hemen düşülür (`CLAIM_ADJUSTMENT`). Örnek: 1.000 kg iplik, 100 kg itirazlı → fire
+tabanı 900 kg, beklenen kumaş 900 × 0,96 = 864 kg; faturalanacak 100 kg.
 
 > Not: S5 ile itirazı fasoncu değil fabrika personeli açar. İtirazın fasoncu-çuval yerine **kumaş partisi**
 > üzerinden açılması gerekebilir; Bölüm 15, A5.
@@ -415,7 +423,7 @@ Bir sevkiyat `s` için:
 ```
 G  = gönderilen net kg            (çıkış tartısı neti; reçete satırları toplamı buna eşittir)
 D  = dönen iplik net kg           (YARN_RETURN toplamı, bu sevkiyata bağlı)
-I  = haklı itiraz kg              (CLAIM_ADJUSTMENT toplamı)
+I  = haklı itiraz kg              (CLAIM_ADJUSTMENT toplamı + fire_claim toplamı)
 f  = sevkiyatın fire oranı        (varsayılan 0,04)
 K  = gelen kumaş net kg           (FABRIC_RECEIPT toplamı)
 

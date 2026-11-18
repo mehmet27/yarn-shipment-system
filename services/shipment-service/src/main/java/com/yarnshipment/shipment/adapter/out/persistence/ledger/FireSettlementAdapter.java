@@ -39,11 +39,17 @@ final class FireSettlementAdapter implements FireSettlementPort {
             coalesce((SELECT sum(r.net_kg) FROM yarn_return r
                       WHERE r.shipment_id = f.shipment_id AND r.direction = 'RETURN'), 0) AS returned_kg,
             greatest(0, coalesce((SELECT -sum(m.net_kg) FROM balance_movement m
-                                  WHERE m.shipment_id = f.shipment_id AND m.kind = 'CLAIM_ADJUSTMENT'), 0)) AS claim_kg,
+                                  WHERE m.shipment_id = f.shipment_id AND m.kind = 'CLAIM_ADJUSTMENT'), 0))
+                + coalesce((SELECT sum(c.claimed_kg) FROM fire_claim c WHERE c.shipment_id = f.shipment_id), 0)
+                AS claim_kg,
             coalesce((SELECT sum(fr.net_kg) FROM fabric_lot fr
                       WHERE fr.shipment_id = f.shipment_id AND fr.source = 'SUBCONTRACTOR'), 0) AS fabric_kg,
             greatest(0, coalesce((SELECT -sum(m.net_kg) FROM balance_movement m
-                                  WHERE m.shipment_id = f.shipment_id AND m.kind = 'INVOICE'), 0)) AS invoiced_kg""";
+                                  WHERE m.shipment_id = f.shipment_id AND m.kind = 'INVOICE'), 0)) AS invoiced_kg,
+            coalesce((SELECT sum(c.claimed_kg) FROM fire_claim c WHERE c.shipment_id = f.shipment_id), 0)
+                AS pending_claim_kg,
+            coalesce((SELECT sum(i.claim_kg) FROM fire_invoice i WHERE i.shipment_id = f.shipment_id), 0)
+                AS claim_invoiced_kg""";
     private static final String INSERT_RATE_CHANGE = """
             INSERT INTO fire_rate_change (id, shipment_id, old_rate, new_rate, reason, changed_by, changed_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)""";
@@ -188,7 +194,9 @@ final class FireSettlementAdapter implements FireSettlementPort {
                 rs.getBigDecimal("returned_kg"),
                 rs.getBigDecimal("claim_kg"),
                 rs.getBigDecimal("fabric_kg"),
-                rs.getBigDecimal("invoiced_kg"));
+                rs.getBigDecimal("invoiced_kg"),
+                rs.getBigDecimal("pending_claim_kg"),
+                rs.getBigDecimal("claim_invoiced_kg"));
     }
 
     private record Filter(String where, Map<String, Object> params) {}

@@ -391,7 +391,7 @@ test('Uyuşmazlık: itiraz, lab sonucu ve karar', async ({ giris }) => {
     await kalite.sayfa.waitForTimeout(1200);
     await sec(kalite.sayfa, /^Karar/, 'Talep haklı');
     await expect(kalite.sayfa.getByTestId('resolution-effect')).toContainText(
-      /fasoncunun sorumlu olduğu iplikten düşülür/,
+      /faturalanacak kiloya eklenir/,
     );
     await kalite.sayfa.getByLabel(/^Not/).first().fill('Robot: haklı bulundu');
     await kalite.sayfa.getByRole('button', { name: 'Karara bağla' }).click();

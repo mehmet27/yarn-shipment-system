@@ -59,12 +59,14 @@ describe('Uyuşmazlık ekranları', () => {
     expect(screen.queryByRole('button', { name: 'Karara bağla' })).not.toBeInTheDocument();
   });
 
-  it('haklı bulunan itirazda iplikten düşüleceğini söyler', async () => {
+  it('haklı bulunan itirazda kilonun faturalanacağa eklendiğini söyler', async () => {
     server.use(...createHandlers('QUALITY'));
     renderApp('/panel/uyusmazliklar/disc-1');
     await userEvent.click(await screen.findByRole('combobox', { name: /^Karar/ }));
     await userEvent.click(await screen.findByRole('option', { name: 'Talep haklı' }));
-    expect(screen.getByTestId('resolution-effect')).toHaveTextContent(/iplikten düşülür/);
+    expect(screen.getByTestId('resolution-effect')).toHaveTextContent(
+      /faturalanacak kiloya eklenir/,
+    );
   });
 
   it('karar notu zorunlu hatasını düz Türkçe gösterir', async () => {

@@ -23,8 +23,9 @@ final class FireInvoiceAdapter implements FireInvoicePort {
             WHERE shipment_id = :shipmentId AND kind = 'DISPATCH'
             GROUP BY yarn_type ORDER BY min(source_ref)""";
     private static final String INSERT_INVOICE = """
-            INSERT INTO fire_invoice (id, shipment_id, invoice_no, invoiced_on, note, kg, invoiced_by, created_at)
-            VALUES (:id, :shipmentId, :invoiceNo, :invoicedOn, :note, :kg, :invoicedBy, :createdAt)""";
+            INSERT INTO fire_invoice (id, shipment_id, invoice_no, invoiced_on, note, kg, claim_kg, invoiced_by,
+                                      created_at)
+            VALUES (:id, :shipmentId, :invoiceNo, :invoicedOn, :note, :kg, :claimKg, :invoicedBy, :createdAt)""";
     private static final String INVOICES = """
             SELECT invoice_no, invoiced_on, kg FROM fire_invoice WHERE shipment_id = ?
             ORDER BY created_at, id""";
@@ -65,6 +66,7 @@ final class FireInvoiceAdapter implements FireInvoicePort {
                 .param("invoicedOn", invoice.invoicedOn())
                 .param("note", invoice.note())
                 .param("kg", total)
+                .param("claimKg", invoice.claimKg())
                 .param("invoicedBy", invoice.invoicedBy())
                 .param("createdAt", Timestamp.from(invoice.at()))
                 .update();

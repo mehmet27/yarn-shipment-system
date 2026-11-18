@@ -5,8 +5,8 @@ import { findRecipe } from '../components/shipmentViews';
 import { useYarnLabel } from '../components/useYarnLabel';
 import { useShipment } from '../hooks/useShipment';
 import { yarnOptionsOf } from './fabricLimits';
-import { formatKgText } from './format';
 import { InvoiceConfirm } from './InvoiceConfirm';
+import { InvoiceRemaining } from './InvoiceRemaining';
 import { InvoiceYarnRows } from './InvoiceYarnRows';
 import { settlementErrorKey } from './settlementErrors';
 import { useInvoiceDraft } from './useInvoiceDraft';
@@ -27,9 +27,7 @@ export function InvoiceForm({ settlement }: { settlement: FireSettlement }) {
   const { fields, set, error, mutation, submit, confirmation } = useInvoiceDraft(settlement);
   return (
     <Stack>
-      <Text data-testid="invoice-remaining">
-        {t('settlement.fire.invoiceRemaining', { kg: formatKgText(settlement.remainingKg) })}
-      </Text>
+      <InvoiceRemaining settlement={settlement} />
       <SimpleGrid cols={{ base: 1, sm: 2 }}>
         <TextInput
           label={t('settlement.fire.invoiceNo')}

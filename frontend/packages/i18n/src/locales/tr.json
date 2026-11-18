@@ -1439,6 +1439,7 @@
       "invoiceConfirmText": "Faturası kesilen kilonun kumaşı artık gelmeyecek mi? Kaydettikten sonra bu kilo için kumaş girilemez ve kayıt geri alınamaz.",
       "invoiceConfirmYes": "Evet, fatura edildi",
       "invoiceConfirmNo": "Vazgeç",
+      "invoiceClaimNote": "Bu kilonun {{kg}} kısmı kabul edilen kalite itirazından gelir. Hatalı gelen kumaş zaten gelen kumaşın içinde sayıldığı için bu kısım fasoncunun ipliğinden ikinci kez düşülmez.",
       "invoiceRemaining": "Faturası henüz kesilmemiş: {{kg}}",
       "invoiceLinesHint": "Faturayı hangi iplikten kaç kilo için kestiyseniz yazın. Yazdığınız kilo fasoncunun bakiyesinden düşer.",
       "invoiceYarnKg": "{{yarn}} (kg)",

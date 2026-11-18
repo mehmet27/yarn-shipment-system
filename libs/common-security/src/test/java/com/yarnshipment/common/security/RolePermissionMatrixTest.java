@@ -82,13 +82,14 @@ class RolePermissionMatrixTest {
     }
 
     @Test
-    @DisplayName("Uyuşmazlığı yalnızca kalite kapatır")
-    void shouldAllowOnlyQualityToResolveDiscrepancy() {
+    @DisplayName("Uyuşmazlığı yalnızca kalite üstlenir; kararı yalnızca müdür verir")
+    void shouldAllowOnlyQualityToHandleAndManagerToDecideDiscrepancy() {
         // when
         List<Role> resolvers = rolesHaving(Permission.DISCREPANCY_RESOLVE);
 
         // then
         assertThat(resolvers).containsExactly(Role.QUALITY);
+        assertThat(rolesHaving(Permission.DISCREPANCY_DECIDE)).containsExactly(Role.MANAGER);
     }
 
     @Test

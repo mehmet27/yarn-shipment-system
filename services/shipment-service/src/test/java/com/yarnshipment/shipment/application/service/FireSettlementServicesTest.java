@@ -206,6 +206,32 @@ class FireSettlementServicesTest {
         }
 
         @Test
+        @DisplayName("Haklı itiraz kilosu faturalanacağa eklenir; fatura önce itirazı karşılar, bitince dosya kapanır")
+        void shouldInvoiceJustifiedClaimKg() {
+            // given: 34.032 kg gönderilmiş, kumaş tam (hatalı kg yok), 100 kg haklı itiraz faturayla düşülecek
+            settlements.givenTotals("0", "100", "34132");
+            settlements.givenPendingClaim("100");
+
+            // when: 40 kg
+            FireSettlementDetails partial = invoiceService.markInvoiced(
+                    invoice("F-1", List.of(new YarnShare("Pamuk 30/1", new BigDecimal("40")))));
+
+            // then
+            assertThat(partial.settlement().status()).isEqualTo(FireSettlementStatus.TO_INVOICE);
+            assertThat(partial.calculation().remainingKg()).isEqualByComparingTo("60");
+            assertThat(settlements.recorded())
+                    .singleElement()
+                    .satisfies(record -> assertThat(record.claimKg()).isEqualByComparingTo("40"));
+
+            // when: kalan
+            FireSettlementDetails rest = invoiceService.markInvoiced(invoice("F-2", List.of()));
+
+            // then
+            assertThat(rest.settlement().status()).isEqualTo(FireSettlementStatus.INVOICED);
+            assertThat(rest.calculation().remainingKg()).isEqualByComparingTo("0");
+        }
+
+        @Test
         @DisplayName("Kalandan fazla kilo faturalanamaz ve sevkiyatta olmayan iplik reddedilir")
         void shouldRejectInvoiceOverRemainingOrUnknownYarn() {
             MarkInvoicedCommand tooMuch = invoice("F-1", List.of(new YarnShare("Pamuk 30/1", new BigDecimal("11"))));

@@ -140,6 +140,18 @@ public record FireSettlement(
                 invoice.note());
     }
 
+    /**
+     * Kapanmış dosyaya haklı itiraz gelirse dosya yeniden faturalanacak olur; itiraz kilosu faturalanınca kapanır.
+     * Açık dosya değişmez. Önceki faturalar kayıtta kalır, dosyadaki son fatura alanları boşalır.
+     */
+    public FireSettlement reopenedForClaim() {
+        if (!status.isFinal()) {
+            return this;
+        }
+        return new FireSettlement(
+                shipmentId, subcontractorId, FireSettlementStatus.TO_INVOICE, fireRate, sentKg, null, null, null, null);
+    }
+
     /** Yalnız hatalı kg sıfır olan dosya kapatılır. */
     public FireSettlement close(FireCalculation calculation) {
         requireOpen();

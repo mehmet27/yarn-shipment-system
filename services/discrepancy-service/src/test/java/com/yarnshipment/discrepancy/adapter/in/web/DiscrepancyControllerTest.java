@@ -67,11 +67,11 @@ class DiscrepancyControllerTest {
         assertThat(result)
                 .bodyJson()
                 .extractingPath("$.items[0].allowedActions")
-                .isEqualTo(List.of("ASSIGN", "RESOLVE"));
+                .isEqualTo(List.of("ASSIGN"));
     }
 
     @Test
-    @DisplayName("Müdür uyuşmazlıkta yalnızca karar eylemini görür; atama göremez")
+    @DisplayName("Müdür uyuşmazlıkta yalnızca karar eylemini görür; atama göremez (kalite yalnız atar)")
     void shouldOfferOnlyResolveToManager() {
         when(getDiscrepancy.getDiscrepancy(any())).thenReturn(TestDiscrepancies.open(TestTokens.SITE_ID));
 

@@ -34,17 +34,24 @@ describe('Uyuşmazlık ekranları', () => {
     await screen.findByRole('checkbox', { name: 'Yalnızca süresi geçenler', checked: true });
   });
 
-  it('açık uyuşmazlığı bana atar, sonra notla karara bağlar', async () => {
+  it('kalite açık uyuşmazlığı bana atar ama karar veremez', async () => {
     server.use(...createHandlers('QUALITY'));
     renderApp('/panel/uyusmazliklar/disc-0');
     await userEvent.click(await screen.findByRole('button', { name: 'Bana ata' }));
     expect(await screen.findByText('Bu uyuşmazlık sizde.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Bana ata' })).not.toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Karar ver' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Karar ver' })).not.toBeInTheDocument();
+  });
+
+  it('müdür açık uyuşmazlığı notla karara bağlar; onay sorulur', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/uyusmazliklar/disc-0');
+    expect(await screen.findByRole('heading', { name: 'Karar ver' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Bana ata' })).not.toBeInTheDocument();
     await userEvent.click(await screen.findByRole('combobox', { name: /^Karar/ }));
     expect(screen.queryByRole('option', { name: 'Tolerans içinde' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: 'Veri hatası' })).not.toBeInTheDocument();
-    await userEvent.click(await screen.findByRole('option', { name: 'Talep haksız' }));
+    expect(screen.queryByRole('option', { name: 'Sorumluluk atandı' })).not.toBeInTheDocument();
+    await userEvent.click(await screen.findByRole('option', { name: 'Haksız' }));
     expect(screen.getByTestId('resolution-effect')).toHaveTextContent('yalnızca kapatılır');
     const note = screen.getByLabelText(/^Not/);
     expect(note.tagName).toBe('TEXTAREA');
@@ -59,12 +66,14 @@ describe('Uyuşmazlık ekranları', () => {
     expect(screen.queryByRole('button', { name: 'Karara bağla' })).not.toBeInTheDocument();
   });
 
-  it('haklı bulunan itirazda iplikten düşüleceğini söyler', async () => {
-    server.use(...createHandlers('QUALITY'));
+  it('haklı bulunan itirazda kilonun faturalanacağa eklendiğini söyler', async () => {
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel/uyusmazliklar/disc-1');
     await userEvent.click(await screen.findByRole('combobox', { name: /^Karar/ }));
-    await userEvent.click(await screen.findByRole('option', { name: 'Talep haklı' }));
-    expect(screen.getByTestId('resolution-effect')).toHaveTextContent(/iplikten düşülür/);
+    await userEvent.click(await screen.findByRole('option', { name: 'Haklı' }));
+    expect(screen.getByTestId('resolution-effect')).toHaveTextContent(
+      /faturalanacak kiloya eklenir/,
+    );
   });
 
   it('karar notu zorunlu hatasını düz Türkçe gösterir', async () => {
@@ -75,19 +84,19 @@ describe('Uyuşmazlık ekranları', () => {
           { status: 400 },
         ),
       ),
-      ...createHandlers('QUALITY'),
+      ...createHandlers('MANAGER'),
     );
     renderApp('/panel/uyusmazliklar/disc-1');
     await userEvent.click(await screen.findByRole('combobox', { name: /^Karar/ }));
-    await userEvent.click(await screen.findByRole('option', { name: 'Talep haksız' }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Haksız' }));
     await userEvent.type(screen.getByLabelText(/^Not/), 'x');
     await userEvent.click(screen.getByRole('button', { name: 'Karara bağla' }));
     await userEvent.click(screen.getByRole('button', { name: 'Evet, kararı kaydet' }));
     expect(await screen.findByText(/Karar notu boş olamaz/)).toBeInTheDocument();
   });
 
-  it('kalite ana sayfada karar bekleyen uyuşmazlıkları listeler', async () => {
-    server.use(...createHandlers('QUALITY'));
+  it('müdür ana sayfada karar bekleyen uyuşmazlıkları listeler', async () => {
+    server.use(...createHandlers('MANAGER'));
     renderApp('/panel');
     const block = await screen.findByTestId('pending-discrepancies');
     expect(block).toHaveTextContent('Karar bekleyen uyuşmazlıklar');
@@ -96,6 +105,13 @@ describe('Uyuşmazlık ekranları', () => {
       'href',
       '/panel/uyusmazliklar',
     );
+  });
+
+  it('kalite ana sayfada karar bekleyen uyuşmazlık listesini görmez (karar müdürde)', async () => {
+    server.use(...createHandlers('QUALITY'));
+    renderApp('/panel');
+    await screen.findByRole('heading', { level: 1 });
+    expect(screen.queryByTestId('pending-discrepancies')).not.toBeInTheDocument();
   });
 
   it('depo ana sayfada karar bekleyen uyuşmazlık listesini görmez', async () => {

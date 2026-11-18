@@ -91,6 +91,7 @@ describe('Faturalanacaklar', () => {
     await userEvent.clear(kg);
     await userEvent.type(kg, '1');
     await userEvent.click(within(card).getByRole('button', { name: 'Fatura edildi' }));
+    await userEvent.click(within(card).getByRole('button', { name: 'Evet, fatura edildi' }));
     expect(await screen.findByText(/Faturalanacak kilo 2,2 kg/)).toBeInTheDocument();
     expect(screen.getByText(/Faturası kesilen: 1 kg/)).toBeInTheDocument();
   });
@@ -125,6 +126,7 @@ describe('Faturalanacaklar', () => {
     await userEvent.click(within(card).getByRole('button', { name: 'Fatura bilgisini gir' }));
     await userEvent.type(within(card).getByLabelText(/Fatura no/), 'F-1');
     await userEvent.click(within(card).getByRole('button', { name: 'Fatura edildi' }));
+    await userEvent.click(within(card).getByRole('button', { name: 'Evet, fatura edildi' }));
     await waitFor(() => {
       expect(screen.queryByRole('article', { name: 'SVK-2026-0003' })).not.toBeInTheDocument();
     });

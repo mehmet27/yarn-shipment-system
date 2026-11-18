@@ -2,7 +2,6 @@ package com.yarnshipment.discrepancy.adapter.in.web;
 
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.common.security.CurrentActorProvider;
-import com.yarnshipment.common.security.Permission;
 import com.yarnshipment.discrepancy.adapter.in.web.api.DiscrepancyDecisionsApi;
 import com.yarnshipment.discrepancy.adapter.in.web.api.model.AssignDiscrepancyRequest;
 import com.yarnshipment.discrepancy.adapter.in.web.api.model.DiscrepancyView;
@@ -46,11 +45,11 @@ public class DiscrepancyDecisionController implements DiscrepancyDecisionsApi {
     }
 
     @Override
-    @PreAuthorize("hasAnyAuthority('DISCREPANCY_RESOLVE', 'DISCREPANCY_DECIDE')")
+    @PreAuthorize("hasAuthority('DISCREPANCY_DECIDE')")
     public ResponseEntity<DiscrepancyView> resolveDiscrepancy(UUID discrepancyId, ResolveDiscrepancyRequest request) {
         Actor actor = currentActorProvider.getCurrentActor();
         Resolution resolution = DiscrepancyViews.resolutionOf(request.getResolution());
-        requireDecidable(actor, resolution);
+        requireDecidable(resolution);
         String liableParty =
                 request.getLiableParty() == null || request.getLiableParty().isBlank()
                         ? null
@@ -60,11 +59,9 @@ public class DiscrepancyDecisionController implements DiscrepancyDecisionsApi {
         return ResponseEntity.ok(DiscrepancyViews.toView(resolveDiscrepancy.resolveDiscrepancy(command), actor));
     }
 
-    /** Yalnızca karar yetkisi olan (müdür) kullanıcı sadece "haklı" ya da "haksız" diyebilir. */
-    private static void requireDecidable(Actor actor, Resolution resolution) {
-        boolean full = actor.hasPermission(Permission.DISCREPANCY_RESOLVE);
-        boolean simple = resolution == Resolution.CLAIM_JUSTIFIED || resolution == Resolution.CLAIM_UNJUSTIFIED;
-        if (!full && !simple) {
+    /** Karar yetkisi yalnız müdürdedir ve yalnızca "haklı" ya da "haksız" diyebilir. */
+    private static void requireDecidable(Resolution resolution) {
+        if (resolution != Resolution.CLAIM_JUSTIFIED && resolution != Resolution.CLAIM_UNJUSTIFIED) {
             throw new AccessDeniedException("Resolution not allowed: " + resolution);
         }
     }

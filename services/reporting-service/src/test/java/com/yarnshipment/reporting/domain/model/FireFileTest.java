@@ -133,4 +133,29 @@ class FireFileTest {
         // (1000 - 900 - 20) / 1000
         assertThat(partlyInvoiced.actualFireRate()).isEqualByComparingTo("0.08");
     }
+
+    @Test
+    @DisplayName("Faturayla düşülecek haklı itiraz kilosu faturalanacağa eklenir; fire oranını değiştirmez")
+    void shouldAddClaimToInvoiceKg() {
+        // G=1000, f=%4, I=100, K=964: eksik yok; itirazdan faturalanacak 100
+        FireFile withClaim = new FireFile(
+                UUID.randomUUID(),
+                "SHP-4",
+                UUID.randomUUID(),
+                "Kırıkhan",
+                new BigDecimal("1000"),
+                BigDecimal.ZERO,
+                new BigDecimal("964"),
+                new BigDecimal("0.04"),
+                "TO_INVOICE",
+                null,
+                null,
+                new BigDecimal("100"),
+                BigDecimal.ZERO,
+                new BigDecimal("100"));
+
+        assertThat(withClaim.shortageKg()).isEqualByComparingTo("0");
+        assertThat(withClaim.toInvoiceKg()).isEqualByComparingTo("100");
+        assertThat(withClaim.actualFireRate()).isEqualByComparingTo("0.04");
+    }
 }

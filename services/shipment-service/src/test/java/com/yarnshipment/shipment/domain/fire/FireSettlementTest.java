@@ -118,4 +118,28 @@ class FireSettlementTest {
         assertThatThrownBy(() -> opened.withFireRate(new BigDecimal("-0.01")))
                 .isInstanceOf(InvalidLedgerInputException.class);
     }
+
+    @Test
+    @DisplayName("Haklı itiraz gelince kapanmış ya da faturalanmış dosya yeniden faturalanacak olur")
+    void shouldReopenFinalFileForClaim() {
+        FireSettlement closed = new FireSettlement(
+                opened.shipmentId(),
+                opened.subcontractorId(),
+                FireSettlementStatus.INVOICED,
+                opened.fireRate(),
+                opened.sentKg(),
+                "F-1",
+                java.time.LocalDate.parse("2026-11-12"),
+                MANAGER,
+                "not");
+
+        FireSettlement reopened = closed.reopenedForClaim();
+
+        assertThat(reopened.status()).isEqualTo(FireSettlementStatus.TO_INVOICE);
+        assertThat(reopened.invoiceNo()).isNull();
+        assertThat(reopened.invoicedOn()).isNull();
+        assertThat(reopened.invoicedBy()).isNull();
+        assertThat(reopened.invoiceNote()).isNull();
+        assertThat(opened.reopenedForClaim()).isSameAs(opened);
+    }
 }

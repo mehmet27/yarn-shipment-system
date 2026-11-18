@@ -7,7 +7,10 @@ import com.yarnshipment.shipment.adapter.out.persistence.PostgresTestDatabase;
 import com.yarnshipment.shipment.application.port.in.balance.BalanceRow;
 import com.yarnshipment.shipment.application.port.in.claim.RecordClaimAdjustmentCommand;
 import com.yarnshipment.shipment.application.service.ClaimAdjustmentService;
+import com.yarnshipment.shipment.domain.fire.FireCalculation;
+import com.yarnshipment.shipment.domain.fire.FireCalculation.Inputs;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
+import com.yarnshipment.shipment.domain.fire.FireSettlementStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -68,9 +71,9 @@ class ClaimLedgerAdapterTest {
     }
 
     @Test
-    @DisplayName("Haklı itiraz kilosu iplik bakiyesinden düşer, fire dosyasında itiraz kilosu olur; tekrar etkisizdir")
-    void shouldDeductJustifiedClaimFromBalanceOnce() {
-        ClaimAdjustmentService service = new ClaimAdjustmentService(claims, ledger);
+    @DisplayName("Açık fire dosyasında haklı itiraz bakiyeden düşmez, faturalanacak kilo olur; tekrar etkisizdir")
+    void shouldKeepJustifiedClaimAsInvoiceableOnce() {
+        ClaimAdjustmentService service = new ClaimAdjustmentService(claims, fireSettlements);
         RecordClaimAdjustmentCommand command =
                 new RecordClaimAdjustmentCommand(UUID.randomUUID(), SHIPMENT, new BigDecimal("100.000"), AT, USER);
 
@@ -80,7 +83,34 @@ class ClaimLedgerAdapterTest {
         assertThat(ledger.findBalances(SUBCONTRACTOR))
                 .singleElement()
                 .extracting(BalanceRow::balanceKg)
-                .satisfies(kg -> assertThat(kg).isEqualByComparingTo("33932"));
+                .satisfies(kg -> assertThat(kg).isEqualByComparingTo("34032"));
         assertThat(fireSettlements.totals(SHIPMENT).claimKg()).isEqualByComparingTo("100");
+        assertThat(fireSettlements.totals(SHIPMENT).pendingClaimKg()).isEqualByComparingTo("100");
+    }
+
+    @Test
+    @DisplayName("Kapanmış fire dosyasına gelen haklı itiraz dosyayı faturalanacak yapar, bakiye değişmez")
+    void shouldReopenClosedFileForClaim() {
+        FireSettlement open = fireSettlements.find(SHIPMENT).orElseThrow();
+        fireSettlements.save(
+                open.afterFabricReceipt()
+                        .close(FireCalculation.of(new Inputs(
+                                open.sentKg(),
+                                BigDecimal.ZERO,
+                                BigDecimal.ZERO,
+                                open.sentKg().multiply(new BigDecimal("0.96")),
+                                open.fireRate()))),
+                AT);
+        ClaimAdjustmentService service = new ClaimAdjustmentService(claims, fireSettlements);
+
+        service.recordClaimAdjustment(
+                new RecordClaimAdjustmentCommand(UUID.randomUUID(), SHIPMENT, new BigDecimal("100.000"), AT, USER));
+
+        assertThat(fireSettlements.find(SHIPMENT).orElseThrow().status()).isEqualTo(FireSettlementStatus.TO_INVOICE);
+        assertThat(fireSettlements.totals(SHIPMENT).pendingClaimKg()).isEqualByComparingTo("100");
+        assertThat(ledger.findBalances(SUBCONTRACTOR))
+                .singleElement()
+                .extracting(BalanceRow::balanceKg)
+                .satisfies(kg -> assertThat(kg).isEqualByComparingTo("34032"));
     }
 }

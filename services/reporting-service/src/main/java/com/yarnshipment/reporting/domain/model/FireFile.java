@@ -13,7 +13,8 @@ import org.jspecify.annotations.Nullable;
  * @param returnedYarnKg D, dönen iplik
  * @param fabricKg K, gelen kumaş
  * @param claimKg I, haklı kalite itirazı kilosu
- * @param invoicedKg şimdiye kadar faturalanan kilo (parça parça fatura)
+ * @param invoicedKg eksik kumaş için şimdiye kadar faturalanan kilo (parça parça fatura)
+ * @param claimToInvoiceKg haklı itirazdan henüz faturalanmamış kilo; faturalanana kadar bakiyeden düşmez
  * @param fireRate f, kesir (0,0400)
  */
 @SuppressWarnings({"checkstyle:RecordComponentNumber", "checkstyle:ParameterNumber"})
@@ -30,10 +31,43 @@ public record FireFile(
         @Nullable String invoiceNo,
         @Nullable Instant invoicedAt,
         BigDecimal claimKg,
-        BigDecimal invoicedKg) {
+        BigDecimal invoicedKg,
+        BigDecimal claimToInvoiceKg) {
 
     public static final int KG_SCALE = 3;
     public static final int RATE_SCALE = 4;
+
+    /** Faturayla düşülecek haklı itirazı olmayan dosya. */
+    public FireFile(
+            UUID shipmentId,
+            String shipmentNo,
+            UUID subcontractorId,
+            String subcontractorName,
+            BigDecimal sentKg,
+            BigDecimal returnedYarnKg,
+            BigDecimal fabricKg,
+            BigDecimal fireRate,
+            String status,
+            @Nullable String invoiceNo,
+            @Nullable Instant invoicedAt,
+            BigDecimal claimKg,
+            BigDecimal invoicedKg) {
+        this(
+                shipmentId,
+                shipmentNo,
+                subcontractorId,
+                subcontractorName,
+                sentKg,
+                returnedYarnKg,
+                fabricKg,
+                fireRate,
+                status,
+                invoiceNo,
+                invoicedAt,
+                claimKg,
+                invoicedKg,
+                BigDecimal.ZERO);
+    }
 
     /** Faturalanmış kilosu olmayan dosya. */
     public FireFile(
@@ -109,8 +143,12 @@ public record FireFile(
         return exact.max(BigDecimal.ZERO).setScale(KG_SCALE, RoundingMode.HALF_UP);
     }
 
-    /** Henüz faturalanmamış kilo: max(0, H − faturalanan), 3 ondalık. */
+    /** Henüz faturalanmamış kilo: max(0, H − faturalanan) + itirazdan faturalanmamış kilo, 3 ondalık. */
     public BigDecimal toInvoiceKg() {
-        return shortageKg().subtract(invoicedKg).max(BigDecimal.ZERO).setScale(KG_SCALE, RoundingMode.HALF_UP);
+        return shortageKg()
+                .subtract(invoicedKg)
+                .max(BigDecimal.ZERO)
+                .add(claimToInvoiceKg)
+                .setScale(KG_SCALE, RoundingMode.HALF_UP);
     }
 }

@@ -36,15 +36,33 @@ public interface FireSettlementPort {
      * Kayıtlardan toplamlar.
      *
      * @param returnedKg D, dönen iplik
-     * @param claimKg I, haklı itiraz
+     * @param claimKg I, haklı itiraz (bakiyeden hemen düşülen eski itirazlar ve faturayla düşülecek itirazlar)
      * @param fabricKg K, gelen kumaş
      * @param invoicedKg şimdiye kadar faturalanan kilo
+     * @param pendingClaimKg I'nın faturayla bakiyeden düşülecek kısmı (bu akıştan karara bağlanan itirazlar)
+     * @param claimInvoicedKg faturalanan kilonun haklı itirazı karşılayan kısmı
      */
-    record FireTotals(BigDecimal returnedKg, BigDecimal claimKg, BigDecimal fabricKg, BigDecimal invoicedKg) {
+    record FireTotals(
+            BigDecimal returnedKg,
+            BigDecimal claimKg,
+            BigDecimal fabricKg,
+            BigDecimal invoicedKg,
+            BigDecimal pendingClaimKg,
+            BigDecimal claimInvoicedKg) {
 
         /** Faturalanmış kilosu olmayan toplamlar. */
         public FireTotals(BigDecimal returnedKg, BigDecimal claimKg, BigDecimal fabricKg) {
             this(returnedKg, claimKg, fabricKg, BigDecimal.ZERO);
+        }
+
+        /** Faturalanan kilo olan, bekleyen itirazı olmayan toplamlar. */
+        public FireTotals(BigDecimal returnedKg, BigDecimal claimKg, BigDecimal fabricKg, BigDecimal invoicedKg) {
+            this(returnedKg, claimKg, fabricKg, invoicedKg, BigDecimal.ZERO, BigDecimal.ZERO);
+        }
+
+        /** Faturalanan kilonun eksik kumaşı karşılayan kısmı; bu kadar iplik tüketilmiş sayılır. */
+        public BigDecimal shortageInvoicedKg() {
+            return invoicedKg.subtract(claimInvoicedKg);
         }
     }
 

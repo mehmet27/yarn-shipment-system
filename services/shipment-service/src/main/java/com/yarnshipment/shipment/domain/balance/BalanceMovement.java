@@ -78,21 +78,6 @@ public record BalanceMovement(
                 consumption.sourceRef());
     }
 
-    /** Haklı kalite itirazının iplik cinsine düşen kilosu fasoncunun bakiyesinden düşer (KR-15); kilo pozitif. */
-    public static BalanceMovement claimAdjustment(ClaimShare share, ClaimContext context) {
-        return new BalanceMovement(
-                UUID.randomUUID(),
-                context.subcontractorId(),
-                new YarnRef(share.yarnType(), null),
-                context.shipmentId(),
-                MovementKind.CLAIM_ADJUSTMENT,
-                share.netKg().negate(),
-                context.at(),
-                context.createdBy(),
-                "Haklı kalite itirazı",
-                "CLAIM:" + context.discrepancyId() + ":" + share.yarnType());
-    }
-
     /** Fasoncuya kesilen faturanın bir iplik cinsine düşen kilosu bakiyeden düşer; kilo pozitif verilir. */
     public static BalanceMovement invoice(InvoiceShare share, InvoiceContext context) {
         return new BalanceMovement(
@@ -127,12 +112,6 @@ public record BalanceMovement(
 
     /** Faturalanan kilonun bir iplik cinsine düşen payı, pozitif. */
     public record InvoiceShare(String yarnType, BigDecimal netKg) {}
-
-    /** Haklı itirazın bağlamı: hangi uyuşmazlık, fasoncu, sevkiyat, ne zaman, kim. */
-    public record ClaimContext(UUID discrepancyId, UUID subcontractorId, UUID shipmentId, Instant at, UUID createdBy) {}
-
-    /** Haklı itiraz kilosunun bir iplik cinsine düşen payı, pozitif. */
-    public record ClaimShare(String yarnType, BigDecimal netKg) {}
 
     /** Sevkiyatın tamamlanma bağlamı: hangi fasoncu, hangi sevkiyat, ne zaman, kim. */
     public record DispatchContext(UUID subcontractorId, UUID shipmentId, Instant at, UUID createdBy) {}

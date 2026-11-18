@@ -1459,7 +1459,10 @@
       "open": "Dosyayı aç",
       "enterInvoice": "Fatura bilgisini gir",
       "alreadyInvoiced": "Faturası kesilen: {{kg}}",
-      "cancelInvoice": "Vazgeç"
+      "cancelInvoice": "Vazgeç",
+      "modalTitle": "Fatura bilgisi · {{no}}",
+      "previousTitle": "Bu sevkiyat için daha önce girilen faturalar",
+      "previousNone": "Bu sevkiyat için henüz fatura girilmedi."
     }
   },
   "stock": {

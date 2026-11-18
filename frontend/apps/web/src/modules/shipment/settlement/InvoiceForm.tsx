@@ -14,17 +14,24 @@ import { useInvoiceDraft } from './useInvoiceDraft';
 const yarnNames = (recipe: ReturnType<typeof findRecipe>) =>
   new Map((recipe === undefined ? [] : yarnOptionsOf(recipe.lines)).map((o) => [o.value, o.label]));
 
+type InvoiceFormProps = {
+  settlement: FireSettlement;
+  /** Fatura kaydolunca çağrılır (pencerede açılan form pencereyi kapatır). */
+  onSaved?: () => void;
+};
+
 /**
  * "Fatura edildi" kaydı (INVOICE_MARK): fatura ERP'de kesilmiştir; müdür fatura no, tarih ve hangi iplikten kaç kilo
  * için fatura kesildiğini yazar. Yazılan kilo fasoncunun bakiyesinden düşer; kalan kilo bitmeden dosya açık kalır.
  */
-export function InvoiceForm({ settlement }: { settlement: FireSettlement }) {
+export function InvoiceForm({ settlement, onSaved }: InvoiceFormProps) {
   const { t } = useTranslation();
   const yarnLabel = useYarnLabel();
   const shipment = useShipment(settlement.shipmentId).data;
   const recipe = shipment === undefined ? undefined : findRecipe(shipment);
   const names = yarnNames(recipe);
-  const { fields, set, error, mutation, submit, confirmation } = useInvoiceDraft(settlement);
+  const draft = useInvoiceDraft(settlement, onSaved);
+  const { fields, set, error, mutation, submit, confirmation } = draft;
   return (
     <Stack>
       <InvoiceRemaining settlement={settlement} />

@@ -304,8 +304,11 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
       const f = await fire();
       const no = (await mudur.api<{ shipmentNo: string }>(`/api/v1/shipments/${id}`)).shipmentNo;
       await mudur.sayfa.goto('/panel/faturalanacaklar');
-      const kart = mudur.sayfa.getByRole('article', { name: no });
-      await kart.getByRole('button', { name: 'Fatura bilgisini gir' }).click();
+      await mudur.sayfa
+        .getByRole('article', { name: no })
+        .getByRole('button', { name: 'Fatura bilgisini gir' })
+        .click();
+      const kart = mudur.sayfa.getByRole('dialog', { name: /Fatura bilgisi/ });
       await kart.getByLabel(/Fatura no/).fill(`F-${iplik}`);
       await kart.getByRole('button', { name: 'Fatura edildi' }).click();
       await kart.getByRole('button', { name: 'Evet, fatura edildi' }).click();

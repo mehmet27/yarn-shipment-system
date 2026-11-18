@@ -86,12 +86,13 @@ describe('Faturalanacaklar', () => {
     renderApp('/panel/faturalanacaklar');
     const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
     await userEvent.click(within(card).getByRole('button', { name: 'Fatura bilgisini gir' }));
-    await userEvent.type(await within(card).findByLabelText(/Fatura no/), 'F-1');
-    const kg = within(card).getByLabelText(/\(kg\)/);
+    const dialog = await screen.findByRole('dialog', { name: /Fatura bilgisi/ });
+    await userEvent.type(await within(dialog).findByLabelText(/Fatura no/), 'F-1');
+    const kg = within(dialog).getByLabelText(/\(kg\)/);
     await userEvent.clear(kg);
     await userEvent.type(kg, '1');
-    await userEvent.click(within(card).getByRole('button', { name: 'Fatura edildi' }));
-    await userEvent.click(within(card).getByRole('button', { name: 'Evet, fatura edildi' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Fatura edildi' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Evet, fatura edildi' }));
     expect(await screen.findByText(/Faturalanacak kilo 2,2 kg/)).toBeInTheDocument();
     expect(screen.getByText(/Faturası kesilen: 1 kg/)).toBeInTheDocument();
   });
@@ -106,12 +107,15 @@ describe('Faturalanacaklar', () => {
     renderApp('/panel/faturalanacaklar');
     const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
     await userEvent.click(within(card).getByRole('button', { name: 'Fatura bilgisini gir' }));
-    await userEvent.type(await within(card).findByLabelText(/Fatura no/), 'F-1');
-    const kg = within(card).getByLabelText(/\(kg\)/);
+    const dialog = await screen.findByRole('dialog', { name: /Fatura bilgisi/ });
+    await userEvent.type(await within(dialog).findByLabelText(/Fatura no/), 'F-1');
+    const kg = within(dialog).getByLabelText(/\(kg\)/);
     await userEvent.clear(kg);
     await userEvent.type(kg, '9');
-    await userEvent.click(within(card).getByRole('button', { name: 'Fatura edildi' }));
-    expect(await within(card).findByText(/faturası kesilmemiş kilodan fazla/)).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Fatura edildi' }));
+    expect(
+      await within(dialog).findByText(/faturası kesilmemiş kilodan fazla/),
+    ).toBeInTheDocument();
   });
 
   it('müdür satırdan fatura bilgisini girer; dosya listeden düşer', async () => {
@@ -124,11 +128,42 @@ describe('Faturalanacaklar', () => {
     renderApp('/panel/faturalanacaklar');
     const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
     await userEvent.click(within(card).getByRole('button', { name: 'Fatura bilgisini gir' }));
-    await userEvent.type(within(card).getByLabelText(/Fatura no/), 'F-1');
-    await userEvent.click(within(card).getByRole('button', { name: 'Fatura edildi' }));
-    await userEvent.click(within(card).getByRole('button', { name: 'Evet, fatura edildi' }));
+    const dialog = await screen.findByRole('dialog', { name: /Fatura bilgisi/ });
+    await userEvent.type(within(dialog).getByLabelText(/Fatura no/), 'F-1');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Fatura edildi' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Evet, fatura edildi' }));
     await waitFor(() => {
       expect(screen.queryByRole('article', { name: 'SVK-2026-0003' })).not.toBeInTheDocument();
     });
+  });
+
+  it('pencerede aynı sevkiyata daha önce girilen faturalar görünür', async () => {
+    addMockReceipt(
+      'shp-0003',
+      { fabricType: 'Süprem', netKg: '1900', waybillNo: 'K-1' },
+      'user-quality',
+    );
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/faturalanacaklar');
+    const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
+    await userEvent.click(within(card).getByRole('button', { name: 'Fatura bilgisini gir' }));
+    let dialog = await screen.findByRole('dialog', { name: /Fatura bilgisi/ });
+    expect(await within(dialog).findByText(/henüz fatura girilmedi/)).toBeInTheDocument();
+    await userEvent.type(within(dialog).getByLabelText(/Fatura no/), 'F-7');
+    const kg = within(dialog).getByLabelText(/\(kg\)/);
+    await userEvent.clear(kg);
+    await userEvent.type(kg, '1');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Fatura edildi' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Evet, fatura edildi' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+    await userEvent.click(
+      within(await screen.findByRole('article', { name: 'SVK-2026-0003' })).getByRole('button', {
+        name: 'Fatura bilgisini gir',
+      }),
+    );
+    dialog = await screen.findByRole('dialog', { name: /Fatura bilgisi/ });
+    expect(await within(dialog).findByText(/F-7 · .* · 1 kg/)).toBeInTheDocument();
   });
 });

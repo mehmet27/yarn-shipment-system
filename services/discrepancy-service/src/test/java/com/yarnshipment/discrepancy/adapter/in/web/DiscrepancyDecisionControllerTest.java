@@ -96,7 +96,27 @@ class DiscrepancyDecisionControllerTest {
     }
 
     @Test
-    @DisplayName("Okuma izni olan karar veremez; depo ve şoför de veremez")
+    @DisplayName("Müdür itirazı yalnızca haklı ya da haksız diye karara bağlar; atayamaz, başka karar veremez")
+    void shouldLetManagerDecideOnlyJustifiedOrUnjustified() {
+        Jwt manager = TestTokens.token("manager").build();
+        when(resolveDiscrepancy.resolveDiscrepancy(any()))
+                .thenReturn(TestDiscrepancies.withStatus(TestTokens.SITE_ID, DiscrepancyStatus.RESOLVED));
+
+        assertThat(post(ONE + "/resolve", "{\"resolution\":\"CLAIM_JUSTIFIED\",\"note\":\"haklı\"}", manager))
+                .hasStatusOk();
+        assertThat(post(ONE + "/resolve", "{\"resolution\":\"CLAIM_UNJUSTIFIED\",\"note\":\"haksız\"}", manager))
+                .hasStatusOk();
+        assertThat(post(
+                        ONE + "/resolve",
+                        "{\"resolution\":\"LIABILITY_ASSIGNED\",\"note\":\"n\",\"liableParty\":\"x\"}",
+                        manager))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(ONE + "/assign", "{\"assigneeId\":\"" + UUID.randomUUID() + "\"}", manager))
+                .hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    @DisplayName("Müdür tolerans gibi kararı veremez; depo ve şoför hiçbir karar veremez")
     void shouldCheckPermissions() {
         Jwt manager = TestTokens.token("manager").build();
 

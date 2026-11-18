@@ -104,7 +104,7 @@ Excel'de hareketler elle toplandığı için bakiye geç ve hatalı çıkıyor, 
 |---|---|---|
 | **Müdür** (`MANAGER`) | Fason işlerinden sorumlu müdür | Sevkiyat açar, reçeteyi ve fire oranını girer; kantar uyuşmazlığında karar verir (iptal / çuval ekle-çıkar); irsaliyeyi yükleyip tamamlar; kumaş girişini ve iplik dönüşünü onaylar **[Yapılacak]**; "fatura edildi" işaretler **[Yapılacak]**; raporları görür |
 | **Depo** (`WAREHOUSE`) | Merkez depo sorumlusu | Çuvalları sevkiyata atar, kantar fişiyle çıkış tartısını girer; eksik gönderimde neden yazar **[Yapılacak]** |
-| **Kalite** (`QUALITY`) | Depo-kalite ve dışarı-kalite | Kalite itirazı açar, numune/lab sonucunu girer, uyuşmazlığı karara bağlar; gelen kumaşı kaydeder **[Yapılacak]** |
+| **Kalite** (`QUALITY`) | Depo-kalite ve dışarı-kalite | Kalite itirazı açar, numune/lab sonucunu girer, uyuşmazlığı karara bağlar (müdür de kalite itirazını yalnızca haklı / haklı-faturalandı / haksız diye kapatabilir); gelen kumaşı kaydeder **[Yapılacak]** |
 | **Genel müdür** **[Yapılacak]** | Üst yönetim | Yalnızca rapor ve bakiye görür; işlem yapmaz |
 | **Admin** (`ADMIN`) | Sistem yöneticisi | Tanımlar, kullanıcılar, ayarlar, gerekçeli düzeltme, kanıt geçersiz kılma |
 | ~~Şoför~~ | — | **Kaldırıldı.** Şoför ve araç yalnızca sevkiyatın üzerinde bilgi olarak yazılır |

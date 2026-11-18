@@ -1,9 +1,9 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, SectionCard, Stack, Text } from '@iplik/ui';
 import { useState } from 'react';
-import { useCurrentUser } from '@/modules/auth';
+import { useCanRefreshTicket } from '../hooks/useCanRefreshTicket';
 import { useUploadEvidence } from '../hooks/useUploadEvidence';
-import { ACCEPTED_MIME_TYPES, fileProblem, UPLOAD_PERMISSION_BY_TYPE } from '../uploadTypes';
+import { ACCEPTED_MIME_TYPES, fileProblem } from '../uploadTypes';
 import type { FileProblem } from '../uploadTypes';
 import { uploadErrorKey } from '../uploadErrors';
 import { UploadButtons } from './UploadButtons';
@@ -12,20 +12,23 @@ export type EvidenceUploadProps = {
   shipmentId: string;
   /** Çıkış tartısı girildi mi; kantar fişi fotoğrafı ilk kez tartıyla birlikte yüklendiği için önce sunulmaz. */
   isDispatched: boolean;
+  /** Sevkiyat yola çıktı mı (yolda, tamamlanmış ya da iptal); fiş bundan sonra yenilenmez. */
+  isDeparted: boolean;
 };
 
 /**
- * Kantar fişini yenileme: yeni fiş yüklenince öncekisi sunucuda geçersiz sayılır. Kalite itirazı fotoğrafı ve
+ * Kantar fişini yenileme: yeni fiş yüklenince öncekisi sunucuda geçersiz sayılır. Fiş varsa yalnızca yola çıkmamış
+ * sevkiyatta sunulur (sunucu ayrıca yalnız ilk fişi yükleyenin yenileyebildiğini denetler); fiş hiç yüklenememişse
+ * yolda olsa da yeniden denenebilir. Kalite itirazı fotoğrafı ve
  * laboratuvar belgesi bu bölümden değil, "Kalite itirazı" sekmesinden girilir; irsaliye tamamlama formundan gelir.
  * Yükleme izni yoksa hiç görünmez.
  */
-export function EvidenceUpload({ shipmentId, isDispatched }: EvidenceUploadProps) {
+export function EvidenceUpload({ shipmentId, isDispatched, isDeparted }: EvidenceUploadProps) {
   const { t } = useTranslation();
-  const user = useCurrentUser();
   const [problem, setProblem] = useState<FileProblem>();
   const mutation = useUploadEvidence(shipmentId);
-  const canUpload = user.data?.permissions.includes(UPLOAD_PERMISSION_BY_TYPE.DISPATCH_SCALE);
-  if (!isDispatched || canUpload !== true) return null;
+  const canRefresh = useCanRefreshTicket(shipmentId, isDispatched, isDeparted);
+  if (!canRefresh) return null;
   const upload = (file: File | null) => {
     if (file === null) return;
     const found = fileProblem(file, ACCEPTED_MIME_TYPES);

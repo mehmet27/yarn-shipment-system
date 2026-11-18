@@ -4,6 +4,8 @@ import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.evidence.domain.model.EvidenceAlreadyInvalidatedException;
 import com.yarnshipment.evidence.domain.model.EvidenceNotFoundException;
 import com.yarnshipment.evidence.domain.model.InvalidationReasonRequiredException;
+import com.yarnshipment.evidence.domain.model.ScaleTicketNotOwnedException;
+import com.yarnshipment.evidence.domain.model.ShipmentDepartedException;
 import com.yarnshipment.evidence.domain.model.ShipmentLockedException;
 import com.yarnshipment.evidence.domain.model.ShipmentNotAccessibleException;
 import com.yarnshipment.evidence.domain.model.ShipmentNotDueException;
@@ -76,6 +78,16 @@ public final class EvidenceExceptionHandler {
     @ExceptionHandler(ShipmentLockedException.class)
     public ProblemDetail handleShipmentLocked(HttpServletRequest request) {
         return problems.create(request, HttpStatus.CONFLICT, "SHIPMENT_LOCKED");
+    }
+
+    @ExceptionHandler(ShipmentDepartedException.class)
+    public ProblemDetail handleShipmentDeparted(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.CONFLICT, "SHIPMENT_DEPARTED");
+    }
+
+    @ExceptionHandler(ScaleTicketNotOwnedException.class)
+    public ProblemDetail handleScaleTicketNotOwned(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.FORBIDDEN, "SCALE_TICKET_NOT_OWN");
     }
 
     @ExceptionHandler(ShipmentNotDueException.class)

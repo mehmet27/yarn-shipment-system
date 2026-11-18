@@ -16,7 +16,6 @@ import com.yarnshipment.evidence.domain.model.ShipmentLockedException;
 import com.yarnshipment.evidence.domain.model.UploadIntent;
 import com.yarnshipment.evidence.domain.model.UploadStage;
 import java.time.Clock;
-import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +30,7 @@ public class RequestUploadService implements RequestUploadUseCase {
     private static final String ACTION = "EVIDENCE_UPLOAD";
 
     private final ShipmentAccessPort shipments;
+    private final ScaleTicketRefresh scaleRefresh;
     private final UploadIntentPort intents;
     private final ObjectStoragePort storage;
     private final ScopeGuard scopeGuard;
@@ -38,11 +38,13 @@ public class RequestUploadService implements RequestUploadUseCase {
 
     public RequestUploadService(
             ShipmentAccessPort shipments,
+            ScaleTicketRefresh scaleRefresh,
             UploadIntentPort intents,
             ObjectStoragePort storage,
             ScopeGuard scopeGuard,
             Clock clock) {
         this.shipments = shipments;
+        this.scaleRefresh = scaleRefresh;
         this.intents = intents;
         this.storage = storage;
         this.scopeGuard = scopeGuard;
@@ -60,7 +62,10 @@ public class RequestUploadService implements RequestUploadUseCase {
         if (isClosedFor(file.type(), shipment)) {
             throw new ShipmentLockedException(shipment.shipmentId());
         }
-        Instant now = clock.instant();
+        if (file.type() == EvidenceType.DISPATCH_SCALE) {
+            scaleRefresh.require(actor, shipment);
+        }
+        var now = clock.instant();
         if (file.type().stages().contains(UploadStage.DISPATCH)) {
             shipment.requireDue(now);
         }

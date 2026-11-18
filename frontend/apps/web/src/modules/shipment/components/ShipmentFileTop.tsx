@@ -11,6 +11,9 @@ import { WeightCheckPanel } from './WeightCheckPanel';
 import { CentralStockNotice } from '../stock/CentralStockNotice';
 import { findWeightCheck, isCompleted } from './shipmentViews';
 
+/** Yola çıkmış (yolda, tamamlanmış ya da iptal) sevkiyat durumları. */
+const DEPARTED: readonly string[] = ['AWAITING_DELIVERY', 'COMPLETED', 'CANCELLED'];
+
 /** Dosyanın üstü: başlık, kantar uyuşmazlığı özeti, eylemler ve kanıt yükleme. */
 export function ShipmentFileTop({ shipment }: { shipment: ShipmentDetail }) {
   const { t } = useTranslation();
@@ -55,7 +58,11 @@ export function ShipmentFileTop({ shipment }: { shipment: ShipmentDetail }) {
         plateNo={shipment.plateNo}
         actions={actions}
       />
-      <EvidenceUpload shipmentId={shipment.shipmentId} isDispatched={shipment.status !== 'DRAFT'} />
+      <EvidenceUpload
+        shipmentId={shipment.shipmentId}
+        isDispatched={shipment.status !== 'DRAFT'}
+        isDeparted={DEPARTED.includes(shipment.status)}
+      />
       {canCancel && <CancelShipmentForm shipmentId={shipment.shipmentId} />}
     </>
   );

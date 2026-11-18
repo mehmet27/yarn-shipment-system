@@ -36,7 +36,7 @@ export function ToInvoiceRow({ row, isFirst }: { row: FireSettlementRow; isFirst
             {t('settlement.toInvoice.alreadyInvoiced', { kg: formatKgText(row.invoicedKg) })}
           </Text>
         )}
-        <InvoiceAction shipmentId={row.shipmentId} />
+        <InvoiceAction shipmentId={row.shipmentId} shipmentNo={row.shipmentNo} />
       </Stack>
     </Box>
   );

@@ -160,7 +160,10 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
     await mudur.sayfa.goto('/panel/faturalanacaklar');
     const kart = mudur.sayfa.getByRole('article', { name: no });
     await kart.getByRole('button', { name: 'Fatura bilgisini gir' }).click();
-    return kart;
+    // Fatura formu açılır pencerede çıkar; pencerede önceki faturalar da listelenir.
+    const pencere = mudur.sayfa.getByRole('dialog', { name: /Fatura bilgisi/ });
+    await expect(pencere.getByTestId('previous-invoices')).toBeVisible();
+    return pencere;
   };
 
   await mudur.adim(
@@ -177,6 +180,7 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
       await kart.getByLabel(/\(kg\)/).fill('1');
       await kart.getByRole('button', { name: 'Fatura edildi' }).click();
       await kart.getByRole('button', { name: 'Evet, fatura edildi' }).click();
+      await expect(kart).toBeHidden(); // kayıttan sonra pencere kapanır
       await mudur.sayfa.waitForTimeout(1500);
       const fire = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
       mudur.kontrol(
@@ -201,6 +205,7 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
 
   await mudur.adim('fatura edildi (kalan): kalan kilo faturalanınca dosya kapanır', async () => {
     const kart = await kartAc();
+    await expect(kart.getByTestId('previous-invoices')).toContainText(`F-${iplik}-1`);
     await kart.getByLabel(/Fatura no/).fill(`F-${iplik}-2`);
     await kart.getByRole('button', { name: 'Fatura edildi' }).click();
     await kart.getByRole('button', { name: 'Evet, fatura edildi' }).click();

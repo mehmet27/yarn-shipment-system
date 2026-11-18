@@ -19,7 +19,7 @@ function initialLines(settlement: FireSettlement): InvoiceLineDraft[] {
 }
 
 /** Fatura formunun alanları, iplik satırları ve gönderimi. */
-export function useInvoiceDraft(settlement: FireSettlement) {
+export function useInvoiceDraft(settlement: FireSettlement, onSaved?: () => void) {
   const [invoiceNo, setInvoiceNo] = useState('');
   const [invoicedOn, setInvoicedOn] = useState(todayIso);
   const [note, setNote] = useState('');
@@ -36,7 +36,12 @@ export function useInvoiceDraft(settlement: FireSettlement) {
     setPending(typeof request === 'string' ? undefined : request);
   };
   const confirm = () => {
-    if (pending !== undefined) mutation.mutate(pending);
+    if (pending === undefined) return;
+    mutation.mutate(pending, {
+      onSuccess: () => {
+        onSaved?.();
+      },
+    });
   };
   const cancel = () => {
     setPending(undefined);

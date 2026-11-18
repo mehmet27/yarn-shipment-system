@@ -431,7 +431,7 @@
       "linePriceInvalid": "Fiyat yazılmalı (en çok 4 ondalıklı, eksi olmayan bir sayı).",
       "sourceSameAsReceiver": "Gönderen ve alıcı fasoncu aynı olamaz.",
       "sourceRequired": "Gönderen fasoncuyu seçin.",
-      "supplierRequired": "Kapıdan aktarma için tedarikçiyi yazın.",
+      "supplierRequired": "Kapıdan aktarma için tedarikçiyi seçin.",
       "shipmentDateRequired": "Sevkiyat tarihini seçin.",
       "shipmentDatePast": "Sevkiyat tarihi bugünden önce olamaz."
     },
@@ -901,7 +901,7 @@
       "lotNo": "Parti numarası",
       "productId": "İplik",
       "qualityGradeId": "Kalite sınıfı",
-      "yarnSupplierId": "İplik tedarikçisi (isteğe bağlı)",
+      "yarnSupplierId": "İplik tedarikçisi",
       "productionDate": "Üretim tarihi"
     },
     "lock": {

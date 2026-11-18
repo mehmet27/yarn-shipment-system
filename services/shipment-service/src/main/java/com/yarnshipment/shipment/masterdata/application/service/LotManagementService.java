@@ -88,7 +88,11 @@ public class LotManagementService
         if (!lots.activeQualityGradeExists(details.qualityGradeId())) {
             throw new InvalidMasterDataException("qualityGradeId", "unknown or inactive");
         }
-        if (details.yarnSupplierId() != null && !lots.activeYarnSupplierExists(details.yarnSupplierId())) {
+        UUID yarnSupplierId = details.yarnSupplierId();
+        if (yarnSupplierId == null) {
+            throw new InvalidMasterDataException("yarnSupplierId", "required");
+        }
+        if (!lots.activeYarnSupplierExists(yarnSupplierId)) {
             throw new InvalidMasterDataException("yarnSupplierId", "unknown or inactive");
         }
         if (details.productionDate().isAfter(LocalDate.now(clock))) {

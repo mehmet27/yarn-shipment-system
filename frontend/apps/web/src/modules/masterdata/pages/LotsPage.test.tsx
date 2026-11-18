@@ -18,6 +18,7 @@ describe('LotsPage', () => {
     await userEvent.type(screen.getByLabelText(/Parti numarası/), 'p-2026-0009');
     await choose(/İplik(?! ted)/, 'PES-30-1 · Polyester 30/1');
     await choose(/Kalite sınıfı/, 'A · Birinci kalite');
+    await choose(/İplik tedarikçisi/, 'Şireci');
     await userEvent.type(screen.getByLabelText(/Üretim tarihi/), '2026-10-20');
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
     const card = await screen.findByRole('group', { name: 'P-2026-0009' });
@@ -29,7 +30,7 @@ describe('LotsPage', () => {
     renderApp('/panel/partiler');
     await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
-    expect((await screen.findAllByText('Bu alan boş olamaz.')).length).toBe(4);
+    expect((await screen.findAllByText('Bu alan boş olamaz.')).length).toBe(5);
   });
 
   it('kalite onayla kilitlenir; kilitli partide düzenle ve kilitle kalkar', async () => {

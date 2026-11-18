@@ -32,8 +32,8 @@ export type CreateDraft = {
   sourceKind: SourceKind;
   /** İplik başka bir fasoncudan gidiyorsa gönderen fasoncu; boşsa merkezden. */
   sourceSubcontractor: MasterOption | undefined;
-  /** Doluysa iplik depoya girmeden kapıdan aktarılır; gelen tedarikçi. Boş metin "merkez stoktan" demektir. */
-  directTransferSupplier: string;
+  /** Doluysa iplik depoya girmeden kapıdan aktarılır; gelen tedarikçi (Tanımlar'daki aktif kayıttan seçilir). */
+  directTransferSupplier: MasterOption | undefined;
   /** Kapıdan aktarılan ipliğin geliş irsaliye numarası (isteğe bağlı). */
   directTransferWaybillNo: string;
   driver: MasterOption | undefined;
@@ -71,7 +71,7 @@ export const EMPTY_CREATE_DRAFT: CreateDraft = {
   subcontractor: undefined,
   sourceKind: 'CENTRAL',
   sourceSubcontractor: undefined,
-  directTransferSupplier: '',
+  directTransferSupplier: undefined,
   directTransferWaybillNo: '',
   driver: undefined,
   vehicle: undefined,
@@ -140,7 +140,7 @@ function sourceError(draft: CreateDraft): {
       ? { sourceSubcontractor: 'sourceSameAsReceiver' }
       : {};
   }
-  return draft.sourceKind === 'DIRECT' && draft.directTransferSupplier.trim() === ''
+  return draft.sourceKind === 'DIRECT' && draft.directTransferSupplier === undefined
     ? { directTransfer: 'supplierRequired' }
     : {};
 }
@@ -237,12 +237,12 @@ export function toRecipeInputs(lines: readonly RecipeLineDraft[]): RecipeLineInp
   return inputs.filter((input): input is RecipeLineInput => input !== undefined);
 }
 
-/** Boş tedarikçi "merkez stoktan" demektir; istekte hiç yer almaz. */
+/** Kapıdan aktarmada seçilen tedarikçinin adı istekte gider; kaynak başka ise hiç yer almaz. */
 function directTransferFields(draft: CreateDraft): Partial<CreateShipmentRequest> {
   if (draft.sourceKind !== 'DIRECT') return {};
-  const directTransferSupplier = draft.directTransferSupplier.trim();
   const directTransferWaybillNo = draft.directTransferWaybillNo.trim();
-  if (directTransferSupplier === '') return {};
+  if (draft.directTransferSupplier === undefined) return {};
+  const directTransferSupplier = draft.directTransferSupplier.label.trim();
   return {
     directTransferSupplier,
     ...(directTransferWaybillNo === '' ? {} : { directTransferWaybillNo }),

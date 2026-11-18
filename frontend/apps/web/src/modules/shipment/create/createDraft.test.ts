@@ -50,7 +50,7 @@ describe('createDraft', () => {
     const direct = {
       ...base,
       sourceKind: 'DIRECT' as const,
-      directTransferSupplier: ' Esha İplik ',
+      directTransferSupplier: { value: 'sup-1', label: ' Esha İplik ' },
       directTransferWaybillNo: 'IRS-7',
     };
     expect(toCreateRequest(direct, SITE)).toMatchObject({
@@ -66,7 +66,11 @@ describe('createDraft', () => {
   it('seçilen kaynağın zorunlu alanı boşsa hata verir', () => {
     expect(validateCreate({ ...base, sourceKind: 'DIRECT' })).toBe('supplierRequired');
     expect(validateCreate({ ...base, sourceKind: 'SUBCONTRACTOR' })).toBe('sourceRequired');
-    const stale = { ...base, sourceSubcontractor: subcontractor, directTransferSupplier: 'Esha' };
+    const stale = {
+      ...base,
+      sourceSubcontractor: subcontractor,
+      directTransferSupplier: { value: 'sup-1', label: 'Esha' },
+    };
     expect(validateCreate(stale)).toBeUndefined();
     expect(toCreateRequest(stale, SITE)).not.toHaveProperty('sourceSubcontractorId');
   });

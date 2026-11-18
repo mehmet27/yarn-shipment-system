@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { SegmentedControl, Stack, TextInput } from '@iplik/ui';
+import { SegmentedControl, Stack, Text, TextInput } from '@iplik/ui';
 import type { CreateDraft, CreateFieldErrors, SourceKind } from './createDraft';
 import { MasterSelect } from './MasterSelect';
 
@@ -43,17 +43,19 @@ export function SourceFields({ draft, onChange, errors }: SourceFieldsProps) {
       )}
       {draft.sourceKind === 'DIRECT' && (
         <Stack gap="xs">
-          <TextInput
+          <MasterSelect
+            kind="supplier"
             label={t('create.directTransferSupplier')}
-            description={t('create.directTransferHint')}
-            withAsterisk
             value={draft.directTransferSupplier}
-            maxLength={200}
+            isRequired
             {...(directError === undefined ? {} : { error: t(`create.errors.${directError}`) })}
-            onChange={(event) => {
-              onChange({ ...draft, directTransferSupplier: event.currentTarget.value });
+            onChange={(directTransferSupplier) => {
+              onChange({ ...draft, directTransferSupplier });
             }}
           />
+          <Text size="sm" c="dimmed">
+            {t('create.directTransferHint')}
+          </Text>
           <TextInput
             label={t('create.directTransferWaybillNo')}
             value={draft.directTransferWaybillNo}

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Center, Paper, PasswordInput, Stack, Text } from '@iplik/ui';
@@ -31,7 +32,7 @@ function errorKey(error: unknown): string {
  * Kişi kendi şifresini değiştirir. Geçici şifreyle girenler (`passwordChangeRequired`) başka sayfaya geçemez, bu
  * yüzden "Vazgeç" yalnızca zorunlu olmayan durumda görünür.
  */
-export function ChangePasswordPage() {
+export function ChangePasswordPage({ brand }: { brand?: ReactNode }) {
   const { t } = useTranslation();
   const { data: user } = useCurrentUser();
   const [current, setCurrent] = useState('');
@@ -51,7 +52,7 @@ export function ChangePasswordPage() {
           }}
         >
           <Stack>
-            <AuthCardHeader title={t('auth.changePassword.title')} />
+            <AuthCardHeader title={t('auth.changePassword.title')} brand={brand} />
             <Text size="sm" c="dimmed">
               {t('auth.changePassword.intro')}
             </Text>

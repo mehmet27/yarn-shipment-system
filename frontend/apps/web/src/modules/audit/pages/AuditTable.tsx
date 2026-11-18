@@ -1,6 +1,7 @@
 import type { AuditRecordView } from '@iplik/api-client/audit';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Badge, Paper, Table, useMediaQuery } from '@iplik/ui';
+import { Paper, Table, useMediaQuery } from '@iplik/ui';
+import { DotBadge } from '@iplik/ui';
 import { useUserNames } from '../hooks/useUserNames';
 import { AuditActor } from './AuditActor';
 import { AuditCards } from './AuditCards';
@@ -42,9 +43,7 @@ export function AuditTable({ records }: { records: AuditRecordView[] }) {
                 <Table.Td>
                   <span title={record.action}>{actionLabel(record.action)}</span>{' '}
                   {record.decision === 'DENIED' ? (
-                    <Badge color="red" variant="light" style={{ whiteSpace: 'nowrap' }}>
-                      {t('audit.denied')}
-                    </Badge>
+                    <DotBadge color="red">{t('audit.denied')}</DotBadge>
                   ) : null}
                 </Table.Td>
                 <Table.Td>

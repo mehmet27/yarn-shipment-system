@@ -1,7 +1,8 @@
-import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Anchor, Group, SectionCard, Stack, Text } from '@iplik/ui';
+import { useTranslation } from '@iplik/i18n';
+import { Anchor, Box, SectionCard, Stack } from '@iplik/ui';
 import { Link } from 'react-router';
 import { usePendingDiscrepancies } from '../hooks/usePendingDiscrepancies';
+import { PendingRow } from './PendingRow';
 
 const SHOWN = 5;
 
@@ -17,25 +18,17 @@ export function PendingDiscrepancies() {
     <SectionCard
       title={t('discrepancy.pending.title', { count: pending.length })}
       icon="discrepancies"
-      tone="warning"
       testId="pending-discrepancies"
     >
-      <Stack gap="xs">
-        {pending.slice(0, SHOWN).map((item) => (
-          <Group key={item.id} justify="space-between">
-            <Anchor component={Link} to={`/panel/uyusmazliklar/${item.id}`}>
-              {item.discrepancyNo}
-            </Anchor>
-            {item.dueAt !== undefined && (
-              <Text size="sm" c="dimmed">
-                {t('discrepancy.pending.due', { date: formatDateTime(item.dueAt) })}
-              </Text>
-            )}
-          </Group>
+      <Stack gap={0} m="calc(var(--mantine-spacing-md) * -1)">
+        {pending.slice(0, SHOWN).map((item, index) => (
+          <PendingRow key={item.id} item={item} isFirst={index === 0} />
         ))}
-        <Anchor component={Link} to="/panel/uyusmazliklar" size="sm">
-          {t('discrepancy.pending.all')}
-        </Anchor>
+        <Box px="md" py="xs" style={{ borderTop: '1px solid var(--app-line-soft)' }}>
+          <Anchor component={Link} to="/panel/uyusmazliklar" size="sm">
+            {t('discrepancy.pending.all')}
+          </Anchor>
+        </Box>
       </Stack>
     </SectionCard>
   );

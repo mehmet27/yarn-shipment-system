@@ -1,6 +1,11 @@
 import type { MantineColorsTuple, MantineThemeComponents } from '@mantine/core';
 import { createTheme, rem, virtualColor } from '@mantine/core';
-import { BRAND_SHADE_INDEX, DEFAULT_BRAND_COLOR, createBrandPalette } from './brandPalette';
+import {
+  BRAND_SHADE_INDEX,
+  DEFAULT_BRAND_COLOR,
+  createBrandPalette,
+  reversePalette,
+} from './brandPalette';
 
 /**
  * Nötr ölçek (çinko grisi): girinti (0), zemin vurgusu (1), çizgi (2-3), girdi kenarı (4), soluk yazı (6), ana yazı (9).
@@ -147,7 +152,7 @@ export function createAppTheme(brandColor: string = DEFAULT_BRAND_COLOR) {
     colors: {
       // Kurulumun rengi vurgu içindir (logo, etkin menü, bağlantı); koyu görünümde tonlar tersine döner.
       brandLight: palette,
-      brandDark: [...palette].reverse() as unknown as MantineColorsTuple,
+      brandDark: reversePalette(palette),
       brand: virtualColor({ name: 'brand', light: 'brandLight', dark: 'brandDark' }),
       inkLight: INK_LIGHT,
       inkDark: INK_DARK,

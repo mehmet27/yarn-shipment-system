@@ -72,6 +72,14 @@ body {
   text-align: center;
 }
 
+/* Telefonda yan menü üst çubuğun altından açılır; üst çubuktaki menü düğmesi görünür ve basılabilir kalır. */
+@media (max-width: 47.99em) {
+  .panel-navbar {
+    top: var(--app-shell-header-height, 56px);
+    height: calc(100dvh - var(--app-shell-header-height, 56px));
+  }
+}
+
 /* Yan menü bağlantısı: soluk yazı; etkin olan girintili zeminde ve koyu yazıyla belirir. */
 .panel-nav-link {
   color: var(--mantine-color-dimmed);
@@ -202,4 +210,14 @@ body {
 
 .mantine-Modal-body:not(:only-child) {
   padding-top: var(--mantine-spacing-md);
+}
+
+/* Koyu görünümde ana renk beyazdır; etkin sayfa numarası okunsun diye yazısı koyu olur. */
+:root[data-mantine-color-scheme='dark'] .mantine-Pagination-control[data-active] {
+  color: var(--mantine-color-black);
+}
+
+/* Sayı hücreleri: son hücrenin sağ çizgisi çizilmez; satır dolmadığında boş alanda yalnız çizgi kalmasın. */
+.app-stat-grid > :last-child {
+  box-shadow: 0 1px 0 var(--app-line) !important;
 }

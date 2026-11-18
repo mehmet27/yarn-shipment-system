@@ -8,11 +8,12 @@ export type StatCardProps = {
   testId?: string | undefined;
 };
 
-const DEFAULT_COLOR = 'dark.9';
+const VALUE_SIZE = 24;
+const MOBILE_VALUE_SIZE = 18;
 const LINE = 'var(--app-line)';
 
 /** Tek göstergelik hücre; çizgiyi `StatGrid` içinde sağ ve alt gölge çizer. Etiket her zaman yazılıdır (FE-UI-03). */
-export function StatCard({ label, value, hint, color = DEFAULT_COLOR, testId }: StatCardProps) {
+export function StatCard({ label, value, hint, color, testId }: StatCardProps) {
   return (
     <Stack
       gap={2}
@@ -24,7 +25,12 @@ export function StatCard({ label, value, hint, color = DEFAULT_COLOR, testId }: 
       <Text size="sm" c="dimmed">
         {label}
       </Text>
-      <Text fw={600} fz={20} lh={1.3} c={color}>
+      <Text
+        fw={600}
+        fz={{ base: MOBILE_VALUE_SIZE, sm: VALUE_SIZE }}
+        lh={1.3}
+        {...(color === undefined ? {} : { c: `var(--mantine-color-${color}-light-color)` })}
+      >
         {value}
       </Text>
       {hint === undefined ? null : (

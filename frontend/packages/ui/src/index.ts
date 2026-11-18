@@ -60,6 +60,8 @@ export { ActionBar } from './components/ActionBar';
 export type { ActionBarProps } from './components/ActionBar';
 export { ActivityFeed } from './components/ActivityFeed';
 export type { ActivityFeedProps, ActivityItem } from './components/ActivityFeed';
+export { DotBadge } from './components/DotBadge';
+export type { DotBadgeProps } from './components/DotBadge';
 export { EmptyState } from './components/EmptyState';
 export type { EmptyStateProps } from './components/EmptyState';
 export { ListGroupHeader } from './components/ListGroupHeader';

@@ -1,6 +1,7 @@
 import type { InspectionView } from '@iplik/api-client';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Badge, Group, Paper, Stack, Text } from '@iplik/ui';
+import { Group, Paper, Stack, Text } from '@iplik/ui';
+import { DotBadge as StatusDotBadge } from '@iplik/ui';
 import { EvidenceById } from '@/modules/evidence';
 import { InspectionResultForm } from './InspectionResultForm';
 
@@ -19,9 +20,9 @@ export function InspectionItem({ claimId, shipmentId, inspection }: InspectionIt
       <Stack gap="xs">
         <Group justify="space-between">
           <Text fw={600}>{t(`claim.inspection.kind.${inspection.kind}`)}</Text>
-          <Badge variant="light" color={isPending ? 'yellow' : 'green'}>
+          <StatusDotBadge color={isPending ? 'yellow' : 'green'}>
             {t(isPending ? 'claim.inspection.pending' : 'claim.inspection.done')}
-          </Badge>
+          </StatusDotBadge>
         </Group>
         {inspection.requestNote !== undefined && <Text size="sm">{inspection.requestNote}</Text>}
         <Text size="sm" c="dimmed">

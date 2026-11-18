@@ -1,11 +1,14 @@
 import { useTranslation } from '@iplik/i18n';
-import { AppShell, Box, Burger, Group, Stack, Text, useDisclosure } from '@iplik/ui';
+import { AppShell, Box, Group, Stack, Text, useDisclosure } from '@iplik/ui';
 import { BrandMark } from '@/modules/branding';
 import { Outlet } from 'react-router';
+import { NavToggles } from './NavToggles';
 import { NotificationBell } from './NotificationBell';
 import { PanelNav } from './PanelNav';
 import { UserMenu } from './UserMenu';
 
+/** Bu genişliğin altı telefon düzenidir. */
+const MOBILE_ONLY = 'sm';
 const HEADER_HEIGHT_PX = 56;
 const NAVBAR_WIDTH_PX = 248;
 const NAV_BRAND_HEIGHT_PX = 44;
@@ -32,7 +35,7 @@ export function PanelLayout() {
       header={{ height: HEADER_HEIGHT_PX }}
       navbar={{
         width: NAVBAR_WIDTH_PX,
-        breakpoint: 'sm',
+        breakpoint: MOBILE_ONLY,
         collapsed: { mobile: !isMobileNavOpen, desktop: !isDesktopNavOpen },
       }}
       padding={{ base: 'md', sm: 'lg' }}
@@ -40,19 +43,13 @@ export function PanelLayout() {
       <AppShell.Header style={HEADER_STYLE}>
         <Group h="100%" px="md" justify="space-between" wrap="nowrap">
           <Group wrap="nowrap" miw={0}>
-            <Burger
-              opened={isMobileNavOpen}
-              onClick={toggleMobileNav}
-              hiddenFrom="sm"
-              aria-label={t('nav.toggle')}
+            <NavToggles
+              isMobileOpen={isMobileNavOpen}
+              isDesktopOpen={isDesktopNavOpen}
+              onToggleMobile={toggleMobileNav}
+              onToggleDesktop={toggleDesktopNav}
             />
-            <Burger
-              opened={isDesktopNavOpen}
-              onClick={toggleDesktopNav}
-              visibleFrom="sm"
-              aria-label={t('nav.toggle')}
-            />
-            <Box hiddenFrom="sm" miw={0}>
+            <Box hiddenFrom={MOBILE_ONLY} miw={0}>
               <BrandMark />
             </Box>
           </Group>
@@ -62,10 +59,11 @@ export function PanelLayout() {
           </Group>
         </Group>
       </AppShell.Header>
-      <AppShell.Navbar p="sm" style={NAVBAR_STYLE}>
-        <Group h={NAV_BRAND_HEIGHT_PX} px="xs" justify="space-between" wrap="nowrap">
-          <BrandMark />
-          <Burger opened onClick={toggleMobileNav} hiddenFrom="sm" aria-label={t('nav.toggle')} />
+      <AppShell.Navbar p="sm" style={NAVBAR_STYLE} className="panel-navbar">
+        <Group h={NAV_BRAND_HEIGHT_PX} px="xs" wrap="nowrap" visibleFrom={MOBILE_ONLY}>
+          <Box visibleFrom={MOBILE_ONLY} miw={0}>
+            <BrandMark />
+          </Box>
         </Group>
         <Stack gap={2} mt="xs">
           <Text size="xs" fw={500} c="dimmed" px="sm" py="xs">

@@ -2,7 +2,7 @@ import { ChangePasswordPage, LoginPage, RequireAuth, RequirePermission } from '@
 import { auditPanelRoutes } from '@/modules/audit';
 import { balancePanelRoutes } from '@/modules/balance';
 import { stockPanelRoutes } from '@/modules/stock';
-import { brandingPanelRoutes } from '@/modules/branding';
+import { BrandMark, brandingPanelRoutes } from '@/modules/branding';
 import { rolePermissionsPanelRoutes } from '@/modules/rolepermissions';
 import { discrepancyPanelRoutes } from '@/modules/discrepancy';
 import { masterDataPanelRoutes } from '@/modules/masterdata';
@@ -50,12 +50,12 @@ const routes: RouteObject[] = [
       ...stockPanelRoutes,
     ],
   },
-  { path: '/giris', element: <LoginPage /> },
+  { path: '/giris', element: <LoginPage brand={<BrandMark />} /> },
   {
     path: '/sifre-degistir',
     element: (
       <RequireAuth errorFallback={<ErrorPage reason="unexpected" />} allowPasswordChangeRequired>
-        <ChangePasswordPage />
+        <ChangePasswordPage brand={<BrandMark />} />
       </RequireAuth>
     ),
   },

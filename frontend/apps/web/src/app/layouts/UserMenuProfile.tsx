@@ -12,13 +12,13 @@ export function UserMenuProfile({ user }: UserMenuProfileProps) {
       <Text fw={600}>{user.fullName}</Text>
       <Group gap={4}>
         {user.roles.map((role) => (
-          <Badge key={role} variant="light" size="sm">
+          <Badge key={role} variant="outline" color="gray" size="sm">
             {t(`users.role.${role}`)}
           </Badge>
         ))}
       </Group>
       {user.mfaVerified ? (
-        <Text size="xs" c="green.8">
+        <Text size="xs" c="var(--mantine-color-green-light-color)">
           {t('app.mfaOn')}
         </Text>
       ) : null}

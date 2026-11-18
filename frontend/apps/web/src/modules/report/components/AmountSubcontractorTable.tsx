@@ -4,6 +4,8 @@ import { Table, Text } from '@iplik/ui';
 import { formatKg3, formatMoney } from '../format';
 import { isPositive } from './amountFormat';
 
+const TABLE_MIN_WIDTH = 300;
+
 /** Fasoncu bazında kalan iplik ve değeri. */
 export function AmountSubcontractorTable({ summary }: { summary: AmountSummaryView }) {
   const { t } = useTranslation();
@@ -15,7 +17,7 @@ export function AmountSubcontractorTable({ summary }: { summary: AmountSummaryVi
     );
   }
   return (
-    <Table.ScrollContainer minWidth={420}>
+    <Table.ScrollContainer minWidth={TABLE_MIN_WIDTH}>
       <Table data-testid="amount-subcontractor-table">
         <Table.Thead>
           <Table.Tr>

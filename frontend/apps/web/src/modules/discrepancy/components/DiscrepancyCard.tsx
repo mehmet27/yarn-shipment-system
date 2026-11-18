@@ -16,16 +16,15 @@ export function DiscrepancyCard({ discrepancy }: { discrepancy: DiscrepancyView 
       withBorder
       p="md"
       mih={72}
-      c="dark"
       aria-label={discrepancy.discrepancyNo}
       style={{
         textDecoration: 'none',
-        borderLeft: `4px solid var(--mantine-color-${toSeverityColor(discrepancy.severity)}-5)`,
+        borderLeft: `4px solid var(--mantine-color-${toSeverityColor(discrepancy.severity)}-filled)`,
       }}
     >
       <Stack gap={4}>
-        <Group justify="space-between" wrap="nowrap">
-          <Text fw={700} size="lg">
+        <Group justify="space-between" gap="xs">
+          <Text fw={600} style={{ whiteSpace: 'nowrap' }}>
             {discrepancy.discrepancyNo}
           </Text>
           <DiscrepancyBadges discrepancy={discrepancy} />

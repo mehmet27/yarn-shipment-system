@@ -41,7 +41,7 @@ export function UserMenu() {
   return (
     <Menu position="bottom-end" width={MENU_WIDTH_PX} shadow="lg" radius="md">
       <Menu.Target>
-        <UnstyledButton aria-label={user.fullName} mih={TOUCH_TARGET_PX}>
+        <UnstyledButton aria-label={user.fullName} mih={TOUCH_TARGET_PX} miw={TOUCH_TARGET_PX}>
           <Group gap="xs" wrap="nowrap">
             <Avatar size={AVATAR_SIZE_PX} radius="md" color="gray">
               {initialsOf(user.fullName)}

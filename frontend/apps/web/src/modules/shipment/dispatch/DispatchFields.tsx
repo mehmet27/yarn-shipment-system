@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Box, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
+import { SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import { formatKg } from '@iplik/units';
 import { TicketCapture } from '@/modules/evidence';
 import type { DispatchDraft, DispatchWeighing } from './dispatchDraft';
@@ -53,18 +53,9 @@ export function DispatchFields({
       </SimpleGrid>
       {weighing !== undefined && (
         <>
-          <Box
-            p="sm"
-            style={{
-              background: 'var(--app-inset)',
-              border: '1px solid var(--app-line)',
-              borderRadius: 'var(--mantine-radius-md)',
-            }}
-          >
-            <Text fw={600} fz="lg">
-              {t('dispatch.net', { net: formatKg(weighing.netKg) })}
-            </Text>
-          </Box>
+          <Text fw={600} fz="xl">
+            {t('dispatch.net', { net: formatKg(weighing.netKg) })}
+          </Text>
           <TicketCapture
             file={draft.ticket}
             onFileChange={(ticket) => {

@@ -26,7 +26,7 @@ export function ShipmentCard({ shipment, to }: ShipmentCardProps) {
       aria-label={shipment.shipmentNo}
       style={{
         textDecoration: 'none',
-        borderLeft: `4px solid var(--mantine-color-${toStatusColor(shipment.status)}-5)`,
+        borderLeft: `4px solid var(--mantine-color-${toStatusColor(shipment.status)}-filled)`,
       }}
     >
       <Stack gap={4}>
@@ -47,7 +47,7 @@ export function ShipmentCard({ shipment, to }: ShipmentCardProps) {
           {formatDate(shipment.shipmentDate)}
         </Text>
         <ShipmentProgress status={shipment.status} />
-        <Text size="sm" c="brand.8" fw={500}>
+        <Text size="sm" fw={500}>
           {t(`shipment.nextStep.${shipment.status}`)}
         </Text>
       </Stack>

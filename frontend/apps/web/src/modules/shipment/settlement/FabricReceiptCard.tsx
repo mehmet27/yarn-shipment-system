@@ -10,7 +10,7 @@ export function FabricReceiptCard({ receipt }: { receipt: FabricReceipt }) {
       ? ''
       : ` · ${t('settlement.fabric.rolls', { count: receipt.rollCount })}`;
   return (
-    <Paper withBorder p="md" component="article">
+    <Paper withBorder p="md" radius="md" bg="var(--app-surface)" component="article">
       <Stack gap="xs">
         <Text fw={600}>
           {receipt.fabricType} · {formatKgText(receipt.netKg)}

@@ -1,10 +1,10 @@
 import { useTranslation } from '@iplik/i18n';
 import { Fragment } from 'react';
-import { SimpleGrid, TextInput } from '@iplik/ui';
+import { SimpleGrid } from '@iplik/ui';
 import type { CreateDraft, CreateFieldErrors } from './createDraft';
 import { withSubcontractor } from './createDraft';
 import { MasterSelect } from './MasterSelect';
-import { ShipmentDateField } from './ShipmentDateField';
+import { OrderMetaFields } from './OrderMetaFields';
 
 type PartiesFieldsProps = {
   draft: CreateDraft;
@@ -50,25 +50,7 @@ export function PartiesFields({ draft, onChange, errors }: PartiesFieldsProps) {
           }}
         />
       </SimpleGrid>
-      <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm" mt="sm">
-        <ShipmentDateField draft={draft} onChange={onChange} errors={errors} />
-        <TextInput
-          label={t('create.contactPerson')}
-          value={draft.contactPerson}
-          maxLength={200}
-          onChange={(event) => {
-            onChange({ ...draft, contactPerson: event.currentTarget.value });
-          }}
-        />
-        <TextInput
-          label={t('create.orderNo')}
-          value={draft.orderNo}
-          maxLength={100}
-          onChange={(event) => {
-            onChange({ ...draft, orderNo: event.currentTarget.value });
-          }}
-        />
-      </SimpleGrid>
+      <OrderMetaFields draft={draft} onChange={onChange} errors={errors} />
     </Fragment>
   );
 }

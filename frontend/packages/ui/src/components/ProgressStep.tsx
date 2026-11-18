@@ -11,6 +11,8 @@ export type ProgressStepProps = {
 const CIRCLE_SIZE_PX = 28;
 const LINE_TOP_PX = 13;
 const LINE_HEIGHT_PX = 2;
+const TEXT_COLOR = 'var(--app-text)';
+const LINE_COLOR = 'var(--app-line)';
 const BOLD = 600;
 
 /** Adım çubuğunun tek adımı: numara dairesi, önceki adıma bağlanan çizgi ve ad. */
@@ -29,7 +31,7 @@ export function ProgressStep({ label, index, current }: ProgressStepProps) {
           pos="absolute"
           top={LINE_TOP_PX}
           h={LINE_HEIGHT_PX}
-          bg={isReached ? 'var(--app-text)' : 'var(--app-line)'}
+          bg={isReached ? TEXT_COLOR : LINE_COLOR}
           style={{ left: '-50%', width: '100%' }}
         />
       )}
@@ -39,7 +41,7 @@ export function ProgressStep({ label, index, current }: ProgressStepProps) {
         h={CIRCLE_SIZE_PX}
         mx="auto"
         mb={6}
-        bg={isReached ? 'var(--app-text)' : 'var(--app-line)'}
+        bg={isReached ? TEXT_COLOR : LINE_COLOR}
         c={isReached ? 'var(--app-surface)' : 'dimmed'}
         fw={BOLD}
         style={{
@@ -49,16 +51,12 @@ export function ProgressStep({ label, index, current }: ProgressStepProps) {
           justifyContent: 'center',
           zIndex: 1,
           fontSize: 'var(--mantine-font-size-sm)',
-          boxShadow: isCurrent ? '0 0 0 4px var(--app-line)' : undefined,
+          boxShadow: isCurrent ? `0 0 0 4px ${LINE_COLOR}` : undefined,
         }}
       >
         {index + 1}
       </Box>
-      <Text
-        size="xs"
-        fw={isCurrent ? BOLD : undefined}
-        c={isCurrent ? 'var(--app-text)' : 'dimmed'}
-      >
+      <Text size="xs" fw={isCurrent ? BOLD : undefined} c={isCurrent ? TEXT_COLOR : 'dimmed'}>
         {label}
       </Text>
     </Box>

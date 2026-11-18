@@ -1,7 +1,8 @@
 import { useTranslation } from '@iplik/i18n';
 import type { CentralStock } from '@iplik/api-client/central-stock';
-import { Badge, Group, Paper, Table, Text } from '@iplik/ui';
+import { Group, Paper, Table, Text } from '@iplik/ui';
 import { useState } from 'react';
+import { DotBadge } from '@iplik/ui';
 import { formatSignedKg } from '@/modules/shipment';
 import type { SortKey } from './StockFilters';
 import { StockFilters } from './StockFilters';
@@ -40,9 +41,7 @@ export function StockRows({ stock }: { stock: CentralStock }) {
                     <Group gap="xs" justify="flex-end" wrap="nowrap">
                       {formatSignedKg(row.stockKg)}
                       {row.stockKg.startsWith('-') && (
-                        <Badge color="red" variant="light">
-                          {t('stock.negativeBadge')}
-                        </Badge>
+                        <DotBadge color="red">{t('stock.negativeBadge')}</DotBadge>
                       )}
                     </Group>
                   </Table.Td>

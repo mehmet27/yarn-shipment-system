@@ -1,19 +1,10 @@
-import { Box, Text } from '@iplik/ui';
+import { Text } from '@iplik/ui';
 
-/** Toplam net kg: girintili kutuda tek satır. */
+/** Toplam net kg: özet kartının başında tek satır (kart zaten çerçeveli, ek kutu yok). */
 export function TotalBox({ text }: { text: string }) {
   return (
-    <Box
-      p="sm"
-      style={{
-        background: 'var(--app-inset)',
-        border: '1px solid var(--app-line)',
-        borderRadius: 'var(--mantine-radius-md)',
-      }}
-    >
-      <Text fw={600} fz="lg" data-testid="recipe-total">
-        {text}
-      </Text>
-    </Box>
+    <Text fw={600} fz="xl" data-testid="recipe-total">
+      {text}
+    </Text>
   );
 }

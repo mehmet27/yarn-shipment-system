@@ -6,6 +6,8 @@ import { FabricMessages } from './FabricMessages';
 import { FabricYarnRows } from './FabricYarnRows';
 import { useFabricSubmit } from './useFabricSubmit';
 
+const NUMBER_STYLES = { input: { textAlign: 'right' } } as const;
+
 /** Kumaş girişi formu; iplik dağılımı sevkiyattaki ipliklerden seçilir, toplamı kumaş kilosuna eşit olmalı. */
 export function FabricForm({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
@@ -29,6 +31,7 @@ export function FabricForm({ shipmentId }: { shipmentId: string }) {
           <TextInput
             label={t('settlement.fabric.netKg')}
             inputMode="decimal"
+            styles={NUMBER_STYLES}
             withAsterisk
             error={form.isOverLimit ? t('settlement.fabric.exceedsRemaining') : undefined}
             {...field('netKg')}
@@ -36,6 +39,7 @@ export function FabricForm({ shipmentId }: { shipmentId: string }) {
           <TextInput
             label={t('settlement.fabric.rollCount')}
             inputMode="numeric"
+            styles={NUMBER_STYLES}
             {...field('rollCount')}
           />
         </SimpleGrid>

@@ -5,6 +5,7 @@ import { useBranding } from './useBranding';
 
 const LOGO_HEIGHT_PX = 32;
 const TOUCH_TARGET_PX = 44;
+const MARK_SIZE_PX = 28;
 
 /** Üst bardaki marka: varsa logo, yanında firma adı; hiçbiri kaydedilmemişse ürün adı. Tıklayınca ana sayfaya gider. */
 export function BrandMark() {
@@ -21,7 +22,15 @@ export function BrandMark() {
       style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}
     >
       <Group gap="xs" wrap="nowrap">
-        {logo === undefined ? null : (
+        {logo === undefined ? (
+          <Box
+            aria-hidden
+            w={MARK_SIZE_PX}
+            h={MARK_SIZE_PX}
+            bg="var(--mantine-color-brand-filled)"
+            style={{ borderRadius: 8, flexShrink: 0 }}
+          />
+        ) : (
           <Box
             component="img"
             src={logo}

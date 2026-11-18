@@ -10,66 +10,52 @@ import {
   Text,
 } from '@iplik/ui';
 import type { BrandingDraft } from '../brandingDraft';
-import { PreviewNav } from './PreviewNav';
+import { PreviewSidebar } from './PreviewSidebar';
 
-const SHADE_FRAME = 9;
-const SHADE_MAIN = 7;
-const SHADE_LIGHT = 1;
-const LOGO_HEIGHT_PX = 28;
+const SHADE_ACCENT = 7;
 
 export type BrandingPreviewProps = { draft: BrandingDraft };
 
-/** Seçilen renklerin yeni kabukta (düz üst bar ve yan menü) nasıl görüneceğini canlı gösterir; uygulamanın kendi temasını değiştirmez. */
+/** Yeni kabuğu gösterir: açık gri yan menü, beyaz üst çubuk, nötr ana düğme; kurulum rengi yalnızca vurguda (işaret, bağlantı). Uygulamanın temasını değiştirmez. */
 export function BrandingPreview({ draft }: BrandingPreviewProps) {
   const { t } = useTranslation();
   const palette = createBrandPalette(
     isValidHexColor(draft.primaryColor) ? draft.primaryColor : DEFAULT_BRAND_COLOR,
   );
+  const accent = palette[SHADE_ACCENT];
   const name = draft.companyName.trim() === '' ? t('app.name') : draft.companyName.trim();
   return (
     <Paper
       withBorder
       radius="md"
-      style={{ overflow: 'hidden' }}
+      style={{ overflow: 'hidden', borderColor: 'var(--app-line)' }}
+      bg="var(--app-surface)"
       aria-label={t('branding.preview.title')}
     >
-      <Group
-        px="md"
-        py="sm"
-        c="white"
-        style={{ background: palette[SHADE_FRAME] }}
-        gap="xs"
-        wrap="nowrap"
-      >
-        {draft.logoDataUrl === '' ? null : (
-          <Box
-            component="img"
-            src={draft.logoDataUrl}
-            alt=""
-            h={LOGO_HEIGHT_PX}
-            style={{ objectFit: 'contain' }}
-          />
-        )}
-        <Text fw={600} truncate>
-          {name}
-        </Text>
-      </Group>
       <Group align="stretch" gap={0} wrap="nowrap">
-        <PreviewNav palette={palette} />
-        <Stack p="md" gap="sm" miw={0} style={{ flex: 1 }}>
-          <Text fw={600}>{t('branding.preview.sample')}</Text>
-          <Box h={8} style={{ background: palette[SHADE_LIGHT], borderRadius: 4 }}>
-            <Box h={8} w="60%" style={{ background: palette[SHADE_MAIN], borderRadius: 4 }} />
-          </Box>
+        <PreviewSidebar name={name} logo={draft.logoDataUrl} accent={accent} />
+        <Stack gap={0} miw={0} style={{ flex: 1 }}>
           <Box
-            px="md"
-            py="xs"
-            c="white"
-            fw={600}
-            style={{ background: palette[SHADE_MAIN], borderRadius: 6, alignSelf: 'flex-start' }}
-          >
-            {t('branding.preview.button')}
-          </Box>
+            h={32}
+            bg="var(--app-surface)"
+            style={{ borderBottom: '1px solid var(--app-line)' }}
+            aria-hidden
+          />
+          <Stack p="md" gap="sm">
+            <Text fw={600} style={{ color: accent }}>
+              {t('branding.preview.sample')}
+            </Text>
+            <Box
+              px="md"
+              py="xs"
+              fw={600}
+              bg="var(--mantine-color-ink-filled)"
+              c="var(--mantine-primary-color-contrast)"
+              style={{ borderRadius: 6, alignSelf: 'flex-start' }}
+            >
+              {t('branding.preview.button')}
+            </Box>
+          </Stack>
         </Stack>
       </Group>
     </Paper>

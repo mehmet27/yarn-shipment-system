@@ -5,6 +5,17 @@ import { useState } from 'react';
 import type { YarnDemand } from './useCentralStockCheck';
 import { useCentralStockCheck } from './useCentralStockCheck';
 
+/** Eksik uyarısı koyuda doygun turuncuya dönmesin: nötr girinti, yalnızca sol kenarda sarı çizgi. */
+const SHORT_STYLES = {
+  root: {
+    background: 'var(--app-inset)',
+    border: '1px solid var(--app-line)',
+    boxShadow: 'inset 3px 0 0 var(--mantine-color-yellow-filled)',
+  },
+  title: { color: 'var(--app-text)' },
+  message: { color: 'var(--app-text)' },
+} as const;
+
 type Props = {
   demands: readonly YarnDemand[];
   /** `true`: yola çıkana kadar merkez stok her zaman görünür; `false`: yalnızca eksik varken, kapatılabilir uyarı. */
@@ -23,12 +34,7 @@ export function CentralStockNotice({ demands, alwaysShow }: Props) {
   if (lines.length === 0 || (!alwaysShow && short.length === 0)) return null;
   if (short.length === 0) {
     return (
-      <Alert
-        color="teal"
-        variant="light"
-        title={t('stockNotice.okTitle')}
-        data-testid="stock-notice"
-      >
+      <Alert color="teal" title={t('stockNotice.okTitle')} data-testid="stock-notice">
         <Stack gap="xs">
           {lines.map((line) => (
             <Group key={line.yarn} justify="space-between" gap="xs">
@@ -47,7 +53,12 @@ export function CentralStockNotice({ demands, alwaysShow }: Props) {
   }
   if (isClosed) return null;
   return (
-    <Alert color="yellow" title={t('stockNotice.shortTitle')} data-testid="stock-notice">
+    <Alert
+      styles={SHORT_STYLES}
+      color="yellow"
+      title={t('stockNotice.shortTitle')}
+      data-testid="stock-notice"
+    >
       <Stack gap="xs">
         {short.map((line) => (
           <Text key={line.yarn} size="sm">

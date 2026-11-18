@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Box, Button, Select, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
+import { Button, Select, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import type { YarnOption } from './fabricLimits';
 import type { YarnRowDraft } from './settlementDraft';
 
@@ -12,6 +12,7 @@ export type FabricYarnRowsProps = {
   onRemove: (index: number) => void;
 };
 
+const NUMBER_STYLES = { input: { textAlign: 'right' } } as const;
 const ROW_STYLE = { border: '1px solid var(--app-line)', borderRadius: 'var(--mantine-radius-md)' };
 
 /** Başka satırda seçilmiş iplik tekrar sunulmaz. */
@@ -59,22 +60,22 @@ export function FabricYarnRows({
           <TextInput
             label={t('settlement.fabric.yarnKg')}
             inputMode="decimal"
+            styles={NUMBER_STYLES}
             value={row.netKg}
             onChange={(event) => {
               onChange(index, { netKg: event.currentTarget.value });
             }}
           />
-          <Box style={{ alignSelf: 'end' }}>
-            <Button
-              variant="default"
-              fullWidth
-              onClick={() => {
-                onRemove(index);
-              }}
-            >
-              {t('settlement.fabric.removeYarn')}
-            </Button>
-          </Box>
+          <Button
+            variant="default"
+            style={{ alignSelf: 'end' }}
+            fullWidth
+            onClick={() => {
+              onRemove(index);
+            }}
+          >
+            {t('settlement.fabric.removeYarn')}
+          </Button>
         </SimpleGrid>
       ))}
       <Button variant="default" w="fit-content" onClick={onAdd}>

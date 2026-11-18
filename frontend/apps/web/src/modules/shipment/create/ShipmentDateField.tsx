@@ -2,6 +2,8 @@ import { todayIsoDate, useTranslation } from '@iplik/i18n';
 import { TextInput } from '@iplik/ui';
 import type { CreateDraft, CreateFieldErrors } from './createDraft';
 
+export const SHIPMENT_DATE_HINT_ID = 'shipment-date-hint';
+
 type ShipmentDateFieldProps = {
   draft: CreateDraft;
   onChange: (draft: CreateDraft) => void;
@@ -15,8 +17,7 @@ export function ShipmentDateField({ draft, onChange, errors }: ShipmentDateField
     <TextInput
       type="date"
       label={t('create.shipmentDate')}
-      description={t('create.shipmentDateHint')}
-      inputWrapperOrder={['label', 'input', 'description', 'error']}
+      aria-describedby={SHIPMENT_DATE_HINT_ID}
       value={draft.shipmentDate}
       min={todayIsoDate()}
       required

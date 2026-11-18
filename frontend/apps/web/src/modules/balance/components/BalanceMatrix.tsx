@@ -6,13 +6,11 @@ import { formatSignedKg, useYarnLabel } from '@/modules/shipment';
 
 type Cells = Map<string, string>;
 
-/** Satır: fasoncu, sütun: iplik cinsi; hücre bakiye kilosu. Toplamlar `sumKg` ile (Big). */
-export function BalanceMatrix({ view }: { view: BalancesView }) {
-  const { t } = useTranslation();
-  const yarnLabel = useYarnLabel();
-  if (view.items.length === 0) return <Text c="dimmed">{t('settlement.balances.empty')}</Text>;
+type Parties = Map<string, { title: string; cells: Cells }>;
+
+function pivotBalances(view: BalancesView): { yarns: string[]; parties: Parties } {
   const yarns = [...new Set(view.items.map((row) => row.yarnType))].sort();
-  const parties = new Map<string, { title: string; cells: Cells }>();
+  const parties: Parties = new Map();
   for (const row of view.items) {
     const party = parties.get(row.subcontractorId) ?? {
       title: row.subcontractorTitle,
@@ -21,6 +19,15 @@ export function BalanceMatrix({ view }: { view: BalancesView }) {
     party.cells.set(row.yarnType, row.balanceKg);
     parties.set(row.subcontractorId, party);
   }
+  return { yarns, parties };
+}
+
+/** Satır: fasoncu, sütun: iplik cinsi; hücre bakiye kilosu. Toplamlar `sumKg` ile (Big). */
+export function BalanceMatrix({ view }: { view: BalancesView }) {
+  const { t } = useTranslation();
+  const yarnLabel = useYarnLabel();
+  if (view.items.length === 0) return <Text c="dimmed">{t('settlement.balances.empty')}</Text>;
+  const { yarns, parties } = pivotBalances(view);
   return (
     <Paper withBorder style={{ overflow: 'hidden' }}>
       <Table.ScrollContainer minWidth={480}>

@@ -7,6 +7,8 @@ import { toReturnRequest } from './settlementDraft';
 import { settlementErrorKey } from './settlementErrors';
 import { useReturnDraft } from './useReturnDraft';
 
+const NUMBER_STYLES = { input: { textAlign: 'right' } } as const;
+
 export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
   const { draft, field, reset } = useReturnDraft();
@@ -26,6 +28,7 @@ export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
           <TextInput
             label={t('settlement.yarn.netKg')}
             inputMode="decimal"
+            styles={NUMBER_STYLES}
             withAsterisk
             {...field('netKg')}
           />

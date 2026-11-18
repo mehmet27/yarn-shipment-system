@@ -9,6 +9,8 @@ const THUMB_STYLE = {
   aspectRatio: '1 / 1',
   objectFit: 'cover',
   borderRadius: 'var(--mantine-radius-sm)',
+  border: '1px solid var(--app-line)',
+  background: 'var(--app-inset)',
 } as const;
 
 /** Dosya adresi alınamazsa (süre, yetki, depo) küçük bir uyarı gösterilir. */

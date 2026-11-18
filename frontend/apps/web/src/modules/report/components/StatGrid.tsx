@@ -7,6 +7,7 @@ const MIN_CELL = '9rem';
 export function StatGrid({ children }: { children: ReactNode }) {
   return (
     <Box
+      className="app-stat-grid"
       style={{
         display: 'grid',
         gridTemplateColumns: `repeat(auto-fit, minmax(${MIN_CELL}, 1fr))`,

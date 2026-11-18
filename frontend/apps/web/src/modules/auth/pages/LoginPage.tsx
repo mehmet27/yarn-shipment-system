@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Center, Paper, PasswordInput, Stack, TextInput } from '@iplik/ui';
@@ -17,7 +18,7 @@ function errorKey(error: unknown): string {
 }
 
 /** Kullanıcı adı ve şifre formu; başarılı girişte oturum çerezi gelir, kişi geldiği sayfaya döner. */
-export function LoginPage() {
+export function LoginPage({ brand }: { brand?: ReactNode }) {
   const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -40,7 +41,7 @@ export function LoginPage() {
       <Paper withBorder radius="md" p="xl" w={FORM_WIDTH_PX} maw="100%" bg="var(--app-surface)">
         <form onSubmit={onSubmit}>
           <Stack>
-            <AuthCardHeader title={t('auth.login.title')} />
+            <AuthCardHeader title={t('auth.login.title')} brand={brand} />
             <TextInput
               label={t('auth.login.username')}
               value={username}

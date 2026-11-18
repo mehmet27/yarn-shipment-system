@@ -1,6 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
-import { Badge, Group, Paper, Stack, Text } from '@iplik/ui';
+import { Group, Paper, Stack, Text } from '@iplik/ui';
 import type { ManagedKind, RecordRow } from '../kinds';
+import { DotBadge } from '@iplik/ui';
 import { RecordCodeLine } from './RecordCodeLine';
 import { RecordRowActions } from './RecordRowActions';
 
@@ -24,13 +25,9 @@ export function RecordCard({ kind, record, onEdit }: RecordCardProps) {
           >
             {record.label}
           </Text>
-          <Badge
-            color={record.isActive ? 'green' : 'gray'}
-            variant="light"
-            style={{ flexShrink: 0, whiteSpace: 'nowrap' }}
-          >
+          <DotBadge color={record.isActive ? 'green' : 'gray'}>
             {t(record.isActive ? 'masterData.active' : 'masterData.inactive')}
-          </Badge>
+          </DotBadge>
         </Group>
         {record.code !== undefined && <RecordCodeLine kind={kind} record={record} />}
         {kind === 'driver' && (

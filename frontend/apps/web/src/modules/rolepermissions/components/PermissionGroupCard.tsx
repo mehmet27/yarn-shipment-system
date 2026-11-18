@@ -25,7 +25,7 @@ export function PermissionGroupCard({
     <SectionCard
       title={t(`permissions.groups.${group.key}`)}
       actions={
-        <Badge variant="light" color="gray" aria-label={countLabel} style={{ flexShrink: 0 }}>
+        <Badge variant="outline" color="gray" aria-label={countLabel} style={{ flexShrink: 0 }}>
           {countLabel}
         </Badge>
       }

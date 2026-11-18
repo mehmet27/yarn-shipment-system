@@ -1,6 +1,7 @@
 import type { LoginAccountView } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Badge, Group } from '@iplik/ui';
+import { Group } from '@iplik/ui';
+import { DotBadge } from '@iplik/ui';
 
 export type StatusBadgesProps = { account: LoginAccountView };
 
@@ -9,22 +10,14 @@ export function StatusBadges({ account }: StatusBadgesProps) {
   const { t } = useTranslation();
   return (
     <Group gap={4}>
-      <Badge
-        color={account.enabled ? 'green' : 'gray'}
-        variant="light"
-        style={{ whiteSpace: 'nowrap' }}
-      >
+      <DotBadge color={account.enabled ? 'green' : 'gray'}>
         {t(account.enabled ? 'users.status.enabled' : 'users.status.disabled')}
-      </Badge>
+      </DotBadge>
       {account.passwordRequestedAt !== undefined && (
-        <Badge color="red" variant="light" style={{ whiteSpace: 'nowrap' }}>
-          {t('users.status.passwordRequested')}
-        </Badge>
+        <DotBadge color="red">{t('users.status.passwordRequested')}</DotBadge>
       )}
       {account.passwordChangeRequired && (
-        <Badge color="yellow" variant="light" style={{ whiteSpace: 'nowrap' }}>
-          {t('users.status.passwordChangeRequired')}
-        </Badge>
+        <DotBadge color="yellow">{t('users.status.passwordChangeRequired')}</DotBadge>
       )}
     </Group>
   );

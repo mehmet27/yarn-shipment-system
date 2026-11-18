@@ -52,9 +52,13 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
           />
         )}
         <NotDueNotice shipment={shipment} />
+        <NextStepBand status={shipment.status} />
       </Stack>
-      <NextStepBand status={shipment.status} />
-      <SimpleGrid cols={{ base: 2, md: 4 }} p="md">
+      <SimpleGrid
+        cols={{ base: 2, md: 4 }}
+        p="md"
+        style={{ borderTop: '1px solid var(--app-line)' }}
+      >
         {facts.map(({ labelKey, value }) => (
           <Stack key={labelKey} gap={2}>
             <Text size="xs" c="dimmed">

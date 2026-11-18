@@ -13,6 +13,13 @@ const TONE_COLOR: Readonly<Record<SectionTone, string>> = {
   danger: 'red',
 };
 
+const SIGNAL_MIX = '12%';
+
+/** Dikkat şeridinin zemini: iki görünümde de yüzeye hafifçe karışmış renk (koyuda doygun kalmasın). */
+function signalBackground(color: string): string {
+  return `color-mix(in srgb, var(--mantine-color-${color}-filled) ${SIGNAL_MIX}, var(--app-surface))`;
+}
+
 export type SectionCardProps = {
   title: string;
   /** Başlığın solundaki ikon (dekoratif). */
@@ -57,7 +64,7 @@ export function SectionCard({
         px="md"
         py="xs"
         mih={44}
-        bg={isSignal ? `var(--mantine-color-${color}-light)` : 'var(--app-inset)'}
+        bg={isSignal ? signalBackground(color) : 'var(--app-inset)'}
         style={{
           borderBottom: '1px solid var(--app-line)',
           boxShadow: isSignal ? `inset 3px 0 0 var(--mantine-color-${color}-6)` : undefined,

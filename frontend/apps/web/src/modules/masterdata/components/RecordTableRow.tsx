@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
-import { Badge, Table, Text } from '@iplik/ui';
+import { Table, Text } from '@iplik/ui';
+import { DotBadge } from '@iplik/ui';
 import type { ManagedKind, RecordRow } from '../kinds';
 import { RecordCodeLine } from './RecordCodeLine';
 import { RecordRowActions } from './RecordRowActions';
@@ -31,9 +32,9 @@ export function RecordTableRow({ kind, record, onEdit }: RecordTableRowProps) {
         )}
       </Table.Td>
       <Table.Td style={{ whiteSpace: 'nowrap' }}>
-        <Badge color={record.isActive ? 'green' : 'gray'} variant="light">
+        <DotBadge color={record.isActive ? 'green' : 'gray'}>
           {t(record.isActive ? 'masterData.active' : 'masterData.inactive')}
-        </Badge>
+        </DotBadge>
       </Table.Td>
       <Table.Td>
         <RecordRowActions kind={kind} record={record} onEdit={onEdit} />

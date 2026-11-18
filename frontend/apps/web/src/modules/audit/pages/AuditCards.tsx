@@ -1,6 +1,7 @@
 import type { AuditRecordView } from '@iplik/api-client/audit';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Badge, Group, Paper, Stack, Text } from '@iplik/ui';
+import { Group, Paper, Stack, Text } from '@iplik/ui';
+import { DotBadge } from '@iplik/ui';
 import { AuditActor } from './AuditActor';
 import { useActionLabel, useEntityLabel, useServiceLabel } from './auditText';
 
@@ -26,9 +27,7 @@ export function AuditCards({
                 {actionLabel(record.action)}
               </Text>
               {record.decision === 'DENIED' ? (
-                <Badge color="red" variant="light" style={{ whiteSpace: 'nowrap' }}>
-                  {t('audit.denied')}
-                </Badge>
+                <DotBadge color="red">{t('audit.denied')}</DotBadge>
               ) : null}
             </Group>
             <Text size="sm" c="dimmed">

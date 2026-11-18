@@ -3,6 +3,7 @@ import { AppShell, Box, Group, Stack, Text, useDisclosure } from '@iplik/ui';
 import { HelpAssistant } from '@/modules/assistant';
 import { BrandMark } from '@/modules/branding';
 import { Outlet } from 'react-router';
+import { NavBackdrop } from './NavBackdrop';
 import { NavToggles } from './NavToggles';
 import { NotificationBell } from './NotificationBell';
 import { PanelNav } from './PanelNav';
@@ -77,6 +78,7 @@ export function PanelLayout() {
             <PanelNav onNavigate={closeMobileNav} />
           </Stack>
         </AppShell.Navbar>
+        {isMobileNavOpen && <NavBackdrop onClose={closeMobileNav} />}
         <AppShell.Main pb={HELP_CLEARANCE_PX}>
           <Outlet />
         </AppShell.Main>

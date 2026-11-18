@@ -1,8 +1,9 @@
 import { ASSISTANT_PATH, getAssistantStatus } from '@iplik/api-client/assistant';
 import { useTranslation } from '@iplik/i18n';
-import { Box, Button, NavIcon, useDisclosure } from '@iplik/ui';
+import { Box, Button, NavIcon, useDisclosure, useMediaQuery } from '@iplik/ui';
 import { useQuery } from '@tanstack/react-query';
 import { HelpPanel } from './HelpPanel';
+import { SHORT_SCREEN_QUERY } from './shortScreen';
 import { useHelpChat } from './useHelpChat';
 
 const BUTTON_HEIGHT_PX = 48;
@@ -21,6 +22,7 @@ export function HelpAssistant() {
   });
   const [isOpen, { toggle, close }] = useDisclosure();
   const { entries, error, isSending, send } = useHelpChat();
+  const isShortScreen = useMediaQuery(SHORT_SCREEN_QUERY);
   if (status?.available !== true) {
     return null;
   }
@@ -35,7 +37,7 @@ export function HelpAssistant() {
           onClose={close}
         />
       )}
-      <Box style={WRAPPER_STYLE}>
+      <Box style={WRAPPER_STYLE} display={isOpen && isShortScreen ? 'none' : undefined}>
         <Button
           onClick={toggle}
           radius="xl"

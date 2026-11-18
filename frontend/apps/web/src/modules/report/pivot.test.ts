@@ -42,7 +42,7 @@ describe('pivotBalanceMatrix', () => {
     const table = balanceMatrixTable(matrix, t);
     expect(table.headers.at(-1)).toBe('report.matrix.inTransit');
     expect(table.rows).toHaveLength(2);
-    expect(formatCell(table.total?.at(-2) ?? { kind: 'text', value: '' })).toBe('1.012,750 kg');
+    expect(formatCell(table.total?.at(-2) ?? { kind: 'text', value: '' })).toBe('1.012,75 kg');
   });
 });
 

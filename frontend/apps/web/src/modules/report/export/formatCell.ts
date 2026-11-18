@@ -1,11 +1,8 @@
+import { formatKgNumber } from '@iplik/units';
 import type { ReportCell } from './reportModel';
 
 const PERCENT_SCALE = 100;
 
-const kgFormat = new Intl.NumberFormat('tr-TR', {
-  minimumFractionDigits: 3,
-  maximumFractionDigits: 3,
-});
 const percentFormat = new Intl.NumberFormat('tr-TR', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
@@ -19,7 +16,7 @@ export function formatCell(cell: ReportCell): string {
     case 'count':
       return String(cell.value);
     case 'kg':
-      return `${kgFormat.format(cell.value)} kg`;
+      return formatKgNumber(cell.value);
     case 'percent':
       return `%${percentFormat.format(cell.value * PERCENT_SCALE)}`;
   }

@@ -37,6 +37,14 @@ export function formatKg(value: Kilogram): string {
   return `${KG_FORMAT.format(value)} kg`;
 }
 
+/**
+ * Ekrandaki, PDF'teki ve Excel yazdırmasındaki tek kilo biçimi: binlik nokta, ondalık virgül,
+ * gereksiz sıfır yok ("2.143,814 kg", "264,5 kg", "700 kg"). Sayı ya da sayı dizesi alır.
+ */
+export function formatKgNumber(value: string | number): string {
+  return `${KG_FORMAT.format(Number(value))} kg`;
+}
+
 export function subtractKg(minuend: Kilogram, subtrahend: Kilogram): Big {
   return new Big(minuend).minus(subtrahend);
 }
@@ -56,8 +64,9 @@ export function sumKg(values: readonly string[]): string {
 
 /** API'den gelen kilo dizesini biçimler; sözleşme dışı bir değer olduğu gibi gösterilir. */
 export function formatKgText(value: string): string {
-  if (isKilogram(value)) return formatKg(value);
-  const magnitude = value.startsWith('-') ? value.slice(1) : undefined;
+  const plain = value.replace(/\s*kg$/i, '').trim();
+  if (isKilogram(plain)) return formatKg(plain);
+  const magnitude = plain.startsWith('-') ? plain.slice(1) : undefined;
   return magnitude !== undefined && isKilogram(magnitude) ? `−${formatKg(magnitude)}` : value;
 }
 

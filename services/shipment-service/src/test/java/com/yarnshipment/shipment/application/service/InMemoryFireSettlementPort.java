@@ -78,7 +78,9 @@ final class InMemoryFireSettlementPort implements FireSettlementPort, FireInvoic
 
     @Override
     public boolean invoiceExists(UUID shipmentId, String invoiceNo) {
-        return recorded.stream().anyMatch(i -> i.shipmentId().equals(shipmentId) && i.invoiceNo().equals(invoiceNo));
+        return recorded.stream()
+                .anyMatch(
+                        i -> i.shipmentId().equals(shipmentId) && i.invoiceNo().equals(invoiceNo));
     }
 
     @Override
@@ -86,7 +88,10 @@ final class InMemoryFireSettlementPort implements FireSettlementPort, FireInvoic
         recorded.add(invoice);
         BigDecimal kg = invoice.lines().stream().map(l -> l.netKg()).reduce(BigDecimal.ZERO, BigDecimal::add);
         totals = new FireTotals(
-                totals.returnedKg(), totals.claimKg(), totals.fabricKg(), totals.invoicedKg().add(kg));
+                totals.returnedKg(),
+                totals.claimKg(),
+                totals.fabricKg(),
+                totals.invoicedKg().add(kg));
     }
 
     @Override

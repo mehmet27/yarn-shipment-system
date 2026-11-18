@@ -7,10 +7,10 @@ import com.yarnshipment.shipment.application.port.in.fire.FireSettlementDetails;
 import com.yarnshipment.shipment.application.port.in.fire.FireSettlementQuery;
 import com.yarnshipment.shipment.application.port.in.fire.MarkInvoicedCommand;
 import com.yarnshipment.shipment.application.port.in.fire.MarkInvoicedUseCase;
-import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort;
-import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort.InvoiceRecord;
+import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort;
+import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
 import com.yarnshipment.shipment.domain.fire.FireSettlement.Invoice;
 import com.yarnshipment.shipment.domain.fire.FireSettlementNotFoundException;
@@ -65,8 +65,8 @@ public class FireInvoiceService implements MarkInvoicedUseCase, CloseFireSettlem
         InvoiceRecord record = InvoiceShares.record(command, before, now);
         Invoice invoice =
                 new Invoice(command.invoiceNo(), command.invoicedOn(), command.note(), InvoiceShares.totalKg(record));
-        FireSettlement updated =
-                current.markInvoiced(before.calculation(), invoice, command.actor().userId());
+        FireSettlement updated = current.markInvoiced(
+                before.calculation(), invoice, command.actor().userId());
         invoices.recordInvoice(record);
         if (!updated.equals(current)) {
             settlements.save(updated, now);

@@ -123,8 +123,7 @@ public record BalanceMovement(
     }
 
     /** Faturanın bağlamı: hangi fasoncu, sevkiyat, fatura numarası, ne zaman, kim. */
-    public record InvoiceContext(
-            UUID subcontractorId, UUID shipmentId, String invoiceNo, Instant at, UUID createdBy) {}
+    public record InvoiceContext(UUID subcontractorId, UUID shipmentId, String invoiceNo, Instant at, UUID createdBy) {}
 
     /** Faturalanan kilonun bir iplik cinsine düşen payı, pozitif. */
     public record InvoiceShare(String yarnType, BigDecimal netKg) {}

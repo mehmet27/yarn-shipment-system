@@ -22,7 +22,6 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -101,5 +100,4 @@ class FireInvoicePartsTest {
                 .isInstanceOf(FabricYarnNotInShipmentException.class);
         assertThat(settlements.recorded()).isEmpty();
     }
-
 }

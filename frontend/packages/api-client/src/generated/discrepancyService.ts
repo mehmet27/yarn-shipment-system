@@ -154,16 +154,6 @@ export interface ResolveDiscrepancyRequest {
   liableParty?: string;
 }
 
-/**
- * LAB laboratuvar testidir.
- */
-export type InspectionKind = typeof InspectionKind[keyof typeof InspectionKind];
-
-
-export const InspectionKind = {
-  LAB: 'LAB',
-} as const;
-
 export interface OpenQualityClaimRequest {
   shipmentId: string;
   /**
@@ -188,50 +178,6 @@ export interface OpenQualityClaimRequest {
   evidenceIds: string[];
 }
 
-export interface RequestInspectionRequest {
-  kind: InspectionKind;
-  /** @maxLength 2000 */
-  note?: string;
-}
-
-export interface RecordInspectionResultRequest {
-  /**
-     * @minLength 1
-     * @maxLength 2000
-     */
-  result: string;
-  /** LAB_RESULT kanıtı; lab kontrolünde zorunlu */
-  evidenceId?: string;
-}
-
-export type InspectionViewAllowedActionsItem = typeof InspectionViewAllowedActionsItem[keyof typeof InspectionViewAllowedActionsItem];
-
-
-export const InspectionViewAllowedActionsItem = {
-  RECORD_RESULT: 'RECORD_RESULT',
-} as const;
-
-export interface InspectionView {
-  id: string;
-  kind: InspectionKind;
-  requestNote?: string;
-  requestedBy: string;
-  requestedAt: string;
-  result?: string;
-  resultEvidenceId?: string;
-  performedBy?: string;
-  performedAt?: string;
-  /** Bu kullanıcının bu kontrolde yapabileceği eylemler (FE-SEC-03) */
-  allowedActions?: InspectionViewAllowedActionsItem[];
-}
-
-export type QualityClaimViewAllowedActionsItem = typeof QualityClaimViewAllowedActionsItem[keyof typeof QualityClaimViewAllowedActionsItem];
-
-
-export const QualityClaimViewAllowedActionsItem = {
-  REQUEST_INSPECTION: 'REQUEST_INSPECTION',
-} as const;
-
 export interface QualityClaimView {
   id: string;
   discrepancyId: string;
@@ -249,9 +195,6 @@ export interface QualityClaimView {
   openedBy: string;
   openedAt: string;
   deadlineAt: string;
-  inspections: InspectionView[];
-  /** Bu kullanıcının bu itirazda yapabileceği eylemler (FE-SEC-03) */
-  allowedActions?: QualityClaimViewAllowedActionsItem[];
 }
 
 export type ShipmentClaimsViewAllowedActionsItem = typeof ShipmentClaimsViewAllowedActionsItem[keyof typeof ShipmentClaimsViewAllowedActionsItem];
@@ -312,12 +255,12 @@ export type ConflictResponse = Problem;
 export type ClaimBadRequestResponse = Problem;
 
 /**
- * İtiraz şu an yapılamıyor (QUALITY_CLAIM_NOT_AVAILABLE, QUALITY_CLAIM_WINDOW_CLOSED, QUALITY_CLAIM_INSPECTION_RECORDED, DISCREPANCY_NOT_OPEN)
+ * İtiraz şu an yapılamıyor (QUALITY_CLAIM_NOT_AVAILABLE, QUALITY_CLAIM_WINDOW_CLOSED, DISCREPANCY_NOT_OPEN)
  */
 export type ClaimConflictResponse = Problem;
 
 /**
- * İtiraz ya da kontrol yok (QUALITY_CLAIM_NOT_FOUND, INSPECTION_NOT_FOUND)
+ * İtiraz yok (QUALITY_CLAIM_NOT_FOUND)
  */
 export type ClaimNotFoundResponse = Problem;
 
@@ -449,40 +392,6 @@ export const getShipmentClaims = (
       );
     }
 
-/**
- * Yalnızca karara bağlanmamış itirazda; kalite ve admin.
- * @summary İtiraz için numune ya da lab kontrolü ister
- */
-export const requestInspection = (
-    claimId: string,
-    requestInspectionRequest: RequestInspectionRequest,
- ) => {
-      return customInstance<InspectionView>(
-      {url: `/api/v1/quality-claims/${claimId}/inspections`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: requestInspectionRequest
-    },
-      );
-    }
-
-/**
- * Sonuç bir kez girilir. Lab sonucu `LAB_RESULT` belgesiyle gelir; numune karşılaştırmasında belge isteğe
- * bağlıdır. Belge aynı sevkiyata yüklenmiş olmalıdır.
- * @summary Kontrol sonucunu girer
- */
-export const recordInspectionResult = (
-    claimId: string,
-    inspectionId: string,
-    recordInspectionResultRequest: RecordInspectionResultRequest,
- ) => {
-      return customInstance<InspectionView>(
-      {url: `/api/v1/quality-claims/${claimId}/inspections/${inspectionId}/result`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: recordInspectionResultRequest
-    },
-      );
-    }
-
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -495,5 +404,3 @@ export type AssignDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof assi
 export type ResolveDiscrepancyResult = NonNullable<Awaited<ReturnType<typeof resolveDiscrepancy>>>
 export type OpenQualityClaimResult = NonNullable<Awaited<ReturnType<typeof openQualityClaim>>>
 export type GetShipmentClaimsResult = NonNullable<Awaited<ReturnType<typeof getShipmentClaims>>>
-export type RequestInspectionResult = NonNullable<Awaited<ReturnType<typeof requestInspection>>>
-export type RecordInspectionResultResult = NonNullable<Awaited<ReturnType<typeof recordInspectionResult>>>

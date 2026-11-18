@@ -3,7 +3,6 @@ import type { Robot } from '../support/robot';
 import {
   fiyatYaz,
   iplikTanimla,
-  kararVer,
   kumasFormuDoldur,
   kumasGir,
   tartiyiOnayla,
@@ -99,7 +98,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     sevkiyatId = mudur.sayfa.url().split('/').pop() ?? '';
   });
 
-  await mudur.adim('müdür: taslak sevkiyatta itiraz/laboratuvar kanıtı yüklenemez', async () => {
+  await mudur.adim('müdür: taslak sevkiyatta itiraz kanıtı yüklenemez', async () => {
     await mudur.sayfa.goto(`/panel/sevkiyat/${sevkiyatId}`);
     await mudur.sayfa.getByText('Kilolar', { exact: true }).first().waitFor();
     await expect(mudur.sayfa.getByText('Yüklenecek belge ne?')).toHaveCount(0);
@@ -407,7 +406,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     },
   );
 
-  await kalite.adim('kalite: lab kontrolü beklerken karar verilememeli', async () => {
+  await kalite.adim('kalite: üstlenir ama karar veremez', async () => {
     await kalite.sayfa.goto('/panel/uyusmazliklar');
     await kalite.sayfa.locator('main a[href*="uyusmazliklar/"]').first().click();
     await kalite.sayfa.getByRole('button', { name: 'Bana ata' }).click();
@@ -416,24 +415,14 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
       'atandıktan sonra "Bana ata" düğmesi görünmemeli',
       (await kalite.sayfa.getByRole('button', { name: 'Bana ata' }).count()) === 0,
     );
-    await kalite.sayfa.getByLabel(/Talep notu/).fill('Robot: numune alın');
-    await kalite.sayfa.getByRole('button', { name: 'Kontrol iste' }).click();
-    await kalite.sayfa.waitForTimeout(1200);
+    kalite.kontrol(
+      'kalitede "Kontrol iste" düğmesi ve "Talep notu" alanı olmamalı (laboratuvar adımı kaldırıldı)',
+      (await kalite.sayfa.getByRole('button', { name: 'Kontrol iste' }).count()) === 0 &&
+        (await kalite.sayfa.getByLabel(/Talep notu/).count()) === 0,
+    );
     kalite.kontrol(
       'kalitede "Karar ver" bölümü olmamalı (karar yalnız müdürde)',
       (await kalite.sayfa.getByRole('heading', { name: 'Karar ver' }).count()) === 0,
-    );
-  });
-
-  await mudur.adim('müdür: lab kontrolü beklerken karar verilememeli', async () => {
-    await mudur.sayfa.goto('/panel/uyusmazliklar');
-    await mudur.sayfa.locator('main a[href*="uyusmazliklar/"]').first().click();
-    await kararVer(mudur, 'Haksız', 'Robot kararı');
-    const mesajlar = await mudur.mesajlar();
-    mudur.kontrol(
-      'bekleyen kontrol uyarısı',
-      mesajlar.some((m) => /sonuc|sonuç|kontrol/i.test(m)),
-      mesajlar.join(' | '),
     );
   });
 });

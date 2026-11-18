@@ -10,7 +10,6 @@ import com.yarnshipment.discrepancy.TestTokens;
 import com.yarnshipment.discrepancy.application.port.out.DiscrepancyQueryPort;
 import com.yarnshipment.discrepancy.application.port.out.EvidenceLookupPort;
 import com.yarnshipment.discrepancy.application.port.out.EvidenceLookupPort.EvidenceRef;
-import com.yarnshipment.discrepancy.application.port.out.InspectionPort;
 import com.yarnshipment.discrepancy.application.port.out.QualityClaimPort;
 import java.time.Clock;
 import java.time.ZoneOffset;
@@ -18,7 +17,7 @@ import java.util.Optional;
 
 /**
  * İtiraz servis testlerinin sahte portları: teslim edilmiş sevkiyat, üzerinde açık bir itiraz (UK-0001) ve aynı
- * sevkiyata yüklenmiş bir itiraz fotoğrafı ile bir lab belgesi.
+ * sevkiyata yüklenmiş bir itiraz fotoğrafı ile başka türde bir belge.
  */
 final class ClaimPorts {
 
@@ -26,7 +25,6 @@ final class ClaimPorts {
 
     final QualityClaimPort claims = mock(QualityClaimPort.class);
     final DiscrepancyQueryPort discrepancies = mock(DiscrepancyQueryPort.class);
-    final InspectionPort inspections = mock(InspectionPort.class);
     final EvidenceLookupPort evidence = mock(EvidenceLookupPort.class);
     final ScopeGuard scopeGuard = new ScopeGuard(event -> {}, CLOCK);
 
@@ -38,8 +36,8 @@ final class ClaimPorts {
         when(evidence.findEvidence(TestClaims.PHOTO))
                 .thenReturn(Optional.of(
                         new EvidenceRef(TestClaims.PHOTO, TestDiscrepancies.SHIPMENT, ClaimEvidence.QUALITY_CLAIM)));
-        when(evidence.findEvidence(TestClaims.LAB_DOCUMENT))
+        when(evidence.findEvidence(TestClaims.OTHER_DOCUMENT))
                 .thenReturn(Optional.of(new EvidenceRef(
-                        TestClaims.LAB_DOCUMENT, TestDiscrepancies.SHIPMENT, ClaimEvidence.LAB_RESULT)));
+                        TestClaims.OTHER_DOCUMENT, TestDiscrepancies.SHIPMENT, "OTHER")));
     }
 }

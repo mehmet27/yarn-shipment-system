@@ -5,7 +5,7 @@ import { ClaimCard } from './ClaimCard';
 
 export type ClaimOfDiscrepancyProps = { shipmentId: string; discrepancyId: string };
 
-/** Kalite uyuşmazlığının itiraz dosyası: açıklama, çuvallar ve numune/lab adımları. */
+/** Kalite uyuşmazlığının itiraz dosyası: açıklama, çuvallar ve karar. */
 export function ClaimOfDiscrepancy({ shipmentId, discrepancyId }: ClaimOfDiscrepancyProps) {
   const { t } = useTranslation();
   const query = useShipmentClaims(shipmentId);

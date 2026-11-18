@@ -76,6 +76,43 @@ describe('Faturalanacaklar', () => {
     expect(router.state.location.pathname).toBe('/panel/sevkiyat/shp-0003');
   });
 
+  it('müdür kalandan az kilo için fatura girer: dosya listede kalır, kalan kilo azalır', async () => {
+    addMockReceipt(
+      'shp-0003',
+      { fabricType: 'Süprem', netKg: '1900', waybillNo: 'K-1' },
+      'user-quality',
+    );
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/faturalanacaklar');
+    const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
+    await userEvent.click(within(card).getByRole('button', { name: 'Fatura bilgisini gir' }));
+    await userEvent.type(await within(card).findByLabelText(/Fatura no/), 'F-1');
+    const kg = within(card).getByLabelText(/\(kg\)/);
+    await userEvent.clear(kg);
+    await userEvent.type(kg, '1');
+    await userEvent.click(within(card).getByRole('button', { name: 'Fatura edildi' }));
+    expect(await screen.findByText(/Faturalanacak kilo 2,2 kg/)).toBeInTheDocument();
+    expect(screen.getByText(/Faturası kesilen: 1 kg/)).toBeInTheDocument();
+  });
+
+  it('kalandan fazla kilo yazılırsa istek gitmez ve uyarı çıkar', async () => {
+    addMockReceipt(
+      'shp-0003',
+      { fabricType: 'Süprem', netKg: '1900', waybillNo: 'K-1' },
+      'user-quality',
+    );
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/faturalanacaklar');
+    const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
+    await userEvent.click(within(card).getByRole('button', { name: 'Fatura bilgisini gir' }));
+    await userEvent.type(await within(card).findByLabelText(/Fatura no/), 'F-1');
+    const kg = within(card).getByLabelText(/\(kg\)/);
+    await userEvent.clear(kg);
+    await userEvent.type(kg, '9');
+    await userEvent.click(within(card).getByRole('button', { name: 'Fatura edildi' }));
+    expect(await within(card).findByText(/faturası kesilmemiş kilodan fazla/)).toBeInTheDocument();
+  });
+
   it('müdür satırdan fatura bilgisini girer; dosya listeden düşer', async () => {
     addMockReceipt(
       'shp-0003',

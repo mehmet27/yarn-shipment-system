@@ -11,7 +11,14 @@ import { GENEL_MESAJ, expect, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import { damga, resim, sec } from '../support/yardimci';
 
-type Fire = { fireRate: string; status: string; fabricKg: string; faultyKg: string };
+type Fire = {
+  fireRate: string;
+  status: string;
+  fabricKg: string;
+  faultyKg: string;
+  invoicedKg: string;
+  remainingKg: string;
+};
 
 async function sekme(robot: Robot, ad: string) {
   await robot.sayfa.getByRole('tab', { name: ad, exact: true }).click();
@@ -143,18 +150,47 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
     await expect(mudur.sayfa.locator('main')).toContainText(/SV-/);
   });
 
-  await mudur.adim('fatura edildi: fatura bilgisiyle kaydolur', async () => {
+  const kartAc = async () => {
+    const liste = await mudur.api<{ items: { shipmentId: string; shipmentNo: string }[] }>(
+      '/api/v1/shipments?size=100',
+    );
+    const no = liste.items.find((s) => s.shipmentId === faturali)?.shipmentNo ?? '';
     await mudur.sayfa.goto('/panel/faturalanacaklar');
-    const kart = mudur.sayfa
-      .getByRole('article')
-      .filter({ hasText: /Faturalanacak kilo/ })
-      .first();
+    const kart = mudur.sayfa.getByRole('article', { name: no });
     await kart.getByRole('button', { name: 'Fatura bilgisini gir' }).click();
-    await kart.getByLabel(/Fatura no/).fill(`F-${iplik}`);
+    return kart;
+  };
+
+  await mudur.adim(
+    'fatura edildi (parça): kalandan az kilo için fatura girilir, dosya açık kalır, kalan azalır',
+    async () => {
+      const kart = await kartAc();
+      await kart.getByLabel(/Fatura no/).fill(`F-${iplik}-1`);
+      await kart.getByLabel(/\(kg\)/).fill('1');
+      await kart.getByRole('button', { name: 'Fatura edildi' }).click();
+      await mudur.sayfa.waitForTimeout(1500);
+      const fire = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
+      mudur.kontrol(
+        'durum hâlâ TO_INVOICE, faturalanan 1 kg, kalan hatalı kilodan 1 kg az',
+        fire.status === 'TO_INVOICE' &&
+          Number(fire.invoicedKg) === 1 &&
+          Math.abs(Number(fire.remainingKg) - (Number(fire.faultyKg) - 1)) < 0.001,
+        JSON.stringify(fire),
+      );
+    },
+  );
+
+  await mudur.adim('fatura edildi (kalan): kalan kilo faturalanınca dosya kapanır', async () => {
+    const kart = await kartAc();
+    await kart.getByLabel(/Fatura no/).fill(`F-${iplik}-2`);
     await kart.getByRole('button', { name: 'Fatura edildi' }).click();
     await mudur.sayfa.waitForTimeout(1500);
     const fire = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
-    mudur.kontrol('durum INVOICED olmalı', fire.status === 'INVOICED', fire.status);
+    mudur.kontrol(
+      'durum INVOICED, kalan 0',
+      fire.status === 'INVOICED' && Number(fire.remainingKg) === 0,
+      JSON.stringify(fire),
+    );
   });
 
   await mudur.adim('hatalı kilo yoksa dosya kapatılır', async () => {

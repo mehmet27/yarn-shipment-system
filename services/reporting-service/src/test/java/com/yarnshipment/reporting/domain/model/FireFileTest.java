@@ -109,4 +109,26 @@ class FireFileTest {
         assertThat(file.shortageKg()).isEqualByComparingTo("6");
         assertThat(file.actualFireRate()).isEqualByComparingTo("0.125");
     }
+
+    @Test
+    @DisplayName("Parça parça faturada faturalanacak kilo, eksik kilodan faturalanan kilo düşülerek bulunur")
+    void shouldSubtractInvoicedKgFromShortage() {
+        FireFile partlyInvoiced = new FireFile(
+                UUID.randomUUID(),
+                "SHP-3",
+                UUID.randomUUID(),
+                "Kırıkhan",
+                new BigDecimal("1000"),
+                BigDecimal.ZERO,
+                new BigDecimal("900"),
+                new BigDecimal("0.04"),
+                "TO_INVOICE",
+                null,
+                null,
+                BigDecimal.ZERO,
+                new BigDecimal("20"));
+
+        assertThat(partlyInvoiced.shortageKg()).isEqualByComparingTo("60");
+        assertThat(partlyInvoiced.toInvoiceKg()).isEqualByComparingTo("40");
+    }
 }

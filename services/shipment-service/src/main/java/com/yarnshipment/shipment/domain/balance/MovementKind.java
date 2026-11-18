@@ -16,6 +16,8 @@ public enum MovementKind {
     TRANSFER_OUT(Sign.NEGATIVE),
     /** Haklı kalite itirazının karara bağlanması; itiraz kilosu iplik bakiyesinden düşer (eksi). */
     CLAIM_ADJUSTMENT(Sign.EITHER),
+    /** Fasoncuya kesilen fatura: faturalanan iplik kilosu fasoncunun iplik bakiyesinden düşer. */
+    INVOICE(Sign.NEGATIVE),
     /** Excel'den açılış bakiyesi. */
     OPENING(Sign.EITHER),
     /** Gerekçeli düzeltme; eski hareket silinmez, ters hareket yazılır. */

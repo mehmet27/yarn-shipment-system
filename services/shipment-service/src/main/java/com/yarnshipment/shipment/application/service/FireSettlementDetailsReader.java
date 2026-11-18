@@ -2,6 +2,7 @@ package com.yarnshipment.shipment.application.service;
 
 import com.yarnshipment.shipment.application.port.in.fire.FireSettlementDetails;
 import com.yarnshipment.shipment.application.port.in.fire.FireSettlementPage;
+import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort.FireTotals;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort.ListedSettlement;
@@ -16,15 +17,21 @@ import org.springframework.stereotype.Component;
 public final class FireSettlementDetailsReader {
 
     private final FireSettlementPort settlements;
+    private final FireInvoicePort invoices;
 
-    public FireSettlementDetailsReader(FireSettlementPort settlements) {
+    public FireSettlementDetailsReader(FireSettlementPort settlements, FireInvoicePort invoices) {
         this.settlements = settlements;
+        this.invoices = invoices;
     }
 
     /** Dosya ve güncel hesabı; toplamlar o anki kayıtlardan okunur. */
     public FireSettlementDetails read(FireSettlement settlement) {
         UUID shipmentId = settlement.shipmentId();
-        return new FireSettlementDetails(settlement, calculate(settlement, settlements.totals(shipmentId)));
+        return new FireSettlementDetails(
+                settlement,
+                calculate(settlement, settlements.totals(shipmentId)),
+                invoices.dispatchedByYarn(shipmentId),
+                invoices.invoices(shipmentId));
     }
 
     FireSettlementPage.Row toRow(ListedSettlement listed) {
@@ -39,6 +46,11 @@ public final class FireSettlementDetailsReader {
 
     private static FireCalculation calculate(FireSettlement settlement, FireTotals totals) {
         return FireCalculation.of(new Inputs(
-                settlement.sentKg(), totals.returnedKg(), totals.claimKg(), totals.fabricKg(), settlement.fireRate()));
+                settlement.sentKg(),
+                totals.returnedKg(),
+                totals.claimKg(),
+                totals.fabricKg(),
+                settlement.fireRate(),
+                totals.invoicedKg()));
     }
 }

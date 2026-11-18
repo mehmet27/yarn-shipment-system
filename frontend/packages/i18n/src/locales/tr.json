@@ -1357,7 +1357,9 @@
       "distributionMismatch": "İplik dağılımının toplamı kumaş kilosuna eşit olmalı.",
       "invalidRate": "Fire oranı %0 ile %20 arasında olmalı.",
       "invalidRollCount": "Top sayısı pozitif tam sayı olmalı.",
-      "exceedsRemaining": "Kumaş kilosu fasoncuya gönderilen ipliğin kalanını aşamaz."
+      "exceedsRemaining": "Kumaş kilosu fasoncuya gönderilen ipliğin kalanını aşamaz.",
+      "invoiceExceeds": "Fatura kilosu, faturası kesilmemiş kilodan fazla olamaz.",
+      "invoiceKgMissing": "Faturanın kaç kilo için kesildiğini yazın."
     },
     "fabric": {
       "title": "Kumaş girişi",
@@ -1428,6 +1430,12 @@
       "invoiceNote": "Not (isteğe bağlı)",
       "invoiceSubmit": "Fatura edildi",
       "invoiceWarning": "Fatura kaydı geri alınamaz.",
+      "invoiceRemaining": "Faturası henüz kesilmemiş: {{kg}}",
+      "invoiceLinesHint": "Faturayı hangi iplikten kaç kilo için kestiyseniz yazın. Yazdığınız kilo fasoncunun bakiyesinden düşer.",
+      "invoiceYarnKg": "{{yarn}} (kg)",
+      "invoiceTotal": "Bu faturada toplam: {{kg}}",
+      "invoicedList": "Faturası kesilen: {{kg}}",
+      "invoiceLine": "{{no}} · {{date}} · {{kg}}",
       "invoiceInfo": "Fatura {{no}} · {{date}}",
       "close": "Kapat",
       "closeHint": "Faturalanacak kilo yok; dosya kapatılabilir.",
@@ -1458,6 +1466,7 @@
         "YARN_RETURN": "İplik dönüşü",
         "YARN_FROM_SUBCONTRACTOR": "Gelen iplik",
         "CLAIM_ADJUSTMENT": "İtiraz düzeltmesi",
+        "INVOICE": "Fatura",
         "OPENING": "Açılış",
         "CORRECTION": "Düzeltme"
       },
@@ -1477,6 +1486,7 @@
       "status": "Durum",
       "open": "Dosyayı aç",
       "enterInvoice": "Fatura bilgisini gir",
+      "alreadyInvoiced": "Faturası kesilen: {{kg}}",
       "cancelInvoice": "Vazgeç"
     }
   },

@@ -51,9 +51,9 @@ public class AmountSummaryService implements GetAmountSummaryUseCase {
         for (FireFile file : toInvoice) {
             BigDecimal price = prices.get(file.shipmentId());
             if (price == null) {
-                invoiceUnpriced = invoiceUnpriced.add(file.shortageKg());
+                invoiceUnpriced = invoiceUnpriced.add(file.toInvoiceKg());
             } else {
-                invoiceAmount = invoiceAmount.add(file.shortageKg().multiply(price));
+                invoiceAmount = invoiceAmount.add(file.toInvoiceKg().multiply(price));
             }
         }
         return new AmountSummary(

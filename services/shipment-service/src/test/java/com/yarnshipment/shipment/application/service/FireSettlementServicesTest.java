@@ -22,6 +22,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,10 +39,10 @@ class FireSettlementServicesTest {
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final Actor manager = TestTokens.actor("manager");
     private final ScopedShipmentLoader loader = new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock));
-    private final FireSettlementDetailsReader reader = new FireSettlementDetailsReader(settlements);
+    private final FireSettlementDetailsReader reader = new FireSettlementDetailsReader(settlements, settlements);
     private final FireRateService rateService = new FireRateService(loader, settlements, reader, events, clock);
     private final FireInvoiceService invoiceService =
-            new FireInvoiceService(loader, settlements, reader, events, clock);
+            new FireInvoiceService(loader, settlements, settlements, reader, events, clock);
     private final FireSettlementQueryService queryService = new FireSettlementQueryService(loader, settlements, reader);
 
     @BeforeEach
@@ -51,6 +52,7 @@ class FireSettlementServicesTest {
                         TestShipments.SHIPMENT_ID, TestShipments.SUBCONTRACTOR_ID, new BigDecimal("34032.000"))
                 .afterFabricReceipt());
         settlements.givenTotals("0", "0", "32660");
+        settlements.givenDispatched(Map.of("Pamuk 30/1", new BigDecimal("34032")));
     }
 
     private FireSettlementQuery query() {

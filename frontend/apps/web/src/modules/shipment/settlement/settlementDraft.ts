@@ -18,7 +18,9 @@ export type DraftError =
   | 'distributionMismatch'
   | 'invalidRate'
   | 'invalidRollCount'
-  | 'exceedsRemaining';
+  | 'exceedsRemaining'
+  | 'invoiceExceeds'
+  | 'invoiceKgMissing';
 
 export type YarnRowDraft = { yarnType: string; netKg: string };
 export type FabricDraft = {
@@ -119,15 +121,43 @@ export function toRateRequest(ratePct: string, reason: string): FireRateRequest 
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
+export type InvoiceLineDraft = { yarnType: string; netKg: string };
+export type InvoiceDraft = {
+  invoiceNo: string;
+  invoicedOn: string;
+  note: string;
+  lines: readonly InvoiceLineDraft[];
+};
+
+/** Dolu iplik satırlarını paya çevirir; kilo geçersizse ya da hiç kilo yazılmamışsa hata kodu döner. */
+function toInvoiceShares(lines: readonly InvoiceLineDraft[]): YarnShare[] | DraftError {
+  const shares: YarnShare[] = [];
+  for (const line of lines.filter((l) => l.netKg.trim() !== '')) {
+    const netKg = parseKg(line.netKg);
+    if (netKg === undefined) return 'invalidKg';
+    shares.push({ yarnType: line.yarnType, netKg });
+  }
+  return lines.length > 0 && shares.length === 0 ? 'invoiceKgMissing' : shares;
+}
+
+/**
+ * "Fatura edildi" isteği. Dolu iplik satırları faturalanan kiloyu verir; toplamı `remainingKg`'ı aşamaz. Hiç satır
+ * yoksa (iplik bilgisi yoksa) kalanın tamamı faturalanır.
+ */
 export function toInvoiceRequest(
-  invoiceNo: string,
-  invoicedOn: string,
-  note: string,
+  draft: InvoiceDraft,
+  remainingKg?: string,
 ): InvoiceRequest | DraftError {
-  if (invoiceNo.trim() === '' || !DATE_PATTERN.test(invoicedOn)) return 'required';
+  if (draft.invoiceNo.trim() === '' || !DATE_PATTERN.test(draft.invoicedOn)) return 'required';
+  const shares = toInvoiceShares(draft.lines);
+  if (typeof shares === 'string') return shares;
+  const total = Number(sumKg(shares.map((share) => share.netKg)));
+  if (remainingKg !== undefined && total > Number(remainingKg)) return 'invoiceExceeds';
+  const note = draft.note.trim();
   return {
-    invoiceNo: invoiceNo.trim(),
-    invoicedOn,
-    ...(note.trim() === '' ? {} : { note: note.trim() }),
+    invoiceNo: draft.invoiceNo.trim(),
+    invoicedOn: draft.invoicedOn,
+    ...(note === '' ? {} : { note }),
+    ...(shares.length === 0 ? {} : { lines: shares }),
   };
 }

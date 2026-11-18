@@ -15,7 +15,6 @@ import com.yarnshipment.shipment.domain.fire.FireSettlement;
 import com.yarnshipment.shipment.domain.stock.CentralProduction;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
 import java.time.Instant;
-import java.util.Objects;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -79,13 +78,9 @@ final class LedgerEventAdapter implements LedgerEventPort {
     }
 
     @Override
-    public void fireInvoiced(FireSettlement settlement, UUID actorId, Instant at) {
-        FireInvoiced event = new FireInvoiced(
-                settlement.shipmentId(),
-                Objects.requireNonNull(settlement.invoiceNo(), "invoiceNo"),
-                Objects.requireNonNull(settlement.invoicedOn(), "invoicedOn"),
-                at);
-        events.publish(new DomainEvent(SHIPMENT, settlement.shipmentId(), FireInvoiced.TYPE, event, at, actorId));
+    public void fireInvoiced(UUID shipmentId, FireSettlement.Invoice invoice, UUID actorId, Instant at) {
+        FireInvoiced event = new FireInvoiced(shipmentId, invoice.invoiceNo().strip(), invoice.invoicedOn(), at);
+        events.publish(new DomainEvent(SHIPMENT, shipmentId, FireInvoiced.TYPE, event, at, actorId));
     }
 
     @Override

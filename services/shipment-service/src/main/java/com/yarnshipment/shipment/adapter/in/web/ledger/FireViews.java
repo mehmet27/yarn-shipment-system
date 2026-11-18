@@ -23,9 +23,11 @@ final class FireViews {
             String status,
             String fireRate,
             @JsonUnwrapped FireFiguresView figures,
-            @JsonUnwrapped InvoiceMarkView invoice) {}
+            @JsonUnwrapped InvoiceMarkView invoice,
+            @JsonUnwrapped FireInvoiceViews.FileInvoices fileInvoices) {}
 
-    /** G, D, I, K, T, B, E, H ve gerçekleşen fire (analiz 8.1). */
+    /** G, D, I, K, T, B, E, H ve gerçekleşen fire (analiz 8.1); faturalanan ve kalan kilo. */
+    @SuppressWarnings("checkstyle:RecordComponentNumber")
     record FireFiguresView(
             String sentKg,
             String returnedKg,
@@ -35,7 +37,9 @@ final class FireViews {
             String expectedFabricKg,
             String shortageKg,
             String faultyKg,
-            String actualFirePercent) {}
+            String actualFirePercent,
+            String invoicedKg,
+            String remainingKg) {}
 
     record InvoiceMarkView(
             @Nullable String invoiceNo,
@@ -43,6 +47,7 @@ final class FireViews {
             @Nullable UUID invoicedBy,
             @Nullable String invoiceNote) {}
 
+    @SuppressWarnings("checkstyle:RecordComponentNumber")
     record FireSettlementRowView(
             UUID shipmentId,
             String shipmentNo,
@@ -52,7 +57,9 @@ final class FireViews {
             String fabricKg,
             String expectedFabricKg,
             String faultyKg,
-            String actualFirePercent) {}
+            String actualFirePercent,
+            String invoicedKg,
+            String remainingKg) {}
 
     record FireSettlementPageView(List<FireSettlementRowView> items, PageMetadataView page) {}
 
@@ -72,12 +79,15 @@ final class FireViews {
                         BalanceViews.kg(calc.expectedFabricKg()),
                         BalanceViews.kg(calc.shortageKg()),
                         BalanceViews.kg(calc.faultyKg()),
-                        calc.actualFirePercent().toPlainString()),
+                        calc.actualFirePercent().toPlainString(),
+                        BalanceViews.kg(calc.invoicedKg()),
+                        BalanceViews.kg(calc.remainingKg())),
                 new InvoiceMarkView(
                         settlement.invoiceNo(),
                         settlement.invoicedOn(),
                         settlement.invoicedBy(),
-                        settlement.invoiceNote()));
+                        settlement.invoiceNote()),
+                FireInvoiceViews.of(details));
     }
 
     static FireSettlementPageView fireSettlements(FireSettlementPage page) {
@@ -97,6 +107,8 @@ final class FireViews {
                 BalanceViews.kg(calc.fabricKg()),
                 BalanceViews.kg(calc.expectedFabricKg()),
                 BalanceViews.kg(calc.faultyKg()),
-                calc.actualFirePercent().toPlainString());
+                calc.actualFirePercent().toPlainString(),
+                BalanceViews.kg(calc.invoicedKg()),
+                BalanceViews.kg(calc.remainingKg()));
     }
 }

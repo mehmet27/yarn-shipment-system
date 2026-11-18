@@ -24,7 +24,10 @@ import java.math.RoundingMode;
  * @param shortageKg E, eksik; kumaş beklenenden fazlaysa eksidir
  * @param faultyKg H, faturalanacak hatalı kg
  * @param actualFirePercent gerçekleşen fire yüzdesi, 2 ondalık
+ * @param invoicedKg bu dosyada şimdiye kadar faturalanan iplik kilosu
+ * @param remainingKg henüz faturalanmamış kilo: max(0, H - faturalanan)
  */
+@SuppressWarnings("checkstyle:RecordComponentNumber")
 public record FireCalculation(
         BigDecimal fireRate,
         BigDecimal sentKg,
@@ -35,7 +38,9 @@ public record FireCalculation(
         BigDecimal expectedFabricKg,
         BigDecimal shortageKg,
         BigDecimal faultyKg,
-        BigDecimal actualFirePercent) {
+        BigDecimal actualFirePercent,
+        BigDecimal invoicedKg,
+        BigDecimal remainingKg) {
 
     private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
 
@@ -51,12 +56,10 @@ public record FireCalculation(
         BigDecimal netFabric = fabricKg.subtract(claimKg);
         BigDecimal shortage = expected.subtract(netFabric);
         BigDecimal faulty = shortage.signum() > 0 ? shortage : BigDecimal.ZERO;
-        BigDecimal percent = base.signum() > 0
-                ? base.subtract(netFabric)
-                        .divide(base, MathContext.DECIMAL128)
-                        .multiply(HUNDRED)
-                        .setScale(2, RoundingMode.HALF_UP)
-                : BigDecimal.ZERO.setScale(2);
+        BigDecimal percent = firePercent(base, netFabric);
+        BigDecimal roundedFaulty = Kilograms.round(faulty);
+        BigDecimal invoiced = Kilograms.round(inputs.invoicedKg());
+        BigDecimal remaining = roundedFaulty.subtract(invoiced).max(BigDecimal.ZERO);
         return new FireCalculation(
                 fireRate,
                 Kilograms.round(sentKg),
@@ -66,8 +69,20 @@ public record FireCalculation(
                 Kilograms.round(base),
                 Kilograms.round(expected),
                 Kilograms.round(shortage),
-                Kilograms.round(faulty),
-                percent);
+                roundedFaulty,
+                percent,
+                invoiced,
+                Kilograms.round(remaining));
+    }
+
+    private static BigDecimal firePercent(BigDecimal base, BigDecimal netFabric) {
+        if (base.signum() <= 0) {
+            return BigDecimal.ZERO.setScale(2);
+        }
+        return base.subtract(netFabric)
+                .divide(base, MathContext.DECIMAL128)
+                .multiply(HUNDRED)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -78,12 +93,29 @@ public record FireCalculation(
      * @param claimKg I, haklı itiraz kg
      * @param fabricKg K, gelen kumaş
      * @param fireRate f, fire oranı
+     * @param invoicedKg şimdiye kadar faturalanan kilo
      */
     public record Inputs(
-            BigDecimal sentKg, BigDecimal returnedKg, BigDecimal claimKg, BigDecimal fabricKg, BigDecimal fireRate) {}
+            BigDecimal sentKg,
+            BigDecimal returnedKg,
+            BigDecimal claimKg,
+            BigDecimal fabricKg,
+            BigDecimal fireRate,
+            BigDecimal invoicedKg) {
 
-    /** Faturalanacak hatalı kilo var mı. */
+        /** Faturalanmış kilosu olmayan dosya. */
+        public Inputs(
+                BigDecimal sentKg,
+                BigDecimal returnedKg,
+                BigDecimal claimKg,
+                BigDecimal fabricKg,
+                BigDecimal fireRate) {
+            this(sentKg, returnedKg, claimKg, fabricKg, fireRate, BigDecimal.ZERO);
+        }
+    }
+
+    /** Faturalanacak (henüz faturalanmamış) hatalı kilo var mı. */
     public boolean hasFaultyKg() {
-        return faultyKg.signum() > 0;
+        return remainingKg.signum() > 0;
     }
 }

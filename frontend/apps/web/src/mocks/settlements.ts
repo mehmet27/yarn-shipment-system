@@ -7,13 +7,14 @@ import type {
   MovementKind,
   YarnReturn,
   YarnReturnRequest,
+  YarnShare,
 } from '@iplik/api-client/settlements';
 import type { Kilogram } from '@iplik/units';
 import { calculateFire, sumKg } from '@iplik/units';
 import { listMockShipments } from './mockStore';
 
 /** Sahte API'nin bakiye, kumaş, iplik dönüşü ve fire dosyası durumu; testler arasında sıfırlanır. */
-type Invoice = { invoiceNo: string; invoicedAt: string; invoiceNote?: string };
+type Invoice = { invoiceNo: string; invoicedAt: string; invoiceNote?: string; kg: string };
 
 export const DEFAULT_YARN = '30/1 Penye';
 const DEFAULT_RATE = '0.0400';
@@ -22,7 +23,7 @@ const ZERO = '0.000';
 let receipts = new Map<string, FabricReceipt[]>();
 let returns = new Map<string, YarnReturn[]>();
 let rates = new Map<string, string>();
-let invoices = new Map<string, Invoice>();
+let invoices = new Map<string, Invoice[]>();
 let closed = new Set<string>();
 let movements: BalanceMovement[] = [];
 let counter = 0;
@@ -42,7 +43,8 @@ const asKg = (value: string): Kilogram => value as Kilogram;
 
 export const listMockReceipts = (id: string) => receipts.get(id) ?? [];
 export const listMockReturns = (id: string) => returns.get(id) ?? [];
-export const isMockClosed = (id: string) => closed.has(id) || invoices.has(id);
+export const isMockClosed = (id: string) =>
+  closed.has(id) || getMockSettlement(id).status === 'INVOICED';
 export const setMockRate = (id: string, rate: string) => rates.set(id, rate);
 
 function sentKgOf(shipmentId: string): string {
@@ -123,15 +125,37 @@ export function addMockReturn(
   return entry;
 }
 
-export function markMockInvoiced(shipmentId: string, invoice: Invoice): void {
-  invoices.set(shipmentId, invoice);
+const toKg = (value: number) => value.toFixed(3);
+
+/** Faturayı yazar: iplik satırları yoksa kalan kilo tek iplikten faturalanır; her satır bakiyeden düşer. */
+export function markMockInvoiced(
+  shipmentId: string,
+  input: Omit<Invoice, 'kg'> & { lines: readonly YarnShare[]; userId: string },
+): void {
+  const { lines, userId, ...invoice } = input;
+  const shares =
+    lines.length === 0
+      ? [{ yarnType: DEFAULT_YARN, netKg: getMockSettlement(shipmentId).remainingKg }]
+      : lines;
+  const kg = toKg(shares.reduce((sum, line) => sum + Number(line.netKg), 0));
+  invoices.set(shipmentId, [...(invoices.get(shipmentId) ?? []), { ...invoice, kg }]);
+  for (const line of shares) {
+    addMovement(
+      { shipmentId, kind: 'INVOICE', yarnType: line.yarnType, netKg: `-${line.netKg}` },
+      userId,
+    );
+  }
 }
 export function closeMockFile(shipmentId: string): void {
   closed.add(shipmentId);
 }
 
-function statusOf(shipmentId: string, hasFabric: boolean): FireSettlement['status'] {
-  if (invoices.has(shipmentId)) return 'INVOICED';
+function statusOf(
+  shipmentId: string,
+  hasFabric: boolean,
+  isFullyInvoiced: boolean,
+): FireSettlement['status'] {
+  if (isFullyInvoiced) return 'INVOICED';
   if (closed.has(shipmentId)) return 'CLOSED';
   return hasFabric ? 'TO_INVOICE' : 'AWAITING_FABRIC';
 }
@@ -150,24 +174,32 @@ export function getMockSettlement(shipmentId: string): FireSettlement {
     fabricKg: asKg(fabricKg),
     fireRate,
   });
-  const invoice = invoices.get(shipmentId);
+  const entries = invoices.get(shipmentId) ?? [];
+  const invoicedKg = toKg(entries.reduce((sum, entry) => sum + Number(entry.kg), 0));
+  const remaining = Math.max(0, Number(result.faultyKg) - Number(invoicedKg));
+  const isFullyInvoiced = entries.length > 0 && remaining <= 0;
+  const last = entries.at(-1);
   return {
     shipmentId,
-    status: statusOf(shipmentId, fabric.length > 0),
+    status: statusOf(shipmentId, fabric.length > 0, isFullyInvoiced),
     fireRate,
     sentKg,
     returnedKg,
     claimKg: ZERO,
     fabricKg,
     ...result,
-    ...(invoice === undefined
-      ? {}
-      : {
-          invoiceNo: invoice.invoiceNo,
-          invoicedAt: invoice.invoicedAt,
+    invoicedKg,
+    remainingKg: toKg(remaining),
+    yarns: [{ yarnType: DEFAULT_YARN, dispatchedKg: sentKg }],
+    invoices: entries.map((e) => ({ invoiceNo: e.invoiceNo, invoicedOn: e.invoicedAt, kg: e.kg })),
+    ...(isFullyInvoiced && last !== undefined
+      ? {
+          invoiceNo: last.invoiceNo,
+          invoicedAt: last.invoicedAt,
           invoicedBy: 'user-manager',
-          ...(invoice.invoiceNote === undefined ? {} : { invoiceNote: invoice.invoiceNote }),
-        }),
+          ...(last.invoiceNote === undefined ? {} : { invoiceNote: last.invoiceNote }),
+        }
+      : {}),
   };
 }
 

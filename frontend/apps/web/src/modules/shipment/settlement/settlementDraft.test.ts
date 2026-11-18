@@ -121,13 +121,33 @@ describe('toRateRequest', () => {
 });
 
 describe('toInvoiceRequest', () => {
+  const draft = { invoiceNo: 'F-1', invoicedOn: '2026-11-10', note: '', lines: [] };
+
   it('fatura no ve tarih zorunlu, not isteğe bağlı', () => {
-    expect(toInvoiceRequest('F-1', '2026-11-10', '')).toEqual({
+    expect(toInvoiceRequest(draft)).toEqual({ invoiceNo: 'F-1', invoicedOn: '2026-11-10' });
+    expect(toInvoiceRequest({ ...draft, note: ' not ' })).toMatchObject({ note: 'not' });
+    expect(toInvoiceRequest({ ...draft, invoiceNo: '' })).toBe('required');
+    expect(toInvoiceRequest({ ...draft, invoicedOn: '10.11.2026' })).toBe('required');
+  });
+
+  it('dolu iplik satırları faturalanan kiloyu verir; boş satırlar atlanır', () => {
+    const lines = [
+      { yarnType: 'Pamuk', netKg: '20' },
+      { yarnType: 'Viskon', netKg: '' },
+    ];
+    expect(toInvoiceRequest({ ...draft, lines }, '50')).toEqual({
       invoiceNo: 'F-1',
       invoicedOn: '2026-11-10',
+      lines: [{ yarnType: 'Pamuk', netKg: '20.000' }],
     });
-    expect(toInvoiceRequest('F-1', '2026-11-10', ' not ')).toMatchObject({ note: 'not' });
-    expect(toInvoiceRequest('', '2026-11-10', '')).toBe('required');
-    expect(toInvoiceRequest('F-1', '10.11.2026', '')).toBe('required');
+  });
+
+  it('kilo yazılmamışsa, geçersizse ya da kalandan fazlaysa hata verir', () => {
+    const empty = [{ yarnType: 'Pamuk', netKg: '' }];
+    expect(toInvoiceRequest({ ...draft, lines: empty }, '50')).toBe('invoiceKgMissing');
+    const tooMuch = [{ yarnType: 'Pamuk', netKg: '50,5' }];
+    expect(toInvoiceRequest({ ...draft, lines: tooMuch }, '50')).toBe('invoiceExceeds');
+    const bad = [{ yarnType: 'Pamuk', netKg: 'abc' }];
+    expect(toInvoiceRequest({ ...draft, lines: bad }, '50')).toBe('invalidKg');
   });
 });

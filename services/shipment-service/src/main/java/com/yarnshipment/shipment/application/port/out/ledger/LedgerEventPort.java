@@ -18,7 +18,7 @@ public interface LedgerEventPort {
 
     void fireRateChanged(FireSettlementPort.RateChange change);
 
-    void fireInvoiced(FireSettlement settlement, UUID actorId, Instant at);
+    void fireInvoiced(UUID shipmentId, FireSettlement.Invoice invoice, UUID actorId, Instant at);
 
     void fireSettlementClosed(FireSettlement settlement, UUID actorId, Instant at);
 }

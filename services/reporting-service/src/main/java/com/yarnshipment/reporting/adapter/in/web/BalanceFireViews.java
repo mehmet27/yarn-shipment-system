@@ -87,4 +87,11 @@ final class BalanceFireViews {
                 row.getYarnType(),
                 new BigDecimal(row.getNetKg()).setScale(FireFile.KG_SCALE));
     }
+
+    /** Faturalanacaklar raporu: eksik sütununda henüz faturalanmamış kalan kilo yazar. */
+    static FireRowView toInvoiceView(FireFile file) {
+        FireRowView view = toView(file);
+        view.setShortageKg(file.toInvoiceKg().toPlainString());
+        return view;
+    }
 }

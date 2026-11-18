@@ -23,6 +23,7 @@ export type MovementKind =
   | 'YARN_RETURN'
   | 'YARN_FROM_SUBCONTRACTOR'
   | 'CLAIM_ADJUSTMENT'
+  | 'INVOICE'
   | 'OPENING'
   | 'CORRECTION';
 export const MOVEMENT_KINDS: readonly MovementKind[] = [
@@ -31,6 +32,7 @@ export const MOVEMENT_KINDS: readonly MovementKind[] = [
   'YARN_RETURN',
   'YARN_FROM_SUBCONTRACTOR',
   'CLAIM_ADJUSTMENT',
+  'INVOICE',
   'OPENING',
   'CORRECTION',
 ];
@@ -102,6 +104,8 @@ export const FIRE_STATUSES: readonly FireStatus[] = [
   'INVOICED',
   'CLOSED',
 ];
+export type SettlementYarn = { yarnType: string; dispatchedKg: string };
+export type InvoiceEntry = { invoiceNo: string; invoicedOn: string; kg: string };
 export type FireSettlement = {
   shipmentId: string;
   status: FireStatus;
@@ -115,13 +119,27 @@ export type FireSettlement = {
   shortageKg: string;
   faultyKg: string;
   actualFirePercent: string;
+  /** Şimdiye kadar faturası kesilen kilo. */
+  invoicedKg: string;
+  /** Henüz faturası kesilmemiş kilo (faturalanacak kilo). */
+  remainingKg: string;
+  /** Sevkiyatta giden iplikler; fatura satırlarında kilo bu ipliklere yazılır. */
+  yarns: SettlementYarn[];
+  /** Şimdiye kadar girilen faturalar. */
+  invoices: InvoiceEntry[];
   invoiceNo?: string;
   invoicedAt?: string;
   invoicedBy?: string;
   invoiceNote?: string;
 };
 export type FireRateRequest = { fireRate: string; reason: string };
-export type InvoiceRequest = { invoiceNo: string; invoicedOn: string; note?: string };
+/** `lines` boşsa kalan kilonun tamamı iplik oranıyla faturalanır. */
+export type InvoiceRequest = {
+  invoiceNo: string;
+  invoicedOn: string;
+  note?: string;
+  lines?: YarnShare[];
+};
 
 export type FireSettlementRow = {
   shipmentId: string;
@@ -133,6 +151,8 @@ export type FireSettlementRow = {
   expectedFabricKg: string;
   faultyKg: string;
   actualFirePercent: string;
+  invoicedKg: string;
+  remainingKg: string;
 };
 export type ListFireSettlementsParams = {
   status?: FireStatus;

@@ -10,6 +10,8 @@ import com.yarnshipment.shipment.application.port.in.fire.CloseFireSettlementUse
 import com.yarnshipment.shipment.application.port.in.fire.FireSettlementQuery;
 import com.yarnshipment.shipment.application.port.in.fire.MarkInvoicedCommand;
 import com.yarnshipment.shipment.application.port.in.fire.MarkInvoicedUseCase;
+import com.yarnshipment.shipment.domain.fabric.YarnShare;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -60,8 +62,20 @@ public class FireSettlementActionController {
                 shipmentId,
                 LedgerRequests.required(request.invoiceNo(), "invoiceNo"),
                 LedgerRequests.requiredDate(request.invoicedOn(), "invoicedOn"),
-                request.note());
+                request.note(),
+                lines(request));
         return ResponseEntity.ok(FireViews.fireSettlement(markInvoicedUseCase.markInvoiced(command)));
+    }
+
+    private static List<YarnShare> lines(InvoiceRequest request) {
+        if (request.lines() == null) {
+            return List.of();
+        }
+        return request.lines().stream()
+                .map(line -> new YarnShare(
+                        LedgerRequests.required(line.yarnType(), "lines.yarnType"),
+                        LedgerRequests.kg(line.netKg(), "lines.netKg")))
+                .toList();
     }
 
     @PostMapping("/api/v1/shipments/{shipmentId}/fire-settlement/close")

@@ -80,6 +80,29 @@ public enum HelpDataSource {
             "/api/v1/shipments/{shipmentId}/history",
             "Tek bir sevkiyatın durum geçmişi; neden beklediğini anlamak için (sevkiyat_no ile)",
             HelpDataArgument.SHIPMENT_NO),
+    CENTRAL_STOCK(
+            "merkez_stok",
+            "/api/v1/central-stock",
+            "Merkezdeki (fasoncuda olmayan) iplik stoku: iplik cinsi başına kilo, toplam, üretilen kumaş, "
+                    + "iplik akışı, son hareketler ve tedarikçiden gelen iplik özeti",
+            HelpDataArgument.PAGE),
+    SUBCONTRACTOR_YARN(
+            "fasoncu_iplik",
+            "/api/v1/balances",
+            "Fasonculardaki iplik bakiyesi ayrıntısı (iplik cinsi bazında); fasoncu_id ile tek fasoncu",
+            HelpDataArgument.SUBCONTRACTOR),
+    BALANCE_MOVEMENTS(
+            "bakiye_hareketleri",
+            "/api/v1/balances/movements",
+            "Fasoncu iplik bakiyesinin hareketleri (gönderim, dönüş, kumaş, düzeltme); fasoncu_id ile süzülür",
+            HelpDataArgument.SUBCONTRACTOR,
+            HelpDataArgument.PAGE),
+    YARN_SUPPLIERS(
+            "tedarikciler",
+            "/api/v1/master-data/yarn-suppliers",
+            "İplik tedarikçileri listesi (kimlik ve ünvan)",
+            HelpDataArgument.SEARCH,
+            HelpDataArgument.PAGE),
     SUBCONTRACTORS(
             "fasoncular",
             "/api/v1/master-data/subcontractors",

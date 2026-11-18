@@ -18,12 +18,15 @@ varsa dokunulmaz. İlk girişte şifre değiştirilir. Unutulan admin şifresi s
 
 | İşlem | Uç |
 |---|---|
-| Fabrika içi hesap aç | `POST /api/v1/master-data/login-accounts` (`username`, `fullName`, `role`, `password`) → 201 |
-| Rol değiştir | `PUT /api/v1/master-data/login-accounts/{userId}/role` (`role`) → 204 |
+| Fabrika içi hesap aç | `POST /api/v1/master-data/login-accounts` (`username`, `fullName`, `role`, `password`; kalite rolünde `workArea`) → 201 |
+| Rol değiştir | `PUT /api/v1/master-data/login-accounts/{userId}/role` (`role`; kalite rolünde `workArea`) → 204 |
+| Ad soyadı düzenle | `PUT /api/v1/master-data/login-accounts/{userId}/name` (`fullName`) → 204 |
 | Pasife al / yeniden aç | `PUT /api/v1/master-data/login-accounts/{userId}/enabled` (`enabled`) → 204 |
 | Yeni geçici şifre ver | `PUT /api/v1/master-data/login-accounts/{userId}/password` (`password`) → 204 |
 
-`role` yalnızca `ADMIN`, `WAREHOUSE`, `QUALITY`, `MANAGER`, `GENERAL_MANAGER` olabilir. Rol değişince, hesap pasife alınınca ya da
+`role` yalnızca `ADMIN` (Yönetici), `WAREHOUSE` (Depo), `QUALITY` (Kalite), `MANAGER` (Müdür), `GENERAL_MANAGER` (Genel müdür) olabilir.
+**Kalite** hesabında ekranda "Çalışma alanı" da seçilir (`workArea`): **Merkez fabrika** (yalnız merkez fabrikanın kumaşını ve merkez iplik stokunu görür/girer) ya da **Fasoncular** (yalnız fasoncuların kumaşını görür/girer); seçilmezse hesap açılmaz. Başka rollerde çalışma alanı verilmez.
+Hesabın rolü açıldıktan sonra da Kullanıcılar ekranından değişir; rolün hangi işleri yapabildiği **Yetkiler** ekranından (yalnız yönetici) ayarlanır. Rol değişince, hesap pasife alınınca ya da
 yeni geçici şifre verilince kişinin açık oturumları kapanır. Kişi kendi rolünü değiştiremez ve kendi hesabını kapatamaz (400
 `INVALID_MASTER_DATA`); kullanıcı yoksa 404 `LOGIN_ACCOUNT_NOT_FOUND`. Giriş adı alınmışsa 409 `LOGIN_ACCOUNT_EXISTS`.
 Şifre kurala uymuyorsa 400 `WEAK_PASSWORD`.
@@ -34,8 +37,10 @@ yeni geçici şifre verilince kişinin açık oturumları kapanır. Kişi kendi 
    (ör. `12345678`) olamaz. Şifre hiçbir yanıtta ya da logda yer almaz; veritabanında yalnızca BCrypt özeti tutulur.
 2. **İlk giriş**: hesap "İlk giriş bekleniyor" görünür; kişi `/giris` sayfasında girince `/sifre-degistir` sayfasına yönlenir ve
    şifresini değiştirmeden başka işlem yapamaz.
-3. **Şifresini unutan**: giriş ekranında "Şifremi unuttum" yoktur; yönetici Kullanıcılar ekranında "Şifre ver" ile yeni
-   geçici şifre belirler. Kişinin açık oturumları kapanır ve hesap kilitliyse kilit kalkar, bir sonraki girişte şifresini değiştirir.
+3. **Şifresini unutan**: giriş ekranında "Şifremi unuttum" yoktur. Art arda 3 hatalı denemeden sonra giriş ekranında
+   **"Adminden şifre talep et"** düğmesi çıkar; talep Kullanıcılar ekranında uyarı ve "Şifre istedi" rozetiyle görünür.
+   Yönetici hesabın menüsünde "Şifre ver" ile yeni geçici şifre belirler (talep o zaman kapanır). `admin` hesabı için talep
+   düğmesi çıkmaz (bkz. yukarıdaki "İlk yönetici" bölümü). Kişinin açık oturumları kapanır ve hesap kilitliyse kilit kalkar, bir sonraki girişte şifresini değiştirir.
 4. **Profilden değiştirme**: giriş yapmış herkes üst çubuktaki "Şifremi değiştir" ile `/sifre-degistir` sayfasına gider; mevcut
    şifresini yazar, yeni şifresini iki kez girer.
 5. **Hatalı deneme**: 5 hatalı şifreden sonra hesap 15 dakika kilitlenir (`423 ACCOUNT_LOCKED`); yönetici yeni şifre vererek

@@ -127,20 +127,27 @@ ek olarak mudurun olusturacagı sipariş formu C:\Users\CELEK\Desktop\iplik sevk
 
 # Geliştirme planı (cevaplara göre)
 
-| # | Cevap | Mevcut durum | Yapılacak | Durum |
+Güncelleme 18.11.2026: tablodaki maddelerin hepsi koda alınmıştır (sütun "Mevcut durum" ilk değerlendirmedir; güncel
+durum "Durum" sütunundadır). Ayrıntılı anlatım için bkz. Süreç analizi v2.
+
+| # | Cevap | Mevcut durum (ilk değerlendirme) | Yapılacak (plan) | Durum |
 |---|-------|--------------|-----------|-------|
-| 1 | S18 itiraz süresi yok | 3 iş günü sonra itiraz kapanıyor | Süre sınırı kaldırıldı (hedef tarih yalnız bilgi) | PR'da |
-| 2 | S3 QR yok, çuval elle sırayla girilir | Çuval anahtarı okutma/yazma | Çuval girişini "sıra no + kg" elle girişe çevir | Sırada |
-| 3 | Sipariş formu (Excel) | Reçete: iplik cinsi + kg | Müdür sipariş formu: firma, yetkili, sipariş no, tarih, satırlar (kumaş cinsi, lycra, tüp/may/açık en, iplik uzunluğu, puss-fine, kg, fiyat) | Soru bekliyor |
-| 4 | S10/S11 kumaş sevkiyat bazlı, parça parça | Kumaş girişi var, çoklu giriş var | Sevkiyat bazında "gönderilen / gelen / kalan beklenen" görünümü; bakiye düşüşü sevkiyat bazlı | Sırada |
-| 5 | S12 fasoncular arası sevk, iade | İade (RETURN) var, fasoncudan fasonçuya sevk yok | Müdürün fasoncudan fasoncuya sevki: kaynak bakiye düşer, hedef artar; iade merkez depoya | Sırada |
-| 6 | S17 merkez fabrika bakiyede izlensin | Yok | Merkez fabrikayı bakiyede ayrı satır olarak göster | Sırada |
-| 7 | S14 fire raporu | Fire dosyası var | Fasoncu bazında toplam fire raporu; kg fiyatı tutulmayacak | Sırada |
-| 8 | S20 detaylı raporlar | Raporlar ekranı var | Genel müdür ve müdür için detaylı raporlar | Sırada |
-| 9 | Gözlem sorunları | — | Raporlar özetindeki eski kutular, çuval atama sonrası liste güncellenmemesi, kumaş girişinde yanlış iplik cinsi | Sırada |
+| 1 | S18 itiraz süresi yok | 3 iş günü sonra itiraz kapanıyordu | Süre sınırı kaldırıldı (hedef tarih yalnız bilgi) | Yapıldı: tamamlanmış sevkiyata her zaman itiraz açılır; ekranda "İtiraz için süre sınırı yoktur" yazar |
+| 2 | S3 QR yok, çuval elle sırayla girilir | Çuval anahtarı okutma/yazma | Çuval girişini "sıra no + kg" elle girişe çevir | Yapıldı: depo "Çuvallar" sekmesinde çuval kilosunu yazar, sıra numarasını sistem verir; çuval servisi ve QR kalktı |
+| 3 | Sipariş formu (Excel) | Reçete: iplik cinsi + kg | Sipariş formu reçetenin yerine geçer: firma, yetkili, sipariş no, tarih, satırlar (kumaş cinsi, lycra, tüp/may/açık en, iplik uzunluğu, puss-fine, kg, fiyat) | Yapıldı: yeni sevkiyatta "Gönderilecek iplikler" satırları ve "Sipariş bilgileri" sekmesi; fiyat zorunlu; "Sipariş formu PDF" indirilir. Yetkili kişi ve sipariş no yalnızca PDF'te yer alır |
+| 4 | S10/S11 kumaş sevkiyat bazlı, parça parça | Kumaş girişi var, çoklu giriş var | Sevkiyat bazında "gönderilen / gelen / kalan beklenen" görünümü; bakiye düşüşü sevkiyat bazlı | Yapıldı: kumaş formunda "Fasoncuya … kg iplik gönderildi, şimdiye kadar … kg kumaş geldi; en çok … kg daha girebilirsiniz." Kumaşı fasoncu kalite girer |
+| 5 | S12 fasoncular arası sevk, iade | İade (RETURN) vardı, fasoncudan fasoncuya sevk yoktu | Müdürün fasoncudan fasoncuya sevki: kaynak bakiye düşer, hedef artar; iade merkez depoya | Yapıldı: yeni sevkiyatta "İplik nereden çıkıyor?" > "Başka fasoncu" (ayrıca "Kapıdan aktarma"); iade "İplik dönüşü" ile depoca kaydedilir |
+| 6 | S17 merkez fabrika bakiyede izlensin | Yoktu | Merkez fabrikayı izle | Yapıldı: "Merkez iplik stoku" ekranı (merkez depodaki iplik, merkez kumaş üretimi, tedarikçiden gelen iplik); fasoncu bakiyesinden ayrı bir ekrandır |
+| 7 | S14 fire raporu | Fire dosyası vardı | Toplam fire raporu; kg fiyatı tutulmayacak | Yapıldı: Raporlar > "Fire raporu" (sevkiyat bazında fire, "Fireyi aşan sevkiyat" ve "Aşanların toplam fire kg"). Kg başı ceza fiyatı tutulmaz; sevkiyattaki her iplik satırının birim fiyatı zorunludur ve "Tutar bilgisi" kartları bundan hesaplanır |
+| 8 | S20 detaylı raporlar | Raporlar ekranı vardı | Genel müdür ve müdür için detaylı raporlar | Yapıldı: Raporlar'da Özet, Fasoncular, Sevkiyat dökümü, Fasoncu bakiye, Bakiye matrisi, Fire raporu, Giden iplik ↔ gelen kumaş, Faturalanacaklar; Excel ve PDF |
+| 9 | Gözlem sorunları | — | Raporlar özetindeki eski kutular, çuval atama sonrası liste güncellenmemesi, kumaş girişinde yanlış iplik cinsi | Kısmen doğrulandı: kumaş girişinde iplik cinsi artık sevkiyattaki ipliklerden seçilir (yanlış iplik girilemez). Raporlar özetinde "İncelemede" ve "Çıkış net / Teslim net" kutuları kodda hâlâ duruyor; çuval listesinin güncellenmesi kodda doğrulanamadı |
 
 Zaten uyumlu olanlar: S1, S2, S4, S5, S6, S7, S8, S9, S13, S15, S16, S19, S21.
 
+Sonradan netleşenler: kalite itirazını yalnızca müdür "Haklı" ya da "Haksız" diye karara bağlar (kalite yalnızca "Bana ata" ile üstlenir;
+laboratuvar ya da numune kontrolü adımı yoktur); haklı itirazın kilosu faturalanacak kiloya eklenir (S19); fatura Faturalanacaklar ekranından, parça parça ve
+onay adımıyla girilir (S15); itiraz yalnızca girilmiş kumaş için açılır.
+
 ## Sipariş formu – ek cevap 1 (düzeltildi)
 Sipariş formu reçetenin YERİNE geçer. Reçete satırları Excel'deki başlıklarla girilir: kumaş cinsi, lycra, tüp/may/açık en, iplik uzunluğu/lycra, puss-fine, sipariş kg, fiyat. Üst bilgi: firma (fasoncu), yetkili kişi, sipariş no, tarih. Müdür elle doldurur; depo bu forma göre iplik sevkiyatını yapar, çuvalları yükler.
-Açık: fire sınırı varsayılanı (%5 mi %4 mü) ve fiyatın tutulup tutulmayacağı.
+Karar: fire sınırı varsayılanı %4'tür (sevkiyat başına değiştirilebilir). Fiyat tutulur: her iplik satırında birim fiyat (TL/kg) zorunludur.

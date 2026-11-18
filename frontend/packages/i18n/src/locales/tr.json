@@ -735,8 +735,7 @@
       "noteRequired": "Karar notu boş olamaz. Kararın nedenini yazın.",
       "notOpen": "Uyuşmazlık artık çözülemez.",
       "inspectionPending": "Sonucu girilmemiş numune ya da laboratuvar kontrolü var; önce sonucu girin.",
-      "failed": "Karar kaydedilemedi. Lütfen tekrar deneyin.",
-      "liablePartyRequired": "Sorumlu tarafı seçin."
+      "failed": "Karar kaydedilemedi. Lütfen tekrar deneyin."
     },
     "activity": {
       "title": "Geçmiş",

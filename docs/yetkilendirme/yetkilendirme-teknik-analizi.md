@@ -1,6 +1,13 @@
 # Yetkilendirme Teknik Analizi – İplik Sevkiyat Sistemi
 
-Sürüm 1.1 · 20.10.2026 · Mehmet Çelek
+Sürüm 1.1 · 20.10.2026 · Mehmet Çelek (rol ve izin bölümleri 18.11.2026'da koda göre güncellendi)
+
+> **Güncel durum (18.11.2026): bu doküman ilk tasarımı anlatır, aşağıdaki maddeler geçerli olandır; çelişen her yerde bu kutu ve kod doğrudur.**
+>
+> - **Giriş:** Uygulamanın kendi giriş sistemi kullanılır (`/giris`: kullanıcı adı + şifre, çerezle oturum; hesaplar `shipment.app_user` tablosunda). Keycloak, gateway/Redis oturumu ve MFA (TOTP) yoktur; bu dokümandaki o bölümler tarihseldir. Giriş hesabı açma için bkz. "Giriş hesabı açma" dokümanı.
+> - **Roller:** Yönetici (`ADMIN`), Depo (`WAREHOUSE`), Kalite (`QUALITY`), Müdür (`MANAGER`), Genel müdür (`GENERAL_MANAGER`); iç kullanım için `SYSTEM`. **Şoför (`DRIVER`) ve fasoncu (`SUBCONTRACTOR`) rolleri yoktur**; fasoncu ve şoför yalnızca ana veridir. Kalite kullanıcısının ayrıca bir çalışma alanı vardır: "Merkez fabrika" ya da "Fasoncular".
+> - **İzinler:** Rol–izin eşlemesi veritabanındadır; yönetici **Yetkiler** ekranından rol bazında değiştirebilir (varsayılan matris `RolePermissionMatrix`). Güncel varsayılan rol–izin listesi için asistan "rol-yetkileri" bölümüne bakar; aşağıdaki eski tablo kullanılmaz.
+> - **Kaldırılanlar:** kör giriş ve "kendi sevkiyatı" (sahiplik) kuralları, mühür/teslim/şoför beyanı izinleri, `CORRECTION_CREATE` (gerekçeli düzeltme; Düzeltmeler özelliği kalktı). Lokasyon kapsamı sürer.
 
 Kaynak: İplik Sevkiyat Ön Analiz Raporu v1.1 (Bölüm 6, 7, 11, 13, 14, 16) ve Java Mikroservis Mimarisi v1.
 
@@ -12,15 +19,17 @@ Kimlik doğrulamayı **Keycloak (OpenID Connect)** yapar, her mikroservis gelen 
 
 | Karar | Seçim | Neden |
 | --- | --- | --- |
-| Kimlik sağlayıcı | Keycloak 26 (self-hosted, OIDC) | Açık kaynak, MFA (TOTP) hazır, kullanıcı/rol yönetim ekranı hazır |
-| Token | JWT (RS256), erişim 5 dk, refresh 30 dk | Servisler merkeze sormadan doğrular; kısa ömür çalınma riskini düşürür |
-| Frontend akışı | Gateway oturumu (BFF), Authorization Code + PKCE gateway'de | Token tarayıcıya hiç inmez, XSS ile çalınamaz; gateway ve Redis mimaride zaten var |
-| Rol modeli | 6 rol (Keycloak realm rolü) → kodda izin seti | Matris tek yerde, test edilebilir; Keycloak'ta yalnız rol atanır |
-| Veri yetkisi | Token'daki `subcontractor_id`, `driver_id` + servis içi politika sınıfları | "Kendi sevkiyatı" ve kör giriş rolle çözülemez, veriye bakmak gerekir |
-| MFA | Admin ve Kalite için zorunlu, `acr`/`amr` claim ile servis tarafında da denetlenir | Ön analiz Bölüm 14 |
+| Kimlik sağlayıcı | ~~Keycloak 26~~ (kaldırıldı) → uygulamanın kendi girişi | Tek kurulum, ayrı kimlik sunucusu yok |
+| Token | ~~JWT~~ (kaldırıldı) → çerezli oturum | |
+| Frontend akışı | ~~Gateway oturumu (BFF)~~ (kaldırıldı) → `/giris` sayfası | |
+| Rol modeli | 5 rol (Yönetici, Depo, Kalite, Müdür, Genel müdür) → izin seti; varsayılan matris kodda, düzenleme Yetkiler ekranında | Matris tek yerde, test edilebilir |
+| Veri yetkisi | Lokasyon kapsamı (`site_ids`) + kalite çalışma alanı | Fasoncu/şoför girişi olmadığı için "kendi sevkiyatı" ve kör giriş kuralları kalktı |
+| MFA | Şu an yok (Keycloak ile birlikte kalktı; kendi girişimize ileride TOTP eklenecek) | |
 | Kod | Ortak `libs/common-security` kütüphanesi; kod kuralları onaylanınca yazılacak | Her mikroservis aynı kuralı tek bağımlılıkla alır |
 
 ## Kimlik doğrulama
+
+> **Tarihsel bölüm.** Keycloak, JWT ve gateway oturumu artık kullanılmıyor; bkz. sayfa başındaki "Güncel durum" kutusu.
 
 Keycloak seçildi; kendi yazacağımız bir JWT servisi yerine hazır bir kimlik sağlayıcı kullanılması, MFA, parola politikası, oturum yönetimi ve hesap kilitleme gibi işleri sıfırdan yazmaktan kurtarır.
 
@@ -45,50 +54,35 @@ Keycloak seçildi; kendi yazacağımız bir JWT servisi yerine hazır bir kimlik
 
 ## Rol ve izin modeli
 
-Keycloak'ta yalnızca 6 rol tutulur; kod bu rolleri aşağıdaki izinlere çevirir ve endpoint'ler rol değil izin ister. Böylece matris değiştiğinde tek bir sınıf (`RolePermissionMatrix`) değişir, controller'lara dokunulmaz.
+Kod rolleri izinlere çevirir ve endpoint'ler rol değil izin ister. Böylece matris değiştiğinde tek bir sınıf (`RolePermissionMatrix`) değişir, controller'lara dokunulmaz.
 
-Roller: `ADMIN`, `WAREHOUSE` (depo), `DRIVER` (şoför), `SUBCONTRACTOR` (fasoncu), `QUALITY` (kalite), `MANAGER` (yönetici), `GENERAL_MANAGER` (genel müdür; yalnız `REPORT_VIEW` + `BALANCE_VIEW`) (+ yalnız servis token'larında `SYSTEM`).
+Roller: `ADMIN` (yönetici), `WAREHOUSE` (depo), `QUALITY` (kalite), `MANAGER` (müdür), `GENERAL_MANAGER` (genel müdür; yalnız rapor, tutar, bakiye, merkez stok ve tanım okuma izinleri) (+ iç kullanım için `SYSTEM`). Şoför (`DRIVER`) ve fasoncu (`SUBCONTRACTOR`) rolleri kaldırıldı.
 
 Rol, izin ve claim adları koddaki adlarla aynıdır ve İngilizcedir (kod standartları NAME kuralları); ekranda Türkçe karşılıkları gösterilir. Kaynak: `libs/common-security` içindeki `Role`, `Permission`, `RolePermissionMatrix` ve `TokenClaims`. `/api/v1/me` cevabındaki `permissions[]` bu izin adlarını taşır.
 
-✓ = izin var · kendi = yalnız kendisine ait sevkiyatlarda · sonra = kör giriş nedeniyle yalnız karşılaştırma bittikten sonra · boş = yok
+Varsayılan rol–izin eşlemesi `RolePermissionMatrix` sınıfındadır ve burada tablo olarak tekrarlanmaz (ilk tasarımdaki tablo
+şoför ve fasoncu sütunları, mühür/teslim izinleri ve Admin'in iş izinleri nedeniyle geçersizdir). Her rolün güncel varsayılan
+yetkileri asistana koddan verilir ("rol-yetkileri"); yönetici bunları **Yetkiler** ekranından değiştirebilir. Rolleri özetle:
 
-| İzin | Admin | Depo | Şoför | Fasoncu | Kalite | Yönetici |
-| --- | --- | --- | --- | --- | --- | --- |
-| `MASTER_DATA_VIEW` | ✓ | ✓ |  |  | ✓ | ✓ |
-| `MASTER_DATA_MANAGE` (fasoncu, şoför, araç, ürün) | ✓ |  |  |  |  |  |
-| `USER_MANAGE`, `SETTINGS_MANAGE` (tolerans, zorunlu kanıt) | ✓ |  |  |  |  |  |
-| `LOT_QUALITY_LOCK` | ✓ |  |  |  | ✓ |  |
-| `SHIPMENT_VIEW` | ✓ | ✓ | kendi | kendi | ✓ | ✓ |
-| `SHIPMENT_CREATE` (çuval atama, şoför/araç atama) | ✓ |  |  |  |  | ✓ |
-| `SHIPMENT_CANCEL` | ✓ |  |  |  |  |  |
-| `DISPATCH_RECORD` (çıkış kilosu, mühür no) |  | ✓ |  |  |  |  |
-| `DISPATCH_VIEW` | ✓ | ✓ | yalnız çuval sayısı + mühür no | sonra | ✓ | ✓ |
-| `DRIVER_DECLARATION_RECORD` |  |  | kendi |  |  |  |
-| `DRIVER_DECLARATION_VIEW` | ✓ | ✓ | kendi |  | ✓ | ✓ |
-| `DELIVERY_RECORD` (teslim kilosu, çuval listesi) |  |  |  | kendi |  |  |
-| `DELIVERY_VIEW` | ✓ | sonra |  | kendi | ✓ | ✓ |
-| `EVIDENCE_UPLOAD_DISPATCH` / `_DRIVER` / `_DELIVERY` / `_CLAIM` (aşamaya göre) |  | çıkış | kendi | teslim | itiraz |  |
-| `EVIDENCE_VIEW` | ✓ | çıkış; teslim sonra | kendi | teslim; çıkış sonra | ✓ | ✓ |
-| `EVIDENCE_INVALIDATE` | ✓ |  |  |  |  |  |
-| `CORRECTION_CREATE` (gerekçeli düzeltme kaydı) | ✓ |  |  |  |  |  |
-| `QUALITY_CLAIM_OPEN` | ✓ |  |  | kendi | ✓ |  |
-| `DISCREPANCY_VIEW` | ✓ |  |  | kendi | ✓ | ✓ |
-| `DISCREPANCY_RESOLVE` | ✓ |  |  |  | ✓ |  |
-| `AUDIT_VIEW`, `REPORT_VIEW` | ✓ |  |  |  | ✓ | ✓ |
+- **Yönetici (Admin):** yalnızca sistemi yönetir: kullanıcılar, ayarlar (görünüm, kural ayarları), yetkiler, denetim kaydı; tanım listelerini okur. Sevkiyat, kanıt, uyuşmazlık, rapor, bakiye, merkez stok, tanımlar ve partiler ekranlarını görmez (API'den de 403). İzinleri sabittir.
+- **Müdür:** sevkiyat açar, iptal eder, tamamlar; kantar uyuşmazlığına karar verir; fire oranını değiştirir; "Fatura edildi" girer; kalite itirazını yalnızca "Haklı" / "Haksız" diye karara bağlar (`DISCREPANCY_DECIDE`); tanımlar ve partiler ile kanıtı geçersiz kılma (`EVIDENCE_INVALIDATE`) müdürdedir; rapor, tutar, bakiye ve merkez stoku görür. Kumaş girişi, iplik dönüşü ve kalite itirazı açma izni yoktur.
+- **Depo:** çuval ve çıkış tartısı (`DISPATCH_RECORD`), kantar fişi yükleme, fasoncudan iplik dönüşü (`YARN_RETURN_RECORD`), merkeze iplik girişi (`CENTRAL_STOCK_RECORD`); merkez stoku görür. Sevkiyat açamaz.
+- **Kalite:** kalite itirazı açar, uyuşmazlığı üstlenir (`DISCREPANCY_RESOLVE`; laboratuvar ya da numune kontrolü yoktur); **karar veremez**. Kumaş girişi (`FABRIC_RECEIPT_RECORD`, fasoncu kalite) ve merkez kumaş girişi (`CENTRAL_PRODUCTION_RECORD`, merkez kalite); partilerin kalitesini kilitler; rapor, bakiye ve merkez stoku görür.
+- **Genel müdür:** salt okur: rapor, tutar, bakiye, merkez stok, tanım listeleri.
 
-**Matristen farklılaşan veya eklenen noktalar** (son bölümde karara bağlandı):
+**Matristen farklılaşan veya eklenen noktalar:**
 
-- `LOT_QUALITY_LOCK` matriste yoktu; ön analiz Bölüm 10'daki "kalite parti bazında belirlenir ve kilitlenir" kuralı için Kalite ve Admin'e eklendi.
-- `BAG_CREATE` (çuval oluşturma ve etiket basımı) çuval etiketi işi iptal edildiği için kaldırıldı; sevkiyat çuvalı kg girişi `DISPATCH_RECORD` ile yapılır.
-- Süreç analizi v2 (A3): `SHIPMENT_CREATE` Depo'dan alındı, yalnız Müdür ve Admin sevkiyat açar; Depo yalnız `DISPATCH_RECORD` ile çıkış tartısı girer.
-- Süreç analizi v2, 3.3: `GENERAL_MANAGER` (yalnız `REPORT_VIEW`, `BALANCE_VIEW`) ve yeni izinler eklendi: `FABRIC_RECEIPT_RECORD` (yalnız Kalite; 15.11.2026'da müdürden alındı), `YARN_RETURN_RECORD` (yalnız Depo; 15.11.2026'da müdürden alındı), `FIRE_RATE_EDIT`, `INVOICE_MARK`, `WEIGHT_MISMATCH_RESOLVE` (Müdür), `BALANCE_VIEW` (Müdür, Genel müdür, Kalite, Admin).
-- `SHIPMENT_CREATE` Admin'e de verildi, çünkü süreç tablosunda (7.1, adım 1) sorumlu "Depo / Admin".
-- **14.11.2026 güncellemesi (bu maddeler yukarıdaki Admin satırlarının yerine geçer):** Admin yalnızca sistemi yönetir; izinleri `MASTER_DATA_VIEW`, `MASTER_DATA_MANAGE`, `USER_MANAGE`, `SETTINGS_MANAGE`, `LOT_QUALITY_LOCK`, `AUDIT_VIEW`. Sevkiyat, kanıt, uyuşmazlık, rapor, bakiye ve merkez stok izinleri Admin'den alındı; bu ekranları görmez, API'den de 403 alır. Gerekçeli düzeltme kaydı (`CORRECTION_CREATE`) ve kanıt geçersiz kılma (`EVIDENCE_INVALIDATE`) Müdür'e geçti; uyuşmazlığı Kalite karara bağlar; Müdür'e yalnızca kalite itirazını haklı/haksız kapatma izni (`DISCREPANCY_DECIDE`) verildi (haklıda fatura bilgisi aynı adımda girilir; atama, sorumluluk kararı ve laboratuvar isteği Kalite'de kalır). Matris `RolePermissionMatrix`, testi `RolePermissionMatrixTest`'tir.
-- Kanıt görüntüleme kör girişe bağlandı: çıkış kantar fotoğrafı kiloyu gösterdiği için fasoncu onu karşılaştırmadan önce göremez; depo da teslim kantar fotoğrafını göremez.
-- Yönetici hiçbir yazma izni almaz; kodda bunu doğrulayan bir test olacak. Şoför çıkış kilosunu görmez, yalnız çuval sayısı ve mühür numarasını görür (Y1).
+- `LOT_QUALITY_LOCK`: "kalite parti bazında belirlenir ve kilitlenir" kuralı için Kalite ve Müdür'dedir (başlangıçta Admin'deydi).
+- `BAG_CREATE` (çuval oluşturma ve etiket basımı) kaldırıldı; sevkiyat çuvalı kg girişi `DISPATCH_RECORD` ile yapılır.
+- Süreç analizi v2 (A3): `SHIPMENT_CREATE` yalnızca Müdür'dedir (Depo'dan alındı; Admin'e de verilmez). Depo yalnız `DISPATCH_RECORD` ile çıkış tartısı girer.
+- Süreç analizi v2, 3.3: `GENERAL_MANAGER` ve yeni izinler eklendi: `FABRIC_RECEIPT_RECORD` (yalnız Kalite; 15.11.2026'da müdürden alındı), `YARN_RETURN_RECORD` (yalnız Depo; 15.11.2026'da müdürden alındı), `FIRE_RATE_EDIT`, `INVOICE_MARK`, `WEIGHT_MISMATCH_RESOLVE` (Müdür), `BALANCE_VIEW` (Müdür, Genel müdür, Kalite), `AMOUNT_VIEW` (Müdür, Genel müdür), `CENTRAL_STOCK_VIEW` / `_RECORD` / `CENTRAL_PRODUCTION_RECORD`.
+- **14.11.2026 güncellemesi:** Admin yalnızca sistemi yönetir; izinleri `MASTER_DATA_VIEW`, `USER_MANAGE`, `SETTINGS_MANAGE`, `PERMISSION_MANAGE`, `AUDIT_VIEW`. Tanımlar (`MASTER_DATA_MANAGE`), parti kilidi ve kanıt geçersiz kılma Müdür'e geçti. Uyuşmazlığı Müdür karara bağlar; Müdür'e yalnızca kalite itirazını haklı/haksız kapatma izni (`DISCREPANCY_DECIDE`) verildi. Haklı kararda fatura bilgisi o ekranda girilmez, Faturalanacaklar'dan girilir. "Haklı, faturalandı" ve "Sorumluluk atandı" kararları kaldırıldı; Kalite yalnızca "Bana ata" ile üstlenir (laboratuvar ya da numune adımı yoktur). Matris `RolePermissionMatrix`, testi `RolePermissionMatrixTest`'tir.
+- Gerekçeli düzeltme kaydı (`CORRECTION_CREATE`) ve sevkiyat dosyasındaki "Düzeltmeler" özelliği tamamen kaldırıldı; hiçbir rolde yoktur.
+- Genel müdür salt okurdur (yazma izni yok); kodda bunu doğrulayan test vardır (`shouldLimitGeneralManagerToReadOnly`).
 
 ## Veri seviyesi kurallar
+
+> **Tarihsel bölüm.** Sahiplik ("kendi sevkiyatı"), kör giriş ve şoför/fasoncu durum tablosu, fasoncu ve şoför rolleri kalktığı için artık uygulanmaz. Yürürlükte olanlar: lokasyon kapsamı (kullanıcı yalnız kapsamındaki lokasyonların verisini görür), kalite çalışma alanı (fasoncu kalite / merkez kalite) ve tamamlanan sevkiyatın kilidi.
 
 Rolün izni olması yetmez; her istekte sevkiyatın kime ait olduğuna ve hangi durumda olduğuna da bakılır. Sahiplik ve lokasyon kapsamı `common-security` içindeki `ScopeGuard` ile, kör giriş ve durum kuralları sevkiyat servisindeki erişim politikasıyla uygulanır; ikisi de hem endpoint'te hem de dönen veride çalışır.
 
@@ -121,6 +115,8 @@ Rolün izni olması yetmez; her istekte sevkiyatın kime ait olduğuna ve hangi 
 - Bu tablo kodda `DurumKurallari` sınıfındadır. Durum geçişlerinin kendisi sevkiyat servisinin işidir; yetki kodu yalnız "bu durumda bu işe izin var mı" sorusunu cevaplar.
 
 ## Mikroservis mimarisinde yerleşim
+
+> **Tarihsel bölüm.** Keycloak, gateway ve `DurumKurallari`/kör giriş anlatımları güncel değildir (bkz. "Güncel durum" kutusu).
 
 Gateway kimliği doğrular ve token'ı iletir; her servis token'ı yeniden doğrular ve izin ile veri kuralını kendi içinde uygular (sıfır güven). Bu, Java mikroservis mimarisi v1 dokümanındaki gateway + 8 servis + Kafka yapısına oturur.
 
@@ -177,6 +173,8 @@ Kod, Java 25 kod kuralları dokümanı onaylandıktan sonra yazılacak. Kurallar
 5. Ortak yetki testi: matristeki her satır için "izinli rol 2xx, diğerleri 403" testi, CI'da zorunlu.
 
 ## Kararlar
+
+> **Tarihsel liste.** Y1 (şoför), Y4 (Keycloak kullanıcı açma), Y5 (MFA), Y6 (şoför/fasoncu oturumu), Y7 (yüksek tutarlı kalite kararında Admin'in ikinci onayı; kodda bulunamadı), Y8 (Active Directory) bugünkü sistemde uygulanmaz; Y2 (Admin sevkiyat açar) 14.11.2026'da değişti: yalnız Müdür açar. Y3'te parti kalitesini Kalite ve Müdür kilitler.
 
 Tüm maddeler 20.10.2026'da **karar verildi**. Proje sahibi seçimi büyümeye uygun olacak şekilde analize bıraktı; Y1 açıkça onaylandı. Amaç, bugün tek fabrikayla sade başlayıp yarın çok tesis ve çok firmaya kod yeniden yazılmadan geçebilmek.
 

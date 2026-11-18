@@ -1,9 +1,6 @@
-import { formatKg, formatPct, isKilogram, rateToPct } from '@iplik/units';
+import { formatKgText, formatPct, rateToPct } from '@iplik/units';
 
-/** Sunucudan gelen kilo dizisi okunur biçime ("1.982,5 kg"); biçimi bilinmeyen olduğu gibi yazılır. */
-export function formatKgText(value: string): string {
-  return isKilogram(value) ? formatKg(value) : value;
-}
+export { formatKgText };
 
 /** İşaretli hareket kilosu: "-100.000" → "−100 kg", "+" işareti yok. */
 export function formatSignedKg(value: string): string {

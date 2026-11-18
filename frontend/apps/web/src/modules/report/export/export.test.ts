@@ -141,7 +141,7 @@ describe('tablolar ve biçim', () => {
   });
 
   it('metin hücreleri Türkçe biçimlenir', () => {
-    expect(formatCell({ kind: 'kg', value: 1234.5 })).toBe('1.234,500 kg');
+    expect(formatCell({ kind: 'kg', value: 1234.5 })).toBe('1.234,5 kg');
     expect(formatCell({ kind: 'percent', value: 0.5 })).toBe('%50,00');
     expect(formatCell({ kind: 'count', value: 3 })).toBe('3');
   });

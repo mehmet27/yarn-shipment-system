@@ -3,6 +3,7 @@ import type { Kilogram } from './kilogram';
 import {
   calculateNetKg,
   formatKg,
+  formatKgNumber,
   isZeroKg,
   formatKgText,
   formatSignedKg,
@@ -79,5 +80,23 @@ describe('isZeroKg', () => {
     expect(isZeroKg('12.500')).toBe(false);
     expect(isZeroKg('-3.000')).toBe(false);
     expect(isZeroKg('abc')).toBe(false);
+  });
+});
+
+describe('tek kilo biçimi', () => {
+  it.each([
+    ['264.500', '264,5 kg'],
+    ['2143.814', '2.143,814 kg'],
+    ['700.000', '700 kg'],
+    ['3', '3 kg'],
+    ['264.500 kg', '264,5 kg'],
+    ['-12.500', '−12,5 kg'],
+  ])('formatKgText "%s" → "%s"', (input, expected) => {
+    expect(formatKgText(input)).toBe(expected);
+  });
+
+  it('formatKgNumber sayıyı da aynı biçimle yazar', () => {
+    expect(formatKgNumber(1234.5)).toBe('1.234,5 kg');
+    expect(formatKgNumber('700.000')).toBe('700 kg');
   });
 });

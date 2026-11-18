@@ -24,7 +24,7 @@ export function formatFactValue(t: Translate, value: string | undefined): string
       (key, index) => `${t(key)} ${formatKgText(weighing[index + 1] ?? '')}`,
     ).join(' · ');
   }
-  return value.includes('.') ? formatKgText(value) : value;
+  return value.includes('.') || /\skg$/i.test(value) ? formatKgText(value) : value;
 }
 
 /** Beklenen/gerçek değer özeti; ikisi de yoksa boş. */

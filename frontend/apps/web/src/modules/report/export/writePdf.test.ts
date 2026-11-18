@@ -48,7 +48,7 @@ describe('buildPdfDefinition', () => {
   it('sayılar tr-TR biçimli ve sağa hizalıdır', () => {
     const row = bodyOf()[1];
 
-    expect(row?.map((cell) => cell.text)).toEqual(['Çağrı Örme', '1.234,500 kg', '%4,03', '2']);
+    expect(row?.map((cell) => cell.text)).toEqual(['Çağrı Örme', '1.234,5 kg', '%4,03', '2']);
     expect(row?.map((cell) => cell.alignment)).toEqual(['left', 'right', 'right', 'right']);
   });
 

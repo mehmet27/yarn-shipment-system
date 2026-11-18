@@ -2,6 +2,7 @@ export type { Kilogram } from './kilogram';
 export {
   calculateNetKg,
   formatKg,
+  formatKgNumber,
   formatKgText,
   formatSignedKg,
   isKilogram,

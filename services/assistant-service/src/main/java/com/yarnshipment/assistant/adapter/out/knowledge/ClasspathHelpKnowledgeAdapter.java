@@ -15,7 +15,8 @@ import org.springframework.stereotype.Component;
 /**
  * Yardım dokümanlarını paketin {@code help/} klasöründen okur. Dosyalar derleme sırasında {@code docs/} klasöründen
  * kopyalanır (assistant-service/pom.xml); böylece asistan ile doküman ayrı ayrı eskimez. Metin ilk kullanımda bir kez
- * okunur ve hep aynı sırada birleştirilir; sıra ya da içerik değişirse önbellek boşa gider.
+ * okunur ve hep aynı sırada birleştirilir; sonuna rollerin güncel yetkileri koddan eklenir ({@link RoleGuide}).
+ * sıra ya da içerik değişirse önbellek boşa gider.
  */
 @Component
 final class ClasspathHelpKnowledgeAdapter implements HelpKnowledgePort {
@@ -42,7 +43,7 @@ final class ClasspathHelpKnowledgeAdapter implements HelpKnowledgePort {
             Arrays.stream(resources)
                     .sorted(Comparator.comparing(resource -> String.valueOf(resource.getFilename())))
                     .forEach(resource -> append(text, resource));
-            return text.toString();
+            return text.append(RoleGuide.describe()).toString();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

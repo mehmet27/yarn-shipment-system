@@ -29,7 +29,6 @@ public enum Permission implements GrantedAuthority {
     EVIDENCE_VIEW(AccessType.READ),
     EVIDENCE_INVALIDATE(AccessType.WRITE),
 
-    CORRECTION_CREATE(AccessType.WRITE),
     QUALITY_CLAIM_OPEN(AccessType.WRITE),
     DISCREPANCY_VIEW(AccessType.READ),
     DISCREPANCY_RESOLVE(AccessType.WRITE),

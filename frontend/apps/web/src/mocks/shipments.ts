@@ -54,7 +54,7 @@ export function allowedActionsOf(status: ShipmentStatus): InternalShipmentView['
     case 'AWAITING_DELIVERY':
       return ['COMPLETE', 'CANCEL'];
     case 'COMPLETED':
-      return ['OPEN_QUALITY_CLAIM', 'CREATE_CORRECTION'];
+      return ['OPEN_QUALITY_CLAIM'];
     case 'CANCELLED':
       return [];
   }

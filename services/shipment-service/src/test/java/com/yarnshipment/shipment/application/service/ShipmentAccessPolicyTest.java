@@ -44,17 +44,14 @@ class ShipmentAccessPolicyTest {
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.DRAFT), manager))
                 .containsExactlyInAnyOrder(
                         ShipmentAction.CANCEL,
-                        ShipmentAction.CREATE_CORRECTION,
                         ShipmentAction.UPDATE_SHIPMENT_DATE,
                         ShipmentAction.UPDATE_TRANSPORT);
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.WEIGHT_MISMATCH), manager))
                 .containsExactlyInAnyOrder(
                         ShipmentAction.CANCEL,
-                        ShipmentAction.RESOLVE_WEIGHT_MISMATCH,
-                        ShipmentAction.CREATE_CORRECTION);
+                        ShipmentAction.RESOLVE_WEIGHT_MISMATCH);
         assertThat(policy.allowedActions(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY), manager))
-                .containsExactlyInAnyOrder(
-                        ShipmentAction.COMPLETE, ShipmentAction.CANCEL, ShipmentAction.CREATE_CORRECTION);
+                .containsExactlyInAnyOrder(ShipmentAction.COMPLETE, ShipmentAction.CANCEL);
     }
 
     @Test
@@ -79,12 +76,12 @@ class ShipmentAccessPolicyTest {
     }
 
     @Test
-    @DisplayName("Müdür tamamlanmış sevkiyatta düzeltme kaydı oluşturur ama kalite itirazı açamaz")
-    void shouldAllowManagerOnlyCorrectionWhenCompleted() {
+    @DisplayName("Müdür tamamlanmış sevkiyatta kalite itirazı açamaz ve başka işlem yapamaz")
+    void shouldAllowManagerNoActionsWhenCompleted() {
         // when / then
         assertThat(policy.allowedActions(
                         TestShipments.shipment(ShipmentStatus.COMPLETED), TestTokens.mfaActor("manager")))
-                .containsExactly(ShipmentAction.CREATE_CORRECTION);
+                .isEmpty();
     }
 
     @Test

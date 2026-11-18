@@ -7,7 +7,6 @@ import type {
   WeightDecisionKind,
 } from '@iplik/api-client';
 import { isKilogram, sumKg } from '@iplik/units';
-import { resetMockCorrections } from './corrections';
 import { resetMockClaims } from './claims';
 import { resetMockLoginAccounts } from './loginAccounts';
 import { resetMockLots } from './lots';
@@ -139,16 +138,6 @@ export function updateMockRecipe(
   );
 }
 
-/** Admin düzeltmesi: çıkış tartısı yeni değeriyle değişir (eskisi düzeltme kaydında kalır). */
-export function patchMockShipment(
-  shipmentId: string,
-  patch: Pick<Partial<InternalShipmentView>, 'dispatchWeighing'>,
-): void {
-  shipments = shipments.map((shipment) =>
-    shipment.shipmentId === shipmentId ? { ...shipment, ...patch } : shipment,
-  );
-}
-
 /** Sevkiyat oluşturma: yeni kayıt DRAFT durumunda ve en başa eklenir. */
 export function addMockShipment(request: CreateShipmentRequest): InternalShipmentView {
   const no = String(shipments.length + 1).padStart(4, '0');
@@ -199,7 +188,6 @@ export function assignedMockBagWeights(shipmentId: string): readonly string[] {
 
 export function resetMockStore(): void {
   resetMasterData();
-  resetMockCorrections();
   resetMockClaims();
   resetMockLots();
   resetMockSettlements();

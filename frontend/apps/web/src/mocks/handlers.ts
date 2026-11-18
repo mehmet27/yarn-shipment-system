@@ -26,7 +26,6 @@ import { bagMismatchResponse } from './bagChecks';
 import { createAuditHandlers } from './auditHandlers';
 import { createBrandingHandlers } from './brandingHandlers';
 import { createRolePermissionHandlers } from './rolePermissionHandlers';
-import { createCorrectionHandlers } from './correctionHandlers';
 import { createClaimHandlers } from './claimHandlers';
 import { createDiscrepancyHandlers } from './discrepancyHandlers';
 import { createEvidenceHandlers } from './evidenceHandlers';
@@ -413,7 +412,6 @@ export function createHandlers(role: Role) {
     ...createLoginAccountHandlers(createMockUser(role).permissions),
     ...createEvidenceHandlers(createMockUser(role).permissions),
     ...createDiscrepancyHandlers(createMockUser(role).permissions, createMockUser(role).userId),
-    ...createCorrectionHandlers(createMockUser(role).permissions, createMockUser(role).userId),
     ...createClaimHandlers(role),
     ...createAuditHandlers(createMockUser(role).permissions),
     ...createReportHandlers(createMockUser(role).permissions),

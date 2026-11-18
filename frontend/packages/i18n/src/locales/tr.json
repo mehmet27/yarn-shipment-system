@@ -181,14 +181,12 @@
         "bags": "Çuvallar",
         "evidence": "Kanıtlar",
         "history": "Geçmiş",
-        "corrections": "Düzeltmeler",
         "claims": "Kalite itirazı",
         "fabric": "Kumaş girişi",
         "yarn": "İplik dönüşü",
         "fire": "Fire dosyası"
       },
       "tabHints": {
-        "corrections": "Tartı kilosunda hata varsa buradan, gerekçesiyle düzeltilir.",
         "claims": "Teslim alınan kumaşta kalite sorunu varsa buradan itiraz açılır.",
         "fabric": "Fasoncudan kumaş gelince kilosunu buraya girin.",
         "fire": "Gönderilen iplik ile gelen kumaşın farkı ve faturalanacak kilo burada hesaplanır."
@@ -264,25 +262,6 @@
           "unknown": "Çuvallar eklenemedi. Lütfen tekrar deneyin.",
           "SHIPMENT_NOT_DUE": "Sevkiyat tarihi gelmeden çuval eklenemez."
         }
-      }
-    },
-    "correction": {
-      "intro": "Tamamlanıp kilitlenen sevkiyatta kayıtlar değişmez; yanlış girilen çıkış tartısını yalnızca Admin gerekçe yazarak düzeltir. Eski değer silinmez, burada kalır.",
-      "empty": "Bu sevkiyatta düzeltme yok.",
-      "target": "Ne düzeltilecek?",
-      "targets": {
-        "DISPATCH_WEIGHING": "Çıkış tartısı"
-      },
-      "reason": "Gerekçe",
-      "submit": "Düzeltmeyi kaydet",
-      "errors": {
-        "targetRequired": "Neyin düzeltileceğini seçin.",
-        "invalidKg": "Brüt ve darayı kilo olarak girin, ör. 1.982,5.",
-        "tareExceedsGross": "Dara brütten büyük olamaz.",
-        "reasonRequired": "Gerekçe yazın.",
-        "INVALID_CORRECTION": "Düzeltme kaydedilemedi: yeni değer eskisiyle aynı olabilir ya da kayıt artık düzeltilemiyor.",
-        "CORRECTION_CONFLICT": "Kayıt bu arada değişti. Sayfayı yenileyip tekrar deneyin.",
-        "unknown": "Düzeltme kaydedilemedi. Lütfen tekrar deneyin."
       }
     },
     "complete": {
@@ -1601,7 +1580,7 @@
     "groups": {
       "masterData": "Tanımlar ve partiler",
       "shipment": "Sevkiyat",
-      "evidence": "Kanıt ve düzeltme",
+      "evidence": "Kanıt",
       "quality": "Kalite ve uyuşmazlık",
       "stock": "Stok ve bakiye",
       "reporting": "Rapor ve denetim",
@@ -1624,7 +1603,6 @@
       "EVIDENCE_UPLOAD_CLAIM": "İtiraz kanıtı yükler",
       "EVIDENCE_VIEW": "Kanıtları görür",
       "EVIDENCE_INVALIDATE": "Kanıtı geçersiz kılar",
-      "CORRECTION_CREATE": "Kayıt düzeltmesi yapar",
       "QUALITY_CLAIM_OPEN": "Kalite itirazı açar",
       "DISCREPANCY_VIEW": "Uyuşmazlıklar ekranını görür",
       "DISCREPANCY_RESOLVE": "Uyuşmazlığı karara bağlar",

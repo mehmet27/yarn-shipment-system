@@ -32,7 +32,6 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
       'EVIDENCE_UPLOAD_DISPATCH',
       'EVIDENCE_UPLOAD_CLAIM',
       'EVIDENCE_INVALIDATE',
-      'CORRECTION_CREATE',
     ],
   },
   {

@@ -27,7 +27,6 @@ class RolePermissionMatrixTest {
                         Permission.SHIPMENT_CANCEL,
                         Permission.SHIPMENT_COMPLETE,
                         Permission.EVIDENCE_INVALIDATE,
-                        Permission.CORRECTION_CREATE,
                         Permission.DISCREPANCY_DECIDE,
                         Permission.FIRE_RATE_EDIT,
                         Permission.INVOICE_MARK,

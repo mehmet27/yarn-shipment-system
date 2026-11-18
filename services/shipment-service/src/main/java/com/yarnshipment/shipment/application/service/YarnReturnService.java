@@ -5,6 +5,7 @@ import com.yarnshipment.shipment.application.port.in.fabric.ListYarnReturnsUseCa
 import com.yarnshipment.shipment.application.port.in.fabric.RecordYarnReturnCommand;
 import com.yarnshipment.shipment.application.port.in.fabric.RecordYarnReturnUseCase;
 import com.yarnshipment.shipment.application.port.in.fabric.ShipmentRecordsQuery;
+import com.yarnshipment.shipment.application.port.out.ledger.BalanceQueryPort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort;
 import com.yarnshipment.shipment.application.port.out.ledger.YarnReturnPort;
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
@@ -15,8 +16,10 @@ import com.yarnshipment.shipment.domain.fire.FireSettlementNotFoundException;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,13 +34,19 @@ public class YarnReturnService implements RecordYarnReturnUseCase, ListYarnRetur
     private final ScopedShipmentLoader shipments;
     private final YarnReturnPort yarnReturns;
     private final FireSettlementPort settlements;
+    private final BalanceQueryPort balances;
     private final Clock clock;
 
     public YarnReturnService(
-            ScopedShipmentLoader shipments, YarnReturnPort yarnReturns, FireSettlementPort settlements, Clock clock) {
+            ScopedShipmentLoader shipments,
+            YarnReturnPort yarnReturns,
+            FireSettlementPort settlements,
+            BalanceQueryPort balances,
+            Clock clock) {
         this.shipments = shipments;
         this.yarnReturns = yarnReturns;
         this.settlements = settlements;
+        this.balances = balances;
         this.clock = clock;
     }
 
@@ -62,6 +71,7 @@ public class YarnReturnService implements RecordYarnReturnUseCase, ListYarnRetur
                 command.waybillNo(),
                 clock.instant(),
                 command.actor().userId());
+        requireWithinSentYarn(record);
         requireWithinSentKg(settlement, record);
         yarnReturns.save(record);
         return record;
@@ -72,6 +82,23 @@ public class YarnReturnService implements RecordYarnReturnUseCase, ListYarnRetur
     public List<YarnReturn> listYarnReturns(ShipmentRecordsQuery query) {
         shipments.load(query.actor(), query.shipmentId(), Permission.SHIPMENT_VIEW);
         return yarnReturns.findByShipment(query.shipmentId());
+    }
+
+    /** Dönen iplik gönderilen iplikler arasından olmalı; o ipliğin gönderilen kilosunu (öncekiler düşülerek) aşamaz. */
+    private void requireWithinSentYarn(YarnReturn record) {
+        Map<String, BigDecimal> sent = balances.findDispatchedByYarn(record.shipmentId());
+        BigDecimal sentOfYarn = sent.get(record.yarnType());
+        if (sentOfYarn == null) {
+            throw new InvalidLedgerInputException("yarnType");
+        }
+        BigDecimal returned = yarnReturns.findByShipment(record.shipmentId()).stream()
+                .filter(earlier -> earlier.direction() == ReturnDirection.RETURN)
+                .filter(earlier -> earlier.yarnType().equals(record.yarnType()))
+                .map(YarnReturn::netKg)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (returned.add(record.netKg()).compareTo(sentOfYarn) > 0) {
+            throw new InvalidLedgerInputException("netKg");
+        }
     }
 
     /** Dönen iplik toplamı gönderilen kiloyu (haklı itiraz düşülmüş) aşamaz. */

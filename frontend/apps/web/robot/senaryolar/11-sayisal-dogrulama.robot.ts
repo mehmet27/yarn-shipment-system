@@ -195,10 +195,7 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
   await depo.adim('iplik dönüşü 10 kg: bakiye 90, fire tabanı 90', async () => {
     await depo.sayfa.goto(`/panel/sevkiyat/${id}`);
     await depo.sayfa.getByRole('tab', { name: 'İplik dönüşü', exact: true }).click();
-    await depo.sayfa
-      .getByLabel(/İplik cinsi/)
-      .first()
-      .fill(iplik);
+    // Sevkiyatta tek iplik gönderildiği için iplik cinsi kendiliğinden seçili gelir.
     await depo.sayfa.getByLabel(/Net kilo/).fill('10');
     await depo.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
     await depo.sayfa.waitForTimeout(1500);

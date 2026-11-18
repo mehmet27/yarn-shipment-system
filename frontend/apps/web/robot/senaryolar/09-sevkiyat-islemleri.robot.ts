@@ -235,10 +235,7 @@ test('İplik dönüşü, düzeltme ve kanıt geçersiz kılma', async ({ giris }
         'iplik dönüşü formunda Yön seçimi olmamalı',
         (await depo.sayfa.getByLabel('Yön', { exact: true }).count()) === 0,
       );
-      await depo.sayfa
-        .getByLabel(/İplik cinsi/)
-        .first()
-        .fill(iplik);
+      // Sevkiyatta tek iplik gönderildiği için iplik cinsi kendiliğinden seçili gelir.
       await depo.sayfa.getByLabel(/Net kilo/).fill('5000');
       await depo.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
       const mesajlar = await depo.mesajlar();

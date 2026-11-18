@@ -3,14 +3,11 @@ package com.yarnshipment.discrepancy.adapter.in.web;
 import com.yarnshipment.common.security.Actor;
 import com.yarnshipment.common.security.Permission;
 import com.yarnshipment.discrepancy.adapter.in.web.api.model.DiscrepancyStatus;
-import com.yarnshipment.discrepancy.adapter.in.web.api.model.InspectionKind;
-import com.yarnshipment.discrepancy.adapter.in.web.api.model.InspectionView;
 import com.yarnshipment.discrepancy.adapter.in.web.api.model.QualityClaimView;
 import com.yarnshipment.discrepancy.adapter.in.web.api.model.Resolution;
 import com.yarnshipment.discrepancy.adapter.in.web.api.model.ShipmentClaimsView;
 import com.yarnshipment.discrepancy.application.port.in.claim.ClaimFile;
 import com.yarnshipment.discrepancy.application.port.in.claim.ShipmentClaims;
-import com.yarnshipment.discrepancy.domain.claim.Inspection;
 import com.yarnshipment.discrepancy.domain.claim.QualityClaim;
 import com.yarnshipment.discrepancy.domain.model.Discrepancy;
 import java.math.BigDecimal;
@@ -43,7 +40,6 @@ final class QualityClaimViews {
     static QualityClaimView toView(ClaimFile file, Actor actor) {
         QualityClaim claim = file.claim();
         Discrepancy discrepancy = file.discrepancy();
-        boolean mayInspect = discrepancy.status().isUnresolved() && actor.hasPermission(Permission.DISCREPANCY_RESOLVE);
         QualityClaimView view = new QualityClaimView()
                 .id(claim.id())
                 .discrepancyId(claim.discrepancyId())
@@ -56,41 +52,10 @@ final class QualityClaimViews {
                 .evidenceIds(claim.evidenceIds())
                 .openedBy(claim.opening().openedBy())
                 .openedAt(utc(claim.opening().openedAt()))
-                .deadlineAt(utc(claim.opening().deadlineAt()))
-                .inspections(file.inspections().stream()
-                        .map(inspection -> toView(inspection, mayInspect))
-                        .toList())
-                .allowedActions(
-                        mayInspect ? List.of(QualityClaimView.AllowedActionsEnum.REQUEST_INSPECTION) : List.of());
+                .deadlineAt(utc(claim.opening().deadlineAt()));
         Discrepancy.Decision decision = discrepancy.decision();
         if (decision != null) {
             view.resolution(Resolution.fromValue(decision.resolution().name())).resolutionNote(decision.note());
-        }
-        return view;
-    }
-
-    /** Yeni istenen ya da sonucu girilen kontrol; itiraz bu noktada açık olduğu için eylem yalnızca izne bağlıdır. */
-    static InspectionView toView(Inspection inspection, Actor actor) {
-        return toView(inspection, actor.hasPermission(Permission.DISCREPANCY_RESOLVE));
-    }
-
-    private static InspectionView toView(Inspection inspection, boolean mayInspect) {
-        InspectionView view = new InspectionView()
-                .id(inspection.id())
-                .kind(InspectionKind.fromValue(inspection.kind().name()))
-                .requestNote(inspection.request().note())
-                .requestedBy(inspection.request().requestedBy())
-                .requestedAt(utc(inspection.request().requestedAt()))
-                .allowedActions(
-                        mayInspect && inspection.isPending()
-                                ? List.of(InspectionView.AllowedActionsEnum.RECORD_RESULT)
-                                : List.of());
-        Inspection.Result result = inspection.result();
-        if (result != null) {
-            view.result(result.summary())
-                    .resultEvidenceId(result.evidenceId())
-                    .performedBy(result.recordedBy())
-                    .performedAt(utc(result.recordedAt()));
         }
         return view;
     }

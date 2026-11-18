@@ -3,21 +3,18 @@ package com.yarnshipment.discrepancy;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRejectedException;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRejection;
 import com.yarnshipment.discrepancy.domain.claim.ClaimTarget;
-import com.yarnshipment.discrepancy.domain.claim.Inspection;
-import com.yarnshipment.discrepancy.domain.claim.InspectionKind;
 import com.yarnshipment.discrepancy.domain.claim.QualityClaim;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/** Testlerde kullanılan örnek itiraz hedefi, itiraz ve kontroller; lokasyonu {@link TestTokens#SITE_ID}. */
+/** Testlerde kullanılan örnek itiraz hedefi ve itiraz; lokasyonu {@link TestTokens#SITE_ID}. */
 public final class TestClaims {
 
     public static final UUID CLAIM_ID = UUID.fromString("0192f0a0-0000-7000-8000-0000000c0001");
-    public static final UUID INSPECTION_ID = UUID.fromString("0192f0a0-0000-7000-8000-0000000c0002");
     public static final UUID PHOTO = UUID.fromString("0192f0a0-0000-7000-8000-0000000c0003");
-    public static final UUID LAB_DOCUMENT = UUID.fromString("0192f0a0-0000-7000-8000-0000000c0004");
+    public static final UUID OTHER_DOCUMENT = UUID.fromString("0192f0a0-0000-7000-8000-0000000c0004");
     public static final UUID ACTOR = UUID.fromString("0192f0a0-0000-7000-8000-0000000c0005");
     /** Tamamlanma cuma; itiraz süresi çarşamba 12:00'ye (İstanbul) kadar. */
     public static final Instant RECEIVED_AT = TestComparisons.RECEIVED_AT;
@@ -48,16 +45,6 @@ public final class TestClaims {
                 new BigDecimal("120.500"),
                 null,
                 List.of(PHOTO));
-    }
-
-    public static Inspection pending(InspectionKind kind) {
-        return new Inspection(
-                INSPECTION_ID,
-                TestDiscrepancies.SHIPMENT,
-                TestDiscrepancies.ID,
-                kind,
-                new Inspection.Request(null, ACTOR, WITHIN_WINDOW),
-                null);
     }
 
     /** Çağrının hangi itiraz kuralıyla reddedildiği; reddedilmezse test düşer. */

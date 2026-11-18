@@ -1,10 +1,5 @@
 import type { Kilogram } from '@iplik/units';
-import type {
-  InspectionKind,
-  InspectionView,
-  OpenQualityClaimRequest,
-  QualityClaimView,
-} from '@iplik/api-client';
+import type { OpenQualityClaimRequest, QualityClaimView } from '@iplik/api-client';
 
 const DAY_MS = 86_400_000;
 const CLAIM_WINDOW_DAYS = 3;
@@ -35,7 +30,6 @@ function seed({ shipmentId, discrepancyId, claimedKg }: Seed, index: number): Qu
     openedBy: 'user-quality',
     openedAt,
     deadlineAt: new Date(Date.parse(openedAt) + 5 * DAY_MS).toISOString(),
-    inspections: [],
   };
 }
 
@@ -69,37 +63,7 @@ export function addMockClaim(request: OpenQualityClaimRequest, actorId: string):
     openedBy: actorId,
     openedAt,
     deadlineAt: new Date(Date.parse(openedAt) + 5 * DAY_MS).toISOString(),
-    inspections: [],
   };
   claims.push(claim);
   return claim;
-}
-
-export type InspectionRequest = { kind: InspectionKind; note?: string };
-
-export function addMockInspection(
-  claim: QualityClaimView,
-  request: InspectionRequest,
-  actorId: string,
-): InspectionView {
-  const inspection: InspectionView = {
-    id: `${claim.id}-insp-${String(claim.inspections.length)}`,
-    kind: request.kind,
-    ...(request.note === undefined ? {} : { requestNote: request.note }),
-    requestedBy: actorId,
-    requestedAt: new Date().toISOString(),
-  };
-  claim.inspections.push(inspection);
-  return inspection;
-}
-
-export function recordMockResult(
-  inspection: InspectionView,
-  result: { result: string; evidenceId?: string },
-  actorId: string,
-): void {
-  inspection.result = result.result;
-  if (result.evidenceId !== undefined) inspection.resultEvidenceId = result.evidenceId;
-  inspection.performedBy = actorId;
-  inspection.performedAt = new Date().toISOString();
 }

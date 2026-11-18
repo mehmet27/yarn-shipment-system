@@ -91,7 +91,7 @@ final class RoleGuide {
     private static void qualityAndReportLabels(Map<Permission, String> labels) {
         labels.put(Permission.QUALITY_CLAIM_OPEN, "Kalite itirazı açar");
         labels.put(Permission.DISCREPANCY_VIEW, "Uyuşmazlıkları görür");
-        labels.put(Permission.DISCREPANCY_RESOLVE, "Uyuşmazlığı karara bağlar, numune ve laboratuvar kontrolü ister");
+        labels.put(Permission.DISCREPANCY_RESOLVE, "Uyuşmazlığı üstlenir (atar)");
         labels.put(Permission.DISCREPANCY_DECIDE, "Kalite itirazını haklı ya da haksız diye karara bağlar");
         labels.put(Permission.AUDIT_VIEW, "Denetim kaydını görür");
         labels.put(Permission.REPORT_VIEW, "Raporları görür");

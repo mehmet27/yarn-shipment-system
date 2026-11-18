@@ -104,7 +104,7 @@ Excel'de hareketler elle toplandığı için bakiye geç ve hatalı çıkıyor, 
 |---|---|---|
 | **Müdür** (`MANAGER`) | Fason işlerinden sorumlu müdür | Sevkiyat açar, reçeteyi ve fire oranını girer; kantar uyuşmazlığında karar verir (iptal / çuval ekle-çıkar); irsaliyeyi yükleyip tamamlar; kumaş girişini ve iplik dönüşünü onaylar **[Yapılacak]**; "fatura edildi" işaretler **[Yapılacak]**; raporları görür |
 | **Depo** (`WAREHOUSE`) | Merkez depo sorumlusu | Çuvalları sevkiyata atar, kantar fişiyle çıkış tartısını girer; eksik gönderimde neden yazar **[Yapılacak]** |
-| **Kalite** (`QUALITY`) | Depo-kalite ve dışarı-kalite | Kalite itirazı açar, numune/lab sonucunu girer; karar veremez. Kalite itirazını yalnızca müdür haklı / haksız diye kapatır (haklıda fatura Faturalanacaklar'dan girilir); gelen kumaşı kaydeder **[Yapılacak]** |
+| **Kalite** (`QUALITY`) | Depo-kalite ve dışarı-kalite | Kalite itirazı açar; karar veremez. Kalite itirazını yalnızca müdür haklı / haksız diye kapatır (haklıda fatura Faturalanacaklar'dan girilir); gelen kumaşı kaydeder **[Yapılacak]** |
 | **Genel müdür** **[Yapılacak]** | Üst yönetim | Yalnızca rapor ve bakiye görür; işlem yapmaz |
 | **Admin** (`ADMIN`) | Sistem yöneticisi | Tanımlar, kullanıcılar, ayarlar, gerekçeli düzeltme, kanıt geçersiz kılma |
 | ~~Şoför~~ | — | **Kaldırıldı.** Şoför ve araç yalnızca sevkiyatın üzerinde bilgi olarak yazılır |
@@ -327,8 +327,8 @@ Bkz. Bölüm 8. Fire **sevkiyat** üzerinden hesaplanır (S2); oran sevkiyatta s
 
 - Kalite (geçiş döneminde fasoncu hesabı da), **tamamlanmış** sevkiyatın çuvalları için itiraz açar; açıklama ve en
   az bir fotoğraf zorunludur. Pencere tamamlanmadan itibaren 3 iş günüdür.
-- Her itiraz Kırmızı bir kalite uyuşmazlığı açar; kalite numune ya da lab kontrolü ister, sonucu girer
-  (lab sonucunda belge zorunlu), uyuşmazlık müdür tarafından `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır.
+- Her itiraz Kırmızı bir kalite uyuşmazlığı açar; numune ya da laboratuvar adımı yoktur;
+  uyuşmazlık müdür tarafından `CLAIM_JUSTIFIED` / `CLAIM_UNJUSTIFIED` ile karara bağlanır.
 
 **[Bugün] Kumaş girişi şartı:** İtiraz yalnızca girilmiş kumaş için açılır. İtiraz edilebilecek kilo, sevkiyata
 girilen kumaştan haksız bulunmamış itirazların kilosu çıkarılarak bulunur; kumaş girişi yoksa itiraz açılamaz
@@ -471,7 +471,7 @@ Kilolar 3 ondalıkla (gram) saklanır ve hesaplanır; ekranda Türkçe biçimde 
 | `md_*` | Ana veri | fasoncu, şoför, araç, lokasyon, ürün, kalite sınıfı |
 
 Diğer servisler: `bag` (çuval, lot, rezervasyon), `evidence` (kanıt, `WAYBILL` türü dahil, kantar fişi okuma),
-`discrepancy` (uyuşmazlık, kalite itirazı, numune/lab; `comparison_input` salt okunur geçmiş), `reporting`
+`discrepancy` (uyuşmazlık, kalite itirazı; `comparison_input` salt okunur geçmiş), `reporting`
 (okuma modeli), `audit` (hash zinciri).
 
 ### 9.2 Eklenenler [Bugün]
@@ -584,7 +584,7 @@ Bu sürümle birlikte gelen değişiklik (`claude/project-thread-guqkg0` dalı) 
 ### 13.1 Korunanlar
 
 Giriş/Keycloak, roller ve izin matrisi, tanımlar, sevkiyat açma, çuval atama, çıkış tartısı ve kantar fişi okuma,
-iptal, gerekçeli düzeltme, kanıt yükleme altyapısı, kalite itirazı ve numune/lab, uyuşmazlık yönetimi, denetim
+iptal, gerekçeli düzeltme, kanıt yükleme altyapısı, kalite itirazı, uyuşmazlık yönetimi, denetim
 zinciri, rapor servisi iskeleti, Excel/PDF dışa aktarma, ön yüz kabuğu ve kurulum.
 
 ### 13.2 Geçiş dönemi (sonraki PR'larda kaldırılacak)

@@ -32,7 +32,7 @@ class OpenQualityClaimServiceTest {
 
     private final ClaimPorts ports = new ClaimPorts();
     private final OpenQualityClaimService open = new OpenQualityClaimService(
-            ports.claims, ports.discrepancies, ports.inspections, ports.evidence, ports.scopeGuard, ClaimPorts.CLOCK);
+            ports.claims, ports.discrepancies, ports.evidence, ports.scopeGuard, ClaimPorts.CLOCK);
 
     @Test
     @DisplayName("Kalite tamamlanmış sevkiyata fotoğraflı itiraz açar; uyuşmazlık vadesi açılıştan sonradır")
@@ -71,7 +71,7 @@ class OpenQualityClaimServiceTest {
 
         assertThat(rejectionOf("2000.001", TestClaims.PHOTO)).isEqualTo(ClaimRejection.CLAIM_EXCEEDS_SHIPMENT_WEIGHT);
         assertThat(rejectionOf("10", foreign)).isEqualTo(ClaimRejection.EVIDENCE_INVALID);
-        assertThat(rejectionOf("10", TestClaims.LAB_DOCUMENT)).isEqualTo(ClaimRejection.EVIDENCE_INVALID);
+        assertThat(rejectionOf("10", TestClaims.OTHER_DOCUMENT)).isEqualTo(ClaimRejection.EVIDENCE_INVALID);
         when(ports.claims.findTarget(SHIPMENT)).thenReturn(Optional.empty());
         assertThat(rejectionOf("10", TestClaims.PHOTO)).isEqualTo(ClaimRejection.NOT_AVAILABLE);
         verify(ports.claims, never()).saveClaim(any());

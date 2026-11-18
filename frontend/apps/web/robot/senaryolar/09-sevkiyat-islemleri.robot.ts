@@ -283,7 +283,7 @@ test('İplik dönüşü ve kanıt geçersiz kılma', async ({ giris }) => {
   });
 });
 
-test('Uyuşmazlık: itiraz, lab sonucu ve karar', async ({ giris }) => {
+test('Uyuşmazlık: itiraz ve karar', async ({ giris }) => {
   const depo = await giris('depo');
   const mudur = await giris('mudur');
   const kalite = await giris('kalite');
@@ -352,33 +352,17 @@ test('Uyuşmazlık: itiraz, lab sonucu ve karar', async ({ giris }) => {
     },
   );
 
-  await kalite.adim('kalite: lab sonucunu girer', async () => {
+  await kalite.adim('kalite: uyuşmazlığı üstlenir; laboratuvar adımı yoktur', async () => {
     const no = (await kalite.api<{ shipmentNo: string }>(`/api/v1/shipments/${id}`)).shipmentNo;
     await kalite.sayfa.goto('/panel/uyusmazliklar');
     await kalite.sayfa.getByRole('link', { name: new RegExp(no) }).click();
     await kalite.sayfa.getByRole('button', { name: 'Bana ata' }).click();
     await expect(kalite.sayfa.getByText('Bu uyuşmazlık sizde.')).toBeVisible();
-    await kalite.sayfa.getByLabel(/Talep notu/).fill('Robot: numune');
-    await kalite.sayfa.getByRole('button', { name: 'Kontrol iste' }).click();
-    await kalite.sayfa.waitForTimeout(1200);
-    await kalite.sayfa
-      .getByLabel(/^Sonuç/)
-      .first()
-      .fill('Robot: leke doğrulandı');
-    await kalite.sayfa
-      .locator('input[type=file]')
-      .last()
-      .setInputFiles({
-        name: 'lab.jpg',
-        mimeType: 'image/jpeg',
-        buffer: await resim(kalite.sayfa, 11),
-      });
-    await kalite.sayfa.waitForTimeout(1500);
-    await kalite.sayfa.getByRole('button', { name: 'Sonucu kaydet' }).first().click();
-    await kalite.sayfa.waitForTimeout(1200);
+    await expect(kalite.sayfa.getByRole('button', { name: 'Kontrol iste' })).toHaveCount(0);
+    await expect(kalite.sayfa.getByLabel(/Talep notu/)).toHaveCount(0);
   });
 
-  await mudur.adim('müdür: sonuç girildikten sonra haklı kararını verir', async () => {
+  await mudur.adim('müdür: haklı kararını verir', async () => {
     await mudur.sayfa.goto(kalite.sayfa.url());
     await sec(mudur.sayfa, /^Karar/, 'Haklı');
     await expect(mudur.sayfa.getByTestId('resolution-effect')).toContainText(

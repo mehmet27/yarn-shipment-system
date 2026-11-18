@@ -5,7 +5,6 @@ import com.yarnshipment.discrepancy.application.port.in.claim.GetShipmentClaimsQ
 import com.yarnshipment.discrepancy.application.port.in.claim.GetShipmentClaimsUseCase;
 import com.yarnshipment.discrepancy.application.port.in.claim.ShipmentClaims;
 import com.yarnshipment.discrepancy.application.port.out.DiscrepancyQueryPort;
-import com.yarnshipment.discrepancy.application.port.out.InspectionPort;
 import com.yarnshipment.discrepancy.application.port.out.QualityClaimPort;
 import com.yarnshipment.discrepancy.domain.claim.ClaimTarget;
 import java.time.Clock;
@@ -23,13 +22,9 @@ public class GetShipmentClaimsService implements GetShipmentClaimsUseCase {
     private final Clock clock;
 
     public GetShipmentClaimsService(
-            QualityClaimPort claims,
-            DiscrepancyQueryPort discrepancies,
-            InspectionPort inspections,
-            ScopeGuard scopeGuard,
-            Clock clock) {
+            QualityClaimPort claims, DiscrepancyQueryPort discrepancies, ScopeGuard scopeGuard, Clock clock) {
         this.claims = claims;
-        this.access = new ClaimAccess(claims, discrepancies, inspections, scopeGuard);
+        this.access = new ClaimAccess(claims, discrepancies, scopeGuard);
         this.clock = clock;
     }
 

@@ -10,12 +10,9 @@ import com.yarnshipment.discrepancy.TestTokens;
 import com.yarnshipment.discrepancy.application.port.in.claim.ClaimFile;
 import com.yarnshipment.discrepancy.application.port.in.claim.GetShipmentClaimsUseCase;
 import com.yarnshipment.discrepancy.application.port.in.claim.OpenQualityClaimUseCase;
-import com.yarnshipment.discrepancy.application.port.in.claim.RecordInspectionResultUseCase;
-import com.yarnshipment.discrepancy.application.port.in.claim.RequestInspectionUseCase;
 import com.yarnshipment.discrepancy.application.port.in.claim.ShipmentClaims;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRejectedException;
 import com.yarnshipment.discrepancy.domain.claim.ClaimRejection;
-import com.yarnshipment.discrepancy.domain.claim.InspectionKind;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +31,6 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 class QualityClaimControllerTest {
 
     private static final String CLAIMS = "/api/v1/quality-claims";
-    private static final String INSPECTIONS = CLAIMS + "/" + TestClaims.CLAIM_ID + "/inspections";
     private static final String OPEN_BODY = "{\"shipmentId\":\"" + TestDiscrepancies.SHIPMENT
             + "\",\"description\":\"B kalite\",\"claimedKg\":\"120.5\",\"evidenceIds\":[\"" + TestClaims.PHOTO
             + "\"]}";
@@ -46,12 +42,6 @@ class QualityClaimControllerTest {
 
     @MockitoBean
     private OpenQualityClaimUseCase openQualityClaim;
-
-    @MockitoBean
-    private RequestInspectionUseCase requestInspection;
-
-    @MockitoBean
-    private RecordInspectionResultUseCase recordInspectionResult;
 
     @Autowired
     QualityClaimControllerTest(MockMvcTester mvc) {
@@ -68,11 +58,7 @@ class QualityClaimControllerTest {
         assertThat(created).bodyJson().extractingPath("$.discrepancyNo").isEqualTo("UY-SV-3-1");
         assertThat(created).bodyJson().extractingPath("$.claimedKg").isEqualTo("120.500");
         assertThat(created).bodyJson().doesNotHavePath("$.bagKeys");
-        assertThat(created)
-                .bodyJson()
-                .extractingPath("$.allowedActions")
-                .asArray()
-                .containsExactly("REQUEST_INSPECTION");
+        assertThat(created).bodyJson().doesNotHavePath("$.inspections");
 
         when(openQualityClaim.openQualityClaim(any()))
                 .thenThrow(new ClaimRejectedException(ClaimRejection.WINDOW_CLOSED, "test"));
@@ -141,37 +127,18 @@ class QualityClaimControllerTest {
     }
 
     @Test
-    @DisplayName("Kalite kontrol ister ve sonuç girer; sonucu girilmiş kontrol 409 alır")
-    void shouldRequestAndRecordInspection() {
-        when(requestInspection.requestInspection(any())).thenReturn(TestClaims.pending(InspectionKind.LAB));
-        when(recordInspectionResult.recordInspectionResult(any()))
-                .thenThrow(new ClaimRejectedException(ClaimRejection.INSPECTION_RECORDED, "test"));
-
-        MvcTestResult requested = post(INSPECTIONS, "{\"kind\":\"LAB\"}", quality());
-        assertThat(requested).hasStatus(HttpStatus.CREATED);
-        assertThat(requested).bodyJson().extractingPath("$.allowedActions[0]").isEqualTo("RECORD_RESULT");
-
-        MvcTestResult recorded =
-                post(INSPECTIONS + "/" + TestClaims.INSPECTION_ID + "/result", "{\"result\":\"aynı\"}", quality());
-        assertThat(recorded).hasStatus(HttpStatus.CONFLICT);
-        assertThat(recorded).bodyJson().extractingPath("$.code").isEqualTo("QUALITY_CLAIM_INSPECTION_RECORDED");
-    }
-
-    @Test
-    @DisplayName("Depo ve müdür kontrol isteyemez ve itiraz açamaz")
+    @DisplayName("Depo ve müdür itiraz açamaz")
     void shouldCheckPermissions() {
         Jwt manager = manager();
         Jwt warehouse = TestTokens.token("warehouse").build();
 
-        assertThat(post(INSPECTIONS, "{\"kind\":\"LAB\"}", warehouse)).hasStatus(HttpStatus.FORBIDDEN);
-        assertThat(post(INSPECTIONS, "{\"kind\":\"LAB\"}", manager)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(CLAIMS, OPEN_BODY, warehouse)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(CLAIMS, OPEN_BODY, manager)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(CLAIMS, OPEN_BODY, TestTokens.unknownRoleToken())).hasStatus(HttpStatus.FORBIDDEN);
     }
 
     private static ClaimFile file() {
-        return new ClaimFile(TestClaims.claim(), TestDiscrepancies.open(TestTokens.SITE_ID), List.of());
+        return new ClaimFile(TestClaims.claim(), TestDiscrepancies.open(TestTokens.SITE_ID));
     }
 
     private static Jwt manager() {

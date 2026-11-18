@@ -78,3 +78,5 @@ export { StatCard } from './components/StatCard';
 export type { StatCardProps, StatTone } from './components/StatCard';
 export { NavIcon, NavIcon as Icon } from './components/NavIcon';
 export type { NavIconName, NavIconProps } from './components/NavIcon';
+export { accentOf, PRESET_COLORS, PREVIEW_SCHEMES } from './brandPalettePreview';
+export type { PreviewScheme } from './brandPalettePreview';

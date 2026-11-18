@@ -30,6 +30,9 @@ kendiliğinden gelir.
 (bilgi). Mantine bileşenlerinin `color="red"` gibi özellikleri iki görünümde de doğru çalışır; onları kullanmak
 serbesttir. Ana eylem rengi (`ink`) açıkta siyah, koyuda beyazdır; elle renk vermeyin.
 
+Kurulumun rengi (`brand`, Görünüm ekranından seçilir) yalnızca vurgudur: logo işareti, etkin menünün sol çizgisi ve
+ikonu, etkin sekmenin alt çizgisi. Düğme, başlık ve yazıda kullanılmaz.
+
 ## İlkeler
 
 1. **Beyaz zemin, ince çizgili kart.** Gölge yok (menü, pencere ve sabit eylem çubuğu hariç). Köşe 8 px. Sayfa

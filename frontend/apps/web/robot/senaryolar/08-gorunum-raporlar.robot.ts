@@ -13,6 +13,16 @@ test('Görünüm: yönetici firma adı ve logoyu kaydeder, varsayılana döner',
     await admin.sayfa.getByRole('button', { name: 'Kaydet' }).click();
     await expect(admin.sayfa.getByText('Görünüm kaydedildi.').first()).toBeVisible();
   });
+  await admin.adim('hazır renk seçilir, "Değişiklikleri geri al" kayıtlı renge döner', async () => {
+    const renk = admin.sayfa.getByLabel(/^Ana renk/);
+    const kayitli = await renk.inputValue();
+    await admin.sayfa.getByRole('button', { name: 'Bordo' }).click();
+    admin.kontrol('hazır renk alana yazılmalı', (await renk.inputValue()) !== kayitli);
+    await expect(admin.sayfa.getByText('Kaydedilmemiş değişiklik var.')).toBeVisible();
+    await expect(admin.sayfa.getByLabel('Önizleme').getByText('Koyu görünüm')).toBeVisible();
+    await admin.sayfa.getByRole('button', { name: 'Değişiklikleri geri al' }).click();
+    await expect(renk).toHaveValue(kayitli);
+  });
   await admin.adim('logo seç: büyük dosya reddedilir', async () => {
     await admin.sayfa
       .locator('input[type=file]')

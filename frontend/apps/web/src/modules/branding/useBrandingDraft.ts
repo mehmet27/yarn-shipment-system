@@ -4,7 +4,7 @@ import type { BrandingDraft, BrandingError } from './brandingDraft';
 import { draftOf, toRequest, validateBranding } from './brandingDraft';
 import { useSaveBranding } from './useSaveBranding';
 
-/** Taslak alanlar, doğrulama ve kayıt; değişiklik "kaydedildi" bildirimini kaldırır. */
+/** Taslak alanlar, doğrulama ve kayıt; değişiklik "kaydedildi" bildirimini kaldırır. Kayıtlı hâlden fark varsa `isDirty`. */
 export function useBrandingDraft(branding: BrandingView) {
   const [draft, setDraft] = useState<BrandingDraft>(() => draftOf(branding));
   const [error, setError] = useState<BrandingError>();
@@ -25,5 +25,15 @@ export function useBrandingDraft(branding: BrandingView) {
       });
     }
   };
-  return { draft, error, isSaved, mutation, change, submit };
+  const saved = draftOf(branding);
+  const isDirty =
+    draft.companyName.trim() !== saved.companyName ||
+    draft.primaryColor.toLowerCase() !== saved.primaryColor.toLowerCase() ||
+    draft.logoDataUrl !== saved.logoDataUrl;
+  const revert = () => {
+    setDraft(saved);
+    setError(undefined);
+    setIsSaved(false);
+  };
+  return { draft, error, isSaved, isDirty, mutation, change, revert, submit };
 }

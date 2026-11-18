@@ -96,6 +96,12 @@ body {
 .panel-nav-link[data-active]:hover {
   background-color: color-mix(in srgb, var(--app-text) 8%, transparent);
   color: var(--app-text);
+  /* Kurulumun rengi: etkin menünün solunda ince çizgi ve ikon. */
+  box-shadow: inset 3px 0 0 var(--mantine-color-brand-filled);
+}
+
+.panel-nav-link[data-active] .mantine-NavLink-section {
+  color: var(--mantine-color-brand-filled);
 }
 
 .mantine-Paper-root {
@@ -171,7 +177,7 @@ body {
 
 .mantine-Tabs-tab[data-variant='default'][data-active] {
   color: var(--app-text);
-  border-color: var(--app-text);
+  border-color: var(--mantine-color-brand-filled);
 }
 
 .mantine-Tabs-root[data-variant='default'] > .mantine-Tabs-panel {

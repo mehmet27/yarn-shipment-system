@@ -1,5 +1,9 @@
-import type { MantineColorsTuple, MantineThemeComponents } from '@mantine/core';
-import { createTheme, rem, virtualColor } from '@mantine/core';
+import type {
+  MantineColorsTuple,
+  MantineThemeComponents,
+  VariantColorsResolver,
+} from '@mantine/core';
+import { createTheme, defaultVariantColorsResolver, rem, virtualColor } from '@mantine/core';
 import {
   BRAND_SHADE_INDEX,
   DEFAULT_BRAND_COLOR,
@@ -141,6 +145,20 @@ const FORM_COMPONENTS: MantineThemeComponents = {
   NumberInput: { defaultProps: { size: 'md', hideControls: true } },
 };
 
+const TEXT_VARIANTS = ['subtle', 'transparent', 'outline', 'light'];
+
+/**
+ * Renk verilmemiş dolgusuz düğmeler (subtle, outline…) ana yazı rengini kullanır. Mantine bu tonu görünümden bağımsız
+ * hesapladığı için koyu görünümde yazı zeminle aynı renkte kalıyordu.
+ */
+const inkVariantResolver: VariantColorsResolver = (input) => {
+  const resolved = defaultVariantColorsResolver(input);
+  const isInk = input.color === undefined || input.color === 'ink';
+  return isInk && TEXT_VARIANTS.includes(input.variant)
+    ? { ...resolved, color: 'var(--app-text)' }
+    : resolved;
+};
+
 /**
  * Mobil öncelikli tema: varsayılan boyutlar zaten dokunma hedefi sınırını geçer, böylece telefonda
  * ve masaüstünde aynı bileşenler kullanılır. Saha ekranları güneş altında da okunmalıdır (yüksek kontrast).
@@ -163,6 +181,7 @@ export function createAppTheme(brandColor: string = DEFAULT_BRAND_COLOR) {
     black: ZINC[9],
     // Ana eylem düğmesi nötrdür (açıkta siyah, koyuda beyaz); yazı rengi dolguya göre kendiliğinden seçilir.
     primaryColor: 'ink',
+    variantColorResolver: inkVariantResolver,
     primaryShade: BRAND_SHADE_INDEX,
     autoContrast: true,
     luminanceThreshold: LUMINANCE_THRESHOLD,

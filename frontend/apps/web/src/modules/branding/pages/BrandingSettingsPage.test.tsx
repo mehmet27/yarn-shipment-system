@@ -1,12 +1,15 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { DEFAULT_BRAND_COLOR, PRESET_COLORS } from '@iplik/ui';
 import { createHandlers } from '@/mocks/handlers';
 import { resetMockBranding } from '@/mocks/brandingHandlers';
 import { server } from '@/mocks/server';
 import { renderApp } from '@/test/renderApp';
 
 const PATH = '/panel/gorunum';
+const PREVIEW_COUNT = 2;
+const BURGUNDY = PRESET_COLORS.find((preset) => preset.key === 'burgundy')?.value ?? '';
 
 describe('Görünüm ve marka', () => {
   beforeEach(() => {
@@ -20,9 +23,11 @@ describe('Görünüm ve marka', () => {
     const name = await screen.findByLabelText(/^Firma adı/);
 
     await userEvent.type(name, 'Gencer Fabric');
-    expect(
-      within(screen.getByLabelText('Önizleme')).getByText('Gencer Fabric'),
-    ).toBeInTheDocument();
+    // Önizleme adı açık ve koyu görünümde iki kez gösterir.
+    expect(within(screen.getByLabelText('Önizleme')).getAllByText('Gencer Fabric')).toHaveLength(
+      PREVIEW_COUNT,
+    );
+    expect(screen.getByText('Kaydedilmemiş değişiklik var.')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
 
     expect(await screen.findByText('Görünüm kaydedildi.')).toBeInTheDocument();
@@ -40,6 +45,23 @@ describe('Görünüm ve marka', () => {
 
     expect(await screen.findByText('Rengi #rrggbb biçiminde girin.')).toBeInTheDocument();
     expect(screen.queryByText('Görünüm kaydedildi.')).not.toBeInTheDocument();
+  });
+
+  it('hazır renk seçilir; "Değişiklikleri geri al" kayıtlı renge döner', async () => {
+    server.use(...createHandlers('ADMIN'));
+    renderApp(PATH);
+    const color = await screen.findByLabelText(/^Ana renk/);
+    expect(
+      screen.queryByRole('button', { name: 'Değişiklikleri geri al' }),
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Bordo' }));
+    expect(color).toHaveValue(BURGUNDY);
+    expect(screen.getByRole('button', { name: 'Bordo' })).toHaveAttribute('aria-pressed', 'true');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Değişiklikleri geri al' }));
+    expect(color).toHaveValue(DEFAULT_BRAND_COLOR);
+    expect(screen.queryByText('Kaydedilmemiş değişiklik var.')).not.toBeInTheDocument();
   });
 
   it('yetkisiz rol Görünüm menüsünü görmez', async () => {

@@ -1,10 +1,12 @@
 import { toProblem } from '@iplik/api-client';
 import type { BrandingView } from '@iplik/api-client/branding';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, ColorInput, Group, Paper, SimpleGrid, Stack, TextInput } from '@iplik/ui';
+import { Alert, SectionCard, SimpleGrid, Stack, TextInput } from '@iplik/ui';
 import { DEFAULT_DRAFT, MAX_NAME_LENGTH } from '../brandingDraft';
 import { useBrandingDraft } from '../useBrandingDraft';
+import { BrandingActions } from './BrandingActions';
 import { BrandingPreview } from './BrandingPreview';
+import { ColorSection } from './ColorSection';
 import { LogoField } from './LogoField';
 
 export type BrandingFormProps = { branding: BrandingView };
@@ -16,58 +18,53 @@ function failureKey(error: unknown): string {
     : 'branding.failed';
 }
 
-/** Marka ayarı: renk, firma adı ve logo; sağdaki önizleme kayıttan önce sonucu gösterir. */
+/** Marka ayarı: solda firma adı, logo ve renk; sağda kayıttan önce sonucu gösteren önizleme. */
 export function BrandingForm({ branding }: BrandingFormProps) {
   const { t } = useTranslation();
-  const { draft, error, isSaved, mutation, change, submit } = useBrandingDraft(branding);
+  const form = useBrandingDraft(branding);
+  const { draft, error, mutation, change } = form;
   return (
-    <SimpleGrid cols={{ base: 1, md: 2 }}>
-      <Paper withBorder radius="md" p="md">
-        <Stack>
-          <TextInput
-            label={t('branding.companyName')}
-            description={t('branding.companyNameHint')}
-            maxLength={MAX_NAME_LENGTH}
-            value={draft.companyName}
-            error={error === 'name' ? t('branding.errors.name') : undefined}
-            onChange={(event) => {
-              change({ companyName: event.currentTarget.value });
-            }}
-          />
-          <ColorInput
-            label={t('branding.primaryColor')}
-            description={t('branding.primaryColorHint')}
-            format="hex"
-            eyeDropperButtonProps={{ 'aria-label': t('branding.eyeDropper') }}
-            value={draft.primaryColor}
-            error={error === 'color' ? t('branding.errors.color') : undefined}
-            onChange={(primaryColor) => {
-              change({ primaryColor });
-            }}
-          />
-          <LogoField
-            value={draft.logoDataUrl}
-            onChange={(logoDataUrl) => {
-              change({ logoDataUrl });
-            }}
-          />
-          {mutation.isError && <Alert color="red">{t(failureKey(mutation.error))}</Alert>}
-          {isSaved && <Alert color="green">{t('branding.saved')}</Alert>}
-          <Group justify="flex-end">
-            <Button
-              variant="default"
-              onClick={() => {
-                change(DEFAULT_DRAFT);
+    <SimpleGrid cols={{ base: 1, md: 2 }} style={{ alignItems: 'start' }}>
+      <Stack>
+        <SectionCard title={t('branding.sections.identity')}>
+          <Stack>
+            <TextInput
+              label={t('branding.companyName')}
+              description={t('branding.companyNameHint')}
+              maxLength={MAX_NAME_LENGTH}
+              value={draft.companyName}
+              error={error === 'name' ? t('branding.errors.name') : undefined}
+              onChange={(event) => {
+                change({ companyName: event.currentTarget.value });
               }}
-            >
-              {t('branding.reset')}
-            </Button>
-            <Button loading={mutation.isPending} onClick={submit}>
-              {t('branding.submit')}
-            </Button>
-          </Group>
-        </Stack>
-      </Paper>
+            />
+            <LogoField
+              value={draft.logoDataUrl}
+              onChange={(logoDataUrl) => {
+                change({ logoDataUrl });
+              }}
+            />
+          </Stack>
+        </SectionCard>
+        <ColorSection
+          value={draft.primaryColor}
+          hasError={error === 'color'}
+          onChange={(primaryColor) => {
+            change({ primaryColor });
+          }}
+        />
+        {mutation.isError && <Alert color="red">{t(failureKey(mutation.error))}</Alert>}
+        {form.isSaved && <Alert color="green">{t('branding.saved')}</Alert>}
+        <BrandingActions
+          isDirty={form.isDirty}
+          isSaving={mutation.isPending}
+          onReset={() => {
+            change(DEFAULT_DRAFT);
+          }}
+          onRevert={form.revert}
+          onSubmit={form.submit}
+        />
+      </Stack>
       <BrandingPreview draft={draft} />
     </SimpleGrid>
   );

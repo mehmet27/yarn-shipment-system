@@ -1,9 +1,11 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Icon, Stack, Text } from '@iplik/ui';
 import { PhotoFailedNotice } from './PhotoFailedNotice';
+import { BagMismatchModal } from './BagMismatchModal';
 import { DispatchConfirmModal } from './DispatchConfirmModal';
 import { DispatchFields } from './DispatchFields';
 import { failureKey } from './dispatchSubmit';
+import { BAGS_TAB_QUERY } from '../components/ShipmentFileTabs';
 import { useDispatchFlow } from './useDispatchFlow';
 
 export type DispatchFormProps = {
@@ -41,6 +43,11 @@ export function DispatchForm({ shipmentId, plannedNetKg, onSaved }: DispatchForm
           {t('dispatch.next')}
         </Button>
       )}
+      <BagMismatchModal
+        mismatch={flow.bagMismatch.mismatch}
+        bagsHref={`/panel/sevkiyat/${shipmentId}?${BAGS_TAB_QUERY}`}
+        onClose={flow.bagMismatch.dismiss}
+      />
       <DispatchConfirmModal
         isOpen={flow.isConfirming}
         isPending={flow.mutation.isPending}

@@ -2,20 +2,35 @@ import { cuvalEkle, taslakAc, tartiGir, tartiyiOnayla } from '../support/akis';
 import { expect, test } from '../support/robot';
 import { damga } from '../support/yardimci';
 
-/** Tartı çuvalların toplamının altındaysa depo nedenini yazar; müdür zilden görür, kararı depoya döner. */
+/** Çuvallar araç net kilosunu tutmazsa sevkiyat girilemez, çuvallar sekmesine yönlendirilir. Tartı beklenenin altındaysa depo nedenini yazar; müdür zilden görür, kararı depoya döner. */
 test('Eksik kilo: neden zorunlu, müdür zilde görür, kararı depoya döner', async ({ giris }) => {
   const depo = await giris('depo');
   const mudur = await giris('mudur');
   for (const r of [depo, mudur]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
   const id = await taslakAc(mudur, damga(), '100');
-  await cuvalEkle(depo, id, 2, '50');
+  await cuvalEkle(depo, id, 2, '45');
 
-  await depo.adim('çuval toplamının altında tartı: neden yazılmadan kaydedilmez', async () => {
-    await tartiGir(depo, id, '1090,000', '1000,000', '2');
-    await expect(
-      depo.sayfa.getByText('Tartılan net kilo beklenenin altında. Eksik kilonun nedenini yazın.'),
-    ).toBeVisible();
-  });
+  await depo.adim(
+    'çuvallar araç net kilosunu tutmuyor: uyarı açılır, çuvallar sekmesine gidilir',
+    async () => {
+      await tartiGir(depo, id, '1100,000', '1000,000', '2');
+      const pencere = depo.sayfa.getByRole('dialog', { name: 'Çuvallar araç kilosunu tutmuyor' });
+      await expect(pencere).toContainText('90 kg');
+      await expect(pencere).toContainText('100 kg');
+      await pencere.getByRole('link', { name: 'Çuvalları kontrol et' }).click();
+      await expect(depo.sayfa.getByText('Sevkiyattaki çuvallar (2)')).toBeVisible();
+    },
+  );
+
+  await depo.adim(
+    'beklenenin altında tartı (çuvallar tutuyor): neden yazılmadan kaydedilmez',
+    async () => {
+      await tartiGir(depo, id, '1090,000', '1000,000', '2');
+      await expect(
+        depo.sayfa.getByText('Tartılan net kilo beklenenin altında. Eksik kilonun nedenini yazın.'),
+      ).toBeVisible();
+    },
+  );
 
   await depo.adim(
     'neden yazılınca kayıt alınır ve sevkiyat kantar uyuşmazlığına düşer',

@@ -192,6 +192,11 @@ export function assignMockBagWeights(shipmentId: string, weights: readonly strin
   return weights.length;
 }
 
+/** Sevkiyata eklenmiş çuval kiloları (çıkış tartısından önce). */
+export function assignedMockBagWeights(shipmentId: string): readonly string[] {
+  return assignedBagWeights.get(shipmentId) ?? [];
+}
+
 export function resetMockStore(): void {
   resetMasterData();
   resetMockCorrections();

@@ -1507,7 +1507,9 @@ export const getShipment = (
 /**
  * Depo çalışanı kantar fişindeki brüt, dara ve çuval sayısını girer. Net kilo brüt ile daradan hesaplanır.
  * Kayıtla birlikte sevkiyat çıkış yapmış ve teslim bekliyor sayılır. Aynı sevkiyat için tekrar gönderilen
- * istek yeni kayıt oluşturmaz ve yine 204 döner.
+ * istek yeni kayıt oluşturmaz ve yine 204 döner. Sevkiyata eklenen çuvalların kilo toplamı araç net kilosunu
+ * kantar toleransı içinde tutmuyorsa hiçbir şey kaydedilmez ve `409 BAG_WEIGHT_MISMATCH` döner (`bagKg`,
+ * `measuredKg`, `toleranceKg`); depo çuvalları kontrol edip düzeltir.
  * @summary Depo çıkış tartımını kaydeder (DRAFT → AWAITING_DELIVERY)
  */
 export const recordDispatchWeighing = (

@@ -1,10 +1,12 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
+import { assignMockBagWeights } from '@/mocks/mockStore';
 import { server } from '@/mocks/server';
 import { captureTicket } from '@/test/ticket';
+import { addBagsTotalling1982Point5 } from '@/test/bags';
 import { renderApp } from '@/test/renderApp';
 
 async function fill(values: Record<string, string>) {
@@ -40,6 +42,7 @@ describe('DispatchWeighingPage', () => {
   });
 
   it('depo çıkış tartısını kaydeder, sevkiyat Fasoncuya yolda olur', async () => {
+    addBagsTotalling1982Point5();
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/sevkiyat/shp-0001/cikis');
     await screen.findByLabelText('Dolu araç tartısı (brüt)');
@@ -61,6 +64,7 @@ describe('DispatchWeighingPage', () => {
   });
 
   it('fotoğraf, çıkış tartısı kaydedilmeden sisteme yüklenmez; onaylanınca yüklenir', async () => {
+    addBagsTotalling1982Point5();
     server.use(...createHandlers('WAREHOUSE'));
     let uploads = 0;
     server.events.on('request:start', ({ request }) => {
@@ -93,6 +97,7 @@ describe('DispatchWeighingPage', () => {
   });
 
   it('sunucu çıkış tartısını reddederse fotoğraf hiç yüklenmez', async () => {
+    addBagsTotalling1982Point5();
     server.use(...createHandlers('WAREHOUSE'));
     server.use(
       http.post('/api/v1/shipments/:shipmentId/dispatch-weighing', () =>
@@ -152,5 +157,26 @@ describe('DispatchWeighingPage', () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/sevkiyat/shp-0001/cikis');
     expect(await screen.findByText('Bu sayfayı görme yetkiniz yok.')).toBeInTheDocument();
+  });
+
+  it('çuvalların toplamı araç net kilosunu tutmazsa uyarır ve çuvallar sekmesine götürür', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    assignMockBagWeights('shp-0001', ['50.000', '50.000']);
+    renderApp('/panel/sevkiyat/shp-0001/cikis');
+    await screen.findByRole('button', { name: 'İleri' });
+    await fill({
+      'Dolu araç tartısı (brüt)': '2.000',
+      'Boş araç tartısı (dara)': '17,5',
+      'Çuval sayısı': '2',
+    });
+    await captureTicket();
+    await userEvent.click(screen.getByRole('button', { name: 'İleri' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Çuvallar araç kilosunu tutmuyor' });
+    expect(dialog).toHaveTextContent('100 kg');
+    expect(dialog).toHaveTextContent('1.982,5 kg');
+    await userEvent.click(within(dialog).getByRole('link', { name: 'Çuvalları kontrol et' }));
+    expect(
+      await screen.findByRole('tab', { name: /Çuvallar/, selected: true }),
+    ).toBeInTheDocument();
   });
 });

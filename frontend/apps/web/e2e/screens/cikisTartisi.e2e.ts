@@ -1,3 +1,4 @@
+import { addBags } from '../support/bags';
 import { fillFields } from '../support/form';
 import { expect, test } from '../support/test';
 import { captureTicket } from '../support/ticket';
@@ -5,7 +6,7 @@ import { captureTicket } from '../support/ticket';
 const WEIGHING = {
   'Dolu araç tartısı (brüt)': '2.000',
   'Boş araç tartısı (dara)': '17,5',
-  'Çuval sayısı': '40',
+  'Çuval sayısı': '2',
 };
 
 test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
@@ -13,7 +14,9 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
     'depo tartı ve fişi kaydeder; sevkiyat Fasoncuya yolda olur',
     { tag: '@smoke' },
     async ({ page, openAs }) => {
-      await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis');
+      await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001');
+      await addBags(page);
+      await page.getByRole('link', { name: 'Çıkış tartısını gir' }).click();
       await fillFields(page, WEIGHING);
       await expect(page.getByText('Net: 1.982,5 kg')).toBeVisible();
       await captureTicket(page);
@@ -39,7 +42,9 @@ test.describe('Çıkış tartısı', { tag: '@panel' }, () => {
   });
 
   test('fotoğraf, çıkış tartısı onaylanana kadar sisteme yüklenmez', async ({ page, openAs }) => {
-    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001/cikis');
+    await openAs('WAREHOUSE', '/panel/sevkiyat/shp-0001');
+    await addBags(page);
+    await page.getByRole('link', { name: 'Çıkış tartısını gir' }).click();
     let uploads = 0;
     page.on('request', (request) => {
       if (request.method() === 'POST' && request.url().endsWith('/api/v1/evidence/uploads')) {

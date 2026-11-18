@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
 import { captureTicket } from '@/test/ticket';
+import { addBagsTotalling1972Point5 } from '@/test/bags';
 import { renderApp } from '@/test/renderApp';
 
 const MISMATCH = '/panel/sevkiyat/shp-0045';
@@ -110,6 +111,7 @@ describe('Kantar uyuşmazlığı', () => {
   });
 
   it('depo beklenenden farklı tartı girince sevkiyat kantar uyuşmazlığına düşer', async () => {
+    addBagsTotalling1972Point5();
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/sevkiyat/shp-0001/cikis');
     await screen.findByRole('button', { name: 'İleri' });
@@ -148,6 +150,7 @@ describe('Kantar uyuşmazlığı', () => {
   });
 
   it('eksik kilo nedeni yazılmadan ileri denirse neden istenir ve hiçbir şey kaydedilmez', async () => {
+    addBagsTotalling1972Point5();
     server.use(
       http.post(`${SHIPMENTS_PATH}/:shipmentId/dispatch-weighing`, () =>
         HttpResponse.json(

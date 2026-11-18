@@ -736,7 +736,6 @@
       "title": "Karar ver",
       "resolution": "Karar",
       "note": "Not",
-      "liableParty": "Sorumlu taraf",
       "submit": "Karara bağla",
       "choice": {
         "CLAIM_JUSTIFIED": "Haklı",
@@ -744,8 +743,7 @@
       },
       "effect": {
         "CLAIM_JUSTIFIED": "İtiraz edilen kilo faturalanacak kiloya eklenir; müdür fatura kesince faturaya girer; iplik ikinci kez düşülmez, çünkü hatalı gelen kumaş zaten gelen kumaşın içindedir. Fire hesabı da buna göre değişir.",
-        "CLAIM_UNJUSTIFIED": "Fasoncunun ipliğinde değişiklik olmaz; uyuşmazlık yalnızca kapatılır.",
-        "LIABILITY_ASSIGNED": "Yazdığınız sorumlu taraf kayda geçer; fasoncunun ipliğinde değişiklik olmaz, uyuşmazlık kapatılır."
+        "CLAIM_UNJUSTIFIED": "Fasoncunun ipliğinde değişiklik olmaz; uyuşmazlık yalnızca kapatılır."
       },
       "confirmTitle": "Onay: karar kaydı",
       "confirmText": "Karar: {{resolution}}. Karar geri alınamaz.",

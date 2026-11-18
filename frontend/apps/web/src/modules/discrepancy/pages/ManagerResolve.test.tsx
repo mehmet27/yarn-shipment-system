@@ -11,14 +11,13 @@ async function chooseAs(label: string) {
 }
 
 describe('Müdür kalite itirazını kapatır', () => {
-  it('yalnızca haklı ya da haksız der; atama, sorumluluk kararı ve fatura seçeneği çıkmaz', async () => {
+  it('yalnızca haklı ya da haksız der; atama ve fatura seçeneği çıkmaz', async () => {
     server.use(...createHandlers('MANAGER'));
     renderApp('/panel/uyusmazliklar/disc-1');
     await userEvent.click(await screen.findByRole('combobox', { name: /^Karar/ }));
     expect(await screen.findByRole('option', { name: 'Haklı' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Haksız' })).toBeInTheDocument();
     expect(screen.queryByRole('option', { name: 'Haklı, faturalandı' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: 'Sorumluluk atandı' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Bana ata' })).not.toBeInTheDocument();
   });
 

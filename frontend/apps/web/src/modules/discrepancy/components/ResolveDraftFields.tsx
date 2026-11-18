@@ -1,15 +1,7 @@
 import { ResolveNoteFields } from './ResolveNoteFields';
 import type { useResolveDraft } from './useResolveDraft';
 
-/** Seçime göre sorumlu taraf ve not alanları. */
+/** Karar notu alanı. */
 export function ResolveDraftFields({ draft }: { draft: ReturnType<typeof useResolveDraft> }) {
-  return (
-    <ResolveNoteFields
-      isPartyRequired={draft.isPartyRequired}
-      liableParty={draft.liableParty}
-      note={draft.note}
-      onLiableParty={draft.setLiableParty}
-      onNote={draft.setNote}
-    />
-  );
+  return <ResolveNoteFields note={draft.note} onNote={draft.setNote} />;
 }

@@ -1,8 +1,8 @@
 import { usePermission } from '@/modules/auth';
-import { choicesFor } from './resolveChoices';
+import { RESOLUTIONS } from './resolveChoices';
 
-/** Kararı yalnızca DISCREPANCY_DECIDE'li (müdür) kişi için kısıtlı seçenekler; kalite hepsini görür. */
+/** Seçenekler herkes için aynıdır; yalnızca müdürün ekran metinleri (düz dil) ayrıdır. */
 export function useResolveChoices() {
   const isManager = !usePermission('DISCREPANCY_RESOLVE');
-  return { isManager, choices: choicesFor(isManager) };
+  return { isManager, choices: RESOLUTIONS };
 }

@@ -30,7 +30,7 @@ export function BrandMark() {
             style={{ objectFit: 'contain' }}
           />
         )}
-        <Text fw={700} size="lg" truncate>
+        <Text fw={600} truncate>
           {name}
         </Text>
       </Group>

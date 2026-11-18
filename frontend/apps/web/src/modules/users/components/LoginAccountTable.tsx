@@ -1,6 +1,6 @@
 import type { LoginAccountView } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Table, useMediaQuery } from '@iplik/ui';
+import { Paper, Stack, Table, useMediaQuery } from '@iplik/ui';
 import { LoginAccountCard } from './LoginAccountCard';
 import { LoginAccountRow } from './LoginAccountRow';
 
@@ -23,22 +23,24 @@ export function LoginAccountTable({ accounts }: LoginAccountTableProps) {
     );
   }
   return (
-    <Table.ScrollContainer minWidth={TABLE_MIN_WIDTH}>
-      <Table striped highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>{t('users.field.user')}</Table.Th>
-            <Table.Th>{t('users.field.roles')}</Table.Th>
-            <Table.Th>{t('users.field.status')}</Table.Th>
-            <Table.Th>{t('users.field.actions')}</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {accounts.map((account) => (
-            <LoginAccountRow key={account.id} account={account} />
-          ))}
-        </Table.Tbody>
-      </Table>
-    </Table.ScrollContainer>
+    <Paper withBorder radius="md" style={{ overflow: 'hidden' }}>
+      <Table.ScrollContainer minWidth={TABLE_MIN_WIDTH}>
+        <Table highlightOnHover>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>{t('users.field.user')}</Table.Th>
+              <Table.Th>{t('users.field.roles')}</Table.Th>
+              <Table.Th>{t('users.field.status')}</Table.Th>
+              <Table.Th ta="right">{t('users.field.actions')}</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {accounts.map((account) => (
+              <LoginAccountRow key={account.id} account={account} />
+            ))}
+          </Table.Tbody>
+        </Table>
+      </Table.ScrollContainer>
+    </Paper>
   );
 }

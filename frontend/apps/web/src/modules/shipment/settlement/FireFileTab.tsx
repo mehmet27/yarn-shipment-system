@@ -1,6 +1,6 @@
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Badge, Group, Paper, Stack, Text, Title } from '@iplik/ui';
+import { Badge, SectionCard, Stack, Text } from '@iplik/ui';
 import { QueryState } from '../components/QueryState';
 import { FireClosedNote } from './FireClosedNote';
 import { FireFigures } from './FireFigures';
@@ -17,16 +17,15 @@ export function FireFileTab({ shipmentId }: { shipmentId: string }) {
   return (
     <QueryState query={query}>
       {(settlement) => (
-        <Paper withBorder p="md" component="section" aria-label={t('settlement.fire.title')}>
+        <SectionCard
+          title={t('settlement.fire.title')}
+          actions={
+            <Badge variant="light" data-testid="fire-status" style={{ flexShrink: 0 }}>
+              {t(`settlement.fire.statuses.${settlement.status}`)}
+            </Badge>
+          }
+        >
           <Stack>
-            <Group justify="space-between">
-              <Title order={2} size="h3">
-                {t('settlement.fire.title')}
-              </Title>
-              <Badge data-testid="fire-status">
-                {t(`settlement.fire.statuses.${settlement.status}`)}
-              </Badge>
-            </Group>
             <FireFigures settlement={settlement} />
             {settlement.status === 'AWAITING_FABRIC' || settlement.status === 'TO_INVOICE' ? (
               <FireOpenActions settlement={settlement} />
@@ -34,7 +33,7 @@ export function FireFileTab({ shipmentId }: { shipmentId: string }) {
               <FireClosedNote settlement={settlement} />
             )}
           </Stack>
-        </Paper>
+        </SectionCard>
       )}
     </QueryState>
   );

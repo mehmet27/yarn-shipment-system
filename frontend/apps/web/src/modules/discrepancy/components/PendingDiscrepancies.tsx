@@ -1,5 +1,5 @@
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Anchor, Group, Paper, Stack, Text, Title } from '@iplik/ui';
+import { Anchor, Group, SectionCard, Stack, Text } from '@iplik/ui';
 import { Link } from 'react-router';
 import { usePendingDiscrepancies } from '../hooks/usePendingDiscrepancies';
 
@@ -14,11 +14,13 @@ export function PendingDiscrepancies() {
   const pending = usePendingDiscrepancies();
   if (pending.length === 0) return null;
   return (
-    <Paper withBorder p="md" data-testid="pending-discrepancies">
+    <SectionCard
+      title={t('discrepancy.pending.title', { count: pending.length })}
+      icon="discrepancies"
+      tone="warning"
+      testId="pending-discrepancies"
+    >
       <Stack gap="xs">
-        <Title order={2} size="h4">
-          {t('discrepancy.pending.title', { count: pending.length })}
-        </Title>
         {pending.slice(0, SHOWN).map((item) => (
           <Group key={item.id} justify="space-between">
             <Anchor component={Link} to={`/panel/uyusmazliklar/${item.id}`}>
@@ -35,6 +37,6 @@ export function PendingDiscrepancies() {
           {t('discrepancy.pending.all')}
         </Anchor>
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }

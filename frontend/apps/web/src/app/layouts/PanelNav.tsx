@@ -127,7 +127,7 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
   return visibleGroups.map((group) => (
     <div key={group}>
       {visibleGroups.length > 1 && (
-        <Text size="xs" fw={600} c="brand.2" px="sm" pt="md" pb={4}>
+        <Text size="xs" fw={500} c="dimmed" px="sm" pt="md" pb={4}>
           {t(`nav.groups.${group}`)}
         </Text>
       )}

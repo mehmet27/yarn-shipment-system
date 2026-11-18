@@ -19,13 +19,17 @@ export function AuditCards({
   return (
     <Stack gap="sm">
       {records.map((record) => (
-        <Paper key={record.id} withBorder p="md">
+        <Paper key={record.id} withBorder radius="md" p="md">
           <Stack gap={4}>
             <Group justify="space-between" wrap="nowrap" align="flex-start">
               <Text fw={600} title={record.action}>
                 {actionLabel(record.action)}
               </Text>
-              {record.decision === 'DENIED' ? <Badge color="red">{t('audit.denied')}</Badge> : null}
+              {record.decision === 'DENIED' ? (
+                <Badge color="red" variant="light" style={{ whiteSpace: 'nowrap' }}>
+                  {t('audit.denied')}
+                </Badge>
+              ) : null}
             </Group>
             <Text size="sm" c="dimmed">
               {formatDateTime(record.occurredAt)}

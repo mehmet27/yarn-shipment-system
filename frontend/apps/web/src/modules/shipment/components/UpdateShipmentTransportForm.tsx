@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, Icon } from '@iplik/ui';
+import { Box, Button, Icon } from '@iplik/ui';
 import { useState } from 'react';
 import { TransportEditor } from './TransportEditor';
 
@@ -16,18 +16,19 @@ export function UpdateShipmentTransportForm(props: UpdateShipmentTransportFormPr
   const [isOpen, setIsOpen] = useState(false);
   if (isOpen) {
     return (
-      <TransportEditor
-        {...props}
-        onClose={() => {
-          setIsOpen(false);
-        }}
-      />
+      <Box w="100%">
+        <TransportEditor
+          {...props}
+          onClose={() => {
+            setIsOpen(false);
+          }}
+        />
+      </Box>
     );
   }
   return (
     <Button
-      variant="light"
-      w="fit-content"
+      variant="default"
       leftSection={<Icon name="truck" />}
       onClick={() => {
         setIsOpen(true);

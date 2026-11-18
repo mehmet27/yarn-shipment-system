@@ -20,7 +20,7 @@ export function PasswordRequestsNotice({ accounts, onShow }: PasswordRequestsNot
             names: requesting.map((account) => account.fullName ?? account.username).join(', '),
           })}
         </Text>
-        <Button size="xs" variant="white" onClick={onShow}>
+        <Button size="xs" variant="default" onClick={onShow}>
           {t('users.requests.show')}
         </Button>
       </Group>

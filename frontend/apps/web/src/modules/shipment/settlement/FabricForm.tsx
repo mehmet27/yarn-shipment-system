@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, Group, Paper, Stack, TextInput, Title } from '@iplik/ui';
+import { Button, SectionCard, SimpleGrid, Stack, TextInput } from '@iplik/ui';
 import { FabricConfirm } from './FabricConfirm';
 import { FabricLimitNote } from './FabricLimitNote';
 import { FabricMessages } from './FabricMessages';
@@ -12,18 +12,20 @@ export function FabricForm({ shipmentId }: { shipmentId: string }) {
   const form = useFabricSubmit(shipmentId);
   const { draft, field, mutation, request } = form;
   return (
-    <Paper withBorder p="md" component="section" aria-label={t('settlement.fabric.title')}>
+    <SectionCard title={t('settlement.fabric.title')}>
       <Stack>
-        <Title order={3} size="h4">
-          {t('settlement.fabric.title')}
-        </Title>
         <FabricLimitNote limits={form.limits} />
-        <TextInput
-          label={t('settlement.fabric.fabricType')}
-          withAsterisk
-          {...field('fabricType')}
-        />
-        <Group grow align="flex-start">
+        <SimpleGrid cols={{ base: 1, sm: 2 }}>
+          <TextInput
+            label={t('settlement.fabric.fabricType')}
+            withAsterisk
+            {...field('fabricType')}
+          />
+          <TextInput
+            label={t('settlement.fabric.waybillNo')}
+            withAsterisk
+            {...field('waybillNo')}
+          />
           <TextInput
             label={t('settlement.fabric.netKg')}
             inputMode="decimal"
@@ -36,8 +38,7 @@ export function FabricForm({ shipmentId }: { shipmentId: string }) {
             inputMode="numeric"
             {...field('rollCount')}
           />
-        </Group>
-        <TextInput label={t('settlement.fabric.waybillNo')} withAsterisk {...field('waybillNo')} />
+        </SimpleGrid>
         <FabricYarnRows
           rows={draft.yarns}
           yarnNames={form.limits.yarnNames}
@@ -60,6 +61,6 @@ export function FabricForm({ shipmentId }: { shipmentId: string }) {
           </Button>
         )}
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }

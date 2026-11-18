@@ -16,9 +16,11 @@ export function TicketCapture({ file, onFileChange }: TicketCaptureProps) {
   const { t } = useTranslation();
   const flow = useTicketPhoto(file, onFileChange);
   return (
-    <Paper withBorder p="md" style={{ borderStyle: 'dashed' }}>
+    <Paper withBorder p="md" radius="md" bg="var(--app-inset)" style={{ borderStyle: 'dashed' }}>
       <Stack>
-        <Text fw={600}>{t('ticket.title')}</Text>
+        <Text fw={600} size="sm">
+          {t('ticket.title')}
+        </Text>
         {file === undefined && (
           <Text size="sm" c="dimmed">
             {t('ticket.guide')}

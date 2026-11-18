@@ -3,6 +3,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Alert, Center, Paper, PasswordInput, Stack, Text } from '@iplik/ui';
 import { useState } from 'react';
 import type { SyntheticEvent } from 'react';
+import { AuthCardHeader } from '../components/AuthCardHeader';
 import { ChangePasswordActions } from '../components/ChangePasswordActions';
 import { TerminateSessionsOption } from '../components/TerminateSessionsOption';
 import { useChangeOwnPassword } from '../hooks/useChangeOwnPassword';
@@ -41,8 +42,8 @@ export function ChangePasswordPage() {
   const isMismatch = repeat !== '' && next !== repeat;
   const canSubmit = current !== '' && next.length >= MIN_PASSWORD_LENGTH && next === repeat;
   return (
-    <Center h="100vh">
-      <Paper withBorder shadow="sm" radius="md" p="xl" w={FORM_WIDTH_PX} maw="92vw">
+    <Center mih="100vh" p="md">
+      <Paper withBorder radius="md" p="xl" w={FORM_WIDTH_PX} maw="100%" bg="var(--app-surface)">
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -50,10 +51,10 @@ export function ChangePasswordPage() {
           }}
         >
           <Stack>
-            <Text fw={700} size="xl" c="brand.7">
-              {t('auth.changePassword.title')}
+            <AuthCardHeader title={t('auth.changePassword.title')} />
+            <Text size="sm" c="dimmed">
+              {t('auth.changePassword.intro')}
             </Text>
-            <Text size="sm">{t('auth.changePassword.intro')}</Text>
             <PasswordInput
               label={t('auth.changePassword.current')}
               value={current}

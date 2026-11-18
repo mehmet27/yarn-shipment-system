@@ -56,7 +56,7 @@ export function DispatchConfirmModal({
           <Button
             loading={isPending}
             leftSection={<Icon name="truck" />}
-            color={isMismatch ? 'orange' : 'blue'}
+            {...(isMismatch ? { color: 'orange' } : {})}
             onClick={onConfirm}
           >
             {t(isMismatch ? 'dispatch.confirm.openMismatch' : 'dispatch.confirm.dispatch')}

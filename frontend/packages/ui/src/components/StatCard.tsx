@@ -34,7 +34,7 @@ export function StatCard({ label, value, tone = 'neutral', icon, hint }: StatCar
             {value}
           </Text>
           {hint === undefined ? null : (
-            <Text size="xs" c={`${color}.8`} fw={600}>
+            <Text size="xs" c={`var(--mantine-color-${color}-light-color)`} fw={600}>
               {hint}
             </Text>
           )}
@@ -43,8 +43,8 @@ export function StatCard({ label, value, tone = 'neutral', icon, hint }: StatCar
           <Box
             aria-hidden
             p="xs"
-            bg={`${color}.0`}
-            c={`${color}.8`}
+            bg={`var(--mantine-color-${color}-light)`}
+            c={`var(--mantine-color-${color}-light-color)`}
             style={{ borderRadius: 'var(--mantine-radius-md)', display: 'flex' }}
           >
             {icon}

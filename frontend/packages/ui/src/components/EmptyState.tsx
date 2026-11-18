@@ -17,7 +17,7 @@ export function EmptyState({ title, description, action }: EmptyStateProps) {
       px="md"
       ta="center"
       style={{
-        border: '1px dashed var(--mantine-color-gray-4)',
+        border: '1px dashed var(--app-control-line)',
         borderRadius: 'var(--mantine-radius-md)',
       }}
     >

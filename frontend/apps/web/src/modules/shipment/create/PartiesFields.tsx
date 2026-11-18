@@ -50,7 +50,7 @@ export function PartiesFields({ draft, onChange, errors }: PartiesFieldsProps) {
           }}
         />
       </SimpleGrid>
-      <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
+      <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm" mt="sm">
         <ShipmentDateField draft={draft} onChange={onChange} errors={errors} />
         <TextInput
           label={t('create.contactPerson')}

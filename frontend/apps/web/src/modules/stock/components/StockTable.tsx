@@ -20,9 +20,7 @@ export function StockTable({ stock }: { stock: CentralStock }) {
         <Alert color="yellow">{`${t('stock.negativeWarning')} (${negative.join(', ')})`}</Alert>
       )}
       <StockRows stock={stock} />
-      <Title order={2} size="h3">
-        {t('stock.movements')}
-      </Title>
+      <Title order={2}>{t('stock.movements')}</Title>
       <MovementRows movements={stock.movements} />
     </Stack>
   );

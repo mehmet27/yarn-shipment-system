@@ -57,20 +57,24 @@ export function SectionCard({
         px="md"
         py="xs"
         mih={44}
-        bg={isSignal ? `${color}.0` : 'var(--app-inset)'}
+        bg={isSignal ? `var(--mantine-color-${color}-light)` : 'var(--app-inset)'}
         style={{
-          borderBottom: `1px solid ${isSignal ? `var(--mantine-color-${color}-2)` : 'var(--app-line)'}`,
+          borderBottom: '1px solid var(--app-line)',
           boxShadow: isSignal ? `inset 3px 0 0 var(--mantine-color-${color}-6)` : undefined,
         }}
       >
         <Group gap="xs" wrap="nowrap" miw={0}>
           {icon === undefined ? null : (
-            <Box c={isSignal ? `${color}.8` : 'gray.7'} lh={0}>
+            <Box c={isSignal ? `var(--mantine-color-${color}-light-color)` : 'dimmed'} lh={0}>
               <NavIcon name={icon} />
             </Box>
           )}
           <Stack gap={0} miw={0}>
-            <Text fw={600} c={isSignal ? `${color}.9` : 'gray.9'} size="sm">
+            <Text
+              fw={600}
+              c={isSignal ? `var(--mantine-color-${color}-light-color)` : 'var(--app-text)'}
+              size="sm"
+            >
               {title}
             </Text>
             {description === undefined ? null : (

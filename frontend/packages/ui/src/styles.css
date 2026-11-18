@@ -1,23 +1,39 @@
-@import '@fontsource-variable/ibm-plex-sans/index.css';
+@import '@fontsource-variable/geist/index.css';
 @import '@mantine/core/styles.css';
 
 /*
- * Yüzey katmanları: zemin (taş grisi) → kart (beyaz) → girinti (kart içinde başlık şeridi, tablo başlığı).
- * Bölümler gölgeyle değil bu üç katman ve ince çizgilerle ayrılır; renk yalnızca durum ve ana eylemde kullanılır.
+ * Yüzey katmanları: zemin ve kart aynı (beyaz), kartı ince çizgi ayırır; girinti (yan menü, kart başlığı, tablo
+ * başlığı) çok açık gri. Koyu görünümde aynı adlar koyu karşılıklarını alır; bileşenler renk kodu yazmaz, bu adları
+ * kullanır.
  */
 :root {
-  --app-page-bg: var(--mantine-color-gray-1);
-  --app-surface: var(--mantine-color-white);
-  --app-inset: var(--mantine-color-gray-0);
-  --app-line: var(--mantine-color-gray-3);
-  --app-line-soft: var(--mantine-color-gray-2);
-  --app-frame-bg: var(--mantine-color-brand-9);
+  --app-page-bg: #ffffff;
+  --app-surface: #ffffff;
+  --app-inset: #fafafa;
+  --app-line: #e4e4e7;
+  --app-line-soft: #f4f4f5;
+  --app-control-line: #d4d4d8;
+  --app-frame-bg: #fafafa;
+  --app-text: #09090b;
   /* Soluk yazı ve ipuçları açık zeminde okunur kalsın (WCAG AA ~4.5:1). */
-  --mantine-color-dimmed: var(--mantine-color-gray-7);
+  --mantine-color-dimmed: var(--mantine-color-gray-6);
   /* Denetim yüksekliği: telefonda 44 px dokunma hedefi (FE-UI-07), masaüstünde sıkı 36 px. Yazı telefonda 16 px kalır
      (iOS, 16 px altındaki alana odaklanınca sayfayı yakınlaştırır). */
   --app-control-height: 2.75rem;
   --app-control-fz: 1rem;
+}
+
+:root[data-mantine-color-scheme='dark'] {
+  --app-page-bg: #09090b;
+  --app-surface: #09090b;
+  --app-inset: #141416;
+  --app-line: #27272a;
+  --app-line-soft: #1c1c1f;
+  --app-control-line: #3f3f46;
+  --app-frame-bg: #0c0c0e;
+  --app-text: #fafafa;
+  --mantine-color-dimmed: var(--mantine-color-dark-2);
+  --mantine-color-body: #09090b;
 }
 
 @media (min-width: 48em) {
@@ -29,7 +45,7 @@
 
 body {
   background: var(--app-page-bg);
-  color: var(--mantine-color-gray-9);
+  color: var(--app-text);
   /* Kilo, tutar ve tarih sütunları alt alta hizalı okunur. */
   font-variant-numeric: tabular-nums;
 }
@@ -56,31 +72,36 @@ body {
   text-align: center;
 }
 
-/* Koyu yan menü: etkin bağlantı açık zeminli, üzerine gelinen hafif aydınlanır. */
+/* Yan menü bağlantısı: soluk yazı; etkin olan girintili zeminde ve koyu yazıyla belirir. */
 .panel-nav-link {
-  color: color-mix(in srgb, white 82%, transparent);
+  color: var(--mantine-color-dimmed);
+  border-radius: var(--mantine-radius-sm);
 }
 
 .panel-nav-link:not([data-active]):hover,
 .panel-nav-link:not([data-active]):active {
-  background-color: color-mix(in srgb, white 10%, transparent);
-  color: white;
+  background-color: color-mix(in srgb, var(--app-text) 6%, transparent);
+  color: var(--app-text);
 }
 
-.panel-nav-link[data-active] {
-  background-color: color-mix(in srgb, white 16%, transparent);
-  color: white;
-  box-shadow: inset 3px 0 0 white;
+.panel-nav-link[data-active],
+.panel-nav-link[data-active]:hover {
+  background-color: color-mix(in srgb, var(--app-text) 8%, transparent);
+  color: var(--app-text);
+}
+
+.mantine-Paper-root {
+  background: var(--app-surface);
 }
 
 .mantine-Input-input::placeholder,
 .mantine-Select-input::placeholder {
-  color: var(--mantine-color-gray-6);
+  color: var(--mantine-color-dimmed);
   opacity: 1;
 }
 
 .mantine-InputWrapper-description {
-  color: var(--mantine-color-gray-7);
+  color: var(--mantine-color-dimmed);
 }
 
 .mantine-Button-root[data-size='md'] {
@@ -95,7 +116,9 @@ body {
 
 /* İkincil düğme (default): beyaz zemin, belirgin kenar; ana eylemle yarışmaz. */
 .mantine-Button-root[data-variant='default'] {
-  border-color: var(--mantine-color-gray-4);
+  border-color: var(--app-control-line);
+  background: var(--app-surface);
+  color: var(--app-text);
 }
 
 .mantine-Input-wrapper[data-size='md'] {
@@ -107,7 +130,7 @@ body {
 .mantine-Input-input:disabled,
 .mantine-Input-input[readonly]:not([aria-haspopup]) {
   background: var(--app-inset);
-  color: var(--mantine-color-gray-8);
+  color: var(--mantine-color-dimmed);
   opacity: 1;
 }
 
@@ -134,13 +157,13 @@ body {
 }
 
 .mantine-Tabs-tab[data-variant='default'] {
-  color: var(--mantine-color-gray-7);
+  color: var(--mantine-color-dimmed);
   padding-inline: var(--mantine-spacing-md);
 }
 
 .mantine-Tabs-tab[data-variant='default'][data-active] {
-  color: var(--mantine-color-brand-8);
-  border-color: var(--mantine-color-brand-7);
+  color: var(--app-text);
+  border-color: var(--app-text);
 }
 
 .mantine-Tabs-root[data-variant='default'] > .mantine-Tabs-panel {
@@ -158,7 +181,7 @@ body {
 
 .mantine-Table-thead .mantine-Table-th {
   background: var(--app-inset);
-  color: var(--mantine-color-gray-7);
+  color: var(--mantine-color-dimmed);
   font-size: var(--mantine-font-size-xs);
   font-weight: 600;
   white-space: nowrap;

@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, Group, Stack } from '@iplik/ui';
+import { Button, Divider, Group, Stack } from '@iplik/ui';
+import { Fragment } from 'react';
 import type { RecipeLineDraft } from './createDraft';
 import { newLine } from './createDraft';
 import { RecipeLineRow } from './RecipeLineRow';
@@ -20,21 +21,23 @@ export function RecipeLines({ lines, onChange, showErrors, lockedCount = 0 }: Re
     onChange(lines.map((line) => (line.key === key ? { ...line, ...patch } : line)));
   };
   return (
-    <Stack gap="sm" data-testid="recipe-lines">
+    <Stack gap="md" data-testid="recipe-lines">
       {lines.map((line, index) => (
-        <RecipeLineRow
-          key={line.key}
-          line={line}
-          index={index}
-          removable={lines.length > 1 && index >= lockedCount}
-          showErrors={showErrors}
-          onPatch={(patch) => {
-            update(line.key, patch);
-          }}
-          onRemove={() => {
-            onChange(lines.filter((candidate) => candidate.key !== line.key));
-          }}
-        />
+        <Fragment key={line.key}>
+          {index > 0 && <Divider color="var(--app-line)" />}
+          <RecipeLineRow
+            line={line}
+            index={index}
+            removable={lines.length > 1 && index >= lockedCount}
+            showErrors={showErrors}
+            onPatch={(patch) => {
+              update(line.key, patch);
+            }}
+            onRemove={() => {
+              onChange(lines.filter((candidate) => candidate.key !== line.key));
+            }}
+          />
+        </Fragment>
       ))}
       <Group justify="space-between">
         <Button

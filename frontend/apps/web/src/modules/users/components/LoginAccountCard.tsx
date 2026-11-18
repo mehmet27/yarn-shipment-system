@@ -12,6 +12,7 @@ export function LoginAccountCard({ account }: LoginAccountCardProps) {
   return (
     <Paper
       withBorder
+      radius="md"
       p="md"
       role="group"
       aria-label={account.username}

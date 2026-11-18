@@ -23,9 +23,9 @@ export function ShipmentRow({ row }: { row: ShipmentRowView }) {
         </Anchor>
       </Table.Td>
       <Table.Td>{nameOf(row.subcontractorId)}</Table.Td>
-      <Table.Td>{t(`shipment.status.${row.status}`)}</Table.Td>
-      <Table.Td>{orDash(row.dispatchNetKg, formatKilograms)}</Table.Td>
-      <Table.Td>{orDash(row.deliveryNetKg, formatKilograms)}</Table.Td>
+      <Table.Td style={{ whiteSpace: 'nowrap' }}>{t(`shipment.status.${row.status}`)}</Table.Td>
+      <Table.Td ta="right">{orDash(row.dispatchNetKg, formatKilograms)}</Table.Td>
+      <Table.Td ta="right">{orDash(row.deliveryNetKg, formatKilograms)}</Table.Td>
       <Table.Td>{formatDateTime(row.createdAt)}</Table.Td>
     </Table.Tr>
   );

@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, FileButton, Group, Icon } from '@iplik/ui';
+import { Button, FileButton, Icon, SimpleGrid } from '@iplik/ui';
 import type { InputHTMLAttributes } from 'react';
 import { usePreparedPick } from '../hooks/usePreparedPick';
 import { ACCEPT } from '../uploadTypes';
@@ -26,7 +26,7 @@ export function UploadButtons({
   const files = usePreparedPick(onPick);
   const isBusy = isLoading || camera.isPreparing || files.isPreparing;
   return (
-    <Group grow>
+    <SimpleGrid cols={{ base: 1, xs: 2 }}>
       <FileButton
         accept="image/*"
         capture="environment"
@@ -67,6 +67,6 @@ export function UploadButtons({
           </Button>
         )}
       </FileButton>
-    </Group>
+    </SimpleGrid>
   );
 }

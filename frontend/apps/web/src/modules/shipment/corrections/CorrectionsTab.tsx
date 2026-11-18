@@ -31,9 +31,14 @@ export function CorrectionsTab({ shipment }: { shipment: InternalShipmentView })
           items.length === 0 ? (
             <Text c="dimmed">{t('shipment.correction.empty')}</Text>
           ) : (
-            <Stack gap="xs">
-              {items.map((item) => (
-                <Paper key={item.id} withBorder p="sm">
+            <Paper withBorder style={{ overflow: 'hidden' }}>
+              {items.map((item, index) => (
+                <Stack
+                  key={item.id}
+                  gap={2}
+                  p="sm"
+                  style={{ borderTop: index === 0 ? undefined : '1px solid var(--app-line-soft)' }}
+                >
                   <Text fw={600}>{t(`shipment.correction.targets.${item.target}`)}</Text>
                   <Text size="sm">
                     {formatCorrectionValue(t, item.oldValue)} →{' '}
@@ -43,9 +48,9 @@ export function CorrectionsTab({ shipment }: { shipment: InternalShipmentView })
                   <Text size="sm" c="dimmed">
                     {formatDateTime(item.createdAt)} · {actorLabel(item.requestedBy)}
                   </Text>
-                </Paper>
+                </Stack>
               ))}
-            </Stack>
+            </Paper>
           )
         }
       </QueryState>

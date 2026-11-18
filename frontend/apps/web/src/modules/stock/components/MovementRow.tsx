@@ -14,14 +14,14 @@ export function MovementRow({ move }: { move: CentralStock['movements'][number] 
   const { t } = useTranslation();
   return (
     <Table.Tr>
-      <Table.Td>{formatDateTime(move.occurredAt)}</Table.Td>
-      <Table.Td>
+      <Table.Td style={{ whiteSpace: 'nowrap' }}>{formatDateTime(move.occurredAt)}</Table.Td>
+      <Table.Td style={{ whiteSpace: 'nowrap' }}>
         <Badge variant="light" color={KIND_COLOR[move.kind] ?? 'gray'}>
           {t(`stock.kinds.${move.kind}`)}
         </Badge>
       </Table.Td>
       <Table.Td>{move.yarnType}</Table.Td>
-      <Table.Td>
+      <Table.Td ta="right">
         <Text span c={move.netKg.startsWith('-') ? 'red.7' : 'green.8'} fw={600}>
           {formatSignedKg(move.netKg)}
         </Text>

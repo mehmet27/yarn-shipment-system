@@ -14,7 +14,7 @@ export type UiProviderProps = {
 export function UiProvider({ children, env = 'default', brandColor }: UiProviderProps) {
   const theme = useMemo(() => createAppTheme(brandColor), [brandColor]);
   return (
-    <MantineProvider theme={theme} env={env}>
+    <MantineProvider theme={theme} env={env} defaultColorScheme="light">
       {children}
     </MantineProvider>
   );

@@ -1,10 +1,19 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, Group, Paper, Stack, Tabs, Text } from '@iplik/ui';
+import { Box, Button, Group, Stack, Tabs, Text } from '@iplik/ui';
 import { useState } from 'react';
 import type { RecipeLineDraft } from './createDraft';
 import { lineError } from './createDraft';
 import { OrderFieldGrid } from './OrderFieldGrid';
 import { YarnTabFields } from './YarnTabFields';
+
+/** Sekme içeriği ek bir kutu açmaz: tema çerçevesi bu satırda kapatılır, alanlar doğrudan kartta durur. */
+const PANEL_STYLE = {
+  border: 0,
+  borderRadius: 0,
+  background: 'transparent',
+  padding: 0,
+  marginTop: 'var(--mantine-spacing-sm)',
+} as const;
 
 type RecipeLineRowProps = {
   line: RecipeLineDraft;
@@ -30,7 +39,7 @@ export function RecipeLineRow({
   // Sipariş sekmesi yalnızca tek eksik fiyat olduğunda öne alınır; iplik/kilo hatası varsa İplik sekmesi görünür kalır.
   const active = error === 'linePriceInvalid' ? 'order' : tab;
   return (
-    <Paper withBorder p="sm" radius="md" bg="gray.0" data-testid="recipe-line">
+    <Box data-testid="recipe-line">
       <Stack gap="xs">
         <Group justify="space-between" wrap="nowrap">
           <Text fw={600}>{t('create.recipe.lineTitle', { index: index + 1 })}</Text>
@@ -41,7 +50,6 @@ export function RecipeLineRow({
           )}
         </Group>
         <Tabs
-          variant="pills"
           value={active}
           onChange={(value) => {
             setTab(value ?? 'yarn');
@@ -51,14 +59,14 @@ export function RecipeLineRow({
             <Tabs.Tab value="yarn">{t('create.recipe.tabYarn')}</Tabs.Tab>
             <Tabs.Tab value="order">{t('create.recipe.tabOrder')}</Tabs.Tab>
           </Tabs.List>
-          <Tabs.Panel value="yarn" pt="xs">
+          <Tabs.Panel value="yarn" style={PANEL_STYLE}>
             <YarnTabFields line={line} index={index} error={error} onPatch={onPatch} />
           </Tabs.Panel>
-          <Tabs.Panel value="order" pt="xs">
+          <Tabs.Panel value="order" style={PANEL_STYLE}>
             <OrderFieldGrid line={line} showErrors={showErrors} onPatch={onPatch} />
           </Tabs.Panel>
         </Tabs>
       </Stack>
-    </Paper>
+    </Box>
   );
 }

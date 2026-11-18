@@ -1,5 +1,5 @@
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Paper, Stack, Text } from '@iplik/ui';
+import { EmptyState, Paper, Stack, Text } from '@iplik/ui';
 import { usePermission } from '@/modules/auth';
 import { QueryState } from '../components/QueryState';
 import { formatKgText } from './format';
@@ -17,7 +17,7 @@ export function YarnReturnsTab({ shipmentId }: { shipmentId: string }) {
       <QueryState query={query}>
         {(returns) =>
           returns.length === 0 ? (
-            <Text c="dimmed">{t('settlement.yarn.empty')}</Text>
+            <EmptyState title={t('settlement.yarn.empty')} />
           ) : (
             <Stack>
               {returns.map((entry) => (

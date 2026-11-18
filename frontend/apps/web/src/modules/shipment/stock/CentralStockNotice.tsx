@@ -29,11 +29,11 @@ export function CentralStockNotice({ demands, alwaysShow }: Props) {
         title={t('stockNotice.okTitle')}
         data-testid="stock-notice"
       >
-        <Stack gap={2}>
+        <Stack gap="xs">
           {lines.map((line) => (
-            <Group key={line.yarn} justify="space-between" wrap="nowrap">
+            <Group key={line.yarn} justify="space-between" gap="xs">
               <Text size="sm">{line.yarn}</Text>
-              <Text size="sm">
+              <Text size="sm" ta="right">
                 {t('stockNotice.line', {
                   stock: formatKgText(line.stockKg),
                   needed: formatKgText(line.neededKg),
@@ -48,7 +48,7 @@ export function CentralStockNotice({ demands, alwaysShow }: Props) {
   if (isClosed) return null;
   return (
     <Alert color="yellow" title={t('stockNotice.shortTitle')} data-testid="stock-notice">
-      <Stack gap={2}>
+      <Stack gap="xs">
         {short.map((line) => (
           <Text key={line.yarn} size="sm">
             {t('stockNotice.shortItem', {
@@ -62,8 +62,7 @@ export function CentralStockNotice({ demands, alwaysShow }: Props) {
           {t('stockNotice.advice')}
         </Text>
         <Button
-          variant="light"
-          color="yellow"
+          variant="default"
           w="fit-content"
           onClick={() => {
             setIsClosed(true);

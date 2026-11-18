@@ -19,13 +19,14 @@ export function RequestInspectionForm({ claimId }: { claimId: string }) {
         <TextInput
           label={t('claim.inspection.note')}
           maxLength={MAX_NOTE_LENGTH}
+          style={{ flex: '1 1 14rem' }}
           value={note}
           onChange={(event) => {
             setNote(event.currentTarget.value);
           }}
         />
         <Button
-          variant="light"
+          variant="default"
           loading={mutation.isPending}
           onClick={() => {
             const trimmed = note.trim();

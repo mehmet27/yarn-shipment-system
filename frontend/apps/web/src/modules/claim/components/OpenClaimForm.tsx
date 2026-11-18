@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Paper, Stack, Text, Textarea, Title } from '@iplik/ui';
+import { Alert, Button, SectionCard, SimpleGrid, Stack, Text, Textarea } from '@iplik/ui';
 import { TypedEvidenceUpload } from '@/modules/evidence';
 import { useState } from 'react';
 import { ClaimedKgField } from './ClaimedKgField';
@@ -28,18 +28,17 @@ export function OpenClaimForm({ shipmentId, shipmentNetKg, onDone }: OpenClaimFo
   const canSubmit =
     kg.isUsable && !kg.isOverLimit && description.trim() !== '' && evidenceIds.length > 0;
   return (
-    <Paper withBorder p="md" component="section" aria-label={t('claim.open.title')}>
+    <SectionCard title={t('claim.open.title')}>
       <Stack>
-        <Title order={3} size="h4">
-          {t('claim.open.title')}
-        </Title>
-        <ClaimedKgField
-          value={kgText}
-          onChange={setKgText}
-          isInvalid={kg.isInvalid}
-          limit={kg.limit}
-          isOverLimit={kg.isOverLimit}
-        />
+        <SimpleGrid cols={{ base: 1, sm: 2 }}>
+          <ClaimedKgField
+            value={kgText}
+            onChange={setKgText}
+            isInvalid={kg.isInvalid}
+            limit={kg.limit}
+            isOverLimit={kg.isOverLimit}
+          />
+        </SimpleGrid>
         <Textarea
           label={t('claim.open.description')}
           maxLength={MAX_DESCRIPTION_LENGTH}
@@ -73,6 +72,6 @@ export function OpenClaimForm({ shipmentId, shipmentNetKg, onDone }: OpenClaimFo
           {t('claim.open.submit')}
         </Button>
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }

@@ -22,6 +22,7 @@ export function ShipmentCard({ shipment, to }: ShipmentCardProps) {
       p="md"
       mih={72}
       c="dark"
+      radius="md"
       aria-label={shipment.shipmentNo}
       style={{
         textDecoration: 'none',
@@ -29,7 +30,7 @@ export function ShipmentCard({ shipment, to }: ShipmentCardProps) {
       }}
     >
       <Stack gap={4}>
-        <Text fw={700} size="lg">
+        <Text fw={600} size="lg">
           {shipment.shipmentNo}
         </Text>
         <Group>

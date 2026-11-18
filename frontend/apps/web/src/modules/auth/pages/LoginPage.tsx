@@ -1,8 +1,9 @@
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Center, Paper, PasswordInput, Stack, Text, TextInput } from '@iplik/ui';
+import { Alert, Button, Center, Paper, PasswordInput, Stack, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import type { SyntheticEvent } from 'react';
+import { AuthCardHeader } from '../components/AuthCardHeader';
 import { PasswordRequestBox } from '../components/PasswordRequestBox';
 import { useLogin } from '../hooks/useLogin';
 
@@ -35,14 +36,11 @@ export function LoginPage() {
   };
 
   return (
-    <Center h="100vh">
-      <Paper withBorder shadow="sm" radius="md" p="xl" w={FORM_WIDTH_PX} maw="92vw">
+    <Center mih="100vh" p="md">
+      <Paper withBorder radius="md" p="xl" w={FORM_WIDTH_PX} maw="100%" bg="var(--app-surface)">
         <form onSubmit={onSubmit}>
           <Stack>
-            <Text fw={700} size="xl" c="brand.7">
-              {t('app.name')}
-            </Text>
-            <Text fw={600}>{t('auth.login.title')}</Text>
+            <AuthCardHeader title={t('auth.login.title')} />
             <TextInput
               label={t('auth.login.username')}
               value={username}
@@ -64,7 +62,12 @@ export function LoginPage() {
             />
             {error !== undefined && <Alert color="red">{t(errorKey(error))}</Alert>}
             {canRequestPassword && <PasswordRequestBox username={username} />}
-            <Button type="submit" loading={isPending} disabled={username === '' || password === ''}>
+            <Button
+              type="submit"
+              fullWidth
+              loading={isPending}
+              disabled={username === '' || password === ''}
+            >
               {t('auth.login.submit')}
             </Button>
           </Stack>

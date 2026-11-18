@@ -1,6 +1,6 @@
 import type { Permission } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Badge, Checkbox, Group, Paper, Stack, Title } from '@iplik/ui';
+import { Badge, Checkbox, Group, SectionCard, Stack } from '@iplik/ui';
 import type { PermissionGroup } from '../groups';
 
 export type PermissionGroupCardProps = {
@@ -22,13 +22,14 @@ export function PermissionGroupCard({
   const { t } = useTranslation();
   const countLabel = `${String(group.permissions.filter((p) => selected.has(p)).length)} / ${String(group.permissions.length)}`;
   return (
-    <Paper withBorder p="md" h="100%">
-      <Group justify="space-between" mb="xs">
-        <Title order={4}>{t(`permissions.groups.${group.key}`)}</Title>
-        <Badge variant="light" aria-label={countLabel}>
+    <SectionCard
+      title={t(`permissions.groups.${group.key}`)}
+      actions={
+        <Badge variant="light" color="gray" aria-label={countLabel} style={{ flexShrink: 0 }}>
           {countLabel}
         </Badge>
-      </Group>
+      }
+    >
       <Stack gap="xs">
         {group.permissions.map((permission) => {
           const isLocked = lockedPermissions.includes(permission);
@@ -43,7 +44,7 @@ export function PermissionGroupCard({
                 }}
               />
               {isLocked && isEditable && (
-                <Badge variant="outline" color="gray">
+                <Badge variant="outline" color="gray" style={{ flexShrink: 0 }}>
                   {t('permissions.locked')}
                 </Badge>
               )}
@@ -51,6 +52,6 @@ export function PermissionGroupCard({
           );
         })}
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }

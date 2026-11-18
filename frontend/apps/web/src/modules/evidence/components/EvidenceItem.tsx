@@ -12,7 +12,7 @@ export function EvidenceItem({ evidence }: { evidence: EvidenceView }) {
   const { t } = useTranslation();
   const isInvalid = evidence.status === 'INVALIDATED';
   return (
-    <Paper withBorder p="sm" aria-label={t(`evidence.types.${evidence.evidenceType}`)}>
+    <Paper withBorder p="sm" radius="md" aria-label={t(`evidence.types.${evidence.evidenceType}`)}>
       <Stack gap="xs">
         <Group justify="space-between" wrap="nowrap">
           <Text fw={600} size="sm">

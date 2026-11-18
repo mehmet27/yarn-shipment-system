@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import type { CentralStock } from '@iplik/api-client/central-stock';
-import { Badge, Group, Table, Text } from '@iplik/ui';
+import { Badge, Group, Paper, Table, Text } from '@iplik/ui';
 import { useState } from 'react';
 import { formatSignedKg } from '@/modules/shipment';
 import type { SortKey } from './StockFilters';
@@ -23,37 +23,39 @@ export function StockRows({ stock }: { stock: CentralStock }) {
   return (
     <>
       <StockFilters search={search} onSearch={setSearch} sort={sort} onSort={setSort} />
-      <Table.ScrollContainer minWidth={360}>
-        <Table striped aria-label={t('stock.title')}>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>{t('stock.yarnType')}</Table.Th>
-              <Table.Th>{t('stock.stockKg')}</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {rows.map((row) => (
-              <Table.Tr key={row.yarnType}>
-                <Table.Td>{row.yarnType}</Table.Td>
-                <Table.Td>
-                  <Group gap="xs">
-                    {formatSignedKg(row.stockKg)}
-                    {row.stockKg.startsWith('-') && (
-                      <Badge color="red" variant="light">
-                        {t('stock.negativeBadge')}
-                      </Badge>
-                    )}
-                  </Group>
-                </Table.Td>
+      <Paper withBorder style={{ overflow: 'hidden' }}>
+        <Table.ScrollContainer minWidth={360}>
+          <Table aria-label={t('stock.title')}>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>{t('stock.yarnType')}</Table.Th>
+                <Table.Th ta="right">{t('stock.stockKg')}</Table.Th>
               </Table.Tr>
-            ))}
-            <Table.Tr>
-              <Table.Th>{t('stock.total')}</Table.Th>
-              <Table.Th>{formatSignedKg(stock.totalKg)}</Table.Th>
-            </Table.Tr>
-          </Table.Tbody>
-        </Table>
-      </Table.ScrollContainer>
+            </Table.Thead>
+            <Table.Tbody>
+              {rows.map((row) => (
+                <Table.Tr key={row.yarnType}>
+                  <Table.Td>{row.yarnType}</Table.Td>
+                  <Table.Td>
+                    <Group gap="xs" justify="flex-end" wrap="nowrap">
+                      {formatSignedKg(row.stockKg)}
+                      {row.stockKg.startsWith('-') && (
+                        <Badge color="red" variant="light">
+                          {t('stock.negativeBadge')}
+                        </Badge>
+                      )}
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+              <Table.Tr>
+                <Table.Th>{t('stock.total')}</Table.Th>
+                <Table.Th ta="right">{formatSignedKg(stock.totalKg)}</Table.Th>
+              </Table.Tr>
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
+      </Paper>
       {rows.length === 0 && <Text c="dimmed">{t('stock.noMatch')}</Text>}
     </>
   );

@@ -1,6 +1,9 @@
 import type { ShipmentDetail } from '@iplik/api-client';
 import { EvidenceGallery, EvidenceUpload } from '@/modules/evidence';
 import { useTranslation } from '@iplik/i18n';
+import { Stack } from '@iplik/ui';
+import { CancelShipmentForm } from './CancelShipmentForm';
+import { DispatchBand } from './DispatchBand';
 import { ManagerDecisionNote } from './ManagerDecisionNote';
 import { ShipmentFileActions } from './ShipmentFileActions';
 import { ShipmentHeader } from './ShipmentHeader';
@@ -12,9 +15,14 @@ import { findWeightCheck, isCompleted } from './shipmentViews';
 export function ShipmentFileTop({ shipment }: { shipment: ShipmentDetail }) {
   const { t } = useTranslation();
   const weightCheck = findWeightCheck(shipment);
+  const actions = shipment.allowedActions;
+  // Kantar uyuşmazlığında iptal, karar kartlarındadır; aynı işlem iki yerde durmaz.
+  const canCancel = actions.includes('CANCEL') && !actions.includes('RESOLVE_WEIGHT_MISMATCH');
+  const hasStockNotice = shipment.status === 'DRAFT' || shipment.status === 'WEIGHT_MISMATCH';
   return (
     <>
       <ShipmentHeader shipment={shipment} />
+      {actions.includes('RECORD_DISPATCH') && <DispatchBand shipmentId={shipment.shipmentId} />}
       {weightCheck !== undefined && shipment.status === 'WEIGHT_MISMATCH' && (
         <WeightCheckPanel check={weightCheck} />
       )}
@@ -26,26 +34,29 @@ export function ShipmentFileTop({ shipment }: { shipment: ShipmentDetail }) {
           hideWhenEmpty
         />
       )}
-      {(shipment.status === 'DRAFT' || shipment.status === 'WEIGHT_MISMATCH') && (
-        <CentralStockNotice
-          alwaysShow
-          demands={(shipment.lines ?? []).map((line) => ({
-            productId: line.yarnTypeId,
-            yarn: line.yarnTypeName ?? line.yarnTypeText ?? '',
-            kg: line.netKg,
-          }))}
-        />
-      )}
-      <ManagerDecisionNote shipment={shipment} />
+      <Stack gap="sm">
+        {hasStockNotice && (
+          <CentralStockNotice
+            alwaysShow
+            demands={(shipment.lines ?? []).map((line) => ({
+              productId: line.yarnTypeId,
+              yarn: line.yarnTypeName ?? line.yarnTypeText ?? '',
+              kg: line.netKg,
+            }))}
+          />
+        )}
+        <ManagerDecisionNote shipment={shipment} />
+      </Stack>
       <ShipmentFileActions
         shipmentId={shipment.shipmentId}
         shipmentDate={shipment.shipmentDate}
         subcontractorId={shipment.subcontractorId}
         driverName={shipment.driverName}
         plateNo={shipment.plateNo}
-        actions={shipment.allowedActions}
+        actions={actions}
       />
       <EvidenceUpload shipmentId={shipment.shipmentId} isDispatched={shipment.status !== 'DRAFT'} />
+      {canCancel && <CancelShipmentForm shipmentId={shipment.shipmentId} />}
     </>
   );
 }

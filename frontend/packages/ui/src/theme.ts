@@ -1,23 +1,68 @@
 import type { MantineColorsTuple, MantineThemeComponents } from '@mantine/core';
-import { createTheme, rem } from '@mantine/core';
+import { createTheme, rem, virtualColor } from '@mantine/core';
 import { BRAND_SHADE_INDEX, DEFAULT_BRAND_COLOR, createBrandPalette } from './brandPalette';
 
 /**
- * Nötr ölçek: soğuk taş grisi. Zemin (1), kart içi girinti (0), çizgi (2-3), girdi kenarı (5), soluk yazı (7),
- * ana yazı (9). Renk yalnızca anlam taşıyan yerde kullanılır (durum, uyarı, ana eylem); gerisi bu ölçektedir.
+ * Nötr ölçek (çinko grisi): girinti (0), zemin vurgusu (1), çizgi (2-3), girdi kenarı (4), soluk yazı (6), ana yazı (9).
+ * Renk yalnızca anlam taşıyan yerde kullanılır (durum, uyarı); gerisi bu ölçektedir.
  */
-const STONE: MantineColorsTuple = [
-  '#f6f7f9',
-  '#eceef2',
-  '#e2e5ea',
-  '#d3d8df',
-  '#bcc3cd',
-  '#959eab',
-  '#6c7684',
-  '#4f5967',
-  '#333b47',
-  '#18202a',
+const ZINC: MantineColorsTuple = [
+  '#fafafa',
+  '#f4f4f5',
+  '#e4e4e7',
+  '#d4d4d8',
+  '#a1a1aa',
+  '#8a8a93',
+  '#71717a',
+  '#52525b',
+  '#27272a',
+  '#09090b',
 ];
+
+/** Koyu görünüm ölçeği: yazı (0), soluk yazı (2), çizgi (4-5), kart (6), zemin (7), en koyu (9). */
+const ZINC_DARK: MantineColorsTuple = [
+  '#fafafa',
+  '#d4d4d8',
+  '#a1a1aa',
+  '#71717a',
+  '#3f3f46',
+  '#27272a',
+  '#18181b',
+  '#09090b',
+  '#050506',
+  '#000000',
+];
+
+/** Ana eylem rengi açık görünümde: neredeyse siyah dolgu (7), üzerine gelince tam siyah (8). */
+const INK_LIGHT: MantineColorsTuple = [
+  '#fafafa',
+  '#f4f4f5',
+  '#e4e4e7',
+  '#d4d4d8',
+  '#a1a1aa',
+  '#71717a',
+  '#3f3f46',
+  '#18181b',
+  '#09090b',
+  '#000000',
+];
+
+/** Ana eylem rengi koyu görünümde tersine döner: açık dolgu (7), koyu yazı. */
+const INK_DARK: MantineColorsTuple = [
+  '#18181b',
+  '#27272a',
+  '#3f3f46',
+  '#52525b',
+  '#71717a',
+  '#a1a1aa',
+  '#d4d4d8',
+  '#fafafa',
+  '#e4e4e7',
+  '#d4d4d8',
+];
+
+/** Dolgu bu parlaklığın üstündeyse üzerindeki yazı koyu olur. */
+const LUMINANCE_THRESHOLD = 0.4;
 
 /** Köşe yuvarlaklığı: denetimler 8 px, kartlar 8 px, pencereler 12 px; her şeye aynı yuvarlaklık verilmez. */
 const RADIUS = { xs: '0.25rem', sm: '0.375rem', md: '0.5rem', lg: '0.75rem', xl: '1rem' } as const;
@@ -97,15 +142,28 @@ const FORM_COMPONENTS: MantineThemeComponents = {
  * Marka rengi tek bir hex değerinden üretilir; her kurulum kendi rengini verir.
  */
 export function createAppTheme(brandColor: string = DEFAULT_BRAND_COLOR) {
+  const palette = createBrandPalette(brandColor);
   return createTheme({
-    colors: { brand: createBrandPalette(brandColor), gray: STONE },
-    black: STONE[9],
-    primaryColor: 'brand',
+    colors: {
+      // Kurulumun rengi vurgu içindir (logo, etkin menü, bağlantı); koyu görünümde tonlar tersine döner.
+      brandLight: palette,
+      brandDark: [...palette].reverse() as unknown as MantineColorsTuple,
+      brand: virtualColor({ name: 'brand', light: 'brandLight', dark: 'brandDark' }),
+      inkLight: INK_LIGHT,
+      inkDark: INK_DARK,
+      ink: virtualColor({ name: 'ink', light: 'inkLight', dark: 'inkDark' }),
+      gray: ZINC,
+      dark: ZINC_DARK,
+    },
+    black: ZINC[9],
+    // Ana eylem düğmesi nötrdür (açıkta siyah, koyuda beyaz); yazı rengi dolguya göre kendiliğinden seçilir.
+    primaryColor: 'ink',
     primaryShade: BRAND_SHADE_INDEX,
+    autoContrast: true,
+    luminanceThreshold: LUMINANCE_THRESHOLD,
     defaultRadius: 'md',
     radius: RADIUS,
-    fontFamily:
-      '"IBM Plex Sans Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+    fontFamily: '"Geist Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
     headings: HEADINGS,
     components: {
       InputWrapper: {
@@ -118,7 +176,9 @@ export function createAppTheme(brandColor: string = DEFAULT_BRAND_COLOR) {
         },
       },
       Input: {
-        styles: { input: { borderColor: 'var(--mantine-color-gray-5)', backgroundColor: 'white' } },
+        styles: {
+          input: { borderColor: 'var(--app-control-line)', backgroundColor: 'var(--app-surface)' },
+        },
       },
       // Kart gölgesiz, ince çizgili: gölge yalnızca üstte duran katmanlarda (menü, pencere, sabit eylem çubuğu) kalır.
       Paper: { defaultProps: { radius: 'md', withBorder: true } },

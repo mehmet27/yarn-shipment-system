@@ -1,11 +1,20 @@
 import { changePasswordUrl, logout } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Avatar, Group, Menu, NavIcon, Text, UnstyledButton } from '@iplik/ui';
+import {
+  Avatar,
+  Group,
+  Menu,
+  NavIcon,
+  Text,
+  UnstyledButton,
+  useColorSchemeToggle,
+} from '@iplik/ui';
 import { useCurrentUser } from '@/modules/auth';
 import { UserMenuProfile } from './UserMenuProfile';
 
-const AVATAR_SIZE_PX = 44;
+const AVATAR_SIZE_PX = 36;
 const MENU_WIDTH_PX = 280;
+const TOUCH_TARGET_PX = 44;
 
 async function logoutAndRedirect(): Promise<void> {
   // Tam sayfa yönlendirmesi: önbellekteki kullanıcı verisi ve izinler bellekten de silinir.
@@ -25,18 +34,19 @@ function initialsOf(fullName: string): string {
 export function UserMenu() {
   const { t } = useTranslation();
   const { data: user } = useCurrentUser();
+  const scheme = useColorSchemeToggle();
   if (user === undefined) {
     return null;
   }
   return (
     <Menu position="bottom-end" width={MENU_WIDTH_PX} shadow="lg" radius="md">
       <Menu.Target>
-        <UnstyledButton aria-label={user.fullName} c="white">
+        <UnstyledButton aria-label={user.fullName} mih={TOUCH_TARGET_PX}>
           <Group gap="xs" wrap="nowrap">
-            <Avatar size={AVATAR_SIZE_PX} radius="xl" color="white" c="brand.7">
+            <Avatar size={AVATAR_SIZE_PX} radius="md" color="gray">
               {initialsOf(user.fullName)}
             </Avatar>
-            <Text size="sm" fw={600} visibleFrom="sm" lh={1.2}>
+            <Text size="sm" fw={500} visibleFrom="sm" lh={1.2}>
               {user.fullName}
             </Text>
           </Group>
@@ -45,6 +55,9 @@ export function UserMenu() {
       <Menu.Dropdown>
         <UserMenuProfile user={user} />
         <Menu.Divider />
+        <Menu.Item leftSection={<NavIcon name="branding" />} onClick={scheme.toggle}>
+          {t(scheme.isDark ? 'app.lightMode' : 'app.darkMode')}
+        </Menu.Item>
         <Menu.Item
           leftSection={<NavIcon name="password" />}
           onClick={() => {

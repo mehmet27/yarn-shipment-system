@@ -29,7 +29,7 @@ export function ProgressStep({ label, index, current }: ProgressStepProps) {
           pos="absolute"
           top={LINE_TOP_PX}
           h={LINE_HEIGHT_PX}
-          bg={isReached ? 'brand.7' : 'gray.3'}
+          bg={isReached ? 'var(--app-text)' : 'var(--app-line)'}
           style={{ left: '-50%', width: '100%' }}
         />
       )}
@@ -39,8 +39,8 @@ export function ProgressStep({ label, index, current }: ProgressStepProps) {
         h={CIRCLE_SIZE_PX}
         mx="auto"
         mb={6}
-        bg={isReached ? 'brand.7' : 'gray.2'}
-        c={isReached ? 'white' : 'gray.7'}
+        bg={isReached ? 'var(--app-text)' : 'var(--app-line)'}
+        c={isReached ? 'var(--app-surface)' : 'dimmed'}
         fw={BOLD}
         style={{
           borderRadius: '50%',
@@ -49,12 +49,16 @@ export function ProgressStep({ label, index, current }: ProgressStepProps) {
           justifyContent: 'center',
           zIndex: 1,
           fontSize: 'var(--mantine-font-size-sm)',
-          boxShadow: isCurrent ? '0 0 0 4px var(--mantine-color-brand-1)' : undefined,
+          boxShadow: isCurrent ? '0 0 0 4px var(--app-line)' : undefined,
         }}
       >
         {index + 1}
       </Box>
-      <Text size="xs" fw={isCurrent ? BOLD : undefined} c={isCurrent ? 'brand.8' : 'dimmed'}>
+      <Text
+        size="xs"
+        fw={isCurrent ? BOLD : undefined}
+        c={isCurrent ? 'var(--app-text)' : 'dimmed'}
+      >
         {label}
       </Text>
     </Box>

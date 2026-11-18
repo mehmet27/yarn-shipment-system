@@ -1,7 +1,7 @@
 import type { FireSettlement } from '@iplik/api-client/settlements';
 import { useTranslation } from '@iplik/i18n';
 import { rateToPct } from '@iplik/units';
-import { Alert, Button, Group, Stack, TextInput } from '@iplik/ui';
+import { Alert, Button, SimpleGrid, Stack, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useUpdateFireRate } from './hooks';
 import type { DraftError } from './settlementDraft';
@@ -29,7 +29,7 @@ export function FireRateForm({ settlement }: { settlement: FireSettlement }) {
   };
   return (
     <Stack>
-      <Group grow align="flex-start">
+      <SimpleGrid cols={{ base: 1, sm: 2 }}>
         <TextInput
           label={t('settlement.fire.ratePct')}
           inputMode="decimal"
@@ -45,10 +45,10 @@ export function FireRateForm({ settlement }: { settlement: FireSettlement }) {
             setReason(event.currentTarget.value);
           }}
         />
-      </Group>
+      </SimpleGrid>
       {error !== undefined && <Alert color="red">{t(`settlement.draftErrors.${error}`)}</Alert>}
       {mutation.isError && <Alert color="red">{t(settlementErrorKey(mutation.error))}</Alert>}
-      <Button w="fit-content" loading={mutation.isPending} onClick={submit}>
+      <Button variant="default" w="fit-content" loading={mutation.isPending} onClick={submit}>
         {t('settlement.fire.rateSubmit')}
       </Button>
     </Stack>

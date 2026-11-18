@@ -20,7 +20,7 @@ export function MiniProgress({ total, done, color, label }: MiniProgressProps) {
           data-testid="mini-progress-segment"
           w={14}
           h={4}
-          bg={index < done ? `${color}.7` : 'gray.3'}
+          bg={index < done ? `var(--mantine-color-${color}-filled)` : 'var(--app-line)'}
           style={{ borderRadius: 2 }}
         />
       ))}

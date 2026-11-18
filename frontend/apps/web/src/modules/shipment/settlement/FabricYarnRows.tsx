@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, Group, Select, Stack, Text, TextInput } from '@iplik/ui';
+import { Box, Button, Select, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import type { YarnOption } from './fabricLimits';
 import type { YarnRowDraft } from './settlementDraft';
 
@@ -11,6 +11,8 @@ export type FabricYarnRowsProps = {
   onAdd: () => void;
   onRemove: (index: number) => void;
 };
+
+const ROW_STYLE = { border: '1px solid var(--app-line)', borderRadius: 'var(--mantine-radius-md)' };
 
 /** Başka satırda seçilmiş iplik tekrar sunulmaz. */
 function optionsFor(names: readonly YarnOption[], rows: readonly YarnRowDraft[], index: number) {
@@ -35,8 +37,14 @@ export function FabricYarnRows({
       </Text>
       {rows.map((row, index) => (
         // Satırın kimliği yok; yalnız sondan eklenir ve sırayla silinir.
-        // eslint-disable-next-line react/no-array-index-key -- kimliksiz taslak satırı
-        <Group key={index} grow align="flex-end">
+        <SimpleGrid
+          // eslint-disable-next-line react/no-array-index-key -- kimliksiz taslak satırı
+          key={index}
+          cols={{ base: 1, sm: 3 }}
+          p="sm"
+          bg="var(--app-inset)"
+          style={ROW_STYLE}
+        >
           <Select
             label={t('settlement.fabric.yarnType')}
             placeholder={t('settlement.fabric.yarnPlaceholder')}
@@ -56,15 +64,18 @@ export function FabricYarnRows({
               onChange(index, { netKg: event.currentTarget.value });
             }}
           />
-          <Button
-            variant="default"
-            onClick={() => {
-              onRemove(index);
-            }}
-          >
-            {t('settlement.fabric.removeYarn')}
-          </Button>
-        </Group>
+          <Box style={{ alignSelf: 'end' }}>
+            <Button
+              variant="default"
+              fullWidth
+              onClick={() => {
+                onRemove(index);
+              }}
+            >
+              {t('settlement.fabric.removeYarn')}
+            </Button>
+          </Box>
+        </SimpleGrid>
       ))}
       <Button variant="default" w="fit-content" onClick={onAdd}>
         {t('settlement.fabric.addYarn')}

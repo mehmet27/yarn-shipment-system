@@ -20,6 +20,7 @@ export function SourceFields({ draft, onChange, errors }: SourceFieldsProps) {
     <Stack gap="sm">
       <SegmentedControl
         fullWidth
+        styles={{ label: { whiteSpace: 'normal', textAlign: 'center' } }}
         aria-label={t('create.source.title')}
         data={SOURCE_KINDS.map((kind) => ({ value: kind, label: t(`create.source.${kind}`) }))}
         value={draft.sourceKind}

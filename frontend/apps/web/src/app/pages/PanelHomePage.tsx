@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import type { NavIconName } from '@iplik/ui';
-import { Button, Icon, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
+import { Button, Icon, PageHero, SectionCard, SimpleGrid, Stack } from '@iplik/ui';
 import { Link } from 'react-router';
 import { Can, useCurrentUser } from '@/modules/auth';
 import type { Permission } from '@iplik/api-client';
@@ -43,9 +43,7 @@ export function PanelHomePage() {
   const { data: user } = useCurrentUser();
   return (
     <Stack>
-      <Title order={1} size="h2">
-        {t('home.welcome', { name: user?.fullName ?? '' })}
-      </Title>
+      <PageHero title={t('home.welcome', { name: user?.fullName ?? '' })} />
       <Can permission="SHIPMENT_VIEW">
         <PendingWeightDecisions />
       </Can>
@@ -58,14 +56,13 @@ export function PanelHomePage() {
       <Can
         permission="REPORT_VIEW"
         fallback={
-          <Stack>
-            <Text c="dimmed">{t('home.shortcuts')}</Text>
+          <SectionCard title={t('home.shortcuts')}>
             <SimpleGrid cols={{ base: 1, sm: 2 }}>
               <Can permission="SHIPMENT_VIEW">
                 <Button
                   component={Link}
                   to="/panel/sevkiyat"
-                  variant="light"
+                  variant="default"
                   leftSection={<Icon name="shipments" />}
                 >
                   {t('nav.shipments')}
@@ -76,7 +73,7 @@ export function PanelHomePage() {
                   <Button
                     component={Link}
                     to={item.to}
-                    variant="light"
+                    variant="default"
                     leftSection={<Icon name={item.icon} />}
                   >
                     {t(item.labelKey)}
@@ -84,7 +81,7 @@ export function PanelHomePage() {
                 </Can>
               ))}
             </SimpleGrid>
-          </Stack>
+          </SectionCard>
         }
       >
         <DashboardSection />

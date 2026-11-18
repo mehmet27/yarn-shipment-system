@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Paper, Stack, Text, TextInput, Title } from '@iplik/ui';
+import { Alert, Button, SectionCard, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import { MasterSelect } from '@/modules/shipment';
 import { stockErrorKey } from '../stockErrors';
 import { useReceiptSubmit } from '../useReceiptSubmit';
@@ -9,29 +9,28 @@ export function YarnReceiptForm() {
   const { t } = useTranslation();
   const { draft, setDraft, field, error, submit, mutation } = useReceiptSubmit();
   return (
-    <Paper withBorder p="md" component="section" aria-label={t('stock.receipt.title')}>
+    <SectionCard title={t('stock.receipt.title')} icon="download">
       <Stack>
-        <Title order={3} size="h4">
-          {t('stock.receipt.title')}
-        </Title>
-        <MasterSelect
-          kind="product"
-          label={t('stock.receipt.yarnType')}
-          isRequired
-          value={draft.product}
-          onChange={(product) => {
-            setDraft((current) => ({ ...current, product }));
-          }}
-        />
+        <SimpleGrid cols={{ base: 1, sm: 2 }}>
+          <MasterSelect
+            kind="product"
+            label={t('stock.receipt.yarnType')}
+            isRequired
+            value={draft.product}
+            onChange={(product) => {
+              setDraft((current) => ({ ...current, product }));
+            }}
+          />
+          <TextInput
+            label={t('stock.receipt.netKg')}
+            inputMode="decimal"
+            withAsterisk
+            {...field('netKg')}
+          />
+        </SimpleGrid>
         <Text size="xs" c="dimmed">
           {t('stock.receipt.yarnHint')}
         </Text>
-        <TextInput
-          label={t('stock.receipt.netKg')}
-          inputMode="decimal"
-          withAsterisk
-          {...field('netKg')}
-        />
         <TextInput label={t('stock.receipt.note')} {...field('note')} />
         {error !== undefined && <Alert color="red">{t(`stock.draftErrors.${error}`)}</Alert>}
         {mutation.isSuccess && error === undefined && (
@@ -42,6 +41,6 @@ export function YarnReceiptForm() {
           {t('stock.receipt.submit')}
         </Button>
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }

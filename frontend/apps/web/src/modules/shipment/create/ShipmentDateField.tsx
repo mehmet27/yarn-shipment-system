@@ -16,6 +16,7 @@ export function ShipmentDateField({ draft, onChange, errors }: ShipmentDateField
       type="date"
       label={t('create.shipmentDate')}
       description={t('create.shipmentDateHint')}
+      inputWrapperOrder={['label', 'input', 'description', 'error']}
       value={draft.shipmentDate}
       min={todayIsoDate()}
       required

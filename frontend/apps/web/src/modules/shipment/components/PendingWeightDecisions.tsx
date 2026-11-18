@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Anchor, Group, Stack, Text } from '@iplik/ui';
+import { Anchor, Group, SectionCard, Stack, Text } from '@iplik/ui';
 import { Link } from 'react-router';
 import { usePendingWeightDecisions } from '../hooks/usePendingWeightDecisions';
 
@@ -12,15 +12,16 @@ export function PendingWeightDecisions() {
   const pending = usePendingWeightDecisions();
   if (pending.length === 0) return null;
   return (
-    <Alert
-      color="orange"
+    <SectionCard
       title={t('shipment.pendingDecisions.title', { count: pending.length })}
-      data-testid="pending-weight-decisions"
+      description={t('shipment.pendingDecisions.hint')}
+      icon="discrepancies"
+      tone="warning"
+      testId="pending-weight-decisions"
     >
       <Stack gap="xs">
-        <Text size="sm">{t('shipment.pendingDecisions.hint')}</Text>
         {pending.map((item) => (
-          <Group key={item.shipmentId} justify="space-between">
+          <Group key={item.shipmentId} justify="space-between" gap="xs">
             <Anchor component={Link} to={`/panel/sevkiyat/${item.shipmentId}`}>
               {item.shipmentNo}
             </Anchor>
@@ -30,6 +31,6 @@ export function PendingWeightDecisions() {
           </Group>
         ))}
       </Stack>
-    </Alert>
+    </SectionCard>
   );
 }

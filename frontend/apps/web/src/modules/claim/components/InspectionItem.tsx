@@ -15,7 +15,7 @@ export function InspectionItem({ claimId, shipmentId, inspection }: InspectionIt
   const { t } = useTranslation();
   const isPending = inspection.result === undefined;
   return (
-    <Paper withBorder p="sm">
+    <Paper withBorder p="sm" radius="md" bg="var(--app-inset)">
       <Stack gap="xs">
         <Group justify="space-between">
           <Text fw={600}>{t(`claim.inspection.kind.${inspection.kind}`)}</Text>

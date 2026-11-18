@@ -1,9 +1,9 @@
 import type { ShipmentBagsResponse } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { formatKgText, sumKg } from '@iplik/units';
-import { Button, Group, Paper, Stack, Text, Title } from '@iplik/ui';
+import { Button, Paper, Stack, Table, Text, Title } from '@iplik/ui';
 
-/** Sevkiyattaki çuvallar: sıra no ve kg; altta toplam kg. */
+/** Sevkiyattaki çuvallar: sıra no ve kg tabloda; altta toplam kg. */
 export function BagSections({
   bags,
   onRemove,
@@ -15,27 +15,39 @@ export function BagSections({
   const { dispatchBags } = bags;
   return (
     <Stack gap="xs">
-      <Title order={5}>{t('shipment.bags.dispatch', { count: dispatchBags.length })}</Title>
-      {dispatchBags.map((bag) => (
-        <Paper key={bag.seqNo} withBorder p="sm">
-          <Group justify="space-between" wrap="nowrap">
-            <Text fw={600}>
-              {t('shipment.bags.seq', { seq: bag.seqNo })} · {formatKgText(bag.weightKg)}
-            </Text>
-            {onRemove !== undefined && (
-              <Button
-                color="red"
-                variant="subtle"
-                onClick={() => {
-                  onRemove(bag.seqNo);
-                }}
-              >
-                {t('shipment.bags.removeFromShipment')}
-              </Button>
-            )}
-          </Group>
+      <Title order={3}>{t('shipment.bags.dispatch', { count: dispatchBags.length })}</Title>
+      {dispatchBags.length > 0 && (
+        <Paper withBorder style={{ overflow: 'hidden' }}>
+          <Table.ScrollContainer minWidth={0}>
+            <Table>
+              <Table.Tbody>
+                {dispatchBags.map((bag) => (
+                  <Table.Tr key={bag.seqNo}>
+                    <Table.Td>{t('shipment.bags.seq', { seq: bag.seqNo })}</Table.Td>
+                    <Table.Td ta="right" fw={600} style={{ whiteSpace: 'nowrap' }}>
+                      {formatKgText(bag.weightKg)}
+                    </Table.Td>
+                    {onRemove !== undefined && (
+                      <Table.Td ta="right">
+                        <Button
+                          color="red"
+                          variant="subtle"
+                          style={{ whiteSpace: 'nowrap' }}
+                          onClick={() => {
+                            onRemove(bag.seqNo);
+                          }}
+                        >
+                          {t('shipment.bags.removeFromShipment')}
+                        </Button>
+                      </Table.Td>
+                    )}
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
         </Paper>
-      ))}
+      )}
       {dispatchBags.length > 0 && (
         <Text size="sm" c="dimmed">
           {t('shipment.bags.total', {

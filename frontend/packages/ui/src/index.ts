@@ -42,6 +42,7 @@ export {
   UnstyledButton,
 } from '@mantine/core';
 export { Box } from '@mantine/core';
+export { useColorSchemeToggle } from './useColorSchemeToggle';
 export { useDebouncedValue, useDisclosure, useMediaQuery } from '@mantine/hooks';
 export { ErrorBoundary } from './ErrorBoundary';
 export type { ErrorBoundaryProps } from './ErrorBoundary';
@@ -73,6 +74,5 @@ export { SectionCard } from './components/SectionCard';
 export type { SectionCardProps, SectionTone } from './components/SectionCard';
 export { StatCard } from './components/StatCard';
 export type { StatCardProps, StatTone } from './components/StatCard';
-export { FRAME_BACKGROUND } from './frameBackground';
 export { NavIcon, NavIcon as Icon } from './components/NavIcon';
 export type { NavIconName, NavIconProps } from './components/NavIcon';

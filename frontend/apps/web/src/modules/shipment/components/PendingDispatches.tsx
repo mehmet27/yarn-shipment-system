@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Anchor, Group, Paper, Stack, Text, Title } from '@iplik/ui';
+import { Anchor, Group, SectionCard, Stack, Text } from '@iplik/ui';
 import { Link } from 'react-router';
 import { useShipments } from '../hooks/useShipments';
 
@@ -17,16 +17,15 @@ export function PendingDispatches() {
   );
   if (pending.length === 0) return null;
   return (
-    <Paper withBorder p="md" data-testid="pending-dispatches">
+    <SectionCard
+      title={t('shipment.pendingDispatches.title', { count: pending.length })}
+      description={t('shipment.pendingDispatches.hint')}
+      icon="truck"
+      testId="pending-dispatches"
+    >
       <Stack gap="xs">
-        <Title order={2} size="h4">
-          {t('shipment.pendingDispatches.title', { count: pending.length })}
-        </Title>
-        <Text size="sm" c="dimmed">
-          {t('shipment.pendingDispatches.hint')}
-        </Text>
         {pending.map((item) => (
-          <Group key={item.shipmentId} justify="space-between">
+          <Group key={item.shipmentId} justify="space-between" gap="xs">
             <Anchor component={Link} to={`/panel/sevkiyat/${item.shipmentId}`}>
               {item.shipmentNo}
             </Anchor>
@@ -36,6 +35,6 @@ export function PendingDispatches() {
           </Group>
         ))}
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }

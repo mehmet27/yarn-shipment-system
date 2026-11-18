@@ -24,13 +24,18 @@ function renderBell() {
 }
 
 describe('NotificationBell', () => {
-  it('açık uyuşmazlık sayısını rozet olarak gösterir', async () => {
+  it('açık ve incelemedeki uyuşmazlıkların toplamını rozet olarak gösterir', async () => {
     server.use(
       http.get(ME_PATH, () => HttpResponse.json(createMockUser('MANAGER'))),
-      http.get(DISCREPANCIES_PATH, () =>
+      http.get(DISCREPANCIES_PATH, ({ request }) =>
         HttpResponse.json({
           items: [],
-          page: { number: 0, size: 5, totalElements: 7, totalPages: 2 },
+          page: {
+            number: 0,
+            size: 5,
+            totalElements: new URL(request.url).searchParams.get('status') === 'OPEN' ? 5 : 2,
+            totalPages: 2,
+          },
         }),
       ),
       http.get(SHIPMENTS_PATH, () =>

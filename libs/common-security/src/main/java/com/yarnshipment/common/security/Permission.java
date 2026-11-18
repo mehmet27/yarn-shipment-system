@@ -29,11 +29,11 @@ public enum Permission implements GrantedAuthority {
     EVIDENCE_VIEW(AccessType.READ),
     EVIDENCE_INVALIDATE(AccessType.WRITE),
 
-    CORRECTION_CREATE(AccessType.WRITE),
     QUALITY_CLAIM_OPEN(AccessType.WRITE),
     DISCREPANCY_VIEW(AccessType.READ),
+    /** Kalite: uyuşmazlığı üstlenir (atama), numune/laboratuvar kontrolü ister ve sonucunu girer; karar veremez. */
     DISCREPANCY_RESOLVE(AccessType.WRITE),
-    /** Kalite itirazını yalnızca "haklı" ya da "haksız" diye karara bağlar (müdür); atama ve kontrol isteği yoktur. */
+    /** Müdür: kalite itirazını yalnızca "haklı" ya da "haksız" diye karara bağlar; atama ve kontrol isteği yoktur. */
     DISCREPANCY_DECIDE(AccessType.WRITE),
 
     AUDIT_VIEW(AccessType.READ),

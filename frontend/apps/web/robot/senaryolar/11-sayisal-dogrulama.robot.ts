@@ -22,6 +22,9 @@ type Fire = {
   expectedFabricKg: string;
   faultyKg: string;
   fireRate: string;
+  remainingKg: string;
+  claimRemainingKg: string;
+  status: string;
 };
 
 const BASKA = 'Başka Dokuma Ltd.';
@@ -192,10 +195,7 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
   await depo.adim('iplik dönüşü 10 kg: bakiye 90, fire tabanı 90', async () => {
     await depo.sayfa.goto(`/panel/sevkiyat/${id}`);
     await depo.sayfa.getByRole('tab', { name: 'İplik dönüşü', exact: true }).click();
-    await depo.sayfa
-      .getByLabel(/İplik cinsi/)
-      .first()
-      .fill(iplik);
+    // Sevkiyatta tek iplik gönderildiği için iplik cinsi kendiliğinden seçili gelir.
     await depo.sayfa.getByLabel(/Net kilo/).fill('10');
     await depo.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
     await depo.sayfa.waitForTimeout(1500);
@@ -240,7 +240,7 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
   });
 
   await kalite.adim(
-    'haklı itiraz 10 kg: bakiye −10 (0), fire tabanı ve hatalı kilo itirazı hesaba katar',
+    'haklı itiraz 10 kg: bakiye hemen düşmez (10), fire tabanı ve hatalı kilo itirazı hesaba katar',
     async () => {
       await kalite.sayfa.goto(`/panel/sevkiyat/${id}`);
       await kalite.sayfa.getByRole('tab', { name: 'Kalite itirazı', exact: true }).click();
@@ -262,11 +262,12 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
       await kalite.sayfa.goto('/panel/uyusmazliklar');
       await kalite.sayfa.getByRole('link', { name: new RegExp(no) }).click();
       await kalite.sayfa.getByRole('button', { name: 'Bana ata' }).click();
-      await kararVer(kalite, 'Talep haklı', 'Robot: haklı');
+      await mudur.sayfa.goto(kalite.sayfa.url());
+      await kararVer(mudur, 'Haklı', 'Robot: haklı');
       await kalite.sayfa.waitForTimeout(2000);
       mudur.kontrol(
-        'Başka Dokuma bakiyesi 0 kg (100 − 10 dönüş − 80 kumaş − 10 itiraz)',
-        kiloEsit(bakiyeOf((await anlik(mudur)).bakiye, BASKA, iplik), 0),
+        'Başka Dokuma bakiyesi 10 kg kalır (100 − 10 dönüş − 80 kumaş); itiraz kilosu kumaşla zaten düştü',
+        kiloEsit(bakiyeOf((await anlik(mudur)).bakiye, BASKA, iplik), 10),
         String(bakiyeOf((await anlik(mudur)).bakiye, BASKA, iplik)),
       );
       await kontrolEt('itiraz sonrası', {
@@ -278,6 +279,40 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
       });
       const f = await fire();
       mudur.kontrol('fire dosyasında itiraz kilosu 10', kiloEsit(Number(f.claimKg), 10), f.claimKg);
+      mudur.kontrol(
+        'faturalanacak kilo = hatalı kilo + itirazdan gelen 10 kg',
+        kiloEsit(Number(f.claimRemainingKg), 10) &&
+          kiloEsit(Number(f.remainingKg), Number(f.faultyKg) + 10),
+        JSON.stringify(f),
+      );
+    },
+  );
+
+  await mudur.adim(
+    'müdür faturayı girince yalnızca hatalı kilo bakiyeden düşer; itiraz kilosu kumaş girişinde zaten düşülmüştür',
+    async () => {
+      const once = bakiyeOf((await anlik(mudur)).bakiye, BASKA, iplik);
+      const f = await fire();
+      const no = (await mudur.api<{ shipmentNo: string }>(`/api/v1/shipments/${id}`)).shipmentNo;
+      await mudur.sayfa.goto('/panel/faturalanacaklar');
+      const kart = mudur.sayfa.getByRole('article', { name: no });
+      await kart.getByRole('button', { name: 'Fatura bilgisini gir' }).click();
+      await kart.getByLabel(/Fatura no/).fill(`F-${iplik}`);
+      await kart.getByRole('button', { name: 'Fatura edildi' }).click();
+      await kart.getByRole('button', { name: 'Evet, fatura edildi' }).click();
+      await mudur.sayfa.waitForTimeout(1500);
+      const sonra = bakiyeOf((await anlik(mudur)).bakiye, BASKA, iplik);
+      mudur.kontrol(
+        `bakiye ${once} → ${sonra}: yalnızca hatalı kilo (${f.remainingKg} − ${f.claimRemainingKg}) düşer`,
+        kiloEsit(once - sonra, Number(f.remainingKg) - Number(f.claimRemainingKg)),
+        JSON.stringify(f),
+      );
+      const bitti = await fire();
+      mudur.kontrol(
+        'dosya INVOICED, kalan 0',
+        bitti.status === 'INVOICED' && Number(bitti.remainingKg) === 0,
+        JSON.stringify(bitti),
+      );
     },
   );
 });

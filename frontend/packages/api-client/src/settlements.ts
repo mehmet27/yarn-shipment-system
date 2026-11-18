@@ -121,8 +121,12 @@ export type FireSettlement = {
   actualFirePercent: string;
   /** Şimdiye kadar faturası kesilen kilo. */
   invoicedKg: string;
-  /** Henüz faturası kesilmemiş kilo (faturalanacak kilo). */
+  /** Henüz faturası kesilmemiş kilo (faturalanacak kilo): eksik kumaş ve haklı itirazdan kalan. */
   remainingKg: string;
+  /** remainingKg'nin haklı kalite itirazından gelen kısmı; fatura kesilince fasoncu bakiyesinden düşer. */
+  claimRemainingKg: string;
+  /** Faturalanan kilonun eksik kumaşı karşılayan kısmı; kumaş girişi sınırında tüketilmiş sayılır. */
+  shortageInvoicedKg: string;
   /** Sevkiyatta giden iplikler; fatura satırlarında kilo bu ipliklere yazılır. */
   yarns: SettlementYarn[];
   /** Şimdiye kadar girilen faturalar. */

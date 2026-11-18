@@ -30,13 +30,19 @@ class YarnReturnServiceTest {
     private final InMemoryShipmentQueryPort queryPort = new InMemoryShipmentQueryPort();
     private final InMemoryFireSettlementPort settlements = new InMemoryFireSettlementPort();
     private final RecordingYarnReturnPort yarnReturns = new RecordingYarnReturnPort();
+    private final RecordingLedgerPorts ledger = new RecordingLedgerPorts();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final Actor warehouse = TestTokens.actor("warehouse");
     private final YarnReturnService service = new YarnReturnService(
-            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), yarnReturns, settlements, clock);
+            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
+            yarnReturns,
+            settlements,
+            ledger,
+            clock);
 
     @BeforeEach
     void givenCompletedShipmentWithOpenFile() {
+        ledger.givenRecipe("30/1 penye", "1000.000");
         queryPort.add(TestShipments.shipment(ShipmentStatus.COMPLETED));
         settlements.put(FireSettlement.open(
                 TestShipments.SHIPMENT_ID, TestShipments.SUBCONTRACTOR_ID, new BigDecimal("1000.000")));
@@ -73,6 +79,24 @@ class YarnReturnServiceTest {
     }
 
     @Test
+    @DisplayName("Dönen iplik gönderilen iplikler arasından olmalı ve o ipliğin kilosunu (öncekiler düşülerek) aşamaz")
+    void shouldLimitReturnPerSentYarn() {
+        // given
+        ledger.givenRecipe("20/1 open end", "300.000");
+
+        // when / then
+        service.recordYarnReturn(command("1000"));
+        assertThatThrownBy(() -> service.recordYarnReturn(command("0.001")))
+                .isInstanceOf(InvalidLedgerInputException.class);
+        RecordYarnReturnCommand unknown = new RecordYarnReturnCommand(
+                warehouse, TestShipments.SHIPMENT_ID, "40/1 penye", null, new BigDecimal("1"), null);
+        assertThatThrownBy(() -> service.recordYarnReturn(unknown)).isInstanceOf(InvalidLedgerInputException.class);
+        RecordYarnReturnCommand other = new RecordYarnReturnCommand(
+                warehouse, TestShipments.SHIPMENT_ID, "20/1 open end", null, new BigDecimal("300"), null);
+        assertThat(service.recordYarnReturn(other).yarnType()).isEqualTo("20/1 open end");
+    }
+
+    @Test
     @DisplayName("Kayıt her zaman fasoncudan depoya dönüş olarak yazılır")
     void shouldAlwaysRecordAsReturn() {
         // when
@@ -91,7 +115,11 @@ class YarnReturnServiceTest {
         InMemoryShipmentQueryPort other = new InMemoryShipmentQueryPort();
         other.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
         YarnReturnService awaiting = new YarnReturnService(
-                new ScopedShipmentLoader(other, new ScopeGuard(event -> {}, clock)), yarnReturns, settlements, clock);
+                new ScopedShipmentLoader(other, new ScopeGuard(event -> {}, clock)),
+                yarnReturns,
+                settlements,
+                ledger,
+                clock);
 
         // when / then
         assertThatThrownBy(() -> awaiting.recordYarnReturn(command("10")))

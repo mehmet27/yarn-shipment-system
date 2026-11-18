@@ -28,7 +28,24 @@ final class InMemoryFireSettlementPort implements FireSettlementPort, FireInvoic
     }
 
     void givenInvoiced(String invoicedKg) {
-        totals = new FireTotals(totals.returnedKg(), totals.claimKg(), totals.fabricKg(), new BigDecimal(invoicedKg));
+        totals = new FireTotals(
+                totals.returnedKg(),
+                totals.claimKg(),
+                totals.fabricKg(),
+                new BigDecimal(invoicedKg),
+                totals.pendingClaimKg(),
+                totals.claimInvoicedKg());
+    }
+
+    /** Karara bağlanmış ve faturayla bakiyeden düşülecek haklı itiraz kilosu; fire tabanı için de sayılır. */
+    void givenPendingClaim(String claimKg) {
+        totals = new FireTotals(
+                totals.returnedKg(),
+                new BigDecimal(claimKg),
+                totals.fabricKg(),
+                totals.invoicedKg(),
+                new BigDecimal(claimKg),
+                totals.claimInvoicedKg());
     }
 
     void put(FireSettlement settlement) {
@@ -96,7 +113,9 @@ final class InMemoryFireSettlementPort implements FireSettlementPort, FireInvoic
                 totals.returnedKg(),
                 totals.claimKg(),
                 totals.fabricKg(),
-                totals.invoicedKg().add(kg));
+                totals.invoicedKg().add(kg),
+                totals.pendingClaimKg(),
+                totals.claimInvoicedKg().add(invoice.claimKg()));
     }
 
     @Override

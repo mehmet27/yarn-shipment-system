@@ -399,9 +399,9 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
         .click();
       const secenekler = await mudur.sayfa.locator('[role=option]:visible').allInnerTexts();
       mudur.kontrol(
-        'seçenekler yalnız "Haklı" ve "Haksız" (fatura bekleyen dosyada "Haklı, faturalandı") olmalı',
+        'seçenekler yalnız "Haklı" ve "Haksız" olmalı (fatura bu ekranda girilmez)',
         secenekler.length > 0 &&
-          secenekler.every((s) => /^(Haklı, faturalandı|Haklı|Haksız)$/.test(s.trim())) &&
+          secenekler.every((s) => /^(Haklı|Haksız)$/.test(s.trim())) &&
           secenekler.some((s) => s.trim() === 'Haksız'),
         secenekler.join(' | '),
       );
@@ -421,10 +421,18 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     await kalite.sayfa.getByLabel(/Talep notu/).fill('Robot: numune alın');
     await kalite.sayfa.getByRole('button', { name: 'Kontrol iste' }).click();
     await kalite.sayfa.waitForTimeout(1200);
-    await expect(kalite.sayfa.getByRole('heading', { name: 'Karar ver' })).toBeVisible();
-    await kararVer(kalite, 'Talep haksız', 'Robot kararı');
-    const mesajlar = await kalite.mesajlar();
     kalite.kontrol(
+      'kalitede "Karar ver" bölümü olmamalı (karar yalnız müdürde)',
+      (await kalite.sayfa.getByRole('heading', { name: 'Karar ver' }).count()) === 0,
+    );
+  });
+
+  await mudur.adim('müdür: lab kontrolü beklerken karar verilememeli', async () => {
+    await mudur.sayfa.goto('/panel/uyusmazliklar');
+    await mudur.sayfa.locator('main a[href*="uyusmazliklar/"]').first().click();
+    await kararVer(mudur, 'Haksız', 'Robot kararı');
+    const mesajlar = await mudur.mesajlar();
+    mudur.kontrol(
       'bekleyen kontrol uyarısı',
       mesajlar.some((m) => /sonuc|sonuç|kontrol/i.test(m)),
       mesajlar.join(' | '),

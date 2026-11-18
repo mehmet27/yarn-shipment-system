@@ -1,6 +1,7 @@
 import type { FireSettlement } from '@iplik/api-client/settlements';
 import { useTranslation } from '@iplik/i18n';
-import { Box, SimpleGrid, Stack, Text } from '@iplik/ui';
+import { SimpleGrid, Stack, Text } from '@iplik/ui';
+import { FireDetails } from './FireDetails';
 import { FireFact } from './FireFact';
 import { formatFireRate, formatKgText, formatPercentText } from './format';
 
@@ -50,21 +51,7 @@ export function FireFigures({ settlement }: { settlement: FireSettlement }) {
           ))}
         </Stack>
       )}
-      <Box component="details">
-        <Text component="summary" size="sm" c="dimmed" style={{ cursor: 'pointer' }}>
-          {t('settlement.fire.details')}
-        </Text>
-        <SimpleGrid cols={{ base: 1, xs: 2, md: 3 }} mt="xs">
-          <FireFact label={t('settlement.fire.sent')} value={formatKgText(settlement.sentKg)} />
-          <FireFact
-            label={t('settlement.fire.returned')}
-            value={formatKgText(settlement.returnedKg)}
-          />
-          <FireFact label={t('settlement.fire.claim')} value={formatKgText(settlement.claimKg)} />
-          <FireFact label={t('settlement.fire.fabric')} value={formatKgText(settlement.fabricKg)} />
-          <FireFact label={t('settlement.fire.base')} value={formatKgText(settlement.baseKg)} />
-        </SimpleGrid>
-      </Box>
+      <FireDetails settlement={settlement} />
     </Stack>
   );
 }

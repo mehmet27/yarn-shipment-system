@@ -1,22 +1,23 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, SectionCard, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
+import { Alert, Button, SectionCard, Select, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import { useState } from 'react';
-import { MasterSelect } from '../create/MasterSelect';
 import { useRecordYarnReturn } from './hooks';
 import type { DraftError } from './settlementDraft';
 import { toReturnRequest } from './settlementDraft';
 import { settlementErrorKey } from './settlementErrors';
 import { useReturnDraft } from './useReturnDraft';
+import { useReturnOptions } from './useReturnOptions';
 
 const NUMBER_STYLES = { input: { textAlign: 'right' } } as const;
 
 export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
-  const { draft, field, setLot, reset } = useReturnDraft();
+  const { draft, field, setYarnType, setLotId, reset } = useReturnDraft();
   const [error, setError] = useState<DraftError>();
   const mutation = useRecordYarnReturn(shipmentId);
+  const { yarns, lots, yarnType, lotId } = useReturnOptions(shipmentId, draft);
   const submit = () => {
-    const request = toReturnRequest(draft);
+    const request = toReturnRequest({ ...draft, yarnType, lotId });
     setError(typeof request === 'string' ? request : undefined);
     if (typeof request !== 'string') mutation.mutate(request, { onSuccess: reset });
   };
@@ -24,13 +25,29 @@ export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
     <SectionCard title={t('settlement.yarn.title')}>
       <Stack>
         <SimpleGrid cols={{ base: 1, sm: 2 }}>
-          <TextInput label={t('settlement.yarn.yarnType')} withAsterisk {...field('yarnType')} />
-          <MasterSelect
-            kind="lot"
-            label={t('settlement.yarn.lotId')}
-            value={draft.lot}
-            onChange={setLot}
+          <Select
+            label={t('settlement.yarn.yarnType')}
+            placeholder={t('settlement.fabric.yarnPlaceholder')}
+            data={yarns}
+            value={yarnType === '' ? null : yarnType}
+            onChange={(value) => {
+              setYarnType(value ?? '');
+            }}
+            allowDeselect={false}
+            nothingFoundMessage={t('settlement.fabric.noYarnFound')}
+            withAsterisk
           />
+          {lots.length > 0 && (
+            <Select
+              label={t('settlement.yarn.lotId')}
+              data={lots}
+              value={lotId === '' ? null : lotId}
+              onChange={(value) => {
+                setLotId(value ?? '');
+              }}
+              clearable
+            />
+          )}
           <TextInput
             label={t('settlement.yarn.netKg')}
             inputMode="decimal"

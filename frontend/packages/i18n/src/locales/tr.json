@@ -181,14 +181,12 @@
         "bags": "Çuvallar",
         "evidence": "Kanıtlar",
         "history": "Geçmiş",
-        "corrections": "Düzeltmeler",
         "claims": "Kalite itirazı",
         "fabric": "Kumaş girişi",
         "yarn": "İplik dönüşü",
         "fire": "Fire dosyası"
       },
       "tabHints": {
-        "corrections": "Tartı kilosunda hata varsa buradan, gerekçesiyle düzeltilir.",
         "claims": "Teslim alınan kumaşta kalite sorunu varsa buradan itiraz açılır.",
         "fabric": "Fasoncudan kumaş gelince kilosunu buraya girin.",
         "fire": "Gönderilen iplik ile gelen kumaşın farkı ve faturalanacak kilo burada hesaplanır."
@@ -264,25 +262,6 @@
           "unknown": "Çuvallar eklenemedi. Lütfen tekrar deneyin.",
           "SHIPMENT_NOT_DUE": "Sevkiyat tarihi gelmeden çuval eklenemez."
         }
-      }
-    },
-    "correction": {
-      "intro": "Tamamlanıp kilitlenen sevkiyatta kayıtlar değişmez; yanlış girilen çıkış tartısını yalnızca Admin gerekçe yazarak düzeltir. Eski değer silinmez, burada kalır.",
-      "empty": "Bu sevkiyatta düzeltme yok.",
-      "target": "Ne düzeltilecek?",
-      "targets": {
-        "DISPATCH_WEIGHING": "Çıkış tartısı"
-      },
-      "reason": "Gerekçe",
-      "submit": "Düzeltmeyi kaydet",
-      "errors": {
-        "targetRequired": "Neyin düzeltileceğini seçin.",
-        "invalidKg": "Brüt ve darayı kilo olarak girin, ör. 1.982,5.",
-        "tareExceedsGross": "Dara brütten büyük olamaz.",
-        "reasonRequired": "Gerekçe yazın.",
-        "INVALID_CORRECTION": "Düzeltme kaydedilemedi: yeni değer eskisiyle aynı olabilir ya da kayıt artık düzeltilemiyor.",
-        "CORRECTION_CONFLICT": "Kayıt bu arada değişti. Sayfayı yenileyip tekrar deneyin.",
-        "unknown": "Düzeltme kaydedilemedi. Lütfen tekrar deneyin."
       }
     },
     "complete": {
@@ -736,25 +715,17 @@
       "title": "Karar ver",
       "resolution": "Karar",
       "note": "Not",
-      "liableParty": "Sorumlu taraf",
       "submit": "Karara bağla",
       "choice": {
-        "CLAIM_JUSTIFIED_INVOICED": "Haklı, faturalandı",
         "CLAIM_JUSTIFIED": "Haklı",
         "CLAIM_UNJUSTIFIED": "Haksız"
       },
       "effect": {
-        "CLAIM_JUSTIFIED_INVOICED": "İtiraz haklı sayılır, kilo fasoncunun ipliğinden düşülür ve girdiğiniz fatura kaydedilir. Bu işlem geri alınamaz.",
-        "CLAIM_JUSTIFIED": "İtiraz edilen kilo, fasoncunun sorumlu olduğu iplikten düşülür; fire hesabı da buna göre değişir.",
-        "CLAIM_UNJUSTIFIED": "Fasoncunun ipliğinde değişiklik olmaz; uyuşmazlık yalnızca kapatılır.",
-        "LIABILITY_ASSIGNED": "Yazdığınız sorumlu taraf kayda geçer; fasoncunun ipliğinde değişiklik olmaz, uyuşmazlık kapatılır."
+        "CLAIM_JUSTIFIED": "İtiraz edilen kilo faturalanacak kiloya eklenir; müdür fatura kesince faturaya girer; iplik ikinci kez düşülmez, çünkü hatalı gelen kumaş zaten gelen kumaşın içindedir. Fire hesabı da buna göre değişir.",
+        "CLAIM_UNJUSTIFIED": "Fasoncunun ipliğinde değişiklik olmaz; uyuşmazlık yalnızca kapatılır."
       },
       "confirmTitle": "Onay: karar kaydı",
       "confirmText": "Karar: {{resolution}}. Karar geri alınamaz.",
-      "confirmTextInvoice": "Karar: haklı. Fatura {{no}} kaydedilecek. Bu işlem geri alınamaz.",
-      "invoiceFailed": "Karar kaydedildi ama fatura kaydedilemedi. Faturayı sevkiyat dosyasındaki fire sekmesinden girin.",
-      "invoiceFailedOpen": "Sevkiyat dosyasını aç",
-      "invoiceFailedDone": "Tamam",
       "confirmYes": "Evet, kararı kaydet",
       "confirmNo": "Vazgeç",
       "noteRequired": "Karar notu boş olamaz. Kararın nedenini yazın.",
@@ -1417,6 +1388,7 @@
       "sent": "Gönderilen iplik",
       "returned": "Dönen iplik",
       "claim": "İtiraz edilen",
+      "claimToInvoice": "İtirazdan faturalanacak",
       "fabric": "Gelen kumaş",
       "base": "Fire hesabına esas iplik",
       "expected": "Gelmesi gereken kumaş",
@@ -1434,6 +1406,11 @@
       "invoiceNote": "Not (isteğe bağlı)",
       "invoiceSubmit": "Fatura edildi",
       "invoiceWarning": "Fatura kaydı geri alınamaz.",
+      "invoiceConfirmTitle": "Fatura onayı",
+      "invoiceConfirmText": "Faturası kesilen kilonun kumaşı artık gelmeyecek mi? Kaydettikten sonra bu kilo için kumaş girilemez ve kayıt geri alınamaz.",
+      "invoiceConfirmYes": "Evet, fatura edildi",
+      "invoiceConfirmNo": "Vazgeç",
+      "invoiceClaimNote": "Bu kilonun {{kg}} kısmı kabul edilen kalite itirazından gelir. Hatalı gelen kumaş zaten gelen kumaşın içinde sayıldığı için bu kısım fasoncunun ipliğinden ikinci kez düşülmez.",
       "invoiceRemaining": "Faturası henüz kesilmemiş: {{kg}}",
       "invoiceLinesHint": "Faturayı hangi iplikten kaç kilo için kestiyseniz yazın. Yazdığınız kilo fasoncunun bakiyesinden düşer.",
       "invoiceYarnKg": "{{yarn}} (kg)",
@@ -1618,7 +1595,7 @@
     "groups": {
       "masterData": "Tanımlar ve partiler",
       "shipment": "Sevkiyat",
-      "evidence": "Kanıt ve düzeltme",
+      "evidence": "Kanıt",
       "quality": "Kalite ve uyuşmazlık",
       "stock": "Stok ve bakiye",
       "reporting": "Rapor ve denetim",
@@ -1641,7 +1618,6 @@
       "EVIDENCE_UPLOAD_CLAIM": "İtiraz kanıtı yükler",
       "EVIDENCE_VIEW": "Kanıtları görür",
       "EVIDENCE_INVALIDATE": "Kanıtı geçersiz kılar",
-      "CORRECTION_CREATE": "Kayıt düzeltmesi yapar",
       "QUALITY_CLAIM_OPEN": "Kalite itirazı açar",
       "DISCREPANCY_VIEW": "Uyuşmazlıklar ekranını görür",
       "DISCREPANCY_RESOLVE": "Uyuşmazlığı karara bağlar",

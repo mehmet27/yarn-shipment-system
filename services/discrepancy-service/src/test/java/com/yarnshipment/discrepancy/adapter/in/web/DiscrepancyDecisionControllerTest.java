@@ -11,7 +11,6 @@ import com.yarnshipment.discrepancy.application.port.in.ResolveDiscrepancyUseCas
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNoteRequiredException;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyStatus;
-import com.yarnshipment.discrepancy.domain.model.LiablePartyRequiredException;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +29,7 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 class DiscrepancyDecisionControllerTest {
 
     private static final String ONE = "/api/v1/discrepancies/" + TestDiscrepancies.ID;
-    private static final String RESOLVE_BODY = "{\"resolution\":\"TOLERANCE\",\"note\":\"tolerans içinde\"}";
+    private static final String RESOLVE_BODY = "{\"resolution\":\"CLAIM_JUSTIFIED\",\"note\":\"haklı\"}";
 
     private final MockMvcTester mvc;
 
@@ -62,16 +61,11 @@ class DiscrepancyDecisionControllerTest {
     }
 
     @Test
-    @DisplayName("Karar sorumlu taraf eksikse LIABLE_PARTY_REQUIRED ile 400 alır; boş not 400 alır")
+    @DisplayName("Boş not 400 alır")
     void shouldValidateResolution() {
-        when(resolveDiscrepancy.resolveDiscrepancy(any())).thenThrow(new LiablePartyRequiredException());
+        MvcTestResult emptyNote =
+                post(ONE + "/resolve", "{\"resolution\":\"CLAIM_JUSTIFIED\",\"note\":\"\"}", manager());
 
-        MvcTestResult missingParty =
-                post(ONE + "/resolve", "{\"resolution\":\"LIABILITY_ASSIGNED\",\"note\":\"sorumlu\"}", quality());
-        MvcTestResult emptyNote = post(ONE + "/resolve", "{\"resolution\":\"TOLERANCE\",\"note\":\"\"}", quality());
-
-        assertThat(missingParty).hasStatus(HttpStatus.BAD_REQUEST);
-        assertThat(missingParty).bodyJson().extractingPath("$.code").isEqualTo("LIABLE_PARTY_REQUIRED");
         assertThat(emptyNote).hasStatus(HttpStatus.BAD_REQUEST);
     }
 
@@ -80,7 +74,8 @@ class DiscrepancyDecisionControllerTest {
     void shouldRejectBlankNote() {
         when(resolveDiscrepancy.resolveDiscrepancy(any())).thenThrow(new DiscrepancyNoteRequiredException());
 
-        MvcTestResult result = post(ONE + "/resolve", "{\"resolution\":\"TOLERANCE\",\"note\":\"   \"}", quality());
+        MvcTestResult result =
+                post(ONE + "/resolve", "{\"resolution\":\"CLAIM_JUSTIFIED\",\"note\":\"   \"}", manager());
 
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("DISCREPANCY_NOTE_REQUIRED");
@@ -92,7 +87,7 @@ class DiscrepancyDecisionControllerTest {
         when(resolveDiscrepancy.resolveDiscrepancy(any()))
                 .thenReturn(TestDiscrepancies.withStatus(TestTokens.SITE_ID, DiscrepancyStatus.RESOLVED));
 
-        assertThat(post(ONE + "/resolve", RESOLVE_BODY, quality())).hasStatusOk();
+        assertThat(post(ONE + "/resolve", RESOLVE_BODY, manager())).hasStatusOk();
     }
 
     @Test
@@ -106,23 +101,16 @@ class DiscrepancyDecisionControllerTest {
                 .hasStatusOk();
         assertThat(post(ONE + "/resolve", "{\"resolution\":\"CLAIM_UNJUSTIFIED\",\"note\":\"haksız\"}", manager))
                 .hasStatusOk();
-        assertThat(post(
-                        ONE + "/resolve",
-                        "{\"resolution\":\"LIABILITY_ASSIGNED\",\"note\":\"n\",\"liableParty\":\"x\"}",
-                        manager))
+        assertThat(post(ONE + "/resolve", "{\"resolution\":\"TOLERANCE\",\"note\":\"n\"}", manager))
                 .hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(ONE + "/assign", "{\"assigneeId\":\"" + UUID.randomUUID() + "\"}", manager))
                 .hasStatus(HttpStatus.FORBIDDEN);
     }
 
     @Test
-    @DisplayName("Müdür tolerans gibi kararı veremez; depo ve şoför hiçbir karar veremez")
+    @DisplayName("Kalite karar veremez ama atayabilir; depo ve şoför hiçbir karar veremez")
     void shouldCheckPermissions() {
-        Jwt manager = TestTokens.token("manager").build();
-
-        assertThat(post(ONE + "/resolve", RESOLVE_BODY, manager)).hasStatus(HttpStatus.FORBIDDEN);
-        assertThat(post(ONE + "/assign", "{\"assigneeId\":\"" + UUID.randomUUID() + "\"}", manager))
-                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(ONE + "/resolve", RESOLVE_BODY, quality())).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(
                         ONE + "/resolve",
                         RESOLVE_BODY,
@@ -136,6 +124,10 @@ class DiscrepancyDecisionControllerTest {
     @DisplayName("Token'sız istek 401 alır")
     void shouldRequireAuthentication() {
         assertThat(mvc.post().uri(ONE + "/resolve").exchange()).hasStatus(HttpStatus.UNAUTHORIZED);
+    }
+
+    private static Jwt manager() {
+        return TestTokens.token("manager").build();
     }
 
     private static Jwt quality() {

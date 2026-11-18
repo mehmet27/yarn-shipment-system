@@ -59,6 +59,19 @@ CREATE TABLE shipment.fire_settlement (
     created_at       timestamptz    NOT NULL
 );
 
+CREATE TABLE shipment.fire_claim (
+    discrepancy_id uuid           PRIMARY KEY,
+    shipment_id    uuid           NOT NULL REFERENCES shipment.shipment (id),
+    claimed_kg     numeric(12, 3) NOT NULL CHECK (claimed_kg > 0)
+);
+
+CREATE TABLE shipment.fire_invoice (
+    id          uuid           PRIMARY KEY,
+    shipment_id uuid           NOT NULL REFERENCES shipment.shipment (id),
+    kg          numeric(12, 3) NOT NULL,
+    claim_kg    numeric(12, 3) NOT NULL DEFAULT 0
+);
+
 CREATE TABLE shipment.fabric_lot (
     id          uuid           PRIMARY KEY,
     source      text           NOT NULL DEFAULT 'SUBCONTRACTOR',

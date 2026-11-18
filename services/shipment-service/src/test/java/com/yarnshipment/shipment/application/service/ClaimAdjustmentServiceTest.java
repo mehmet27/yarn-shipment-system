@@ -2,23 +2,16 @@ package com.yarnshipment.shipment.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.yarnshipment.shipment.application.port.in.balance.BalanceRow;
-import com.yarnshipment.shipment.application.port.in.balance.ListMovementsQuery;
-import com.yarnshipment.shipment.application.port.in.balance.MovementPage;
 import com.yarnshipment.shipment.application.port.in.claim.RecordClaimAdjustmentCommand;
-import com.yarnshipment.shipment.application.port.out.ledger.BalanceQueryPort;
 import com.yarnshipment.shipment.application.port.out.ledger.ClaimLedgerPort;
-import com.yarnshipment.shipment.domain.balance.BalanceMovement;
-import com.yarnshipment.shipment.domain.balance.MovementKind;
+import com.yarnshipment.shipment.application.port.out.ledger.ClaimLedgerPort.InvoiceableClaim;
+import com.yarnshipment.shipment.domain.fire.FireSettlement;
+import com.yarnshipment.shipment.domain.fire.FireSettlementStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -30,74 +23,63 @@ class ClaimAdjustmentServiceTest {
     private static final Instant AT = Instant.parse("2026-11-12T09:00:00Z");
 
     private final Ledger ledger = new Ledger();
-    private final ClaimAdjustmentService service = new ClaimAdjustmentService(ledger, ledger);
+    private final InMemoryFireSettlementPort settlements = new InMemoryFireSettlementPort();
+    private final ClaimAdjustmentService service = new ClaimAdjustmentService(ledger, settlements);
 
     private RecordClaimAdjustmentCommand command(String kg) {
         return new RecordClaimAdjustmentCommand(UUID.randomUUID(), SHIPMENT, new BigDecimal(kg), AT, USER);
     }
 
     @Test
-    @DisplayName("Haklı itiraz kilosu iplik cinslerine gönderim oranıyla dağıtılıp fasoncunun bakiyesinden düşülür")
-    void shouldDeductClaimProportionallyFromYarns() {
-        ledger.subcontractor = SUBCONTRACTOR;
-        ledger.dispatched.put("30/1 Penye", new BigDecimal("600.000"));
-        ledger.dispatched.put("20/1 Open End", new BigDecimal("400.000"));
+    @DisplayName("Açık fire dosyasında haklı itiraz bakiyeden düşülmez, faturalanacak kilo olarak yazılır")
+    void shouldRecordInvoiceableClaimForOpenFile() {
+        FireSettlement file = FireSettlement.open(SHIPMENT, SUBCONTRACTOR, new BigDecimal("1000"))
+                .afterFabricReceipt();
+        settlements.put(file);
 
         service.recordClaimAdjustment(command("100.000"));
 
-        assertThat(ledger.appended).hasSize(2);
-        assertThat(ledger.appended).allSatisfy(movement -> {
-            assertThat(movement.kind()).isEqualTo(MovementKind.CLAIM_ADJUSTMENT);
-            assertThat(movement.subcontractorId()).isEqualTo(SUBCONTRACTOR);
-            assertThat(movement.shipmentId()).isEqualTo(SHIPMENT);
-            assertThat(movement.netKg().signum()).isNegative();
-        });
-        assertThat(ledger.appended.stream().map(BalanceMovement::netKg))
-                .containsExactly(new BigDecimal("-60.000"), new BigDecimal("-40.000"));
+        assertThat(ledger.invoiceable).containsExactly(new BigDecimal("100.000"));
+        assertThat(settlements.find(SHIPMENT)).contains(file);
     }
 
     @Test
-    @DisplayName("Fasoncusuz ya da hiç gönderilmemiş sevkiyatta düşülecek bakiye olmadığından hareket yazılmaz")
-    void shouldWriteNothingWithoutDispatchedBalance() {
-        ledger.subcontractor = SUBCONTRACTOR;
-        service.recordClaimAdjustment(command("10.000"));
+    @DisplayName("Kapanmış ya da faturalanmış dosyaya gelen haklı itiraz dosyayı yeniden faturalanacak yapar")
+    void shouldReopenClosedFileForClaim() {
+        for (FireSettlementStatus status : List.of(FireSettlementStatus.CLOSED, FireSettlementStatus.INVOICED)) {
+            settlements.put(new FireSettlement(
+                    SHIPMENT,
+                    SUBCONTRACTOR,
+                    status,
+                    new BigDecimal("0.0400"),
+                    new BigDecimal("1000"),
+                    "F-1",
+                    null,
+                    null,
+                    null));
 
-        ledger.subcontractor = null;
-        ledger.dispatched.put("30/1 Penye", new BigDecimal("100.000"));
-        service.recordClaimAdjustment(command("10.000"));
+            service.recordClaimAdjustment(command("100.000"));
 
-        assertThat(ledger.appended).isEmpty();
+            assertThat(settlements.find(SHIPMENT).orElseThrow().status()).isEqualTo(FireSettlementStatus.TO_INVOICE);
+        }
+        assertThat(ledger.invoiceable).hasSize(2);
     }
 
-    private static final class Ledger implements ClaimLedgerPort, BalanceQueryPort {
+    @Test
+    @DisplayName("Fire dosyası olmayan (fasoncusuz) sevkiyatta hiçbir şey yazılmaz")
+    void shouldWriteNothingWithoutFile() {
+        service.recordClaimAdjustment(command("10.000"));
 
-        private @Nullable UUID subcontractor;
-        private final Map<String, BigDecimal> dispatched = new LinkedHashMap<>();
-        private final List<BalanceMovement> appended = new ArrayList<>();
+        assertThat(ledger.invoiceable).isEmpty();
+    }
 
-        @Override
-        public Optional<UUID> findSubcontractor(UUID shipmentId) {
-            return Optional.ofNullable(subcontractor);
-        }
+    private static final class Ledger implements ClaimLedgerPort {
 
-        @Override
-        public void append(BalanceMovement movement) {
-            appended.add(movement);
-        }
+        private final List<BigDecimal> invoiceable = new ArrayList<>();
 
         @Override
-        public Map<String, BigDecimal> findDispatchedByYarn(UUID shipmentId) {
-            return dispatched;
-        }
-
-        @Override
-        public List<BalanceRow> findBalances(@Nullable UUID subcontractorId) {
-            return List.of();
-        }
-
-        @Override
-        public MovementPage findMovements(ListMovementsQuery query) {
-            return new MovementPage(List.of(), 0, 1, 0);
+        public void recordInvoiceableClaim(InvoiceableClaim claim) {
+            invoiceable.add(claim.claimedKg());
         }
     }
 }

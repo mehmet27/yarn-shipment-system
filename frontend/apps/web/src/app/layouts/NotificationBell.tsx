@@ -1,33 +1,24 @@
-import { DiscrepancyStatus, DISCREPANCIES_PATH, listDiscrepancies } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { ActionIcon, Indicator, Menu, NavIcon, Text } from '@iplik/ui';
-import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { usePermission } from '@/modules/auth';
 import { DiscrepancyMenuItems } from './DiscrepancyMenuItems';
+import { useBellDiscrepancies } from './useBellDiscrepancies';
 import { WeightDecisionItems } from './WeightDecisionItems';
 import { usePendingWeightDecisions } from '@/modules/shipment';
 
 const POLL_MS = 60_000;
-const PREVIEW_SIZE = 5;
 const MENU_WIDTH_PX = 320;
 
-/** Üst çubuktaki zil: kantar kararı bekleyen sevkiyatları ve karar bekleyen (açık) uyuşmazlıkları gösterir. */
+/** Üst çubuktaki zil: kantar kararı bekleyen sevkiyatları ve karar bekleyen (açık ve incelemedeki) uyuşmazlıkları, yani yeni kalite itirazlarını gösterir. */
 export function NotificationBell() {
   const { t } = useTranslation();
   const canView = usePermission('DISCREPANCY_VIEW');
-  const { data } = useQuery({
-    queryKey: [DISCREPANCIES_PATH, 'bell'],
-    queryFn: () => listDiscrepancies({ status: DiscrepancyStatus.OPEN, size: PREVIEW_SIZE }),
-    enabled: canView,
-    refetchInterval: POLL_MS,
-  });
+  const { total: discrepancyTotal, items } = useBellDiscrepancies(canView);
   const weightPending = usePendingWeightDecisions({ pollMs: POLL_MS, isEnabled: canView });
   if (!canView) {
     return null;
   }
-  const discrepancyTotal = data?.page.totalElements ?? 0;
-  const items = data?.items ?? [];
   const total = discrepancyTotal + weightPending.length;
   return (
     <Menu position="bottom-end" width={MENU_WIDTH_PX} shadow="lg" radius="md">
@@ -53,7 +44,7 @@ export function NotificationBell() {
           </Text>
         )}
         <Menu.Divider />
-        <Menu.Item component={Link} to="/panel/uyusmazliklar?durum=OPEN">
+        <Menu.Item component={Link} to="/panel/uyusmazliklar">
           {t('notifications.all')}
         </Menu.Item>
       </Menu.Dropdown>

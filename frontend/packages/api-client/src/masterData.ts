@@ -75,12 +75,6 @@ export type {
   WeightDecisionChoice,
   UpdateRecipeRequest,
 } from './generated/shipmentService';
-export { CorrectionTarget, listCorrections, recordCorrection } from './generated/shipmentService';
-export type {
-  CorrectionListResponse,
-  CorrectionView,
-  RecordCorrectionRequest,
-} from './generated/shipmentService';
 export type { CancelShipmentRequest } from './generated/shipmentService';
 
 export { removeShipmentBag } from './generated/shipmentService';

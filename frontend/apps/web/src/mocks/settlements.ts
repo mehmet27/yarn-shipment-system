@@ -203,6 +203,8 @@ export function getMockSettlement(shipmentId: string): FireSettlement {
     actualFirePercent: firePercentAfterInvoice(result.baseKg, fabric, invoicedKg),
     invoicedKg,
     remainingKg: toKg(remaining),
+    claimRemainingKg: ZERO,
+    shortageInvoicedKg: invoicedKg,
     yarns: [{ yarnType: DEFAULT_YARN, dispatchedKg: sentKg }],
     invoices: entries.map((e) => ({ invoiceNo: e.invoiceNo, invoicedOn: e.invoicedAt, kg: e.kg })),
     ...(isFullyInvoiced && last !== undefined

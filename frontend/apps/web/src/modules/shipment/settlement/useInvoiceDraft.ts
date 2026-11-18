@@ -1,4 +1,4 @@
-import type { FireSettlement } from '@iplik/api-client/settlements';
+import type { FireSettlement, InvoiceRequest } from '@iplik/api-client/settlements';
 import { useState } from 'react';
 import { useMarkInvoiced } from './hooks';
 import type { DraftError, InvoiceLineDraft } from './settlementDraft';
@@ -25,6 +25,7 @@ export function useInvoiceDraft(settlement: FireSettlement) {
   const [note, setNote] = useState('');
   const [lines, setLines] = useState(() => initialLines(settlement));
   const [error, setError] = useState<DraftError>();
+  const [pending, setPending] = useState<InvoiceRequest>();
   const mutation = useMarkInvoiced(settlement.shipmentId);
   const submit = () => {
     const request = toInvoiceRequest(
@@ -32,7 +33,13 @@ export function useInvoiceDraft(settlement: FireSettlement) {
       settlement.remainingKg,
     );
     setError(typeof request === 'string' ? request : undefined);
-    if (typeof request !== 'string') mutation.mutate(request);
+    setPending(typeof request === 'string' ? undefined : request);
+  };
+  const confirm = () => {
+    if (pending !== undefined) mutation.mutate(pending);
+  };
+  const cancel = () => {
+    setPending(undefined);
   };
   const setLine = (index: number, netKg: string) => {
     setLines(lines.map((line, i) => (i === index ? { ...line, netKg } : line)));
@@ -43,5 +50,6 @@ export function useInvoiceDraft(settlement: FireSettlement) {
     error,
     mutation,
     submit,
+    confirmation: { isOpen: pending !== undefined, confirm, cancel },
   };
 }

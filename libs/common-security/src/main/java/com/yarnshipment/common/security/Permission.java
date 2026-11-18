@@ -33,6 +33,8 @@ public enum Permission implements GrantedAuthority {
     QUALITY_CLAIM_OPEN(AccessType.WRITE),
     DISCREPANCY_VIEW(AccessType.READ),
     DISCREPANCY_RESOLVE(AccessType.WRITE),
+    /** Kalite itirazını yalnızca "haklı" ya da "haksız" diye karara bağlar (müdür); atama ve kontrol isteği yoktur. */
+    DISCREPANCY_DECIDE(AccessType.WRITE),
 
     AUDIT_VIEW(AccessType.READ),
     REPORT_VIEW(AccessType.READ),

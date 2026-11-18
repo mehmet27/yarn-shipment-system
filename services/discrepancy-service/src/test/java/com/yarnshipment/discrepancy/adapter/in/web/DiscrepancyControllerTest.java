@@ -71,14 +71,14 @@ class DiscrepancyControllerTest {
     }
 
     @Test
-    @DisplayName("Yönetici uyuşmazlığı görür ama eylem butonu göremez")
-    void shouldHideActionsFromReadOnlyRole() {
+    @DisplayName("Müdür uyuşmazlıkta yalnızca karar eylemini görür; atama göremez")
+    void shouldOfferOnlyResolveToManager() {
         when(getDiscrepancy.getDiscrepancy(any())).thenReturn(TestDiscrepancies.open(TestTokens.SITE_ID));
 
         MvcTestResult result = get(ONE, TestTokens.token("manager").build());
 
         assertThat(result).hasStatusOk();
-        assertThat(result).bodyJson().extractingPath("$.allowedActions").isEqualTo(List.of());
+        assertThat(result).bodyJson().extractingPath("$.allowedActions").isEqualTo(List.of("RESOLVE"));
     }
 
     @Test

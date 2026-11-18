@@ -40,6 +40,7 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
     permissions: [
       'DISCREPANCY_VIEW',
       'DISCREPANCY_RESOLVE',
+      'DISCREPANCY_DECIDE',
       'QUALITY_CLAIM_OPEN',
       'FABRIC_RECEIPT_RECORD',
     ],

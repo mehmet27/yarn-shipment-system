@@ -710,13 +710,23 @@
       "note": "Not",
       "liableParty": "Sorumlu taraf",
       "submit": "Karara bağla",
+      "choice": {
+        "CLAIM_JUSTIFIED_INVOICED": "Haklı, faturalandı",
+        "CLAIM_JUSTIFIED": "Haklı",
+        "CLAIM_UNJUSTIFIED": "Haksız"
+      },
       "effect": {
+        "CLAIM_JUSTIFIED_INVOICED": "İtiraz haklı sayılır, kilo fasoncunun ipliğinden düşülür ve girdiğiniz fatura kaydedilir. Bu işlem geri alınamaz.",
         "CLAIM_JUSTIFIED": "İtiraz edilen kilo, fasoncunun sorumlu olduğu iplikten düşülür; fire hesabı da buna göre değişir.",
         "CLAIM_UNJUSTIFIED": "Fasoncunun ipliğinde değişiklik olmaz; uyuşmazlık yalnızca kapatılır.",
         "LIABILITY_ASSIGNED": "Yazdığınız sorumlu taraf kayda geçer; fasoncunun ipliğinde değişiklik olmaz, uyuşmazlık kapatılır."
       },
       "confirmTitle": "Onay: karar kaydı",
       "confirmText": "Karar: {{resolution}}. Karar geri alınamaz.",
+      "confirmTextInvoice": "Karar: haklı. Fatura {{no}} kaydedilecek. Bu işlem geri alınamaz.",
+      "invoiceFailed": "Karar kaydedildi ama fatura kaydedilemedi. Faturayı sevkiyat dosyasındaki fire sekmesinden girin.",
+      "invoiceFailedOpen": "Sevkiyat dosyasını aç",
+      "invoiceFailedDone": "Tamam",
       "confirmYes": "Evet, kararı kaydet",
       "confirmNo": "Vazgeç",
       "noteRequired": "Karar notu boş olamaz. Kararın nedenini yazın.",
@@ -741,7 +751,7 @@
     "title": "Fotoğraf ve belgeler",
     "scale": {
       "title": "Kantar fişini yenile",
-      "hint": "Yeni bir kantar fişi yüklerseniz öncekisi geçersiz sayılır; yalnızca son yüklenen fiş geçerli olur."
+      "hint": "Yeni bir kantar fişi yüklerseniz öncekisi geçersiz sayılır; yalnızca son yüklenen fiş geçerli olur. Yalnızca sizin yüklediğiniz ve henüz yola çıkmamış sevkiyatlarda yenileyebilirsiniz."
     },
     "camera": "Fotoğraf çek",
     "file": "Dosya seç",
@@ -782,6 +792,8 @@
       "SHIPMENT_NOT_FOUND": "Sevkiyat bulunamadı.",
       "SHIPMENT_LOCKED": "Sevkiyat kilitli; artık dosya eklenemiyor.",
       "SHIPMENT_NOT_DUE": "Sevkiyat tarihi gelmeden çıkış fotoğrafı eklenemez.",
+      "SHIPMENT_DEPARTED": "Sevkiyat yola çıktı; kantar fişi artık yenilenemez.",
+      "SCALE_TICKET_NOT_OWN": "Bu kantar fişini yalnızca ilk yükleyen kişi yenileyebilir.",
       "UPLOAD_NOT_COMPLETED": "Dosya henüz yüklenmedi. Lütfen tekrar deneyin.",
       "UPLOAD_MISMATCH": "Yüklenen dosya bildirilenle uyuşmuyor. Lütfen yeniden seçin.",
       "SHIPMENT_SERVICE_UNAVAILABLE": "Sevkiyat doğrulanamadı. Lütfen biraz sonra tekrar deneyin.",
@@ -1572,6 +1584,7 @@
       "QUALITY_CLAIM_OPEN": "Kalite itirazı açar",
       "DISCREPANCY_VIEW": "Uyuşmazlıklar ekranını görür",
       "DISCREPANCY_RESOLVE": "Uyuşmazlığı karara bağlar",
+      "DISCREPANCY_DECIDE": "Kalite itirazını haklı ya da haksız diye kapatır",
       "FABRIC_RECEIPT_RECORD": "Fasoncudan gelen kumaşı girer",
       "YARN_RETURN_RECORD": "Fasoncudan depoya iplik dönüşünü kaydeder",
       "BALANCE_VIEW": "Fasoncu bakiyesini görür",

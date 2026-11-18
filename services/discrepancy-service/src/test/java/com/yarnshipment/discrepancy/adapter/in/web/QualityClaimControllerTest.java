@@ -59,11 +59,11 @@ class QualityClaimControllerTest {
     }
 
     @Test
-    @DisplayName("Müdür itiraz açar ve 201 alır; süre dolmuşsa QUALITY_CLAIM_WINDOW_CLOSED ile 409 alır")
+    @DisplayName("Kalite itiraz açar ve 201 alır; süre dolmuşsa QUALITY_CLAIM_WINDOW_CLOSED ile 409 alır")
     void shouldOpenClaim() {
         when(openQualityClaim.openQualityClaim(any())).thenReturn(file());
 
-        MvcTestResult created = post(CLAIMS, OPEN_BODY, manager());
+        MvcTestResult created = post(CLAIMS, OPEN_BODY, quality());
         assertThat(created).hasStatus(HttpStatus.CREATED);
         assertThat(created).bodyJson().extractingPath("$.discrepancyNo").isEqualTo("UY-SV-3-1");
         assertThat(created).bodyJson().extractingPath("$.claimedKg").isEqualTo("120.500");
@@ -72,11 +72,11 @@ class QualityClaimControllerTest {
                 .bodyJson()
                 .extractingPath("$.allowedActions")
                 .asArray()
-                .isEmpty();
+                .containsExactly("REQUEST_INSPECTION");
 
         when(openQualityClaim.openQualityClaim(any()))
                 .thenThrow(new ClaimRejectedException(ClaimRejection.WINDOW_CLOSED, "test"));
-        MvcTestResult late = post(CLAIMS, OPEN_BODY, manager());
+        MvcTestResult late = post(CLAIMS, OPEN_BODY, quality());
         assertThat(late).hasStatus(HttpStatus.CONFLICT);
         assertThat(late).bodyJson().extractingPath("$.code").isEqualTo("QUALITY_CLAIM_WINDOW_CLOSED");
     }
@@ -87,7 +87,7 @@ class QualityClaimControllerTest {
         when(openQualityClaim.openQualityClaim(any()))
                 .thenThrow(new ClaimRejectedException(ClaimRejection.DESCRIPTION_REQUIRED, "test"));
 
-        MvcTestResult result = post(CLAIMS, OPEN_BODY, manager());
+        MvcTestResult result = post(CLAIMS, OPEN_BODY, quality());
 
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("QUALITY_CLAIM_DESCRIPTION_REQUIRED");
@@ -100,11 +100,11 @@ class QualityClaimControllerTest {
         when(openQualityClaim.openQualityClaim(any()))
                 .thenThrow(new ClaimRejectedException(ClaimRejection.EVIDENCE_INVALID, "test"));
 
-        assertThat(post(CLAIMS, noPhoto, manager())).hasStatus(HttpStatus.BAD_REQUEST);
-        assertThat(post(CLAIMS, OPEN_BODY.replace("\"claimedKg\":\"120.5\",", ""), manager()))
+        assertThat(post(CLAIMS, noPhoto, quality())).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post(CLAIMS, OPEN_BODY.replace("\"claimedKg\":\"120.5\",", ""), quality()))
                 .hasStatus(HttpStatus.BAD_REQUEST);
-        assertThat(post(CLAIMS, OPEN_BODY.replace("120.5", "-1"), manager())).hasStatus(HttpStatus.BAD_REQUEST);
-        MvcTestResult invalid = post(CLAIMS, OPEN_BODY, manager());
+        assertThat(post(CLAIMS, OPEN_BODY.replace("120.5", "-1"), quality())).hasStatus(HttpStatus.BAD_REQUEST);
+        MvcTestResult invalid = post(CLAIMS, OPEN_BODY, quality());
         assertThat(invalid).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(invalid).bodyJson().extractingPath("$.code").isEqualTo("QUALITY_CLAIM_EVIDENCE_INVALID");
     }
@@ -115,7 +115,7 @@ class QualityClaimControllerTest {
         when(openQualityClaim.openQualityClaim(any()))
                 .thenThrow(new ClaimRejectedException(ClaimRejection.CLAIM_EXCEEDS_SHIPMENT_WEIGHT, "test"));
 
-        MvcTestResult result = post(CLAIMS, OPEN_BODY, manager());
+        MvcTestResult result = post(CLAIMS, OPEN_BODY, quality());
 
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("QUALITY_CLAIM_CLAIM_EXCEEDS_SHIPMENT_WEIGHT");
@@ -129,7 +129,7 @@ class QualityClaimControllerTest {
 
         MvcTestResult result = mvc.get()
                 .uri(CLAIMS + "/shipments/" + TestDiscrepancies.SHIPMENT)
-                .with(SecurityMockMvcRequestPostProcessors.authentication(TestTokens.CONVERTER.convert(manager())))
+                .with(SecurityMockMvcRequestPostProcessors.authentication(TestTokens.CONVERTER.convert(quality())))
                 .exchange();
 
         assertThat(result).hasStatusOk();
@@ -157,7 +157,7 @@ class QualityClaimControllerTest {
     }
 
     @Test
-    @DisplayName("Depo ve yönetici kontrol isteyemez; depo itiraz açamaz")
+    @DisplayName("Depo ve müdür kontrol isteyemez ve itiraz açamaz")
     void shouldCheckPermissions() {
         Jwt manager = manager();
         Jwt warehouse = TestTokens.token("warehouse").build();
@@ -165,6 +165,7 @@ class QualityClaimControllerTest {
         assertThat(post(INSPECTIONS, "{\"kind\":\"LAB\"}", warehouse)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(INSPECTIONS, "{\"kind\":\"LAB\"}", manager)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(CLAIMS, OPEN_BODY, warehouse)).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(CLAIMS, OPEN_BODY, manager)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(post(CLAIMS, OPEN_BODY, TestTokens.unknownRoleToken())).hasStatus(HttpStatus.FORBIDDEN);
     }
 

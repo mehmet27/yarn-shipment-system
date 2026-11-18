@@ -1,27 +1,26 @@
-import { Resolution } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Select, Text } from '@iplik/ui';
-
-const RESOLUTIONS = Object.values(Resolution);
-/** Uyuşmazlıklar yalnızca kalite itirazıdır; "tolerans içinde" ve "veri hatası" kararları bu akışa uymaz. */
-const OFFERED = RESOLUTIONS.filter((value) => value !== 'TOLERANCE' && value !== 'DATA_ERROR');
+import type { ResolveChoice } from './resolveChoices';
 
 export type ResolutionSelectProps = {
-  value: Resolution | undefined;
-  onChange: (value: Resolution | undefined) => void;
+  choices: ResolveChoice[];
+  isManager: boolean;
+  value: ResolveChoice | undefined;
+  onChange: (value: ResolveChoice | undefined) => void;
 };
 
 /** Karar seçimi; altında seçilen kararın ne yaptığını tek cümleyle anlatır. */
-export function ResolutionSelect({ value, onChange }: ResolutionSelectProps) {
+export function ResolutionSelect({ choices, isManager, value, onChange }: ResolutionSelectProps) {
   const { t } = useTranslation();
+  const labelKey = isManager ? 'discrepancy.resolve.choice' : 'discrepancy.resolution';
   return (
     <>
       <Select
         label={t('discrepancy.resolve.resolution')}
-        data={OFFERED.map((item) => ({ value: item, label: t(`discrepancy.resolution.${item}`) }))}
+        data={choices.map((item) => ({ value: item, label: t(`${labelKey}.${item}`) }))}
         value={value ?? null}
         onChange={(selected) => {
-          onChange(RESOLUTIONS.find((item) => item === selected));
+          onChange(choices.find((item) => item === selected));
         }}
         withAsterisk
       />

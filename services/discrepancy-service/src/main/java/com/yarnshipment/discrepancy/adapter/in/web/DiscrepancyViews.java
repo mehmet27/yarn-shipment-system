@@ -93,10 +93,15 @@ final class DiscrepancyViews {
 
     /** FE-SEC-03: butonlar yalnızca bu listeye göre gösterilir. */
     private static List<DiscrepancyView.AllowedActionsEnum> allowedActions(Discrepancy discrepancy, Actor actor) {
-        if (!discrepancy.status().isUnresolved() || !actor.hasPermission(Permission.DISCREPANCY_RESOLVE)) {
+        if (!discrepancy.status().isUnresolved()) {
             return List.of();
         }
-        return List.of(DiscrepancyView.AllowedActionsEnum.ASSIGN, DiscrepancyView.AllowedActionsEnum.RESOLVE);
+        if (actor.hasPermission(Permission.DISCREPANCY_RESOLVE)) {
+            return List.of(DiscrepancyView.AllowedActionsEnum.ASSIGN, DiscrepancyView.AllowedActionsEnum.RESOLVE);
+        }
+        return actor.hasPermission(Permission.DISCREPANCY_DECIDE)
+                ? List.of(DiscrepancyView.AllowedActionsEnum.RESOLVE)
+                : List.of();
     }
 
     private static @Nullable String plain(@Nullable BigDecimal value) {

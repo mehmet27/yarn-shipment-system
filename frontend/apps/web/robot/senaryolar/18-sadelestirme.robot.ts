@@ -204,4 +204,35 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
       await expect(mudur.sayfa.getByRole('button', { name: 'Fotoğraf çek' })).toHaveCount(0);
     },
   );
+
+  await mudur.adim('müdür kalite itirazlarını görür ama itiraz açamaz', async () => {
+    await mudur.sayfa.goto(`/panel/sevkiyat/${tam}`);
+    await mudur.sayfa.getByRole('tab', { name: 'Kalite itirazı' }).click();
+    await mudur.sayfa.getByRole('heading', { name: 'Kalite itirazı' }).waitFor();
+    await mudur.sayfa.waitForLoadState('networkidle');
+    await expect(mudur.sayfa.getByRole('button', { name: 'Kalite itirazı aç' })).toHaveCount(0);
+    const kod = await mudur.sayfa.evaluate(async (shipmentId) => {
+      const cerez = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='));
+      const yanit = await fetch('/api/v1/quality-claims', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': crypto.randomUUID(),
+          'X-XSRF-TOKEN': decodeURIComponent(cerez?.split('=')[1] ?? ''),
+        },
+        body: JSON.stringify({
+          shipmentId,
+          description: 'deneme',
+          claimedKg: '1',
+          evidenceIds: [crypto.randomUUID()],
+        }),
+      });
+      return `${String(yanit.status)} ${((await yanit.json()) as { code?: string }).code ?? ''}`;
+    }, tam);
+    mudur.kontrol(
+      'müdür sunucudan da itiraz açamaz: 403 ACCESS_DENIED dönmeli',
+      kod === '403 ACCESS_DENIED',
+      kod,
+    );
+  });
 });

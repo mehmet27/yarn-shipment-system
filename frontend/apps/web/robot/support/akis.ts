@@ -208,7 +208,10 @@ export async function kumasGir(
  */
 export async function kararVer(kalite: Robot, karar: string, not: string, onayla = true) {
   await sec(kalite.sayfa, /^Karar/, karar);
-  await kalite.sayfa.getByLabel(/^Not/).first().fill(not);
+  await kalite.sayfa
+    .getByLabel(/^Not(?! \()/)
+    .first()
+    .fill(not);
   await kalite.sayfa.getByRole('button', { name: 'Karara bağla' }).click();
   await kalite.sayfa.getByText(/Karar geri alınamaz\./).waitFor({ timeout: 15_000 });
   if (onayla) {

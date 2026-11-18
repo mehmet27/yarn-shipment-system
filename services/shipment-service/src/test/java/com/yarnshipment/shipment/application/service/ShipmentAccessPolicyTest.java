@@ -79,11 +79,20 @@ class ShipmentAccessPolicyTest {
     }
 
     @Test
-    @DisplayName("Müdür tamamlanmış sevkiyatta itiraz açar ve düzeltme kaydı oluşturur")
-    void shouldAllowManagerClaimAndCorrectionWhenCompleted() {
+    @DisplayName("Müdür tamamlanmış sevkiyatta düzeltme kaydı oluşturur ama kalite itirazı açamaz")
+    void shouldAllowManagerOnlyCorrectionWhenCompleted() {
         // when / then
         assertThat(policy.allowedActions(
                         TestShipments.shipment(ShipmentStatus.COMPLETED), TestTokens.mfaActor("manager")))
-                .containsExactlyInAnyOrder(ShipmentAction.OPEN_QUALITY_CLAIM, ShipmentAction.CREATE_CORRECTION);
+                .containsExactly(ShipmentAction.CREATE_CORRECTION);
+    }
+
+    @Test
+    @DisplayName("Kalite tamamlanmış sevkiyatta kalite itirazı açar")
+    void shouldAllowQualityClaimWhenCompleted() {
+        // when / then
+        assertThat(policy.allowedActions(
+                        TestShipments.shipment(ShipmentStatus.COMPLETED), TestTokens.mfaActor("quality")))
+                .containsExactly(ShipmentAction.OPEN_QUALITY_CLAIM);
     }
 }

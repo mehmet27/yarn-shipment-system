@@ -2375,6 +2375,7 @@ components:
         - QUALITY_CLAIM_OPEN
         - DISCREPANCY_VIEW
         - DISCREPANCY_RESOLVE
+        - DISCREPANCY_DECIDE
         - AUDIT_VIEW
         - REPORT_VIEW
         - AMOUNT_VIEW

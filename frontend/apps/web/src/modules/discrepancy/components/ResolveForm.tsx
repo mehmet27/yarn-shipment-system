@@ -1,12 +1,13 @@
-import type { Resolution } from '@iplik/api-client';
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Paper, Stack, Title } from '@iplik/ui';
-import { useState } from 'react';
-import { useResolveDiscrepancy } from '../hooks/useDecideDiscrepancy';
+import { useRefreshDiscrepancies, useResolveDiscrepancy } from '../hooks/useDecideDiscrepancy';
 import { ResolutionSelect } from './ResolutionSelect';
 import { ResolveActions } from './ResolveActions';
-import { ResolveNoteFields } from './ResolveNoteFields';
+import { ResolveInvoiceFailed } from './ResolveInvoiceFailed';
+import { ResolveDraftFields } from './ResolveDraftFields';
+import { useResolveChoices } from './useResolveChoices';
+import { useResolveDraft } from './useResolveDraft';
 
 const ERROR_KEYS: Record<string, string> = {
   DISCREPANCY_NOT_OPEN: 'discrepancy.resolve.notOpen',
@@ -18,31 +19,34 @@ function errorKey(error: unknown): string {
   return ERROR_KEYS[toProblem(error).code] ?? 'discrepancy.resolve.failed';
 }
 
-const partyOf = (isRequired: boolean, liableParty: string) =>
-  isRequired ? { liableParty: liableParty.trim() } : {};
-
-/** Karar: çözüm kodu ve not zorunlu; sorumluluk atamasında sorumlu taraf da gerekir. Kayıttan önce onay sorulur. */
-export function ResolveForm({ discrepancyId }: { discrepancyId: string }) {
+/**
+ * Karar: çözüm ve not zorunlu; sorumluluk atamasında sorumlu taraf, "haklı, faturalandı"da fatura bilgisi
+ * de gerekir. Müdür yalnızca haklı/haksız der. Kayıttan önce onay sorulur.
+ */
+export function ResolveForm({
+  discrepancyId,
+  shipmentId,
+}: {
+  discrepancyId: string;
+  shipmentId: string;
+}) {
   const { t } = useTranslation();
-  const [resolution, setResolution] = useState<Resolution>();
-  const [note, setNote] = useState('');
-  const [liableParty, setLiableParty] = useState('');
-  const [isConfirming, setConfirming] = useState(false);
-  const mutation = useResolveDiscrepancy(discrepancyId);
-  const isPartyRequired = resolution === 'LIABILITY_ASSIGNED';
-  const canSubmit =
-    resolution !== undefined &&
-    note.trim() !== '' &&
-    (!isPartyRequired || liableParty.trim() !== '');
+  const { isManager, choices } = useResolveChoices(shipmentId);
+  const draft = useResolveDraft();
+  const mutation = useResolveDiscrepancy(discrepancyId, shipmentId);
+  const refresh = useRefreshDiscrepancies();
   const save = () => {
-    if (resolution === undefined) return;
-    const request = { resolution, note: note.trim(), ...partyOf(isPartyRequired, liableParty) };
-    mutation.mutate(request, {
+    const input = draft.toInput();
+    if (input === undefined) return;
+    mutation.mutate(input, {
       onSettled: () => {
-        setConfirming(false);
+        draft.setConfirming(false);
       },
     });
   };
+  if (mutation.data?.isInvoiceFailed === true) {
+    return <ResolveInvoiceFailed shipmentId={shipmentId} onDone={() => void refresh()} />;
+  }
   return (
     <Paper withBorder p="md" component="section">
       <Stack>
@@ -50,30 +54,26 @@ export function ResolveForm({ discrepancyId }: { discrepancyId: string }) {
           {t('discrepancy.resolve.title')}
         </Title>
         <ResolutionSelect
-          value={resolution}
-          onChange={(value) => {
-            setResolution(value);
-            setConfirming(false);
-          }}
+          choices={choices}
+          isManager={isManager}
+          value={draft.choice}
+          onChange={draft.setChoice}
         />
-        <ResolveNoteFields
-          {...{ isPartyRequired, liableParty, note }}
-          onLiableParty={setLiableParty}
-          onNote={setNote}
-        />
+        <ResolveDraftFields draft={draft} />
         {mutation.isError && <Alert color="red">{t(errorKey(mutation.error))}</Alert>}
         <ResolveActions
-          resolution={resolution}
-          isConfirming={isConfirming}
-          canSubmit={canSubmit}
+          choice={draft.choice}
+          invoiceNo={draft.invoice.invoiceNo}
+          isConfirming={draft.isConfirming}
+          canSubmit={draft.canSubmit}
           isPending={mutation.isPending}
           onAsk={() => {
             mutation.reset();
-            setConfirming(true);
+            draft.setConfirming(true);
           }}
           onConfirm={save}
           onCancel={() => {
-            setConfirming(false);
+            draft.setConfirming(false);
           }}
         />
       </Stack>

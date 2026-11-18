@@ -108,7 +108,8 @@ public final class RolePermissionMatrix {
 
     /**
      * Müdür sevkiyatı açar, iptal eder ve irsaliye gelince tamamlar (saha analizi, 10.11.2026); çıkış tartısını
-     * düzeltir ve kanıtı geçersiz kılar; tanımlar (ana veri) ve partiler de müdürdedir (yöneticiden devralındı).
+     * düzeltir ve kanıtı geçersiz kılar; tanımlar (ana veri) ve partiler de müdürdedir (yöneticiden devralındı). Kalite
+     * itirazını yalnızca kalite açar; müdür itirazları ve uyuşmazlıkları görür ama açamaz.
      */
     private static Set<Permission> permissionsForManager() {
         return EnumSet.of(
@@ -120,12 +121,11 @@ public final class RolePermissionMatrix {
                 Permission.SHIPMENT_CANCEL,
                 Permission.SHIPMENT_COMPLETE,
                 Permission.DISPATCH_VIEW,
-                Permission.EVIDENCE_UPLOAD_CLAIM,
                 Permission.EVIDENCE_VIEW,
                 Permission.EVIDENCE_INVALIDATE,
                 Permission.CORRECTION_CREATE,
-                Permission.QUALITY_CLAIM_OPEN,
                 Permission.DISCREPANCY_VIEW,
+                Permission.DISCREPANCY_DECIDE,
                 Permission.AUDIT_VIEW,
                 Permission.REPORT_VIEW,
                 Permission.AMOUNT_VIEW,

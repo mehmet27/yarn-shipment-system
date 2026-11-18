@@ -1,9 +1,10 @@
 import { useTranslation } from '@iplik/i18n';
-import { Box, Button, FileButton, Group, Stack, Text } from '@iplik/ui';
+import { Button, FileButton, Group, Stack, Text } from '@iplik/ui';
 import { LOGO_TYPES, MAX_LOGO_BYTES } from '../brandingDraft';
+import { PREVIEW_SCHEMES } from '@iplik/ui';
 import { useLogoPicker } from '../useLogoPicker';
+import { LogoTile } from './LogoTile';
 
-const LOGO_PREVIEW_HEIGHT_PX = 48;
 const BYTES_PER_KB = 1000;
 
 export type LogoFieldProps = { value: string; onChange: (dataUrl: string) => void };
@@ -22,13 +23,17 @@ export function LogoField({ value, onChange }: LogoFieldProps) {
           {t('branding.logo.none')}
         </Text>
       ) : (
-        <Box
-          component="img"
-          src={value}
-          alt={t('branding.logo.alt')}
-          h={LOGO_PREVIEW_HEIGHT_PX}
-          style={{ objectFit: 'contain', alignSelf: 'flex-start' }}
-        />
+        <Group gap="sm" wrap="nowrap" align="flex-start">
+          {PREVIEW_SCHEMES.map((scheme) => (
+            <LogoTile
+              key={scheme.key}
+              src={value}
+              alt={scheme.key === 'light' ? t('branding.logo.alt') : ''}
+              caption={t(scheme.key === 'light' ? 'branding.logo.onLight' : 'branding.logo.onDark')}
+              background={scheme.surface}
+            />
+          ))}
+        </Group>
       )}
       <Group gap="xs">
         <FileButton

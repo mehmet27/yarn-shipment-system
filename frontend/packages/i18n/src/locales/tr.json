@@ -1241,12 +1241,30 @@
     "companyName": "Firma adı",
     "companyNameHint": "Üst barda ve giriş sayfasında görünür. Boş bırakırsanız ürün adı kullanılır.",
     "primaryColor": "Ana renk",
-    "primaryColorHint": "Menü, başlık ve düğme tonları bu renkten üretilir. Metin okunabilirliği için gerekirse otomatik koyulaştırılır.",
+    "primaryColorHint": "Logo işareti, etkin menü ve etkin sekme çizgisi bu renkte görünür; düğmeler siyah beyaz kalır. Çok açık renk, okunsun diye kendiliğinden koyulaştırılır.",
+    "presets": "Hazır renkler",
+    "presetNames": {
+      "navy": "Lacivert",
+      "green": "Yeşil",
+      "burgundy": "Bordo",
+      "purple": "Mor",
+      "orange": "Turuncu",
+      "teal": "Petrol yeşili",
+      "gray": "Gri"
+    },
+    "sections": {
+      "identity": "Firma bilgisi",
+      "color": "Renk"
+    },
+    "unsaved": "Kaydedilmemiş değişiklik var.",
+    "revert": "Değişiklikleri geri al",
     "eyeDropper": "Ekrandan renk seç",
     "logo": {
       "label": "Logo",
       "none": "Logo seçilmedi.",
       "alt": "Seçili logo",
+      "onLight": "Açık zeminde",
+      "onDark": "Koyu zeminde",
       "choose": "Logo seç",
       "change": "Logoyu değiştir",
       "remove": "Logoyu kaldır",
@@ -1260,6 +1278,12 @@
     "preview": {
       "title": "Önizleme",
       "sample": "Örnek ekran",
+      "light": "Açık görünüm",
+      "dark": "Koyu görünüm",
+      "activeMenu": "Etkin menü",
+      "otherMenu": "Diğer menü",
+      "activeTab": "Etkin sekme",
+      "otherTab": "Diğer sekme",
       "button": "Örnek düğme"
     },
     "submit": "Kaydet",

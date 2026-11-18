@@ -17,6 +17,8 @@ export type Problem = {
   measuredKg?: string;
   toleranceKg?: string;
   /** Yalnızca `BAG_COUNT_MISMATCH`: tartıya yazılan çuval sayısı ve sevkiyata eklenen çuval sayısı. */
+  /** Yalnızca `INVALID_FIRE_SETTLEMENT_ACTION`: işlemin reddedilme nedeni (ör. `NOTHING_TO_INVOICE`). */
+  reason?: string;
   enteredCount?: number;
   bagCount?: number;
 };

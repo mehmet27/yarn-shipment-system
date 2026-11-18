@@ -171,9 +171,11 @@
       "dismiss": "Vazgeç",
       "errors": {
         "INVALID_SHIPMENT_STATUS": "Tamamlanmış sevkiyat iptal edilemez.",
-        "unknown": "Sevkiyat iptal edilemedi. Lütfen tekrar deneyin."
+        "unknown": "Sevkiyat iptal edilemedi. Lütfen tekrar deneyin.",
+        "INVALID_CANCELLATION": "İptal gerekçesini yazın."
       },
-      "title": "Sevkiyatı iptal et"
+      "title": "Sevkiyatı iptal et",
+      "warning": "İptal edilen sevkiyat tekrar açılamaz. Yanlış sevkiyatı iptal etmeyin; emin değilseniz vazgeçin."
     },
     "file": {
       "tabs": {
@@ -266,7 +268,7 @@
     },
     "complete": {
       "title": "İrsaliyeyle tamamla",
-      "hint": "Sevkiyat fasoncuya ulaştığında irsaliyeyi yükleyin ve numarasını yazın. Tamamlanan sevkiyat kilitlenir.",
+      "hint": "Sevkiyat fasoncuya ulaştığında irsaliyeyi yükleyin ve numarasını yazın. Tamamlanan sevkiyat kilitlenir: tartı, çuval ve irsaliye sonradan değiştirilemez. Önce bunları kontrol edin.",
       "waybillFile": "İrsaliye fotoğrafı veya PDF",
       "waybillUploaded": "İrsaliye yüklendi",
       "waybillNo": "İrsaliye no",
@@ -277,7 +279,8 @@
         "WAYBILL_EVIDENCE_INVALID": "Yüklenen dosya bu sevkiyatın geçerli irsaliyesi değil; lütfen tekrar yükleyin.",
         "EVIDENCE_SERVICE_UNAVAILABLE": "Fotoğraf servisi yanıt vermiyor; tamamlama yapılmadı. Lütfen tekrar deneyin.",
         "unknown": "Sevkiyat tamamlanamadı. Lütfen tekrar deneyin."
-      }
+      },
+      "missing": "Tamamlamak için irsaliye dosyasını yükleyin ve irsaliye numarasını yazın."
     },
     "weightDecision": {
       "title": "Müdür kararı: bu sevkiyat için ne yapılsın?",
@@ -299,7 +302,8 @@
         "unknown": "Karar kaydedilemedi. Lütfen tekrar deneyin."
       },
       "subtitle": "Tartı ile iplik listesi tutmadı; yola çıkmadan önce bir yol seçin.",
-      "goRecipe": "İplik listesini düzelt"
+      "goRecipe": "İplik listesini düzelt",
+      "cancelWarning": "İptal edilen sevkiyat tekrar açılamaz. Çuvalları ya da iplik listesini düzeltmek yeterliyse iptal etmeyin."
     },
     "managerNote": {
       "title": "Müdürün isteği",
@@ -731,7 +735,8 @@
       "noteRequired": "Karar notu boş olamaz. Kararın nedenini yazın.",
       "notOpen": "Uyuşmazlık artık çözülemez.",
       "inspectionPending": "Sonucu girilmemiş numune ya da laboratuvar kontrolü var; önce sonucu girin.",
-      "failed": "Karar kaydedilemedi. Lütfen tekrar deneyin."
+      "failed": "Karar kaydedilemedi. Lütfen tekrar deneyin.",
+      "liablePartyRequired": "Sorumlu tarafı seçin."
     },
     "activity": {
       "title": "Geçmiş",
@@ -1323,7 +1328,12 @@
       "FABRIC_EXCEEDS_SENT_YARN": "Gelen kumaşın toplamı fasoncuya gönderilen iplikten fazla olamaz.",
       "FABRIC_YARN_NOT_IN_SHIPMENT": "Bu iplik bu sevkiyatta yok. Listeden seçin.",
       "INVALID_LEDGER_INPUT": "Girilen kilo ya da değer geçersiz: kilo sıfırdan büyük olmalı, dönen iplik gönderilen ipliği aşmamalı.",
-      "unknown": "İşlem tamamlanamadı. Lütfen tekrar deneyin."
+      "unknown": "İşlem tamamlanamadı. Lütfen tekrar deneyin.",
+      "FIRE_SETTLEMENT_CLOSED": "Fire dosyası kapandı; artık işlem yapılamaz.",
+      "INVALID_FIRE_SETTLEMENT_ACTION": "Bu işlem dosyanın şu anki durumuna uygun değil. Sayfayı yenileyip tekrar deneyin.",
+      "NOTHING_TO_INVOICE": "Faturalanacak hatalı kilo yok.",
+      "INVOICE_EXCEEDS_REMAINING": "Fatura kilosu, faturası kesilmemiş kilodan fazla olamaz. Kalan kiloyu kontrol edin.",
+      "FAULTY_KG_REMAINS": "Faturalanacak kilo var; dosya kapatılamaz. Önce fatura bilgisini girin."
     },
     "draftErrors": {
       "invalidKg": "Kiloyu geçerli bir sayı olarak girin (ör. 1.250,5).",
@@ -1419,7 +1429,7 @@
       "invoiceLine": "{{no}} · {{date}} · {{kg}}",
       "invoiceInfo": "Fatura {{no}} · {{date}}",
       "close": "Kapat",
-      "closeHint": "Faturalanacak kilo yok; dosya kapatılabilir.",
+      "closeHint": "Faturalanacak kilo yok; dosya kapatılabilir. Kapanan dosyaya kumaş girilemez, değiştirilemez ve geri açılamaz.",
       "summary": "Fasoncuya {{sent}} iplik gönderildi, {{fabric}} kumaş geldi; gelmesi gereken {{expected}}.",
       "details": "Hesap ayrıntıları",
       "closedNote": "Dosya kapandı."

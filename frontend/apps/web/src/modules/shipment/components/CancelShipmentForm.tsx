@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useCancelShipment } from '../hooks/useCancelShipment';
 
 const MAX_REASON_LENGTH = 500;
-const KNOWN_CODES = ['INVALID_SHIPMENT_STATUS'] as const;
+const KNOWN_CODES = ['INVALID_SHIPMENT_STATUS', 'INVALID_CANCELLATION'] as const;
 
 function cancelErrorKey(code: string): string {
   const known = KNOWN_CODES.find((candidate) => candidate === code);
@@ -36,6 +36,7 @@ export function CancelShipmentForm({ shipmentId }: { shipmentId: string }) {
   return (
     <SectionCard title={t('shipment.cancel.title')} icon="stop" tone="danger">
       <Stack maw={560}>
+        <Alert color="orange">{t('shipment.cancel.warning')}</Alert>
         <TextInput
           label={t('shipment.cancel.reason')}
           maxLength={MAX_REASON_LENGTH}

@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.application.port.out.ledger;
 
+import com.yarnshipment.shipment.application.port.in.fire.InvoiceEntry;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement.InvoiceShare;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -34,7 +35,4 @@ public interface FireInvoicePort {
             List<InvoiceShare> lines,
             UUID invoicedBy,
             Instant at) {}
-
-    /** Girilmiş bir fatura: numara, tarih ve toplam kilo. */
-    record InvoiceEntry(String invoiceNo, LocalDate invoicedOn, BigDecimal kg) {}
 }

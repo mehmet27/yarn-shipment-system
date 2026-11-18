@@ -11,6 +11,7 @@ import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort.InvoiceRecord;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort;
 import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
+import com.yarnshipment.shipment.application.service.invoice.InvoiceShares;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
 import com.yarnshipment.shipment.domain.fire.FireSettlement.Invoice;
 import com.yarnshipment.shipment.domain.fire.FireSettlementNotFoundException;

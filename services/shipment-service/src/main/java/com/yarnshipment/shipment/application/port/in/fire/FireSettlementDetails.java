@@ -1,6 +1,5 @@
 package com.yarnshipment.shipment.application.port.in.fire;
 
-import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort.InvoiceEntry;
 import com.yarnshipment.shipment.domain.fire.FireCalculation;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
 import java.math.BigDecimal;

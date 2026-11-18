@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.adapter.out.persistence.ledger;
 
+import com.yarnshipment.shipment.application.port.in.fire.InvoiceEntry;
 import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement.InvoiceContext;

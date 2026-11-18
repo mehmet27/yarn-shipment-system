@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.application.service;
 
+import com.yarnshipment.shipment.application.port.in.fire.InvoiceEntry;
 import com.yarnshipment.shipment.application.port.in.fire.ListFireSettlementsQuery;
 import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort;

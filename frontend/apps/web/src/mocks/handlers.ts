@@ -9,10 +9,9 @@ import type {
 import { ME_PATH, SHIPMENTS_PATH } from '@iplik/api-client';
 import { todayIsoDate } from '@iplik/i18n';
 import type { Kilogram } from '@iplik/units';
-import { calculateNetKg, isKilogram, subtractKg, sumKg } from '@iplik/units';
+import { calculateNetKg, isKilogram, subtractKg } from '@iplik/units';
 import { http, HttpResponse } from 'msw';
 import {
-  assignedMockBagWeights,
   assignMockBagWeights,
   updateMockShipmentDate,
   addMockShipment,
@@ -23,6 +22,7 @@ import {
   recordMockDispatch,
   updateMockShipmentStatus,
 } from './mockStore';
+import { bagMismatchResponse } from './bagChecks';
 import { createAuditHandlers } from './auditHandlers';
 import { createBrandingHandlers } from './brandingHandlers';
 import { createRolePermissionHandlers } from './rolePermissionHandlers';
@@ -224,23 +224,6 @@ const completeShipmentHandler = http.post(
   },
 );
 
-/** Çuval toplamı araç net kilosunu tutmuyorsa 409 BAG_WEIGHT_MISMATCH. */
-function bagMismatchResponse(shipmentId: string, netKg: string): Response | undefined {
-  const bagKg = sumKg(assignedMockBagWeights(shipmentId));
-  if (bagKg === netKg) return undefined;
-  return HttpResponse.json(
-    {
-      status: 409,
-      code: 'BAG_WEIGHT_MISMATCH',
-      title: 'Çuval toplamı araç net kilosunu tutmuyor',
-      bagKg,
-      measuredKg: netKg,
-      toleranceKg: '0.000',
-    },
-    { status: 409 },
-  );
-}
-
 function dispatchPrecondition(shipment: InternalShipmentView): Response | undefined {
   if (shipment.status !== 'DRAFT') return problem(409, 'INVALID_SHIPMENT_STATUS', 'Geçersiz durum');
   return shipment.shipmentDate > todayIsoDate()
@@ -259,7 +242,7 @@ const dispatchWeighingHandler = http.post(
     const blocked = dispatchPrecondition(shipment);
     if (blocked !== undefined) return blocked;
     const weighing = toMockWeighing(body);
-    const mismatch = bagMismatchResponse(shipment.shipmentId, weighing.netKg);
+    const mismatch = bagMismatchResponse(shipment.shipmentId, weighing);
     if (mismatch !== undefined) return mismatch;
     const expected = shipment.plannedNetKg;
     const diff = expected === undefined ? undefined : subtractKg(weighing.netKg, expected);

@@ -369,6 +369,9 @@
     "submitFailed": "Çıkış tartısı kaydedilemedi. Lütfen tekrar deneyin.",
     "notDraft": "Bu sevkiyatın çıkış tartısı artık girilemez.",
     "bagMismatch": {
+      "countTitle": "Çuval sayısı tutmuyor",
+      "countBody": "Tartıya {{enteredCount}} çuval yazdınız, ama sevkiyata {{bagCount}} çuval eklenmiş.",
+      "countBlocked": "Çuvallar ya da çuval sayısı düzelmeden sevkiyat yola çıkamaz.",
       "title": "Çuvallar araç kilosunu tutmuyor",
       "body": "Girdiğiniz çuvalların toplamı {{bagKg}}, ama araç net kilosu {{measuredKg}}.",
       "blocked": "{{diff}} fark var. Çuvallar ya da tartı düzelmeden sevkiyat yola çıkamaz.",

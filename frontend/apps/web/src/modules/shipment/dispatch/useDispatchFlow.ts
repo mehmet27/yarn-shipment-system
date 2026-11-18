@@ -2,7 +2,7 @@ import { toProblem } from '@iplik/api-client';
 import { useState } from 'react';
 import { useRecordDispatch } from '../hooks/useRecordDispatch';
 import type { DispatchDraft, DispatchError } from './dispatchDraft';
-import { EMPTY_DISPATCH_DRAFT, validateDispatch } from './dispatchDraft';
+import { EMPTY_DISPATCH_DRAFT, parseBagCount, validateDispatch } from './dispatchDraft';
 import { sendDispatch } from './dispatchSubmit';
 import { useBagMismatch } from './useBagMismatch';
 import { useDispatchWeighing } from './useDispatchWeighing';
@@ -27,7 +27,9 @@ export function useDispatchFlow(
   const review = () => {
     const invalid = validateDispatch(draft);
     setError(invalid);
-    const isBlocked = invalid === undefined && bagMismatch.check(weighing?.netKg);
+    const isBlocked =
+      invalid === undefined &&
+      bagMismatch.check({ netKg: weighing?.netKg, bagCount: parseBagCount(draft.bagCount) });
     const isReasonRequired = comparison?.isShort === true && draft.shortfallReason.trim() === '';
     setReasonEmpty(invalid === undefined && !isBlocked && isReasonRequired);
     setConfirming(invalid === undefined && !isBlocked && !isReasonRequired);

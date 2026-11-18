@@ -1,7 +1,8 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Icon, Modal, Stack, Text } from '@iplik/ui';
-import { formatKgText } from '@iplik/units';
+import { Button, Group, Icon, Modal, Stack } from '@iplik/ui';
 import { Link } from 'react-router';
+import { BagCountMessage } from './BagCountMessage';
+import { BagWeightMessage } from './BagWeightMessage';
 import type { BagMismatch } from './useBagMismatch';
 
 export type BagMismatchModalProps = {
@@ -12,7 +13,7 @@ export type BagMismatchModalProps = {
 };
 
 /**
- * Çuvalların kilo toplamı araç net kilosunu tutmuyor: iki kilo gösterilir, sevkiyat yola çıkmaz. Depo çuvalları
+ * Önce çuval sayısı, sonra çuval kiloları denetlenir; tutmuyorsa iki değer gösterilir, sevkiyat yola çıkmaz. Depo çuvalları
  * kontrol etmek için çuval ekleme ekranına gider ya da tartı değerlerini düzeltmek için geri döner.
  */
 export function BagMismatchModal({ mismatch, bagsHref, onClose }: BagMismatchModalProps) {
@@ -21,21 +22,22 @@ export function BagMismatchModal({ mismatch, bagsHref, onClose }: BagMismatchMod
     <Modal
       opened={mismatch !== undefined}
       onClose={onClose}
-      title={t('dispatch.bagMismatch.title')}
+      title={
+        mismatch?.kind === 'count'
+          ? t('dispatch.bagMismatch.countTitle')
+          : t('dispatch.bagMismatch.title')
+      }
     >
       <Stack>
-        {mismatch !== undefined && (
-          <Text>
-            {t('dispatch.bagMismatch.body', {
-              bagKg: formatKgText(mismatch.bagKg),
-              measuredKg: formatKgText(mismatch.measuredKg),
-            })}
-          </Text>
+        {mismatch?.kind === 'count' && (
+          <BagCountMessage enteredCount={mismatch.enteredCount} bagCount={mismatch.bagCount} />
         )}
-        {mismatch !== undefined && (
-          <Alert color="red" icon={<Icon name="discrepancies" />}>
-            {t('dispatch.bagMismatch.blocked', { diff: formatKgText(mismatch.diffKg) })}
-          </Alert>
+        {mismatch?.kind === 'weight' && (
+          <BagWeightMessage
+            bagKg={mismatch.bagKg}
+            measuredKg={mismatch.measuredKg}
+            diffKg={mismatch.diffKg}
+          />
         )}
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose}>

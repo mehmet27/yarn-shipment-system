@@ -16,6 +16,9 @@ export type Problem = {
   bagKg?: string;
   measuredKg?: string;
   toleranceKg?: string;
+  /** Yalnızca `BAG_COUNT_MISMATCH`: tartıya yazılan çuval sayısı ve sevkiyata eklenen çuval sayısı. */
+  enteredCount?: number;
+  bagCount?: number;
 };
 
 export type StockShortfall = { yarnType: string; missingKg: string };

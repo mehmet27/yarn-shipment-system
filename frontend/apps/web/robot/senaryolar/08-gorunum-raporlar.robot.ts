@@ -20,6 +20,11 @@ test('Görünüm: yönetici firma adı ve logoyu kaydeder, varsayılana döner',
     admin.kontrol('hazır renk alana yazılmalı', (await renk.inputValue()) !== kayitli);
     await expect(admin.sayfa.getByText('Kaydedilmemiş değişiklik var.')).toBeVisible();
     await expect(admin.sayfa.getByLabel('Önizleme').getByText('Koyu görünüm')).toBeVisible();
+    for (const ad of ['Lacivert', 'Yeşil', 'Petrol yeşili', 'Mor', 'Turuncu', 'Gri']) {
+      const onceki = await renk.inputValue();
+      await admin.sayfa.getByRole('button', { name: ad, exact: true }).click();
+      admin.kontrol(`hazır renk "${ad}" alana yazılmalı`, (await renk.inputValue()) !== onceki);
+    }
     await admin.sayfa.getByRole('button', { name: 'Değişiklikleri geri al' }).click();
     await expect(renk).toHaveValue(kayitli);
   });

@@ -17,7 +17,7 @@
   --app-text: #09090b;
   /* Soluk yazı ve ipuçları açık zeminde okunur kalsın (WCAG AA ~4.5:1). */
   --mantine-color-dimmed: var(--mantine-color-gray-6);
-  /* Denetim yüksekliği: telefonda 44 px dokunma hedefi (FE-UI-07), masaüstünde sıkı 36 px. Yazı telefonda 16 px kalır
+  /* Denetim yüksekliği: telefonda ve tablette 44 px dokunma hedefi (FE-UI-07), masaüstünde (1024 px ve üstü) sıkı 36 px. Yazı telefonda 16 px kalır
      (iOS, 16 px altındaki alana odaklanınca sayfayı yakınlaştırır). */
   --app-control-height: 2.75rem;
   --app-control-fz: 1rem;
@@ -36,7 +36,7 @@
   --mantine-color-body: #09090b;
 }
 
-@media (min-width: 48em) {
+@media (min-width: 64em) {
   :root {
     --app-control-height: 2.25rem;
     --app-control-fz: var(--mantine-font-size-sm);

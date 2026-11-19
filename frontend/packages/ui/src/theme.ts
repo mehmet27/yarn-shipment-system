@@ -136,7 +136,7 @@ const FORM_COMPONENTS: MantineThemeComponents = {
       label: { whiteSpace: 'normal', textAlign: 'center' },
     },
   },
-  // Boyut `md`: telefonda 44 px, masaüstünde 36 px (styles.css `--app-control-height`).
+  // Boyut `md`: telefonda ve tablette 44 px, masaüstünde 36 px (styles.css `--app-control-height`).
   TextInput: { defaultProps: { size: 'md' } },
   PasswordInput: { defaultProps: { size: 'md' } },
   Textarea: { defaultProps: { size: 'md' } },

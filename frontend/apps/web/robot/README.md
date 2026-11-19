@@ -134,6 +134,22 @@ Gezgin **anahtar** (onay kutusu) tıkladığında "işaretli olmalı" demez: tı
   `sifre.*` vb.) ve `ROBOT-…` kayıtları kalmaz. Robotu yeniden çalıştırmadan önce admin'in kalıcı şifresi yine `kullanicilar.local.json`
   içindedir (sıfırlamadan sonra admin ilk girişte şifresini belirler).
 
+## Senaryo yazarken tuzaklar
+
+- **Sıfırlama sonrası admin ilk girişi:** sıfırlamadan sonra admin şifresi `deploy/.env` içindeki `LOCAL_TEST_USER_PASSWORD`'dür ve ilk girişte
+  `/sifre-degistir` ister. `00-kurulum`dan önce admin'in `kullanicilar.local.json` şifresi bu yoldan bir kez belirlenmelidir; aksi hâlde
+  giriş "Kullanıcı adı ya da şifre hatalı" ile zaman aşımına düşer ve sonraki tüm senaryolar kırmızı görünür.
+- **Büyük/küçük harf:** menü başlıkları ve durumlar artık büyük harfe çevrilmez. `/GÜNLÜK İŞLER/i` gibi büyük harfli Türkçe kalıplar eşleşmez;
+  ekrandaki yazımı (`/günlük işler/i`) arayın. `/iplik/i` de "ipliğin"i yakalamaz: `/ipli[kğ]/i` kullanın.
+- **Merkez stok uyarısı:** yalnızca **taslak** sevkiyatta ve iplik **listeden seçilmişse** çıkar (serbest metin cinsler kontrol dışıdır);
+  çıkış tartısı girilince sevkiyat yola çıkar ve uyarı kalkar. `taslakAc` listede kayıtlı ipliği seçer, bulamazsa serbest metne yazar.
+- **Alan sırası:** iki sütunlu formlarda alanlar yan yana olabilir; sırayı önce `y`, eşitse `x` ile karşılaştırın.
+- **Dokunma hedefi:** denetim yüksekliği 1024 px altında (telefon ve tablet) 44 px, üstünde 36 px'tir (`packages/ui/src/styles.css`);
+  `12-cihazlar` 40 px altını hata sayar. Düğmeye küçük boyut (`compact-*`, `sm`) vermeyin.
+- **Kalitenin kendi açtığı itiraz** ona atanmış gelebilir; "Bana ata" yerine "Bu uyuşmazlık sizde." yazar.
+- **Hazır renkler:** `08-gorunum-raporlar` Görünüm ekranındaki tüm hazır renk düğmelerini dener; yeni renk eklenirse `support/kapsam.ts`'e ve
+  senaryodaki listeye ekleyin (`getByRole` adı kısa adlarda `exact: true` ister; yoksa "Yeşil" aynı zamanda "Petrol yeşili"ni de yakalar).
+
 ## Yeni özellik eklerken robotu güncelleme kuralı
 
 Her geliştirmede (yeni ekran, rota, alan, düğme, doğrulama ya da hesap kuralı) aynı PR'da robota gereken bilgi verilir:

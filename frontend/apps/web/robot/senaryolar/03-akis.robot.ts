@@ -192,8 +192,8 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     await tarteGir('103,5', '3,5', '2', 'doğru');
     await depo.sayfa.waitForURL(new RegExp(`${sevkiyatId}$`), { timeout: 15_000 });
     depo.kontrol(
-      'durum FASONCUYA YOLDA',
-      /FASONCUYA YOLDA/.test(await depo.sayfa.innerText('main')),
+      'durum Fasoncuya yolda',
+      /fasoncuya yolda/i.test(await depo.sayfa.innerText('main')),
     );
   });
 
@@ -297,7 +297,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
       const mesajlar = await fasonKalite.mesajlar();
       fasonKalite.kontrol(
         'iplikten fazla kumaş nedeniyle alan altında uyarılmalı',
-        mesajlar.some((m) => /iplik/i.test(m) && !GENEL_MESAJ.test(m)),
+        mesajlar.some((m) => /ipli[kğ]/i.test(m) && !GENEL_MESAJ.test(m)),
         mesajlar.join(' | '),
       );
       fasonKalite.kontrol(
@@ -414,7 +414,10 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
   await kalite.adim('kalite: üstlenir ama karar veremez', async () => {
     await kalite.sayfa.goto('/panel/uyusmazliklar');
     await kalite.sayfa.locator('main a[href*="uyusmazliklar/"]').first().click();
-    await kalite.sayfa.getByRole('button', { name: 'Bana ata' }).click();
+    await kalite.sayfa.waitForLoadState('networkidle');
+    const ata = kalite.sayfa.getByRole('button', { name: 'Bana ata' });
+    // Kalitenin kendi açtığı itiraz ona atanmış gelebilir; o zaman düğme yerine "sizde" yazar.
+    if ((await ata.count()) > 0) await ata.click();
     await expect(kalite.sayfa.getByText('Bu uyuşmazlık sizde.')).toBeVisible();
     kalite.kontrol(
       'atandıktan sonra "Bana ata" düğmesi görünmemeli',

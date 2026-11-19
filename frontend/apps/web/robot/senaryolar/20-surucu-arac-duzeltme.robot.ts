@@ -1,5 +1,5 @@
 import { expect, test } from '../support/robot';
-import { taslakAc } from '../support/akis';
+import { soforAracTanimla, taslakAc } from '../support/akis';
 import { damga, sec } from '../support/yardimci';
 
 /**
@@ -12,6 +12,11 @@ test('Şoför ve araç: merkez şoförleri listede, müdür düzeltir, uyarı an
   const depo = await giris('depo');
   const mudur = await giris('mudur');
   for (const r of [depo, mudur]) r.beklenen(/4\d\d (POST|PUT|PATCH) /);
+
+  // Temiz ortamda merkez şoförü/aracı yoktur: Tanımlar'dan eklenir.
+  await mudur.adim("Tanımlar'da merkez şoförü ve aracı var", async () => {
+    await soforAracTanimla(mudur, damga());
+  });
 
   await mudur.adim(
     'fasoncu seçilince şoför listesinde "Merkez şoförleri" başlığı da görünür',

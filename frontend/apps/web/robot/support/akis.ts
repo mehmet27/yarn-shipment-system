@@ -44,6 +44,28 @@ export async function tedarikciTanimla(mudur: Robot, ad: string) {
   await pencere.waitFor({ state: 'hidden' });
 }
 
+/**
+ * Müdür Tanımlar > Şoförler ve Araçlar'a bir merkez şoförü ile aracı ekler. Yeni sevkiyat formundaki "Merkez şoförleri"
+ * ve araç listeleri yalnızca Tanımlar'daki kayıtlardan dolar; temiz ortamda bu kayıtlar yoktur. Plakayı döndürür.
+ */
+export async function soforAracTanimla(mudur: Robot, ad: string): Promise<string> {
+  const sayi = ad.replaceAll(/\D/g, '');
+  const plaka = `34 RBT ${sayi.slice(-3).padStart(3, '0')}`;
+  for (const [sekme, alan, deger] of [
+    ['Şoförler', 'Ad soyad *', ad],
+    ['Araçlar', 'Plaka *', plaka],
+  ] as const) {
+    await mudur.sayfa.goto('/panel/tanimlar');
+    await mudur.sayfa.getByRole('tab', { name: sekme, exact: true }).click();
+    await mudur.sayfa.getByRole('button', { name: 'Ekle' }).click();
+    const pencere = mudur.sayfa.getByRole('dialog');
+    await pencere.getByLabel(alan, { exact: true }).fill(deger);
+    await pencere.getByRole('button', { name: 'Kaydet' }).click();
+    await pencere.waitFor({ state: 'hidden' });
+  }
+  return plaka;
+}
+
 /** Yeni sevkiyat formunda reçete satırının birim fiyatını (zorunlu) "Sipariş bilgileri" sekmesinden yazar. */
 export async function fiyatYaz(sayfa: Page, fiyat = '21,5') {
   await sayfa
@@ -86,10 +108,26 @@ export async function taslakAc(
   await mudur.sayfa.getByLabel(/Fire oranı/).fill(fire);
   // Sevkiyat tarihi formda bugünle gelir; verilirse o güne ayarlanır.
   if (tarih !== undefined) await mudur.sayfa.getByLabel(/Sevkiyat tarihi/).fill(tarih);
-  await mudur.sayfa
-    .getByLabel(/ya da listede yoksa yazın/i)
-    .first()
-    .fill(iplik);
+  // Tanımlar'da kayıtlı iplik listeden seçilir (merkez stok kontrolü yalnızca listeden seçilen cinste çalışır);
+  // listede yoksa serbest metin alanına yazılır.
+  const liste = mudur.sayfa.getByRole('combobox', { name: 'İplik cinsi' }).first();
+  await liste.click();
+  await liste.fill(iplik);
+  const secenek = mudur.sayfa.locator('[role=option]:visible').filter({ hasText: iplik }).first();
+  if (
+    await secenek.waitFor({ timeout: 3_000 }).then(
+      () => true,
+      () => false,
+    )
+  ) {
+    await secenek.click();
+  } else {
+    await liste.fill('');
+    await mudur.sayfa
+      .getByLabel(/ya da listede yoksa yazın/i)
+      .first()
+      .fill(iplik);
+  }
   await mudur.sayfa.getByLabel(/Net kg 1/).fill(kg);
   await fiyatYaz(mudur.sayfa);
   await mudur.sayfa.getByRole('button', { name: 'Taslak oluştur' }).click();

@@ -91,7 +91,7 @@ Excel'de hareketler elle toplandığı için bakiye geç ve hatalı çıkıyor, 
 | **Hatalı kg** | Beklenen kumaştan eksik gelen kilo; fasoncuya fatura edilir. Ekranda "Faturalanacak kilo" diye yazar. |
 | **Bakiye** | Bir fasoncuda, iplik cinsi bazında, henüz kumaşa dönmemiş net iplik kilosu. |
 | **Bakiye hareketi** | Bakiyeyi değiştiren her kayıt: çıkış, kumaş girişi, iplik dönüşü, başka fasoncuya sevk edilen iplik, fatura, açılış (eski kayıtlarda itiraz düzeltmesi). |
-| **Fatura edildi** | Müdürün, ERP'de kesilen faturayı Faturalanacaklar ekranından girmesi (fatura no, tarih, iplik başına kilo); parça parça girilebilir. Faturalanan kilo fasoncunun bakiyesinden düşer; faturalanacak kilo bitince sevkiyatın fire dosyası kapanır. |
+| **Fatura edildi** | Müdürün, ERP'de kesilen faturayı Faturalama ekranının Faturalanacaklar sekmesinden girmesi (fatura no, tarih, iplik başına kilo); parça parça girilebilir. Faturalanan kilo fasoncunun bakiyesinden düşer; faturalanacak kilo bitince sevkiyatın fire dosyası kapanır. |
 | **Merkez iplik stoku** | Merkez depoda duran iplik (fasoncudaki iplik değil). "Merkez iplik stoku" ekranında iplik cinsi başına kilo olarak görünür. Fasoncu bakiyesinden ayrıdır. |
 | **Kapıdan aktarma** | İpliğin depoya girmeden tedarikçinin kamyonundan fasoncunun kamyonuna aktarılması; sevkiyat açılırken "Kapıdan aktarma" seçilir ve tedarikçi listeden seçilir. |
 
@@ -106,7 +106,7 @@ Excel'de hareketler elle toplandığı için bakiye geç ve hatalı çıkıyor, 
 | **Müdür** (`MANAGER`) | Fason işlerinden sorumlu müdür | Sevkiyat açar (gönderilecek iplikler, fiyat, fire oranı, sevkiyat tarihi), sevkiyat tarihini ve şoför/aracı günceller; kantar uyuşmazlığında karar verir (Çuval ekle / çıkar, İplik güncelle, Sevkiyatı iptal et); irsaliyeyi yükleyip sevkiyatı tamamlar, sevkiyatı iptal eder; fire oranını değiştirir; Faturalanacaklar'dan "Fatura edildi" girer ve faturalanacak kilosu kalmamış fire dosyasını kapatır; kalite itirazını yalnızca "Haklı" ya da "Haksız" diye karara bağlar; Tanımlar ve Partiler ekranlarını yönetir, kanıtı geçersiz kılar; raporları, tutarları (TL), fasoncu bakiyesini ve merkez iplik stokunu görür. **Kumaş girişi ve iplik dönüşü kaydedemez**, kalite itirazı açamaz |
 | **Depo** (`WAREHOUSE`) | Merkez depo sorumlusu | Çuvalları sevkiyata ekler (çuval kilosu yazarak), çıkış tartısını (boş araç, dolu araç, çuval sayısı) ve kantar fişi fotoğrafını girer, tartı beklenenin altındaysa "Eksik kilo nedeni" yazar; **fasoncudan dönen ipliği kaydeder**; merkeze gelen ipliği stoğa yazar (tedarikçi seçmek zorunlu); merkez iplik stokunu görür. Sevkiyat açamaz, bakiye ve raporları görmez |
 | **Kalite** (`QUALITY`) | Fasoncu kalite ve merkez kalite (kullanıcı açılırken "Çalışma alanı" seçilir: Merkez fabrika ya da Fasoncular) | Kalite itirazı açar, uyuşmazlığı üstlenir ("Bana ata"); **karar veremez** (laboratuvar ya da numune kontrolü adımı yoktur). Fasoncudan gelen kumaşı yalnızca **fasoncu kalite** girer; merkez fabrikanın kumaşını ve merkez iplik stokunu yalnızca **merkez kalite** görür ve girer. Partilerin kalitesini kilitler; raporları ve fasoncu bakiyesini görür |
-| **Genel müdür** (`GENERAL_MANAGER`) | Üst yönetim | Raporları (tutarlar dahil), fasoncu bakiyesini, Faturalanacaklar listesini ve merkez iplik stokunu salt okunur görür; işlem yapmaz |
+| **Genel müdür** (`GENERAL_MANAGER`) | Üst yönetim | Raporları (tutarlar dahil), fasoncu bakiyesini, Faturalama ekranını (Faturalanacaklar ve Faturalananlar) ve merkez iplik stokunu salt okunur görür; işlem yapmaz |
 | **Admin** (`ADMIN`) | Sistem yöneticisi | Yalnızca sistemi yönetir: Kullanıcılar (hesap açma, rol, şifre verme), Görünüm (firma adı, renk, logo), Yetkiler ve Denetim kaydı. Sevkiyat, uyuşmazlık, rapor, bakiye ve merkez stok ekranlarını görmez; Tanımlar ve Partiler müdürdedir, admin açamaz |
 | ~~Şoför~~ | — | **Kaldırıldı.** Şoför ve araç yalnızca sevkiyatın üzerinde bilgi olarak yazılır |
 | ~~Fasoncu~~ | — | **Kaldırıldı.** S5 gereği fasoncu sisteme girmez; rolü ve saha ekranı yoktur, yalnızca Tanımlar'daki "Fasoncular" kaydıdır |
@@ -137,7 +137,7 @@ doküman ile kod ayrışırsa o liste doğrudur. Matristeki temel ilkeler:
 | `YARN_RETURN_RECORD` | Depo | Fasoncudan iplik dönüşü (müdürden alındı, 15.11.2026) |
 | `FIRE_RATE_EDIT` | Müdür | Sevkiyatın fire oranını değiştirmek |
 | `INVOICE_MARK` | Müdür | "Fatura edildi" girmek, fire dosyasını kapatmak |
-| `BALANCE_VIEW` | Müdür, Genel müdür, Kalite | Fasoncu bakiyesi, Faturalanacaklar ve fire dosyası |
+| `BALANCE_VIEW` | Müdür, Genel müdür, Kalite | Fasoncu bakiyesi, Faturalama (Faturalanacaklar, Faturalananlar) ve fire dosyası |
 | `WEIGHT_MISMATCH_RESOLVE` | Müdür | Durmuş sevkiyatı yeniden tartıya açmak |
 | `DISCREPANCY_DECIDE` | Müdür | Kalite itirazını "Haklı" / "Haksız" diye kapatmak |
 | `AMOUNT_VIEW` | Müdür, Genel müdür | Raporlarda tutar (TL) bilgisi |
@@ -306,7 +306,7 @@ hareket silinmez ve elle "bakiye düzeltme" yoktur.
 | `FABRIC_RECEIPT` (Kumaş girişi) | − | Kumaş girişi | Tüketilen iplik kilosu kadar |
 | `YARN_RETURN` (İplik dönüşü) | − | Fasoncudan depoya dönen iplik (S6, S9); kaydı yalnızca depo girer | Fire tabanından da düşer |
 | `TRANSFER_OUT` | − | Başka fasoncuya sevk edilen iplik | Gönderen fasoncunun bakiyesinden düşer; alıcıda "Çıkış" olarak artar |
-| `INVOICE` (Fatura) | − | Faturalanacaklar'dan girilen fatura | Faturalanan iplik kilosu kadar; hatalı gelen kumaşın itirazı karşılayan kısmı ikinci kez düşmez (5.12) |
+| `INVOICE` (Fatura) | − | Faturalama ekranının Faturalanacaklar sekmesinden girilen fatura | Faturalanan iplik kilosu kadar; hatalı gelen kumaşın itirazı karşılayan kısmı ikinci kez düşmez (5.12) |
 | `YARN_FROM_SUBCONTRACTOR` (Gelen iplik) | − | Fasoncudan gelen iplik (S6) | 15.11.2026'dan beri yeni kayıt açılmaz (depo fasoncu stoğundan iplik girmez); yalnızca eski kayıtlar geçmişte kalır ("Eski kayıt: fasoncudan gelen iplik") |
 | `CLAIM_ADJUSTMENT` (İtiraz düzeltmesi) | ± | Eski kayıtlar (yeni itirazlar bakiye hareketi yazmaz) | Bölüm 5.12 |
 | `OPENING` (Açılış) | + | Excel'den açılış bakiyesi | Bir kez, geçişte (Raporlar > Bakiye matrisi) |
@@ -357,8 +357,10 @@ ayrıntıları" altındadır.
 
 Fire dosyasının durumları: "Kumaş bekleniyor" → "Faturalanacak" → "Faturalandı" ya da "Kapandı".
 
-1. Fire dosyasında faturalanacak kilo (hatalı kg ve haklı itirazdan gelen kilo) varsa dosya **Faturalanacaklar** ekranında
-   listelenir (menü: Faturalanacaklar; Raporlar'da da aynı sekme vardır). Müdür, kalite ve genel müdür listeyi görür.
+1. Fire dosyasında faturalanacak kilo (hatalı kg ve haklı itirazdan gelen kilo) varsa dosya **Faturalama** ekranının **Faturalanacaklar** sekmesinde
+   listelenir (menü: Faturalama; Raporlar'da da Faturalanacaklar sekmesi vardır). Faturası girilen kayıtlar aynı ekranın
+   **Faturalananlar** sekmesine düşer: fatura no, tarih, fasoncu, sevkiyat ve kilo; tarih ve fasoncuya göre süzülür, Excel'e
+   alınabilir. Müdür, kalite ve genel müdür ekranı görür.
 2. Müdür ERP'de faturayı keser, sistemde satırdaki **"Fatura bilgisini gir"** der: fatura no, fatura tarihi, **iplik başına kilo**
    ve isteğe bağlı not yazar, **"Fatura edildi"** der (S8). Aynı form sevkiyat dosyasındaki "Fire dosyası" sekmesinde de
    bulunur.
@@ -388,11 +390,11 @@ kumaşın tamamı için itiraz açıldıysa yeni itiraz açılamaz.
 Kalite **karar veremez**. Kararı yalnızca **müdür** verir ve yalnızca iki seçenek vardır: **"Haklı"**
 ya da **"Haksız"**; karar notu boş olamaz, "Karara bağla" → "Karar geri alınamaz." → **"Evet, kararı kaydet"** ile kaydedilir.
 "Haklı, faturalandı" ya da "Sorumluluk atandı" diye
-bir karar yoktur; fatura bu ekranda girilmez, Faturalanacaklar'dan girilir (5.11).
+bir karar yoktur; fatura bu ekranda girilmez, Faturalama ekranının Faturalanacaklar sekmesinden girilir (5.11).
 
 **Bakiye etkisi:** İtiraz "Haklı" bulunursa itiraz edilen kilo **hem kumaştan hem gönderilen iplikten**
 sayılır, böylece fire hesabı sapmaz (fire tabanı T = G − D − I). Kilo bakiyeden **hemen düşülmez**; dosyada
-"İtirazdan faturalanacak" olarak faturalanacak kiloya eklenir (`fire_claim`) ve dosya **Faturalanacaklar** listesine düşer.
+"İtirazdan faturalanacak" olarak faturalanacak kiloya eklenir (`fire_claim`) ve dosya **Faturalama** ekranındaki Faturalanacaklar sekmesine düşer.
 "Haksız" kararda fasoncunun ipliğinde değişiklik olmaz, uyuşmazlık yalnızca kapanır. Dosya kapanmış ya da faturalanmışsa haklı
 itiraz dosyayı yeniden faturalanacak yapar (süre sınırı yoktur). Hatalı gelen kumaş, girilen kumaş K'nın içindedir ve
 bakiyeden K olarak zaten düşülmüştür; bu yüzden müdür fatura girince faturanın itirazı karşılayan kısmı bakiyeyi **ikinci kez
@@ -481,7 +483,7 @@ geçiş yazamaz. Her geçiş `shipment_status_history` tablosuna değiştirileme
 | KR-13 | Bakiye yalnız hareketlerle değişir; hareket silinmez. |
 | KR-14 | Dönen iplik fire tabanından düşer. |
 | KR-15 | Haklı itiraz kilosu hem kumaştan hem iplikten sayılır (fire tabanı değişmez); bakiyeden hemen düşmez, faturalanacak kiloya eklenir. |
-| KR-16 | Faturalanacak kilosu olan fire dosyası, kilo faturalanmadan kapanmaz (S8). Fatura Faturalanacaklar'dan, parça parça girilir; kayıt geri alınamaz. |
+| KR-16 | Faturalanacak kilosu olan fire dosyası, kilo faturalanmadan kapanmaz (S8). Fatura Faturalama ekranının Faturalanacaklar sekmesinden, parça parça girilir; kayıt geri alınamaz. |
 | KR-17 | Fasoncu sisteme giriş yapmaz (S5); fasoncu verisi fabrika personelince girilir. |
 | KR-18 | Fasoncu pasife alınabilir, silinmez; bakiyesi olan fasoncu pasife alınırken uyarı verilir ("Yine de pasife al"). |
 | KR-19 | Her kayıt değişikliği denetim zincirine (hash zinciri) yazılır. |
@@ -594,7 +596,7 @@ yetkilerine göre değişir.
 | Kumaş girişi (sekme) | Fasoncu kalite kaydeder; bakiye görenler okur | Kumaş cinsi, kg, top sayısı, irsaliye no, iplik dağılımı; "Evet, kaydet" onayı |
 | İplik dönüşü (sekme) | Depo kaydeder | Sevkiyatta gönderilen iplik/parti seç, net kg, irsaliye no |
 | Fire dosyası (sekme) | Bakiye görenler; müdür işlem yapar | Gönderilen, dönen, gelen kumaş, gelmesi gereken kumaş, faturalanacak kilo, "Hesap ayrıntıları"; müdür: "Fire oranını değiştir", "Fatura bilgisini gir" / "Kapat" |
-| Faturalanacaklar | Müdür, Kalite, Genel müdür görür; müdür fatura girer | Faturalanacak kilosu kalan dosyalar; "Fatura bilgisini gir" → "Fatura edildi" → "Evet, fatura edildi" |
+| Faturalama | Müdür, Kalite, Genel müdür görür; müdür fatura girer | İki sekme. Faturalanacaklar: faturalanacak kilosu kalan dosyalar; "Fatura bilgisini gir" → "Fatura edildi" → "Evet, fatura edildi". Faturalananlar: girilmiş faturalar (fatura no, tarih, fasoncu, sevkiyat, kilo); tarih ve fasoncu süzgeci; Excel |
 | Fasoncu bakiyesi | Müdür, Genel müdür, Kalite | İplik cinsi × fasoncu matrisi, "Yolda" sütunu, hareket dökümü |
 | Merkez iplik stoku | Müdür, Genel müdür, Depo, Merkez kalite | Eldeki iplik, İplik girişi (depo), Kumaş girişi (merkez kalite), tedarikçiden gelen iplik tablosu (5.14) |
 | Uyuşmazlıklar | Kalite, Müdür | Kalite itirazı uyuşmazlıkları; kalite "Bana ata", müdür "Haklı" / "Haksız" kararı; müdür ana sayfasında "Karar bekleyen uyuşmazlıklar" listesi |
@@ -621,7 +623,7 @@ bu üç genişlikte denetler.
 | **Bakiye matrisi** | ✓ | İplik cinsi × fasoncu (09.11.2026 tablosunun ekranı), "Yolda" sütunu, toplamlar; açılış bakiyesi buradan yüklenir |
 | **Fire raporu** | ✓ | Sevkiyat bazında G, D, I, K, beklenen, gerçekleşen fire %, hatalı kg, fatura durumu |
 | **Giden iplik ↔ gelen kumaş** | ✓ | Kırıkhan Excel'inin ekran hali, fasoncu bazında |
-| **Faturalanacaklar** | ✓ | Faturalanacak kilosu kalmış dosyalar |
+| **Faturalama** | ✓ | Faturalanacaklar sekmesi: faturalanacak kilosu kalmış dosyalar; Faturalananlar sekmesi: girilmiş faturalar |
 
 Bütün raporlar Excel (.xlsx) ve PDF dosyası olarak indirilir; dönem (7/30/90 gün ya da tarih aralığı) süzgeci vardır.
 **Tedarikçi raporu** Merkez iplik stoku ekranındadır: "Tedarikçiden gelen iplik" tablosu (5.14).
@@ -718,14 +720,14 @@ gösterilir. QR etiket yoktur. Karar Bölüm 15, A4.
 | ✓ | Bakiye defteri | `balance_movement`, tamamlamada `DISPATCH` hareketi, bakiye görünümü | O–B |
 | ✓ | Kumaş girişi | Kayıt, iplik dağılımı, bakiyeden düşme | O |
 | ✓ | İplik dönüşü / gelen iplik | Kayıt, bakiye ve fire tabanı | K–O |
-| ✓ | Fire dosyası ve "fatura edildi" | Hesap, faturalanacaklar listesi, işaret | O |
+| ✓ | Fire dosyası ve "fatura edildi" | Hesap, Faturalama ekranı (faturalanacaklar ve faturalananlar), işaret | O |
 | ✓ | Kalite itirazının taşınması | Kalite açar, müdür karara bağlar; haklı itiraz faturalanacak kiloya eklenir; fasoncu rolü ve saha ekranı kaldırıldı | O |
 | ✓ | Raporlar | Bakiye matrisi, fire raporu, giden iplik ↔ gelen kumaş, faturalanacaklar; Excel/PDF | O–B |
 | ✓ | Açılış bakiyesi | 09.11.2026 tablosu ve fasoncu sayfalarından içe aktarma, Kırıkhan kabul testi | K–O |
 | ✓ | Genel müdür rolü, iplik tedarikçisi | Salt okuma rolü, tedarikçi tanımı ve lota bağlanması; tedarikçi artık zorunlu | K |
 | ✓ | Merkez iplik stoku | Merkeze iplik girişi (depo), merkez kumaş girişi (merkez kalite), tedarikçiden gelen iplik tablosu, stok eksiye düşmez | O |
 | ✓ | İplik kaynağı | Başka fasoncudan sevkiyat, kapıdan aktarma (tedarikçi listeden seçilir) | O |
-| ✓ | Parça parça fatura | Faturalanacaklar'dan iplik başına kilo, onay adımı; haklı itiraz faturalanacağa eklenir; kalite kararı yalnız müdürde | O |
+| ✓ | Parça parça fatura | Faturalama ekranından iplik başına kilo, onay adımı; haklı itiraz faturalanacağa eklenir; kalite kararı yalnız müdürde | O |
 | ✓ | Sipariş formu ve sevkiyat tarihi | Fiyat zorunlu, sipariş formu PDF, tarih gelmeden depo işlem yapamaz, tutar bilgisi | K–O |
 | ✓ | Yetkiler ekranı, yardım asistanı | Rol izinleri yönetici tarafından düzenlenir; "Yardım" balonu | O |
 
@@ -771,14 +773,14 @@ Aşağıdaki senaryoların hepsi kodda çalışır (otomatik testler ve robot se
 10. *Bakiye:* 1.000 kg (viskon 600, poly 400) sevkiyat tamamlanır → fasoncu bakiyesi viskon +600, poly +400.
 11. *Fire içinde:* Aynı sevkiyata 960 kg kumaş girilir ("Evet, kaydet" onayıyla) → faturalanacak kilo 0, gerçekleşen fire
     %4,00; dosya müdürün "Kapat" onayıyla kapanır.
-12. *Fire aşımı:* 900 kg kumaş → faturalanacak kilo 60, dosya "Faturalanacak"; müdür Faturalanacaklar'da "Fatura bilgisini
+12. *Fire aşımı:* 900 kg kumaş → faturalanacak kilo 60, dosya "Faturalanacak"; müdür Faturalama ekranında "Fatura bilgisini
     gir" der, fatura no, tarih ve iplik başına kilo yazıp "Fatura edildi" der, "Evet, fatura edildi" onayını verir →
     kalanın tamamı faturalandığı için dosya kapanır, faturalanan kilo fasoncu bakiyesinden düşer, kayıt geri alınamaz.
     Kalandan az kilo yazılırsa dosya açık kalır ve kalan azalır.
 13. *Özel fire:* Fire %5 girilmiş sevkiyatta 940 kg kumaş → faturalanacak kilo 10.
 14. *Dönen iplik:* Depo, sevkiyatta gönderilen ipliklerden birini seçip 100 kg dönüş kaydeder → taban 900, beklenen 864 kg.
 15. *Haklı itiraz:* Kalite 100 kg itiraz açar, müdür "Haklı" der → 100 kg fire hesabına esas iplikten ve gelen kumaştan
-    sayılır (fire hesabı değişmez), faturalanacak kiloya eklenir ve dosya Faturalanacaklar'a düşer; bakiyeden hemen düşmez.
+    sayılır (fire hesabı değişmez), faturalanacak kiloya eklenir ve dosya Faturalama ekranındaki Faturalanacaklar sekmesine düşer; bakiyeden hemen düşmez.
 16. *Kırıkhan:* Excel'deki giden 34.032 kg ve gelen 32.660 kg girildiğinde gerçekleşen fire %4,03, hatalı kg 10,72.
 17. *Bakiye matrisi:* Açılış bakiyesi aktarıldıktan sonra matris 09.11.2026 tablosundaki fasoncu bakiyeleriyle birebir tutar.
 18. *Kumaş yokken itiraz:* Kumaş girişi yapılmamış sevkiyatta kalite itirazı formu açılmaz; "Kalite itirazı için önce

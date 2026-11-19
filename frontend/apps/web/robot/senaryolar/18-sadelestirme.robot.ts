@@ -269,7 +269,7 @@ test('Sadeleştirme: Düzeltmeler sekmesi yok, kilolar tek biçimde yazılır', 
     `/panel/sevkiyat/${id}`,
     '/panel/bakiye',
     '/panel/merkez-stok',
-    '/panel/faturalanacaklar',
+    '/panel/faturalama',
     '/panel/raporlar',
   ];
   for (const yol of ekranlar)

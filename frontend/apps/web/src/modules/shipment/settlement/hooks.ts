@@ -8,6 +8,7 @@ import { SHIPMENTS_PATH } from '@iplik/api-client';
 import {
   BALANCES_PATH,
   closeFireSettlement,
+  FIRE_INVOICES_PATH,
   FIRE_SETTLEMENTS_PATH,
   getFireSettlement,
   listFabricReceipts,
@@ -47,6 +48,7 @@ function useRefresh(shipmentId: string) {
       queryClient.invalidateQueries({ queryKey: [SHIPMENTS_PATH, shipmentId] }),
       queryClient.invalidateQueries({ queryKey: [BALANCES_PATH] }),
       queryClient.invalidateQueries({ queryKey: [FIRE_SETTLEMENTS_PATH] }),
+      queryClient.invalidateQueries({ queryKey: [FIRE_INVOICES_PATH] }),
     ]);
 }
 

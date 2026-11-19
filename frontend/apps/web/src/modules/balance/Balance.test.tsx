@@ -5,7 +5,7 @@ import { BALANCES_PATH } from '@iplik/api-client/settlements';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
-import { addMockReceipt } from '@/mocks/settlements';
+import { addMockReceipt, markMockInvoiced } from '@/mocks/settlements';
 import { renderApp } from '@/test/renderApp';
 
 describe('Fasoncu bakiyesi', () => {
@@ -50,7 +50,7 @@ describe('Fasoncu bakiyesi', () => {
     renderApp('/panel/sevkiyat');
     await screen.findByRole('link', { name: 'Sevkiyatlar' });
     expect(screen.queryByRole('link', { name: 'Fasoncu bakiyesi' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Faturalanacaklar' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Faturalama' })).not.toBeInTheDocument();
   });
 
   it('izinsiz rol bakiye sayfasında yönlendirilir', async () => {
@@ -60,7 +60,7 @@ describe('Fasoncu bakiyesi', () => {
   });
 });
 
-describe('Faturalanacaklar', () => {
+describe('Faturalama: Faturalanacaklar sekmesi', () => {
   it('müdür hatalı kilosu olan dosyayı listeler ve dosyaya gider', async () => {
     addMockReceipt(
       'shp-0003',
@@ -69,7 +69,7 @@ describe('Faturalanacaklar', () => {
     );
     server.use(...createHandlers('MANAGER'));
     const { router } = renderApp('/panel/sevkiyat/shp-0003');
-    await userEvent.click(await screen.findByRole('link', { name: 'Faturalanacaklar' }));
+    await userEvent.click(await screen.findByRole('link', { name: 'Faturalama' }));
     const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
     expect(within(card).getByText(/Faturalanacak kilo 3,2 kg/)).toBeInTheDocument();
     await userEvent.click(within(card).getByRole('link', { name: 'SVK-2026-0003' }));
@@ -83,7 +83,7 @@ describe('Faturalanacaklar', () => {
       'user-quality',
     );
     server.use(...createHandlers('MANAGER'));
-    renderApp('/panel/faturalanacaklar');
+    renderApp('/panel/faturalama');
     const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
     await userEvent.click(within(card).getByRole('button', { name: 'Fatura bilgisini gir' }));
     const dialog = await screen.findByRole('dialog', { name: /Fatura bilgisi/ });
@@ -104,7 +104,7 @@ describe('Faturalanacaklar', () => {
       'user-quality',
     );
     server.use(...createHandlers('MANAGER'));
-    renderApp('/panel/faturalanacaklar');
+    renderApp('/panel/faturalama');
     const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
     await userEvent.click(within(card).getByRole('button', { name: 'Fatura bilgisini gir' }));
     const dialog = await screen.findByRole('dialog', { name: /Fatura bilgisi/ });
@@ -125,7 +125,7 @@ describe('Faturalanacaklar', () => {
       'user-quality',
     );
     server.use(...createHandlers('MANAGER'));
-    renderApp('/panel/faturalanacaklar');
+    renderApp('/panel/faturalama');
     const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
     await userEvent.click(within(card).getByRole('button', { name: 'Fatura bilgisini gir' }));
     const dialog = await screen.findByRole('dialog', { name: /Fatura bilgisi/ });
@@ -144,7 +144,7 @@ describe('Faturalanacaklar', () => {
       'user-quality',
     );
     server.use(...createHandlers('MANAGER'));
-    renderApp('/panel/faturalanacaklar');
+    renderApp('/panel/faturalama');
     const card = await screen.findByRole('article', { name: 'SVK-2026-0003' });
     await userEvent.click(within(card).getByRole('button', { name: 'Fatura bilgisini gir' }));
     let dialog = await screen.findByRole('dialog', { name: /Fatura bilgisi/ });
@@ -165,5 +165,86 @@ describe('Faturalanacaklar', () => {
     );
     dialog = await screen.findByRole('dialog', { name: /Fatura bilgisi/ });
     expect(await within(dialog).findByText(/F-7 · .* · 1 kg/)).toBeInTheDocument();
+  });
+});
+
+function seedInvoices(): void {
+  addMockReceipt(
+    'shp-0003',
+    { fabricType: 'Süprem', netKg: '1900', waybillNo: 'K-1' },
+    'user-quality',
+  );
+  const base = { lines: [], userId: 'user-manager' } as const;
+  markMockInvoiced('shp-0003', {
+    ...base,
+    invoiceNo: 'F-10',
+    invoicedAt: '2026-11-05',
+    lines: [{ yarnType: '30/1 Penye', netKg: '1' }],
+  });
+  markMockInvoiced('shp-0003', {
+    ...base,
+    invoiceNo: 'F-11',
+    invoicedAt: '2026-11-12',
+    lines: [{ yarnType: '30/1 Penye', netKg: '1.5' }],
+  });
+}
+
+describe('Faturalama: Faturalananlar sekmesi', () => {
+  it('girilmiş faturaları yeniden eskiye listeler; toplam kilo ve sevkiyat bağlantısı görünür', async () => {
+    seedInvoices();
+    server.use(...createHandlers('MANAGER'));
+    const { router } = renderApp('/panel/faturalama');
+    await userEvent.click(await screen.findByRole('tab', { name: 'Faturalananlar' }));
+    const table = await screen.findByRole('table', { name: 'Faturalananlar' });
+    const rows = within(table).getAllByRole('row');
+    expect(rows.map((row) => row.textContent)).toEqual([
+      expect.stringContaining('Fatura no'),
+      expect.stringMatching(/F-11.*12\.11\.2026.*1,5 kg/),
+      expect.stringMatching(/F-10.*05\.11\.2026.*1 kg/),
+    ]);
+    expect(screen.getByText('2 fatura · toplam 2,5 kg')).toBeInTheDocument();
+    expect(router.state.location.search).toBe('?sekme=faturalananlar');
+    await userEvent.click(
+      within(table).getAllByRole('link', { name: 'SVK-2026-0003' })[0] ?? table,
+    );
+    expect(router.state.location.pathname).toBe('/panel/sevkiyat/shp-0003');
+  });
+
+  it('tarih aralığına göre süzülür; toplam süzgece uyanlardan hesaplanır', async () => {
+    seedInvoices();
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/faturalama?sekme=faturalananlar');
+    await screen.findByText('2 fatura · toplam 2,5 kg');
+    await userEvent.type(screen.getByLabelText('Başlangıç tarihi'), '2026-11-10');
+    expect(await screen.findByText('1 fatura · toplam 1,5 kg')).toBeInTheDocument();
+    expect(screen.queryByText('F-10')).not.toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText('Bitiş tarihi'), '2026-11-11');
+    expect(await screen.findByText('Bu süzgece uyan fatura yok.')).toBeInTheDocument();
+  });
+
+  it('başlangıç tarihi bitişten sonraysa uyarı çıkar ve Excel kapanır', async () => {
+    seedInvoices();
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/faturalama?sekme=faturalananlar');
+    await screen.findByText('2 fatura · toplam 2,5 kg');
+    await userEvent.type(screen.getByLabelText('Bitiş tarihi'), '2026-11-01');
+    await userEvent.type(screen.getByLabelText('Başlangıç tarihi'), '2026-11-20');
+    expect(
+      await screen.findByText(/Başlangıç tarihi bitiş tarihinden sonra olamaz/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: "Excel'e al" })).toBeDisabled();
+  });
+
+  it('henüz fatura yoksa boş durum yazar', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/faturalama?sekme=faturalananlar');
+    expect(await screen.findByText('Bu süzgece uyan fatura yok.')).toBeInTheDocument();
+  });
+
+  it('eski adres yeni ekrana yönlenir', async () => {
+    server.use(...createHandlers('MANAGER'));
+    const { router } = renderApp('/panel/faturalanacaklar');
+    expect(await screen.findByRole('tab', { name: 'Faturalanacaklar' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/panel/faturalama');
   });
 });

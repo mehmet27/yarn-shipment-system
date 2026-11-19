@@ -41,9 +41,20 @@ public enum HelpDataSource {
     TO_INVOICE(
             "faturalanacaklar",
             "/api/v1/reports/to-invoice",
-            "Faturası bekleyen fire dosyaları (eksik kilosu olup henüz faturalanmamış)",
+            "Faturalama ekranındaki Faturalanacaklar sekmesi: faturası bekleyen fire dosyaları "
+                    + "(eksik kilosu olup henüz faturalanmamış)",
             HelpDataArgument.START,
             HelpDataArgument.END),
+    FIRE_INVOICES(
+            "faturalananlar",
+            "/api/v1/fire-invoices",
+            "Faturalama ekranındaki Faturalananlar sekmesi: girilmiş faturalar (fatura no, tarih, fasoncu, "
+                    + "sevkiyat, kilo) ve süzgeçteki toplam kilo; baslangic/bitis fatura tarihine göre. "
+                    + "Yeniden eskiye, sayfa başına 20",
+            HelpDataArgument.START,
+            HelpDataArgument.END,
+            HelpDataArgument.SUBCONTRACTOR,
+            HelpDataArgument.PAGE),
     AMOUNTS(
             "tutarlar",
             "/api/v1/reports/amounts",

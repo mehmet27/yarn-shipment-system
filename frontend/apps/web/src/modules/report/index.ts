@@ -7,3 +7,4 @@ export { kg, text } from './export/reportModel';
 export { StatGrid } from './components/StatGrid';
 export { StatCard as StatCell } from './components/StatCard';
 export { SupplierReceipts } from './components/SupplierReceipts';
+export { downloadWorkbook } from './export/writeWorkbook';

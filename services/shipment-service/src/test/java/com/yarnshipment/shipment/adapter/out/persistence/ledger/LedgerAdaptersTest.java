@@ -8,6 +8,7 @@ import com.yarnshipment.shipment.adapter.out.persistence.PostgresTestDatabase;
 import com.yarnshipment.shipment.application.port.in.balance.BalanceRow;
 import com.yarnshipment.shipment.application.port.in.balance.ListMovementsQuery;
 import com.yarnshipment.shipment.application.port.in.balance.MovementPage;
+import com.yarnshipment.shipment.application.port.in.fire.ListFireInvoicesQuery;
 import com.yarnshipment.shipment.application.port.in.fire.ListFireSettlementsQuery;
 import com.yarnshipment.shipment.application.port.out.ledger.ClaimLedgerPort;
 import com.yarnshipment.shipment.application.port.out.ledger.FireInvoicePort;
@@ -48,6 +49,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
     YarnReturnAdapter.class,
     FireSettlementAdapter.class,
     FireInvoiceAdapter.class,
+    FireInvoiceListAdapter.class,
     ClaimLedgerAdapter.class
 })
 @SuppressWarnings({"checkstyle:ClassFanOutComplexity", "checkstyle:ClassDataAbstractionCoupling"})
@@ -100,6 +102,9 @@ class LedgerAdaptersTest {
 
     @Autowired
     private FireInvoiceAdapter fireInvoices;
+
+    @Autowired
+    private FireInvoiceListAdapter invoiceList;
 
     @Autowired
     private ClaimLedgerAdapter claims;
@@ -379,6 +384,40 @@ class LedgerAdaptersTest {
         // then: yalnızca eksik kilo düşer; itiraz kilosu kumaş girişinde zaten düşülmüştür
         assertThat(balanceOf("(reçetesiz)")).isEqualByComparingTo("33992");
         assertThat(fireSettlements.totals(SHIPMENT).shortageInvoicedKg()).isEqualByComparingTo("40");
+    }
+
+    @Test
+    @DisplayName("Faturalananlar tarih ve fasoncuya göre süzülür, yeniden eskiye sıralanır, toplam kilo süzgeçten")
+    void shouldListInvoicesAcrossShipmentsWithFilters() {
+        // given
+        fireSettlements.open(FireSettlement.open(SHIPMENT, SUBCONTRACTOR, new BigDecimal("34032")), AT);
+        for (String[] invoice : new String[][] {{"F-1", "2026-11-10", "20"}, {"F-2", "2026-11-12", "30"}}) {
+            fireInvoices.recordInvoice(new FireInvoicePort.InvoiceRecord(
+                    SHIPMENT,
+                    SUBCONTRACTOR,
+                    invoice[0],
+                    LocalDate.parse(invoice[1]),
+                    null,
+                    List.of(new BalanceMovement.InvoiceShare("(reçetesiz)", new BigDecimal(invoice[2]))),
+                    BigDecimal.ZERO,
+                    USER,
+                    AT));
+        }
+        var all = new ListFireInvoicesQuery(TestTokens.actor("manager"), null, null, null, 0, PAGE_SIZE);
+        var november12 = new ListFireInvoicesQuery(
+                TestTokens.actor("manager"), LocalDate.parse("2026-11-11"), null, null, 0, PAGE_SIZE);
+        var otherSubcontractor =
+                new ListFireInvoicesQuery(TestTokens.actor("manager"), null, null, UUID.randomUUID(), 0, PAGE_SIZE);
+
+        // then
+        assertThat(invoiceList.findInvoices(all)).extracting(row -> row.invoiceNo()).containsExactly("F-2", "F-1");
+        assertThat(invoiceList.findInvoices(all).get(0).shipmentNo()).isEqualTo("SV-L1");
+        assertThat(invoiceList.countInvoices(all)).isEqualTo(2);
+        assertThat(invoiceList.sumInvoiceKg(all)).isEqualByComparingTo("50");
+        assertThat(invoiceList.findInvoices(november12)).extracting(row -> row.invoiceNo()).containsExactly("F-2");
+        assertThat(invoiceList.sumInvoiceKg(november12)).isEqualByComparingTo("30");
+        assertThat(invoiceList.countInvoices(otherSubcontractor)).isZero();
+        assertThat(invoiceList.sumInvoiceKg(otherSubcontractor)).isEqualByComparingTo("0");
     }
 
     @Test

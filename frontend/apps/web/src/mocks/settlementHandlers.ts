@@ -5,7 +5,12 @@ import type {
   YarnReturnRequest,
 } from '@iplik/api-client/settlements';
 import { SHIPMENTS_PATH } from '@iplik/api-client';
-import { BALANCES_PATH, FIRE_SETTLEMENTS_PATH, FIRE_STATUSES } from '@iplik/api-client/settlements';
+import {
+  BALANCES_PATH,
+  FIRE_INVOICES_PATH,
+  FIRE_SETTLEMENTS_PATH,
+  FIRE_STATUSES,
+} from '@iplik/api-client/settlements';
 import { isKilogram, sumKg } from '@iplik/units';
 import { http, HttpResponse } from 'msw';
 import { findMockShipment, listMockShipments } from './mockStore';
@@ -16,6 +21,7 @@ import {
   getMockBalanceRows,
   getMockSettlement,
   isMockClosed,
+  listMockInvoiceRows,
   listMockMovements,
   listMockReceipts,
   listMockReturns,
@@ -215,6 +221,30 @@ export function createSettlementHandlers(user: CurrentUser) {
       }
       closeMockFile(id);
       return HttpResponse.json(getMockSettlement(id));
+    }),
+    http.get(FIRE_INVOICES_PATH, ({ request }) => {
+      if (!has('BALANCE_VIEW')) return problem(403, 'ACCESS_DENIED');
+      const params = new URL(request.url).searchParams;
+      const from = params.get('from');
+      const to = params.get('to');
+      const subcontractorId = params.get('subcontractorId');
+      if (from !== null && to !== null && from > to) return problem(400, 'INVALID_LEDGER_INPUT');
+      const page = Number(params.get('page') ?? '0');
+      const size = Number(params.get('size') ?? String(DEFAULT_SIZE));
+      const rows = listMockInvoiceRows()
+        .filter((row) => from === null || row.invoicedOn >= from)
+        .filter((row) => to === null || row.invoicedOn <= to)
+        .filter((row) => subcontractorId === null || row.subcontractorId === subcontractorId);
+      return HttpResponse.json({
+        items: rows.slice(page * size, (page + 1) * size),
+        page: {
+          number: page,
+          size,
+          totalElements: rows.length,
+          totalPages: Math.ceil(rows.length / size),
+        },
+        totalKg: sumKg(rows.map((row) => row.kg)),
+      });
     }),
     http.get(FIRE_SETTLEMENTS_PATH, ({ request }) => {
       if (!has('BALANCE_VIEW') && !has('INVOICE_MARK')) return problem(403, 'ACCESS_DENIED');

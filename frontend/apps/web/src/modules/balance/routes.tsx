@@ -1,9 +1,10 @@
 import { RequirePermission } from '@/modules/auth';
+import { Navigate } from 'react-router';
 import type { RouteObject } from 'react-router';
 import { BalancesPage } from './pages/BalancesPage';
-import { ToInvoicePage } from './pages/ToInvoicePage';
+import { InvoicingPage } from './pages/InvoicingPage';
 
-/** /panel altındaki fasoncu bakiyesi ve faturalanacaklar route'ları. */
+/** /panel altındaki fasoncu bakiyesi ve faturalama route'ları. */
 export const balancePanelRoutes: RouteObject[] = [
   {
     path: 'bakiye',
@@ -14,11 +15,13 @@ export const balancePanelRoutes: RouteObject[] = [
     ),
   },
   {
-    path: 'faturalanacaklar',
+    path: 'faturalama',
     element: (
       <RequirePermission permission="INVOICE_MARK">
-        <ToInvoicePage />
+        <InvoicingPage />
       </RequirePermission>
     ),
   },
+  /** Ekranın eski adı: kayıtlı bağlantılar ve eski metinler yeni ekrana gider. */
+  { path: 'faturalanacaklar', element: <Navigate to="/panel/faturalama" replace /> },
 ];

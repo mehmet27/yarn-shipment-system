@@ -155,6 +155,21 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, Faturalama ekr
     },
   );
 
+  await mudur.adim(
+    'fire dosyasında fatura girilmez: faturalanacak kilo bilgisi ve Faturalama bağlantısı görünür',
+    async () => {
+      await mudur.sayfa.goto(`/panel/sevkiyat/${faturali}`);
+      await sekme(mudur, 'Fire dosyası');
+      const bilgi = mudur.sayfa.getByTestId('invoice-info');
+      await expect(bilgi).toContainText(
+        /faturalanacak\. Faturalama ekranından takip edebilirsiniz\./,
+      );
+      await expect(bilgi.getByRole('link', { name: 'Faturalama ekranına git' })).toBeVisible();
+      await expect(mudur.sayfa.getByLabel(/Fatura no/)).toHaveCount(0);
+      await expect(mudur.sayfa.getByRole('button', { name: 'Fatura edildi' })).toHaveCount(0);
+    },
+  );
+
   const kartAc = async () => {
     const liste = await mudur.api<{ items: { shipmentId: string; shipmentNo: string }[] }>(
       '/api/v1/shipments?size=100',

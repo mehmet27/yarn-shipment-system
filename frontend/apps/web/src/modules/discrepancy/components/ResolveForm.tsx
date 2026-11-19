@@ -19,7 +19,7 @@ function errorKey(error: unknown): string {
 
 /**
  * Karar: çözüm ve not zorunlu; sorumluluk atamasında sorumlu taraf da gerekir. Müdür yalnızca haklı/haksız der.
- * Haklı karar faturalanacak kiloya eklenir; fatura Faturalanacaklar'dan girilir. Kayıttan önce onay sorulur.
+ * Haklı karar faturalanacak kiloya eklenir; fatura Faturalama ekranından girilir. Kayıttan önce onay sorulur.
  */
 export function ResolveForm({
   discrepancyId,

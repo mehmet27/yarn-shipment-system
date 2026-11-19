@@ -34,7 +34,6 @@ export const KAPSANAN: Record<string, string> = {
   '/panel/sevkiyat/<id>|Evet, kaydet': '03-akis (kumaş girişi onayı), 09',
   '/panel/sevkiyat/<id>|Hareketi kaydet': '09-sevkiyat-islemleri',
   '/panel/sevkiyat/<id>|Oranı kaydet': '09-sevkiyat-islemleri',
-  '/panel/sevkiyat/<id>|Fatura edildi': '09-sevkiyat-islemleri',
   '/panel/faturalama|Fatura bilgisini gir': '09-sevkiyat-islemleri, 11-sayisal-dogrulama',
   "/panel/faturalama|Excel'e al": '09-sevkiyat-islemleri (Faturalananlar sekmesi)',
   '/panel/sevkiyat/<id>|Sevkiyatı iptal et': '09-sevkiyat-islemleri, 11-sayisal-dogrulama',

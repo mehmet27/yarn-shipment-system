@@ -63,6 +63,10 @@ final class FireInvoiceListAdapter implements FireInvoiceListPort {
     private static StatementSpec bind(StatementSpec spec, ListFireInvoicesQuery query) {
         return spec.param("fromDate", query.from())
                 .param("toDate", query.to())
-                .param("subcontractor", query.subcontractorId() == null ? null : query.subcontractorId().toString());
+                .param(
+                        "subcontractor",
+                        query.subcontractorId() == null
+                                ? null
+                                : query.subcontractorId().toString());
     }
 }

@@ -410,11 +410,15 @@ class LedgerAdaptersTest {
                 new ListFireInvoicesQuery(TestTokens.actor("manager"), null, null, UUID.randomUUID(), 0, PAGE_SIZE);
 
         // then
-        assertThat(invoiceList.findInvoices(all)).extracting(row -> row.invoiceNo()).containsExactly("F-2", "F-1");
+        assertThat(invoiceList.findInvoices(all))
+                .extracting(row -> row.invoiceNo())
+                .containsExactly("F-2", "F-1");
         assertThat(invoiceList.findInvoices(all).get(0).shipmentNo()).isEqualTo("SV-L1");
         assertThat(invoiceList.countInvoices(all)).isEqualTo(2);
         assertThat(invoiceList.sumInvoiceKg(all)).isEqualByComparingTo("50");
-        assertThat(invoiceList.findInvoices(november12)).extracting(row -> row.invoiceNo()).containsExactly("F-2");
+        assertThat(invoiceList.findInvoices(november12))
+                .extracting(row -> row.invoiceNo())
+                .containsExactly("F-2");
         assertThat(invoiceList.sumInvoiceKg(november12)).isEqualByComparingTo("30");
         assertThat(invoiceList.countInvoices(otherSubcontractor)).isZero();
         assertThat(invoiceList.sumInvoiceKg(otherSubcontractor)).isEqualByComparingTo("0");

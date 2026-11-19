@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 final class FireInvoiceListAdapter implements FireInvoiceListPort {
 
-    private static final String FROM = " FROM fire_invoice i JOIN shipment s ON s.id = i.shipment_id";
+    private static final String FROM = " FROM fire_invoice i JOIN shipment s ON s.id = i.shipment_id\n";
     private static final String WHERE = """
              WHERE (CAST(:fromDate AS date) IS NULL OR i.invoiced_on >= CAST(:fromDate AS date))
                AND (CAST(:toDate AS date) IS NULL OR i.invoiced_on <= CAST(:toDate AS date))

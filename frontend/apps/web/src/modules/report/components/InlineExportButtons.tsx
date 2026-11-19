@@ -21,7 +21,6 @@ export function InlineExportButtons({
         </Text>
       )}
       <Button
-        size="compact-sm"
         variant="default"
         leftSection={<Icon name="excel" size={14} />}
         onClick={() => void run('xlsx')}
@@ -29,7 +28,6 @@ export function InlineExportButtons({
         {t('report.export.excel')}
       </Button>
       <Button
-        size="compact-sm"
         variant="default"
         leftSection={<Icon name="pdf" size={14} />}
         onClick={() => void run('pdf')}

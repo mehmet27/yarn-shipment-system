@@ -43,10 +43,10 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
       const menu = await mudur.sayfa.locator('nav, aside, [class*="Navbar"]').first().innerText();
       mudur.kontrol(
         '"Günlük işler" başlığı olmalı',
-        /GÜNLÜK İŞLER/i.test(menu),
+        /günlük işler/i.test(menu),
         menu.slice(0, 200),
       );
-      mudur.kontrol('"Tanımlar ve ayarlar" başlığı olmalı', /TANIMLAR VE AYARLAR/i.test(menu));
+      mudur.kontrol('"Tanımlar ve ayarlar" başlığı olmalı', /tanımlar ve ayarlar/i.test(menu));
     },
   );
   await depo.adim('depo menüsü: tek liste, grup başlığı yok', async () => {
@@ -123,8 +123,10 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
       const dara = await depo.sayfa.getByLabel(/Boş araç tartısı/).boundingBox();
       const brut = await depo.sayfa.getByLabel(/Dolu araç tartısı/).boundingBox();
       depo.kontrol(
-        'dara alanı brüt alanının üstünde olmalı',
-        dara !== null && brut !== null && dara.y < brut.y,
+        'dara alanı brüt alanından önce (üstte ya da solda) olmalı',
+        dara !== null &&
+          brut !== null &&
+          (dara.y < brut.y || (dara.y === brut.y && dara.x < brut.x)),
       );
       depo.kontrol(
         'kilo kutularında "kg" yazmalı',

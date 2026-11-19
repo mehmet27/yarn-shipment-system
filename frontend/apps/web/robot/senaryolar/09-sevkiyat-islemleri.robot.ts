@@ -65,8 +65,6 @@ test('Sevkiyat: merkez stok yetmiyorsa uyarı oluştururken bir kez çıkar, tam
   });
   const id = await taslakAc(mudur, iplik, '100');
   await cuvalEkle(depo, id, 2, '50');
-  await tartiGir(depo, id, '103,5', '3,5', '2');
-  await depo.sayfa.waitForURL(new RegExp(`${id}$`), { timeout: 15_000 });
   await mudur.adim(
     'müdür: oluştururken stok uyarısını görür, kapatıp açınca yeniden görür',
     async () => {
@@ -85,6 +83,9 @@ test('Sevkiyat: merkez stok yetmiyorsa uyarı oluştururken bir kez çıkar, tam
       await mudur.sayfa.getByTestId('stock-notice').waitFor();
     },
   );
+  // Uyarı taslakta görünür; tartı girilince sevkiyat yola çıkar ve uyarı kalkar.
+  await tartiGir(depo, id, '103,5', '3,5', '2');
+  await depo.sayfa.waitForURL(new RegExp(`${id}$`), { timeout: 15_000 });
   await mudur.adim('müdür: tamamlarken stok sorusu çıkmaz, sevkiyat tamamlanır', async () => {
     await stokYetmeseDeTamamla(mudur, id, `${iplik}-IRS`);
   });
@@ -312,7 +313,7 @@ test('İplik dönüşü ve kanıt geçersiz kılma', async ({ giris }) => {
         (await depo.sayfa.getByLabel('Yön', { exact: true }).count()) === 0,
       );
       // İplik serbest metin değil, sevkiyatta gönderilenlerden seçilir; tek iplik varsa kendiliğinden seçili gelir.
-      await expect(depo.sayfa.getByLabel(/İplik cinsi/)).not.toHaveValue('');
+      await expect(depo.sayfa.getByLabel(/İplik cinsi/).first()).not.toHaveValue('');
       await depo.sayfa.getByLabel(/Net kilo/).fill('5000');
       await depo.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
       const mesajlar = await depo.mesajlar();

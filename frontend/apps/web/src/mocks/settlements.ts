@@ -1,5 +1,6 @@
 import type {
   BalanceMovement,
+  FireInvoiceRow,
   BalanceRow,
   FabricReceipt,
   FabricReceiptRequest,
@@ -146,6 +147,35 @@ export function markMockInvoiced(
     );
   }
 }
+/** Girilmiş tüm faturalar, sevkiyat ve fasoncu bilgisiyle; yeniden eskiye (fatura tarihi, sonra giriş sırası). */
+export function listMockInvoiceRows(): FireInvoiceRow[] {
+  const shipments = listMockShipments();
+  const rows: { row: FireInvoiceRow; order: number }[] = [];
+  let order = 0;
+  for (const [shipmentId, entries] of invoices) {
+    const shipment = shipments.find((s) => s.shipmentId === shipmentId);
+    if (shipment === undefined) continue;
+    for (const entry of entries) {
+      order += 1;
+      rows.push({
+        order,
+        row: {
+          invoiceNo: entry.invoiceNo,
+          invoicedOn: entry.invoicedAt,
+          shipmentId,
+          shipmentNo: shipment.shipmentNo,
+          subcontractorId: shipment.subcontractorId,
+          subcontractorTitle: shipment.subcontractorTitle,
+          kg: entry.kg,
+        },
+      });
+    }
+  }
+  return rows
+    .sort((a, b) => b.row.invoicedOn.localeCompare(a.row.invoicedOn) || b.order - a.order)
+    .map(({ row }) => row);
+}
+
 export function closeMockFile(shipmentId: string): void {
   closed.add(shipmentId);
 }

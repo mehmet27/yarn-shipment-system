@@ -119,12 +119,11 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     await userEvent.type(await screen.findByLabelText('Değişiklik gerekçesi'), 'Sözleşme');
     await userEvent.click(screen.getByRole('button', { name: 'Oranı kaydet' }));
     const info = await screen.findByTestId('invoice-info');
-    expect(info).toHaveTextContent(
-      /faturalanacak\. Faturalamayı Faturalanacaklar ekranından takip edebilirsiniz\./,
+    expect(info).toHaveTextContent(/faturalanacak\. Faturalama ekranından takip edebilirsiniz\./);
+    expect(within(info).getByRole('link', { name: 'Faturalama ekranına git' })).toHaveAttribute(
+      'href',
+      '/panel/faturalama',
     );
-    expect(
-      within(info).getByRole('link', { name: 'Faturalanacaklar ekranına git' }),
-    ).toHaveAttribute('href', '/panel/faturalanacaklar');
     expect(screen.queryByLabelText(/Fatura no/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Fatura edildi' })).not.toBeInTheDocument();
   });

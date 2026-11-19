@@ -108,7 +108,7 @@ test('Sevkiyat: merkez stok yetmiyorsa uyarı oluştururken bir kez çıkar, tam
   });
 });
 
-test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacaklar listesi', async ({
+test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, Faturalama ekranı (iki sekme)', async ({
   giris,
 }) => {
   const depo = await giris('depo');
@@ -144,26 +144,27 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
     },
   );
 
-  await mudur.adim('eksik kumaş: dosya faturalanacaklar listesine düşer', async () => {
-    await kumasGir(fasonKalite, faturali, '90', `${iplik}-K`);
-    const fire = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
-    mudur.kontrol('hatalı kilo oluşmalı', Number(fire.faultyKg) > 0, fire.faultyKg);
-    await mudur.sayfa.goto('/panel/faturalanacaklar');
-    await expect(mudur.sayfa.locator('main')).toContainText(/SV-/);
-  });
+  await mudur.adim(
+    'eksik kumaş: dosya Faturalama ekranının Faturalanacaklar sekmesine düşer',
+    async () => {
+      await kumasGir(fasonKalite, faturali, '90', `${iplik}-K`);
+      const fire = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
+      mudur.kontrol('hatalı kilo oluşmalı', Number(fire.faultyKg) > 0, fire.faultyKg);
+      await mudur.sayfa.goto('/panel/faturalama');
+      await expect(mudur.sayfa.locator('main')).toContainText(/SV-/);
+    },
+  );
 
   await mudur.adim(
-    'fire dosyasında fatura girilmez: faturalanacak kilo bilgisi ve Faturalanacaklar bağlantısı görünür',
+    'fire dosyasında fatura girilmez: faturalanacak kilo bilgisi ve Faturalama bağlantısı görünür',
     async () => {
       await mudur.sayfa.goto(`/panel/sevkiyat/${faturali}`);
       await sekme(mudur, 'Fire dosyası');
       const bilgi = mudur.sayfa.getByTestId('invoice-info');
       await expect(bilgi).toContainText(
-        /faturalanacak\. Faturalamayı Faturalanacaklar ekranından takip edebilirsiniz\./,
+        /faturalanacak\. Faturalama ekranından takip edebilirsiniz\./,
       );
-      await expect(
-        bilgi.getByRole('link', { name: 'Faturalanacaklar ekranına git' }),
-      ).toBeVisible();
+      await expect(bilgi.getByRole('link', { name: 'Faturalama ekranına git' })).toBeVisible();
       await expect(mudur.sayfa.getByLabel(/Fatura no/)).toHaveCount(0);
       await expect(mudur.sayfa.getByRole('button', { name: 'Fatura edildi' })).toHaveCount(0);
     },
@@ -174,7 +175,7 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
       '/api/v1/shipments?size=100',
     );
     const no = liste.items.find((s) => s.shipmentId === faturali)?.shipmentNo ?? '';
-    await mudur.sayfa.goto('/panel/faturalanacaklar');
+    await mudur.sayfa.goto('/panel/faturalama');
     const kart = mudur.sayfa.getByRole('article', { name: no });
     await kart.getByRole('button', { name: 'Fatura bilgisini gir' }).click();
     // Fatura formu açılır pencerede çıkar; pencerede önceki faturalar da listelenir.
@@ -234,6 +235,52 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, faturalanacakl
       JSON.stringify(fire),
     );
   });
+
+  await mudur.adim(
+    'Faturalananlar sekmesi: girilen iki fatura listelenir, tarihe göre süzülür, Excel inebilir',
+    async () => {
+      const dosya = await mudur.api<Fire>(`/api/v1/shipments/${faturali}/fire-settlement`);
+      const liste = await mudur.api<{ items: { shipmentId: string; shipmentNo: string }[] }>(
+        '/api/v1/shipments?size=100',
+      );
+      const no = liste.items.find((s) => s.shipmentId === faturali)?.shipmentNo ?? '';
+      await mudur.sayfa.goto('/panel/faturalama');
+      await expect(
+        mudur.sayfa.getByRole('heading', { name: 'Faturalama', exact: true }),
+      ).toBeVisible();
+      await expect(mudur.sayfa.getByRole('tab', { name: 'Faturalanacaklar' })).toBeVisible();
+      await mudur.sayfa.getByRole('tab', { name: 'Faturalananlar' }).click();
+      const tablo = mudur.sayfa.getByRole('table', { name: 'Faturalananlar' });
+      await expect(tablo.getByRole('row', { name: new RegExp(`F-${iplik}-2`) })).toBeVisible();
+      await expect(tablo.getByRole('row', { name: new RegExp(`F-${iplik}-1`) })).toBeVisible();
+      await expect(tablo.getByRole('link', { name: no }).first()).toBeVisible();
+      // Gelecekteki bir başlangıç tarihi hiçbir faturayı bırakmaz; bitiş tarihi başlangıçtan önceyse uyarı çıkar.
+      await mudur.sayfa.getByLabel('Başlangıç tarihi').fill('2999-01-01');
+      await expect(mudur.sayfa.getByText('Bu süzgece uyan fatura yok.')).toBeVisible();
+      await mudur.sayfa.getByLabel('Bitiş tarihi').fill('2998-01-01');
+      await expect(
+        mudur.sayfa.getByText('Başlangıç tarihi bitiş tarihinden sonra olamaz.'),
+      ).toBeVisible();
+      await mudur.sayfa.getByLabel('Başlangıç tarihi').fill('');
+      await mudur.sayfa.getByLabel('Bitiş tarihi').fill('');
+      await expect(tablo).toBeVisible();
+      const [indirme] = await Promise.all([
+        mudur.sayfa.waitForEvent('download', { timeout: 20_000 }),
+        mudur.sayfa.getByRole('button', { name: "Excel'e al" }).click(),
+      ]);
+      mudur.kontrol('Excel dosyası inmeli', indirme.suggestedFilename().endsWith('.xlsx'));
+      const sunucu = await mudur.api<{ items: { invoiceNo: string; kg: string }[] }>(
+        '/api/v1/fire-invoices?size=100',
+      );
+      const bunlar = sunucu.items.filter((f) => f.invoiceNo.startsWith(`F-${iplik}-`));
+      mudur.kontrol(
+        'bu sevkiyatın iki faturası listelenmeli ve kiloları faturalanan kiloya eşit olmalı',
+        bunlar.length === 2 &&
+          Math.abs(bunlar.reduce((t, f) => t + Number(f.kg), 0) - Number(dosya.invoicedKg)) < 0.001,
+        JSON.stringify(bunlar),
+      );
+    },
+  );
 
   await mudur.adim('hatalı kilo yoksa dosya kapatılır', async () => {
     await kumasGir(fasonKalite, kapali, '98', `${iplik}-K2`);

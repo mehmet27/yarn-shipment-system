@@ -7,6 +7,7 @@ import type { Page } from './shipments';
  */
 export const BALANCES_PATH = '/api/v1/balances';
 export const FIRE_SETTLEMENTS_PATH = '/api/v1/fire-settlements';
+export const FIRE_INVOICES_PATH = '/api/v1/fire-invoices';
 
 export type BalanceRow = {
   subcontractorId: string;
@@ -165,6 +166,27 @@ export type ListFireSettlementsParams = {
   size?: number;
 };
 
+/** Faturalananlar listesinde bir fatura: hangi sevkiyata, hangi fasoncuya ve kaç kilo girildiği. */
+export type FireInvoiceRow = {
+  invoiceNo: string;
+  /** Fatura tarihi, `YYYY-MM-DD`. */
+  invoicedOn: string;
+  shipmentId: string;
+  shipmentNo: string;
+  subcontractorId: string;
+  subcontractorTitle: string;
+  kg: string;
+};
+/** `totalKg` yalnız bu sayfanın değil, süzgece uyan tüm faturaların toplamıdır. */
+export type FireInvoicePage = Page<FireInvoiceRow> & { totalKg: string };
+export type ListFireInvoicesParams = {
+  from?: string;
+  to?: string;
+  subcontractorId?: string;
+  page?: number;
+  size?: number;
+};
+
 export const getBalances = (subcontractorId?: string) =>
   customInstance<BalancesView>({
     url: BALANCES_PATH,
@@ -227,3 +249,6 @@ export const closeFireSettlement = (shipmentId: string) =>
 
 export const listFireSettlements = (params: ListFireSettlementsParams) =>
   customInstance<Page<FireSettlementRow>>({ url: FIRE_SETTLEMENTS_PATH, method: 'GET', params });
+
+export const listFireInvoices = (params: ListFireInvoicesParams) =>
+  customInstance<FireInvoicePage>({ url: FIRE_INVOICES_PATH, method: 'GET', params });

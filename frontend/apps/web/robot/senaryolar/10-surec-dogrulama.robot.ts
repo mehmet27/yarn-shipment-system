@@ -318,7 +318,7 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
           /%10/.test(metin),
         metin.slice(metin.indexOf('Fire dosyası'), metin.indexOf('Fire dosyası') + 260),
       );
-      await mudur.sayfa.goto('/panel/faturalanacaklar');
+      await mudur.sayfa.goto('/panel/faturalama');
       await mudur.sayfa.waitForLoadState('networkidle');
       await mudur.sayfa.waitForTimeout(800);
       mudur.kontrol(

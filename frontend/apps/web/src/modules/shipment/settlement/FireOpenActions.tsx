@@ -9,7 +9,7 @@ import { formatKgText } from './format';
 
 /**
  * Açık dosyada izne göre oran düzenleme, faturalanacak kilo bilgisi (kalan kilo varsa) ya da kapatma (kalmadıysa).
- * Fatura bu ekranda girilmez; yalnızca Faturalanacaklar ekranından girilir.
+ * Fatura bu ekranda girilmez; yalnızca Faturalama ekranından (Faturalanacaklar sekmesi) girilir.
  */
 export function FireOpenActions({ settlement }: { settlement: FireSettlement }) {
   const { t } = useTranslation();
@@ -25,7 +25,7 @@ export function FireOpenActions({ settlement }: { settlement: FireSettlement }) 
       {shouldShowInvoiceInfo && (
         <Alert color="blue" data-testid="invoice-info">
           {t('settlement.fire.invoiceInfoNote', { kg: formatKgText(settlement.remainingKg) })}{' '}
-          <Anchor component={Link} to="/panel/faturalanacaklar">
+          <Anchor component={Link} to="/panel/faturalama">
             {t('settlement.fire.invoiceInfoLink')}
           </Anchor>
         </Alert>

@@ -39,8 +39,8 @@ const ITEMS: readonly PanelNavItem[] = [
   },
   {
     group: 'daily',
-    to: '/panel/faturalanacaklar',
-    labelKey: 'nav.toInvoice',
+    to: '/panel/faturalama',
+    labelKey: 'nav.invoicing',
     icon: 'invoices',
     permission: 'INVOICE_MARK',
   },

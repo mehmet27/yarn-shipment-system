@@ -94,7 +94,7 @@
     "audit": "Denetim kaydı",
     "branding": "Görünüm",
     "balances": "Fasoncu bakiyesi",
-    "toInvoice": "Faturalanacaklar",
+    "invoicing": "Faturalama",
     "centralStock": "Merkez iplik stoku",
     "permissions": "Yetkiler"
   },
@@ -1391,8 +1391,8 @@
       "ratePct": "Fire oranı (%)",
       "rateReason": "Değişiklik gerekçesi",
       "rateSubmit": "Oranı kaydet",
-      "invoiceInfoNote": "{{kg}} faturalanacak. Faturalamayı Faturalanacaklar ekranından takip edebilirsiniz.",
-      "invoiceInfoLink": "Faturalanacaklar ekranına git",
+      "invoiceInfoNote": "{{kg}} faturalanacak. Faturalama ekranından takip edebilirsiniz.",
+      "invoiceInfoLink": "Faturalama ekranına git",
       "invoiceNo": "Fatura no",
       "invoicedOn": "Fatura tarihi",
       "invoiceNote": "Not (isteğe bağlı)",
@@ -1445,9 +1445,33 @@
       },
       "openShipment": "Sevkiyat"
     },
+    "invoicing": {
+      "title": "Faturalama",
+      "subtitle": "Faturası bekleyen dosyalar ve faturası girilmiş kayıtlar.",
+      "tabs": {
+        "toInvoice": "Faturalanacaklar",
+        "invoiced": "Faturalananlar"
+      }
+    },
+    "invoiced": {
+      "title": "Faturalananlar",
+      "sheet": "Faturalananlar",
+      "from": "Başlangıç tarihi",
+      "to": "Bitiş tarihi",
+      "rangeInvalid": "Başlangıç tarihi bitiş tarihinden sonra olamaz.",
+      "subcontractor": "Fasoncu",
+      "allSubcontractors": "Tüm fasoncular",
+      "invoiceNo": "Fatura no",
+      "date": "Fatura tarihi",
+      "shipment": "Sevkiyat",
+      "kg": "Kilo",
+      "total": "Toplam",
+      "totalLine": "{{count}} fatura · toplam {{kg}}",
+      "empty": "Bu süzgece uyan fatura yok.",
+      "excel": "Excel'e al",
+      "exportFailed": "Excel dosyası hazırlanamadı. Biraz sonra tekrar deneyin."
+    },
     "toInvoice": {
-      "title": "Faturalanacaklar",
-      "subtitle": "Faturalanacak kilosu olan, faturası bekleyen fire dosyaları.",
       "empty": "Faturalanacak dosya yok.",
       "shipment": "Sevkiyat",
       "subcontractor": "Fasoncu",
@@ -1608,7 +1632,7 @@
       "DISPATCH_VIEW": "Çıkış tartısı bilgisini görür",
       "WEIGHT_MISMATCH_RESOLVE": "Kantar uyuşmazlığını yeniden tartıya açar",
       "FIRE_RATE_EDIT": "Fire oranını değiştirir",
-      "INVOICE_MARK": "Faturalanacaklar: fatura edildi işaretler",
+      "INVOICE_MARK": "Faturalama: fatura edildi işaretler",
       "EVIDENCE_UPLOAD_DISPATCH": "Çıkış kanıtı (fotoğraf, fiş) yükler",
       "EVIDENCE_UPLOAD_CLAIM": "İtiraz kanıtı yükler",
       "EVIDENCE_VIEW": "Kanıtları görür",

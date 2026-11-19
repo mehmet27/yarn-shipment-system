@@ -303,7 +303,7 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
       const once = bakiyeOf((await anlik(mudur)).bakiye, BASKA, iplik);
       const f = await fire();
       const no = (await mudur.api<{ shipmentNo: string }>(`/api/v1/shipments/${id}`)).shipmentNo;
-      await mudur.sayfa.goto('/panel/faturalanacaklar');
+      await mudur.sayfa.goto('/panel/faturalama');
       await mudur.sayfa
         .getByRole('article', { name: no })
         .getByRole('button', { name: 'Fatura bilgisini gir' })

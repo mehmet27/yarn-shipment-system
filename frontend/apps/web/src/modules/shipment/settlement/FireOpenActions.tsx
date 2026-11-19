@@ -1,28 +1,34 @@
 import type { FireSettlement } from '@iplik/api-client/settlements';
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Title } from '@iplik/ui';
+import { Alert, Anchor, Stack } from '@iplik/ui';
+import { Link } from 'react-router';
 import { usePermission } from '@/modules/auth';
 import { CloseAction } from './CloseAction';
 import { FireRateForm } from './FireRateForm';
-import { InvoiceForm } from './InvoiceForm';
+import { formatKgText } from './format';
 
-/** Açık dosyada izne göre oran düzenleme, fatura kaydı (faturalanacak kilo kaldıysa) ya da kapatma (kalmadıysa). */
+/**
+ * Açık dosyada izne göre oran düzenleme, faturalanacak kilo bilgisi (kalan kilo varsa) ya da kapatma (kalmadıysa).
+ * Fatura bu ekranda girilmez; yalnızca Faturalanacaklar ekranından girilir.
+ */
 export function FireOpenActions({ settlement }: { settlement: FireSettlement }) {
   const { t } = useTranslation();
   const canEditRate = usePermission('FIRE_RATE_EDIT');
   const canMark = usePermission('INVOICE_MARK');
   const hasFabric = Number(settlement.fabricKg) > 0;
   const hasFault = Number(settlement.remainingKg) > 0;
-  const canInvoice = canMark && hasFabric && hasFault;
+  const shouldShowInvoiceInfo = canMark && hasFabric && hasFault;
   const canClose = canMark && hasFabric && !hasFault;
   return (
     <Stack gap="lg">
       {canEditRate && <FireRateForm key={settlement.fireRate} settlement={settlement} />}
-      {canInvoice && (
-        <Stack>
-          <Title order={3}>{t('settlement.fire.invoiceTitle')}</Title>
-          <InvoiceForm settlement={settlement} />
-        </Stack>
+      {shouldShowInvoiceInfo && (
+        <Alert color="blue" data-testid="invoice-info">
+          {t('settlement.fire.invoiceInfoNote', { kg: formatKgText(settlement.remainingKg) })}{' '}
+          <Anchor component={Link} to="/panel/faturalanacaklar">
+            {t('settlement.fire.invoiceInfoLink')}
+          </Anchor>
+        </Alert>
       )}
       {canClose && <CloseAction shipmentId={settlement.shipmentId} />}
     </Stack>

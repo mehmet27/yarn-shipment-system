@@ -107,7 +107,7 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     expect(screen.queryByRole('button', { name: 'Kumaş girişini kaydet' })).not.toBeInTheDocument();
   });
 
-  it('müdür oranı değiştirir ve hatalı kiloyu faturalar; dosya kapanır', async () => {
+  it('müdür oranı değiştirir; faturalanacak kilo için fatura yerine bilgi görür', async () => {
     addMockReceipt(
       'shp-0003',
       { fabricType: 'Süprem', netKg: '1900', waybillNo: 'KUM-1' },
@@ -118,12 +118,15 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     await openTab('Fire dosyası');
     await userEvent.type(await screen.findByLabelText('Değişiklik gerekçesi'), 'Sözleşme');
     await userEvent.click(screen.getByRole('button', { name: 'Oranı kaydet' }));
-    await userEvent.type(await screen.findByLabelText(/Fatura no/), 'FTR-7');
-    await userEvent.click(screen.getByRole('button', { name: 'Fatura edildi' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Evet, fatura edildi' }));
-    expect(await screen.findByText(/Fatura FTR-7/)).toBeInTheDocument();
-    expect(screen.getByTestId('fire-status')).toHaveTextContent('Faturalandı');
-    expect(screen.queryByRole('button', { name: 'Oranı kaydet' })).not.toBeInTheDocument();
+    const info = await screen.findByTestId('invoice-info');
+    expect(info).toHaveTextContent(
+      /faturalanacak\. Faturalamayı Faturalanacaklar ekranından takip edebilirsiniz\./,
+    );
+    expect(
+      within(info).getByRole('link', { name: 'Faturalanacaklar ekranına git' }),
+    ).toHaveAttribute('href', '/panel/faturalanacaklar');
+    expect(screen.queryByLabelText(/Fatura no/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Fatura edildi' })).not.toBeInTheDocument();
   });
 
   it('müdür hatalı kilosu olmayan dosyayı kapatır', async () => {

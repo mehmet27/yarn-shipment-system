@@ -182,7 +182,7 @@ Silinecekler: yerel PostgreSQL verisi ve kanıt dosyaları (.yerel/evidence) (ad
     dur("docker compose down başarısız.");
   rmSync(join(KAYIT, "evidence"), { recursive: true, force: true });
   if (
-    calistir("docker", [...compose, "up", "-d"], { stdio: "inherit" })
+    calistir("docker", [...compose, "up", "-d", "--wait"], { stdio: "inherit" })
       .status !== 0
   )
     dur("docker compose up başarısız.");
@@ -194,6 +194,12 @@ Silinecekler: yerel PostgreSQL verisi ve kanıt dosyaları (.yerel/evidence) (ad
   }
 } else {
   servisleriDurdur();
+  // Bilgisayar yeniden başladıysa veritabanı konteyneri durmuş olabilir; veriye dokunmadan ayağa kaldırılır.
+  if (
+    calistir("docker", [...compose, "up", "-d", "--wait"], { stdio: "inherit" })
+      .status !== 0
+  )
+    dur("Veritabanı başlatılamadı (docker compose up). Docker çalışıyor mu?");
 }
 
 // ---- Backend ve arayüzü (yeniden) derle ve başlat ----------------------------------------------------------

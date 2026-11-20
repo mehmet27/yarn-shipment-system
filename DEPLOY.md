@@ -22,9 +22,10 @@ nano deploy/prod/.env             # APP_HOST ve ACME_EMAIL alanlarını doldurun
 ./deploy/prod/install.sh          # sırları üretir, imajları derler, her şeyi başlatır
 ```
 
-İlk derleme 10-20 dakika sürer. Bitince `docker compose -f deploy/prod/docker-compose.yml --env-file deploy/prod/.env ps`
-ile tüm servislerin `running`/`healthy` olduğunu görün. Betik sonunda yönetici bilgilerini yazar; `deploy/prod/.env`
-dosyasını güvenli bir yere yedekleyin (içindeki sırlar kaybolursa veriye erişilemez).
+İlk derleme 10-20 dakika sürer. Betik uygulama gerçekten yanıt verene kadar bekler (açılmazsa günlüğün sonunu gösterip
+hatayla çıkar), ardından **gece yedeğini kendiliğinden kurar** (bkz. bölüm 4) ve yönetici bilgilerini yazar. Durumu sonradan
+`./deploy/prod/durum.sh` ile görün. `deploy/prod/.env` dosyasını güvenli bir yere yedekleyin (yönetici ilk şifresi ve sırlar
+içindedir).
 
 ## 2. İlk giriş
 
@@ -38,35 +39,59 @@ dosyasını güvenli bir yere yedekleyin (içindeki sırlar kaybolursa veriye er
 
 | İş | Komut (depo kökünde) |
 |---|---|
-| Güncelleme | `git pull && ./deploy/prod/install.sh` |
-| Durum / günlük | `docker compose -f deploy/prod/docker-compose.yml --env-file deploy/prod/.env ps` · `... logs -f yarnshipment-app` |
-| Durdurma | `... down` (veriler korunur; `down -v` **tüm veriyi siler**) |
-| Yedek | `./deploy/prod/yedekle.sh` (veritabanı dökümü + kanıt dosyaları; aşağıya bakın) ve `deploy/prod/.env` |
+| Durum (servisler, son yedek, disk) | `./deploy/prod/durum.sh` (sorun varsa uyarır ve sıfırdan farklı kodla çıkar) |
+| Güncelleme | `git pull && ./deploy/prod/install.sh` (önce veritabanı dökümü alır, sonra yeni sürümü başlatır ve açılmasını bekler) |
+| Günlük | `docker compose -f deploy/prod/docker-compose.yml --env-file deploy/prod/.env logs -f yarnshipment-app` |
+| Durdurma | `docker compose -f deploy/prod/docker-compose.yml --env-file deploy/prod/.env down` (veriler korunur; `down -v` **tüm veriyi siler**) |
+| Yedek (elle) | `sudo ./deploy/prod/yedekle.sh` |
+| Geri yükleme | `sudo ./deploy/prod/geri-yukle.sh` (aşağıya bakın) |
+
+Sunucuya özel ek Compose ayarı gerekiyorsa (farklı port, bellek sınırı) `deploy/prod/docker-compose.override.yml` dosyasına
+yazın; betikler varsa kendiliğinden kullanır, dosya git'e girmez.
 
 ## 4. Yedekleme ve geri yükleme
 
 Kanıt dosyaları (kantar fişi, irsaliye, itiraz belgeleri) sunucu diskindeki `evidence-data` biriminde durur; dosyaların
-SHA-256 değeri veritabanındadır, bu yüzden bozulma sonradan doğrulanabilir. Disk kaybına karşı **gece yedeği şarttır**.
+SHA-256 değeri veritabanındadır, bu yüzden bozulma sonradan doğrulanabilir.
+
+**Gece yedeği kendiliğinden kurulur.** `install.sh` her çalıştığında `yedek-kur.sh` ile `/etc/cron.d/yarn-shipment-yedek`
+dosyasını yazar: her gece 02:30'da `yedekle.sh` çalışır, çıktısı `/var/log/yarn-shipment-yedek.log` dosyasına eklenir.
+Ayarlar `deploy/prod/.env` içindedir; değiştirince `sudo ./deploy/prod/yedek-kur.sh` çalıştırın:
+
+| Ayar | Anlamı | Varsayılan |
+|---|---|---|
+| `YEDEK_DIZINI` | Yedeğin yazıldığı yer. **Ayrı bir disk ya da bağlı NAS verin**; boşsa yedek uygulamayla aynı diskte durur ve disk bozulursa birlikte kaybolur | `/var/backups/yarn-shipment` |
+| `YEDEK_UZAK` | Şehir dışı kopya, `rsync` hedefi (ör. `yedek@baska-sunucu:/yedekler/iplik`; root'un SSH anahtarı tanımlı olmalı) | yok |
+| `YEDEK_SAATI` | Gece yedeğinin saati (sunucu saati, `SS:DD`) | `02:30` |
+| `YEDEK_GUN` | Veritabanı dökümlerinin saklandığı gün sayısı | `30` |
+
+`yedekle.sh` veritabanını `pg_dump` ile alır, dökümün okunabildiğini doğrular (bozuk döküm yedek sayılmaz, eski dökümler
+silinmez) ve kanıt klasörünü `rsync` ile **silmeden** kopyalar (uygulama dosya silmez; yedekte de silinmez). Başarılı her
+yedekten sonra `<YEDEK_DIZINI>/son-basarili-yedek.txt` güncellenir; `durum.sh` son yedek 26 saatten eskiyse uyarır.
+Gece yedeğini kaldırmak: `sudo ./deploy/prod/yedek-kur.sh --kaldir`.
+
+**Geri yükleme** (aynı sunucuda ya da yeni kurulmuş boş bir sunucuda; önce `install.sh` çalışmış olmalı):
 
 ```bash
-# Elle bir kez: yedek diski /mnt/yedek, şehir dışı kopya (isteğe bağlı) başka bir sunucuda
-sudo YEDEK_DIZINI=/mnt/yedek YEDEK_UZAK=yedek@baska-sunucu:/yedekler/iplik ./deploy/prod/yedekle.sh
-
-# Her gece 02:30 (root crontab -e):
-30 2 * * * cd /opt/yarn-shipment-system && YEDEK_DIZINI=/mnt/yedek ./deploy/prod/yedekle.sh >> /var/log/yedekle.log 2>&1
+sudo ./deploy/prod/geri-yukle.sh                                   # YEDEK_DIZINI içindeki en son dökümü geri yükler
+sudo ./deploy/prod/geri-yukle.sh /mnt/yedek/veritabani/yarnshipment-20261120-023000.dump   # belirli bir döküm
+sudo ./deploy/prod/geri-yukle.sh --kanit-atla                      # yalnızca veritabanı
 ```
 
-Betik veritabanını `pg_dump` ile alır (son 30 gün saklanır) ve kanıt klasörünü `rsync` ile **silmeden** kopyalar
-(uygulama dosya silmez; yedekte de silinmez). `rsync` kurulu olmalıdır (`apt install rsync`).
-
-Geri yükleme: boş kurulumda servisleri durdurun, `docker compose ... exec -T postgres pg_restore -U postgres -d yarnshipment --clean --if-exists < yarnshipment-<tarih>.dump`
-ile veritabanını, `rsync -a /mnt/yedek/evidence/ $(docker volume inspect -f '{{ .Mountpoint }}' yarn-shipment-prod_evidence-data)/`
-ile dosyaları yerine koyup `chown -R 10001 <aynı klasör>` çalıştırın ve servisleri başlatın. Ayda bir geri yükleme denemesi yapın.
+Betik onay ister (`GERI-YUKLE` yazılır; `--evet` ile sormaz), uygulamayı durdurur, **mevcut veritabanının dökümünü
+`geri-yukleme-oncesi-<tarih>.dump` adıyla alır**, veritabanını dökümden yeniden kurar, kanıt dosyalarını yerine koyar
+(sunucudaki dosyaları silmez), uygulamayı başlatır ve açılmasını bekler. Yeni sunucuya taşırken yedek klasörünü
+(`veritabani/` ve `evidence/`) yeni sunucuya kopyalayıp `YEDEK_DIZINI` ile gösterin. Geri yüklemeden sonra herkes yeniden
+giriş yapar. **Ayda bir**, yedeği ayrı bir deneme sunucusunda geri yükleyip bir sevkiyatı ve bir kanıt dosyasını açarak deneyin.
 
 ## Bilinen sınırlar
 
-- Derleme ve imajlar bu ortamda Docker olmadığı için çalıştırılarak denenmedi; ilk kurulumda bir adım hata verirse
-  `docker compose ... logs <servis>` çıktısını paylaşın.
+- **Ne denendi:** kurulum zinciri (`install.sh` → HTTPS üzerinden arayüz ve API → admin girişi ve şifre değişimi →
+  `yedekle.sh` → `install.sh` ile güncelleme → tüm verinin silinmesi → yeniden kurulum → `geri-yukle.sh`) `tools/ci/deploy-smoke.sh`
+  ile Docker üzerinde uçtan uca denenir; aynı test CI'da (`deploy` iş akışı) kurulum dosyaları değişince ve haftada bir koşar.
+  **Denenmeyenler:** gerçek alan adıyla Let's Encrypt sertifikası (testte Caddy `localhost` için kendi iç sertifikasını üretir),
+  gerçek bir Ubuntu sunucuda Docker'ın `get.docker.com` ile kurulması, cron'un gece gerçekten tetiklemesi ve `YEDEK_UZAK`
+  kopyası. İlk kurulumda bir adım hata verirse `docker compose ... logs <servis>` çıktısını paylaşın.
 - **MinIO'dan geçiş:** eski kurulumda dosyalar MinIO'daydı (`evidence` kovası; MinIO'nun disk düzeni düz dosya değildir,
   `minio-data` klasörü kopyalanarak taşınamaz). Güncellemeden **önce**, eski yığın çalışırken dosyaları düz klasöre alın
   (anahtarlar aynı kalır, veritabanına dokunulmaz):

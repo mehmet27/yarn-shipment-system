@@ -83,6 +83,14 @@ services:
       - evidence-data:/data/evidence
     depends_on:
       postgres: { condition: service_healthy }
+    # Uygulama gerçekten yanıt veriyor mu (veritabanına bağlanıp markayı okur); install.sh ve geri-yukle.sh bunu bekler.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost:8083/api/v1/branding"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 120s
+      start_interval: 5s
 
 volumes:
   postgres-data:

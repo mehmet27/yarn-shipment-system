@@ -8,6 +8,8 @@ const yavas = Number(process.env.ROBOT_YAVAS ?? (izle ? '250' : '0'));
 export default defineConfig({
   testDir: './senaryolar',
   testMatch: '**/*.robot.ts',
+  // Yığın ayakta mı ve admin robotun şifresiyle girebiliyor mu (sıfırlama sonrası ilk giriş dahil).
+  globalSetup: './support/hazirlik.ts',
   // Senaryolar yerel veritabanına kayıt yazar; birbirini beklemeden değil sırayla koşar.
   fullyParallel: false,
   workers: 1,

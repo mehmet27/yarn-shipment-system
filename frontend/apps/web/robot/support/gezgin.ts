@@ -47,7 +47,18 @@ export async function sayfayiGez(
   const sonuc: Kapsam[] = [];
   const rota = rotaTipi(yol);
   const ac = async () => {
-    await sayfa.goto(yol);
+    // Gezgin tek sekmede yüzlerce kez sayfa açar; veri çoğaldıkça (tam koşu) tarayıcı kaynak sınırına takılıp
+    // ERR_INSUFFICIENT_RESOURCES verebilir. Sekme boşaltılıp kısa bir aradan sonra yeniden denenir.
+    for (let deneme = 0; ; deneme += 1) {
+      try {
+        await sayfa.goto(yol);
+        break;
+      } catch (hata) {
+        if (deneme >= 2 || !/ERR_INSUFFICIENT_RESOURCES/.test((hata as Error).message)) throw hata;
+        await sayfa.goto('about:blank').catch(() => undefined);
+        await sayfa.waitForTimeout(2_000 * (deneme + 1));
+      }
+    }
     await sayfa.waitForLoadState('networkidle');
     await sayfa.waitForTimeout(300);
   };

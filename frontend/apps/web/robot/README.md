@@ -10,7 +10,7 @@ sunucu doğrulamaları ve sayıların tutarlılığı gerçek koşullarda sınan
 `yarnshipment-app` `8083` üzerinde `local` profiliyle (arayüz `/api` isteklerini ona iletir). Giriş formu `/giris` sayfasıdır; ilk girişte geçici şifre `/sifre-degistir` sayfasında değiştirilir.
 
 ```bash
-cd frontend
+cd frontend   # aşağıdaki komutların kısası burada da çalışır: pnpm robot -- --rol=depo
 # Şifre: bash için  export ROBOT_SIFRE='...'   PowerShell için  $env:ROBOT_SIFRE = '...'
 # ya da robot/.env.local dosyasına  ROBOT_SIFRE=...  yazın (git'e girmez)
 pnpm --filter @iplik/web robot                  # sessiz kip; rapor üretir
@@ -60,11 +60,18 @@ cd frontend && pnpm yerel:sifirla    # hacimleri siler, yalnızca admin'li kurar
 
 (Ayrıntı ve seçenekler için kök `README.md`, "Yerel ortamı sıfırlama".)
 
-Ardından yığını başlatıp `ROBOT_SIFRE` olarak admin'in şifresini değil, **tüm robot kullanıcılarının alacağı** şifreyi verin
-(en az 8 karakter ve kolay tahmin edilmeyen bir şifre; `12345678` gibileri reddedilir). `admin` için
-`robot/kullanicilar.local.json` içine kendi şifresini yazın: `{ "admin": "<admin şifresi>" }`. `00-kurulum` senaryosu
-eksik kullanıcıları (depo, kalite, fasoncu kalite, müdür, genel müdür) yönetici ekranından açar, her biriyle ilk girişi yapıp
-`ROBOT_SIFRE` şifresini belirler; sonraki senaryolar bu hesaplarla koşar.
+`ROBOT_SIFRE` olarak **tüm robot kullanıcılarının (admin dahil) alacağı** şifreyi verin (en az 8 karakter ve kolay tahmin
+edilmeyen bir şifre; `12345678` gibileri reddedilir; `deploy/.env` içindeki `LOCAL_TEST_USER_PASSWORD` ile aynı olamaz).
+
+**Sıfırlamadan sonraki ilk koşu kendiliğinden çalışır.** Her koşunun başında `support/hazirlik.ts` (Playwright `globalSetup`)
+bir kez çalışır: yığın ayakta değilse tek ve açık bir mesajla durur; `admin` robotun şifresiyle giremiyorsa `deploy/.env`
+içindeki geçici şifreyle (`LOCAL_TEST_USER_PASSWORD`) ilk girişi yapar, uygulamanın istediği şifre değişikliğinde robotun
+şifresini belirler. Elle bir şey yapmanız, `kullanicilar.local.json` açmanız gerekmez. (Admin'e ayrı bir şifre vermek
+isterseniz `robot/kullanicilar.local.json` içine `{ "admin": "<şifre>" }` yazın; hazırlık o şifreyi belirler. Geçici şifre
+`deploy/.env` dışında bir yerdeyse `ROBOT_ADMIN_ILK_SIFRE` ile verin.)
+
+`00-kurulum` senaryosu eksik kullanıcıları (depo, kalite, fasoncu kalite, müdür, genel müdür) yönetici ekranından açar, her
+biriyle ilk girişi yapıp `ROBOT_SIFRE` şifresini belirler; sonraki senaryolar bu hesaplarla koşar.
 
 **Lokasyon:** hesap açmak lokasyona bağlı değildir. Veritabanında hiç lokasyon yoksa uygulama açılışta "Merkez" lokasyonunu kendisi açıp lokasyonsuz hesaplara verir; sonradan açılan lokasyon da tüm hesaplara eklenir. Bu yüzden robotun kurulum adımında lokasyon girmesi gerekmez.
 
@@ -129,16 +136,20 @@ Gezgin **anahtar** (onay kutusu) tıkladığında "işaretli olmalı" demez: tı
 
 - Her geliştirmede **yalnızca değişen özelliğin senaryoları** koşulur (`pnpm robot -- --rol=<senaryo adı>`); **tam koşu yalnızca
   kullanıcı isterse** yapılır.
-- **Her robot koşusundan sonra** (tam koşu ya da PR koşusu) ortam sıfırlanır: `cd frontend && pnpm yerel:sifirla -- --evet`.
+- **Her robot koşusundan sonra** (tam koşu ya da PR koşusu) ortam sıfırlanır. En kolayı koşuya `--sifirla` eklemektir:
+  `cd frontend && pnpm robot -- --rol=<senaryo adı> --sifirla` koşu bitince (başarılı ya da başarısız) `pnpm yerel:sifirla -- --evet`
+  çalıştırır; rapor `robot/rapor` altında kalır. Bayrak verilmediyse koşunun sonunda hatırlatma yazılır ve sıfırlama elle yapılır.
   Docker verisi silinir; sistemde yalnızca `admin` kalır, robotun açtığı kullanıcılar (`depo`, `kalite`, `fason.kalite`, `mudur`, `genel.mudur`,
-  `sifre.*` vb.) ve `ROBOT-…` kayıtları kalmaz. Robotu yeniden çalıştırmadan önce admin'in kalıcı şifresi yine `kullanicilar.local.json`
-  içindedir (sıfırlamadan sonra admin ilk girişte şifresini belirler).
+  `sifre.*` vb.) ve `ROBOT-…` kayıtları kalmaz. Sıfırlamadan sonraki koşuda admin'in ilk girişini robot kendisi yapar
+  ("Temiz kurulumdan başlama").
 
 ## Senaryo yazarken tuzaklar
 
 - **Sıfırlama sonrası admin ilk girişi:** sıfırlamadan sonra admin şifresi `deploy/.env` içindeki `LOCAL_TEST_USER_PASSWORD`'dür ve ilk girişte
-  `/sifre-degistir` ister. `00-kurulum`dan önce admin'in `kullanicilar.local.json` şifresi bu yoldan bir kez belirlenmelidir; aksi hâlde
-  giriş "Kullanıcı adı ya da şifre hatalı" ile zaman aşımına düşer ve sonraki tüm senaryolar kırmızı görünür.
+  `/sifre-degistir` ister. Bunu koşunun başında `support/hazirlik.ts` halleder; senaryolar admin'in robot şifresiyle girebildiğini varsayabilir.
+  Hazırlık "ROBOT HAZIRLIĞI DURDU" ile durursa mesaj nedeni ve çözümü söyler (yığın kapalı, şifre geçici şifreyle aynı, admin şifresi elle değişmiş).
+- **Gezgin ve tarayıcı kaynak sınırı:** `05-tum-ekranlar` tek sekmede yüzlerce sayfa açar; veri çoğaldığında (tam koşu ya da akış
+  senaryolarından sonra) `page.goto` `net::ERR_INSUFFICIENT_RESOURCES` verebilir. `support/gezgin.ts` sekmeyi boşaltıp en çok iki kez yeniden dener.
 - **Büyük/küçük harf:** menü başlıkları ve durumlar artık büyük harfe çevrilmez. `/GÜNLÜK İŞLER/i` gibi büyük harfli Türkçe kalıplar eşleşmez;
   ekrandaki yazımı (`/günlük işler/i`) arayın. `/iplik/i` de "ipliğin"i yakalamaz: `/ipli[kğ]/i` kullanın.
 - **Merkez stok uyarısı:** yalnızca **taslak** sevkiyatta ve iplik **listeden seçilmişse** çıkar (serbest metin cinsler kontrol dışıdır);

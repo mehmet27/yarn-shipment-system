@@ -1,0 +1,37 @@
+#!/bin/sh
+# Commit öncesi denetim: CI'ın ilk adımda reddedeceği biçim hatalarını bilgisayarda yakalar (BUILD-05, FE-BUILD-06).
+# Kurulum (bir kez, depo kökünde):  git config core.hooksPath tools/git-hooks
+# Atlamak için (önerilmez; CI yine yakalar):  git commit --no-verify
+set -e
+KOK="$(git rev-parse --show-toplevel)"
+cd "$KOK"
+
+ON_YUZ="$(git diff --cached --name-only --diff-filter=ACMR -- frontend | sed 's|^frontend/||')"
+if [ -n "$ON_YUZ" ]; then
+  if [ -d frontend/node_modules ]; then
+    echo "pre-commit: frontend biçimi (prettier) denetleniyor..."
+    # shellcheck disable=SC2086  # dosya adları bilerek ayrı argümanlara bölünür (depoda boşluklu yol yoktur)
+    (cd frontend && pnpm exec prettier --check --ignore-unknown $ON_YUZ) || {
+      echo "Biçim bozuk. Düzeltmek için: cd frontend && pnpm format   (sonra dosyaları yeniden 'git add' edin)"
+      exit 1
+    }
+    KOD="$(echo "$ON_YUZ" | grep -E '\.(ts|tsx|js|mjs)$' || true)"
+    if [ -n "$KOD" ]; then
+      echo "pre-commit: frontend kuralları (eslint) denetleniyor..."
+      # shellcheck disable=SC2086
+      (cd frontend && pnpm exec eslint --max-warnings 0 --no-warn-ignored $KOD) || exit 1
+    fi
+  else
+    echo "pre-commit: frontend/node_modules yok, frontend denetimi atlandı (cd frontend && pnpm install)."
+  fi
+fi
+
+if git diff --cached --name-only --diff-filter=ACMR | grep -qE '\.java$|pom\.xml$'; then
+  echo "pre-commit: Java biçimi (spotless) denetleniyor..."
+  MVNW=./mvnw
+  [ -x "$MVNW" ] || MVNW="sh ./mvnw"
+  $MVNW -q -B -ntp spotless:check || {
+    echo "Biçim bozuk. Düzeltmek için: ./mvnw spotless:apply   (sonra dosyaları yeniden 'git add' edin)"
+    exit 1
+  }
+fi

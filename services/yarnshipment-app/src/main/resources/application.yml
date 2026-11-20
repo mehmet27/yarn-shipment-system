@@ -83,6 +83,10 @@ yarnshipment:
   database:
     # Yalnızca local profilinde açılır: yerel örnek veri (R__ migration'ları) yüklenir.
     seed-local: false
+    partition-maintenance:
+      # Aylık bölümlü tabloların (audit_log, audit_local, shipment_status_history, evidence_file, discrepancy_activity)
+      # ileriki 12 ayını açan iş; açılışta da bir kez çalışır.
+      cron: ${PARTITION_MAINTENANCE_CRON:0 30 2 * * *}
   evidence:
     storage:
       # Kanıt dosyaları sunucu diskinde bu klasöre yazılır (yedeklenecek yer; üretimde Docker birimi). Yükleme ve indirme

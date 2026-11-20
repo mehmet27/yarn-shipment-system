@@ -300,4 +300,14 @@ DO $$ BEGIN
     END IF;
 END $$;
 
+
+-- Bölümü açılmamış tarih yedek bölüme yazılır (V202611210910); 2027-12 sonrası yazma hata vermez.
+INSERT INTO shipment_status_history (id, created_at, shipment_id, to_status, changed_by, changed_at)
+VALUES (gen_random_uuid(), timestamptz '2040-06-15 10:00:00+00', gen_random_uuid(), 'DRAFT', gen_random_uuid(),
+        timestamptz '2040-06-15 10:00:00+00');
+DO $$ BEGIN
+    IF (SELECT count(*) FROM shipment_status_history_default) <> 1 THEN
+        RAISE EXCEPTION 'row outside the monthly partitions must land in the default partition';
+    END IF;
+END $$;
 ROLLBACK;

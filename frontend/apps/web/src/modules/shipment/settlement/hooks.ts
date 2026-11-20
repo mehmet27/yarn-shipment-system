@@ -34,10 +34,11 @@ export const useYarnReturns = (shipmentId: string) =>
     queryFn: () => listYarnReturns(shipmentId),
   });
 
-export const useFireSettlement = (shipmentId: string) =>
+export const useFireSettlement = (shipmentId: string, isEnabled = true) =>
   useQuery({
     queryKey: key(shipmentId, 'fire-settlement'),
     queryFn: () => getFireSettlement(shipmentId),
+    enabled: isEnabled,
   });
 
 /** Kumaş, iplik dönüşü ve fire değişince fire dosyası, bakiyeler ve faturalanacaklar yeniden okunur. */

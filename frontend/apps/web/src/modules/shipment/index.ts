@@ -11,3 +11,6 @@ export { useFireRateDefault } from './hooks/useFireRateDefault';
 export { PendingWeightDecisions } from './components/PendingWeightDecisions';
 export { usePendingWeightDecisions } from './hooks/usePendingWeightDecisions';
 export { PendingDispatches } from './components/PendingDispatches';
+export { PendingDeliveries } from './components/PendingDeliveries';
+export { PendingRow } from './components/PendingRow';
+export { usePendingDeliveries, usePendingDispatches } from './hooks/usePendingShipments';

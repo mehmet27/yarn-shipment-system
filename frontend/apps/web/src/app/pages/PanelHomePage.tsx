@@ -4,9 +4,8 @@ import { Button, Icon, PageHero, SectionCard, SimpleGrid, Stack } from '@iplik/u
 import { Link } from 'react-router';
 import { Can, useCurrentUser } from '@/modules/auth';
 import type { Permission } from '@iplik/api-client';
-import { PendingDiscrepancies } from '@/modules/discrepancy';
 import { DashboardSection } from '@/modules/report';
-import { PendingDispatches, PendingWeightDecisions } from '@/modules/shipment';
+import { HomeTasks } from './HomeTasks';
 
 /** Yönetici yalnızca sistemi yönetir; ana sayfada yetkisi olduğu sistem ekranlarının kısayolları görünür. */
 const SYSTEM_SHORTCUTS: readonly {
@@ -44,15 +43,7 @@ export function PanelHomePage() {
   return (
     <Stack>
       <PageHero title={t('home.welcome', { name: user?.fullName ?? '' })} />
-      <Can permission="SHIPMENT_VIEW">
-        <PendingWeightDecisions />
-      </Can>
-      <Can permission="DISCREPANCY_DECIDE">
-        <PendingDiscrepancies />
-      </Can>
-      <Can permission="DISPATCH_RECORD">
-        <PendingDispatches />
-      </Can>
+      <HomeTasks />
       <Can
         permission="REPORT_VIEW"
         fallback={

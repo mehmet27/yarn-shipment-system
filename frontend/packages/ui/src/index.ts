@@ -74,6 +74,8 @@ export { PageHero } from './components/PageHero';
 export type { PageHeroProps } from './components/PageHero';
 export { ProgressSteps } from './components/ProgressSteps';
 export type { ProgressStepsProps } from './components/ProgressSteps';
+export { StepList } from './components/StepList';
+export type { StepListItem, StepListProps } from './components/StepList';
 export { SectionCard } from './components/SectionCard';
 export type { SectionCardProps, SectionTone } from './components/SectionCard';
 export { SegmentedBar } from './components/SegmentedBar';

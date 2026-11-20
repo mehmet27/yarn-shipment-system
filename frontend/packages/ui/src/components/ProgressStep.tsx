@@ -1,4 +1,5 @@
 import { Box, Text } from '@mantine/core';
+import { NavIcon } from './NavIcon';
 
 export type ProgressStepProps = {
   label: string;
@@ -6,17 +7,22 @@ export type ProgressStepProps = {
   index: number;
   /** Süreçteki geçerli adımın sırası. */
   current: number;
+  /** Adın altındaki soluk açıklama, örn. adımı kimin yaptığı. */
+  caption?: string | undefined;
 };
 
 const CIRCLE_SIZE_PX = 28;
+const CHECK_SIZE_PX = 16;
 const LINE_TOP_PX = 13;
 const LINE_HEIGHT_PX = 2;
 const TEXT_COLOR = 'var(--app-text)';
 const LINE_COLOR = 'var(--app-line)';
 const BOLD = 600;
+const REACHED_CIRCLE = { bg: TEXT_COLOR, c: 'var(--app-surface)' } as const;
+const PENDING_CIRCLE = { bg: LINE_COLOR, c: 'dimmed' } as const;
 
-/** Adım çubuğunun tek adımı: numara dairesi, önceki adıma bağlanan çizgi ve ad. */
-export function ProgressStep({ label, index, current }: ProgressStepProps) {
+/** Adım çubuğunun tek adımı: numara dairesi (biten adımda onay işareti), önceki adıma bağlanan çizgi ve ad. */
+export function ProgressStep({ label, index, current, caption }: ProgressStepProps) {
   const isReached = index <= current;
   const isCurrent = index === current;
   return (
@@ -41,8 +47,7 @@ export function ProgressStep({ label, index, current }: ProgressStepProps) {
         h={CIRCLE_SIZE_PX}
         mx="auto"
         mb={6}
-        bg={isReached ? TEXT_COLOR : LINE_COLOR}
-        c={isReached ? 'var(--app-surface)' : 'dimmed'}
+        {...(isReached ? REACHED_CIRCLE : PENDING_CIRCLE)}
         fw={BOLD}
         style={{
           borderRadius: '50%',
@@ -54,11 +59,16 @@ export function ProgressStep({ label, index, current }: ProgressStepProps) {
           boxShadow: isCurrent ? `0 0 0 4px ${LINE_COLOR}` : undefined,
         }}
       >
-        {index + 1}
+        {index < current ? <NavIcon name="check" size={CHECK_SIZE_PX} /> : index + 1}
       </Box>
       <Text size="xs" fw={isCurrent ? BOLD : undefined} c={isCurrent ? TEXT_COLOR : 'dimmed'}>
         {label}
       </Text>
+      {caption === undefined ? null : (
+        <Text size="xs" c="dimmed">
+          {caption}
+        </Text>
+      )}
     </Box>
   );
 }

@@ -1,9 +1,14 @@
 import type { ShipmentAction } from '@iplik/api-client';
-import { Group } from '@iplik/ui';
+import { Box, Group } from '@iplik/ui';
+import { COMPLETE_SECTION_ID, WEIGHT_DECISION_SECTION_ID } from '../guide/guideSteps';
+import { SECTION_SCROLL_MARGIN_PX } from '../guide/scrollToSection';
 import { CompleteShipmentForm } from './CompleteShipmentForm';
 import { UpdateShipmentDateForm } from './UpdateShipmentDateForm';
 import { UpdateShipmentTransportForm } from './UpdateShipmentTransportForm';
 import { WeightDecisionForm } from './WeightDecisionForm';
+
+/** "Sonraki işlem" düğmesi bu bölümlere kaydırır; sabit üst çubuğun altında kalmasınlar. */
+const SCROLL_TARGET = { scrollMarginTop: SECTION_SCROLL_MARGIN_PX } as const;
 
 /** Sevkiyat dosyasındaki eylemler (iptal ve çıkış tartısı düğmesi hariç, onlar dosyanın başında ve sonunda); yalnızca `allowedActions` listesindekiler görünür (FE-SEC-03). */
 export function ShipmentFileActions({
@@ -25,9 +30,15 @@ export function ShipmentFileActions({
   return (
     <>
       {actions.includes('RESOLVE_WEIGHT_MISMATCH') && (
-        <WeightDecisionForm shipmentId={shipmentId} />
+        <Box id={WEIGHT_DECISION_SECTION_ID} style={SCROLL_TARGET}>
+          <WeightDecisionForm shipmentId={shipmentId} />
+        </Box>
       )}
-      {actions.includes('COMPLETE') && <CompleteShipmentForm shipmentId={shipmentId} />}
+      {actions.includes('COMPLETE') && (
+        <Box id={COMPLETE_SECTION_ID} style={SCROLL_TARGET}>
+          <CompleteShipmentForm shipmentId={shipmentId} />
+        </Box>
+      )}
       {canEdit && (
         <Group gap="sm" align="flex-start">
           {actions.includes('UPDATE_SHIPMENT_DATE') && (

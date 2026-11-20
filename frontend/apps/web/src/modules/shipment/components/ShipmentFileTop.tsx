@@ -3,7 +3,6 @@ import { EvidenceGallery, EvidenceUpload } from '@/modules/evidence';
 import { useTranslation } from '@iplik/i18n';
 import { Stack } from '@iplik/ui';
 import { CancelShipmentForm } from './CancelShipmentForm';
-import { DispatchBand } from './DispatchBand';
 import { ManagerDecisionNote } from './ManagerDecisionNote';
 import { ShipmentFileActions } from './ShipmentFileActions';
 import { ShipmentHeader } from './ShipmentHeader';
@@ -25,7 +24,6 @@ export function ShipmentFileTop({ shipment }: { shipment: ShipmentDetail }) {
   return (
     <>
       <ShipmentHeader shipment={shipment} />
-      {actions.includes('RECORD_DISPATCH') && <DispatchBand shipmentId={shipment.shipmentId} />}
       {weightCheck !== undefined && shipment.status === 'WEIGHT_MISMATCH' && (
         <WeightCheckPanel check={weightCheck} />
       )}

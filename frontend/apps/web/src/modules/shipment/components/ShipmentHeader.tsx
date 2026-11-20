@@ -1,13 +1,12 @@
 import type { ShipmentDetail } from '@iplik/api-client';
 import { formatDate, useTranslation } from '@iplik/i18n';
-import { Button, Group, Paper, ProgressSteps, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
+import { Button, Group, Paper, SimpleGrid, Stack, Text, Title } from '@iplik/ui';
 import { Link } from 'react-router';
-import { NextStepBand } from './NextStepBand';
+import { ShipmentGuide } from '../guide/ShipmentGuide';
 import { NotDueNotice } from './NotDueNotice';
 import { findDriverName } from './shipmentViews';
 import { useFieldText } from './useFieldText';
 import { ShipmentStatusBadge } from './ShipmentStatusBadge';
-import { PROGRESS_STATUSES, toProgressDone } from './progressSteps';
 
 export type ShipmentHeaderProps = {
   shipment: ShipmentDetail;
@@ -44,15 +43,8 @@ export function ShipmentHeader({ shipment }: ShipmentHeaderProps) {
             </Button>
           )}
         </Group>
-        {shipment.status === 'CANCELLED' ? null : (
-          <ProgressSteps
-            label={t('shipment.progress.steps')}
-            steps={PROGRESS_STATUSES.map((status) => t(`shipment.progress.step.${status}`))}
-            current={toProgressDone(shipment.status) - 1}
-          />
-        )}
         <NotDueNotice shipment={shipment} />
-        <NextStepBand status={shipment.status} />
+        <ShipmentGuide shipment={shipment} />
       </Stack>
       <SimpleGrid
         cols={{ base: 2, md: 4 }}

@@ -1,5 +1,5 @@
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Button, PageHero, Stack, Tabs, Text } from '@iplik/ui';
+import { Button, Group, PageHero, Stack, Tabs, Text } from '@iplik/ui';
 import { useState } from 'react';
 import { usePermission } from '@/modules/auth';
 import { InlineExportButtons } from '@/modules/report';
@@ -23,14 +23,7 @@ export function CentralStockPage() {
         title={t('stock.title')}
         subtitle={t('stock.subtitle')}
         actions={
-          <Stack gap={2} align="flex-end">
-            <Button
-              variant="default"
-              loading={query.isFetching}
-              onClick={() => void query.refetch()}
-            >
-              {t('stock.refresh')}
-            </Button>
+          <Group gap="sm">
             {query.dataUpdatedAt > 0 && (
               <Text size="xs" c="dimmed">
                 {t('stock.updatedAt', {
@@ -38,7 +31,14 @@ export function CentralStockPage() {
                 })}
               </Text>
             )}
-          </Stack>
+            <Button
+              variant="default"
+              loading={query.isFetching}
+              onClick={() => void query.refetch()}
+            >
+              {t('stock.refresh')}
+            </Button>
+          </Group>
         }
       />
       <Tabs value={tab} onChange={setTab} keepMounted={false}>

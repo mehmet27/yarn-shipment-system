@@ -14,7 +14,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/** Kumaş ve fatura kilosunun iplik cinslerine dağıtımında hiçbir gramın kaybolmadığını ve payların adil olduğunu doğrular. */
+/** Kumaş ve fatura kilosu iplik cinslerine dağıtılırken hiçbir gram kaybolmaz ve paylar oranına uygundur. */
 class YarnDistributionInvariantTest {
 
     private static final long SEED = 20261119L;
@@ -42,7 +42,8 @@ class YarnDistributionInvariantTest {
     }
 
     @Test
-    @DisplayName("Rastgele 500 reçetede payların toplamı kumaş kilosuna eşittir ve her pay tam oranından 1 gramdan az sapar")
+    @DisplayName(
+            "Rastgele 500 reçetede payların toplamı kumaş kilosuna eşittir ve her pay tam oranından 1 gramdan az sapar")
     void shouldAlwaysSumToFabricKgAndStayWithinOneGramOfExactShare() {
         // given
         Random random = new Random(SEED);
@@ -88,7 +89,8 @@ class YarnDistributionInvariantTest {
     @DisplayName("Eşit paylarda artan gram reçete sırasındaki ilk ipliğe verilir; sonuç her çağrıda aynıdır")
     void shouldBreakTiesByRecipeOrder() {
         // when: 100 g üç eşit ipliğe -> 33 g + 1 g artan
-        List<YarnShare> shares = YarnDistribution.proportional(new BigDecimal("0.100"), recipe("A", "5", "B", "5", "C", "5"));
+        List<YarnShare> shares =
+                YarnDistribution.proportional(new BigDecimal("0.100"), recipe("A", "5", "B", "5", "C", "5"));
 
         // then
         assertThat(shares)
@@ -142,7 +144,8 @@ class YarnDistributionInvariantTest {
     @DisplayName("Sıfır ya da eksi kilolu iplik payı reddedilir")
     void shouldRejectNonPositiveShare() {
         assertThatThrownBy(() -> new YarnShare("A", BigDecimal.ZERO)).isInstanceOf(InvalidLedgerInputException.class);
-        assertThatThrownBy(() -> new YarnShare("A", new BigDecimal("-1"))).isInstanceOf(InvalidLedgerInputException.class);
+        assertThatThrownBy(() -> new YarnShare("A", new BigDecimal("-1")))
+                .isInstanceOf(InvalidLedgerInputException.class);
         assertThatThrownBy(() -> new YarnShare("A", new BigDecimal("0.0004")))
                 .isInstanceOf(InvalidLedgerInputException.class);
     }

@@ -39,6 +39,7 @@ class DispatchLedgerRecipeTest {
     private static final UUID LOT = UUID.fromString("0192f0a0-0000-7000-8000-000000000a05");
     private static final UUID USER = UUID.fromString("0192f0a0-0000-7000-8000-00000000d001");
     private static final Instant AT = Instant.parse("2026-11-19T09:00:00Z");
+    private static final int THREE_LINES = 3;
     private static final String COTTON_NAME = "Pamuk 30/1";
     private static final String POLYESTER = "Polyester 150";
     private static final String VISCOSE = "Viskon 30/1";
@@ -185,7 +186,9 @@ class DispatchLedgerRecipeTest {
         // then: 1.000.001 g / 3 = 333.333 g, artan 2 gram ilk iki satıra verilir
         assertThat(balancesOf(SUBCONTRACTOR))
                 .containsOnly(
-                        Map.entry(COTTON_NAME, "333.334"), Map.entry(POLYESTER, "333.334"), Map.entry(VISCOSE, "333.333"));
+                        Map.entry(COTTON_NAME, "333.334"),
+                        Map.entry(POLYESTER, "333.334"),
+                        Map.entry(VISCOSE, "333.333"));
         assertThat(totalBalanceOf(SUBCONTRACTOR)).isEqualByComparingTo("1000.001");
         assertThat(stock.findStock().stream().map(CentralStockRow::stockKg).reduce(BigDecimal.ZERO, BigDecimal::add))
                 .isEqualByComparingTo("-1000.001");
@@ -211,11 +214,12 @@ class DispatchLedgerRecipeTest {
                         "SELECT count(*) FROM balance_movement WHERE shipment_id = ? AND kind = 'DISPATCH'",
                         Integer.class,
                         SHIPMENT))
-                .isEqualTo(3);
+                .isEqualTo(THREE_LINES);
     }
 
     @Test
-    @DisplayName("Fasoncudan fasoncuya çok iplikli sevkiyatta gönderen her iplikten aynı kiloyu verir; merkez stok değişmez")
+    @DisplayName(
+            "Fasoncudan fasoncuya çok iplikli sevkiyatta gönderen her iplikten aynı kiloyu verir; merkez stok değişmez")
     void shouldMoveEachYarnBetweenSubcontractorsWithoutTouchingCentralStock() {
         // given
         givenShipment(true);
@@ -247,8 +251,7 @@ class DispatchLedgerRecipeTest {
         ledger.recordDispatch(SHIPMENT, SUBCONTRACTOR, AT, USER);
 
         // then
-        assertThat(balancesOf(SUBCONTRACTOR))
-                .containsOnly(Map.entry(BalanceLedgerAdapter.UNSPECIFIED_YARN, "500.000"));
+        assertThat(balancesOf(SUBCONTRACTOR)).containsOnly(Map.entry(BalanceLedgerAdapter.UNSPECIFIED_YARN, "500.000"));
         assertThat(List.copyOf(ledger.findDispatchedByYarn(SHIPMENT).keySet()))
                 .containsExactly(BalanceLedgerAdapter.UNSPECIFIED_YARN);
     }

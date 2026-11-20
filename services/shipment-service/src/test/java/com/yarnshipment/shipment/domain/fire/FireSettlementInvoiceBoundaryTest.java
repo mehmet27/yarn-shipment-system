@@ -23,8 +23,8 @@ class FireSettlementInvoiceBoundaryTest {
     private static final LocalDate DAY = LocalDate.parse("2026-11-19");
 
     /** 1.000 kg gönderilmiş, 900 kg kumaş gelmiş: faturalanacak 60 kg. */
-    private final FireSettlement toInvoice =
-            FireSettlement.open(SHIPMENT, SUBCONTRACTOR, new BigDecimal("1000.000")).afterFabricReceipt();
+    private final FireSettlement toInvoice = FireSettlement.open(SHIPMENT, SUBCONTRACTOR, new BigDecimal("1000.000"))
+            .afterFabricReceipt();
 
     private final FireCalculation sixtyKgShort = FireCalculation.of(new Inputs(
             new BigDecimal("1000"), BigDecimal.ZERO, BigDecimal.ZERO, new BigDecimal("900"), new BigDecimal("0.04")));
@@ -70,7 +70,9 @@ class FireSettlementInvoiceBoundaryTest {
     void shouldValidateInvoiceNumberLength() {
         String longest = "F".repeat(FireSettlement.MAX_INVOICE_NO_LENGTH);
 
-        assertThat(toInvoice.markInvoiced(sixtyKgShort, wholeInvoice(longest), MANAGER).invoiceNo())
+        assertThat(toInvoice
+                        .markInvoiced(sixtyKgShort, wholeInvoice(longest), MANAGER)
+                        .invoiceNo())
                 .isEqualTo(longest);
         assertThatThrownBy(() -> toInvoice.markInvoiced(sixtyKgShort, wholeInvoice(longest + "F"), MANAGER))
                 .isInstanceOf(InvalidLedgerInputException.class);

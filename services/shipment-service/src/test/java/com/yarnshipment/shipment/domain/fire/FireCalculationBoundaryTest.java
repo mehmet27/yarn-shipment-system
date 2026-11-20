@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.CsvSource;
  * Fire hesabının sınır durumları (analiz 8.1 ve 8.3): gram ve yüzde yuvarlaması, sıfır ve en yüksek fire oranı, dönen
  * iplik ile itirazın birlikte olduğu dosya ve parça parça fatura. Beklenen değerler formülden elle hesaplanmıştır.
  */
+@SuppressWarnings("checkstyle:MagicNumber")
 class FireCalculationBoundaryTest {
 
     private static BigDecimal kg(String value) {
@@ -21,13 +22,21 @@ class FireCalculationBoundaryTest {
 
     /** Sıra: G, D, I, K, f. */
     private static FireCalculation calculate(String... values) {
-        return FireCalculation.of(new Inputs(kg(values[0]), kg(values[1]), kg(values[2]), kg(values[3]), kg(values[4])));
+        return FireCalculation.of(
+                new Inputs(kg(values[0]), kg(values[1]), kg(values[2]), kg(values[3]), kg(values[4])));
     }
 
     /** G=1.000, I=100 (faturayla düşülecek), K=904, f=%4: T=900, B=864, K-I=804, eksik 60, faturalanacak 160. */
     private static FireCalculation claimAndShortage(String invoicedKg, String claimInvoicedKg) {
         return FireCalculation.of(new Inputs(
-                kg("1000"), BigDecimal.ZERO, kg("100"), kg("904"), kg("0.04"), kg(invoicedKg), kg("100"), kg(claimInvoicedKg)));
+                kg("1000"),
+                BigDecimal.ZERO,
+                kg("100"),
+                kg("904"),
+                kg("0.04"),
+                kg(invoicedKg),
+                kg("100"),
+                kg(claimInvoicedKg)));
     }
 
     @Test
@@ -57,7 +66,14 @@ class FireCalculationBoundaryTest {
     }
 
     @ParameterizedTest(name = "K = {0} kg -> yüzde {1}")
-    @CsvSource({"959.950, 4.01", "959.951, 4.00", "960.000, 4.00", "1000.000, 0.00", "1000.050, -0.01", "1010.000, -1.00", "0.001, 100.00"
+    @CsvSource({
+        "959.950, 4.01",
+        "959.951, 4.00",
+        "960.000, 4.00",
+        "1000.000, 0.00",
+        "1000.050, -0.01",
+        "1010.000, -1.00",
+        "0.001, 100.00"
     })
     @DisplayName("Gerçekleşen fire yüzdesi 2 ondalığa yarım yukarı yuvarlanır; kumaş fazlaysa eksi çıkar")
     void shouldRoundFirePercentHalfUp(String fabricKg, String expectedPercent) {

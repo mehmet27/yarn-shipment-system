@@ -9,7 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-/** Kilo girişinin sınırları (KR-04): 3 ondalık, sıfırdan büyük, tek kayıtta en çok 100.000 kg; yuvarlama yarım yukarı. */
+/** Kilo girişinin sınırları (KR-04): 3 ondalık, sıfırdan büyük, en çok 100.000 kg; yuvarlama yarım yukarı. */
 class KilogramsTest {
 
     @ParameterizedTest(name = "{0} -> {1}")

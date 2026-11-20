@@ -76,7 +76,7 @@ class ShipmentListReaderTest {
         var balances = reader.findSubcontractorBalances(PERIOD, scope(site));
 
         assertThat(balances).hasSize(1);
-        var balance = balances.get(0);
+        var balance = balances.getFirst();
         assertThat(balance.subcontractorId()).isEqualTo(subcontractor);
         assertThat(balance.shipmentCount()).isEqualTo(2);
         assertThat(balance.dispatchedKg()).isEqualByComparingTo("1500.000");

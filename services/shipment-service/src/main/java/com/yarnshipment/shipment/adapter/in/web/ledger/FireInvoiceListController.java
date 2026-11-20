@@ -28,6 +28,8 @@ public class FireInvoiceListController {
         this.currentActorProvider = currentActorProvider;
     }
 
+    // İstisna: SIZE-07, her parametre sözleşmedeki ayrı bir sorgu parametresidir (tarih aralığı, fasoncu, sayfa)
+    // (GIT-10)
     @SuppressWarnings("checkstyle:ParameterNumber")
     @GetMapping("/api/v1/fire-invoices")
     @PreAuthorize("hasAuthority('BALANCE_VIEW')")

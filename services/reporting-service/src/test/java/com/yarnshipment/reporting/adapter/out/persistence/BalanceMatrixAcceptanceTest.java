@@ -31,6 +31,7 @@ import org.springframework.test.context.DynamicPropertySource;
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(BalanceFireReader.class)
+// İstisna: STRUC-07, analizdeki örnek kilolar testte okunur kalsın diye sayı olarak yazılır (GIT-10)
 @SuppressWarnings("checkstyle:MagicNumber")
 class BalanceMatrixAcceptanceTest {
 

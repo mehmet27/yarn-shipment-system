@@ -17,6 +17,7 @@ import org.jspecify.annotations.Nullable;
  * @param claimToInvoiceKg haklı itirazdan henüz faturalanmamış kilo; faturalanana kadar bakiyeden düşmez
  * @param fireRate f, kesir (0,0400)
  */
+// İstisna: SIZE-09/SIZE-08, analizdeki sütunları bire bir taşır; bölmek hesap adlarını (G, D, I, K…) dağıtır (GIT-10)
 @SuppressWarnings({"checkstyle:RecordComponentNumber", "checkstyle:ParameterNumber"})
 public record FireFile(
         UUID shipmentId,

@@ -16,6 +16,7 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Immutable
 @Table(name = "shipment")
+// İstisna: NullAway.Init ve SIZE-10, alanları Hibernate doldurur ve tablo kolonlarını bire bir eşler (GIT-10)
 @SuppressWarnings({"NullAway.Init", "PMD.TooManyFields"})
 class ShipmentJpaEntity {
 

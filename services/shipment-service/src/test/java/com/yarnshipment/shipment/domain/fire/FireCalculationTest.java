@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 /** Analiz Bölüm 8.2 örnekleri ve Kırıkhan kabul testi. */
+// İstisna: STRUC-07, analizdeki örnek kilolar testte okunur kalsın diye sayı olarak yazılır (GIT-10)
 @SuppressWarnings("checkstyle:MagicNumber")
 class FireCalculationTest {
 

@@ -3,6 +3,7 @@
 //   pnpm robot -- --izle        gerçek pencerede, yavaşlatarak izlenir (--yavas=500 ms)
 //   pnpm robot -- --video       her senaryonun videosunu rapora ekler
 //   pnpm robot -- --rol=depo    yalnızca adında "depo" geçen senaryolar
+//   pnpm robot -- --rol=depo --sifirla   koşu bitince (başarılı ya da başarısız) yerel ortamı sıfırlar: yalnızca admin kalır
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { existsSync, readFileSync } from 'node:fs';
@@ -29,9 +30,11 @@ if (env.ROBOT_SIFRE === undefined || env.ROBOT_SIFRE === '') {
 }
 
 const arguman = [];
+let sifirla = false;
 for (const bayrak of bayraklar) {
   if (bayrak === '--') continue;
-  if (bayrak === '--izle') env.ROBOT_IZLE = '1';
+  if (bayrak === '--sifirla') sifirla = true;
+  else if (bayrak === '--izle') env.ROBOT_IZLE = '1';
   else if (bayrak === '--video') env.ROBOT_VIDEO = '1';
   else if (bayrak.startsWith('--yavas=')) env.ROBOT_YAVAS = bayrak.slice(8);
   else if (bayrak.startsWith('--rol=')) arguman.push('-g', bayrak.slice(6));
@@ -44,4 +47,21 @@ const sonuc = spawnSync(process.execPath, [playwright, 'test', '-c', 'robot', ..
   env,
   cwd: join(import.meta.dirname, '..'),
 });
+
+// Koşu kuralı (robot/README.md): her koşudan sonra yerel ortam sıfırlanır. Rapor robot/rapor altında kalır.
+const sifirlama = join(import.meta.dirname, '..', '..', '..', '..', 'tools', 'yerel-sifirla.mjs');
+if (sifirla) {
+  console.log('\nKoşu bitti; yerel ortam sıfırlanıyor (yalnızca admin kalacak)...');
+  const temizlik = spawnSync(process.execPath, [sifirlama, '--evet'], { stdio: 'inherit' });
+  if (temizlik.status !== 0) {
+    console.error(
+      'Sıfırlama başarısız oldu; elle çalıştırın: cd frontend && pnpm yerel:sifirla -- --evet',
+    );
+    process.exit(sonuc.status === 0 ? 1 : (sonuc.status ?? 1));
+  }
+} else {
+  console.log(
+    '\nKoşu bitti. Kural: ortamı sıfırlayın → cd frontend && pnpm yerel:sifirla -- --evet  (ya da koşuya --sifirla ekleyin)',
+  );
+}
 process.exit(sonuc.status ?? 1);

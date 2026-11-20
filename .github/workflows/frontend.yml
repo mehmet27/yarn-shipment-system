@@ -7,13 +7,20 @@ on:
     branches: [main]
     paths: ['frontend/**', 'services/shipment-service/src/main/resources/openapi/**', '.github/workflows/frontend.yml']
 
+# Aynı PR'a yeni commit gelince eski koşu iptal edilir.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 defaults:
   run:
     working-directory: frontend
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    # Sürüm sabit: ubuntu-latest değişince CI kendiliğinden bozulmasın (frontend-e2e ile aynı).
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

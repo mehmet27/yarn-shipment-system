@@ -85,12 +85,14 @@ services:
       postgres: { condition: service_healthy }
     # `docker compose ps` uygulamayı ancak veritabanına ulaşabiliyorsa "healthy" gösterir (readiness veritabanını
     # denetler). Açılışta şema göçü sürebildiği için ilk iki dakika başarısız denemeler sayılmaz.
+    # install.sh ve geri-yukle.sh uygulamanın açılmasını bu denetimle bekler.
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8083/actuator/health/readiness || exit 1"]
-      interval: 15s
+      interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 6
       start_period: 120s
+      start_interval: 5s
 
 volumes:
   postgres-data:

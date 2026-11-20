@@ -12,6 +12,7 @@ yükleyip numarasını yazar ve sevkiyatı tamamlar (`COMPLETED`). Ayrıntılı 
 
 - [Java 21 kod standartları](docs/standartlar/java-kod-standartlari.md): projedeki tüm Java kodu için bağlayıcı kurallar.
 - [React ve TypeScript kod standartları](docs/standartlar/react-typescript-kod-standartlari.md): frontend kodu için bağlayıcı kurallar.
+- [Süreç standartları](docs/standartlar/surec-standartlari.md): geliştirme döngüsü, PR, CI, robot, kurulum ve yedek kuralları.
 - [Modüler monolit mimarisi](docs/architecture/moduler-monolit-mimarisi.md): modüller, olaylar, veri, audit ve güvenlik (güncel mimari).
 - [Veritabanı tasarımı](docs/veritabani-tasarimi.md): PostgreSQL 17 şemaları, tablolar, `platform` şeması ve audit rolleri.
 - [Süreç analizi v2](docs/analiz/surec-analizi-v2.md): Kasım 2026 saha incelemesinden sonraki iş akışı, roller, kurallar ve yol haritası.
@@ -83,7 +84,7 @@ pnpm yerel:sifirla              # "SIL" yazarak onaylarsınız; sıfırlar, back
 pnpm yerel:sifirla -- --evet    # onay sormadan
 pnpm yerel:sifirla -- --sadece-veri      # yalnızca Docker verisini sıfırlar (uygulama ve arayüze dokunmaz)
 pnpm yerel:sifirla -- --derleme-atla     # backend'i yeniden derlemeden (kod değişmediyse daha hızlı)
-pnpm yerel:baslat               # veriye dokunmadan servisleri yeniden başlatır (onay sormaz)
+pnpm yerel:baslat               # veriye dokunmadan servisleri yeniden başlatır; veritabanı konteyneri durmuşsa onu da kaldırır (onay sormaz)
 pnpm yerel:durdur               # servisleri durdurur (Docker'a dokunmaz)
 ```
 

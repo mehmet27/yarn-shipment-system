@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
-import { Anchor, PageHero, Stack } from '@iplik/ui';
-import { Link, useNavigate, useParams } from 'react-router';
-import { QueryState } from '@/modules/shared';
+import { PageHero, Stack } from '@iplik/ui';
+import { useNavigate, useParams } from 'react-router';
+import { BackLink, QueryState } from '@/modules/shared';
 import { DispatchPanel } from '../dispatch/DispatchPanel';
 import { useShipment } from '../hooks/useShipment';
 
@@ -14,9 +14,7 @@ export function DispatchWeighingPage() {
   const back = `/panel/sevkiyat/${shipmentId}`;
   return (
     <Stack>
-      <Anchor component={Link} to={back}>
-        {t('dispatch.back')}
-      </Anchor>
+      <BackLink to={back}>{t('dispatch.back')}</BackLink>
       <QueryState query={query}>
         {(shipment) => (
           <Stack>

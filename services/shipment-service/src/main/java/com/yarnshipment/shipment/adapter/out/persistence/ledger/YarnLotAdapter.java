@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.adapter.out.persistence.ledger;
 
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.shipment.application.port.out.ledger.YarnLotPort;
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
 import com.yarnshipment.shipment.domain.stock.LotRequest;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Component;
 @Component
 final class YarnLotAdapter implements YarnLotPort {
 
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', ?, true)";
     private static final String FIND_LOT = """
             SELECT id, lot_no, product_id, yarn_supplier_id FROM md_production_lot
             WHERE upper(lot_no) = :lotNo AND site_id IN (:siteIds)
@@ -77,7 +77,7 @@ final class YarnLotAdapter implements YarnLotPort {
         }
         UUID id = UUID.randomUUID();
         UUID siteId = request.siteIds().stream().sorted().findFirst().orElseThrow();
-        jdbc.sql(SET_ACTOR).param(request.actorId().toString()).query().singleValue();
+        AuditActors.actAs(jdbc, request.actorId());
         jdbc.sql(INSERT_LOT)
                 .param("id", id)
                 .param("siteId", siteId)

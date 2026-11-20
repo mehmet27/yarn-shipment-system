@@ -1,5 +1,6 @@
 package com.yarnshipment.evidence.adapter.out.persistence;
 
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.events.evidence.EvidenceInvalidated;
 import com.yarnshipment.evidence.application.port.out.EvidenceInvalidationPort;
 import com.yarnshipment.evidence.domain.model.EvidenceAlreadyInvalidatedException;
@@ -20,7 +21,6 @@ import org.springframework.stereotype.Component;
 @Component
 final class EvidenceInvalidationAdapter implements EvidenceInvalidationPort {
 
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', :actor, true)";
     private static final String INVALIDATE = """
             UPDATE evidence_file SET status = 'INVALIDATED', invalidated_reason = :reason, updated_at = :at,
                    updated_by = :actor, version = version + 1
@@ -38,7 +38,7 @@ final class EvidenceInvalidationAdapter implements EvidenceInvalidationPort {
 
     @Override
     public void saveInvalidation(EvidenceFile evidence, UUID invalidatedBy, Instant at) {
-        jdbc.sql(SET_ACTOR).param("actor", invalidatedBy.toString()).query().singleValue();
+        AuditActors.actAs(jdbc, invalidatedBy);
         int updated = jdbc.sql(INVALIDATE)
                 .param("id", evidence.id())
                 .param("reason", evidence.invalidatedReason())

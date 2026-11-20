@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.shipment.masterdata.application.port.out.BrandingPort;
 import com.yarnshipment.shipment.masterdata.domain.branding.Branding;
 import java.sql.Timestamp;
@@ -23,7 +24,6 @@ final class BrandingAdapter implements BrandingPort {
     static final String NAME_KEY = "branding_company_name";
     static final String COLOR_KEY = "branding_primary_color";
     static final String LOGO_KEY = "branding_logo";
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', ?, true)";
     private static final String SELECT = "SELECT key, value FROM app_setting WHERE key LIKE 'branding\\_%'";
     private static final String UPSERT = """
             INSERT INTO app_setting (key, value, updated_at, updated_by) VALUES (:key, :value, :at, :actor)
@@ -57,7 +57,7 @@ final class BrandingAdapter implements BrandingPort {
 
     @Override
     public Branding upsertBranding(UUID actorId, Branding branding) {
-        jdbc.sql(SET_ACTOR).param(actorId.toString()).query().singleValue();
+        AuditActors.actAs(jdbc, actorId);
         upsert(NAME_KEY, branding.companyName(), actorId);
         upsert(COLOR_KEY, branding.primaryColor(), actorId);
         upsert(LOGO_KEY, branding.logoDataUrl(), actorId);

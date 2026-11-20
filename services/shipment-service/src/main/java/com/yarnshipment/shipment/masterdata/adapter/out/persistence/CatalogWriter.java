@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.shipment.masterdata.domain.catalog.DuplicateCodeException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
 import java.sql.Timestamp;
@@ -16,8 +17,6 @@ import org.springframework.jdbc.core.simple.JdbcClient;
  */
 final class CatalogWriter {
 
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', ?, true)";
-
     private final JdbcClient jdbc;
     private final Clock clock;
 
@@ -28,7 +27,7 @@ final class CatalogWriter {
 
     /** {@code :id, :code, :name, :extra, :at, :actor} parametreli INSERT'i çalıştırır, yeni kimliği döner. */
     UUID insert(String sql, UUID actorId, Row row) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         UUID id = UUID.randomUUID();
         try {
             jdbc.sql(sql)
@@ -62,17 +61,13 @@ final class CatalogWriter {
 
     /** {@code :id, :name, :extra} parametreli güncellemeyi hazırlar. */
     JdbcClient.StatementSpec rewrite(String sql, UUID actorId, UUID id, Row row) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         return jdbc.sql(sql).param("id", id).param("name", row.name()).param("extra", row.extra());
     }
 
     boolean setStatus(String sql, UUID actorId, UUID id, MasterDataStatus status) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         return jdbc.sql(sql).param("active", status.isActive()).param("id", id).update() > 0;
-    }
-
-    private void actAs(UUID actorId) {
-        jdbc.sql(SET_ACTOR).param(actorId.toString()).query().singleValue();
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.yarnshipment.discrepancy.adapter.out.persistence;
 
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.discrepancy.application.port.out.NewQualityClaim;
 import com.yarnshipment.discrepancy.domain.claim.ClaimTarget;
 import com.yarnshipment.discrepancy.domain.claim.QualityClaim;
@@ -25,7 +26,6 @@ final class QualityClaimWriter {
     static final String RULE_CODE = "QUALITY_CLAIM";
 
     private static final String AGGREGATE_TYPE = "Shipment";
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', :actor, true)";
     private static final String LOCK_SHIPMENT = "SELECT pg_advisory_xact_lock(hashtext(:shipmentId))";
     private static final String COUNT_DISCREPANCIES =
             "SELECT count(*) FROM discrepancy WHERE shipment_id = :shipmentId";
@@ -56,7 +56,7 @@ final class QualityClaimWriter {
 
     QualityClaim write(NewQualityClaim claim) {
         ClaimTarget target = claim.target();
-        jdbc.sql(SET_ACTOR).param("actor", claim.openedBy().toString()).query().singleValue();
+        AuditActors.actAs(jdbc, claim.openedBy());
         jdbc.sql(LOCK_SHIPMENT)
                 .param("shipmentId", target.shipmentId().toString())
                 .query()

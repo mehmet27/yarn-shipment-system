@@ -1,8 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, Divider, Modal, Stack } from '@iplik/ui';
-import { InvoiceForm, QueryState, useFireSettlement } from '@/modules/shipment';
+import { Button, Modal } from '@iplik/ui';
 import { useState } from 'react';
-import { PreviousInvoices } from './PreviousInvoices';
+import { InvoiceEntry } from './InvoiceEntry';
 
 /** Satırda "Fatura bilgisini gir" düğmesi; açılan pencerede önceki faturalar ve yeni fatura formu çıkar. */
 export function InvoiceAction({
@@ -14,7 +13,6 @@ export function InvoiceAction({
 }) {
   const { t } = useTranslation();
   const [isOpen, setOpen] = useState(false);
-  const query = useFireSettlement(shipmentId);
   const close = () => {
     setOpen(false);
   };
@@ -34,18 +32,7 @@ export function InvoiceAction({
         onClose={close}
         title={t('settlement.toInvoice.modalTitle', { no: shipmentNo })}
       >
-        <QueryState query={query}>
-          {(settlement) => (
-            <Stack>
-              <PreviousInvoices settlement={settlement} />
-              <Divider />
-              <InvoiceForm settlement={settlement} onSaved={close} />
-              <Button variant="subtle" w="fit-content" onClick={close}>
-                {t('settlement.toInvoice.cancelInvoice')}
-              </Button>
-            </Stack>
-          )}
-        </QueryState>
+        {isOpen && <InvoiceEntry shipmentId={shipmentId} onClose={close} />}
       </Modal>
     </>
   );

@@ -22,6 +22,7 @@ export function BagsTab({ shipmentId, canAssign }: { shipmentId: string; canAssi
             )}
             <BagSections
               bags={bags}
+              removingSeqNo={remove.isPending ? remove.variables : undefined}
               onRemove={
                 canAssign
                   ? (seqNo) => {

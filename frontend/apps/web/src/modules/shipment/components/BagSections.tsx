@@ -7,9 +7,12 @@ import { Button, Paper, Stack, Table, Text, Title } from '@iplik/ui';
 export function BagSections({
   bags,
   onRemove,
+  removingSeqNo,
 }: {
   bags: ShipmentBagsResponse;
   onRemove?: ((seqNo: number) => void) | undefined;
+  /** Çıkarılmakta olan çuval; istek bitene kadar düğmeler ikinci tıklamayı almaz. */
+  removingSeqNo?: number | undefined;
 }) {
   const { t } = useTranslation();
   const { dispatchBags } = bags;
@@ -33,6 +36,8 @@ export function BagSections({
                           color="red"
                           variant="subtle"
                           style={{ whiteSpace: 'nowrap' }}
+                          loading={removingSeqNo === bag.seqNo}
+                          disabled={removingSeqNo !== undefined && removingSeqNo !== bag.seqNo}
                           onClick={() => {
                             onRemove(bag.seqNo);
                           }}

@@ -616,13 +616,13 @@ bu üç genişlikte denetler.
 
 | Rapor | Durum | İçerik |
 |---|:-:|---|
-| Özet | ✓ | Stok durumu (merkez depoda iplik, fasoncularda iplik, fasoncudan gelen kumaş, merkezde üretilen kumaş), dönemdeki sevkiyat sayıları, açık ve süresi geçen uyuşmazlıklar; müdür ve genel müdür için "Tutar bilgisi" (fasoncudaki ipliğin değeri, faturalanacak tutar, yolda olan ipliğin tutarı) |
+| Özet | ✓ | Stok durumu (merkez depoda iplik, fasoncularda iplik, fasoncudan gelen kumaş, merkezde üretilen kumaş), dönemdeki sevkiyat sayıları, açık ve süresi geçen uyuşmazlıklar; müdür ve genel müdür için "Tutar bilgisi" (fasoncudaki ipliğin değeri, faturalanacak tutar, yolda olan ipliğin tutarı). **Grafikler:** son 6 ayın aylık giden ipliği ve gelen kumaşı, fasoncu başına bugünkü iplik, fasoncu başına fire oranı (sınırı aşan yazıyla da belirtilir), faturalanmayı bekleyen ve dönemde faturalanan kilo, sevkiyat durumu, merkez depodaki iplikler, tedarikçiden gelen iplik. Her grafik altındaki ya da ilgili ekrandaki tabloyla aynı uçtan beslenir |
 | Fasoncu raporu | ✓ | Fasoncu bazında sevkiyat sayısı, uyuşmazlıklı sevkiyat oranı |
 | Sevkiyat dökümü | ✓ | Sevkiyat no, fasoncu, durum, çıkış neti, tarih |
 | Fasoncu bakiye (basit) | ✓ | Gönderilen / yolda / tamamlanan kg |
 | **Bakiye matrisi** | ✓ | İplik cinsi × fasoncu (09.11.2026 tablosunun ekranı), "Yolda" sütunu, toplamlar; açılış bakiyesi buradan yüklenir |
 | **Fire raporu** | ✓ | Sevkiyat bazında G, D, I, K, beklenen, gerçekleşen fire %, hatalı kg, fatura durumu |
-| **Giden iplik ↔ gelen kumaş** | ✓ | Kırıkhan Excel'inin ekran hali, fasoncu bazında |
+| **Giden iplik ↔ gelen kumaş** | ✓ | Kırıkhan Excel'inin ekran hali, fasoncu bazında; üstte fasoncu fire çubukları |
 | **Faturalama** | ✓ | Faturalanacaklar sekmesi: faturalanacak kilosu kalmış dosyalar; Faturalananlar sekmesi: girilmiş faturalar |
 
 Bütün raporlar Excel (.xlsx) ve PDF dosyası olarak indirilir; dönem (7/30/90 gün ya da tarih aralığı) süzgeci vardır.

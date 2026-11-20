@@ -3,6 +3,7 @@ import type {
   BalanceMatrixCell,
   DashboardView,
   FireRowView,
+  MonthlyFlowView,
   PartyStatsView,
   Permission,
   ShipmentRowView,
@@ -174,6 +175,27 @@ const MOCK_YARN_VS_FABRIC: YarnVsFabricRowView[] = [
   },
 ];
 
+const month = (name: string, sentKg: string, fabricKg: string): MonthlyFlowView => ({
+  month: name,
+  from: `${name}-01`,
+  to: `${name}-28`,
+  shipmentCount: sentKg === '0.000' ? 0 : 1,
+  sentKg,
+  returnedYarnKg: '0.000',
+  fabricKg,
+  actualFireRate: sentKg === '0.000' ? '0.0000' : '0.0500',
+  shortageKg: '0.000',
+});
+/** Son altı ay; son ay "Giden iplik ↔ gelen kumaş" sahte satırının toplamıyla aynıdır. */
+const MOCK_TREND: MonthlyFlowView[] = [
+  month('2026-06', '0.000', '0.000'),
+  month('2026-07', '18500.000', '17575.000'),
+  month('2026-08', '22340.500', '21223.475'),
+  month('2026-09', '19800.000', '18810.000'),
+  month('2026-10', '24000.000', '22800.000'),
+  { ...month('2026-11', '1000.000', '900.000'), actualFireRate: '0.1000', shortageKg: '60.000' },
+];
+
 /** Raporlar yalnızca REPORT_VIEW izniyle; backend gibi izinsizse 403 döner. */
 export function createReportHandlers(permissions: readonly Permission[]) {
   const canView = permissions.includes('REPORT_VIEW');
@@ -202,6 +224,9 @@ export function createReportHandlers(permissions: readonly Permission[]) {
     http.get(`${REPORTS_PATH}/fire`, () => (canView ? HttpResponse.json(MOCK_FIRE) : denied())),
     http.get(`${REPORTS_PATH}/yarn-vs-fabric`, () =>
       canView ? HttpResponse.json(MOCK_YARN_VS_FABRIC) : denied(),
+    ),
+    http.get(`${REPORTS_PATH}/monthly-trend`, () =>
+      canView ? HttpResponse.json(MOCK_TREND) : denied(),
     ),
     http.get(`${REPORTS_PATH}/to-invoice`, () =>
       canView

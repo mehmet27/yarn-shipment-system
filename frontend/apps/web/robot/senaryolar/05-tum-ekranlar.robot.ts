@@ -8,9 +8,17 @@ type Liste = { items: { shipmentId: string; status: string }[] };
 
 const tumKapsam: (Kapsam & { rol: string })[] = [];
 
+/**
+ * Gezginin süresi veriyle büyür: veritabanı doluyken her durumdan bir sevkiyat dosyası, uyuşmazlık detayı ve çıkış fişi
+ * de gezilir, listelerde sayfa düğmeleri çıkar. En çok ekranı olan rol (müdür) genel 5 dakikalık sınırı sabit ekranları
+ * bitirip sevkiyat dosyalarına geçerken aşıyordu; tek tek adımların kendi sınırları (tıklama 15 sn, sayfa 30 sn) aynı kalır.
+ */
+const GEZGIN_SURESI_MS = 900_000;
+
 for (const [rol, rotalar] of Object.entries(IZINLI)) {
   test(`Tüm ekranlar: ${rol} her sekme, filtre ve güvenli düğmeye tıklar`, async ({ giris }) => {
     test.skip(!rolTanimli(rol), `${rol} için kullanıcı/şifre tanımlı değil`);
+    test.setTimeout(GEZGIN_SURESI_MS);
     const robot = await giris(rol);
     const yollar = rotalar.filter((r) => r !== '/panel/gorunum' || rol === 'admin');
     // Sevkiyat ve uyuşmazlık verisi yalnızca o ekranları açabilen rollerde çekilir (yönetici 403 alır).

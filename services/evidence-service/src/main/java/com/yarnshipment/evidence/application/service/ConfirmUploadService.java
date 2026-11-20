@@ -63,7 +63,7 @@ public class ConfirmUploadService implements ConfirmUploadUseCase {
         scopeGuard.validateInScope(command.actor(), ShipmentScopes.of(intent.shipmentId(), intent.siteId()), ACTION);
         Optional<EvidenceFile> existing = evidence.findEvidence(intent.id());
         if (existing.isPresent()) {
-            return existing.get();
+            return existing.orElseThrow();
         }
         StoredObject stored =
                 storage.inspect(intent.storageKey()).orElseThrow(() -> new UploadNotCompletedException(intent.id()));

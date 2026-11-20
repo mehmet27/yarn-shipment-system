@@ -25,6 +25,7 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+// İstisna: CPLX-09/CPLX-10, senaryo testi alanın tüm port sahtelerini ve domain tiplerini birlikte kurar (GIT-10)
 @SuppressWarnings("checkstyle:ClassDataAbstractionCoupling")
 class CentralStockServiceTest {
 
@@ -130,7 +131,7 @@ class CentralStockServiceTest {
     void shouldStoreSupplierLotAndWaybill() {
         receipts.recordYarnReceipt(receipt(TEDARIKCI, " p-1 ", " IRS-7 "));
 
-        ReceiptDetails details = stock.receiptDetails.get(0);
+        ReceiptDetails details = stock.receiptDetails.getFirst();
         assertThat(details.supplierName()).isEqualTo("Şireci");
         assertThat(details.lotNo()).isEqualTo("P-1");
         assertThat(details.lotId()).isNotNull();
@@ -144,7 +145,7 @@ class CentralStockServiceTest {
     @DisplayName("Parti yazılmazsa parti açılmaz; pasif tedarikçi ve geçersiz parti reddedilir")
     void shouldValidateSupplierAndLot() {
         receipts.recordYarnReceipt(receipt(TEDARIKCI, " ", null));
-        assertThat(stock.receiptDetails.get(0).lotId()).isNull();
+        assertThat(stock.receiptDetails.getFirst().lotId()).isNull();
         assertThat(lotRequests).isEmpty();
 
         UUID pasif = UUID.randomUUID();

@@ -33,6 +33,7 @@ import java.math.RoundingMode;
  * @param claimRemainingKg remainingKg'nin haklı itirazdan gelen kısmı
  * @param claimInvoicedKg faturalanan kilonun haklı itirazı karşılayan kısmı
  */
+// İstisna: SIZE-09, analizdeki sütunları bire bir taşır; bölmek hesap adlarını (G, D, I, K…) dağıtır (GIT-10)
 @SuppressWarnings("checkstyle:RecordComponentNumber")
 public record FireCalculation(
         BigDecimal fireRate,

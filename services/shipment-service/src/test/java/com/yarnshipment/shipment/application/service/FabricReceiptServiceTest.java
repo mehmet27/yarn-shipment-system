@@ -32,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+// İstisna: CPLX-09/CPLX-10, senaryo testi alanın tüm port sahtelerini ve domain tiplerini birlikte kurar (GIT-10)
 @SuppressWarnings({"checkstyle:ClassDataAbstractionCoupling", "checkstyle:ClassFanOutComplexity"})
 class FabricReceiptServiceTest {
 
@@ -73,7 +74,7 @@ class FabricReceiptServiceTest {
 
         // then
         assertThat(receipt.yarns()).extracting(YarnShare::yarnType).containsExactly("30/1 penye", "20/1 open end");
-        assertThat(receipt.yarns().get(0).netKg()).isEqualByComparingTo("576");
+        assertThat(receipt.yarns().getFirst().netKg()).isEqualByComparingTo("576");
         assertThat(receipt.yarns().get(1).netKg()).isEqualByComparingTo("384");
         assertThat(receipt.receivedAt()).isEqualTo(NOW);
         assertThat(ledger.receipts()).containsExactly(receipt);

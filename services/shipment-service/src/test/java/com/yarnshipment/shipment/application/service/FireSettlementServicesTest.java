@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /** Fire oranı, fatura işareti ve kapatma kuralları ile Kırıkhan örneğinin uçtan uca hesabı. */
+// İstisna: CPLX-09/CPLX-10, senaryo testi alanın tüm port sahtelerini ve domain tiplerini birlikte kurar (GIT-10)
 @SuppressWarnings({"checkstyle:ClassDataAbstractionCoupling", "checkstyle:ClassFanOutComplexity"})
 class FireSettlementServicesTest {
 

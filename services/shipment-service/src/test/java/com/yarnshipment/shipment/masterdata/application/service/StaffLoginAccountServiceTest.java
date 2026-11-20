@@ -199,7 +199,7 @@ class StaffLoginAccountServiceTest {
         service.createStaffLoginAccount(admin, request);
 
         assertThat(openedStaff).hasSize(1);
-        assertThat(openedStaff.get(0).siteIds()).isEmpty();
+        assertThat(openedStaff.getFirst().siteIds()).isEmpty();
     }
 
     @Test

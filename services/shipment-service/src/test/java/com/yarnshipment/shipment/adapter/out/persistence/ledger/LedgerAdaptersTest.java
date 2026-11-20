@@ -52,6 +52,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
     FireInvoiceListAdapter.class,
     ClaimLedgerAdapter.class
 })
+// İstisna: CPLX-09/CPLX-10, senaryo testi alanın tüm port sahtelerini ve domain tiplerini birlikte kurar (GIT-10)
 @SuppressWarnings({"checkstyle:ClassFanOutComplexity", "checkstyle:ClassDataAbstractionCoupling"})
 class LedgerAdaptersTest {
 
@@ -413,7 +414,7 @@ class LedgerAdaptersTest {
         assertThat(invoiceList.findInvoices(all))
                 .extracting(row -> row.invoiceNo())
                 .containsExactly("F-2", "F-1");
-        assertThat(invoiceList.findInvoices(all).get(0).shipmentNo()).isEqualTo("SV-L1");
+        assertThat(invoiceList.findInvoices(all).getFirst().shipmentNo()).isEqualTo("SV-L1");
         assertThat(invoiceList.countInvoices(all)).isEqualTo(2);
         assertThat(invoiceList.sumInvoiceKg(all)).isEqualByComparingTo("50");
         assertThat(invoiceList.findInvoices(november12))

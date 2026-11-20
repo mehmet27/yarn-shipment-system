@@ -44,8 +44,8 @@ class ListDiscrepancyActivityServiceTest {
 
         List<DiscrepancyActivity> result = service(names).listActivity(query());
 
-        assertThat(result.get(0).actorName()).isEqualTo("Kerem Kalite");
-        assertThat(result.get(0).assigneeName()).isNull();
+        assertThat(result.getFirst().actorName()).isEqualTo("Kerem Kalite");
+        assertThat(result.getFirst().assigneeName()).isNull();
         assertThat(result.get(1).assigneeName()).isEqualTo("Melek Müdür");
     }
 

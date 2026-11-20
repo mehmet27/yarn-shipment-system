@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.shipment.masterdata.application.port.out.VehicleSiteCommandPort;
 import com.yarnshipment.shipment.masterdata.domain.model.DuplicatePlateException;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Component;
 @Component
 final class VehicleSiteCommandAdapter implements VehicleSiteCommandPort {
 
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', ?, true)";
     private static final String INSERT_VEHICLE =
             "INSERT INTO md_vehicle (id, plate_no, created_at, created_by) VALUES (:id, :value, :at, :actor)";
     private static final String UPDATE_VEHICLE = "UPDATE md_vehicle SET plate_no = :value WHERE id = :id";
@@ -49,7 +49,7 @@ final class VehicleSiteCommandAdapter implements VehicleSiteCommandPort {
 
     @Override
     public boolean updateVehicle(UUID actorId, UUID id, String plateNo) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         try {
             return jdbc.sql(UPDATE_VEHICLE)
                             .param("value", plateNo)
@@ -63,7 +63,7 @@ final class VehicleSiteCommandAdapter implements VehicleSiteCommandPort {
 
     @Override
     public boolean setVehicleStatus(UUID actorId, UUID id, MasterDataStatus status) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         return jdbc.sql(STATUS_VEHICLE)
                         .param("active", status.isActive())
                         .param("id", id)
@@ -80,13 +80,13 @@ final class VehicleSiteCommandAdapter implements VehicleSiteCommandPort {
 
     @Override
     public boolean updateSite(UUID actorId, UUID id, String name) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         return jdbc.sql(UPDATE_SITE).param("value", name).param("id", id).update() > 0;
     }
 
     @Override
     public boolean setSiteStatus(UUID actorId, UUID id, MasterDataStatus status) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         return jdbc.sql(STATUS_SITE)
                         .param("active", status.isActive())
                         .param("id", id)
@@ -95,7 +95,7 @@ final class VehicleSiteCommandAdapter implements VehicleSiteCommandPort {
     }
 
     private UUID insert(String sql, UUID actorId, String value) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         UUID id = UUID.randomUUID();
         try {
             jdbc.sql(sql)
@@ -108,9 +108,5 @@ final class VehicleSiteCommandAdapter implements VehicleSiteCommandPort {
             throw new DuplicatePlateException(value);
         }
         return id;
-    }
-
-    private void actAs(UUID actorId) {
-        jdbc.sql(SET_ACTOR).param(actorId.toString()).query().singleValue();
     }
 }

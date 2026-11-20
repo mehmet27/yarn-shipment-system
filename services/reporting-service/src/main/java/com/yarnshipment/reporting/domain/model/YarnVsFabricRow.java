@@ -41,8 +41,8 @@ public record YarnVsFabricRow(
         BigDecimal shortage = sum(group, FireFile::shortageKg);
         List<FireFile> over = group.stream().filter(FireFile::exceedsLimit).toList();
         return new YarnVsFabricRow(
-                group.get(0).subcontractorId(),
-                group.get(0).subcontractorName(),
+                group.getFirst().subcontractorId(),
+                group.getFirst().subcontractorName(),
                 sent,
                 returned,
                 fabric,

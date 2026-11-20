@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Sevkiyat taraflarının anlık görüntü kolonları. */
 @Embeddable
+// İstisna: NullAway.Init, alanları Hibernate yansımayla doldurur; yapıcıda atanamaz (GIT-10)
 @SuppressWarnings("NullAway.Init")
 final class PartiesEmbeddable {
 

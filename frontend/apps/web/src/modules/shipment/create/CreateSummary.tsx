@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Box, Button, Group, Icon, SectionCard, Stack, Text } from '@iplik/ui';
+import { Alert, Button, Group, Icon, SectionCard, Stack, Text } from '@iplik/ui';
 import { calculateFire, formatKgText, isKilogram, parseFireRatePct, parseKg } from '@iplik/units';
 import { CentralStockNotice } from '../stock/CentralStockNotice';
 import type { CreateDraft } from './createDraft';
@@ -31,7 +31,7 @@ function expectedFabric(total: string, firePct: string): string | undefined {
   }).expectedFabricKg;
 }
 
-/** Toplam, beklenen kumaş ve gönderme düğmesi (fire oranı reçete kartında girilir); geniş ekranda sağda yapışkan durur. */
+/** Toplam, beklenen kumaş ve gönderme düğmesi (fire oranı reçete kartında girilir); formun altında, tam genişlikte durur. */
 export function CreateSummary({
   draft,
   defaultFirePct,
@@ -45,40 +45,38 @@ export function CreateSummary({
   const firePct = draft.fireRatePct ?? defaultFirePct;
   const fabric = expectedFabric(total, firePct);
   return (
-    <Box pos="sticky" top={16}>
-      <SectionCard title={t('create.sections.summary')} icon="list">
-        <Stack gap="sm">
-          <TotalBox text={t('create.recipe.total', { total: formatKgText(total) })} />
-          <Group justify="space-between" wrap="nowrap">
-            <Text c="dimmed">
-              {t('create.summary.expectedFabric')} (
-              {t('create.summary.afterFire', { rate: firePct })})
-            </Text>
-            <Text fw={600}>{fabric === undefined ? '—' : `≈ ${formatKgText(fabric)}`}</Text>
-          </Group>
-          <CentralStockNotice
-            alwaysShow={false}
-            demands={draft.lines.map((line) => ({
-              productId: line.yarn?.value,
-              yarn: line.yarn?.label ?? '',
-              kg: parseKg(line.netKg) ?? '',
-            }))}
-          />
-          {failure !== undefined && <Alert color="red">{failure}</Alert>}
-          <Button loading={isSubmitting} leftSection={<Icon name="check" />} onClick={onSubmit}>
-            {t('create.submit')}
-          </Button>
-          <Button
-            variant="default"
-            leftSection={<Icon name="pdf" />}
-            onClick={() => {
-              void downloadPdf(draft);
-            }}
-          >
-            {t('create.pdf.button')}
-          </Button>
-        </Stack>
-      </SectionCard>
-    </Box>
+    <SectionCard title={t('create.sections.summary')} icon="list">
+      <Stack gap="sm">
+        <TotalBox text={t('create.recipe.total', { total: formatKgText(total) })} />
+        <Group justify="space-between" wrap="nowrap">
+          <Text c="dimmed">
+            {t('create.summary.expectedFabric')} ({t('create.summary.afterFire', { rate: firePct })}
+            )
+          </Text>
+          <Text fw={600}>{fabric === undefined ? '—' : `≈ ${formatKgText(fabric)}`}</Text>
+        </Group>
+        <CentralStockNotice
+          alwaysShow={false}
+          demands={draft.lines.map((line) => ({
+            productId: line.yarn?.value,
+            yarn: line.yarn?.label ?? '',
+            kg: parseKg(line.netKg) ?? '',
+          }))}
+        />
+        {failure !== undefined && <Alert color="red">{failure}</Alert>}
+        <Button loading={isSubmitting} leftSection={<Icon name="check" />} onClick={onSubmit}>
+          {t('create.submit')}
+        </Button>
+        <Button
+          variant="default"
+          leftSection={<Icon name="pdf" />}
+          onClick={() => {
+            void downloadPdf(draft);
+          }}
+        >
+          {t('create.pdf.button')}
+        </Button>
+      </Stack>
+    </SectionCard>
   );
 }

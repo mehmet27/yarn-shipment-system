@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { filterRows } from '../export/reportModel';
 import { usePartyNames } from '../hooks/usePartyNames';
 import { useSubcontractorReport } from '../hooks/usePartyReport';

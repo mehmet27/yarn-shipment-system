@@ -39,6 +39,7 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 /** Kumaş girişi ve fire dosyası uçlarının sözleşmesi: izin, istek doğrulama, düz JSON biçimi ve hata eşlemesi. */
 @WebMvcTest(controllers = {FabricReceiptController.class, FireSettlementController.class})
+// İstisna: CPLX-09/CPLX-10, senaryo testi alanın tüm port sahtelerini ve domain tiplerini birlikte kurar (GIT-10)
 @SuppressWarnings("checkstyle:ClassFanOutComplexity")
 class LedgerControllersTest {
 

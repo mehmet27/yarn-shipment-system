@@ -1,5 +1,6 @@
 package com.yarnshipment.evidence.adapter.out.persistence;
 
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.events.evidence.EvidenceReuseDetected;
 import com.yarnshipment.events.evidence.EvidenceUploaded;
 import com.yarnshipment.evidence.application.port.out.EvidenceStorePort;
@@ -30,7 +31,6 @@ import org.springframework.stereotype.Component;
 final class EvidenceStoreAdapter implements EvidenceStorePort {
 
     private static final String AGGREGATE_TYPE = "Shipment";
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', :actor, true)";
     private static final String SELECT = """
             SELECT id, shipment_id, evidence_type, storage_key, mime_type, size_bytes, sha256, captured_at,
                    uploaded_at, uploaded_by, status, invalidated_reason
@@ -83,10 +83,7 @@ final class EvidenceStoreAdapter implements EvidenceStorePort {
     @Override
     public void saveEvidence(EvidenceFile evidence) {
         Timestamp at = Timestamp.from(evidence.uploadedAt());
-        jdbc.sql(SET_ACTOR)
-                .param("actor", evidence.uploadedBy().toString())
-                .query()
-                .singleValue();
+        AuditActors.actAs(jdbc, evidence.uploadedBy());
         insert(evidence, at);
         publish(
                 evidence,

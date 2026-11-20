@@ -1,11 +1,13 @@
 import type { GetDashboardParams } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { SectionCard } from '@iplik/ui';
+import { SectionCard, Stack } from '@iplik/ui';
+import type { ReactNode } from 'react';
 import { usePermission } from '@/modules/auth';
 import { formatKilograms } from '../format';
 import { useYarnVsFabricReport } from '../hooks/useFaconReports';
 import { useCentralStockTotals, useSubcontractorYarn } from '../hooks/useStockOverview';
 import { AmountOverview } from './AmountOverview';
+import { SupplierBars } from './SupplierBars';
 import { SupplierReceipts } from './SupplierReceipts';
 import { CardBleed } from './CardBleed';
 import { StatCard } from './StatCard';
@@ -19,7 +21,13 @@ function kgOrDash(value: string | undefined): string {
 }
 
 /** Dört stok göstergesi: merkez depoda iplik, fasoncularda iplik, fasoncudan gelen kumaş, merkezde üretilen kumaş. */
-export function StockOverview({ params }: { params: GetDashboardParams }) {
+type StockOverviewProps = {
+  params: GetDashboardParams;
+  /** Stok kartlarının hemen altına, tutar bilgisinden önce girecek bölümler (rapor özetinin grafikleri). */
+  children?: ReactNode;
+};
+
+export function StockOverview({ params, children }: StockOverviewProps) {
   const { t } = useTranslation();
   const central = useCentralStockTotals(usePermission('CENTRAL_STOCK_VIEW')).data;
   const subcontractors = useSubcontractorYarn(usePermission('BALANCE_VIEW')).data;
@@ -59,12 +67,16 @@ export function StockOverview({ params }: { params: GetDashboardParams }) {
           </StatGrid>
         </CardBleed>
       </SectionCard>
+      {children}
+      <AmountOverview params={params} />
       {central === undefined ? null : (
-        <SectionCard title={t('stock.suppliers.title')} icon="download">
-          <SupplierReceipts suppliers={central.suppliers} />
+        <SectionCard title={t('stock.suppliers.title')} icon="download" testId="section-suppliers">
+          <Stack>
+            <SupplierBars suppliers={central.suppliers} />
+            <SupplierReceipts suppliers={central.suppliers} />
+          </Stack>
         </SectionCard>
       )}
-      <AmountOverview params={params} />
     </>
   );
 }

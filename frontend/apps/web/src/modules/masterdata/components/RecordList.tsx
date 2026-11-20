@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
-import { Group, Stack, Text, useDebouncedValue } from '@iplik/ui';
+import { EmptyState, Group, Stack, useDebouncedValue } from '@iplik/ui';
 import { useState } from 'react';
-import { ListPagination, QueryState } from '@/modules/shipment';
+import { ListPagination, QueryState } from '@/modules/shared';
 import { useRecords } from '../hooks/useRecords';
 import type { ManagedKind, RecordRow } from '../kinds';
 import { RecordTable } from './RecordTable';
@@ -45,7 +45,7 @@ export function RecordList({ kind }: { kind: ManagedKind }) {
       <QueryState query={query}>
         {({ rows, totalPages }) =>
           rows.length === 0 ? (
-            <Text c="dimmed">{t('masterData.empty')}</Text>
+            <EmptyState title={t('masterData.empty')} />
           ) : (
             <Stack>
               <RecordTable kind={kind} rows={rows} onEdit={setEditing} />

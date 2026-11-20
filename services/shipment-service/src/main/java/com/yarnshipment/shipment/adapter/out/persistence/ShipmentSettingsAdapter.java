@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.adapter.out.persistence;
 
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.shipment.application.port.out.ShipmentSettingsPort;
 import com.yarnshipment.shipment.domain.model.ShipmentSettings;
 import java.math.BigDecimal;
@@ -17,7 +18,6 @@ final class ShipmentSettingsAdapter implements ShipmentSettingsPort {
 
     static final String FIRE_RATE_KEY = "default_fire_rate";
     static final String TOLERANCE_KEY = "weight_tolerance_kg";
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', ?, true)";
     private static final String SELECT = "SELECT key, value FROM app_setting";
     private static final String UPSERT = """
             INSERT INTO app_setting (key, value, updated_at, updated_by) VALUES (:key, :value, :at, :actor)
@@ -50,7 +50,7 @@ final class ShipmentSettingsAdapter implements ShipmentSettingsPort {
 
     @Override
     public void save(ShipmentSettings settings, UUID actorUserId) {
-        jdbc.sql(SET_ACTOR).param(actorUserId.toString()).query().singleValue();
+        AuditActors.actAs(jdbc, actorUserId);
         upsert(FIRE_RATE_KEY, settings.defaultFireRate().toPlainString(), actorUserId);
         upsert(TOLERANCE_KEY, settings.weightToleranceKg().toPlainString(), actorUserId);
     }

@@ -10,7 +10,9 @@ import com.yarnshipment.shipment.domain.fire.FireSettlementStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -66,6 +68,32 @@ class ClaimAdjustmentServiceTest {
     }
 
     @Test
+    @DisplayName("Aynı uyuşmazlığın kararı ikinci kez gelirse faturalanmış dosya yeniden açılmaz")
+    void shouldNotReopenInvoicedFileWhenSameDecisionIsRedelivered() {
+        FireSettlement open = FireSettlement.open(SHIPMENT, SUBCONTRACTOR, new BigDecimal("1000"))
+                .afterFabricReceipt();
+        settlements.put(open);
+        RecordClaimAdjustmentCommand decision = command("100.000");
+        service.recordClaimAdjustment(decision);
+        FireSettlement invoiced = new FireSettlement(
+                SHIPMENT,
+                SUBCONTRACTOR,
+                FireSettlementStatus.INVOICED,
+                open.fireRate(),
+                open.sentKg(),
+                "F-1",
+                null,
+                USER,
+                null);
+        settlements.put(invoiced);
+
+        service.recordClaimAdjustment(decision);
+
+        assertThat(settlements.find(SHIPMENT)).contains(invoiced);
+        assertThat(ledger.invoiceable).containsExactly(new BigDecimal("100.000"));
+    }
+
+    @Test
     @DisplayName("Fire dosyası olmayan (fasoncusuz) sevkiyatta hiçbir şey yazılmaz")
     void shouldWriteNothingWithoutFile() {
         service.recordClaimAdjustment(command("10.000"));
@@ -76,10 +104,15 @@ class ClaimAdjustmentServiceTest {
     private static final class Ledger implements ClaimLedgerPort {
 
         private final List<BigDecimal> invoiceable = new ArrayList<>();
+        private final Set<UUID> discrepancies = new HashSet<>();
 
         @Override
-        public void recordInvoiceableClaim(InvoiceableClaim claim) {
+        public boolean recordInvoiceableClaim(InvoiceableClaim claim) {
+            if (!discrepancies.add(claim.discrepancyId())) {
+                return false;
+            }
             invoiceable.add(claim.claimedKg());
+            return true;
         }
     }
 }

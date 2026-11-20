@@ -83,9 +83,11 @@ services:
       - evidence-data:/data/evidence
     depends_on:
       postgres: { condition: service_healthy }
-    # Uygulama gerçekten yanıt veriyor mu (veritabanına bağlanıp markayı okur); install.sh ve geri-yukle.sh bunu bekler.
+    # `docker compose ps` uygulamayı ancak veritabanına ulaşabiliyorsa "healthy" gösterir (readiness veritabanını
+    # denetler). Açılışta şema göçü sürebildiği için ilk iki dakika başarısız denemeler sayılmaz.
+    # install.sh ve geri-yukle.sh uygulamanın açılmasını bu denetimle bekler.
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost:8083/api/v1/branding"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8083/actuator/health/readiness || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 6

@@ -86,8 +86,8 @@ class ReportQueryAdapterTest {
         var subcontractors = reports.findSubcontractorStats(PERIOD, scope(site));
 
         assertThat(subcontractors).hasSize(1);
-        assertThat(subcontractors.get(0).shipmentCount()).isEqualTo(THREE);
-        assertThat(subcontractors.get(0).discrepantShipmentCount()).isEqualTo(2);
+        assertThat(subcontractors.getFirst().shipmentCount()).isEqualTo(THREE);
+        assertThat(subcontractors.getFirst().discrepantShipmentCount()).isEqualTo(2);
     }
 
     @Test
@@ -99,12 +99,14 @@ class ReportQueryAdapterTest {
         seed.shipment(site, new Shipment("SHP-1", "COMPLETED", false));
         seed.shipment(other, new Shipment("SHP-2", "COMPLETED", false));
 
-        assertThat(reports.findSubcontractorStats(PERIOD, scope(site)).get(0).shipmentCount())
+        assertThat(reports.findSubcontractorStats(PERIOD, scope(site))
+                        .getFirst()
+                        .shipmentCount())
                 .isEqualTo(1);
         assertThat(reports.findSubcontractorStats(PERIOD, new ReportScope(Set.of(), false, null)))
                 .isEmpty();
         ReportScope narrowed = new ReportScope(Set.of(site, other), false, other);
-        assertThat(reports.findSubcontractorStats(PERIOD, narrowed).get(0).shipmentCount())
+        assertThat(reports.findSubcontractorStats(PERIOD, narrowed).getFirst().shipmentCount())
                 .isEqualTo(1);
     }
 

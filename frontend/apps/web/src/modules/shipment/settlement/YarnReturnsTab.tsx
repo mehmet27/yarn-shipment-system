@@ -1,7 +1,7 @@
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { EmptyState, Paper, Stack, Text } from '@iplik/ui';
 import { usePermission } from '@/modules/auth';
-import { QueryState } from '../components/QueryState';
+import { QueryState } from '@/modules/shared';
 import { formatKgText } from './format';
 import { useYarnReturns } from './hooks';
 import { YarnReturnForm } from './YarnReturnForm';

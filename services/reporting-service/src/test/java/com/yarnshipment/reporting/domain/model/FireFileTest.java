@@ -81,10 +81,10 @@ class FireFileTest {
         List<YarnVsFabricRow> rows = YarnVsFabricRow.aggregate(List.of(aboveLimit, withinLimit));
 
         assertThat(rows).hasSize(1);
-        assertThat(rows.get(0).actualFireRate()).isEqualByComparingTo("0.0700");
-        assertThat(rows.get(0).shortageKg()).isEqualByComparingTo("60");
-        assertThat(rows.get(0).overLimitShipmentCount()).isEqualTo(1);
-        assertThat(rows.get(0).overLimitFireKg()).isEqualByComparingTo("100");
+        assertThat(rows.getFirst().actualFireRate()).isEqualByComparingTo("0.0700");
+        assertThat(rows.getFirst().shortageKg()).isEqualByComparingTo("60");
+        assertThat(rows.getFirst().overLimitShipmentCount()).isEqualTo(1);
+        assertThat(rows.getFirst().overLimitFireKg()).isEqualByComparingTo("100");
     }
 
     @Test

@@ -24,6 +24,7 @@ import org.jspecify.annotations.Nullable;
  * @param createdAt oluşturma zamanı
  * @param recipe reçete satırları, fire oranı ve son kantar karşılaştırması
  */
+// İstisna: SIZE-09, aggregate kökü; ilişkili alanlar zaten ShipmentParties ve Recipe içinde gruplandı (GIT-10)
 @SuppressWarnings("checkstyle:RecordComponentNumber")
 public record Shipment(
         UUID id,
@@ -74,6 +75,7 @@ public record Shipment(
     }
 
     /** Sevkiyat tarihi olmayan (eski) kayıt: tarih oluşturulma günüdür (UTC). */
+    // İstisna: SIZE-08, record bileşenlerinin sevkiyat tarihi dışındaki tamamını alan uyumluluk yapıcısı (GIT-10)
     @SuppressWarnings("checkstyle:ParameterNumber")
     public Shipment(
             UUID id,

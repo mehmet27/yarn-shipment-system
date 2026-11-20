@@ -1,6 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { PageHero, Paper, Select, SimpleGrid, Stack, Title } from '@iplik/ui';
-import { QueryState, useMasterOptions } from '@/modules/shipment';
+import { useMasterOptions } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { useState } from 'react';
 import { BalanceMatrix } from '../components/BalanceMatrix';
 import { MovementList } from '../components/MovementList';

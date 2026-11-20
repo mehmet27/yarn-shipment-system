@@ -2,13 +2,13 @@
 
 | Alan | Değer |
 | --- | --- |
-| Sürüm | 1.0 |
-| Tarih | 20.10.2026 |
-| Kapsam | Backend: 8 Spring Boot servisi, API Gateway, `libs/*` ortak kütüphaneleri |
-| Dayandığı dokümanlar | Ön analiz raporu v1.1, Java mikroservis mimarisi v1, Veritabanı tasarımı |
+| Sürüm | 2.0 |
+| Tarih | 20.11.2026 (v1.0: 20.10.2026) |
+| Kapsam | Backend: tek Spring Boot uygulamasında (`services/yarnshipment-app`) çalışan altı modül (`shipment`, `discrepancy`, `evidence`, `reporting`, `audit`, `assistant`) ve `libs/*` ortak kütüphaneleri |
+| Dayandığı dokümanlar | Modüler monolit mimarisi v2.0, Süreç analizi v2, Veritabanı tasarımı; `main` dalındaki kod (20.11.2026) |
 | Bağlayıcılık | **Projede yazılan her Java satırı bu dokümana uyar.** Kurala aykırı kod birleştirilmez. |
 
-Bu doküman yalnızca **kod yazım standartlarını** içerir. Repo ve modül yapısı, katman düzeni, olay sözleşmesi, servisler arası iletişim, çalışma zamanı ve mimari kararlar [modüler monolit mimarisi](../architecture/moduler-monolit-mimarisi.md) dokümanındadır; kural kimlikleri ise tarihsel [mikroservis mimarisi](../architecture/java-mikroservis-mimarisi.md) belgesinde durur ve (STR, ARCH, EVT-02…06/09 vb.) code review'da aynı şekilde kullanılır.
+Bu doküman yalnızca **backend kod yazım standartlarını** içerir (frontend için: [React ve TypeScript kod standartları](react-typescript-kod-standartlari.md)). Repo ve modül yapısı, katman düzeni, olay sözleşmesi, servisler arası iletişim, çalışma zamanı ve mimari kararlar [modüler monolit mimarisi](../architecture/moduler-monolit-mimarisi.md) dokümanındadır; kural kimlikleri ise tarihsel [mikroservis mimarisi](../architecture/java-mikroservis-mimarisi.md) belgesinde durur ve (STR, ARCH, EVT-02…06/09 vb.) code review'da aynı şekilde kullanılır.
 
 Bu doküman projenin temel taşıdır. Kod yazmaya başlamadan önce okunur, code review'da kural kimlikleriyle (ör. `DOM-04`) atıf yapılır. Kurallar iki seviyededir:
 
@@ -21,6 +21,7 @@ Kural belirtilmeden yazılan her madde ZORUNLU kabul edilir.
 
 ## İçindekiler
 
+0. [Sürüm 2.0: koddan çıkarılan fiilî standartlar](#0-sürüm-20-koddan-çıkarılan-fiilî-standartlar)
 1. [Temel ilkeler](#1-temel-ilkeler)
 2. [Java 21 dil kullanımı](#2-java-21-dil-kullanımı)
 3. [Adlandırma ve dil](#3-adlandırma-ve-dil)
@@ -40,6 +41,93 @@ Kural belirtilmeden yazılan her madde ZORUNLU kabul edilir.
 17. [Ek A: Domain sözlüğü (Türkçe → kod)](#ek-a-domain-sözlüğü-türkçe--kod)
 18. [Ek B: Otomatik denetim özeti](#ek-b-otomatik-denetim-özeti)
 19. [Ek C: Araç ayarları (derlemede zorlanan kurallar)](#ek-c-araç-ayarları-derlemede-zorlanan-kurallar)
+
+---
+
+## 0. Sürüm 2.0: koddan çıkarılan fiilî standartlar
+
+Sürüm 1.0 kod yazılmadan önce, sekiz mikroservisli mimari için yazılmıştı. Kasım 2026'da mimari modüler monolite geçti
+ve saha süreci sadeleşti (şoför uygulaması, kör teslim girişi, mühür ve teslim tartısı kalktı). Bu sürüm, kuralları
+20.11.2026 tarihli `main` koduyla hizalar. Yöntem şudur: kodun tamamında tutarlı uygulanan kalıp kural olur; kodda
+karşılığı kalmayan kural kaldırılır; kodun bilinçli olarak farklı yaptığı kural koda göre yeniden yazılır. Kaldırılan
+kural kimlikleri yeniden kullanılmaz. Aşağıdaki bölümlerde bir kural bu bölümle çelişirse **bu bölüm geçerlidir**.
+
+### 0.1 Kaldırılan kurallar
+
+| Kural | Neden kalktı |
+| --- | --- |
+| EVT-10, EVT-11, PERS-19 (Kafka kısmı), PERS-20, LOG-06 (outbox kısmı), DOM-18 | Kafka, outbox ve Spring Cloud Contract yok. Olaylar süreç içidir (MOD-03); Kafka bağımlılığı Maven Enforcer ve ArchUnit (`NO_KAFKA`) ile yasaktır. |
+| API-13, API-14 | Servisler arası REST istemcisi, Resilience4j ve gateway yok; modüller `libs/module-api` ile konuşur (MOD-02). |
+| SEC-05, SEC-07, SEC-08, DOM-16 | Kör giriş, şoför ve fasoncu görünümleri, mühür ve düzeltme kaydı (`CorrectionRecord`) süreçten çıkarıldı. |
+| DOM-02, DOM-05 (değer nesnesi kısmı), DOM-08, DOM-12 | Tipli kimlik record'ları ve `Kilogram`/`Percentage` değer nesneleri yazılmadı; bkz. DOM-20…22. |
+| API-11 (MapStruct kısmı) | MapStruct kullanılmıyor; eşleme elle yazılan statik fabrikalarladır (WEB-01). |
+| LOG-08, LOG-09 (Kafka kısmı), SEC-15, CONC-03…09 arasındaki sanal thread kuralları | OpenTelemetry, bağımlılık taraması ve sanal thread kullanımı bugün kodda yok; eklendiklerinde kural yeniden yazılır. |
+
+### 0.2 Koda göre değişen kurallar
+
+| Kural | v1.0 | v2.0 (kodda olan) |
+| --- | --- | --- |
+| NAME-22 | Use case metodu yalnız fiildir (`submit`) | Metot adı fiil + nesnedir ve controller metoduyla aynıdır: `CompleteShipmentUseCase.completeShipment(CompleteShipmentCommand)`. Arayüz tek metotludur (ArchUnit). Girdi tercihen `Command`/`Query` record'udur; en fazla 4 parametreye kadar (SIZE-07) açık parametre de kabul edilir (`updateDriver(Actor, UUID, DriverDetails)`). |
+| NAME-14 | Servis kodunda statik yardımcı sınıf açılmaz | Adapter ve domain'de, tek bir kavrama ait durumsuz işlevler çoğul adlı `final` sınıfta toplanır (WEB-01, PERS-22, DOM-22). `Util`/`Helper` adları yine yasaktır. |
+| NAME-24 | Erişimci `get` almaz | Aynı; tek yerleşik istisna `CurrentActorProvider.getCurrentActor()`'dır ("mutlaka vardır" anlamında, NAME-20). |
+| ERR-01 | Tek `sealed DomainException` hiyerarşisi ve `ErrorCode` | Her iş kuralı ihlali, `RuntimeException`'dan doğrudan türeyen kendi `final` istisnasıdır (ERR-09…11). |
+| PERS-07, PERS-03…06 | Her aggregate JPA entity'sidir | Yazma ve okumanın çoğu `JdbcClient` iledir (PERS-22). JPA yalnız sevkiyat listesi gibi `Specification` gerektiren okumalarda kalır; entity'ler `@Immutable`'dır. Eşzamanlı güncelleme koşullu `UPDATE … WHERE status = :from` ve etkilenen satır sayısıyla korunur. |
+| PERS-12 | `db/migration` | `db/migration/<şema>`; her modül şemasının kendi Flyway geçmişi vardır. Platform göçleri `libs/common-web/src/main/resources/db/platform` altındadır. |
+| SEC-02, SEC-03, SEC-04 | JWT, `ScopeGuard` | Oturum çerezi; bkz. SEC-16…18. |
+| API-01 | Sözleşmeden üretilen arayüzü controller uygular | OpenAPI dosyası her modülde tutulur ve arayüz üretilir; yeni uçlar (ledger, tanımlar) ise elle yazılan `@RestController`'dır ve sözleşme dosyası aynı PR'da güncellenir. |
+| CONF-01 | `@Value` yok | Tek seferlik açılış bileşenlerinde (`AccountBootstrap`, `DatabaseMigrationConfiguration`, `LoopbackHelpDataAdapter`) yapıcı parametresinde `@Value` kabul edilir; iki ve daha çok sınıfın okuduğu ayar `@ConfigurationProperties` record'u olur. |
+| TEST-05, 14.1 tablosu | `*IT`, `*ContractTest`, `*E2E` sonekleri | Tüm testler `*Test`'tir ve `mvn verify` içinde koşar; bkz. TEST-11…14. Uçtan uca doğrulama ekran robotudur (`frontend/apps/web/robot`). |
+| GIT-02, GIT-03, GIT-04 | `feature/…` dalları, Conventional Commits, squash | Commit ve PR başlığı Türkçe, ne yapıldığını söyleyen tek cümledir (`Faturalama ekranı: Faturalananlar sekmesi`). PR'lar merge commit ile birleşir. PR açıklaması `.github/pull_request_template.md` başlıklarını doldurur (Özet, Test, Robot). |
+
+### 0.3 Koddan çıkarılan yeni kurallar
+
+**Modül yapısı**
+
+- **MOD-01** Her modülün kök paketi `com.yarnshipment.<modül>`'dür ve şu alt paketleri taşır: `adapter.in.web` (controller, `*Views`, `*Requests`, `*ExceptionHandler`), `adapter.in.module` (başka modüle açılan `module-api` uygulaması), `adapter.in.messaging` (`*EventsConsumer`), `adapter.out.persistence`, `adapter.out.<karşı modül ya da teknoloji>` (`adapter.out.evidence`, `adapter.out.storage`), `application.port.in`, `application.port.out`, `application.service`, `domain`. Paket 30 tipi (SIZE-12) aşacaksa iş alanına göre alt pakete bölünür (`ledger`, `fire`, `stock`, `balance`); teknik ada göre (`dto`, `mapper`) bölünmez.
+- **MOD-02** Modüller arası senkron çağrı yalnız `libs/module-api` arayüzleriyledir. Sağlayan modül arayüzü `adapter.in.module.<Ad>ModuleAdapter` ile uygular ve kapsam denetimini kendisi yapar. Çağıran modül kendi `port.out` arayüzünü `adapter.out.<modül>.<Ad>ModuleAdapter` ile uygular; `ModuleUnavailableException` yalnız bu adapter'da yakalanır ve çağıranın kendi istisnasına çevrilir.
+- **MOD-03** Olay yayını `DomainEventPublisher.publish(DomainEvent)` ile, iş satırını yazan adapter'da ve aynı transaction'da yapılır. Tüketici `adapter.in.messaging` içinde `<Kaynak>EventsConsumer` adını alır, `delivery()` ile `BEFORE_COMMIT` ya da `AFTER_COMMIT` seçimini açıkça bildirir ve iş mantığı içermez; use case çağırır. Olay yükleri `libs/event-contracts` record'larıdır (EVT-01, EVT-07, EVT-08 geçerlidir).
+- **MOD-04** Modül sınırını korumak için küçük altyapı sınıfları (`UuidV7Generator`, test tarafında `PostgresTestDatabase`) modül başına ayrı tutulabilir. Bir sınıf `libs/common-*` altına yalnız davranışı tüm modüllerde bire bir aynıysa taşınır (örnek: `AuditActors`, PERS-23).
+- **MOD-05** `application.service` paketinde yalnız use case uygulamaları (`<Fiil><Nesne>Service`, alanın birkaç use case'ini birlikte uygulayan `<Alan>Service`) ve onların paylaştığı, paket-özel yardımcı bileşenler (`ScopedShipmentLoader`, `ShipmentAccessPolicy`, `…Reader`, `…Cover`) bulunur. Yardımcı bileşen adı işini söyler; `Helper`/`Manager` olmaz.
+
+**Domain**
+
+- **DOM-20** Kimlikler `java.util.UUID`'dir; parametre adı neyin kimliği olduğunu söyler (`shipmentId`, `subcontractorId`, `actorId`). Yeni satır kimliği UUIDv7'dir ve modülün `UuidV7Generator` bileşeninden alınır; tanım (`md_*`) satırlarında `UUID.randomUUID()` kullanımı mevcuttur ve kabul edilir. Veritabanına kimlik ürettirilmez.
+- **DOM-21** Kilo `BigDecimal`'dır, ölçek 3; alan adı birimi taşır (`netKg`, `sentKg`). Yuvarlama ve ayrıştırma tek yerdedir (`domain.balance.Kilograms`); oranlar `Rates` içindedir. `double`/`float` yasağı (DOM-05) ve DOM-06, DOM-07 aynen geçerlidir.
+- **DOM-22** Domain nesneleri record'dur ve geçerliliğini kompakt yapıcıda ya da `of(...)` fabrikasında kurar (`Completion.of(shipment, waybillNo, evidenceId, at)`). Bir iş adımının kuralı, adımın adını taşıyan record'dadır (`Completion`, `NewShipment`, `DispatchRecording`); application servisi bu record'u kurar ve porta verir.
+
+**Hata yönetimi**
+
+- **ERR-09** İş kuralı ihlali, kuralın adını taşıyan `final` bir `RuntimeException` alt sınıfıdır (`InvalidShipmentStatusException`, `ShipmentNotDueException`). Sınıfın Javadoc'u HTTP durumunu ve hata kodunu yazar: `(409, {@code INVALID_SHIPMENT_STATUS})`. İstemciye gidecek ek bilgi alan olarak taşınır (`shipmentDate()`), mesajdan ayrıştırılmaz.
+- **ERR-10** HTTP eşlemesi modülün `adapter.in.web.<Alan>ExceptionHandler` sınıfındadır (`@RestControllerAdvice`, `@Order(HIGHEST_PRECEDENCE)`); gövdeyi yalnız `ProblemFactory.create(request, status, code)` üretir. Kod `UPPER_SNAKE_CASE`'tir; Türkçe `title`/`detail` metni `<modül>-messages_tr.properties` içinde `problem.<KOD>.title|detail` anahtarıyla durur (API-08).
+- **ERR-11** Altyapı istisnası adapter'da yakalanıp domain istisnasına çevrilirken asıl istisna `cause` olarak verilir (ERR-02). Tek istisna, nedeni zaten istisnanın adında olan benzersizlik ihlalidir (`DuplicateKeyException` → `DuplicateCodeException`). Yeni kodda yakalanan değişken `exception` adını alır (eski kodda `e` de vardır); bilinçli yok sayılan yakalamada ad nedeni söyler (`ignored`, `duplicate`, `notUuid`).
+
+**Kalıcılık**
+
+- **PERS-22** JDBC erişimi `JdbcClient` iledir. Her SQL, sınıfın başında `private static final String` sabitidir (çok satırlıysa metin bloğu), adlandırılmış parametre kullanır ve kullanıcı girdisi dizeye eklenmez (PERS-10). Satır eşleme adapter'daki `private static` metotta ya da birden çok adapter paylaşıyorsa `<Kavram>Rows` sınıfındadır. Adapter adı `<Kavram><Rol>Adapter`'dır ve paket-özeldir; birden çok adapter'ın paylaştığı yazma adımları `<Kavram>Writer`, okuma adımları `<Kavram>Reader` bileşenindedir.
+- **PERS-23** `audit_local` trigger'ı aktörü `app.actor_id` oturum ayarından okur. Yazan her adapter metodu ilk iş olarak `AuditActors.actAs(jdbc, actorId)` çağırır (`libs/common-web`, `platform` paketi); ayarın SQL'i başka yerde tekrar yazılmaz.
+- **PERS-24** Fiziksel silme yasağı (GEN-04, PERS-11) iş verisi için geçerlidir. Bilinçli istisnalar: rol-yetki eşlemesi (`role_permission`) ve süresi dolan `idempotency_record` satırları.
+
+**Web**
+
+- **WEB-01** Bir alanın yanıt record'ları ve eşleme fabrikaları, çoğul adlı paket-özel tek sınıfta durur: `BalanceViews` içinde `BalanceRowView`, `MovementPageView` ve `static BalanceSummaryView balances(BalanceSummary)`. İstek gövdeleri `<Alan>Requests`, sayfa eşlemeleri `<Alan>Pages` içindedir. Yanıt record'u `View`, istek record'u `Request` ile biter. Kilo JSON'da 3 ondalıklı dizedir (API-03) ve dönüşüm tek yerden yapılır (`BalanceViews.kg`).
+- **WEB-02** Controller metodu üç adımdır: aktörü al (`currentActorProvider.getCurrentActor()`), `Command`/`Query` kur, use case çağır ve `Views` ile eşle (API-10). Sorgu parametresinden enum ya da sayı ayrıştırma `private static` metottadır ve hatayı alanın `Invalid…InputException`'ına çevirir.
+
+**Güvenlik**
+
+- **SEC-16** Her controller metodu `@PreAuthorize("hasAuthority('<PERMISSION>')")` taşır; yetki adı `common-security` içindeki `Permission` enum'undandır, rol adı yazılmaz (rol-yetki eşlemesi Yetkiler ekranından değişir). Method security proxy'si gerektiği için controller `final` değildir ve Javadoc'u bunu söyler.
+- **SEC-17** Kapsam (lokasyon, fasoncu) denetimi application servisindedir: kayıt `ScopedShipmentLoader.load(actor, id, permission)` gibi kapsamlı yükleyiciyle okunur. Kapsam dışı kayıt "bulunamadı" (404) döner; varlığı sızdırılmaz.
+- **SEC-18** İşlemi yapan her zaman oturumdan gelen `Actor`'dır; gövdede aktör alanı kabul edilmez (SEC-04). Dosya adresleri `FileGrantSigner` ile imzalanır ve süresi konfigürasyondan gelir (SEC-10).
+
+**Test**
+
+- **TEST-11** Dilimler: domain ve application servisleri Spring'siz birim testidir; portlar için elle yazılan sahte uygulama (`Fake…`, `Recording…`) ya da Mockito kullanılır (TEST-03). Controller'lar `@WebMvcTest` ile izin, doğrulama, JSON biçimi ve hata eşlemesi için test edilir. Persistence adapter'ları `@JdbcTest`/`@DataJpaTest` ile gerçek PostgreSQL 17'ye karşı test edilir (TEST-02).
+- **TEST-12** Veritabanı testleri modülün `PostgresTestDatabase` sınıfını kullanır: Flyway şema sahibi rolle, uygulama DML rolüyle bağlanır; böylece eksik `GRANT` testte yakalanır. Veri bırakan test `startIsolated()` ile kendi konteynerini alır.
+- **TEST-13** Her modülde iki mimari testi bulunur: üretim kodu için `ArchitectureTest` (Hexagonal, Naming, Structure kural setleri), test kodu için `TestCodeArchitectureTest` (`TestRules`).
+- **TEST-14** Arayüzü etkileyen her backend değişikliğinde (yeni alan, doğrulama, rol, hesaplama) aynı PR'da robot senaryosu güncellenir ve yalnız o özelliğin senaryoları koşulur; kural `frontend/apps/web/robot/README.md` içindedir. Arayüzü etkilemeyen, davranışı koruyan refaktörde robot maddesi "ilgilendiren değişiklik yok" olarak işaretlenir.
+
+**İstisna kaydı**
+
+- **GIT-11** Her `@SuppressWarnings`, hemen üstünde nedenini söyleyen bir yorumla yazılır (GIT-10). Sınır kurallarının (SIZE, CPLX) bastırıldığı yerler bugün şunlardır ve yenisi PR açıklamasında gerekçe ister: analizdeki sütunları bire bir taşıyan record'lar (`Shipment`, `FireCalculation`, `FireFile`, `FireViews`), çok bağımlılıklı senaryo testleri ve JPA entity'lerinde `NullAway.Init`.
 
 ---
 
@@ -161,7 +249,7 @@ ShipmentStatus next = switch (result) {
 
 - **NAME-12** Sınıf adı bir **isimdir** ve tek bir sorumluluğu anlatır. Sınıf adı `^[A-Z][a-zA-Z0-9]*$` kalıbına uyar ve en az 3 karakterdir.
 - **NAME-13 Yasaklı sınıf adı sonekleri:** `Manager`, `Helper`, `Util`, `Utils`, `Impl`, `Data`, `Info`, `Processor`, `Handler` (Spring ve Kafka hata işleyicileri hariç), `Base` öneki. Bu adlar "ne yaptığı belli olmayan sınıf" üretir. Bir arayüzün tek uygulaması varsa adı uygulamanın farkını anlatır (`ShipmentRepositoryPort` → `JpaShipmentRepositoryAdapter`), `Impl` ile bitmez.
-- **NAME-14** Ortak yardımcı statik metotlar gerekiyorsa sınıf, ait olduğu kavramın çoğul adını alır ve yalnızca `libs/common-*` içinde bulunur (`Percentages`, `UniqueKeys`); `final` ve özel yapıcılıdır. Servis kodunda statik yardımcı sınıf açılmaz; davranış ilgili değer nesnesine konur.
+- **NAME-14** Durumsuz statik işlevler gerekiyorsa sınıf, ait olduğu kavramın çoğul adını alır (`Kilograms`, `BalanceViews`, `DiscrepancyRows`, `AuditActors`); `final` ve özel yapıcılıdır. Modüller arası ortak olanlar `libs/common-*` içindedir; modül içindekiler paket-özeldir (v2.0, bkz. WEB-01, PERS-22).
 - **NAME-15** İstisna sınıfları `Exception` ile biter ve neyin yanlış gittiğini söyler: `ShipmentLockedException`, `BagAlreadyAssignedException`. `GeneralException`, `ServiceException` gibi adlar yasaktır.
 - **NAME-16** Arayüz adında `I` öneki kullanılmaz (`IShipmentService` yasak).
 - **NAME-17** Soyut sınıflar `Abstract` önekiyle başlar ve yalnızca `libs/common-*` içinde bulunabilir. Servis kodunda soyut sınıf kalıtımı yerine `sealed interface` + record veya kompozisyon kullanılır.
@@ -193,7 +281,7 @@ ShipmentStatus next = switch (result) {
 | `on<OlayAdı>` | Olay dinleyicisi (yalnızca `adapter.in.messaging`) | `void` | `onComparisonCompleted(...)` |
 
 - **NAME-21 Yasaklı belirsiz metot adları:** `process`, `handle` (Spring `@ExceptionHandler` hariç), `doIt`, `do…`, `manage…`, `perform…`, `execute` (bkz. NAME-22), `run` (`Runnable` uygulaması hariç), `data`, `info`, `check` (yerine `validate…` veya `is…`), `update` tek başına (neyi güncellediği yazılır: `updateContactPhone`).
-- **NAME-22 Use case arayüzü** tek metotludur ve metot adı arayüz adındaki fiildir: `SubmitDeliveryReceiptUseCase.submit(SubmitDeliveryReceiptCommand)`, `GetShipmentFileUseCase.get(ShipmentFileQuery)`.
+- **NAME-22 Use case arayüzü** tek metotludur ve metot adı arayüz adının `UseCase` soneksiz hâlidir: `CompleteShipmentUseCase.completeShipment(CompleteShipmentCommand)`, `ListShipmentsUseCase.listShipments(ListShipmentsQuery)` (v2.0, bkz. 0.2).
 - **NAME-23 Controller metotları** OpenAPI `operationId` ile aynı addadır; `operationId` fiil + kaynak biçimindedir (`submitDeliveryReceipt`, `listShipments`, `getShipment`).
 - **NAME-24 Erişimciler.** Domain ve uygulama sınıflarında alan erişimcisi `get` öneki **almaz**, record gibi alan adını taşır: `shipment.status()`, `shipment.shipmentNo()`. `get…` öneki NAME-20'deki anlamına ("mutlaka bulunur") ayrılmıştır. JavaBean getter'ı yalnızca bir framework zorunlu kıldığında (JPA entity, `@ConfigurationProperties` olmayan Spring bean'i) yazılır.
 - **NAME-25** Boolean dönen metot olumsuz adlandırılmaz: `isNotLocked()` değil `!isLocked()`; `isValid()` gibi neye göre geçerli olduğu belirsiz adlar yerine kural adı kullanılır (`isWithinTolerance()`).
@@ -329,8 +417,8 @@ public void submitDeliveryReceipt(DeliveryReceipt receipt) {
 ### 5.1 Aggregate ve kimlik
 
 - **DOM-01** Her aggregate kökü kendi tutarlılığından sorumludur. Durum değişikliği yalnızca aggregate'in iş metotlarıyla yapılır (`shipment.recordDispatchWeighing(...)`). Public setter yasaktır.
-- **DOM-02** Kimlikler tipli record'dur: `ShipmentId`, `BagId`, `SubcontractorId`. Metot imzalarında çıplak `UUID` veya `String` kimlik dolaşmaz. Bu sayede `assign(BagId, ShipmentId)` çağrısında argümanların yeri karışamaz.
-- **DOM-03** Kimlikler UUIDv7'dir (veritabanı tasarımı). Domain kimliği kendisi üretir; üretim bir `IdGenerator` portu arkasındadır, testlerde deterministik uygulama kullanılır. Veritabanına kimlik ürettirilmez.
+- **DOM-02** *(v2.0'da kaldırıldı, yerine DOM-20.)* Kimlikler tipli record'dur: `ShipmentId`, `BagId`, `SubcontractorId`. Metot imzalarında çıplak `UUID` veya `String` kimlik dolaşmaz. Bu sayede `assign(BagId, ShipmentId)` çağrısında argümanların yeri karışamaz.
+- **DOM-03** Kimlikler UUIDv7'dir (veritabanı tasarımı) ve modülün `UuidV7Generator` bileşeninden alınır; bileşen `Clock` aldığı için testte deterministiktir. Veritabanına kimlik ürettirilmez (v2.0, bkz. DOM-20).
 - **DOM-04** Başka servise ait kayıtlar yalnızca tipli kimlikle ve gerekirse anlık görüntü (snapshot) değerleriyle tutulur (`SubcontractorId` + `subcontractorTitle`). Başka servisin modeline ait sınıf kopyalanmaz.
 
 ```java
@@ -473,7 +561,7 @@ public enum ShipmentStatus {
 
 ### 6.2 İstisna hiyerarşisi
 
-- **ERR-01** İş kuralı ihlalleri domain istisnasıdır ve tek bir `sealed` hiyerarşiden türer. Her istisna bir `ErrorCode` taşır; REST eşlemesi bu koda göre yapılır.
+- **ERR-01** *(v2.0'da değişti: tek hiyerarşi yoktur, bkz. ERR-09 ve ERR-10. Aşağıdaki örnek tarihseldir.)* İş kuralı ihlalleri domain istisnasıdır.
 
 ```java
 public abstract sealed class DomainException extends RuntimeException
@@ -511,7 +599,7 @@ public sealed interface BagReservationResult {
 
 ### 6.3 Hata yanıtı
 
-- **ERR-06** Tüm REST hataları RFC 9457 `ProblemDetail` formatındadır ve `common-web` içindeki tek `@RestControllerAdvice` tarafından üretilir. Servisler kendi hata gövdesini icat etmez.
+- **ERR-06** Tüm REST hataları RFC 9457 `ProblemDetail` formatındadır ve gövdeyi yalnız `common-web` içindeki `ProblemFactory` üretir. Ortak istek hataları `CommonProblemAdvice`'ta, modüle özgü iş hataları modülün `*ExceptionHandler` sınıfındadır (ERR-10). Modüller kendi hata gövdesini icat etmez.
 - **ERR-07** `ProblemDetail` alanları: `type` (`https://errors.yarnshipment.com/<error-code>`; adres sabittir, erişilebilir olması gerekmez), `title`, `status`, `detail`, `instance`, ek olarak `code` (makine tarafından okunur, ör. `SHIPMENT_LOCKED`), `requestId`, doğrulama hatalarında `errors[]`.
 - **ERR-08** 5xx yanıtlarında yığın izi, SQL, sınıf adı veya iç sistem bilgisi istemciye dönmez.
 
@@ -546,7 +634,7 @@ public sealed interface BagReservationResult {
 
 ### 7.2 Flyway
 
-- **PERS-12** Migration dosyaları `src/main/resources/db/migration` altındadır ve `V<yyyyMMddHHmm>__<ingilizce_aciklama>.sql` biçiminde adlandırılır (ör. `V202610211030__create_shipment_tables.sql`). Zaman damgası, paralel çalışan geliştiricilerin sürüm çakışmasını önler.
+- **PERS-12** Migration dosyaları modülün `src/main/resources/db/migration/<şema>` klasöründedir ve `V<yyyyMMddHHmm>__<ingilizce_aciklama>.sql` biçiminde adlandırılır (ör. `V202610211030__create_shipment_tables.sql`). Zaman damgası, paralel çalışan geliştiricilerin sürüm çakışmasını önler.
 - **PERS-13** `main`'e birleştirilmiş bir migration **asla değiştirilmez**; düzeltme yeni migration ile yapılır.
 - **PERS-14** Geriye uyumsuz şema değişikliği (kolon silme, yeniden adlandırma) "genişlet ve daralt" ile en az iki sürümde yapılır: önce yeni kolon eklenir ve iki yere yazılır, sonraki sürümde eski kolon kaldırılır.
 - **PERS-16** Kısıtlar (FK, CHECK, kısmi unique indeks, trigger) veritabanı tasarımındaki gibi veritabanında da tanımlanır. Kod içi doğrulama veritabanı kısıtının yerine geçmez; ikisi birlikte bulunur.
@@ -570,7 +658,7 @@ public sealed interface BagReservationResult {
 - **API-05** Kilitli kayıtta güncelleme uçları 409 döner. Düzeltme yalnızca `/corrections` alt kaynağıyla ve zorunlu `reason` alanıyla yapılır.
 - **API-06** Liste uçları sayfalıdır: `page` (0'dan başlar), `size` (varsayılan 20, en fazla 100), `sort`. Yanıt `{ "items": [...], "page": {...} }` biçimindedir. Sayfasız liste dönen uç yazılmaz.
 - **API-07** Girdi doğrulaması request record'larında Jakarta Bean Validation ile yapılır (`@NotNull`, `@Size`, `@Pattern`), controller parametresinde `@Valid`. Bu yalnızca biçim doğrulamasıdır; iş kuralları domain'dedir.
-- **API-08** Kullanıcıya gösterilecek `title` ve `detail` metinleri Türkçedir ve `messages_tr.properties` içinden gelir; kod içine kullanıcı metni gömülmez. Frontend kararları `code` alanına göre verir, metne göre değil.
+- **API-08** Kullanıcıya gösterilecek `title` ve `detail` metinleri Türkçedir ve modülün `<modül>-messages_tr.properties` dosyasından (ortak hatalar için `yarnshipment-web-messages_tr.properties`) gelir; kod içine kullanıcı metni gömülmez. Frontend kararları `code` alanına göre verir, metne göre değil.
 - **API-09** Yanıt DTO'su hedef kitleye göre ayrıdır: fasoncuya, şoföre ve iç kullanıcılara dönen sevkiyat görünümleri **farklı record'lardır** (bkz. SEC-05). Ortak alanlar için kalıtım kullanılmaz; her görünüm kendi alanlarını açıkça listeler.
 - **API-10** Controller metotları ince tutulur: DTO → Command dönüşümü, use case çağrısı, sonuç → DTO dönüşümü. Controller metodu en fazla 15 satırdır (SIZE-02'deki genel 30 satır sınırından daha sıkı; review'da denetlenir); aşıyorsa iş mantığı sızmıştır.
 - **API-11** DTO eşleme `adapter.in.web` içinde MapStruct ile veya elle yazılan statik fabrika metoduyla (`ShipmentAdminResponse.from(shipment)`) yapılır. MapStruct'ta `unmappedTargetPolicy = ReportingPolicy.ERROR` zorunludur; yeni alan eklendiğinde unutulan eşleme derlemeyi kırar.
@@ -713,15 +801,15 @@ public record UploadProperties(
 | --- | --- | --- | --- | --- |
 | Birim | `domain`, `application` (portlar sahte) | JUnit Jupiter, AssertJ | `*Test` | Her derleme (`mvn test`) |
 | Mimari | Paket bağımlılıkları, adlandırma | ArchUnit | `ArchitectureTest` | Her derleme |
-| Entegrasyon | Adapter'lar gerçek altyapıyla | Testcontainers (PostgreSQL, Kafka, MinIO, Keycloak) | `*IT` | Her PR (`mvn verify`) |
-| Sözleşme | REST ve olay sözleşmeleri | Spring Cloud Contract | `*ContractTest` | Her PR |
-| Uçtan uca | Sevkiyat akışının tamamı | Docker Compose + test istemcisi | `*E2E` | Gece ve sürüm öncesi |
+| Web dilimi | Controller: izin, doğrulama, JSON biçimi, hata eşlemesi | `@WebMvcTest` | `*Test` | Her derleme |
+| Kalıcılık | Adapter'lar gerçek PostgreSQL 17 ile | Testcontainers, `@JdbcTest` / `@DataJpaTest` | `*Test` | Her derleme (`mvn verify`, Docker gerekir) |
+| Uçtan uca | Ekranlar ve roller | Ekran robotu (`frontend/apps/web/robot`, Playwright) | senaryo | Yalnız değişen özellik için; tam koşu istenirse |
 
 - **TEST-01** Domain katmanı Spring bağlamı olmadan test edilir. Domain testinde `@SpringBootTest` yasaktır.
 - **TEST-02** Veritabanı testlerinde H2 veya gömülü veritabanı kullanılmaz; gerçek PostgreSQL 17 Testcontainers ile çalışır (`@ServiceConnection`). Kısmi unique indeks, trigger ve CHECK kısıtları ancak böyle doğrulanır.
 - **TEST-03** Mock yalnızca port sınırında kullanılır. Domain nesneleri ve değer nesneleri mock'lanmaz. Mockito `@Mock` ile somut sınıf değil arayüz mock'lanır.
 - **TEST-04** Zaman ve kimlik deterministiktir: `Clock.fixed(...)` ve sabit `IdGenerator`. `Thread.sleep` ile bekleme yazılmaz; asenkron doğrulama Awaitility ile yapılır.
-- **TEST-05** Test adları davranışı anlatır, İngilizce `snake_case` veya `camelCase`, `should` ile başlar; Türkçe açıklama `@DisplayName` ile verilir:
+- **TEST-05** Test adları davranışı anlatır, İngilizce `camelCase`'tir ve `should` ile başlar; Türkçe açıklama `@DisplayName` ile verilir:
 
 ```java
 @Test
@@ -738,7 +826,7 @@ void shouldRejectBagAlreadyAssignedToAnotherShipment() {
 }
 ```
 
-- **TEST-06** Test yapısı `given / when / then` yorumlarıyla ayrılır. Bir test tek davranışı doğrular.
+- **TEST-06** Bir test tek davranışı doğrular; hazırlık, eylem ve doğrulama boş satırla ayrılır. Uzun testlerde `// given`, `// when`, `// then` yorumları ÖNERİLEN'dir.
 - **TEST-07** Kurallar için zorunlu test kümeleri: her durum geçişi (izinli ve izinsiz), tolerans bandı sınırları (tam %0,5 ve %1,5 değerleri dahil), kör giriş alan yokluğu (SEC-07), kilitli kayıtta 409, Idempotency-Key tekrarı, olay idempotensi (aynı olay iki kez).
 - **TEST-08** Kapsam eşikleri (JaCoCo, satır): `domain` ≥ %90, servis geneli ≥ %80. Eşik altı derleme kırılır. Domain katmanında PIT mutasyon testi ÖNERİLEN'dir.
 - **TEST-09** Kararsız (flaky) test `@Disabled` ile susturulmaz; sorumlu kişiyle issue açılır ve aynı sprintte düzeltilir.
@@ -754,7 +842,7 @@ void shouldRejectBagAlreadyAssignedToAnotherShipment() {
 - **BUILD-04** Derleyici: `-parameters -Xlint:all -Werror`. Error Prone + NullAway hata seviyesinde (NULL-02). Bilinçli bastırma `@SuppressWarnings("Kontrol")` ile en dar kapsamda ve yanında yorumla yapılır.
 - **BUILD-05 Biçimlendirme otomatiktir.** Spotless + Palantir Java Format. `./mvnw spotless:apply` biçimi düzeltir, CI'da `spotless:check` biçimsiz kodu reddeder. Biçim tartışması review konusu değildir. Satır uzunluğu 120, girinti 4 boşluk, dosya kodlaması UTF-8, satır sonu LF.
 - **BUILD-06** Checkstyle ve PMD, Ek C'deki ayarlarla **hata** seviyesinde çalışır; Bölüm 3 ve 4'teki adlandırma, boyut, karmaşıklık ve yapı kurallarını derlemede zorlar. Uyarı seviyesi ve baseline kullanılmaz.
-- **BUILD-08** CI her PR'da sırasıyla şunları çalıştırır: `spotless:check` → derleme (Error Prone, NullAway) → birim + ArchUnit → `verify` (Testcontainers, sözleşme) → JaCoCo eşikleri → bağımlılık ve gizli bilgi taraması → imaj. Herhangi bir adım kırmızıysa birleştirme yapılmaz.
+- **BUILD-08** CI (`.github/workflows/backend.yml`) her PR'da sırasıyla şunları çalıştırır: `spotless:check` → `verify` (Checkstyle → derleme: Error Prone, NullAway → birim, ArchUnit ve Testcontainers testleri → PMD → JaCoCo eşikleri). Göç betikleri ayrıca `db-migrations.yml` ile doğrulanır. Herhangi bir adım kırmızıysa birleştirme yapılmaz.
 - **BUILD-09** Yeni bağımlılık eklemek PR açıklamasında gerekçe ister: ne için, alternatifi neden yetmedi, lisansı (yalnızca Apache 2.0, MIT, BSD, EPL ve benzeri izin verici lisanslar).
 
 ---
@@ -827,7 +915,9 @@ void shouldRejectBagAlreadyAssignedToAnotherShipment() {
 | Kilitleme | `lock()` / `lockedAt` | |
 | İptal | `cancel()` / `CANCELLED` | |
 
-Servis adları mimari dokümandaki gibidir: `master-data-service`, `bag-service`, `shipment-service`, `evidence-service`, `discrepancy-service`, `audit-service`, `notification-service`, `reporting-service`. (Veritabanı dokümanındaki `masterdata-service` yazımı bu adla hizalanmalıdır.)
+Modül adları mimari dokümandaki gibidir: `shipment` (tanımlar `shipment.masterdata` alt paketindedir), `discrepancy`, `evidence`, `reporting`, `audit`, `assistant`. Maven modül klasörleri tarihsel `-service` sonekini taşır (`services/shipment-service`); hepsi `services/yarnshipment-app` içinde tek süreçte çalışır.
+
+Sözlükteki şoför beyanı, mühür, kör teslim girişi, düzeltme kaydı, bildirim ve risk skoru satırları Kasım 2026 süreç değişikliğiyle koddan çıkmıştır; yeniden eklenirlerse bu adlar kullanılır. Sonradan eklenen terimler: fire dosyası `FireSettlement`, fire oranı `fireRate`, bakiye hareketi `BalanceMovement`, kumaş girişi `FabricReceipt`, iplik dönüşü `YarnReturn`, merkez stok `CentralStock`, iplik tedarikçisi `YarnSupplier`, irsaliye `Waybill`, kantar farkı `WeightMismatch`, reçete `Recipe`.
 
 ## Ek B: Otomatik denetim özeti
 
@@ -840,13 +930,11 @@ Servis adları mimari dokümandaki gibidir: `master-data-service`, `bag-service`
 | LANG-13, BUILD-04 | `javac -Xlint:all -Werror` |
 | NAME-09, ERR-03, DOM-06 | Error Prone (`StringCaseLocaleUsage`, `EmptyCatch`, `BigDecimalEquals`, `BigDecimalLiteralDouble`) |
 | NULL-01, NULL-02 | NullAway + `package-info.java` varlık kontrolü (ArchUnit) |
-| ARCH-01…08 (mimari doküman), PERS-08, PERS-17, DOM-10, CONF-05 | ArchUnit (`common-test` ortak kural seti) |
+| ARCH-01…08 (mimari doküman; ARCH-07 artık "Kafka yok" kuralıdır), PERS-08, PERS-17, DOM-10, CONF-05 | ArchUnit (`common-test` ortak kural seti) |
 | PERS-02, PERS-12, PERS-13 | Flyway `validate` + CI'da migration checksum kontrolü |
-| API-11 | MapStruct `unmappedTargetPolicy = ERROR` |
-| SEC-07, SEC-08 | Kör giriş sözleşme testleri |
-| EVT-06 (mimari doküman), EVT-11 | Spring Cloud Contract |
-| SEC-14, SEC-15 | gitleaks, bağımlılık açık taraması |
-| BUILD-03 | Maven Enforcer `bannedDependencies` |
+| SEC-16 | `@WebMvcTest` izin testleri (yetkisiz rol 403) |
+| TEST-13 | Her modülde `ArchitectureTest` ve `TestCodeArchitectureTest` |
+| BUILD-03, MOD-02 (modüller birbirine bağımlı olamaz), Kafka yasağı | Maven Enforcer `bannedDependencies` |
 | BUILD-05 | Spotless `check` |
 | TEST-08 | JaCoCo `check` |
 

@@ -1,10 +1,9 @@
 import type { ShipmentSummary } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Paper, Stack, Table, useMediaQuery } from '@iplik/ui';
+import { Paper, Stack, Table } from '@iplik/ui';
+import { useWideLayout } from '@/modules/shared';
 import { ShipmentRow } from './ShipmentRow';
 import { ShipmentCard } from './ShipmentCard';
-
-const DESKTOP_QUERY = '(min-width: 48em)';
 
 export type ShipmentTableProps = {
   shipments: readonly ShipmentSummary[];
@@ -13,7 +12,7 @@ export type ShipmentTableProps = {
 /** Mobil öncelikli (FE-UI-07): dar ekranda kartlar, geniş ekranda tablo. */
 export function ShipmentTable({ shipments }: ShipmentTableProps) {
   const { t } = useTranslation();
-  const isDesktop = useMediaQuery(DESKTOP_QUERY, true, { getInitialValueInEffect: false });
+  const isDesktop = useWideLayout();
   if (!isDesktop) {
     return (
       <Stack gap="sm">

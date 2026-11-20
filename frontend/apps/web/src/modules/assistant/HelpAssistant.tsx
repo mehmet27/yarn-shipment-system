@@ -7,7 +7,13 @@ import { SHORT_SCREEN_QUERY } from './shortScreen';
 import { useHelpChat } from './useHelpChat';
 
 const BUTTON_HEIGHT_PX = 48;
-const WRAPPER_STYLE = { position: 'fixed', right: 16, bottom: 16, zIndex: 300 } as const;
+/** Sayfada alt eylem çubuğu (ActionBar) varsa düğme onun üstünde durur; çubuktaki "Kaydet" örtülmez. */
+const WRAPPER_STYLE = {
+  position: 'fixed',
+  right: 16,
+  bottom: 'calc(16px + var(--app-action-bar-height, 0px))',
+  zIndex: 300,
+} as const;
 
 /**
  * Sağ alttaki "Yardım" balonu ve sohbet penceresi. Sunucuda API anahtarı tanımlı değilse hiç görünmez. Asistan yalnızca

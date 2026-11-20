@@ -27,16 +27,6 @@ export type MovementKind =
   | 'INVOICE'
   | 'OPENING'
   | 'CORRECTION';
-export const MOVEMENT_KINDS: readonly MovementKind[] = [
-  'DISPATCH',
-  'FABRIC_RECEIPT',
-  'YARN_RETURN',
-  'YARN_FROM_SUBCONTRACTOR',
-  'CLAIM_ADJUSTMENT',
-  'INVOICE',
-  'OPENING',
-  'CORRECTION',
-];
 
 export type BalanceMovement = {
   id: string;

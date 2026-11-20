@@ -1,12 +1,20 @@
 import { Stack } from '@iplik/ui';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { useDashboard } from '../hooks/useDashboard';
 import type { ReportPanelProps } from './reportPanelProps';
 import { AttentionLists } from './AttentionLists';
+import { CentralStockSection } from './CentralStockSection';
 import { DashboardSummary } from './DashboardSummary';
+import { FireBySubcontractorSection } from './FireBySubcontractorSection';
+import { InvoicingSection } from './InvoicingSection';
 import { StockOverview } from './StockOverview';
+import { SubcontractorYarnSection } from './SubcontractorYarnSection';
+import { TrendSection } from './TrendSection';
 
-/** Rapor ekranının "Özet" sekmesi: seçili dönemin dashboard verisi. */
+/**
+ * Rapor ekranının "Özet" sekmesi, genel müdürün soru sırasıyla: karar bekleyenler, stok, aylık eğilim, fasoncularda
+ * iplik, fire, faturalama, tutar, sevkiyatlar, merkez stok ve tedarikçiler. Her grafiğin rakamı yanında yazar.
+ */
 export function SummaryPanel({ params, isEnabled }: ReportPanelProps) {
   const query = useDashboard(params);
   if (!isEnabled) return null;
@@ -15,8 +23,14 @@ export function SummaryPanel({ params, isEnabled }: ReportPanelProps) {
       {(dashboard) => (
         <Stack>
           <AttentionLists dashboard={dashboard} />
-          <StockOverview params={params} />
+          <StockOverview params={params}>
+            <TrendSection params={params} />
+            <SubcontractorYarnSection />
+            <FireBySubcontractorSection params={params} />
+            <InvoicingSection params={params} />
+          </StockOverview>
           <DashboardSummary dashboard={dashboard} />
+          <CentralStockSection />
         </Stack>
       )}
     </QueryState>

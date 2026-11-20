@@ -1,5 +1,6 @@
 package com.yarnshipment.discrepancy.adapter.out.persistence;
 
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.discrepancy.application.port.out.DiscrepancyDecisionPort;
 import com.yarnshipment.discrepancy.domain.model.Discrepancy;
 import com.yarnshipment.discrepancy.domain.model.DiscrepancyNotOpenException;
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Component;
 final class DiscrepancyDecisionAdapter implements DiscrepancyDecisionPort {
 
     private static final String AGGREGATE_TYPE = "Shipment";
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', :actor, true)";
     private static final String UPDATE_ASSIGNMENT = """
             UPDATE discrepancy
                SET status = 'IN_REVIEW', assignee_id = :assignee, updated_at = :at, updated_by = :actor,
@@ -59,7 +59,7 @@ final class DiscrepancyDecisionAdapter implements DiscrepancyDecisionPort {
     public void saveAssignment(Discrepancy assigned, UUID actorId, Instant at) {
         Timestamp timestamp = Timestamp.from(at);
         Stamp stamp = new Stamp(actorId, timestamp);
-        setActor(actorId);
+        AuditActors.actAs(jdbc, actorId);
         int updated = jdbc.sql(UPDATE_ASSIGNMENT)
                 .param("id", assigned.id())
                 .param("assignee", assigned.handling().assigneeId())
@@ -79,7 +79,7 @@ final class DiscrepancyDecisionAdapter implements DiscrepancyDecisionPort {
         }
         Timestamp timestamp = Timestamp.from(at);
         Stamp stamp = new Stamp(actorId, timestamp);
-        setActor(actorId);
+        AuditActors.actAs(jdbc, actorId);
         int updated = jdbc.sql(UPDATE_RESOLUTION)
                 .param("id", resolved.id())
                 .param("resolution", decision.resolution().name())
@@ -95,10 +95,6 @@ final class DiscrepancyDecisionAdapter implements DiscrepancyDecisionPort {
                 .query(Integer.class)
                 .single();
         publish(resolved, remaining, stamp);
-    }
-
-    private void setActor(UUID actorId) {
-        jdbc.sql(SET_ACTOR).param("actor", actorId.toString()).query().singleValue();
     }
 
     /** Satır güncellenmediyse uyuşmazlık okunduktan sonra başkası tarafından çözülmüştür. */

@@ -14,6 +14,7 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Immutable
 @Table(name = "weighing")
+// İstisna: NullAway.Init, alanları Hibernate yansımayla doldurur; yapıcıda atanamaz (GIT-10)
 @SuppressWarnings("NullAway.Init")
 class WeighingJpaEntity {
 

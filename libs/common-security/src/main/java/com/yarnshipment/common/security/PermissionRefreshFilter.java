@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,6 +23,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * rolü yoktur, olduğu gibi bırakılır.
  */
 public final class PermissionRefreshFilter extends OncePerRequestFilter {
+
+    /** Log bağlamındaki kullanıcı kimliği anahtarı. */
+    public static final String USER_ID_MDC_KEY = "userId";
 
     private final Supplier<RolePermissionProvider> provider;
 
@@ -42,7 +46,24 @@ public final class PermissionRefreshFilter extends OncePerRequestFilter {
                 context.setAuthentication(refreshed(token, fresh));
             }
         }
-        chain.doFilter(request, response);
+        proceedWithUserInLogContext(request, response, chain);
+    }
+
+    /** Log satırları işlemi yapanın kimliğini taşır (ad değil, SEC-12); oturumsuz istekte alan yoktur. */
+    private static void proceedWithUserInLogContext(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        Authentication current = SecurityContextHolder.getContext().getAuthentication();
+        if (!(current instanceof ActorAuthenticationToken token)) {
+            chain.doFilter(request, response);
+            return;
+        }
+        MDC.put(USER_ID_MDC_KEY, token.actor().userId().toString());
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            MDC.remove(USER_ID_MDC_KEY);
+        }
     }
 
     private static ActorAuthenticationToken refreshed(ActorAuthenticationToken token, Set<Permission> permissions) {

@@ -47,7 +47,7 @@ export function RolePermissionsPage() {
       )}
       {view === undefined && !query.isError && (
         <Center py="xl">
-          <Loader />
+          <Loader aria-label={t('app.loading')} />
         </Center>
       )}
     </Stack>

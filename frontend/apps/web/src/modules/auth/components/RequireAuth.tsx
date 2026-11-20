@@ -1,4 +1,5 @@
 import { CHANGE_PASSWORD_PATH, classifyProblem, loginUrl, toProblem } from '@iplik/api-client';
+import { useTranslation } from '@iplik/i18n';
 import { Center, Loader } from '@iplik/ui';
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router';
@@ -20,6 +21,7 @@ export function RequireAuth({
   errorFallback,
   allowPasswordChangeRequired = false,
 }: RequireAuthProps) {
+  const { t } = useTranslation();
   const query = useCurrentUser();
   const location = useLocation();
   const isUnauthenticated =
@@ -37,7 +39,7 @@ export function RequireAuth({
   if (query.isError) return errorFallback;
   return (
     <Center h="100vh">
-      <Loader />
+      <Loader aria-label={t('app.loading')} />
     </Center>
   );
 }

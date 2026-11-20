@@ -15,11 +15,6 @@ export function findDispatchWeighing(shipment: ShipmentDetail): Weighing | undef
   return shipment.dispatchWeighing;
 }
 
-/** Çıkışta tartılan çuval sayısı. */
-export function findBagCount(shipment: ShipmentDetail): FieldValue {
-  return present(shipment.dispatchWeighing?.bagCount);
-}
-
 export function findDriverName(shipment: ShipmentDetail): FieldValue {
   return present(shipment.driverName);
 }

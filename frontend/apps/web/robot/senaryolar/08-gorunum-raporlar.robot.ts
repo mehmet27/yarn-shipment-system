@@ -132,6 +132,131 @@ test('Raporlar: müdür her sekmeyi, dönemi, tarihleri, logoyu ve açılış ba
   );
 });
 
+type Egilim = { month: string; sentKg: string; fabricKg: string; shipmentCount: number };
+type Bakiye = { totalKg: string; items: { subcontractorTitle: string; balanceKg: string }[] };
+type IplikKumas = { sentKg: string };
+
+/** "34.032,5 kg" gibi ekran metnini sayıya çevirir. */
+const sayi = (metin: string): number =>
+  Number(
+    metin
+      .replace(/[^\d.,−-]/g, '')
+      .replace(/\./g, '')
+      .replace(',', '.')
+      .replace('−', '-'),
+  );
+
+const yakin = (a: number, b: number): boolean => Math.abs(a - b) < 0.0005;
+
+/**
+ * Özet sekmesindeki grafikler: genel müdür bölümleri görür; veri varsa grafik çizilir ve grafikteki rakam aynı verinin
+ * geldiği uçla (Fasoncu bakiyesi, Giden iplik ↔ gelen kumaş) aynıdır. Veri yoksa bölüm boş durum cümlesini gösterir.
+ */
+test('Raporlar: genel müdür Özet sekmesinde grafikleri görür, rakamlar tablolarla tutar', async ({
+  giris,
+}) => {
+  test.skip(!rolTanimli('genel-mudur'), 'genel-mudur için şifre tanımlı değil');
+  const genel = await giris('genel-mudur');
+  await genel.sayfa.goto('/panel/raporlar');
+
+  await genel.adim('grafik bölümlerinin başlıkları görünür', async () => {
+    for (const baslik of [
+      'Aylık giden iplik ve gelen kumaş',
+      'Hangi fasoncuda ne kadar iplik var',
+      'Fasoncuların fire oranı',
+      'Faturalama',
+      'Merkez depodaki iplikler',
+    ]) {
+      await expect(genel.sayfa.getByText(baslik, { exact: true }).first()).toBeVisible();
+    }
+    await expect(genel.sayfa.getByTestId('chart-shipment-status')).toBeVisible();
+    await expect(genel.sayfa.getByTestId('chart-invoicing')).toBeVisible();
+    for (const satir of ['Faturalanmayı bekleyen', 'Faturalanan']) {
+      await expect(
+        genel.sayfa.getByTestId('chart-invoicing').getByText(satir, { exact: true }),
+      ).toBeVisible();
+    }
+  });
+
+  await genel.adim('aylık eğilim: 6 ay gelir, grafik ve tablo sunucuyla aynı', async () => {
+    const aylar = await genel.api<Egilim[]>('/api/v1/reports/monthly-trend');
+    genel.kontrol('eğilim son 6 ayı vermeli', aylar.length === 6, String(aylar.length));
+    const bolum = genel.sayfa.getByTestId('section-trend');
+    if (aylar.every((ay) => ay.shipmentCount === 0)) {
+      await expect(bolum.getByText('Son 6 ayda tamamlanan sevkiyat yok.')).toBeVisible();
+      return;
+    }
+    await expect(genel.sayfa.getByTestId('chart-trend')).toBeVisible();
+    const satirlar = genel.sayfa.getByTestId('trend-table').locator('tbody tr');
+    await expect(satirlar).toHaveCount(aylar.length);
+    const son = aylar.at(-1);
+    if (son === undefined) return;
+    const hucreler = await satirlar.last().locator('td').allInnerTexts();
+    genel.kontrol(
+      'son ayın giden ipliği sunucuyla aynı',
+      yakin(sayi(hucreler[1] ?? ''), Number(son.sentKg)),
+      `${hucreler[1] ?? ''} ≠ ${son.sentKg}`,
+    );
+    genel.kontrol(
+      'son ayın gelen kumaşı sunucuyla aynı',
+      yakin(sayi(hucreler[3] ?? ''), Number(son.fabricKg)),
+      `${hucreler[3] ?? ''} ≠ ${son.fabricKg}`,
+    );
+    const ayBasi = `${son.month}-01`;
+    const bugun = new Date().toISOString().slice(0, 10);
+    const rapor = await genel.api<IplikKumas[]>(
+      `/api/v1/reports/yarn-vs-fabric?from=${ayBasi}&to=${bugun}`,
+    );
+    const toplam = rapor.reduce((a, r) => a + Number(r.sentKg), 0);
+    genel.kontrol(
+      'son ay = "Giden iplik ↔ gelen kumaş" raporunun aynı aydaki toplamı',
+      yakin(toplam, Number(son.sentKg)),
+      `${String(toplam)} ≠ ${son.sentKg}`,
+    );
+  });
+
+  await genel.adim('fasoncularda iplik çubukları Fasoncu bakiyesi ile aynı', async () => {
+    const bakiye = await genel.api<Bakiye>('/api/v1/balances');
+    const fasoncu = new Map<string, number>();
+    for (const satir of bakiye.items) {
+      fasoncu.set(
+        satir.subcontractorTitle,
+        (fasoncu.get(satir.subcontractorTitle) ?? 0) + Number(satir.balanceKg),
+      );
+    }
+    const toplam = [...fasoncu.values()].reduce((a, b) => a + b, 0);
+    genel.kontrol(
+      'fasoncu toplamları = bakiye toplamı',
+      yakin(toplam, Number(bakiye.totalKg)),
+      `${String(toplam)} ≠ ${bakiye.totalKg}`,
+    );
+    if (fasoncu.size === 0) {
+      await expect(genel.sayfa.getByText('Fasoncularda iplik yok.')).toBeVisible();
+      return;
+    }
+    const cubuklar = genel.sayfa.getByTestId('chart-subcontractor-yarn').getByRole('listitem');
+    await expect(cubuklar.first()).toBeVisible();
+    const [ad, kg] = [...fasoncu.entries()].sort((a, b) => b[1] - a[1])[0] ?? ['', 0];
+    const ilk = (await cubuklar.first().innerText()).replace(/\s+/g, ' ');
+    genel.kontrol('en çok ipliği olan fasoncu en üstte', ilk.includes(ad), `${ilk} / ${ad}`);
+    const yazan = sayi(/−?[\d.]+(?:,\d+)? kg/.exec(ilk)?.[0] ?? '');
+    genel.kontrol('çubuktaki kilo bakiye ile aynı', yakin(yazan, kg), `${ilk} ≠ ${String(kg)}`);
+  });
+
+  await genel.adim(
+    '"Giden iplik ↔ gelen kumaş" sekmesinde fire çubukları tabloyla durur',
+    async () => {
+      await genel.sayfa
+        .getByRole('tab', { name: 'Giden iplik ↔ gelen kumaş', exact: true })
+        .click();
+      const rapor = await genel.api<IplikKumas[]>('/api/v1/reports/yarn-vs-fabric');
+      if (rapor.length > 0) {
+        await expect(genel.sayfa.getByTestId('chart-fire-detail')).toBeVisible();
+      }
+    },
+  );
+});
+
 test('Merkez iplik stoku: özet kartları, arama, sıralama, tür süzgeci ve Excel/PDF indirme', async ({
   giris,
 }) => {

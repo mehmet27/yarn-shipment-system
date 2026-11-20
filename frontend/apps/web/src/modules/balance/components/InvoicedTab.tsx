@@ -1,5 +1,5 @@
 import { Stack } from '@iplik/ui';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { useState } from 'react';
 import type { InvoicedFilter } from '../hooks/useFireSettlements';
 import { useInvoiced } from '../hooks/useFireSettlements';

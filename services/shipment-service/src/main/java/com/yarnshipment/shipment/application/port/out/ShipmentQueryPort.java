@@ -13,6 +13,12 @@ public interface ShipmentQueryPort {
 
     Optional<Shipment> findShipment(UUID shipmentId);
 
+    /**
+     * Sevkiyat satırını transaction sonuna kadar kilitleyip okur (CONC-07). Aynı sevkiyata yazan iki istek sıraya
+     * girer: ikincisi birincinin yazdığını görür, eski durumla karar vermez. Yalnızca yazan transaction'da çağrılır.
+     */
+    Optional<Shipment> findShipmentForUpdate(UUID shipmentId);
+
     /** Kapsamdaki sevkiyatlar, en yeni önce. Kapsam filtresi WHERE koşuluna çevrilir, bellekte elenmez. */
     ShipmentSlice findShipments(AccessScope scope, Set<ShipmentStatus> statuses, PageRequest page);
 

@@ -33,7 +33,7 @@ public class AssignBagsService implements AssignBagsUseCase {
     @Transactional
     public int assignBags(AssignBagsCommand command) {
         Actor actor = command.actor();
-        Shipment shipment = shipments.load(actor, command.shipmentId(), Permission.DISPATCH_RECORD);
+        Shipment shipment = shipments.loadForUpdate(actor, command.shipmentId(), Permission.DISPATCH_RECORD);
         shipment.requireBagsAssignable();
         shipment.requireDue(ShipmentDays.today(clock));
         return assignmentPort.assign(

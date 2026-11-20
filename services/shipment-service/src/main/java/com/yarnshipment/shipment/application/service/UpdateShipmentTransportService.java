@@ -35,7 +35,7 @@ public class UpdateShipmentTransportService implements UpdateShipmentTransportUs
     @Transactional
     public void updateShipmentTransport(UpdateShipmentTransportCommand command) {
         Actor actor = command.actor();
-        Shipment shipment = shipments.load(actor, command.shipmentId(), Permission.SHIPMENT_CREATE);
+        Shipment shipment = shipments.loadForUpdate(actor, command.shipmentId(), Permission.SHIPMENT_CREATE);
         if (!ShipmentAction.UPDATE_TRANSPORT.isAllowedIn(shipment.status())) {
             throw new InvalidShipmentStatusException(shipment.id(), shipment.status(), ShipmentStatus.DRAFT);
         }

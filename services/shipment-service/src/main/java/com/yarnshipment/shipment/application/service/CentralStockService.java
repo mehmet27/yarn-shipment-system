@@ -26,8 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Merkez iplik stoku: fasoncuya sevkiyat tamamlanınca düşer (defter kancası) ve merkez fabrikada
- * üretilen kumaş tükettiği ipliği fire ile düşer. Stok eksiye düşse de kayıt yapılır (doğrudan fasoncuya giden
- * ipliğin girişi henüz yapılmamış olabilir); ekran eksi stoğu uyarır.
+ * üretilen kumaş tükettiği ipliği fire ile düşer. Üretim, stokta yetecek kadar bulunan iplikten yapılır; denetim ile
+ * düşüş arasına başka bir düşüş girmemesi için stok kilitlenir.
  */
 @Service
 public class CentralStockService implements RecordCentralProductionUseCase, GetCentralStockUseCase {
@@ -71,6 +71,7 @@ public class CentralStockService implements RecordCentralProductionUseCase, GetC
 
     /** Üretim yalnızca stokta girişi olan ve yetecek kadar bulunan iplikten yapılır. */
     private void requireStockFor(List<CentralStockMovement> consumptions) {
+        stock.lockForDeduction();
         Map<UUID, BigDecimal> available = new HashMap<>();
         stock.findStock().stream()
                 .filter(row -> row.productId() != null)

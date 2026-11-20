@@ -57,7 +57,7 @@ public class UpdateRecipeService implements UpdateRecipeUseCase {
     @Transactional
     public void updateRecipe(UpdateRecipeCommand command) {
         Actor actor = command.actor();
-        Shipment shipment = shipments.load(actor, command.shipmentId(), Permission.SHIPMENT_CANCEL);
+        Shipment shipment = shipments.loadForUpdate(actor, command.shipmentId(), Permission.SHIPMENT_CANCEL);
         String reason = command.reason().strip();
         if (reason.isEmpty() || reason.length() > MAX_REASON_LENGTH) {
             throw new InvalidWeightDecisionException("reason", "required");

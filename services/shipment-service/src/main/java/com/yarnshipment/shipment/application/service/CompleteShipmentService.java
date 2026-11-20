@@ -58,7 +58,7 @@ public class CompleteShipmentService implements CompleteShipmentUseCase {
     @Transactional
     public void completeShipment(CompleteShipmentCommand command) {
         Actor actor = command.actor();
-        Shipment shipment = shipments.load(actor, command.shipmentId(), Permission.SHIPMENT_COMPLETE);
+        Shipment shipment = shipments.loadForUpdate(actor, command.shipmentId(), Permission.SHIPMENT_COMPLETE);
         if (isRepeatedRequest(shipment, command.waybillNo())) {
             return;
         }

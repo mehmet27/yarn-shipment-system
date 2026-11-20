@@ -29,6 +29,13 @@ public interface CentralStockPort {
     /** Üretimi ve tükettiği iplikleri yazar. */
     void saveProduction(CentralProduction production, List<CentralStockMovement> consumptions);
 
+    /**
+     * Stoktan düşen işlemleri transaction sonuna kadar sıraya sokar (CONC-07). "Stok yetiyor mu" denetimi ile düşüş
+     * arasına başka bir düşüş giremez; aynı anda gelen iki işlem stoğu birlikte eksiye düşüremez. Denetimden önce
+     * çağrılır.
+     */
+    void lockForDeduction();
+
     List<CentralStockRow> findStock();
 
     /**

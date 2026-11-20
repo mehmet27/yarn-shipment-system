@@ -32,6 +32,11 @@ final class InMemoryShipmentQueryPort implements ShipmentQueryPort {
     }
 
     @Override
+    public Optional<Shipment> findShipmentForUpdate(UUID shipmentId) {
+        return findShipment(shipmentId);
+    }
+
+    @Override
     public ShipmentSlice findShipments(AccessScope scope, Set<ShipmentStatus> statuses, PageRequest page) {
         lastScope = scope;
         List<Shipment> matching = shipments.stream()

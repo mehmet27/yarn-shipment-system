@@ -503,7 +503,7 @@ export const getAmountSummary = (
     }
 
 /**
- * BALANCE_VIEW gerekir. (fasoncu, iplik cinsi) için OPENING varsa satır atlanır.
+ * Yalnızca müdür (MANAGER rolü ve BALANCE_VIEW izni). (fasoncu, iplik cinsi) için OPENING varsa satır atlanır.
  * @summary Açılış bakiyesini OPENING hareketi olarak içe aktarır
  */
 export const importOpeningBalance = (

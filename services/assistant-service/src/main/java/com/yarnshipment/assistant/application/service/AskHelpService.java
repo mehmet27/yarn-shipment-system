@@ -51,6 +51,10 @@ final class AskHelpService implements AskHelpUseCase, GetHelpStatusUseCase {
         if (!model.isConfigured()) {
             throw new HelpUnavailableException("help assistant is not configured");
         }
+        if (command.actor().roles().isEmpty()) {
+            // Geçici şifresini değiştirmemiş kişinin rolü ve izni yoktur; belgeler ve API bütçesi ona açılmaz.
+            throw new HelpUnavailableException("password change required");
+        }
         if (!rateLimiter.tryAcquire(command.actor().userId())) {
             throw new HelpRateLimitedException("question limit reached");
         }

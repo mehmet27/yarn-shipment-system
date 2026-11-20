@@ -29,7 +29,8 @@ final class YarnLotAdapter implements YarnLotPort {
     private static final String INSERT_LOT = """
             INSERT INTO md_production_lot (id, site_id, lot_no, product_id, quality_grade_id, production_date,
                                            yarn_supplier_id, created_at, created_by)
-            VALUES (:id, :siteId, :lotNo, :productId, :gradeId, :today, :supplierId, :at, :actor)""";
+            VALUES (:id, :siteId, :lotNo, :productId, :gradeId, :today, :supplierId, :at, :actor)
+            ON CONFLICT (site_id, upper(lot_no)) DO NOTHING""";
 
     private final JdbcClient jdbc;
     private final Clock clock;
@@ -44,7 +45,12 @@ final class YarnLotAdapter implements YarnLotPort {
         if (request.siteIds().isEmpty()) {
             throw new YarnLotConflictException(YarnLotConflictException.NO_SITE);
         }
-        Optional<ExistingLot> existing = jdbc.sql(FIND_LOT)
+        Optional<ExistingLot> existing = find(request);
+        return existing.map(lot -> reuse(lot, request)).orElseGet(() -> open(request));
+    }
+
+    private Optional<ExistingLot> find(LotRequest request) {
+        return jdbc.sql(FIND_LOT)
                 .param("lotNo", request.lotNo())
                 .param("siteIds", List.copyOf(request.siteIds()))
                 .query((rs, i) -> new ExistingLot(
@@ -53,7 +59,6 @@ final class YarnLotAdapter implements YarnLotPort {
                         rs.getObject("product_id", UUID.class),
                         rs.getObject("yarn_supplier_id", UUID.class)))
                 .optional();
-        return existing.map(lot -> reuse(lot, request)).orElseGet(() -> open(request));
     }
 
     private static ResolvedLot reuse(ExistingLot lot, LotRequest request) {
@@ -78,7 +83,7 @@ final class YarnLotAdapter implements YarnLotPort {
         UUID id = UUID.randomUUID();
         UUID siteId = request.siteIds().stream().sorted().findFirst().orElseThrow();
         AuditActors.actAs(jdbc, request.actorId());
-        jdbc.sql(INSERT_LOT)
+        int inserted = jdbc.sql(INSERT_LOT)
                 .param("id", id)
                 .param("siteId", siteId)
                 .param("lotNo", request.lotNo())
@@ -89,6 +94,12 @@ final class YarnLotAdapter implements YarnLotPort {
                 .param("at", Timestamp.from(clock.instant()))
                 .param("actor", request.actorId())
                 .update();
+        if (inserted == 0) {
+            // Aynı parti numarasını aynı anda başka bir giriş açtı: çift kayıt hatası yerine o parti kullanılır.
+            return find(request)
+                    .map(lot -> reuse(lot, request))
+                    .orElseThrow(() -> new IllegalStateException("lot vanished: " + request.lotNo()));
+        }
         return new ResolvedLot(id, request.lotNo());
     }
 

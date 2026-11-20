@@ -29,6 +29,7 @@ final class CentralStockShortageCover {
      * onaylarsa eksik kilo kadar sistem girişi yazılır, stok sıfırda kalır.
      */
     void cover(UUID shipmentId, CompleteShipmentCommand command, Instant at) {
+        stock.lockForDeduction();
         List<CentralStockRow> shortages = stock.findShortagesAfterDispatch(shipmentId);
         if (shortages.isEmpty()) {
             return;

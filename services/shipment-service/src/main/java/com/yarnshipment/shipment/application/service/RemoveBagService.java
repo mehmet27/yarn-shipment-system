@@ -27,7 +27,7 @@ public class RemoveBagService implements RemoveBagUseCase {
     @Transactional
     public void removeBag(RemoveBagCommand command) {
         Actor actor = command.actor();
-        Shipment shipment = shipments.load(actor, command.shipmentId(), Permission.DISPATCH_RECORD);
+        Shipment shipment = shipments.loadForUpdate(actor, command.shipmentId(), Permission.DISPATCH_RECORD);
         shipment.requireBagsAssignable();
         removalPort.remove(shipment.id(), command.seqNo(), actor.userId(), clock.instant());
     }

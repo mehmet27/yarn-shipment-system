@@ -7,6 +7,7 @@ import com.yarnshipment.common.security.scope.ScopedResource;
 import com.yarnshipment.shipment.application.port.in.ShipmentNotFoundException;
 import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort;
 import com.yarnshipment.shipment.domain.model.Shipment;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -24,10 +25,22 @@ public final class ScopedShipmentLoader {
         this.scopeGuard = scopeGuard;
     }
 
-    /** Kayıt yoksa 404, kapsam dışıysa audit'e yazılan 403. */
+    /** Kayıt yoksa 404, kapsam dışıysa audit'e yazılan 403. Okuma ve sevkiyat satırına yazmayan işlemler içindir. */
     public Shipment load(Actor actor, UUID shipmentId, Permission permission) {
-        Shipment shipment =
-                shipmentQueryPort.findShipment(shipmentId).orElseThrow(() -> new ShipmentNotFoundException(shipmentId));
+        return scoped(actor, shipmentQueryPort.findShipment(shipmentId), shipmentId, permission);
+    }
+
+    /**
+     * {@link #load} ile aynı denetimler; ayrıca sevkiyat satırını transaction sonuna kadar kilitler. Sevkiyatın
+     * durumunu, çuvallarını ya da reçetesini değiştiren her işlem bununla yükler: çift tıklama ve aynı anda gelen iki
+     * istek sıraya girer, ikincisi güncel durumu görür.
+     */
+    public Shipment loadForUpdate(Actor actor, UUID shipmentId, Permission permission) {
+        return scoped(actor, shipmentQueryPort.findShipmentForUpdate(shipmentId), shipmentId, permission);
+    }
+
+    private Shipment scoped(Actor actor, Optional<Shipment> found, UUID shipmentId, Permission permission) {
+        Shipment shipment = found.orElseThrow(() -> new ShipmentNotFoundException(shipmentId));
         ScopedResource resource = new ScopedResource(RESOURCE_TYPE, shipment.id(), shipment.siteId());
         scopeGuard.validateInScope(actor, resource, permission.name());
         return shipment;

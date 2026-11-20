@@ -60,6 +60,11 @@ final class InMemoryCentralStock implements CentralStockPort {
     }
 
     @Override
+    public void lockForDeduction() {
+        // Tek thread'li testte sıraya sokulacak işlem yoktur.
+    }
+
+    @Override
     public List<CentralStockRow> findStock() {
         return kg.entrySet().stream()
                 .map(entry ->

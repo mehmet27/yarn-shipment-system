@@ -36,6 +36,17 @@ CREATE TABLE shipment.weighing (
     superseded_by uuid
 );
 
+CREATE TABLE shipment.shipment_line (
+    id             uuid           PRIMARY KEY,
+    shipment_id    uuid           NOT NULL REFERENCES shipment.shipment (id),
+    line_no        integer        NOT NULL,
+    yarn_type_id   uuid,
+    yarn_type_text text,
+    net_kg         numeric(12, 3) NOT NULL,
+    unit_price     numeric(12, 2),
+    UNIQUE (shipment_id, line_no)
+);
+
 CREATE TABLE shipment.balance_movement (
     id               uuid           PRIMARY KEY,
     subcontractor_id uuid           NOT NULL,

@@ -37,6 +37,7 @@ final class CentralStockAdapter implements CentralStockPort {
             INSERT INTO fabric_lot (id, source, fabric_type, net_kg, fire_rate, roll_count, waybill_no, occurred_at,
                                     created_by)
             VALUES (:id, 'CENTRAL', :fabricType, :netKg, :fireRate, :rollCount, :waybillNo, :producedAt, :createdBy)""";
+    private static final String LOCK = "SELECT pg_advisory_xact_lock(hashtext('shipment.central_stock'))";
     private static final String STOCK = """
             SELECT m.product_id, coalesce(p.name, m.yarn_type) AS yarn_type, sum(m.net_kg) AS stock_kg
             FROM central_stock_movement m
@@ -109,6 +110,11 @@ final class CentralStockAdapter implements CentralStockPort {
                 .param("createdBy", production.createdBy())
                 .update();
         consumptions.forEach(movement -> insert(movement, "PRODUCTION:" + movement.id(), null));
+    }
+
+    @Override
+    public void lockForDeduction() {
+        jdbc.sql(LOCK).query((rs, i) -> 0).single();
     }
 
     @Override

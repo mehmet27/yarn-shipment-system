@@ -53,7 +53,7 @@ public class RecordDispatchService implements RecordDispatchUseCase {
     @Transactional
     public void recordDispatch(RecordDispatchCommand command) {
         Actor actor = command.actor();
-        Shipment shipment = shipments.load(actor, command.shipmentId(), Permission.DISPATCH_RECORD);
+        Shipment shipment = shipments.loadForUpdate(actor, command.shipmentId(), Permission.DISPATCH_RECORD);
         if (isRepeatedRequest(shipment)) {
             return;
         }

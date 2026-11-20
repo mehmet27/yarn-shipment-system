@@ -35,7 +35,7 @@ public class CancelShipmentService implements CancelShipmentUseCase {
     @Transactional
     public void cancelShipment(CancelShipmentCommand command) {
         Actor actor = command.actor();
-        Shipment shipment = shipments.load(actor, command.shipmentId(), Permission.SHIPMENT_CANCEL);
+        Shipment shipment = shipments.loadForUpdate(actor, command.shipmentId(), Permission.SHIPMENT_CANCEL);
         if (shipment.status() == ShipmentStatus.CANCELLED) {
             return;
         }

@@ -35,7 +35,7 @@ public class UpdateShipmentDateService implements UpdateShipmentDateUseCase {
     @Transactional
     public void updateShipmentDate(UpdateShipmentDateCommand command) {
         Actor actor = command.actor();
-        Shipment shipment = shipments.load(actor, command.shipmentId(), Permission.SHIPMENT_CREATE);
+        Shipment shipment = shipments.loadForUpdate(actor, command.shipmentId(), Permission.SHIPMENT_CREATE);
         if (shipment.status() != ShipmentStatus.DRAFT) {
             throw new InvalidShipmentStatusException(shipment.id(), shipment.status(), ShipmentStatus.DRAFT);
         }

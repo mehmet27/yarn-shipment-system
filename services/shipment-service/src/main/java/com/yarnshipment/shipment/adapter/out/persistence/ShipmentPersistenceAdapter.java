@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 final class ShipmentPersistenceAdapter implements ShipmentQueryPort {
 
+    private static final String LOCK = "SELECT id FROM shipment WHERE id = ? FOR NO KEY UPDATE";
     private static final Sort NEWEST_FIRST = Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
 
     private final ShipmentJpaRepository shipments;
@@ -34,6 +35,15 @@ final class ShipmentPersistenceAdapter implements ShipmentQueryPort {
         return shipments
                 .findById(shipmentId)
                 .map(entity -> toDomain(List.of(entity)).getFirst());
+    }
+
+    /** Önce satır kilitlenir, sonra okunur: bekleyen istek, önündekinin commit ettiği durumu görür. */
+    @Override
+    public Optional<Shipment> findShipmentForUpdate(UUID shipmentId) {
+        if (jdbc.sql(LOCK).param(shipmentId).query(UUID.class).optional().isEmpty()) {
+            return Optional.empty();
+        }
+        return findShipment(shipmentId);
     }
 
     @Override

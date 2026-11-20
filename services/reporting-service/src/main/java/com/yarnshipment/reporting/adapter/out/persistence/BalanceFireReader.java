@@ -36,7 +36,10 @@ final class BalanceFireReader implements BalanceFirePort {
               JOIN shipment_view s ON s.shipment_id = l.shipment_id
              WHERE s.status = 'AWAITING_DELIVERY' /*SITE*/""";
 
-    /** Fasoncu × iplik cinsi bakiyesi ve o fasoncuya o iplik için son girilen fiyat. */
+    /**
+     * Fasoncu × iplik cinsi bakiyesi ve o fasoncuya o iplik için son girilen fiyat. Son fiyatlar reçete satırları bir
+     * kez taranarak bulunur; bakiye satırı başına ayrı arama, veri büyüdükçe karesel yavaşlıyordu.
+     */
     private static final String PRICED_BALANCE_SQL = """
             SELECT b.subcontractor_id, b.subcontractor_name, b.balance_kg, p.unit_price
               FROM (SELECT m.subcontractor_id, m.yarn_type,
@@ -47,15 +50,16 @@ final class BalanceFireReader implements BalanceFirePort {
                       LEFT JOIN shipment.md_subcontractor sub ON sub.id = m.subcontractor_id
                      WHERE true /*SITE*/
                      GROUP BY m.subcontractor_id, m.yarn_type) b
-              LEFT JOIN LATERAL (
-                   SELECT l.unit_price
+              LEFT JOIN (
+                   SELECT DISTINCT ON (sh.subcontractor_id, coalesce(l.yarn_type_id::text, l.yarn_type_text))
+                          sh.subcontractor_id, coalesce(l.yarn_type_id::text, l.yarn_type_text) AS yarn_type,
+                          l.unit_price
                      FROM shipment.shipment_line l
                      JOIN shipment.shipment sh ON sh.id = l.shipment_id
-                    WHERE sh.subcontractor_id = b.subcontractor_id
-                      AND coalesce(l.yarn_type_id::text, l.yarn_type_text) = b.yarn_type
-                      AND l.unit_price IS NOT NULL
-                    ORDER BY sh.created_at DESC, l.line_no
-                    LIMIT 1) p ON true
+                    WHERE l.unit_price IS NOT NULL
+                    ORDER BY sh.subcontractor_id, coalesce(l.yarn_type_id::text, l.yarn_type_text),
+                             sh.created_at DESC, l.line_no) p
+                ON p.subcontractor_id = b.subcontractor_id AND p.yarn_type = b.yarn_type
              WHERE b.balance_kg > 0
              ORDER BY b.subcontractor_name, b.subcontractor_id""";
 

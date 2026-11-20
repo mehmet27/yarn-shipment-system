@@ -19,7 +19,7 @@ export function EvidenceImageThumb({ evidence }: { evidence: EvidenceView }) {
   const [isOpen, { open, close }] = useDisclosure(false);
   const url = useEvidenceUrl(evidence.id);
   const label = t(`evidence.types.${evidence.evidenceType}`);
-  if (url.isPending) return <Loader size="sm" />;
+  if (url.isPending) return <Loader size="sm" aria-label={t('app.loading')} />;
   if (url.isError) return <Alert color="red">{t('evidence.view.loadFailed')}</Alert>;
   return (
     <>

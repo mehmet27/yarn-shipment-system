@@ -2,7 +2,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Anchor, PageHero, Stack } from '@iplik/ui';
 import { Link, useParams } from 'react-router';
 import { ClaimOfDiscrepancy } from '@/modules/claim';
-import { QueryState } from '@/modules/shipment';
+import { BackLink, QueryState } from '@/modules/shared';
 import { ActivityList } from '../components/ActivityList';
 import { AssignToMeButton } from '../components/AssignToMeButton';
 import { DiscrepancyBadges } from '../components/DiscrepancyBadges';
@@ -19,9 +19,7 @@ export function DiscrepancyDetailPage() {
     <QueryState query={query}>
       {(discrepancy) => (
         <Stack>
-          <Anchor component={Link} to="/panel/uyusmazliklar">
-            {t('discrepancy.back')}
-          </Anchor>
+          <BackLink to="/panel/uyusmazliklar">{t('discrepancy.back')}</BackLink>
           <PageHero
             title={discrepancy.discrepancyNo}
             actions={<DiscrepancyBadges discrepancy={discrepancy} />}

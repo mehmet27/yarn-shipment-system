@@ -1,5 +1,5 @@
 import { Stack } from '@iplik/ui';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { useDashboard } from '../hooks/useDashboard';
 import type { ReportPanelProps } from './reportPanelProps';
 import { AttentionLists } from './AttentionLists';

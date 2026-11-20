@@ -2,7 +2,7 @@ import { useTranslation } from '@iplik/i18n';
 import { ActivityFeed, Text } from '@iplik/ui';
 import { useShipmentHistory } from '../hooks/useShipmentHistory';
 import { formatDateTime } from './formatDateTime';
-import { QueryState } from './QueryState';
+import { QueryState } from '@/modules/shared';
 import { useActorLabel } from './useActorLabel';
 
 /** Durum geçmişi eskiden yeniye; mobilde her geçiş bir kart olarak alt alta dizilir. */

@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
-import { PageHero, Stack, Text } from '@iplik/ui';
-import { ListPagination, QueryState } from '@/modules/shipment';
+import { EmptyState, PageHero, Stack } from '@iplik/ui';
+import { ListPagination, QueryState } from '@/modules/shared';
 import { DiscrepancyCard } from '../components/DiscrepancyCard';
 import { useDiscrepancies } from '../hooks/useDiscrepancies';
 import { DiscrepancyFilters } from '../components/DiscrepancyFilters';
@@ -23,7 +23,7 @@ export function DiscrepancyListPage() {
       <QueryState query={query}>
         {(page) =>
           page.items.length === 0 ? (
-            <Text c="dimmed">{t('discrepancy.list.empty')}</Text>
+            <EmptyState title={t('discrepancy.list.empty')} />
           ) : (
             <Stack>
               {page.items.map((item) => (

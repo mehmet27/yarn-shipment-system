@@ -223,8 +223,3 @@ body {
 :root[data-mantine-color-scheme='dark'] .mantine-Pagination-control[data-active] {
   color: var(--mantine-color-black);
 }
-
-/* Sayı hücreleri: son hücrenin sağ çizgisi çizilmez; satır dolmadığında boş alanda yalnız çizgi kalmasın. */
-.app-stat-grid > :last-child {
-  box-shadow: 0 1px 0 var(--app-line) !important;
-}

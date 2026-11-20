@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { EmptyState, PageHero, Paper, Select, SimpleGrid, Stack, TextInput } from '@iplik/ui';
-import { ListPagination, QueryState } from '@/modules/shipment';
+import { ListPagination, QueryState } from '@/modules/shared';
 import { AUDIT_PAGE_SIZE, ENTITY_TYPES, useAuditFilter } from '../hooks/useAuditFilter';
 import { useAuditRecords } from '../hooks/useAuditLog';
 import { AuditTable } from './AuditTable';

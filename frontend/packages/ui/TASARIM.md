@@ -62,7 +62,10 @@ ikonu, etkin sekmenin alt çizgisi. Düğme, başlık ve yazıda kullanılmaz.
 | Bir konunun alanları ya da listesi | `SectionCard` (başlık şeridi + gövde). Dikkat isteyen bölümde `tone` |
 | Tablo                              | `Paper` içinde `Table.ScrollContainer` + `Table` (çizgili değil)     |
 | Özet sayı                          | `StatCard` ya da tek kutuda hücreler (ilke 5)                        |
-| Boş liste                          | `EmptyState`                                                         |
+| Yükleniyor ve hata                 | `QueryState` (`@/modules/shared`); elle `Loader` yazılmaz            |
+| Boş liste                          | Sayfanın ana listesinde `EmptyState`; bölüm kartı içinde soluk yazı  |
+| Tablo mu kart mı                   | `useWideLayout()` (`@/modules/shared`): 992 px altında kart listesi  |
+| "… dön" bağlantısı                 | `BackLink` (`@/modules/shared`)                                      |
 | Uyarı, bilgi                       | `Alert`                                                              |
 | Durum                              | `Badge` (ilke 3)                                                     |
 | Sabit alt eylem çubuğu             | `ActionBar`                                                          |

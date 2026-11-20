@@ -1,6 +1,7 @@
 import type { AuditRecordView } from '@iplik/api-client/audit';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
-import { Paper, Table, useMediaQuery } from '@iplik/ui';
+import { Paper, Table } from '@iplik/ui';
+import { useWideLayout } from '@/modules/shared';
 import { DotBadge } from '@iplik/ui';
 import { useUserNames } from '../hooks/useUserNames';
 import { AuditActor } from './AuditActor';
@@ -16,7 +17,7 @@ export function AuditTable({ records }: { records: AuditRecordView[] }) {
   const names = useUserNames(
     records.flatMap((record) => (record.actor.userId === undefined ? [] : [record.actor.userId])),
   ).data;
-  const isDesktop = useMediaQuery('(min-width: 48em)', true, { getInitialValueInEffect: false });
+  const isDesktop = useWideLayout();
   if (!isDesktop) return <AuditCards records={records} names={names} />;
   return (
     <Paper withBorder radius="md" style={{ overflow: 'hidden' }}>

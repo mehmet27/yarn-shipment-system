@@ -150,6 +150,15 @@ Gezgin **anahtar** (onay kutusu) tıkladığında "işaretli olmalı" demez: tı
 - **Hazır renkler:** `08-gorunum-raporlar` Görünüm ekranındaki tüm hazır renk düğmelerini dener; yeni renk eklenirse `support/kapsam.ts`'e ve
   senaryodaki listeye ekleyin (`getByRole` adı kısa adlarda `exact: true` ister; yoksa "Yeşil" aynı zamanda "Petrol yeşili"ni de yakalar).
 
+- **Yükleniyor ve hata durumu:** listeler yüklenirken ekranda `role="status"` içinde "Yükleniyor…" adlı gösterge bulunur. Sunucu hatasında
+  (5xx, bağlantı) kırmızı uyarının içinde **"Yeniden dene"** düğmesi çıkar ve sayfayı yenilemeden sorguyu tekrarlar; yetki ve "bulunamadı"
+  hatasında çıkmaz. Düğme veri değiştirmez, kapsam kaydı gerekmez.
+- **Tablet düzeni:** tablo yerine kart listesi artık 992 px altında çizilir (önceden 768 px); `12-cihazlar` "tablet 768" koşusunda
+  Sevkiyatlar, Tanımlar, Kullanıcılar ve Denetim kaydı kart olarak görünür. Tablo satırı arayan senaryolar 1280 px'te koşmalıdır (varsayılan).
+- **Geri bağlantıları:** "Sevkiyatlara dön", "Sevkiyata dön" ve "Uyuşmazlık listesi" bağlantılarının solunda ok vardır; ok dekoratiftir,
+  bağlantının adı değişmedi (`getByRole('link', { name: 'Sevkiyatlara dön' })` çalışır).
+- **Yetkiler ekranında Yardım balonu:** alttaki "Kaydet" çubuğunu örtmemesi için çubuğun üstünde durur; yine sağ alt çeyrektedir.
+
 ## Yeni özellik eklerken robotu güncelleme kuralı
 
 Her geliştirmede (yeni ekran, rota, alan, düğme, doğrulama ya da hesap kuralı) aynı PR'da robota gereken bilgi verilir:

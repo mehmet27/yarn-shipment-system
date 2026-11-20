@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Button, Group, Stack } from '@iplik/ui';
 import { useParams } from 'react-router';
-import { QueryState } from '../components/QueryState';
+import { QueryState } from '@/modules/shared';
 import { ExitSlipBody } from '../components/ExitSlipBody';
 import { useShipment } from '../hooks/useShipment';
 import { useShipmentBags } from '../hooks/useShipmentBags';

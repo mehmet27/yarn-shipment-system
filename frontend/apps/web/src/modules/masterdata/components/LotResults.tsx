@@ -1,7 +1,7 @@
 import type { LotView } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Group, Stack, Text } from '@iplik/ui';
-import { ListPagination, QueryState } from '@/modules/shipment';
+import { EmptyState, Group, Stack } from '@iplik/ui';
+import { ListPagination, QueryState } from '@/modules/shared';
 import type { useLots } from '../hooks/useLots';
 import { LotCard } from './LotCard';
 
@@ -19,7 +19,7 @@ export function LotResults({ query, page, onPage, onEdit }: LotResultsProps) {
     <QueryState query={query}>
       {({ rows, totalPages }) =>
         rows.length === 0 ? (
-          <Text c="dimmed">{t('masterData.empty')}</Text>
+          <EmptyState title={t('masterData.empty')} />
         ) : (
           <Stack>
             {rows.map((lot) => (

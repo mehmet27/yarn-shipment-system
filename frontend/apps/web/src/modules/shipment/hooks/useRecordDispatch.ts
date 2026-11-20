@@ -10,7 +10,7 @@ export type DispatchResult = { photoUploaded: boolean };
 
 /**
  * Çıkış tartısını kaydeder. Fotoğraf yalnızca sunucu tartıyı kabul ettikten sonra (tüm kurallar geçince) yüklenir;
- * reddedilen tartıda sisteme hiçbir şey gitmez. Başarıdan sonra sevkiyat yeniden okunur.
+ * reddedilen tartıda sisteme hiçbir şey gitmez. Başarıdan sonra sevkiyat arka planda yeniden okunur.
  */
 export function useRecordDispatch(shipmentId: string) {
   const queryClient = useQueryClient();
@@ -25,6 +25,10 @@ export function useRecordDispatch(shipmentId: string) {
         return { photoUploaded: false };
       }
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [SHIPMENTS_PATH] }),
+    // Yeniden okuma beklenmez: beklenirse sevkiyat "yolda" gelince form ekrandan kalkar ve çağıranın başarı
+    // adımı (sevkiyat dosyasına dönüş) hiç çalışmayabilir; kullanıcı "artık girilemez" yazısında kalır.
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [SHIPMENTS_PATH] });
+    },
   });
 }

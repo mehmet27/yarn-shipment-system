@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Stack, Table, Text } from '@iplik/ui';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { useShipmentReport } from '../hooks/usePartyReport';
 import type { ReportPanelProps } from './reportPanelProps';
 import { ShipmentRow } from './ShipmentRow';

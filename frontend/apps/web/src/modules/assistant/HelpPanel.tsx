@@ -10,10 +10,10 @@ const TOUCH_TARGET_PX = 44;
 const PANEL_STYLE = {
   position: 'fixed',
   right: 16,
-  bottom: 76,
+  bottom: 'calc(76px + var(--app-action-bar-height, 0px))',
   zIndex: 300,
   width: 'min(380px, calc(100vw - 32px))',
-  height: 'min(520px, calc(100dvh - 160px))',
+  height: 'min(520px, calc(100dvh - 160px - var(--app-action-bar-height, 0px)))',
   display: 'flex',
   flexDirection: 'column',
 } as const;

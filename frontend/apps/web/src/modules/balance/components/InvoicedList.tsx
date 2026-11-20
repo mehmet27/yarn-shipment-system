@@ -1,7 +1,8 @@
 import type { FireInvoicePage } from '@iplik/api-client/settlements';
 import { formatDate, useTranslation } from '@iplik/i18n';
-import { Anchor, Paper, Stack, Table, Text } from '@iplik/ui';
-import { formatKgText, ListPagination } from '@/modules/shipment';
+import { Anchor, EmptyState, Paper, Stack, Table, Text } from '@iplik/ui';
+import { formatKgText } from '@/modules/shipment';
+import { ListPagination } from '@/modules/shared';
 import { Link } from 'react-router';
 
 /** Faturalananlar tablosu: fatura no, tarih, fasoncu, sevkiyat (dosyaya bağlantı) ve kilo. */
@@ -16,7 +17,7 @@ export function InvoicedList({
 }) {
   const { t } = useTranslation();
   const { items, page: info, totalKg } = data;
-  if (items.length === 0) return <Text c="dimmed">{t('settlement.invoiced.empty')}</Text>;
+  if (items.length === 0) return <EmptyState title={t('settlement.invoiced.empty')} />;
   return (
     <Stack>
       <Text fw={600}>

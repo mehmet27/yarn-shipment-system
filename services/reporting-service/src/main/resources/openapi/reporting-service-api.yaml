@@ -20,6 +20,7 @@ servers:
 tags:
   - name: Reports
   - name: BalanceFire
+  - name: Trend
 security:
   - bearerAuth: []
 paths:
@@ -194,6 +195,43 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/YarnVsFabricRowView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/reports/monthly-trend:
+    get:
+      tags: [Trend]
+      operationId: getMonthlyTrend
+      summary: Aylık giden iplik ve gelen kumaş eğilimi
+      description: |
+        REPORT_VIEW gerekir. `to` (boşsa bugün) ayında biten `months` takvim ayı, eskiden yeniye. Her ay, o ayda
+        tamamlanan sevkiyatların fire dosyalarından toplanır; tanımlar "Giden iplik ↔ gelen kumaş" raporuyla aynıdır
+        (aynı ay seçildiğinde o raporun satır toplamına eşittir). Verisi olmayan ay sıfırlarla döner.
+      parameters:
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/SiteId'
+        - name: months
+          in: query
+          required: false
+          description: Kaç ay (varsayılan 6)
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 12
+            default: 6
+      responses:
+        '200':
+          description: Aylar
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MonthlyFlowView'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -563,6 +601,26 @@ components:
         overLimitFireKg:
           type: string
           description: Fire sınırını aşan sevkiyatların toplam fire kilosu (T − K)
+    MonthlyFlowView:
+      type: object
+      required: [month, from, to, shipmentCount, sentKg, returnedYarnKg, fabricKg, actualFireRate, shortageKg]
+      properties:
+        month:
+          type: string
+          description: Takvim ayı, `YYYY-MM`
+          example: '2026-11'
+        from: {type: string, format: date, description: Ayın ilk günü}
+        to: {type: string, format: date, description: Ayın son günü}
+        shipmentCount:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Ayda tamamlanan sevkiyat (fire dosyası) sayısı
+        sentKg: {type: string}
+        returnedYarnKg: {type: string}
+        fabricKg: {type: string}
+        actualFireRate: {type: string, description: Kesir (0.0400 = %4)}
+        shortageKg: {type: string}
     OpeningRowRequest:
       type: object
       required: [subcontractorId, subcontractorName, yarnType, netKg]

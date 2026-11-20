@@ -1,7 +1,7 @@
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Center, Group, Loader, Stack, Text } from '@iplik/ui';
-import { ListPagination } from '@/modules/shipment';
+import { Alert, Button, Center, EmptyState, Group, Loader, Stack, Text } from '@iplik/ui';
+import { ListPagination } from '@/modules/shared';
 import { type AccountFilter, applyFilter, isFiltering } from '../accountFilter';
 import type { useLoginAccounts } from '../hooks/useLoginAccounts';
 import { LoginAccountTable } from './LoginAccountTable';
@@ -52,7 +52,7 @@ export function LoginAccountResults({
   }
   const { rows, totalPages, totalElements } = query.data;
   if (rows.length === 0) {
-    return <Text c="dimmed">{t(isSearching ? 'users.noMatch' : 'users.empty')}</Text>;
+    return <EmptyState title={t(isSearching ? 'users.noMatch' : 'users.empty')} />;
   }
   const visible = applyFilter(rows, filter);
   return (
@@ -63,7 +63,7 @@ export function LoginAccountResults({
           : t('users.count', { count: totalElements })}
       </Text>
       {visible.length === 0 ? (
-        <Text c="dimmed">{t('users.filter.noMatch')}</Text>
+        <EmptyState title={t('users.filter.noMatch')} />
       ) : (
         <LoginAccountTable accounts={visible} />
       )}

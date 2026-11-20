@@ -1,6 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Button, Divider, Stack } from '@iplik/ui';
-import { InvoiceForm, QueryState, useFireSettlement } from '@/modules/shipment';
+import { InvoiceForm, useFireSettlement } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { PreviousInvoices } from './PreviousInvoices';
 
 /** Fire dosyası yalnızca pencere açılınca okunur; listedeki her satır için ayrı istek gitmez. */

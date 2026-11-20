@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
-import { Paper, Stack, Text } from '@iplik/ui';
-import { ListPagination, QueryState } from '@/modules/shipment';
+import { EmptyState, Paper, Stack } from '@iplik/ui';
+import { ListPagination, QueryState } from '@/modules/shared';
 import { useState } from 'react';
 import { useToInvoice } from '../hooks/useFireSettlements';
 import { ToInvoiceRow } from './ToInvoiceRow';
@@ -14,7 +14,7 @@ export function ToInvoiceTab() {
     <QueryState query={query}>
       {({ items, page: info }) =>
         items.length === 0 ? (
-          <Text c="dimmed">{t('settlement.toInvoice.empty')}</Text>
+          <EmptyState title={t('settlement.toInvoice.empty')} />
         ) : (
           <Stack>
             <Paper withBorder style={{ overflow: 'hidden' }}>

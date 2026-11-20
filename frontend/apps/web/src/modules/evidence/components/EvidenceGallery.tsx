@@ -21,7 +21,7 @@ export function EvidenceGallery({ shipmentId, types, title, hideWhenEmpty }: Evi
   if (query.isPending) {
     return (
       <Center py="md">
-        <Loader size="sm" />
+        <Loader size="sm" aria-label={t('app.loading')} />
       </Center>
     );
   }

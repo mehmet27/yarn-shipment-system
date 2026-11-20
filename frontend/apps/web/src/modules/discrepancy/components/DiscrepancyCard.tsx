@@ -16,6 +16,8 @@ export function DiscrepancyCard({ discrepancy }: { discrepancy: DiscrepancyView 
       withBorder
       p="md"
       mih={72}
+      c="var(--app-text)"
+      radius="md"
       aria-label={discrepancy.discrepancyNo}
       style={{
         textDecoration: 'none',

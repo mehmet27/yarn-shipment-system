@@ -95,13 +95,6 @@ export function createMeHandler(role: Role) {
   return http.get(ME_PATH, () => HttpResponse.json(createMockUser(role)));
 }
 
-export const unauthenticatedMeHandler = http.get(ME_PATH, () =>
-  HttpResponse.json(
-    { status: 401, code: 'AUTHENTICATION_REQUIRED', title: 'Oturum açmanız gerekiyor' },
-    { status: 401 },
-  ),
-);
-
 function createListShipmentsHandler(role: Role) {
   const user = createMockUser(role);
   return http.get(SHIPMENTS_PATH, ({ request }) => {

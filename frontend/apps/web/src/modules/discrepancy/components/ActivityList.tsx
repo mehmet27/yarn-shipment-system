@@ -1,7 +1,8 @@
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Paper, Stack, Text, Title } from '@iplik/ui';
 import { EvidenceById } from '@/modules/evidence';
-import { QueryState, useActorLabel } from '@/modules/shipment';
+import { useActorLabel } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import type { DiscrepancyActivityView } from '@iplik/api-client';
 import { useDiscrepancyActivity } from '../hooks/useDiscrepancy';
 import { ruleLabel } from './discrepancyText';

@@ -1,6 +1,7 @@
 import type { RecipeLineView } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Text, useMediaQuery } from '@iplik/ui';
+import { Stack, Text } from '@iplik/ui';
+import { useWideLayout } from '@/modules/shared';
 import { fireRateToPctInput, formatKgText, formatPct, sumKg } from '@iplik/units';
 import { RecipeLineCards } from './RecipeLineCards';
 import { RecipeTable } from './RecipeTable';
@@ -11,12 +12,10 @@ export type RecipePanelProps = {
   fireRate: string | undefined;
 };
 
-const DESKTOP_QUERY = '(min-width: 48em)';
-
 /** Müdürün yazdığı reçete: satırlar, toplam net kg ve sevkiyatta saklanan fire oranı; dar ekranda kart listesi. */
 export function RecipePanel({ lines, fireRate }: RecipePanelProps) {
   const { t } = useTranslation();
-  const isDesktop = useMediaQuery(DESKTOP_QUERY, true, { getInitialValueInEffect: false });
+  const isDesktop = useWideLayout();
   if (lines.length === 0) return <Text c="dimmed">{t('shipment.file.recipe.empty')}</Text>;
   const total = formatKgText(sumKg(lines.map((line) => line.netKg)));
   const View = isDesktop ? RecipeTable : RecipeLineCards;

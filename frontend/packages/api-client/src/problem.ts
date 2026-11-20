@@ -10,6 +10,8 @@ export type Problem = {
   errors?: readonly FieldError[];
   /** Yalnızca `CENTRAL_STOCK_SHORTFALL` ve `SOURCE_YARN_SHORTAGE`: stoğu yetmeyen iplikler ve eksik kilo. */
   shortfalls?: readonly StockShortfall[];
+  /** Yalnızca `YARN_TYPE_NOT_IN_CATALOG`: reçetede olup Tanımlar'da olmayan iplik adları. */
+  yarnTypes?: readonly string[];
   /** Yalnızca `RECIPE_WEIGHT_MISMATCH`: reçete toplamı, tartılan net ve kantar toleransı (kg metni). */
   recipeKg?: string;
   /** Yalnızca `BAG_WEIGHT_MISMATCH`: çuvalların toplamı; `measuredKg` araç net kilosu, `toleranceKg` kantar toleransıdır. */

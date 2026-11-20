@@ -55,6 +55,11 @@ final class CentralStockAdapter implements CentralStockPort {
             JOIN md_product p ON p.id = st.product_id
             WHERE st.stock_kg < 0
             ORDER BY p.name""";
+    private static final String UNLISTED = """
+            SELECT DISTINCT yarn_type FROM central_stock_movement
+            WHERE shipment_id = :shipmentId AND kind = 'TO_SUBCONTRACTOR' AND product_id IS NULL
+              AND yarn_type <> :unspecified
+            ORDER BY yarn_type""";
     private static final String ACTIVE_PRODUCTS = "SELECT id, name FROM md_product WHERE active AND id IN (:ids)";
     private static final String PRODUCED = "SELECT coalesce(sum(net_kg), 0) FROM fabric_lot WHERE source = 'CENTRAL'";
     private static final String FLOW = """
@@ -135,6 +140,15 @@ final class CentralStockAdapter implements CentralStockPort {
                         rs.getObject("product_id", UUID.class),
                         rs.getString("yarn_type"),
                         rs.getBigDecimal("stock_kg")))
+                .list();
+    }
+
+    @Override
+    public List<String> findUnlistedYarnsOfDispatch(UUID shipmentId) {
+        return jdbc.sql(UNLISTED)
+                .param("shipmentId", shipmentId)
+                .param("unspecified", BalanceLedgerAdapter.UNSPECIFIED_YARN)
+                .query((rs, i) -> rs.getString("yarn_type"))
                 .list();
     }
 

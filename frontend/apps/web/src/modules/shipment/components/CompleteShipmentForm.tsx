@@ -1,9 +1,12 @@
 import { toProblem } from '@iplik/api-client';
+import type { Problem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { WaybillUpload } from '@/modules/evidence';
 import { Alert, Button, Icon, SectionCard, Stack, Text, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useCompleteShipment } from '../hooks/useCompleteShipment';
+
+type Translate = ReturnType<typeof useTranslation>['t'];
 
 const MAX_WAYBILL_NO_LENGTH = 64;
 const KNOWN_CODES = [
@@ -16,6 +19,16 @@ const KNOWN_CODES = [
 function completeErrorKey(code: string): string {
   const known = KNOWN_CODES.find((candidate) => candidate === code);
   return `shipment.complete.errors.${known ?? 'unknown'}`;
+}
+
+/** Tamamlama reddinin metni; Tanımlar'da olmayan iplik varsa adlarıyla ve ne yapılacağıyla söylenir. */
+function completeErrorText(t: Translate, problem: Problem): string {
+  if (problem.code === 'YARN_TYPE_NOT_IN_CATALOG') {
+    return t('shipment.complete.errors.YARN_TYPE_NOT_IN_CATALOG', {
+      yarns: (problem.yarnTypes ?? []).join(', '),
+    });
+  }
+  return t(completeErrorKey(problem.code));
 }
 
 /**
@@ -59,7 +72,7 @@ export function CompleteShipmentForm({ shipmentId }: { shipmentId: string }) {
           </Text>
         )}
         {mutation.isError && (
-          <Alert color="red">{t(completeErrorKey(toProblem(mutation.error).code))}</Alert>
+          <Alert color="red">{completeErrorText(t, toProblem(mutation.error))}</Alert>
         )}
         <Button
           w="fit-content"

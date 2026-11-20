@@ -6,6 +6,7 @@ import com.yarnshipment.shipment.application.port.out.ledger.CentralStockPort;
 import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.stock.CentralStockMovement;
 import com.yarnshipment.shipment.domain.stock.CentralStockShortfallException;
+import com.yarnshipment.shipment.domain.stock.UnlistedYarnTypeException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -25,11 +26,12 @@ final class CentralStockShortageCover {
     }
 
     /**
-     * Merkez stok eksiye düşemez. Yetmiyorsa müdür onaylamadan tamamlama geri alınır (uyarı);
-     * onaylarsa eksik kilo kadar sistem girişi yazılır, stok sıfırda kalır.
+     * Merkez stok eksiye düşemez. Reçetede Tanımlar'da olmayan iplik varsa tamamlama reddedilir. Yetmiyorsa müdür
+     * onaylamadan tamamlama geri alınır (uyarı); onaylarsa eksik kilo kadar sistem girişi yazılır, stok sıfırda kalır.
      */
     void cover(UUID shipmentId, CompleteShipmentCommand command, Instant at) {
         stock.lockForDeduction();
+        requireListedYarns(shipmentId);
         List<CentralStockRow> shortages = stock.findShortagesAfterDispatch(shipmentId);
         if (shortages.isEmpty()) {
             return;
@@ -53,6 +55,14 @@ final class CentralStockShortageCover {
                     command.actor().userId());
             stock.saveReceipt(receipt);
             events.yarnReceiptRecorded(receipt);
+        }
+    }
+
+    /** Tanımlar'da olmayan ipliğin stoğu denetlenemez ve eksiği sistem girişiyle kapatılamaz; önce tanımlanmalıdır. */
+    private void requireListedYarns(UUID shipmentId) {
+        List<String> unlisted = stock.findUnlistedYarnsOfDispatch(shipmentId);
+        if (!unlisted.isEmpty()) {
+            throw new UnlistedYarnTypeException(unlisted);
         }
     }
 }

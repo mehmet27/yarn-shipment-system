@@ -238,6 +238,20 @@ class CentralStockAdapterTest {
     }
 
     @Test
+    @DisplayName("Tanımlar'da olmayan iplik adıyla bildirilir; tanıma bağlanan iplik ve reçetesiz eski satır sayılmaz")
+    void shouldFindUnlistedYarnsOfDispatch() {
+        String insert = "INSERT INTO balance_movement (id, subcontractor_id, yarn_type, shipment_id, kind, net_kg,"
+                + " occurred_at, created_by, source_ref)"
+                + " VALUES (gen_random_uuid(), ?, ?, ?, 'DISPATCH', 5, now(), ?, ?)";
+        jdbc.update(insert, SUBCONTRACTOR, PRODUCT.toString(), SHIPMENT, USER, "U:1");
+        jdbc.update(insert, SUBCONTRACTOR, "Bilinmeyen Metin", SHIPMENT, USER, "U:2");
+
+        ledger.recordDispatch(SHIPMENT, SUBCONTRACTOR, AT, USER);
+
+        assertThat(stock.findUnlistedYarnsOfDispatch(SHIPMENT)).containsExactly("Bilinmeyen Metin");
+    }
+
+    @Test
     @DisplayName("Sevkiyat düşüşünden sonra stoğu eksi kalan tanım eksik olarak bulunur; stok yetiyorsa boş döner")
     void shouldFindShortageAfterDispatch() {
         jdbc.update(

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { fiyatYaz, iplikTanimla, tedarikciTanimla } from '../support/akis';
+import { fiyatYaz, iplikTanimla, sevkiyatIpligiSec, tedarikciTanimla } from '../support/akis';
 import { rolTanimli, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import { damga, iplikGirisiDoldur } from '../support/yardimci';
@@ -103,13 +103,15 @@ test('Rastgele girdi: müdür yeni sevkiyat alanları', async ({ giris }) => {
   test.skip(!rolTanimli('mudur'), 'mudur yok');
   const mudur = await giris('mudur');
   mudur.beklenen(/4\d\d (POST|PUT) /);
+  // İplik serbest metin değil, Tanımlar'dan seçilir; metin fuzz'u iplik alanına yapılmaz.
+  const sevkiyatIpligi = damga();
+  await iplikTanimla(mudur, sevkiyatIpligi);
   await dene(
     mudur,
     'yeni sevkiyat',
     [
       { etiket: /Fire oranı/, tur: 'sayi' },
       { etiket: /Net kg 1/, tur: 'sayi' },
-      { etiket: /ya da listede yoksa yazın/i, tur: 'metin', ilk: true },
       { etiket: /Sipariş no/, tur: 'metin' },
       { etiket: /İlgili kişi/, tur: 'metin' },
     ],
@@ -124,10 +126,7 @@ test('Rastgele girdi: müdür yeni sevkiyat alanları', async ({ giris }) => {
         .click();
       await mudur.sayfa.locator('[role=option]:visible').first().click();
       await mudur.sayfa.getByLabel(/Fire oranı/).fill('3');
-      await mudur.sayfa
-        .getByLabel(/ya da listede yoksa yazın/i)
-        .first()
-        .fill('ROBOT-fuzz');
+      await sevkiyatIpligiSec(mudur.sayfa, sevkiyatIpligi);
       await mudur.sayfa.getByLabel(/Net kg 1/).fill('1');
       await fiyatYaz(mudur.sayfa);
     },

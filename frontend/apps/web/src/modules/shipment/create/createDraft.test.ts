@@ -11,7 +11,8 @@ import {
 
 const SITE = 'site-merkez';
 const subcontractor = { value: 'sub-1', label: 'Bursa Tekstil' };
-const line = { ...newLine(), yarnText: '20 denye likra', netKg: '2.036', unitPrice: '21,5' };
+const yarn = { value: 'prd-9', label: '20 denye likra' };
+const line = { ...newLine(), yarn, netKg: '2.036', unitPrice: '21,5' };
 const TODAY = '2026-11-15';
 const base = { ...EMPTY_CREATE_DRAFT, subcontractor, lines: [line], shipmentDate: '2026-11-20' };
 
@@ -26,7 +27,7 @@ describe('createDraft', () => {
       siteId: 'site-merkez',
       subcontractorId: 'sub-1',
       subcontractorTitle: 'Bursa Tekstil',
-      lines: [{ netKg: '2036.000', yarnTypeText: '20 denye likra', unitPrice: '21.5' }],
+      lines: [{ netKg: '2036.000', yarnTypeId: 'prd-9', unitPrice: '21.5' }],
       fireRate: '0.0400',
       shipmentDate: '2026-11-20',
     });
@@ -120,7 +121,7 @@ describe('createDraft', () => {
     );
     expect(request?.lines).toEqual([
       { yarnTypeId: 'prd-1', lotId: 'lot-1', netKg: '19488.000', unitPrice: '30' },
-      { yarnTypeText: '20 denye likra', netKg: '2036.000', unitPrice: '21.5' },
+      { yarnTypeId: 'prd-9', netKg: '2036.000', unitPrice: '21.5' },
     ]);
   });
 
@@ -170,7 +171,7 @@ describe('createDraft', () => {
     };
     expect(toCreateRequest({ ...base, lines: [full] }, SITE)?.lines[0]).toEqual({
       netKg: '2036.000',
-      yarnTypeText: '20 denye likra',
+      yarnTypeId: 'prd-9',
       fabricType: '30/150 Penye Siyah',
       lycra: '30 denye',
       widthType: 'OPEN_WIDTH',

@@ -263,15 +263,10 @@ export interface UpdateShipmentTransportRequest {
 }
 
 /**
- * En az biri verilir, yarnTypeId ya da yarnTypeText
+ * İplik cinsi yalnızca Tanımlar'daki ipliklerden seçilir (yarnTypeId); serbest metin kabul edilmez
  */
 export interface RecipeLineInput {
-  yarnTypeId?: string;
-  /**
-     * @minLength 1
-     * @maxLength 200
-     */
-  yarnTypeText?: string;
+  yarnTypeId: string;
   lotId?: string;
   netKg: Kg;
   /**
@@ -1475,7 +1470,9 @@ export const recordDispatchWeighing = (
  * Müdür irsaliye belgesini önce evidence-service'e WAYBILL türüyle yükler, sonra irsaliye numarası ve belgenin
  * kimliğiyle bu ucu çağırır; sevkiyat tamamlanır ve kilitlenir. Belge yoksa, başka sevkiyata aitse ya da irsaliye
  * değilse 422 WAYBILL_EVIDENCE_INVALID döner. Aynı irsaliye numarasıyla tekrar gönderilen istek yeni kayıt
- * oluşturmaz ve yine 204 döner.
+ * oluşturmaz ve yine 204 döner. Merkezden çıkan sevkiyatın reçetesinde Tanımlar'da olmayan (serbest metinle
+ * yazılmış) iplik varsa 409 YARN_TYPE_NOT_IN_CATALOG döner (`yarnTypes` bu ipliklerin adlarını verir); iplik
+ * Tanımlar'a aynı adla eklenince istek yinelenir.
  * @summary İrsaliye müdüre ulaştı, sevkiyatı tamamlar (AWAITING_DELIVERY → COMPLETED)
  */
 export const completeShipment = (

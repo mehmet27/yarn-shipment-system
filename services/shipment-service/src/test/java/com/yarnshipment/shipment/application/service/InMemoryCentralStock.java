@@ -28,6 +28,7 @@ final class InMemoryCentralStock implements CentralStockPort {
     final Map<UUID, String> suppliers = new HashMap<>();
     private final Map<UUID, String> active;
     private List<CentralStockRow> shortages = List.of();
+    private List<String> unlisted = List.of();
 
     InMemoryCentralStock(Map<UUID, String> active) {
         this.active = active;
@@ -40,6 +41,15 @@ final class InMemoryCentralStock implements CentralStockPort {
     @Override
     public List<CentralStockRow> findShortagesAfterDispatch(UUID shipmentId) {
         return shortages;
+    }
+
+    void givenUnlistedYarns(List<String> yarns) {
+        this.unlisted = yarns;
+    }
+
+    @Override
+    public List<String> findUnlistedYarnsOfDispatch(UUID shipmentId) {
+        return unlisted;
     }
 
     BigDecimal stockOf(UUID product) {

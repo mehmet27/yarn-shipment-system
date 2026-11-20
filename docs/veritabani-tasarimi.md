@@ -275,7 +275,7 @@ Migration'lar yazılırken tasarımın PostgreSQL'de birebir uygulanamayan veya 
 | `audit_log` tekilliği | Partition anahtarı `occurred_at`, tekillik `(event_id, occurred_at)` | Aynı olayın `occurred_at`'i her tekrarda aynıdır; böylece `event_id` tekilliği partition'lı tabloda da korunur |
 | Audit zinciri | `audit_append(jsonb)` tek ekleme yolu; zincir başı `audit_chain_head` satırı kilitlenerek sıraya konur; `audit_verify_chain()` sonucu `audit_chain_check`'e yazar | Yazan rolün tabloya hiçbir yetkisi yoktur |
 | Parti kalitesi kilidi (bag_db) | `lot_quality_lock` tablosu `LotQualityLocked` olayından dolar; `bag (lot_id, quality_grade_code)` buna FK ile bağlı | "Kilitsiz partiye çuval yok" ve "kalite partiden kopyalanır" kuralı veritabanında zorlanır |
-| Partition yönetimi | `create_monthly_partitions()` (SECURITY DEFINER) ilk 15 ayı açar; servisler zamanlanmış görevle gelecek ayları açar | Resmi `postgres:17` imajında `pg_partman` yok; sunucuda `pg_partman`'e geçilebilir |
+| Partition yönetimi | `create_monthly_partitions()` (SECURITY DEFINER) ilk 15 ayı (2027-12'ye kadar) açar; ileriki ayları `yarnshipment-app` içindeki `PartitionMaintenance` açılışta ve her gece açar (12 ay ilerisi). Her bölümlü tablonun ayrıca `_default` yedek bölümü vardır (`V202611210910`) | Resmi `postgres:17` imajında `pg_partman` yok; sunucuda `pg_partman`'e geçilebilir |
 | Yerel iz | Kritik tablolarda `audit_local_capture()` trigger'ı `audit_local`'a yazar; `app.actor_id` oturum ayarı aktörü taşır | Kuyruk çalışmasa bile iz kaybolmaz |
 | Yetkiler | Uygulama rolüne hiçbir tabloda DELETE verilmez; outbox'ta yalnızca `published_at` kolonu güncellenebilir | GEN-04, PERS-11 |
 | Kolon adları | `condition` → `seal_condition`, `type` → `declaration_type` / `discrepancy_type`, `key/value` → `setting_key/setting_value`; `driver.phone` → `phone_enc` (KVKK) | Ayrılmış veya belirsiz kelimelerden kaçınmak |
@@ -370,6 +370,13 @@ defter tablolarında yalnızca-ekleme trigger'ı, kilitli sevkiyat koruması ve 
 | `fire_invoice (invoiced_on)` indeksi | aynı | Faturalama ekranındaki Faturalananlar listesi tarih aralığıyla süzülüp sıralanıyor |
 | `fabric_lot` üzerindeki `fabric_receipt_*` kısıt adları `fabric_lot_*`, `ux_app_user_username` indeksi `app_user_username_key` oldu | aynı | Tablo adı değişmiş, kısıt adları eski kalmıştı; kural aynı, yalnızca ad değişti |
 | `discrepancy_activity.discrepancy_id` → `discrepancy (id)` yabancı anahtarı | `discrepancy/V202611210900__discrepancy_activity_fk.sql` | `inspection` ve `quality_claim` bu bağı kuruyordu, geçmiş tablosunda eksikti |
+
+**Aylık bölümler (`V202611210910`).** `audit_log`, `audit_local`, `shipment_status_history`, `evidence_file` ve `discrepancy_activity`
+aylık bölümlüdür; bölümler yalnızca 2027-12'ye kadar açılmıştı ve ileriki ayları açan bir iş yoktu, yani 1 Ocak 2028'de bu tablolara
+yazan her işlem (sevkiyat durumu, denetim kaydı, dosya yükleme) hata alacaktı. Düzeltme iki katmanlı: `PartitionMaintenance`
+(`services/yarnshipment-app`) açılışta ve her gece 02:30 UTC'de 12 ay ilerisinin bölümlerini açar; her tabloya eklenen `_default`
+yedek bölüm de iş çalışmamışsa satırın kaybolmamasını sağlar. Yedek bölüm olağan durumda boştur. Dolu kalırsa kapsadığı ayın bölümü
+açılamaz: iş bunu ERROR olarak loglar, satırlar yeni bölüme elle taşınır (`DETACH` → bölümü aç → satırları ekle).
 
 Geri alma: eklenen kısıtlar `ALTER TABLE ... DROP CONSTRAINT`, indeksler `DROP INDEX` ile kaldırılır; ad değişiklikleri ters yönde
 `RENAME` ile döner. Hiçbiri veri değiştirmez.

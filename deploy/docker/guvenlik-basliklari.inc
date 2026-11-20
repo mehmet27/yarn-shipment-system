@@ -1,0 +1,5 @@
+# Statik sayfa cevaplarına eklenen güvenlik başlıkları (nginx.conf içinden include edilir).
+add_header X-Frame-Options "DENY" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "same-origin" always;
+add_header Content-Security-Policy "frame-ancestors 'none'; object-src 'none'; base-uri 'self'" always;

@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class BalanceFireController implements BalanceFireApi {
 
+    private static final String OPENING_IMPORT_ACCESS = "hasRole('MANAGER') and hasAuthority('BALANCE_VIEW')";
+
     private final ListBalanceMatrixUseCase listBalanceMatrix;
     private final ListFireReportUseCase listFire;
     private final ListYarnVsFabricUseCase listYarnVsFabric;
@@ -94,8 +96,12 @@ public class BalanceFireController implements BalanceFireApi {
         return ResponseEntity.ok(BalanceFireViews.toView(getAmountSummary.getAmountSummary(query(from, to, siteId))));
     }
 
+    /**
+     * Deftere hareket yazar; bu yüzden bakiyeyi görmek yetmez, yalnızca müdür yükler (ekrandaki form da yalnızca
+     * müdüre görünür). Bakiye görme izni başka role verilse bile o rol açılış bakiyesi yazamaz.
+     */
     @Override
-    @PreAuthorize("hasAuthority('BALANCE_VIEW')")
+    @PreAuthorize(OPENING_IMPORT_ACCESS)
     public ResponseEntity<OpeningImportResult> importOpeningBalance(OpeningImportRequest request) {
         var result = importOpening.importOpening(
                 currentActorProvider.getCurrentActor().userId(),

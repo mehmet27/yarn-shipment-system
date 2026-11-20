@@ -2,11 +2,11 @@ import { CHANGE_PASSWORD_PATH, login, safeReturnTo } from '@iplik/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { CURRENT_USER_QUERY_KEY } from './useCurrentUser';
+import { clearHelpChat } from '@/modules/assistant';
 
 type Failures = { username: string; count: number };
 
-/** Girişi gönderir; başarılıysa kullanıcı önbelleğini yeniler ve kişiyi geldiği sayfaya (ya da şifre değiştirmeye) götürür. */
+/** Girişi gönderir; başarılıysa önceki oturumdan kalan önbelleği siler ve kişiyi geldiği sayfaya (ya da şifre değiştirmeye) götürür. */
 export function useLogin() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -20,9 +20,11 @@ export function useLogin() {
     setIsPending(true);
     setError(undefined);
     login({ username: username.trim(), password })
-      .then(async (response) => {
-        // Önceki kişinin önbelleği kalmasın: kullanıcı ve izinler yeni oturumla yeniden alınır.
-        await queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
+      .then((response) => {
+        // Ortak bilgisayarda oturum süresi dolup başka biri giriş yapabilir (çıkış düğmesine basılmadan): önceki
+        // kişinin önbellekteki verisi (rapor, tutar, bakiye) ve yardım sohbeti yeni kişiye görünmesin.
+        queryClient.clear();
+        clearHelpChat();
         void navigate(
           response.passwordChangeRequired
             ? CHANGE_PASSWORD_PATH

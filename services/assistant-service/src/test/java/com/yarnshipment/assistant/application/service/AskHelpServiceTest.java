@@ -70,6 +70,16 @@ class AskHelpServiceTest {
     }
 
     @Test
+    @DisplayName("Geçici şifresini değiştirmemiş (rolsüz) kişinin sorusu modele gitmez")
+    void shouldRejectActorWithoutRole() {
+        Actor withoutRole = TestTokens.actor();
+
+        assertThatThrownBy(() -> service.ask(new AskHelpCommand(withoutRole, "soru", List.of())))
+                .isInstanceOf(HelpUnavailableException.class);
+        assertThat(model.conversation).isEmpty();
+    }
+
+    @Test
     @DisplayName("Anahtar tanımlı değilse asistan kapalıdır ve soru reddedilir")
     void shouldBeUnavailableWithoutKey() {
         AskHelpService closed =

@@ -8,8 +8,10 @@ import { describe, expect, it } from 'vitest';
 import { server } from '@/mocks/server';
 import { LoginPage } from './LoginPage';
 
-function renderPage(url = '/giris') {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function renderPage(
+  url = '/giris',
+  queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
   render(
     <UiProvider env="test">
       <QueryClientProvider client={queryClient}>
@@ -129,5 +131,24 @@ describe('LoginPage', () => {
     renderPage();
     await fillAndSubmit();
     expect(await screen.findByText(/hesap kısa süre kilitlendi/)).toBeInTheDocument();
+  });
+
+  it('girişte önceki kişiden kalan önbellek ve yardım sohbeti silinir', async () => {
+    server.use(
+      http.post('/api/v1/auth/login', () => HttpResponse.json({ passwordChangeRequired: false })),
+    );
+    window.sessionStorage.setItem(
+      'yardim-sohbeti',
+      JSON.stringify([{ id: 0, role: 'assistant', text: 'Toplam tutar 412.300 TL' }]),
+    );
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    renderPage('/giris', queryClient);
+    queryClient.setQueryData(['/api/v1/reports/amounts'], { shippedAmount: '412300.00' });
+
+    await fillAndSubmit('kalite');
+
+    expect(await screen.findByText('ana sayfa')).toBeInTheDocument();
+    expect(queryClient.getQueryData(['/api/v1/reports/amounts'])).toBeUndefined();
+    expect(window.sessionStorage.getItem('yardim-sohbeti')).toBeNull();
   });
 });

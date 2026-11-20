@@ -1,5 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { useToInvoiceReport } from '../hooks/useFaconReports';
 import { FireList } from './FireList';
 import type { ReportPanelProps } from './reportPanelProps';

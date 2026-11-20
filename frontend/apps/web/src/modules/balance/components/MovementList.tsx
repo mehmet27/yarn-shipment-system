@@ -1,12 +1,7 @@
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Paper, Stack, Table, Text } from '@iplik/ui';
-import {
-  formatSignedKg,
-  ListPagination,
-  QueryState,
-  useActorLabel,
-  useYarnLabel,
-} from '@/modules/shipment';
+import { formatSignedKg, useActorLabel, useYarnLabel } from '@/modules/shipment';
+import { ListPagination, QueryState } from '@/modules/shared';
 import type { MovementFilter } from '../hooks/useBalances';
 import { useBalanceMovements } from '../hooks/useBalances';
 

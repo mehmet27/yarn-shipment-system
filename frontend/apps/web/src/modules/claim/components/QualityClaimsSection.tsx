@@ -13,7 +13,7 @@ export function QualityClaimsSection({ shipmentId }: { shipmentId: string }) {
       <Title order={2}>{t('claim.title')}</Title>
       {query.isPending && (
         <Center py="md">
-          <Loader />
+          <Loader aria-label={t('app.loading')} />
         </Center>
       )}
       {query.isError &&

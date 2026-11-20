@@ -46,10 +46,6 @@ export function listMockClaims(shipmentId: string): QualityClaimView[] {
   return claims.filter((claim) => claim.shipmentId === shipmentId);
 }
 
-export function findMockClaim(id: unknown): QualityClaimView | undefined {
-  return claims.find((claim) => claim.id === id);
-}
-
 export function addMockClaim(request: OpenQualityClaimRequest, actorId: string): QualityClaimView {
   const index = claims.length;
   const sameShipment = listMockClaims(request.shipmentId).length;

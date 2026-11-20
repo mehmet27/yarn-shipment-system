@@ -3,7 +3,7 @@ import { Button, PageHero, Stack, Tabs, Text } from '@iplik/ui';
 import { useState } from 'react';
 import { usePermission } from '@/modules/auth';
 import { InlineExportButtons } from '@/modules/report';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { ProductionForm } from '../components/ProductionForm';
 import { StockTable } from '../components/StockTable';
 import { YarnReceiptForm } from '../components/YarnReceiptForm';

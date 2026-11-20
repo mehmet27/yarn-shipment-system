@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { EmptyState, Stack } from '@iplik/ui';
 import { usePermission } from '@/modules/auth';
-import { QueryState } from '../components/QueryState';
+import { QueryState } from '@/modules/shared';
 import { FabricForm } from './FabricForm';
 import { FabricReceiptCard } from './FabricReceiptCard';
 import { useFabricReceipts } from './hooks';

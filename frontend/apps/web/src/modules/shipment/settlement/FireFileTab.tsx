@@ -1,7 +1,7 @@
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Badge, SectionCard, Stack, Text } from '@iplik/ui';
-import { QueryState } from '../components/QueryState';
+import { QueryState } from '@/modules/shared';
 import { FireClosedNote } from './FireClosedNote';
 import { FireFigures } from './FireFigures';
 import { FireOpenActions } from './FireOpenActions';

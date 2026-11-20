@@ -2,7 +2,7 @@ import type { GetDashboardParams } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { SectionCard } from '@iplik/ui';
 import { usePermission } from '@/modules/auth';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { useAmountSummary } from '../hooks/useFaconReports';
 import { AmountCards } from './AmountCards';
 import { AmountSubcontractorTable } from './AmountSubcontractorTable';

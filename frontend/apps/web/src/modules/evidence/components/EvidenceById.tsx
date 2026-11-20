@@ -7,7 +7,7 @@ import { EvidenceItem } from './EvidenceItem';
 export function EvidenceById({ evidenceId }: { evidenceId: string }) {
   const { t } = useTranslation();
   const query = useEvidence(evidenceId);
-  if (query.isPending) return <Loader size="sm" />;
+  if (query.isPending) return <Loader size="sm" aria-label={t('app.loading')} />;
   if (query.isError) return <Alert color="red">{t('evidence.view.loadFailed')}</Alert>;
   return <EvidenceItem evidence={query.data} />;
 }

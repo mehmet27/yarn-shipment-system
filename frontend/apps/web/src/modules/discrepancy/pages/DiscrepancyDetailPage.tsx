@@ -2,7 +2,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Anchor, PageHero, Stack } from '@iplik/ui';
 import { Link, useParams } from 'react-router';
 import { ClaimOfDiscrepancy } from '@/modules/claim';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { ActivityList } from '../components/ActivityList';
 import { AssignToMeButton } from '../components/AssignToMeButton';
 import { DiscrepancyBadges } from '../components/DiscrepancyBadges';

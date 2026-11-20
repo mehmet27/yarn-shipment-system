@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Alert, Anchor, PageHero, Stack } from '@iplik/ui';
 import { Link, useNavigate, useParams } from 'react-router';
-import { QueryState } from '../components/QueryState';
+import { QueryState } from '@/modules/shared';
 import { useShipment } from '../hooks/useShipment';
 import { RecipeEditor } from '../recipe/RecipeEditor';
 

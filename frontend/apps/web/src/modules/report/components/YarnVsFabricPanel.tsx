@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Stack, Table, Text } from '@iplik/ui';
 import { useState } from 'react';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { yarnVsFabricTable } from '../export/faconTables';
 import { formatFireRate, formatKg3 } from '../format';
 import { useYarnVsFabricReport } from '../hooks/useFaconReports';

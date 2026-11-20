@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Stack, Text } from '@iplik/ui';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { balanceMatrixTable } from '../export/faconTables';
 import { useBalanceMatrix } from '../hooks/useFaconReports';
 import { pivotBalanceMatrix } from '../pivot';

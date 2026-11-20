@@ -1,6 +1,6 @@
 import { Stack } from '@iplik/ui';
 import { useParams } from 'react-router';
-import { QueryState } from '../components/QueryState';
+import { QueryState } from '@/modules/shared';
 import { ShipmentFileTabs } from '../components/ShipmentFileTabs';
 import { ShipmentFileTop } from '../components/ShipmentFileTop';
 import { useShipment } from '../hooks/useShipment';

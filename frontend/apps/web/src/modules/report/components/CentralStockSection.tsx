@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { BarList, SectionCard, Text } from '@iplik/ui';
 import { usePermission } from '@/modules/auth';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { foldOthers, toKgBars } from '../charts/barItems';
 import { formatKilograms } from '../format';
 import { useCentralStockTotals } from '../hooks/useStockOverview';

@@ -28,4 +28,17 @@ class PasswordPolicyTest {
         assertThatThrownBy(() -> PasswordPolicy.require("depo", "x".repeat(PasswordPolicy.MAX_LENGTH + 1)))
                 .isInstanceOf(WeakPasswordException.class);
     }
+
+    @Test
+    @DisplayName("BCrypt'in özetleyemeyeceği kadar uzun (72 bayttan fazla) şifre reddedilir; Türkçe harf iki bayttır")
+    void shouldRejectPasswordsLongerThanBcryptLimit() {
+        String seventyTwoBytes = "Abc-12345".repeat(PasswordPolicy.MAX_BYTES / "Abc-12345".length());
+        String thirtySevenTurkishLetters = "ş".repeat(PasswordPolicy.MAX_BYTES / 2) + "ğ";
+
+        assertThatCode(() -> PasswordPolicy.require("depo", seventyTwoBytes)).doesNotThrowAnyException();
+        assertThatThrownBy(() -> PasswordPolicy.require("depo", seventyTwoBytes + "x"))
+                .isInstanceOf(WeakPasswordException.class);
+        assertThatThrownBy(() -> PasswordPolicy.require("depo", thirtySevenTurkishLetters))
+                .isInstanceOf(WeakPasswordException.class);
+    }
 }

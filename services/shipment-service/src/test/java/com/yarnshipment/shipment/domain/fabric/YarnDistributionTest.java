@@ -33,7 +33,7 @@ class YarnDistributionTest {
 
         // then
         assertThat(shares).extracting(YarnShare::yarnType).containsExactly("A", "B");
-        assertThat(shares.get(0).netKg()).isEqualByComparingTo("576");
+        assertThat(shares.getFirst().netKg()).isEqualByComparingTo("576");
         assertThat(shares.get(1).netKg()).isEqualByComparingTo("384");
     }
 

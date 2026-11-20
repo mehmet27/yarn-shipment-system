@@ -24,4 +24,11 @@ record StorageProperties(Path root, String signingKey, Duration uploadUrlTtl, Du
                     + " characters");
         }
     }
+
+    /** SEC-13: imza anahtarı log ya da hata mesajına yazılmaz. */
+    @Override
+    public String toString() {
+        return "StorageProperties[root=" + root + ", signingKey=***, uploadUrlTtl=" + uploadUrlTtl + ", downloadUrlTtl="
+                + downloadUrlTtl + "]";
+    }
 }

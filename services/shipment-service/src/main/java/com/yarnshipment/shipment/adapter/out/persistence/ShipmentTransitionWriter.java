@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.adapter.out.persistence;
 
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.moduleapi.event.DomainEvent;
 import com.yarnshipment.moduleapi.event.DomainEventPublisher;
 import com.yarnshipment.shipment.domain.model.InvalidShipmentStatusException;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Component;
 final class ShipmentTransitionWriter {
 
     private static final String AGGREGATE_TYPE = "Shipment";
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', ?, true)";
     private static final String UPDATE_STATUS = """
             UPDATE shipment SET status = ?, updated_at = ?, updated_by = ?, version = version + 1
             WHERE id = ? AND status = ?""";
@@ -44,7 +44,7 @@ final class ShipmentTransitionWriter {
 
     /** Transaction'daki tetikleyicilerin ({@code audit_local}) işlemi yapanı görmesi için. */
     void actAs(UUID actorUserId) {
-        jdbc.sql(SET_ACTOR).param(actorUserId.toString()).query().singleValue();
+        AuditActors.actAs(jdbc, actorUserId);
     }
 
     void changeStatus(Transition transition) {

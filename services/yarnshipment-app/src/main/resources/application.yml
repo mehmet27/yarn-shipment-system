@@ -34,6 +34,27 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+# LOG-09: yalnızca sağlık ucu açılır. Ayrıntı (veritabanı adı, disk yolu) kimseye dönmez; yalnızca UP/DOWN görünür.
+# /actuator/health ve /actuator/health/readiness veritabanı bağlantısını da denetler; liveness denetlemez (veritabanı
+# kesintisinde uygulama yeniden başlatılmasın diye). nginx yalnızca /api yolunu ilettiği için uç dışarıya açılmaz.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db
+logging:
+  pattern:
+    # LOG-02: her log satırı istek kimliğini ve (oturum varsa) işlemi yapan kullanıcının kimliğini taşır.
+    correlation: "[%X{requestId:-}] [%X{userId:-}] "
 server:
   port: ${SERVER_PORT:8083}
   servlet:

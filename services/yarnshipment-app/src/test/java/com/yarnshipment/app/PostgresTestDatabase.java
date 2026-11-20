@@ -1,5 +1,6 @@
 package com.yarnshipment.app;
 
+import java.util.Map;
 import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -34,6 +35,14 @@ final class PostgresTestDatabase {
 
     private static String jdbcUrl() {
         return CONTAINER == null ? EXTERNAL_URL : CONTAINER.getJdbcUrl();
+    }
+
+    /** Bağlam başlatıcıları için: veri kaynağı ayarları düz anahtar-değer olarak. */
+    static Map<String, Object> properties() {
+        return Map.of(
+                "spring.datasource.url", jdbcUrl(),
+                "spring.datasource.username", USER,
+                "spring.datasource.password", PASSWORD);
     }
 
     static void register(DynamicPropertyRegistry registry) {

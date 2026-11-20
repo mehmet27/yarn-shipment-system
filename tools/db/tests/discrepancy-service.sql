@@ -29,4 +29,7 @@ UPDATE discrepancy SET status = 'RESOLVED', resolution = 'TOLERANCE', resolution
 WHERE id = '00000000-0000-7000-8000-000000000601';
 INSERT INTO discrepancy_activity (id, created_at, discrepancy_id, action_type, actor_id, occurred_at)
 VALUES (gen_random_uuid(), now(), '00000000-0000-7000-8000-000000000601', 'RESOLVED', gen_random_uuid(), now());
+-- Geçmiş satırı var olmayan bir uyuşmazlığa yazılamaz (V202611210900).
+SELECT pg_temp.expect_error($$INSERT INTO discrepancy_activity (id, created_at, discrepancy_id, action_type, actor_id,
+    occurred_at) VALUES (gen_random_uuid(), now(), gen_random_uuid(), 'OPENED', gen_random_uuid(), now())$$, '23503');
 ROLLBACK;

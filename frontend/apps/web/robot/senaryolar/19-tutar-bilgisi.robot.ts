@@ -14,6 +14,7 @@ const TL = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFra
 /**
  * Tutar bilgisi: birim fiyat yeni sevkiyatta zorunludur; tutarı yalnızca müdür ve genel müdür görür. Tutar her satırın
  * kendi fiyatıyla hesaplandığından kartlardaki değerler sunucunun verdiği toplamlarla ve fasoncu tablosuyla aynı olmalıdır.
+ * Açılış bakiyesini yalnızca müdür yükler: bakiyeyi görebilen kalite ve genel müdür isteği doğrudan gönderse de 403 alır.
  */
 test('Tutar bilgisi: fiyat zorunlu; tutarı yalnızca müdür ve genel müdür görür; kartlar sunucuyla tutarlı', async ({
   giris,
@@ -91,4 +92,32 @@ test('Tutar bilgisi: fiyat zorunlu; tutarı yalnızca müdür ve genel müdür g
     );
     kalite.kontrol('tutar uç noktası kalite için 403 olmalı', /403 GET/.test(hata), hata);
   });
+
+  // Açılış bakiyesi deftere hareket yazar; bakiyeyi görebilmek yüklemeye yetmez, yalnızca müdür yükler.
+  for (const rol of [kalite, genel]) {
+    rol.beklenen(/403 POST \/api\/v1\/reports\/balance\/opening-import/);
+    await rol.adim(
+      'açılış bakiyesini yalnızca müdür yükler: istek doğrudan gönderilse de 403',
+      async () => {
+        await rol.sayfa.goto('/panel/raporlar');
+        const kod = await rol.sayfa.evaluate(async () => {
+          const cerez = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='));
+          const yanit = await fetch('/api/v1/reports/balance/opening-import', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-XSRF-TOKEN': decodeURIComponent(cerez?.split('=')[1] ?? ''),
+            },
+            body: JSON.stringify({ asOf: '2026-01-01', rows: [] }),
+          });
+          return `${String(yanit.status)} ${((await yanit.json()) as { code?: string }).code ?? ''}`;
+        });
+        rol.kontrol(
+          'açılış bakiyesi yükleme 403 ACCESS_DENIED dönmeli',
+          kod === '403 ACCESS_DENIED',
+          kod,
+        );
+      },
+    );
+  }
 });

@@ -51,7 +51,7 @@ public final class AuthenticationService
             hasher.spendVerificationTime(password);
             throw new AuthenticationFailedException();
         }
-        AuthUser user = found.get();
+        AuthUser user = found.orElseThrow();
         requireNotLocked(user, now);
         if (!hasher.matches(password, user.passwordHash())) {
             users.recordFailedAttempt(user.id(), MAX_FAILED_ATTEMPTS, LOCK_DURATION, now);

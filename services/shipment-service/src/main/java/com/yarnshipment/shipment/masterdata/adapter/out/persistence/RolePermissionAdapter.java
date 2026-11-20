@@ -2,6 +2,7 @@ package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 
 import com.yarnshipment.common.security.Permission;
 import com.yarnshipment.common.security.Role;
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.shipment.masterdata.application.port.out.RolePermissionPort;
 import java.sql.Timestamp;
 import java.time.Clock;
@@ -20,7 +21,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 @Component
 final class RolePermissionAdapter implements RolePermissionPort {
 
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', ?, true)";
     private static final String SELECT = "SELECT role, permission FROM role_permission";
     private static final String INSERT = """
             INSERT INTO role_permission (role, permission, updated_at, updated_by)
@@ -49,7 +49,7 @@ final class RolePermissionAdapter implements RolePermissionPort {
 
     @Override
     public void replace(UUID actorId, Role role, Set<Permission> permissions) {
-        jdbc.sql(SET_ACTOR).param(actorId.toString()).query().singleValue();
+        AuditActors.actAs(jdbc, actorId);
         Set<Permission> current = findAll().getOrDefault(role, Set.of());
         for (Permission permission : current) {
             if (!permissions.contains(permission)) {

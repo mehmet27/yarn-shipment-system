@@ -255,7 +255,7 @@ paths:
       tags: [BalanceFire]
       operationId: importOpeningBalance
       summary: Açılış bakiyesini OPENING hareketi olarak içe aktarır
-      description: BALANCE_VIEW gerekir. (fasoncu, iplik cinsi) için OPENING varsa satır atlanır.
+      description: Yalnızca müdür (MANAGER rolü ve BALANCE_VIEW izni). (fasoncu, iplik cinsi) için OPENING varsa satır atlanır.
       requestBody:
         required: true
         content:

@@ -87,6 +87,17 @@ class StaffLoginAccountServiceTest {
             new StaffLoginAccountService(targets, accounts, credentials, workAreas, users.issuer());
 
     @Test
+    @DisplayName("Hesap açma isteğinin metin hali şifreyi, giriş adını ve ad soyadı içermez")
+    void shouldMaskSecretsInRequestToString() {
+        String text =
+                new StaffAccountRequest("ayse.depo", "Ayşe Yılmaz", StaffRole.WAREHOUSE, "Gizli-Sifre-42").toString();
+
+        assertThat(text)
+                .doesNotContain("Gizli-Sifre-42", "ayse.depo", "Ayşe Yılmaz")
+                .contains("role=WAREHOUSE");
+    }
+
+    @Test
     @DisplayName("Kalite hesabı çalışma alanıyla açılır ve alan yeni kullanıcıya yazılır")
     void shouldSaveWorkAreaForQuality() {
         service.createStaffLoginAccount(
@@ -199,7 +210,7 @@ class StaffLoginAccountServiceTest {
         service.createStaffLoginAccount(admin, request);
 
         assertThat(openedStaff).hasSize(1);
-        assertThat(openedStaff.get(0).siteIds()).isEmpty();
+        assertThat(openedStaff.getFirst().siteIds()).isEmpty();
     }
 
     @Test

@@ -3,11 +3,14 @@ import { useTranslation } from '@iplik/i18n';
 import { SectionCard } from '@iplik/ui';
 import { formatKilograms } from '../format';
 import { CardBleed } from './CardBleed';
-import { GroupLabel } from './GroupLabel';
 import { StatCard } from './StatCard';
+import { ShipmentStatusBar } from './ShipmentStatusBar';
 import { StatGrid } from './StatGrid';
 
-/** Dashboard kartları: sevkiyat durumu ve kilo karşılaştırması tek kartta, açık uyuşmazlıklar ayrı kartta. */
+/**
+ * Dashboard kartları: sevkiyatların durum dağılımı (dilimli çubuk) ve kilo karşılaştırması tek kartta, açık
+ * uyuşmazlıklar ayrı kartta.
+ */
 export function DashboardSummary({ dashboard }: { dashboard: DashboardView }) {
   const { t } = useTranslation();
   const { shipments, quantity, discrepancies } = dashboard;
@@ -15,18 +18,13 @@ export function DashboardSummary({ dashboard }: { dashboard: DashboardView }) {
     <>
       <SectionCard title={t('report.dashboard.shipments')} icon="shipments">
         <CardBleed>
+          <ShipmentStatusBar shipments={shipments} />
           <StatGrid>
             <StatCard
               label={t('report.dashboard.total')}
               value={shipments.total}
               testId="stat-total"
             />
-            <StatCard label={t('report.dashboard.inProgress')} value={shipments.inProgress} />
-            <StatCard label={t('report.dashboard.inReview')} value={shipments.inReview} />
-            <StatCard label={t('report.dashboard.completed')} value={shipments.completed} />
-          </StatGrid>
-          <GroupLabel>{t('report.dashboard.comparison')}</GroupLabel>
-          <StatGrid>
             <StatCard
               label={t('report.dashboard.dispatchNet')}
               value={formatKilograms(quantity.dispatchNetKg)}

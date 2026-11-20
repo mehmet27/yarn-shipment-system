@@ -10,6 +10,7 @@ export {
   parseKg,
   subtractKg,
   sumKg,
+  sumSignedKg,
 } from './kilogram';
 export {
   calculateDifferencePct,

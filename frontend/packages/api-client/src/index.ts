@@ -206,6 +206,7 @@ export type {
 } from './evidence';
 export {
   getDashboard,
+  getMonthlyTrend,
   getShipmentReport,
   getSubcontractorBalanceReport,
   getSubcontractorReport,
@@ -214,6 +215,8 @@ export {
 export type {
   DashboardView,
   GetDashboardParams,
+  GetMonthlyTrendParams,
+  MonthlyFlowView,
   OpenDiscrepanciesView,
   OverdueDiscrepancyView,
   PartyStatsView,

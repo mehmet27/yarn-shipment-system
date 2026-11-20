@@ -11,6 +11,7 @@ import com.yarnshipment.shipment.domain.balance.BalanceMovement.DispatchLine;
 import com.yarnshipment.shipment.domain.balance.Kilograms;
 import com.yarnshipment.shipment.domain.balance.MovementKind;
 import com.yarnshipment.shipment.domain.balance.YarnRef;
+import com.yarnshipment.shipment.domain.fabric.YarnDistribution;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -29,8 +31,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Bakiye defterinin JDBC uygulaması. Bakiye hareketlerin toplamıdır; yoldaki kilo (KR-12) henüz tamamlanmamış
- * sevkiyatların çıkış tartısı netidir. Reçete satırları tablosu ayrı bir değişiklikle gelir; yoksa ya da toplamı
- * tartıyla tutmuyorsa sevkiyat "(reçetesiz)" tek satır yazılır.
+ * sevkiyatların çıkış tartısı netidir. Reçete satırı olmayan eski sevkiyat "(reçetesiz)" tek satır yazılır.
  */
 @Component
 final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort {
@@ -196,14 +197,34 @@ final class BalanceLedgerAdapter implements BalanceQueryPort, DispatchLedgerPort
         return weighed;
     }
 
-    /** Reçete satırları tartı netine eşitse satırlar, değilse tek "(reçetesiz)" satır. */
+    /**
+     * Gönderilen kilo tartı netidir. Reçete satırları tartıya eşitse satırlar aynen yazılır; kantar toleransı içinde
+     * farklıysa tartı neti satırlara reçete oranıyla dağıtılır (iplik cinsleri ve lot korunur, toplam tartıya eşittir).
+     * Reçete satırı olmayan eski kayıtta tek "(reçetesiz)" satır yazılır.
+     */
     private List<DispatchLine> dispatchLines(UUID shipmentId, BigDecimal weighed) {
         List<DispatchLine> lines = recipeLines(shipmentId);
-        BigDecimal total = lines.stream().map(DispatchLine::netKg).reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (lines.isEmpty() || total.compareTo(weighed) != 0) {
+        if (lines.isEmpty()) {
             return List.of(new DispatchLine(1, UNSPECIFIED_YARN, null, weighed));
         }
-        return lines;
+        BigDecimal total = lines.stream().map(DispatchLine::netKg).reduce(BigDecimal.ZERO, BigDecimal::add);
+        return total.compareTo(weighed) == 0 ? lines : scaledToWeighing(lines, weighed);
+    }
+
+    private static List<DispatchLine> scaledToWeighing(List<DispatchLine> lines, BigDecimal weighed) {
+        Map<String, BigDecimal> recipe = new LinkedHashMap<>();
+        Map<String, DispatchLine> byLineNo = new LinkedHashMap<>();
+        for (DispatchLine line : lines) {
+            String lineNo = Integer.toString(line.lineNo());
+            recipe.put(lineNo, line.netKg());
+            byLineNo.put(lineNo, line);
+        }
+        return YarnDistribution.proportional(weighed, recipe).stream()
+                .map(share -> {
+                    DispatchLine line = Objects.requireNonNull(byLineNo.get(share.yarnType()), "line");
+                    return new DispatchLine(line.lineNo(), line.yarnType(), line.lotId(), share.netKg());
+                })
+                .toList();
     }
 
     private List<DispatchLine> recipeLines(UUID shipmentId) {

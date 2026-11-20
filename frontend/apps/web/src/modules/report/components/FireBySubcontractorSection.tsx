@@ -1,7 +1,7 @@
 import type { GetDashboardParams } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { SectionCard, Text } from '@iplik/ui';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { useYarnVsFabricReport } from '../hooks/useFaconReports';
 import { FireBars } from './FireBars';
 

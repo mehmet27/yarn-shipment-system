@@ -73,10 +73,10 @@ describe('sevkiyat günü', () => {
     expect(screen.queryByRole('button', { name: 'Fotoğraf çek' })).not.toBeInTheDocument();
   });
 
-  it('sevkiyat günü gelmiş sevkiyatta depo çıkış tartısı düğmesini görür', async () => {
+  it('sevkiyat günü gelmiş sevkiyatta depo çuval ekleme düğmesini görür', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel/sevkiyat/shp-0001');
-    expect(await screen.findByRole('link', { name: 'Çıkış tartısını gir' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Çuval eklemeye başla' })).toBeInTheDocument();
     expect(screen.queryByText(/Bu tarihten önce çuval atanamaz/)).not.toBeInTheDocument();
   });
 });

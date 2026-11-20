@@ -100,7 +100,16 @@
   },
   "home": {
     "welcome": "Hoş geldiniz, {{name}}",
-    "shortcuts": "Sık kullanılan ekranlar"
+    "shortcuts": "Sık kullanılan ekranlar",
+    "tasks": "Sizi bekleyen işler",
+    "allClear": "Şu an sizi bekleyen iş yok",
+    "allClearHint": {
+      "DISPATCH_RECORD": "Müdür yeni sevkiyat açınca burada \"Yüklenecek sevkiyat\" olarak görünür.",
+      "SHIPMENT_CREATE": "Yeni sevkiyat açabilirsiniz. Karar, irsaliye ya da fatura bekleyen iş çıkınca burada görünür.",
+      "FABRIC_RECEIPT_RECORD": "Fasoncuya iplik teslim edilince kumaşı beklenen sevkiyat burada görünür.",
+      "default": "Yeni iş çıkınca burada görünür."
+    },
+    "openShipments": "Sevkiyatlara git"
   },
   "common": {
     "notRecorded": "Henüz girilmedi",
@@ -128,17 +137,21 @@
     },
     "list": {
       "title": "Sevkiyatlar",
-      "empty": "Bu filtreye uyan sevkiyat yok.",
+      "empty": "Bu durumda sevkiyat yok.",
       "statusFilter": "Durum",
-      "allStatuses": "Tüm durumlar"
+      "allStatuses": "Tüm durumlar",
+      "showAll": "Tüm durumları göster",
+      "none": "Henüz sevkiyat yok",
+      "noneHint": "Müdür yeni sevkiyat açınca burada görünür.",
+      "noneHintCreate": "İlk sevkiyatı açmak için \"Yeni sevkiyat\" düğmesine basın."
     },
     "nextStep": {
       "label": "Sıradaki adım",
-      "DRAFT": "Çuvallar ve çıkış tartısı bekleniyor",
-      "AWAITING_DELIVERY": "Fasoncuya ulaşınca irsaliye yüklenip tamamlanacak",
-      "COMPLETED": "Süreç tamamlandı",
+      "DRAFT": "Depo çuvalları ekleyip çıkış tartısını girecek",
+      "AWAITING_DELIVERY": "Müdür irsaliyeyi yükleyip tamamlayacak",
+      "COMPLETED": "Fasoncuya teslim edildi",
       "CANCELLED": "İptal edildi",
-      "WEIGHT_MISMATCH": "Müdür kararı bekleniyor"
+      "WEIGHT_MISMATCH": "Müdür karar verecek"
     },
     "progress": {
       "label": "{{done}} / {{total}} adım",
@@ -148,7 +161,6 @@
         "AWAITING_DELIVERY": "Yolda",
         "COMPLETED": "Tamam"
       },
-      "current": "Sıradaki adım: {{step}}",
       "cancelled": "İptal edildi"
     },
     "field": {
@@ -198,7 +210,6 @@
       "tare": "Dara",
       "net": "Net",
       "recordDispatch": "Çıkış tartısını gir",
-      "bagsFirst": "Önce \"Çuvallar\" sekmesinden çuvalları ekleyin, sonra tartıyı girin.",
       "dispatchNotRecorded": "Çıkış tartısı henüz girilmedi",
       "bagCount": "Çuval",
       "recipe": {
@@ -343,6 +354,90 @@
         "unknown": "Tarih güncellenemedi. Lütfen tekrar deneyin."
       },
       "title": "Sevkiyat tarihi"
+    },
+    "guide": {
+      "step": {
+        "CREATE": "Yeni sevkiyat",
+        "BAGS": "Çuvallar",
+        "WEIGH": "Çıkış tartısı",
+        "DELIVER": "İrsaliye",
+        "FABRIC": "Kumaş girişi",
+        "FIRE": "Fire dosyası"
+      },
+      "summary": "{{current}} / {{total}} adım: {{step}}",
+      "summaryDone": "{{total}} adımın hepsi bitti",
+      "showSteps": "Tüm adımlar",
+      "hideSteps": "Adımları gizle",
+      "yourTurn": "Sıra sizde",
+      "waiting": "Bu adımı {{actor}} yapacak. Sizin şu an yapmanız gereken bir şey yok.",
+      "task": {
+        "BAGS": {
+          "own": "Çuvalları ekleyin",
+          "other": "Çuvallar eklenecek",
+          "hint": "Önce \"Çuvallar\" sekmesinden çuvalları ekleyin, sonra tartıyı girin.",
+          "action": "Çuval eklemeye başla"
+        },
+        "WEIGH": {
+          "own": "Çıkış tartısını girin",
+          "other": "Çıkış tartısı girilecek",
+          "hint": "Çuvallar eklendi. Aracı boş ve dolu tarttıktan sonra kiloları girin; kilolar tutarsa sevkiyat yola çıkar.",
+          "action": "Çıkış tartısını gir"
+        },
+        "MISMATCH": {
+          "own": "Kantar uyuşmazlığı için karar verin",
+          "other": "Kantar uyuşmazlığı için karar verilecek",
+          "hint": "Tartılan kilo çuvalların toplamıyla tutmadı. Sevkiyat siz karar verene kadar yola çıkamaz.",
+          "action": "Karar seçeneklerine git"
+        },
+        "DELIVER": {
+          "own": "İrsaliyeyi yükleyip sevkiyatı tamamlayın",
+          "other": "Sevkiyat irsaliyeyle tamamlanacak",
+          "hint": "Sevkiyat yolda. Fasoncuya ulaşınca irsaliyeyi yükleyin ve numarasını yazın.",
+          "action": "İrsaliyeyi yükle"
+        },
+        "FABRIC": {
+          "own": "Gelen kumaşı girin",
+          "other": "Fasoncudan gelen kumaş girilecek",
+          "hint": "İplik fasoncuya teslim edildi. Kumaş geldikçe kilosunu \"Kumaş girişi\" sekmesine girin.",
+          "action": "Kumaş girişi yap"
+        },
+        "INVOICE": {
+          "own": "Faturayı girin",
+          "other": "Fatura girilecek",
+          "hint": "{{kg}} faturalanacak. Fatura bilgisi Faturalama ekranından girilir.",
+          "action": "Faturalama ekranına git"
+        },
+        "CLOSE": {
+          "own": "Fire dosyasını kapatın",
+          "other": "Fire dosyası kapatılacak",
+          "hint": "Faturalanacak kilo yok. Gelecek kumaş kalmadıysa \"Fire dosyası\" sekmesinden dosyayı kapatın.",
+          "action": "Fire dosyasını aç"
+        },
+        "SETTLING": {
+          "own": "Fasoncuya teslim edildi",
+          "other": "Fasoncuya teslim edildi",
+          "hint": "Kumaş girişi ve fire dosyası sürüyor. Sizin şu an yapmanız gereken bir şey yok."
+        },
+        "DONE": {
+          "own": "Süreç tamamlandı",
+          "other": "Süreç tamamlandı",
+          "hint": "Bu sevkiyatta yapılacak iş kalmadı."
+        },
+        "CANCELLED": {
+          "own": "İptal edildi",
+          "other": "İptal edildi",
+          "hint": "İptal edilen sevkiyatta işlem yapılmaz."
+        }
+      }
+    },
+    "pendingDeliveries": {
+      "title": "İrsaliyesi beklenen sevkiyat: {{count}}",
+      "hint": "Sevkiyat fasoncuya ulaşınca dosyasını açıp irsaliyeyi yükleyin ve tamamlayın."
+    },
+    "pendingFabric": {
+      "title": "Kumaşı beklenen sevkiyat: {{count}}",
+      "hint": "Fasoncudan kumaş gelince sevkiyatı açıp kilosunu girin.",
+      "more": "İlk {{shown}} sevkiyat gösteriliyor."
     }
   },
   "dispatch": {
@@ -1487,7 +1582,10 @@
       "cancelInvoice": "Vazgeç",
       "modalTitle": "Fatura bilgisi · {{no}}",
       "previousTitle": "Bu sevkiyat için daha önce girilen faturalar",
-      "previousNone": "Bu sevkiyat için henüz fatura girilmedi."
+      "previousNone": "Bu sevkiyat için henüz fatura girilmedi.",
+      "pendingTitle": "Faturası beklenen dosya: {{count}}",
+      "pendingHint": "Fatura bilgisini Faturalama ekranından girin.",
+      "pendingOpen": "Faturalama ekranına git"
     }
   },
   "stock": {

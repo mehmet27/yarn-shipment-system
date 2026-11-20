@@ -1,9 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { SectionCard, Stack } from '@iplik/ui';
 import { PendingRow } from './PendingRow';
-import { useShipments } from '../hooks/useShipments';
-
-const LIST_SIZE = 20;
+import { usePendingDispatches } from '../hooks/usePendingShipments';
 
 /**
  * Depocunun ana sayfadaki iş listesi: çıkış tartısı bekleyen sevkiyatlar ve sırası (1 çuvalları ekle, 2 tartıyı gir).
@@ -11,10 +9,7 @@ const LIST_SIZE = 20;
  */
 export function PendingDispatches() {
   const { t } = useTranslation();
-  const query = useShipments({ status: ['DRAFT'], size: LIST_SIZE });
-  const pending = (query.data?.items ?? []).filter((item) =>
-    item.allowedActions.includes('RECORD_DISPATCH'),
-  );
+  const pending = usePendingDispatches().items;
   if (pending.length === 0) return null;
   return (
     <SectionCard

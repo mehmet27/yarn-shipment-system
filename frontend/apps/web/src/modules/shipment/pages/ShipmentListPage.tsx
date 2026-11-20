@@ -1,10 +1,11 @@
 import { SHIPMENT_STATUSES } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Button, PageHero, Select, Stack, Text } from '@iplik/ui';
+import { Button, PageHero, Select, Stack } from '@iplik/ui';
 import { Can } from '@/modules/auth';
 import { Link } from 'react-router';
 import { ListPagination } from '../components/ListPagination';
 import { QueryState } from '../components/QueryState';
+import { ShipmentListEmpty } from '../components/ShipmentListEmpty';
 import { ShipmentTable } from '../components/ShipmentTable';
 import { useShipmentListFilter, PAGE_SIZE } from '../hooks/useShipmentListFilter';
 import { useShipments } from '../hooks/useShipments';
@@ -48,7 +49,12 @@ export function ShipmentListPage() {
       <QueryState query={query}>
         {(page) =>
           page.items.length === 0 ? (
-            <Text c="dimmed">{t('shipment.list.empty')}</Text>
+            <ShipmentListEmpty
+              isFiltered={filter.status !== undefined}
+              onShowAll={() => {
+                filter.setStatus(undefined);
+              }}
+            />
           ) : (
             <Stack>
               <ShipmentTable shipments={page.items} />

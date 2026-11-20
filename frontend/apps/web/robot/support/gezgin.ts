@@ -1,9 +1,12 @@
 import type { Locator, Page } from '@playwright/test';
 import type { Robot } from './robot';
 
-/** Veri değiştirmeyen, bu yüzden gezginin kendi tıkladığı düğmeler (sayfalama, indirme, büyütme, satır ekle/sil…). */
+/**
+ * Veri değiştirmeyen, bu yüzden gezginin kendi tıkladığı düğmeler (sayfalama, indirme, büyütme, satır ekle/sil,
+ * "sıradaki adım" kutusunun sekme açan ya da forma kaydıran düğmeleri…).
+ */
 const GUVENLI_DUGME =
-  /^(\d+|Önceki sayfa|Sonraki sayfa|PDF indir|Excel indir \(\.xlsx\)|Sipariş formu PDF|.*fotoğrafını büyüt|Satır ekle|İplik ekle|İplik satırı ekle|Sil|\d+\. satırı sil|Varsayılana dön|Yeni kullanıcı|Ekle|Bildirimler|Yan menü|Yenile)$/;
+  /^(\d+|Önceki sayfa|Sonraki sayfa|PDF indir|Excel indir \(\.xlsx\)|Sipariş formu PDF|.*fotoğrafını büyüt|Satır ekle|İplik ekle|İplik satırı ekle|Sil|\d+\. satırı sil|Varsayılana dön|Yeni kullanıcı|Ekle|Bildirimler|Yan menü|Yenile|Çuval eklemeye başla|İrsaliyeyi yükle|Karar seçeneklerine git|Kumaş girişi yap|Fire dosyasını aç|Tüm adımlar|Adımları gizle|Tüm durumları göster)$/;
 
 /** Dosya seçtirdiği ya da kamera açtığı için gezginin dokunmadığı düğmeler; dosya yükleme senaryolarında denenir. */
 const DOSYA_DUGME =

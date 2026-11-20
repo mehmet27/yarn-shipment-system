@@ -1,27 +1,35 @@
 import { useTranslation } from '@iplik/i18n';
 import { Tabs, Text } from '@iplik/ui';
-import { useSearchParams } from 'react-router';
 import { EvidenceGallery } from '@/modules/evidence';
 import { ClaimsTabTrigger, QualityClaimsSection } from '@/modules/claim';
 import { SettlementTabPanels } from '../settlement/SettlementTabPanels';
 import { SettlementTabTriggers } from '../settlement/SettlementTabTriggers';
+import { SECTION_SCROLL_MARGIN_PX } from '../guide/scrollToSection';
 import { BagsTab } from './BagsTab';
+import { FILE_TABS_SECTION_ID, fileTabSearch, isFileTab, useFileTab } from './fileTabs';
 import { HistoryTab } from './HistoryTab';
 import type { ShipmentDetail } from '@iplik/api-client';
 import { isCompleted } from './shipmentViews';
 import { WeightsPanel } from './WeightsPanel';
 
 /** Çıkış tartısı uyarısı çuvallar sekmesini bu adresle açar (`?sekme=cuvallar`). */
-export const BAGS_TAB_QUERY = 'sekme=cuvallar';
+export const BAGS_TAB_QUERY = fileTabSearch('bags').slice(1);
 
 /** Sevkiyat dosyasının sekmeleri. */
 export function ShipmentFileTabs({ shipment }: { shipment: ShipmentDetail }) {
   const { t } = useTranslation();
   const shipmentId = shipment.shipmentId;
-  const [params] = useSearchParams();
-  const firstTab = params.get('sekme') === 'cuvallar' ? 'bags' : 'weights';
+  const [tab, setTab] = useFileTab();
   return (
-    <Tabs defaultValue={firstTab} keepMounted={false}>
+    <Tabs
+      value={tab}
+      onChange={(value) => {
+        if (isFileTab(value)) setTab(value);
+      }}
+      keepMounted={false}
+      id={FILE_TABS_SECTION_ID}
+      style={{ scrollMarginTop: SECTION_SCROLL_MARGIN_PX }}
+    >
       <Tabs.List>
         <Tabs.Tab value="weights">{t('shipment.file.tabs.weights')}</Tabs.Tab>
         <Tabs.Tab value="bags">{t('shipment.file.tabs.bags')}</Tabs.Tab>

@@ -14,6 +14,9 @@ export type Screen = {
  * genişlikte açar, hatasız yüklendiğini, yatay taşma ve küçük dokunma hedefi olmadığını denetler.
  */
 export const SCREENS: readonly Screen[] = [
+  { name: 'Ana sayfa (depo)', role: 'WAREHOUSE', path: '/panel', ready: 'Sizi bekleyen işler' },
+  { name: 'Ana sayfa (müdür)', role: 'MANAGER', path: '/panel', ready: 'Sizi bekleyen işler' },
+  { name: 'Ana sayfa (kalite)', role: 'QUALITY', path: '/panel', ready: 'Sizi bekleyen işler' },
   { name: 'Sevkiyat listesi', role: 'WAREHOUSE', path: '/panel/sevkiyat', ready: 'Sevkiyatlar' },
   {
     name: 'Yeni sevkiyat',

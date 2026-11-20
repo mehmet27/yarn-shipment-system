@@ -138,7 +138,8 @@ export async function taslakAc(
 /** Depo her biri `kg` kilo olan `adet` çuval ekler. */
 export async function cuvalEkle(depo: Robot, id: string, adet: number, kg: string) {
   await depo.sayfa.goto(`/panel/sevkiyat/${id}`);
-  await depo.sayfa.getByText('Çuvallar', { exact: true }).first().click();
+  // Adım çubuğunda da "Çuvallar" yazar; sekme rolüyle seçilir.
+  await depo.sayfa.getByRole('tab', { name: 'Çuvallar', exact: true }).click();
   for (let i = 0; i < adet; i += 1) {
     await depo.sayfa.getByLabel(/Çuval kilosu/).fill(kg);
     await depo.sayfa.getByRole('button', { name: 'Listeye ekle' }).click();

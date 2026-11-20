@@ -18,4 +18,11 @@ public record StaffAccountRequest(
     public StaffAccountRequest(String username, String fullName, StaffRole role, String password) {
         this(username, fullName, role, password, null);
     }
+
+    /** SEC-13: şifre ve kişisel veri (giriş adı, ad soyad) log ya da istisna mesajına yazılmaz. */
+    @Override
+    public String toString() {
+        return "StaffAccountRequest[username=***, fullName=***, role=" + role + ", password=***, workArea=" + workArea
+                + "]";
+    }
 }

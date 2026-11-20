@@ -196,6 +196,16 @@ class FileSystemObjectStorageAdapterTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    @Test
+    @DisplayName("Ayarların metin hali imza anahtarını içermez")
+    void shouldMaskSigningKeyInToString() {
+        String signingKey = "signing-key-that-must-never-be-logged-0123";
+
+        String text = new StorageProperties(root, signingKey, UPLOAD_TTL, DOWNLOAD_TTL).toString();
+
+        assertThat(text).doesNotContain(signingKey).contains("signingKey=***");
+    }
+
     private void store(FileSystemObjectStorageAdapter adapter) {
         String token = tokenOf(adapter.presignUpload(new UploadTarget(KEY, JPEG, JPEG_BYTES.length))
                 .url());

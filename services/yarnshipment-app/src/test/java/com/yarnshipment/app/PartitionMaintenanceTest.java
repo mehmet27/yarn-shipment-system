@@ -56,7 +56,9 @@ class PartitionMaintenanceTest {
         YearMonth last = YearMonth.now(clock).plusMonths(PartitionMaintenance.MONTHS_AHEAD);
 
         for (String table : TABLES) {
-            assertThat(partitionExists(table + "_p" + last.format(SUFFIX))).as(table).isTrue();
+            assertThat(partitionExists(table + "_p" + last.format(SUFFIX)))
+                    .as(table)
+                    .isTrue();
         }
     }
 
@@ -85,7 +87,9 @@ class PartitionMaintenanceTest {
                  ORDER BY 1""", String.class);
 
         assertThat(withoutDefault).isEmpty();
-        assertThat(TABLES).allSatisfy(table -> assertThat(partitionExists(table + "_default")).isTrue());
+        assertThat(TABLES)
+                .allSatisfy(
+                        table -> assertThat(partitionExists(table + "_default")).isTrue());
     }
 
     private boolean partitionExists(String qualifiedName) {

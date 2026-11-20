@@ -1,7 +1,7 @@
 import { toProblem } from '@iplik/api-client';
 import { todayIsoDate } from '@iplik/i18n';
 import { useTranslation } from '@iplik/i18n';
-import { Box, Group } from '@iplik/ui';
+import { Stack } from '@iplik/ui';
 import { formatKgText } from '@iplik/units';
 import { useRef, useState } from 'react';
 import { useSoleSiteId } from '@/modules/masterdata';
@@ -19,7 +19,7 @@ import {
 
 export type CreateShipmentFormProps = { onCreated: (shipmentId: string) => void };
 
-/** Sevkiyat oluşturma: solda üç kart, sağda yapışkan özet; dar ekranda tek sütun. */
+/** Sevkiyat oluşturma: üç kart ve altında özet (toplam, beklenen kumaş, Taslak oluştur); her genişlikte tek sütun. */
 export function CreateShipmentForm({ onCreated }: CreateShipmentFormProps) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<CreateDraft>(() => ({
@@ -62,20 +62,16 @@ export function CreateShipmentForm({ onCreated }: CreateShipmentFormProps) {
     }
   };
   return (
-    <Group align="flex-start" gap="md" wrap="wrap">
-      <Box flex="1 1 560px" miw={0}>
-        <CreateFields {...{ draft, errors: fieldErrors, defaultFirePct }} onChange={change} />
-      </Box>
-      <Box flex="1 1 300px" maw={{ base: '100%', lg: 360 }} w="100%">
-        <CreateSummary
-          draft={draft}
-          defaultFirePct={defaultFirePct}
-          failure={failureText(t, isSiteMissing, mutation.isError ? mutation.error : undefined)}
-          isSubmitting={mutation.isPending}
-          onSubmit={submit}
-        />
-      </Box>
-    </Group>
+    <Stack gap="md">
+      <CreateFields {...{ draft, errors: fieldErrors, defaultFirePct }} onChange={change} />
+      <CreateSummary
+        draft={draft}
+        defaultFirePct={defaultFirePct}
+        failure={failureText(t, isSiteMissing, mutation.isError ? mutation.error : undefined)}
+        isSubmitting={mutation.isPending}
+        onSubmit={submit}
+      />
+    </Stack>
   );
 }
 

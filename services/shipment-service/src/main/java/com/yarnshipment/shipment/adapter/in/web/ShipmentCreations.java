@@ -35,14 +35,14 @@ final class ShipmentCreations {
                 request.getShipmentDate());
     }
 
-    /** Reçete satırı girdilerini sıraya göre numaralı satırlara çevirir. */
+    /** Reçete satırı girdilerini sıraya göre numaralı satırlara çevirir; iplik yalnızca Tanımlar'dan seçilir. */
     static List<RecipeLine> lines(List<RecipeLineInput> inputs) {
         List<RecipeLine> lines = new ArrayList<>();
         for (RecipeLineInput input : inputs) {
             lines.add(new RecipeLine(
                     lines.size() + 1,
                     input.getYarnTypeId(),
-                    input.getYarnTypeText(),
+                    null,
                     input.getLotId(),
                     new BigDecimal(input.getNetKg()),
                     orderSpec(input)));

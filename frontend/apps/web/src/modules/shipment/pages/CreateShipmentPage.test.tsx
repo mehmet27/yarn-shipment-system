@@ -13,7 +13,7 @@ async function pick(label: string, option: string) {
 }
 
 async function fillRecipe(netKg: string, withPrice = true) {
-  await userEvent.type(await screen.findByLabelText(/ya da listede yoksa yazın/), '20 denye likra');
+  await pick('İplik cinsi 1', 'Pamuk 20/1');
   await userEvent.type(screen.getByLabelText(/Net kg 1/), netKg);
   if (!withPrice) return;
   await userEvent.click(screen.getByRole('tab', { name: /Sipariş bilgileri/ }));
@@ -47,10 +47,7 @@ describe('CreateShipmentPage', () => {
       server.use(...createHandlers('MANAGER'));
       renderApp('/panel/sevkiyat/yeni');
       await pick('Alıcı fasoncu', 'Bursa Tekstil');
-      await userEvent.type(
-        await screen.findByLabelText(/ya da listede yoksa yazın/),
-        '20 denye likra',
-      );
+      await pick('İplik cinsi 1', 'Pamuk 20/1');
       await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
       expect(await screen.findByLabelText(/Net kg 1/)).toBeVisible();
     },
@@ -129,7 +126,7 @@ describe('CreateShipmentPage', () => {
     await userEvent.type(screen.getByLabelText(/Fire oranı/), '25');
     await userEvent.click(screen.getByRole('button', { name: 'Taslak oluştur' }));
     expect(
-      await screen.findByText('Her satırda iplik cinsi seçin ya da yazın.'),
+      await screen.findByText('Her satırda iplik cinsini listeden seçin.'),
     ).toBeInTheDocument();
     expect(screen.getByText(/Fire oranı 0 ile 20 arasında/)).toBeInTheDocument();
   });

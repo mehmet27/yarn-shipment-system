@@ -54,7 +54,7 @@ describe('sevkiyat günü', () => {
       siteId: 'site-merkez',
       subcontractorId: 'sub-0',
       subcontractorTitle: 'Örnek Tekstil A.Ş.',
-      lines: [{ yarnTypeText: '30/1 Penye', netKg: '100.000' }],
+      lines: [{ yarnTypeId: 'prd-0', netKg: '100.000' }],
       fireRate: '0.0400',
       shipmentDate: '2099-12-20',
     });
@@ -88,7 +88,7 @@ describe('sevkiyat günü güncelleme', () => {
       siteId: 'site-merkez',
       subcontractorId: 'sub-0',
       subcontractorTitle: 'Örnek Tekstil A.Ş.',
-      lines: [{ yarnTypeText: '30/1 Penye', netKg: '100.000' }],
+      lines: [{ yarnTypeId: 'prd-0', netKg: '100.000' }],
       fireRate: '0.0400',
       shipmentDate: '2099-12-20',
     });

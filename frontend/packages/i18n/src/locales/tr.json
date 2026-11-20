@@ -289,6 +289,7 @@
         "INVALID_COMPLETION": "İrsaliye numarası geçersiz.",
         "WAYBILL_EVIDENCE_INVALID": "Yüklenen dosya bu sevkiyatın geçerli irsaliyesi değil; lütfen tekrar yükleyin.",
         "EVIDENCE_SERVICE_UNAVAILABLE": "Fotoğraf servisi yanıt vermiyor; tamamlama yapılmadı. Lütfen tekrar deneyin.",
+        "YARN_TYPE_NOT_IN_CATALOG": "Bu iplik Tanımlar'da yok: {{yarns}}. Stok takibi için önce Tanımlar > İplikler'e aynı adla ekleyin, sonra sevkiyatı tamamlayın.",
         "unknown": "Sevkiyat tamamlanamadı. Lütfen tekrar deneyin."
       },
       "missing": "Tamamlamak için irsaliye dosyasını yükleyin ve irsaliye numarasını yazın."
@@ -524,7 +525,7 @@
     "errors": {
       "subcontractorRequired": "Fasoncu seçin.",
       "linesRequired": "En az bir iplik satırı girin.",
-      "lineYarnRequired": "Her satırda iplik cinsi seçin ya da yazın.",
+      "lineYarnRequired": "Her satırda iplik cinsini listeden seçin.",
       "lineKgInvalid": "Net kg 0'dan büyük olmalı (ör. 1.982,5).",
       "fireRateInvalid": "Fire oranı 0 ile 20 arasında, en çok 2 ondalıklı olmalı.",
       "linePriceInvalid": "Fiyat yazılmalı (en çok 4 ondalıklı, eksi olmayan bir sayı).",
@@ -538,7 +539,6 @@
       "title": "Gönderilecek iplikler",
       "yarnType": "İplik cinsi",
       "yarnTypePlaceholder": "Listeden seçin",
-      "yarnTypeText": "ya da listede yoksa yazın",
       "lineTitle": "{{index}}. satır",
       "tabYarn": "İplik",
       "tabOrder": "Sipariş bilgileri (fiyat zorunlu)",

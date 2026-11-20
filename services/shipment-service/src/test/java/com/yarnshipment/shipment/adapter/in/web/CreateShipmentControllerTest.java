@@ -34,7 +34,7 @@ class CreateShipmentControllerTest {
     private static final String VALID_BODY = "{\"siteId\": \"" + TestTokens.SITE_ID + "\", \"subcontractorId\": \""
             + TestTokens.SUBCONTRACTOR_ID + "\", \"subcontractorTitle\": \"Örnek Tekstil\","
             + " \"shipmentDate\": \"2026-10-22\", \"fireRate\": \"0.0500\","
-            + " \"lines\": [{\"yarnTypeText\": \"36/1 VİSKON\","
+            + " \"lines\": [{\"yarnTypeId\": \"0192f0a0-0000-7000-8000-0000000000a1\","
             + " \"netKg\": \"19488.000\", \"unitPrice\": \"21.5000\"}]}";
 
     private final MockMvcTester mvc;
@@ -79,6 +79,19 @@ class CreateShipmentControllerTest {
         boolean fire = new java.math.BigDecimal("0.0500").compareTo(command.fireRate()) == 0;
         boolean day = command.shipmentDate().toString().equals("2026-10-22");
         return header && lines && fire && day;
+    }
+
+    @Test
+    @DisplayName("Serbest metin iplikli satır 400 alır: iplik yalnızca Tanımlar'dan seçilir")
+    void shouldRejectFreeTextYarn() {
+        MvcTestResult result = post(
+                TestTokens.token("manager").build(),
+                VALID_BODY.replace(
+                        "\"yarnTypeId\": \"0192f0a0-0000-7000-8000-0000000000a1\"",
+                        "\"yarnTypeText\": \"36/1 VİSKON\""));
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+        verifyNoInteractions(createShipmentUseCase);
     }
 
     @Test

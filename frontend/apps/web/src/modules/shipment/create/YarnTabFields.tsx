@@ -11,7 +11,7 @@ type YarnTabFieldsProps = {
   onPatch: (patch: Partial<RecipeLineDraft>) => void;
 };
 
-/** Satırın İplik sekmesi: cins ile serbest metin, altında lot ve net kg. */
+/** Satırın İplik sekmesi: cins (Tanımlar'dan seçilir), lot ve net kg. */
 export function YarnTabFields({ line, index, error, onPatch }: YarnTabFieldsProps) {
   const { t } = useTranslation();
   return (

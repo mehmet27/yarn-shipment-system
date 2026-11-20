@@ -1,4 +1,4 @@
-import { taslakAc } from '../support/akis';
+import { iplikTanimla, sevkiyatIpligiSec, taslakAc } from '../support/akis';
 import { expect, rolTanimli, test } from '../support/robot';
 import { damga, sec } from '../support/yardimci';
 
@@ -26,13 +26,12 @@ test('Tutar bilgisi: fiyat zorunlu; tutarı yalnızca müdür ve genel müdür g
   mudur.beklenen(/4\d\d (POST|PUT|PATCH) /);
   kalite.beklenen(/403 GET/);
 
+  const fiyatsizIplik = `${damga()}-fiyatsiz`;
+  await iplikTanimla(mudur, fiyatsizIplik);
   await mudur.adim('fiyatsız sevkiyat açılamaz: fiyat alanı uyarı verir', async () => {
     await mudur.sayfa.goto('/panel/sevkiyat/yeni');
     await sec(mudur.sayfa, /Alıcı fasoncu/, 'Başka Dokuma');
-    await mudur.sayfa
-      .getByLabel(/ya da listede yoksa yazın/i)
-      .first()
-      .fill(`${damga()}-fiyatsiz`);
+    await sevkiyatIpligiSec(mudur.sayfa, fiyatsizIplik);
     await mudur.sayfa.getByLabel(/Net kg 1/).fill('10');
     await mudur.sayfa.getByRole('button', { name: 'Taslak oluştur' }).click();
     await expect(

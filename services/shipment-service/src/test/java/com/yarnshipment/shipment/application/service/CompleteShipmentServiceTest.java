@@ -15,6 +15,7 @@ import com.yarnshipment.shipment.domain.evidence.InvalidWaybillEvidenceException
 import com.yarnshipment.shipment.domain.fire.FireSettlementStatus;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.stock.CentralStockShortfallException;
+import com.yarnshipment.shipment.domain.stock.UnlistedYarnTypeException;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -133,6 +134,22 @@ class CompleteShipmentServiceTest {
         assertThat(centralStock.stockOf(product)).isEqualByComparingTo("100");
         assertThat(events.names).containsExactly("yarnReceipt");
         assertThat(completions).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("Reçetede Tanımlar'da olmayan iplik varsa tamamlama onay verilse de reddedilir, iplik adı bildirilir")
+    void shouldRejectWhenYarnIsNotInCatalog() {
+        queryPort.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
+        givenEvidence(TestShipments.SHIPMENT_ID, EvidenceReference.WAYBILL);
+        centralStock.givenUnlistedYarns(List.of("Serbest İplik"));
+        CompleteShipmentCommand command = new CompleteShipmentCommand(
+                manager, TestShipments.SHIPMENT_ID, "IRS-1", EVIDENCE, UUID.randomUUID(), true);
+
+        assertThatThrownBy(() -> service.completeShipment(command))
+                .isInstanceOfSatisfying(
+                        UnlistedYarnTypeException.class,
+                        error -> assertThat(error.yarnTypes()).containsExactly("Serbest İplik"));
+        assertThat(events.names).isEmpty();
     }
 
     @Test

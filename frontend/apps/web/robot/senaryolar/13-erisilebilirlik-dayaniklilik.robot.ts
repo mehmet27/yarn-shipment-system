@@ -1,7 +1,7 @@
 import { API_SURESI_MS, SAYFA_SURESI_MS } from '../kurallar/hesap';
 import { IZINLI } from '../kurallar/yetki';
 import { expect, rolTanimli, test } from '../support/robot';
-import { fiyatYaz, iplikTanimla, tedarikciTanimla } from '../support/akis';
+import { fiyatYaz, iplikTanimla, sevkiyatIpligiSec, tedarikciTanimla } from '../support/akis';
 import { damga, iplikGirisiDoldur } from '../support/yardimci';
 
 type Ozet = { shipments: Record<string, number> };
@@ -132,10 +132,7 @@ test('Dayanıklılık: yenileme, geri/ileri ve çift tıklama veri tekrarlamaz',
       .click();
     await mudur.sayfa.locator('[role=option]:visible').first().click();
     await mudur.sayfa.getByLabel(/Fire oranı/).fill('3');
-    await mudur.sayfa
-      .getByLabel(/ya da listede yoksa yazın/i)
-      .first()
-      .fill(iplik);
+    await sevkiyatIpligiSec(mudur.sayfa, iplik);
     await mudur.sayfa.getByLabel(/Net kg 1/).fill('10');
     await fiyatYaz(mudur.sayfa);
     await mudur.sayfa.getByRole('button', { name: 'Taslak oluştur' }).dblclick();

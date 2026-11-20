@@ -44,6 +44,12 @@ public interface CentralStockPort {
      */
     List<CentralStockRow> findShortagesAfterDispatch(UUID shipmentId);
 
+    /**
+     * Sevkiyatın merkez stoktan düştüğü, Tanımlar'daki hiçbir iplikle eşleşmeyen (serbest metin) iplik adları. Reçetesi
+     * olmayan eski sevkiyatın "(reçetesiz)" satırı sayılmaz. Boş liste: bütün iplikler tanımlı.
+     */
+    List<String> findUnlistedYarnsOfDispatch(UUID shipmentId);
+
     /** Verilen iplik tanımlarından <b>aktif</b> olanların adları; pasif ya da olmayan tanım sonuçta yer almaz. */
     Map<UUID, String> findActiveProductNames(Collection<UUID> productIds);
 

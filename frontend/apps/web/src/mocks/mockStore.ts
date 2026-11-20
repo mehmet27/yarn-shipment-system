@@ -158,11 +158,10 @@ export function addMockShipment(request: CreateShipmentRequest): InternalShipmen
     ...(request.plateNo === undefined ? {} : { plateNo: request.plateNo }),
     createdAt: new Date().toISOString(),
     allowedActions: allowedActionsOf('DRAFT'),
-    lines: request.lines.map(({ yarnTypeId, yarnTypeText, lotId, netKg }, index) => ({
+    lines: request.lines.map(({ yarnTypeId, lotId, netKg }, index) => ({
       lineNo: index + 1,
       netKg,
-      ...(yarnTypeId === undefined ? {} : { yarnTypeId }),
-      ...(yarnTypeText === undefined ? {} : { yarnTypeText }),
+      yarnTypeId,
       ...(lotId === undefined ? {} : { lotId }),
     })),
     ...(request.fireRate === undefined ? {} : { fireRate: request.fireRate }),

@@ -3,6 +3,7 @@ import type { MasterOption } from '../hooks/useMasterOptions';
 import type { RecipeLineDraft } from '../create/createDraft';
 import { newLine } from '../create/createDraft';
 
+/** İplik yalnızca Tanımlar'dan seçilir; serbest metinle yazılmış eski satırda seçim boş gelir, müdür listeden seçer. */
 function yarnOption(line: RecipeLineView): MasterOption | undefined {
   if (line.yarnTypeId === undefined) return undefined;
   return { value: line.yarnTypeId, label: line.yarnTypeName ?? line.yarnTypeText ?? '' };
@@ -29,7 +30,6 @@ export function draftFromLine(line: RecipeLineView): RecipeLineDraft {
   return {
     ...newLine(),
     yarn: yarnOption(line),
-    yarnText: line.yarnTypeId === undefined ? (line.yarnTypeText ?? '') : '',
     lot: lotOption(line),
     netKg: line.netKg.replace('.', ','),
     ...orderFields(line),

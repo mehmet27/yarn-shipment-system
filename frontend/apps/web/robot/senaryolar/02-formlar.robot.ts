@@ -6,6 +6,7 @@ import {
   kaliteSinifiTanimla,
   kumasFormuDoldur,
   kumasGir,
+  sevkiyatIpligiSec,
   tamamlanmisSevkiyat,
   tedarikciTanimla,
 } from '../support/akis';
@@ -203,6 +204,8 @@ test('Formlar: kumaş girişi ve kalite itirazı kilo sınırını aşınca sat�
 
 test('Formlar: müdür yeni sevkiyat formu eksik ve hatalı girişte uyarır', async ({ giris }) => {
   const robot = await giris('mudur');
+  const sevkiyatIpligi = damga();
+  await iplikTanimla(robot, sevkiyatIpligi);
   await robot.sayfa.goto('/panel/sevkiyat/yeni');
   await robot.adim('hepsi boş', async () => {
     await robot.sayfa.getByRole('button', { name: 'Taslak oluştur' }).click();
@@ -218,10 +221,7 @@ test('Formlar: müdür yeni sevkiyat formu eksik ve hatalı girişte uyarır', a
   ] as const) {
     await robot.adim(`yeni sevkiyat: ${ad}`, async () => {
       await robot.sayfa.getByLabel(/Fire oranı/).fill(fire);
-      await robot.sayfa
-        .getByLabel(/ya da listede yoksa yazın/i)
-        .first()
-        .fill('ROBOT-iplik');
+      await sevkiyatIpligiSec(robot.sayfa, sevkiyatIpligi);
       await robot.sayfa.getByLabel(/Net kg 1/).fill(kg);
       await fiyatYaz(robot.sayfa);
       await robot.sayfa.getByRole('button', { name: 'Taslak oluştur' }).click();

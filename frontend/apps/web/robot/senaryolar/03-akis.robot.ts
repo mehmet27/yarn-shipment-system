@@ -6,6 +6,7 @@ import {
   tedarikciTanimla,
   kumasFormuDoldur,
   kumasGir,
+  sevkiyatIpligiSec,
   tartiyiOnayla,
 } from '../support/akis';
 import { damga, iplikGirisiDoldur, iplikSec, resim, sec } from '../support/yardimci';
@@ -14,7 +15,8 @@ type FireDosyasi = { fireRate: string; sentKg: string; fabricKg: string; status:
 type Sevkiyat = { fireRate: string; status: string };
 
 async function sekme(robot: Robot, ad: string) {
-  await robot.sayfa.getByText(ad, { exact: true }).first().click();
+  // Adım çubuğunda da aynı adlar yazar (Çuvallar, Kumaş girişi); sekme rolüyle seçilir.
+  await robot.sayfa.getByRole('tab', { name: ad, exact: true }).first().click();
   await robot.sayfa.waitForTimeout(600);
 }
 
@@ -89,10 +91,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     await mudur.sayfa.goto('/panel/sevkiyat/yeni');
     await sec(mudur.sayfa, /Alıcı fasoncu/, 'Başka Dokuma');
     await mudur.sayfa.getByLabel(/Fire oranı/).fill('3');
-    await mudur.sayfa
-      .getByLabel(/ya da listede yoksa yazın/i)
-      .first()
-      .fill(iplik);
+    await sevkiyatIpligiSec(mudur.sayfa, iplik);
     await mudur.sayfa.getByLabel(/Net kg 1/).fill('100');
     await fiyatYaz(mudur.sayfa);
     await mudur.sayfa.getByRole('button', { name: 'Taslak oluştur' }).click();

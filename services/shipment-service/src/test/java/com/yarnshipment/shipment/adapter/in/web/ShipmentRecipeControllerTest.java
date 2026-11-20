@@ -34,8 +34,9 @@ class ShipmentRecipeControllerTest {
     private static final String URI = "/api/v1/shipments/" + SHIPMENT + "/recipe";
     private static final String BODY = """
             {"reason": "Reçete düzeltildi",
-             "lines": [{"yarnTypeText": "VİSKON", "netKg": "1000.000", "unitPrice": "12.5"},
-                       {"yarnTypeText": "POLY", "netKg": "982.500", "unitPrice": "10"}]}""";
+             "lines": [
+               {"yarnTypeId": "0192f0a0-0000-7000-8000-0000000000a1", "netKg": "1000.000", "unitPrice": "12.5"},
+               {"yarnTypeId": "0192f0a0-0000-7000-8000-0000000000a2", "netKg": "982.500", "unitPrice": "10"}]}""";
 
     private final MockMvcTester mvc;
 

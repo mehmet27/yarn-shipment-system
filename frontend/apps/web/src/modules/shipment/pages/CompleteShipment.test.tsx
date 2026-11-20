@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
@@ -50,5 +51,33 @@ describe('İrsaliyeyle tamamlama', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Sevkiyatı tamamla' }));
     expect(await screen.findByTestId('shipment-status')).toHaveTextContent('Tamamlandı');
     expect(screen.queryByTestId('stock-shortfall')).not.toBeInTheDocument();
+  });
+
+  it("reçetede Tanımlar'da olmayan iplik varsa tamamlanmaz; iplik adı ve yapılacak iş söylenir", async () => {
+    server.use(
+      http.post('/api/v1/shipments/:shipmentId/completion', () =>
+        HttpResponse.json(
+          {
+            status: 409,
+            code: 'YARN_TYPE_NOT_IN_CATALOG',
+            title: 'x',
+            yarnTypes: ['Serbest İplik'],
+          },
+          { status: 409 },
+        ),
+      ),
+      ...createHandlers('MANAGER'),
+    );
+    renderApp(AWAITING_FILE);
+    const [fileInput] = await screen.findAllByTestId('upload-file-input');
+    if (fileInput === undefined) throw new Error('dosya girişi yok');
+    await userEvent.upload(fileInput, waybill());
+    await screen.findByText('İrsaliye yüklendi');
+    await userEvent.type(screen.getByLabelText(/İrsaliye no/), 'IRS-9');
+    await userEvent.click(screen.getByRole('button', { name: 'Sevkiyatı tamamla' }));
+    expect(
+      await screen.findByText(/Bu iplik Tanımlar'da yok: Serbest İplik\..*aynı adla ekleyin/),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('shipment-status')).not.toHaveTextContent('Tamamlandı');
   });
 });

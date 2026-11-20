@@ -10,6 +10,7 @@ import com.yarnshipment.shipment.domain.fire.InvalidFireSettlementActionExceptio
 import com.yarnshipment.shipment.domain.stock.CentralStockShortfallException;
 import com.yarnshipment.shipment.domain.stock.InsufficientCentralStockException;
 import com.yarnshipment.shipment.domain.stock.SourceYarnShortageException;
+import com.yarnshipment.shipment.domain.stock.UnlistedYarnTypeException;
 import com.yarnshipment.shipment.domain.stock.YarnLotConflictException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -67,6 +68,13 @@ public final class LedgerExceptionHandler {
                                 "missingKg",
                                 item.missingKg().toPlainString()))
                         .toList());
+        return problem;
+    }
+
+    @ExceptionHandler(UnlistedYarnTypeException.class)
+    public ProblemDetail handleUnlistedYarn(UnlistedYarnTypeException exception, HttpServletRequest request) {
+        ProblemDetail problem = problems.create(request, HttpStatus.CONFLICT, "YARN_TYPE_NOT_IN_CATALOG");
+        problem.setProperty("yarnTypes", exception.yarnTypes());
         return problem;
     }
 

@@ -8,7 +8,6 @@ import type { MasterOption } from '../hooks/useMasterOptions';
 export type RecipeLineDraft = {
   key: string;
   yarn: MasterOption | undefined;
-  yarnText: string;
   lot: MasterOption | undefined;
   netKg: string;
   /** Sipariş formu alanları; boş metin "girilmedi" demektir. */
@@ -55,7 +54,6 @@ export function newLine(): RecipeLineDraft {
   return {
     key: `line-${String(lineCounter)}`,
     yarn: undefined,
-    yarnText: '',
     lot: undefined,
     netKg: '',
     fabricType: '',
@@ -124,7 +122,7 @@ export function priceValid(input: string): boolean {
 }
 
 export function lineError(line: RecipeLineDraft): CreateError | undefined {
-  if (line.yarn === undefined && line.yarnText.trim() === '') return 'lineYarnRequired';
+  if (line.yarn === undefined) return 'lineYarnRequired';
   if (parsePositiveKg(line.netKg) === undefined) return 'lineKgInvalid';
   return priceValid(line.unitPrice) ? undefined : 'linePriceInvalid';
 }
@@ -219,12 +217,10 @@ function orderFormFields(line: RecipeLineDraft): Partial<RecipeLineInput> {
 
 function toRecipeLine(line: RecipeLineDraft): RecipeLineInput | undefined {
   const netKg = parsePositiveKg(line.netKg);
-  const yarnTypeText = line.yarnText.trim();
-  if (netKg === undefined) return undefined;
-  if (line.yarn === undefined && yarnTypeText === '') return undefined;
+  if (netKg === undefined || line.yarn === undefined) return undefined;
   return {
     netKg,
-    ...(line.yarn === undefined ? { yarnTypeText } : { yarnTypeId: line.yarn.value }),
+    yarnTypeId: line.yarn.value,
     ...(line.lot === undefined ? {} : { lotId: line.lot.value }),
     ...orderFormFields(line),
   };

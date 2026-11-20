@@ -12,7 +12,13 @@ export async function iplikTanimla(mudur: Robot, ad: string) {
   await mudur.sayfa.getByRole('tab', { name: 'İplikler', exact: true }).click();
   await mudur.sayfa.getByRole('button', { name: 'Ekle' }).click();
   const pencere = mudur.sayfa.getByRole('dialog');
-  await pencere.getByLabel('Kod *', { exact: true }).fill(`RB${ad.replaceAll(/\D/g, '')}`);
+  // Aynı damgadan türeyen adlar (ör. `…-K`) aynı rakamları taşır; kod çakışmasın diye harf eki de eklenir.
+  const ek = ad
+    .replace(/^ROBOT/i, '')
+    .replaceAll(/[^a-z]/gi, '')
+    .slice(0, 6)
+    .toUpperCase();
+  await pencere.getByLabel('Kod *', { exact: true }).fill(`RB${ad.replaceAll(/\D/g, '')}${ek}`);
   await pencere.getByLabel('İplik adı *', { exact: true }).fill(ad);
   await pencere.getByRole('button', { name: 'Kaydet' }).click();
   await pencere.waitFor({ state: 'hidden' });
@@ -80,6 +86,18 @@ export async function fiyatYaz(sayfa: Page, fiyat = '21,5') {
   await sayfa.getByRole('tab', { name: 'İplik', exact: true }).first().click();
 }
 
+/** Yeni sevkiyat formunda ilk satırın ipliğini listeden seçer; iplik Tanımlar'da olmalıdır (serbest metin yoktur). */
+export async function sevkiyatIpligiSec(sayfa: Page, iplik: string) {
+  const liste = sayfa.getByRole('combobox', { name: 'İplik cinsi' }).first();
+  await liste.click();
+  await liste.fill(iplik);
+  await sayfa
+    .locator('[role=option]:visible')
+    .filter({ hasText: iplik })
+    .first()
+    .click({ timeout: 15_000 });
+}
+
 export type Yonetim = { depo: Robot; mudur: Robot };
 
 /** Kapıdan aktarmada `tedarikci`, Tanımlar > İplik tedarikçileri'nde tanımlı olmalıdır. */
@@ -108,8 +126,8 @@ export async function taslakAc(
   await mudur.sayfa.getByLabel(/Fire oranı/).fill(fire);
   // Sevkiyat tarihi formda bugünle gelir; verilirse o güne ayarlanır.
   if (tarih !== undefined) await mudur.sayfa.getByLabel(/Sevkiyat tarihi/).fill(tarih);
-  // Tanımlar'da kayıtlı iplik listeden seçilir (merkez stok kontrolü yalnızca listeden seçilen cinste çalışır);
-  // listede yoksa serbest metin alanına yazılır.
+  // İplik yalnızca Tanımlar'daki ipliklerden seçilir (serbest metin alanı yoktur); listede yoksa önce tanımlanır ve form
+  // baştan doldurulur.
   const liste = mudur.sayfa.getByRole('combobox', { name: 'İplik cinsi' }).first();
   await liste.click();
   await liste.fill(iplik);
@@ -122,11 +140,8 @@ export async function taslakAc(
   ) {
     await secenek.click();
   } else {
-    await liste.fill('');
-    await mudur.sayfa
-      .getByLabel(/ya da listede yoksa yazın/i)
-      .first()
-      .fill(iplik);
+    await iplikTanimla(mudur, iplik);
+    return taslakAc(mudur, iplik, kg, fire, kaynak, alici, tarih);
   }
   await mudur.sayfa.getByLabel(/Net kg 1/).fill(kg);
   await fiyatYaz(mudur.sayfa);

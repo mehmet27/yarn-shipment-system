@@ -265,18 +265,17 @@ function readFireRate(value: unknown): string | undefined {
 
 function readRecipeLine(item: unknown): RecipeLineInput | undefined {
   const line = typeof item === 'object' && item !== null ? (item as Record<string, unknown>) : {};
-  const { yarnTypeId, yarnTypeText, lotId, netKg } = line;
+  const { yarnTypeId, lotId, netKg } = line;
   if (!isKg(netKg) || Number(netKg) <= 0) return undefined;
-  if (!isNonEmpty(yarnTypeId) && !isNonEmpty(yarnTypeText)) return undefined;
+  if (!isNonEmpty(yarnTypeId)) return undefined;
   return {
     netKg,
-    ...(isNonEmpty(yarnTypeId) ? { yarnTypeId } : {}),
-    ...(isNonEmpty(yarnTypeText) ? { yarnTypeText } : {}),
+    yarnTypeId,
     ...(isNonEmpty(lotId) ? { lotId } : {}),
   };
 }
 
-/** En az bir satır; her satırda iplik cinsi (kimlik ya da metin) ve 0'dan büyük net kg. */
+/** En az bir satır; her satırda Tanımlar'dan seçilmiş iplik cinsi ve 0'dan büyük net kg. */
 function readRecipeLines(value: unknown): RecipeLineInput[] | undefined {
   if (!Array.isArray(value) || value.length === 0) return undefined;
   const lines = (value as unknown[]).map(readRecipeLine);

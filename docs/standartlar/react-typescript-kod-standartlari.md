@@ -8,6 +8,8 @@
 | Dayandığı dokümanlar | [React frontend mimarisi](../frontend/react-frontend-mimarisi.md) v1.2, [Yetkilendirme teknik analizi](../yetkilendirme/yetkilendirme-teknik-analizi.md) v1.1, [Java 25 kod standartları](java-kod-standartlari.md) v1.0 |
 | Bağlayıcılık | **Projede yazılan her TypeScript ve TSX satırı bu dokümana uyar.** Kurala aykırı kod birleştirilmez. |
 
+> Kodda fiilen izlenen kalıplar ve bu dokümanın uygulanmayan maddeleri (form kütüphanesi, Zustand, çevrimdışı kuyruk vb.) [`frontend/KOD-STANDARTLARI.md`](../../frontend/KOD-STANDARTLARI.md) içindedir; ikisi çelişirse o doküman geçerlidir.
+
 Bu doküman mimari kararı F-13'ün karşılığıdır: Java kod standartlarıyla aynı yapıda, frontend'e özgü kuralları içerir. Klasör yapısı, teknoloji seçimi ve ekran kararları mimari dokümandadır; burada tekrar edilmez.
 
 Kurallar iki seviyededir:

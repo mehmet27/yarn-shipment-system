@@ -21,7 +21,7 @@ export function ShipmentCard({ shipment, to }: ShipmentCardProps) {
       withBorder
       p="md"
       mih={72}
-      c="dark"
+      c="var(--app-text)"
       radius="md"
       aria-label={shipment.shipmentNo}
       style={{

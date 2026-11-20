@@ -198,6 +198,26 @@ export interface YarnVsFabricRowView {
   overLimitFireKg: string;
 }
 
+export interface MonthlyFlowView {
+  /** Takvim ayı, `YYYY-MM` */
+  month: string;
+  /** Ayın ilk günü */
+  from: string;
+  /** Ayın son günü */
+  to: string;
+  /**
+     * Ayda tamamlanan sevkiyat (fire dosyası) sayısı
+     * @minimum 0
+     */
+  shipmentCount: number;
+  sentKg: string;
+  returnedYarnKg: string;
+  fabricKg: string;
+  /** Kesir (0.0400 = %4) */
+  actualFireRate: string;
+  shortageKg: string;
+}
+
 export interface OpeningRowRequest {
   subcontractorId: string;
   /** @minLength 1 */
@@ -347,6 +367,23 @@ to?: ToParameter;
 siteId?: SiteIdParameter;
 };
 
+export type GetMonthlyTrendParams = {
+/**
+ * Dönem sonu (dahil), Europe/Istanbul günü
+ */
+to?: ToParameter;
+/**
+ * Yalnızca bu lokasyon; kullanıcının yetkili olduğu lokasyonlardan biri olmalıdır
+ */
+siteId?: SiteIdParameter;
+/**
+ * Kaç ay (varsayılan 6)
+ * @minimum 1
+ * @maximum 12
+ */
+months?: number;
+};
+
 export type GetToInvoiceReportParams = {
 /**
  * Dönem başı (dahil), Europe/Istanbul günü
@@ -475,6 +512,22 @@ export const getYarnVsFabricReport = (
     }
 
 /**
+ * REPORT_VIEW gerekir. `to` (boşsa bugün) ayında biten `months` takvim ayı, eskiden yeniye. Her ay, o ayda
+ * tamamlanan sevkiyatların fire dosyalarından toplanır; tanımlar "Giden iplik ↔ gelen kumaş" raporuyla aynıdır
+ * (aynı ay seçildiğinde o raporun satır toplamına eşittir). Verisi olmayan ay sıfırlarla döner.
+ * @summary Aylık giden iplik ve gelen kumaş eğilimi
+ */
+export const getMonthlyTrend = (
+    params?: GetMonthlyTrendParams,
+ ) => {
+      return customInstance<MonthlyFlowView[]>(
+      {url: `/api/v1/reports/monthly-trend`, method: 'GET',
+        params
+    },
+      );
+    }
+
+/**
  * REPORT_VIEW gerekir. Eksik kilo sıfırdan büyük ve durum TO_INVOICE olanlar.
  * @summary Faturalanacak fire dosyaları
  */
@@ -503,7 +556,7 @@ export const getAmountSummary = (
     }
 
 /**
- * BALANCE_VIEW gerekir. (fasoncu, iplik cinsi) için OPENING varsa satır atlanır.
+ * Yalnızca müdür (MANAGER rolü ve BALANCE_VIEW izni). (fasoncu, iplik cinsi) için OPENING varsa satır atlanır.
  * @summary Açılış bakiyesini OPENING hareketi olarak içe aktarır
  */
 export const importOpeningBalance = (
@@ -529,6 +582,7 @@ export type GetSubcontractorBalanceReportResult = NonNullable<Awaited<ReturnType
 export type GetBalanceMatrixResult = NonNullable<Awaited<ReturnType<typeof getBalanceMatrix>>>
 export type GetFireReportResult = NonNullable<Awaited<ReturnType<typeof getFireReport>>>
 export type GetYarnVsFabricReportResult = NonNullable<Awaited<ReturnType<typeof getYarnVsFabricReport>>>
+export type GetMonthlyTrendResult = NonNullable<Awaited<ReturnType<typeof getMonthlyTrend>>>
 export type GetToInvoiceReportResult = NonNullable<Awaited<ReturnType<typeof getToInvoiceReport>>>
 export type GetAmountSummaryResult = NonNullable<Awaited<ReturnType<typeof getAmountSummary>>>
 export type ImportOpeningBalanceResult = NonNullable<Awaited<ReturnType<typeof importOpeningBalance>>>

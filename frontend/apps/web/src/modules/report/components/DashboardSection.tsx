@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Group, Stack, Title } from '@iplik/ui';
 import { useState } from 'react';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { useDashboard } from '../hooks/useDashboard';
 import type { PeriodDays } from '../period';
 import { DEFAULT_PERIOD, toPeriodParams } from '../period';

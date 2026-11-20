@@ -1,15 +1,16 @@
 import { useTranslation } from '@iplik/i18n';
-import { Stack, Table, Text } from '@iplik/ui';
+import { Paper, Stack, Text } from '@iplik/ui';
 import { useState } from 'react';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { yarnVsFabricTable } from '../export/faconTables';
-import { formatFireRate, formatKg3 } from '../format';
 import { useYarnVsFabricReport } from '../hooks/useFaconReports';
+import { FireBars } from './FireBars';
 import { PanelExportBar } from './PanelExportBar';
 import type { ReportPanelProps } from './reportPanelProps';
 import { optionsOf } from './subcontractorOptions';
+import { YarnVsFabricTable } from './YarnVsFabricTable';
 
-/** Fasoncu bazında giden iplik ↔ gelen kumaş karşılaştırması. */
+/** Fasoncu bazında giden iplik ↔ gelen kumaş karşılaştırması: üstte fire oranı çubukları, altında tablo. */
 export function YarnVsFabricPanel({ params, isEnabled }: ReportPanelProps) {
   const { t } = useTranslation();
   const query = useYarnVsFabricReport(params, isEnabled);
@@ -33,36 +34,12 @@ export function YarnVsFabricPanel({ params, isEnabled }: ReportPanelProps) {
             {rows.length === 0 ? (
               <Text c="dimmed">{t('report.fire.empty')}</Text>
             ) : (
-              <Table.ScrollContainer minWidth={820}>
-                <Table>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>{t('report.parties.subcontractor')}</Table.Th>
-                      <Table.Th ta="right">{t('report.fire.sent')}</Table.Th>
-                      <Table.Th ta="right">{t('report.fire.returnedYarn')}</Table.Th>
-                      <Table.Th ta="right">{t('report.fire.fabric')}</Table.Th>
-                      <Table.Th ta="right">{t('report.fire.actualFireRate')}</Table.Th>
-                      <Table.Th ta="right">{t('report.fire.shortage')}</Table.Th>
-                      <Table.Th ta="right">{t('report.fire.overLimitCount')}</Table.Th>
-                      <Table.Th ta="right">{t('report.fire.overLimitFire')}</Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {rows.map((row) => (
-                      <Table.Tr key={row.subcontractorId}>
-                        <Table.Td>{row.subcontractorName}</Table.Td>
-                        <Table.Td ta="right">{formatKg3(row.sentKg)}</Table.Td>
-                        <Table.Td ta="right">{formatKg3(row.returnedYarnKg)}</Table.Td>
-                        <Table.Td ta="right">{formatKg3(row.fabricKg)}</Table.Td>
-                        <Table.Td ta="right">{formatFireRate(row.actualFireRate)}</Table.Td>
-                        <Table.Td ta="right">{formatKg3(row.shortageKg)}</Table.Td>
-                        <Table.Td ta="right">{row.overLimitShipmentCount}</Table.Td>
-                        <Table.Td ta="right">{formatKg3(row.overLimitFireKg)}</Table.Td>
-                      </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
-              </Table.ScrollContainer>
+              <>
+                <Paper withBorder p="md">
+                  <FireBars rows={rows} testId="chart-fire-detail" />
+                </Paper>
+                <YarnVsFabricTable rows={rows} />
+              </>
             )}
           </Stack>
         );

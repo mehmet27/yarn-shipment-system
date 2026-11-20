@@ -28,6 +28,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+// İstisna: CPLX-09/CPLX-10, senaryo testi alanın tüm port sahtelerini ve domain tiplerini birlikte kurar (GIT-10)
 @SuppressWarnings("checkstyle:ClassDataAbstractionCoupling")
 class CompleteShipmentServiceTest {
 

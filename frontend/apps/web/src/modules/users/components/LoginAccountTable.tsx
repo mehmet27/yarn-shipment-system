@@ -1,10 +1,10 @@
 import type { LoginAccountView } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Paper, Stack, Table, useMediaQuery } from '@iplik/ui';
+import { Paper, Stack, Table } from '@iplik/ui';
+import { useWideLayout } from '@/modules/shared';
 import { LoginAccountCard } from './LoginAccountCard';
 import { LoginAccountRow } from './LoginAccountRow';
 
-const DESKTOP_QUERY = '(min-width: 48em)';
 const TABLE_MIN_WIDTH = 640;
 
 export type LoginAccountTableProps = { accounts: readonly LoginAccountView[] };
@@ -12,7 +12,7 @@ export type LoginAccountTableProps = { accounts: readonly LoginAccountView[] };
 /** Mobil öncelikli (FE-UI-07): dar ekranda kartlar, geniş ekranda tablo. Şifre sütunu yoktur. */
 export function LoginAccountTable({ accounts }: LoginAccountTableProps) {
   const { t } = useTranslation();
-  const isDesktop = useMediaQuery(DESKTOP_QUERY, true, { getInitialValueInEffect: false });
+  const isDesktop = useWideLayout();
   if (!isDesktop) {
     return (
       <Stack gap="sm">

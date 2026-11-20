@@ -21,13 +21,14 @@ final class ClaimLedgerAdapter implements ClaimLedgerPort {
     }
 
     @Override
-    public void recordInvoiceableClaim(InvoiceableClaim claim) {
-        jdbc.sql(INSERT_CLAIM)
-                .param("discrepancyId", claim.discrepancyId())
-                .param("shipmentId", claim.shipmentId())
-                .param("claimedKg", claim.claimedKg())
-                .param("by", claim.decidedBy())
-                .param("at", Timestamp.from(claim.decidedAt()))
-                .update();
+    public boolean recordInvoiceableClaim(InvoiceableClaim claim) {
+        return jdbc.sql(INSERT_CLAIM)
+                        .param("discrepancyId", claim.discrepancyId())
+                        .param("shipmentId", claim.shipmentId())
+                        .param("claimedKg", claim.claimedKg())
+                        .param("by", claim.decidedBy())
+                        .param("at", Timestamp.from(claim.decidedAt()))
+                        .update()
+                > 0;
     }
 }

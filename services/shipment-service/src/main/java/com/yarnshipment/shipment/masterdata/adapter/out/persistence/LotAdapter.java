@@ -1,6 +1,7 @@
 package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 
 import com.yarnshipment.common.security.scope.AccessScope;
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.application.port.out.LotPort;
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Component;
 @Component
 final class LotAdapter implements LotPort {
 
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', ?, true)";
     private static final String LOTS = """
             FROM (SELECT l.id, l.site_id, l.lot_no, l.product_id, l.quality_grade_id, l.production_date,
                          l.quality_locked_at, l.active, l.yarn_supplier_id, ys.name AS yarn_supplier_name,
@@ -98,7 +98,7 @@ final class LotAdapter implements LotPort {
 
     @Override
     public UUID insertLot(UUID actorId, UUID siteId, LotDetails details) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         UUID id = UUID.randomUUID();
         try {
             bind(jdbc.sql(INSERT), details)
@@ -115,7 +115,7 @@ final class LotAdapter implements LotPort {
 
     @Override
     public boolean updateLot(UUID actorId, UUID id, LotDetails details) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         try {
             return bind(jdbc.sql(UPDATE), details).param("id", id).update() > 0;
         } catch (DuplicateKeyException e) {
@@ -125,7 +125,7 @@ final class LotAdapter implements LotPort {
 
     @Override
     public boolean setLotStatus(UUID actorId, UUID id, MasterDataStatus status) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         return jdbc.sql(STATUS)
                         .param("active", status.isActive())
                         .param("id", id)
@@ -135,7 +135,7 @@ final class LotAdapter implements LotPort {
 
     @Override
     public boolean lockQuality(UUID actorId, UUID id, Instant lockedAt) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         return jdbc.sql(LOCK)
                         .param("at", Timestamp.from(lockedAt))
                         .param("actor", actorId)
@@ -167,10 +167,6 @@ final class LotAdapter implements LotPort {
     private boolean exists(String sql, UUID id) {
         return Boolean.TRUE.equals(
                 jdbc.sql(sql).param("id", id).query(Boolean.class).single());
-    }
-
-    private void actAs(UUID actorId) {
-        jdbc.sql(SET_ACTOR).param(actorId.toString()).query().singleValue();
     }
 
     private static JdbcClient.StatementSpec bind(JdbcClient.StatementSpec spec, LotDetails details) {

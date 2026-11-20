@@ -118,7 +118,7 @@ hata ya iş işlemini geri alır (`BEFORE_COMMIT`) ya da loglanır (`AFTER_COMMI
   `audit_local` kritik tablolardaki değişikliği trigger ile (`platform.audit_local_capture()`) yazar; hangi modül
   şemasından geldiği `table_schema` kolonundadır, aktör `app.actor_id` oturum ayarından gelir. Uygulama rolü bu
   tabloyu okuyamaz ve yazamaz; yalnızca `SECURITY DEFINER` trigger fonksiyonu ekler, UPDATE ve DELETE reddedilir
-  (`YS001`). Aylık bölümler `platform.create_monthly_partitions()` ile açılır (ilk 15 ay hazır).
+  (`YS001`). Aylık bölümler `platform.create_monthly_partitions()` ile açılır (ilk 15 ay migration ile hazır; sonrasını `PartitionMaintenance` açılışta ve her gece açar, her tabloda `_default` yedek bölüm vardır).
 - **Reporting canlı görünümdür.** Dashboard sorguları shipment ve discrepancy tablolarından okunur; olayla beslenen
   kopya tablo yoktur. Sorgu süresi sorun olursa görünüm materialized view'a çevrilir (ayrı karar).
 - **Ayrı kalan tablolar bilinçli:** `yarn_return` iade belgesidir (irsaliye no, yön), `balance_movement` ortak

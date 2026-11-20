@@ -4,7 +4,7 @@ import { useRemoveBag } from '../hooks/useRemoveBag';
 import { useShipmentBags } from '../hooks/useShipmentBags';
 import { AssignBagsForm } from './AssignBagsForm';
 import { BagSections } from './BagSections';
-import { QueryState } from './QueryState';
+import { QueryState } from '@/modules/shared';
 
 /** Kör giriş: backend hangi listeyi vermediyse o bölüm hiç çizilmez (rol adı kontrolü yok). */
 export function BagsTab({ shipmentId, canAssign }: { shipmentId: string; canAssign: boolean }) {

@@ -1,7 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Anchor, PageHero, Stack } from '@iplik/ui';
-import { Link, useNavigate, useParams } from 'react-router';
-import { QueryState } from '../components/QueryState';
+import { Alert, PageHero, Stack } from '@iplik/ui';
+import { useNavigate, useParams } from 'react-router';
+import { BackLink, QueryState } from '@/modules/shared';
 import { useShipment } from '../hooks/useShipment';
 import { RecipeEditor } from '../recipe/RecipeEditor';
 
@@ -14,9 +14,7 @@ export function UpdateRecipePage() {
   const back = `/panel/sevkiyat/${shipmentId}`;
   return (
     <Stack>
-      <Anchor component={Link} to={back}>
-        {t('recipeEdit.back')}
-      </Anchor>
+      <BackLink to={back}>{t('recipeEdit.back')}</BackLink>
       <QueryState query={query}>
         {(shipment) => (
           <Stack>

@@ -141,7 +141,7 @@ class YarnShipmentApplicationTest {
             jdbc.queryForObject("SELECT set_config('app.actor_id', ?, true)", String.class, actor);
             jdbc.update("""
                     INSERT INTO shipment.app_setting (key, value, updated_at, updated_by)
-                    VALUES ('default_fire_rate', '5', now(), ?)
+                    VALUES ('default_fire_rate', '0.0400', now(), ?)
                     ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at""", ACTOR);
         });
 

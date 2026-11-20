@@ -8,4 +8,5 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 
 FROM nginx:1.27-alpine
 COPY deploy/docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY deploy/docker/guvenlik-basliklari.inc /etc/nginx/conf.d/guvenlik-basliklari.inc
 COPY --from=build /src/frontend/apps/web/dist /usr/share/nginx/html

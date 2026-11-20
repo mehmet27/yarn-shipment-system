@@ -10,6 +10,7 @@ import {
   isKilogram,
   parseKg,
   sumKg,
+  sumSignedKg,
 } from './kilogram';
 
 const kg = (value: string) => value as Kilogram;
@@ -70,6 +71,15 @@ describe('sumKg ve formatSignedKg', () => {
     expect(formatSignedKg('-12.500')).toBe('-12,5 kg');
     expect(formatSignedKg('7.000')).toBe('+7 kg');
     expect(formatSignedKg('x')).toBe('x');
+  });
+});
+
+describe('sumSignedKg', () => {
+  it('eksi değerleri de toplar; sayı olmayanı saymaz, boş listede sıfır döner', () => {
+    expect(sumSignedKg(['12500.500', '4200', '-35.25'])).toBe('16665.250');
+    expect(sumSignedKg(['0.1', '0.2', 'x', ''])).toBe('0.300');
+    expect(sumSignedKg(['-10', '4'])).toBe('-6.000');
+    expect(sumSignedKg([])).toBe('0.000');
   });
 });
 

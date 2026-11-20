@@ -1,6 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
 import { Button, Divider, Modal, Stack } from '@iplik/ui';
-import { InvoiceForm, QueryState, useFireSettlement } from '@/modules/shipment';
+import { InvoiceForm, useFireSettlement } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { useState } from 'react';
 import { PreviousInvoices } from './PreviousInvoices';
 

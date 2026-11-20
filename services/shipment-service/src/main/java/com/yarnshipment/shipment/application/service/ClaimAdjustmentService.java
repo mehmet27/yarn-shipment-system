@@ -14,7 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Haklı kalite itirazının kilosunu fire dosyasına faturalanacak kilo olarak yazar (KR-15, analiz 5.12). Kilo bakiyeden
  * hemen düşülmez; müdür fatura kesince düşer. İtiraz için süre sınırı olmadığından kapanmış dosyaya gelen itiraz da
  * dosyayı yeniden faturalanacak yapar. Fire hesabı itiraz kilosunu fire tabanından düşer. Aynı uyuşmazlığın olayı
- * tekrar gelirse kayıt değişmez; fire dosyası olmayan (fasoncusuz) sevkiyatta yapılacak bir şey yoktur.
+ * tekrar gelirse kayıt değişmez, kapanmış dosya da yeniden açılmaz; fire dosyası olmayan (fasoncusuz) sevkiyatta
+ * yapılacak bir şey yoktur.
  */
 @Service
 public class ClaimAdjustmentService implements RecordClaimAdjustmentUseCase {
@@ -34,12 +35,15 @@ public class ClaimAdjustmentService implements RecordClaimAdjustmentUseCase {
     }
 
     private void record(FireSettlement file, RecordClaimAdjustmentCommand command) {
-        ledger.recordInvoiceableClaim(new InvoiceableClaim(
+        boolean recorded = ledger.recordInvoiceableClaim(new InvoiceableClaim(
                 command.discrepancyId(),
                 command.shipmentId(),
                 Kilograms.round(command.claimedKg()),
                 command.decidedAt(),
                 command.decidedBy()));
+        if (!recorded) {
+            return;
+        }
         FireSettlement reopened = file.reopenedForClaim();
         if (!reopened.equals(file)) {
             settlements.save(reopened, command.decidedAt());

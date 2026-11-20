@@ -11,12 +11,13 @@ Sürüm: v1 · Tarih: 20.10.2026 · Kaynak: Ön analiz raporu v1.1, Java mikrose
 
 ## Güncel veritabanı yapısı
 
-PostgreSQL 17, tek veritabanı `yarnshipment`, tek uygulama kullanıcısı `yarnshipment`. 36 tablo (Flyway geçmişi ve aylık bölümler hariç):
+PostgreSQL 17, tek veritabanı `yarnshipment`, tek uygulama kullanıcısı `yarnshipment`. 40 tablo (Flyway geçmişi ve aylık bölümler hariç;
+20.11.2026 incelemesinde migration'lar temiz bir veritabanına uygulanarak sayıldı):
 
 | Şema | Tablolar |
 | --- | --- |
-| `shipment` (23) | `shipment`, `shipment_line`, `shipment_bag`, `shipment_status_history`, `weighing`, `weight_check`, `correction_record`, `md_site`, `md_subcontractor`, `md_driver`, `md_vehicle`, `md_product`, `md_quality_grade`, `md_production_lot`, `md_yarn_supplier`, `balance_movement`, `fire_settlement`, `fire_rate_change`, `fabric_lot`, `yarn_return`, `central_stock_movement`, `staff_work_area`, `app_setting` |
-| `discrepancy` (5) | `discrepancy`, `discrepancy_activity`, `inspection`, `quality_claim`, `shipment_watch` |
+| `shipment` (26) | `shipment`, `shipment_line`, `shipment_bag`, `shipment_status_history`, `weighing`, `weight_check`, `md_site`, `md_subcontractor`, `md_driver`, `md_vehicle`, `md_product`, `md_quality_grade`, `md_production_lot`, `md_yarn_supplier`, `balance_movement`, `fire_settlement`, `fire_rate_change`, `fire_invoice`, `fire_claim`, `fabric_lot`, `yarn_return`, `central_stock_movement`, `staff_work_area`, `app_setting`, `app_user`, `role_permission` |
+| `discrepancy` (6) | `discrepancy`, `discrepancy_activity`, `inspection`, `quality_claim`, `shipment_watch`, `fabric_receipt_watch` |
 | `evidence` (3) | `evidence_file`, `evidence_duplicate`, `upload_intent` |
 | `audit` (3) | `audit_log`, `audit_chain_head`, `audit_chain_check` |
 | `platform` (2) | `idempotency_record`, `audit_local` |
@@ -274,7 +275,7 @@ Migration'lar yazılırken tasarımın PostgreSQL'de birebir uygulanamayan veya 
 | `audit_log` tekilliği | Partition anahtarı `occurred_at`, tekillik `(event_id, occurred_at)` | Aynı olayın `occurred_at`'i her tekrarda aynıdır; böylece `event_id` tekilliği partition'lı tabloda da korunur |
 | Audit zinciri | `audit_append(jsonb)` tek ekleme yolu; zincir başı `audit_chain_head` satırı kilitlenerek sıraya konur; `audit_verify_chain()` sonucu `audit_chain_check`'e yazar | Yazan rolün tabloya hiçbir yetkisi yoktur |
 | Parti kalitesi kilidi (bag_db) | `lot_quality_lock` tablosu `LotQualityLocked` olayından dolar; `bag (lot_id, quality_grade_code)` buna FK ile bağlı | "Kilitsiz partiye çuval yok" ve "kalite partiden kopyalanır" kuralı veritabanında zorlanır |
-| Partition yönetimi | `create_monthly_partitions()` (SECURITY DEFINER) ilk 15 ayı açar; servisler zamanlanmış görevle gelecek ayları açar | Resmi `postgres:17` imajında `pg_partman` yok; sunucuda `pg_partman`'e geçilebilir |
+| Partition yönetimi | `create_monthly_partitions()` (SECURITY DEFINER) ilk 15 ayı (2027-12'ye kadar) açar; ileriki ayları `yarnshipment-app` içindeki `PartitionMaintenance` açılışta ve her gece açar (12 ay ilerisi). Her bölümlü tablonun ayrıca `_default` yedek bölümü vardır (`V202611210910`) | Resmi `postgres:17` imajında `pg_partman` yok; sunucuda `pg_partman`'e geçilebilir |
 | Yerel iz | Kritik tablolarda `audit_local_capture()` trigger'ı `audit_local`'a yazar; `app.actor_id` oturum ayarı aktörü taşır | Kuyruk çalışmasa bile iz kaybolmaz |
 | Yetkiler | Uygulama rolüne hiçbir tabloda DELETE verilmez; outbox'ta yalnızca `published_at` kolonu güncellenebilir | GEN-04, PERS-11 |
 | Kolon adları | `condition` → `seal_condition`, `type` → `declaration_type` / `discrepancy_type`, `key/value` → `setting_key/setting_value`; `driver.phone` → `phone_enc` (KVKK) | Ayrılmış veya belirsiz kelimelerden kaçınmak |
@@ -353,3 +354,46 @@ Servisleri yeniden başlatın. (`reporting_db` Kafka olaylarından yeniden üret
 | Audit rolleri | `audit/V202611181000__audit_roles.sql` | `audit_writer`, `audit_reader` |
 
 Ertelendi: `fire_settlement` ve `fire_rate_change` birleştirmeleri (ayrı karar). `yarn_return` ile `balance_movement` bilinçli olarak ayrı kalır.
+
+## Veritabanı incelemesi (20.11.2026)
+
+Tablolar, kolonlar, tipler, kısıtlar ve indeksler migration'lar temiz bir PostgreSQL 17'ye uygulanıp kodla (JDBC sorguları, iki JPA
+varlığı, raporlama görünümleri) karşılaştırılarak incelendi. Şema genel olarak sıkı: durum ve tür kolonlarının hepsinde CHECK,
+defter tablolarında yalnızca-ekleme trigger'ı, kilitli sevkiyat koruması ve sorguların kullandığı indeksler var.
+
+### Uygulananlar (`V202611210900`, veri silmez, kolon ya da tip değiştirmez)
+
+| Değişiklik | Migration | Neden |
+| --- | --- | --- |
+| Zorunlu adlar boş olamaz: `md_site.name`, `md_subcontractor.title`, `md_driver.full_name`, `md_vehicle.plate_no`, `md_product.code` / `name`, `md_quality_grade.code` / `name`, `md_yarn_supplier.name`, `md_production_lot.lot_no`, `shipment.shipment_no`, `shipment.subcontractor_title` | `shipment/V202611210900__blank_text_checks_indexes_and_names.sql` | Şemanın geri kalanı bu kuralı CHECK ile zorluyordu, tanım tablolarında eksikti. `NOT VALID` eklenip doğrulanır; eski kurulumda boş adlı satır varsa uyarı verir, göç durmaz |
+| `central_stock_movement (shipment_id)` kısmi indeksi | aynı | Sevkiyatın merkez depo hareketleri `shipment_id` ile okunuyor, indeks yoktu |
+| `fire_invoice (invoiced_on)` indeksi | aynı | Faturalama ekranındaki Faturalananlar listesi tarih aralığıyla süzülüp sıralanıyor |
+| `fabric_lot` üzerindeki `fabric_receipt_*` kısıt adları `fabric_lot_*`, `ux_app_user_username` indeksi `app_user_username_key` oldu | aynı | Tablo adı değişmiş, kısıt adları eski kalmıştı; kural aynı, yalnızca ad değişti |
+| `discrepancy_activity.discrepancy_id` → `discrepancy (id)` yabancı anahtarı | `discrepancy/V202611210900__discrepancy_activity_fk.sql` | `inspection` ve `quality_claim` bu bağı kuruyordu, geçmiş tablosunda eksikti |
+
+**Aylık bölümler (`V202611210910`).** `audit_log`, `audit_local`, `shipment_status_history`, `evidence_file` ve `discrepancy_activity`
+aylık bölümlüdür; bölümler yalnızca 2027-12'ye kadar açılmıştı ve ileriki ayları açan bir iş yoktu, yani 1 Ocak 2028'de bu tablolara
+yazan her işlem (sevkiyat durumu, denetim kaydı, dosya yükleme) hata alacaktı. Düzeltme iki katmanlı: `PartitionMaintenance`
+(`services/yarnshipment-app`) açılışta ve her gece 02:30 UTC'de 12 ay ilerisinin bölümlerini açar; her tabloya eklenen `_default`
+yedek bölüm de iş çalışmamışsa satırın kaybolmamasını sağlar. Yedek bölüm olağan durumda boştur. Dolu kalırsa kapsadığı ayın bölümü
+açılamaz: iş bunu ERROR olarak loglar, satırlar yeni bölüme elle taşınır (`DETACH` → bölümü aç → satırları ekle).
+
+Geri alma: eklenen kısıtlar `ALTER TABLE ... DROP CONSTRAINT`, indeksler `DROP INDEX` ile kaldırılır; ad değişiklikleri ters yönde
+`RENAME` ile döner. Hiçbiri veri değiştirmez.
+
+### Yalnızca öneri (uygulanmadı; karar ya da daha geniş değişiklik gerekir)
+
+| Konu | Bulgu | Öneri |
+| --- | --- | --- |
+| Tanım tablolarına yabancı anahtar | `shipment.site_id` / `subcontractor_id` / `driver_id` / `vehicle_id` / `source_subcontractor_id`, `shipment_line.yarn_type_id` / `lot_id`, `balance_movement.subcontractor_id` / `lot_id`, `yarn_return.subcontractor_id` / `lot_id`, `fire_settlement.subcontractor_id`, `staff_work_area.user_id` hiçbir tabloya bağlı değil. Bu kolonlar mikroservis döneminden kalma; tanımlar artık aynı şemada (`md_*`, `app_user`) ve silinmiyor | Yabancı anahtar eklenebilir. Bugün eklenmedi çünkü testlerin ve `tools/db/tests` dosyalarının çoğu bu kolonlara rastgele kimlik yazıyor; önce test verisi düzenlenmeli |
+| İplik cinsi metin kolonu | `balance_movement.yarn_type` ve `yarn_return.yarn_type` ya ürün kimliğini metin olarak ya da serbest metni tutuyor; görünümler `md_product.id::text = yarn_type` ile eşliyor | `central_stock_movement`'taki gibi ayrı `product_id uuid` kolonu eklenip eski satırlar doldurulmalı (veri taşıma gerekir) |
+| Kullanılmayan tablo | `discrepancy.inspection`: kodda hiçbir okuma ya da yazma yok, görünümlerde geçmiyor (laboratuvar / fiziki kontrol adımı kaldırıldı) | Veri yoksa düşürülebilir |
+| Yalnızca yazılan tablo | `evidence.evidence_duplicate`: kod yazıyor ama hiçbir ekran ya da sorgu okumuyor | Ya bir ekranda gösterilmeli ya da yazım kaldırılmalı |
+| Kullanılmayan / sabit kolonlar | `shipment.planned_bag_count` (yalnızca JPA eşlemesinde), `shipment_bag.lot_no`, `quality_grade_code` (hiç yazılmıyor), `shipment_bag.bag_id`, `unique_key`, `scan_method`, `package_type` (çuval kaydı kalkınca sabit ya da türetilmiş değer), `weighing.side` (yalnızca `DISPATCH`), `inspection.request_note`, `weighing.updated_by` | Canlıya çıkmadan önce birlikte düşürülebilir; kolon silmek geri alınamadığı için ayrı karar |
+| Fatura bilgisinin iki yeri | `fire_settlement.invoice_no` / `invoiced_on` / `invoiced_by` / `invoice_note` son faturayı, `fire_invoice` tüm faturaları tutuyor | Tek kaynak `fire_invoice` olmalı; `fire_settlement` kolonları görünümden türetilebilir |
+| İplik girişinde tedarikçi | Kural gereği her iplik girişinde tedarikçi zorunlu, ama `central_stock_movement` `YARN_RECEIPT` satırında `supplier_name` boş olabiliyor (eski satırlar için) | Eski satırlar doldurulduktan sonra `kind <> 'YARN_RECEIPT' OR supplier_name IS NOT NULL` kısıtı eklenebilir |
+| Kullanıcı tablosunda yerel iz yok | `role_permission` ve `md_*` tablolarında `audit_local` trigger'ı var, `app_user`'da yok | Şifre özeti ize yazılmayacak biçimde (kolon hariç tutularak) trigger eklenebilir |
+| Kilo hassasiyeti | Kilolar `shipment` şemasında `numeric(12,3)`, `discrepancy` şemasındaki kopyalarda (`shipment_watch.dispatch_net_kg`, `fabric_receipt_watch.net_kg`, `quality_claim.claimed_kg`) `numeric(14,3)` | Zararsız; tip değişikliği gerektiği için dokunulmadı |
+| Doğrulanmamış kısıt | `discrepancy_discrepancy_type_check` `NOT VALID` (eski türdeki satırlar silinemediği için bilinçli) | Canlı veritabanı temiz kurulacağı için orada sorun değil |
+| İndeksi olmayan yabancı anahtarlar | `central_stock_movement.production_id` / `supplier_id`, `weight_check.weighing_id`, `weighing.superseded_by` | Bu kolonlarla süzen sorgu yok ve üst tablolar silinmiyor; indeks eklenmedi |
+

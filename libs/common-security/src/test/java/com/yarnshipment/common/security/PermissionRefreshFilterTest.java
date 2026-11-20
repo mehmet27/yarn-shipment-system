@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
@@ -56,6 +57,33 @@ class PermissionRefreshFilterTest {
         ActorAuthenticationToken original = token(Set.of(), Set.of(), true);
 
         assertThat(run(original, NEW)).isSameAs(original);
+    }
+
+    @Test
+    @DisplayName("İstek sürerken log bağlamında kullanıcı kimliği vardır; istek bitince temizlenir")
+    void shouldExposeUserIdToLogContextDuringRequest() throws Exception {
+        ActorAuthenticationToken original = token(Set.of(Role.WAREHOUSE), OLD, false);
+        SecurityContextHolder.getContext().setAuthentication(original);
+        String[] seen = new String[1];
+        FilterChain chain = (request, response) -> seen[0] = MDC.get(PermissionRefreshFilter.USER_ID_MDC_KEY);
+
+        new PermissionRefreshFilter(() -> roles -> OLD)
+                .doFilter(new MockHttpServletRequest(), new MockHttpServletResponse(), chain);
+
+        assertThat(seen[0]).isEqualTo(original.actor().userId().toString());
+        assertThat(MDC.get(PermissionRefreshFilter.USER_ID_MDC_KEY)).isNull();
+    }
+
+    @Test
+    @DisplayName("Oturumsuz istekte log bağlamına kullanıcı yazılmaz")
+    void shouldNotExposeUserIdWithoutSession() throws Exception {
+        String[] seen = {"unset"};
+        FilterChain chain = (request, response) -> seen[0] = MDC.get(PermissionRefreshFilter.USER_ID_MDC_KEY);
+
+        new PermissionRefreshFilter(() -> roles -> OLD)
+                .doFilter(new MockHttpServletRequest(), new MockHttpServletResponse(), chain);
+
+        assertThat(seen[0]).isNull();
     }
 
     private static Authentication run(ActorAuthenticationToken token, Set<Permission> fresh) throws Exception {

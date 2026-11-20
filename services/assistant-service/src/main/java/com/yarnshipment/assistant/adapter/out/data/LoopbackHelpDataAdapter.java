@@ -75,7 +75,9 @@ final class LoopbackHelpDataAdapter implements HelpDataPort {
                     arguments.getOrDefault(HelpDataArgument.SHIPMENT_NO, "").strip();
             Optional<String> id =
                     shipmentNo.isEmpty() ? Optional.empty() : finder.find(path -> fetch(cookie, path), shipmentNo);
-            return id.isPresent() ? fetch(cookie, source.path().replace(SHIPMENT_ID, id.get())) : NOT_FOUND_TEXT;
+            return id.isPresent()
+                    ? fetch(cookie, source.path().replace(SHIPMENT_ID, id.orElseThrow()))
+                    : NOT_FOUND_TEXT;
         } catch (HelpDataReadException e) {
             LOG.warn("Help data read failed: {}", e.getMessage());
             return UNAVAILABLE_TEXT;

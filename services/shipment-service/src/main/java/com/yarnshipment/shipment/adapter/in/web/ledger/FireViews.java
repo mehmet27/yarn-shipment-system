@@ -27,6 +27,7 @@ final class FireViews {
             @JsonUnwrapped FireInvoiceViews.FileInvoices fileInvoices) {}
 
     /** G, D, I, K, T, B, E, H ve gerçekleşen fire (analiz 8.1); faturalanan ve kalan kilo. */
+    // İstisna: SIZE-09, analizdeki sütunları bire bir taşır; bölmek hesap adlarını (G, D, I, K…) dağıtır (GIT-10)
     @SuppressWarnings("checkstyle:RecordComponentNumber")
     record FireFiguresView(
             String sentKg,
@@ -49,6 +50,7 @@ final class FireViews {
             @Nullable UUID invoicedBy,
             @Nullable String invoiceNote) {}
 
+    // İstisna: SIZE-09, fire dosyası listesinin satırı ekrandaki sütunları bire bir taşır (GIT-10)
     @SuppressWarnings("checkstyle:RecordComponentNumber")
     record FireSettlementRowView(
             UUID shipmentId,

@@ -62,6 +62,19 @@ export function sumKg(values: readonly string[]): string {
   return total.toFixed(KG_SCALE);
 }
 
+const SIGNED_API_PATTERN = /^-?\d+(\.\d{1,3})?$/;
+
+/**
+ * İşaretli kilo dizelerinin toplamı ("-35.250" dahil), ör. bakiye ve stok satırları; `sumKg` eksi değeri saymaz.
+ * Sayı olmayan dizeler sayılmaz, satır yoksa "0.000".
+ */
+export function sumSignedKg(values: readonly string[]): string {
+  const total = values
+    .filter((value) => SIGNED_API_PATTERN.test(value))
+    .reduce((sum, value) => sum.plus(value), new Big(0));
+  return total.toFixed(KG_SCALE);
+}
+
 /** API'den gelen kilo dizesini biçimler; sözleşme dışı bir değer olduğu gibi gösterilir. */
 export function formatKgText(value: string): string {
   const plain = value.replace(/\s*kg$/i, '').trim();

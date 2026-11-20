@@ -10,8 +10,10 @@ public interface ClaimLedgerPort {
     /**
      * Haklı itirazın kilosunu bakiyeden düşmeden fire dosyasına faturalanacak kilo olarak yazar; aynı uyuşmazlık
      * tekrar gelirse dokunmaz.
+     *
+     * @return kayıt şimdi yazıldıysa {@code true}; aynı uyuşmazlık daha önce yazılmışsa {@code false}
      */
-    void recordInvoiceableClaim(InvoiceableClaim claim);
+    boolean recordInvoiceableClaim(InvoiceableClaim claim);
 
     /**
      * Faturayla bakiyeden düşülecek haklı itiraz.

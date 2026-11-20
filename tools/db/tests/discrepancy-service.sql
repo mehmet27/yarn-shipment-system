@@ -29,4 +29,16 @@ UPDATE discrepancy SET status = 'RESOLVED', resolution = 'TOLERANCE', resolution
 WHERE id = '00000000-0000-7000-8000-000000000601';
 INSERT INTO discrepancy_activity (id, created_at, discrepancy_id, action_type, actor_id, occurred_at)
 VALUES (gen_random_uuid(), now(), '00000000-0000-7000-8000-000000000601', 'RESOLVED', gen_random_uuid(), now());
+-- Geçmiş satırı var olmayan bir uyuşmazlığa yazılamaz (V202611210900).
+SELECT pg_temp.expect_error($$INSERT INTO discrepancy_activity (id, created_at, discrepancy_id, action_type, actor_id,
+    occurred_at) VALUES (gen_random_uuid(), now(), gen_random_uuid(), 'OPENED', gen_random_uuid(), now())$$, '23503');
+-- Bölümü açılmamış tarih yedek bölüme yazılır (V202611210910).
+INSERT INTO discrepancy_activity (id, created_at, discrepancy_id, action_type, actor_id, occurred_at)
+VALUES (gen_random_uuid(), timestamptz '2040-06-15 10:00:00+00', '00000000-0000-7000-8000-000000000601', 'NOTE',
+        gen_random_uuid(), timestamptz '2040-06-15 10:00:00+00');
+DO $$ BEGIN
+    IF (SELECT count(*) FROM discrepancy_activity_default) <> 1 THEN
+        RAISE EXCEPTION 'row outside the monthly partitions must land in the default partition';
+    END IF;
+END $$;
 ROLLBACK;

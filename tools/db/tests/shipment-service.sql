@@ -257,4 +257,57 @@ SELECT pg_temp.expect_error($$UPDATE md_production_lot SET site_id = '00000000-0
     WHERE id = '00000000-0000-7000-8000-000000000605'$$, 'YS002');
 UPDATE md_production_lot SET active = false WHERE id = '00000000-0000-7000-8000-000000000605';
 
+-- Zorunlu adlar boş ya da yalnızca boşluk olamaz (V202611210900).
+SELECT pg_temp.expect_error($$INSERT INTO md_site (id, name, created_at, created_by)
+    VALUES (gen_random_uuid(), '   ', now(), gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO md_subcontractor (id, title, created_at, created_by)
+    VALUES (gen_random_uuid(), '', now(), gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO md_driver (id, full_name, created_at, created_by)
+    VALUES (gen_random_uuid(), ' ', now(), gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO md_vehicle (id, plate_no, created_at, created_by)
+    VALUES (gen_random_uuid(), '', now(), gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO md_product (id, code, name, created_at, created_by)
+    VALUES (gen_random_uuid(), 'BOS-AD', '  ', now(), gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO md_product (id, code, name, created_at, created_by)
+    VALUES (gen_random_uuid(), ' ', 'Kodsuz', now(), gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO md_quality_grade (id, code, name, created_at, created_by)
+    VALUES (gen_random_uuid(), 'BOS', ' ', now(), gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO md_yarn_supplier (id, name, created_at, created_by)
+    VALUES (gen_random_uuid(), ' ', now(), gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO md_production_lot (id, site_id, lot_no, product_id, quality_grade_id,
+    production_date, created_at, created_by) VALUES (gen_random_uuid(), '00000000-0000-7000-8000-000000000601',
+    ' ', '00000000-0000-7000-8000-000000000602', '00000000-0000-7000-8000-000000000603', current_date, now(),
+    gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title,
+    status, created_at, created_by) VALUES (gen_random_uuid(), gen_random_uuid(), ' ', gen_random_uuid(), 'Fasoncu',
+    'DRAFT', now(), gen_random_uuid())$$, '23514');
+SELECT pg_temp.expect_error($$INSERT INTO shipment (id, site_id, shipment_no, subcontractor_id, subcontractor_title,
+    status, created_at, created_by) VALUES (gen_random_uuid(), gen_random_uuid(), 'S-BOS', gen_random_uuid(), '  ',
+    'DRAFT', now(), gen_random_uuid())$$, '23514');
+-- Yeni kısıtların hepsi doğrulanmış, eski adlı kısıt ve indeks kalmamış olmalı.
+DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM pg_constraint WHERE connamespace = current_schema()::regnamespace
+               AND conname LIKE '%\_not\_blank' AND NOT convalidated) THEN
+        RAISE EXCEPTION 'not_blank constraints must be validated on a clean database';
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_constraint WHERE connamespace = current_schema()::regnamespace
+               AND conname LIKE 'fabric\_receipt\_%') THEN
+        RAISE EXCEPTION 'fabric_lot still has constraints named fabric_receipt_*';
+    END IF;
+    IF to_regclass('app_user_username_key') IS NULL OR to_regclass('central_stock_movement_shipment_idx') IS NULL
+            OR to_regclass('fire_invoice_invoiced_on_idx') IS NULL THEN
+        RAISE EXCEPTION 'expected indexes are missing';
+    END IF;
+END $$;
+
+
+-- Bölümü açılmamış tarih yedek bölüme yazılır (V202611210910); 2027-12 sonrası yazma hata vermez.
+INSERT INTO shipment_status_history (id, created_at, shipment_id, to_status, changed_by, changed_at)
+VALUES (gen_random_uuid(), timestamptz '2040-06-15 10:00:00+00', gen_random_uuid(), 'DRAFT', gen_random_uuid(),
+        timestamptz '2040-06-15 10:00:00+00');
+DO $$ BEGIN
+    IF (SELECT count(*) FROM shipment_status_history_default) <> 1 THEN
+        RAISE EXCEPTION 'row outside the monthly partitions must land in the default partition';
+    END IF;
+END $$;
 ROLLBACK;

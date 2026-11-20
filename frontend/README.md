@@ -1,6 +1,6 @@
 # İplik Sevkiyat – Frontend
 
-React + TypeScript pnpm workspace. Mimari: [`docs/frontend/react-frontend-mimarisi.md`](../docs/frontend/react-frontend-mimarisi.md), kod kuralları: [`docs/standartlar/react-typescript-kod-standartlari.md`](../docs/standartlar/react-typescript-kod-standartlari.md).
+React + TypeScript pnpm workspace. Mimari: [`docs/frontend/react-frontend-mimarisi.md`](../docs/frontend/react-frontend-mimarisi.md), kod kuralları: [`docs/standartlar/react-typescript-kod-standartlari.md`](../docs/standartlar/react-typescript-kod-standartlari.md). Kodda fiilen izlenen kalıplar (dosya nereye konur, hangi hazır parça kullanılır) ve eski dokümandan sapmalar: [`KOD-STANDARTLARI.md`](KOD-STANDARTLARI.md).
 
 | Klasör                | İçerik                                                               |
 | --------------------- | -------------------------------------------------------------------- |

@@ -1,10 +1,10 @@
 import { useTranslation } from '@iplik/i18n';
-import { Paper, Stack, Table, useMediaQuery } from '@iplik/ui';
+import { Paper, Stack, Table } from '@iplik/ui';
+import { useWideLayout } from '@/modules/shared';
 import type { ManagedKind, RecordRow } from '../kinds';
 import { RecordCard } from './RecordCard';
 import { RecordTableRow } from './RecordTableRow';
 
-const DESKTOP_QUERY = '(min-width: 48em)';
 const TABLE_MIN_WIDTH = 640;
 
 export type RecordTableProps = {
@@ -16,7 +16,7 @@ export type RecordTableProps = {
 /** Tanım listesi: geniş ekranda kartın içinde tablo, dar ekranda her kayıt bir kart. */
 export function RecordTable({ kind, rows, onEdit }: RecordTableProps) {
   const { t } = useTranslation();
-  const isDesktop = useMediaQuery(DESKTOP_QUERY, true, { getInitialValueInEffect: false });
+  const isDesktop = useWideLayout();
   if (!isDesktop) {
     return (
       <Stack gap="sm">

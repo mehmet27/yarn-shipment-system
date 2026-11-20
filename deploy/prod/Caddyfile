@@ -5,5 +5,7 @@
 
 {$APP_HOST} {
 	encode zstd gzip
+	# Tarayıcı bu adrese bir yıl boyunca yalnızca HTTPS ile gelir (ilk istekte araya girip HTTP'ye düşürme saldırısına karşı).
+	header Strict-Transport-Security "max-age=31536000"
 	reverse_proxy web:80
 }

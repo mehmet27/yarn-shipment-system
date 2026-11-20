@@ -1,5 +1,6 @@
 package com.yarnshipment.shipment.masterdata.adapter.out.persistence;
 
+import com.yarnshipment.common.web.platform.AuditActors;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataPage;
 import com.yarnshipment.shipment.masterdata.application.port.in.MasterDataQuery;
 import com.yarnshipment.shipment.masterdata.application.port.out.YarnSupplierPort;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Component;
 @Component
 final class YarnSupplierAdapter implements YarnSupplierPort {
 
-    private static final String SET_ACTOR = "SELECT set_config('app.actor_id', ?, true)";
     private static final String COLUMNS = "id, name, active";
     private static final String LIST = "FROM md_yarn_supplier WHERE (active OR :includeInactive)"
             + " AND (CAST(:pattern AS text) IS NULL OR name ILIKE :pattern ESCAPE '\\')";
@@ -54,7 +54,7 @@ final class YarnSupplierAdapter implements YarnSupplierPort {
 
     @Override
     public YarnSupplier insertYarnSupplier(UUID actorId, String name) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         UUID id = UUID.randomUUID();
         try {
             jdbc.sql(INSERT)
@@ -71,7 +71,7 @@ final class YarnSupplierAdapter implements YarnSupplierPort {
 
     @Override
     public Optional<YarnSupplier> updateYarnSupplier(UUID actorId, UUID id, String name) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         try {
             return jdbc.sql(UPDATE)
                     .param("id", id)
@@ -85,16 +85,12 @@ final class YarnSupplierAdapter implements YarnSupplierPort {
 
     @Override
     public boolean setYarnSupplierStatus(UUID actorId, UUID id, MasterDataStatus status) {
-        actAs(actorId);
+        AuditActors.actAs(jdbc, actorId);
         return jdbc.sql(STATUS)
                         .param("active", status.isActive())
                         .param("id", id)
                         .update()
                 > 0;
-    }
-
-    private void actAs(UUID actorId) {
-        jdbc.sql(SET_ACTOR).param(actorId.toString()).query().singleValue();
     }
 
     private static YarnSupplier supplier(ResultSet rs) throws SQLException {

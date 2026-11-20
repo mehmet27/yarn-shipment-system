@@ -2,7 +2,7 @@ import type { GetDashboardParams } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Loader, SectionCard, Stack, Text } from '@iplik/ui';
 import { lazy, Suspense } from 'react';
-import { QueryState } from '@/modules/shipment';
+import { QueryState } from '@/modules/shared';
 import { isTrendEmpty } from '../charts/trendRows';
 import { useMonthlyTrend } from '../hooks/useMonthlyTrend';
 import { TrendTable } from './TrendTable';

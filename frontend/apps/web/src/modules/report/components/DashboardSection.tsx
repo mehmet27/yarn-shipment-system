@@ -3,6 +3,7 @@ import { Group, Stack, Title } from '@iplik/ui';
 import { useState } from 'react';
 import { QueryState } from '@/modules/shared';
 import { useDashboard } from '../hooks/useDashboard';
+import { usePreviousDashboard } from '../hooks/usePreviousDashboard';
 import type { PeriodDays } from '../period';
 import { DEFAULT_PERIOD, toPeriodParams } from '../period';
 import { AttentionLists } from './AttentionLists';
@@ -15,6 +16,7 @@ export function DashboardSection() {
   const { t } = useTranslation();
   const [days, setDays] = useState<PeriodDays>(DEFAULT_PERIOD);
   const query = useDashboard(toPeriodParams(days));
+  const previous = usePreviousDashboard(toPeriodParams(days));
   return (
     <Stack>
       {query.data === undefined ? null : <AttentionLists dashboard={query.data} />}
@@ -26,7 +28,7 @@ export function DashboardSection() {
         {(dashboard) => (
           <Stack>
             <StockOverview params={toPeriodParams(days)} />
-            <DashboardSummary dashboard={dashboard} />
+            <DashboardSummary dashboard={dashboard} previous={previous} />
           </Stack>
         )}
       </QueryState>

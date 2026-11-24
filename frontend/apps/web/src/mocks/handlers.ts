@@ -95,6 +95,26 @@ export function createMeHandler(role: Role) {
   return http.get(ME_PATH, () => HttpResponse.json(createMockUser(role)));
 }
 
+/** Sunucudaki arama: numara, fasoncu, şoför ve plakada büyük-küçük harf ayırmadan; tarih aralığı iki ucu kapsar. */
+function matchesShipmentFilter(shipment: InternalShipmentView, params: URLSearchParams): boolean {
+  const search = (params.get('search') ?? '').trim().toLocaleLowerCase('tr');
+  const from = params.get('from');
+  const to = params.get('to');
+  const haystack = [
+    shipment.shipmentNo,
+    shipment.subcontractorTitle,
+    shipment.driverName ?? '',
+    shipment.plateNo ?? '',
+  ]
+    .join(' ')
+    .toLocaleLowerCase('tr');
+  return (
+    haystack.includes(search) &&
+    (from === null || shipment.shipmentDate >= from) &&
+    (to === null || shipment.shipmentDate <= to)
+  );
+}
+
 function createListShipmentsHandler(role: Role) {
   const user = createMockUser(role);
   return http.get(SHIPMENTS_PATH, ({ request }) => {
@@ -104,7 +124,9 @@ function createListShipmentsHandler(role: Role) {
     const statuses = params.getAll('status');
     const matching = listMockShipments().filter(
       (shipment) =>
-        isInScope(shipment, user) && (statuses.length === 0 || statuses.includes(shipment.status)),
+        isInScope(shipment, user) &&
+        (statuses.length === 0 || statuses.includes(shipment.status)) &&
+        matchesShipmentFilter(shipment, params),
     );
     return HttpResponse.json({
       items: matching.slice(page * size, (page + 1) * size).map(toSummary),

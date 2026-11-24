@@ -68,6 +68,14 @@ class AuditEventsConsumerTest {
         assertThat(captured().entityType()).isEqualTo("Evidence");
     }
 
+    @Test
+    @DisplayName("Giriş olayı LoginAccount türüyle yazılır")
+    void shouldMapAuthTopic() {
+        consumer.consume(record("auth.events.v1", ACTOR.toString()));
+
+        assertThat(captured().entityType()).isEqualTo("LoginAccount");
+    }
+
     private AppendAuditEntryCommand captured() {
         ArgumentCaptor<AppendAuditEntryCommand> command = ArgumentCaptor.forClass(AppendAuditEntryCommand.class);
         verify(useCase).appendEntry(command.capture());

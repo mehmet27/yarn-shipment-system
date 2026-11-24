@@ -1,4 +1,6 @@
 export { shipmentPanelRoutes } from './routes';
+export { QuickSearch } from './components/QuickSearch';
+export type { QuickSearchProps } from './components/QuickSearch';
 export { useActorLabel } from './components/useActorLabel';
 export { useYarnLabel } from './components/useYarnLabel';
 export { formatKgText, formatPercentText, formatSignedKg } from './settlement/format';
@@ -13,4 +15,6 @@ export { usePendingWeightDecisions } from './hooks/usePendingWeightDecisions';
 export { PendingDispatches } from './components/PendingDispatches';
 export { PendingDeliveries } from './components/PendingDeliveries';
 export { PendingRow } from './components/PendingRow';
+export type { PendingRowProps } from './components/PendingRow';
+export { fetchAllShipments } from './components/shipmentListTable';
 export { usePendingDeliveries, usePendingDispatches } from './hooks/usePendingShipments';

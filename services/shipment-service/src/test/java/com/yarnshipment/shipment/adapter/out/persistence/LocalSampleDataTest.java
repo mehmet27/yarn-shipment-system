@@ -3,11 +3,11 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.common.security.scope.AccessScope;
+import com.yarnshipment.shipment.application.port.in.ListShipmentsQuery.Filter;
 import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort.PageRequest;
 import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort.ShipmentSlice;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
@@ -47,7 +47,7 @@ class LocalSampleDataTest {
     @Test
     @DisplayName("Örnek sevkiyatlar her durumdan ve iki lokasyondan okunur")
     void shouldReadSampleShipmentsAcrossStatusesAndSites() {
-        ShipmentSlice all = adapter.findShipments(AccessScope.UNRESTRICTED, Set.of(), ALL);
+        ShipmentSlice all = adapter.findShipments(AccessScope.UNRESTRICTED, Filter.NONE, ALL);
 
         assertThat(all.totalElements()).isEqualTo(SAMPLE_COUNT);
         assertThat(all.shipments().stream().map(Shipment::status).collect(Collectors.toSet()))

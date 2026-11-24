@@ -85,6 +85,8 @@
       "setup": "Tanımlar ve ayarlar"
     },
     "toggle": "Yan menü",
+    "quickSearch": "Hızlı arama",
+    "quickSearchPlaceholder": "Sevkiyat no, fasoncu ya da plaka ara",
     "shipments": "Sevkiyatlar",
     "masterData": "Tanımlar",
     "discrepancies": "Uyuşmazlıklar",
@@ -141,6 +143,14 @@
       "statusFilter": "Durum",
       "allStatuses": "Tüm durumlar",
       "showAll": "Tüm durumları göster",
+      "clearFilters": "Süzgeçleri temizle",
+      "emptyFiltered": "Bu aramaya uyan sevkiyat yok.",
+      "search": "Sevkiyat ara",
+      "searchPlaceholder": "Sevkiyat no, fasoncu, şoför ya da plaka",
+      "searchSubmit": "Ara",
+      "dateFrom": "Başlangıç tarihi",
+      "dateTo": "Bitiş tarihi",
+      "dateRangeInvalid": "Başlangıç tarihi bitiş tarihinden sonra olamaz.",
       "none": "Henüz sevkiyat yok",
       "noneHint": "Müdür yeni sevkiyat açınca burada görünür.",
       "noneHintCreate": "İlk sevkiyatı açmak için \"Yeni sevkiyat\" düğmesine basın."
@@ -719,6 +729,9 @@
       "evidence-reuse-detected": "Kanıt tekrar kullanımı tespit edildi",
       "evidence-uploaded": "Kanıt yüklendi",
       "lot-quality-locked": "Parti kalitesi kilitlendi",
+      "login-succeeded": "Giriş yapıldı",
+      "login-failed": "Hesaba yanlış şifre denendi",
+      "account-locked": "Hesap kilitlendi",
       "delivery-received": "Teslim alındı",
       "shipment-arrived": "Sevkiyat vardı",
       "shipment-cancelled": "Sevkiyat iptal edildi",
@@ -732,9 +745,11 @@
       "Shipment": "Sevkiyat",
       "Evidence": "Kanıt",
       "Discrepancy": "Uyuşmazlık",
-      "CentralStock": "Merkez stok"
+      "CentralStock": "Merkez stok",
+      "LoginAccount": "Giriş"
     },
     "service": {
+      "auth": "Giriş",
       "shipment-service": "Sevkiyat",
       "bag-service": "Çuval",
       "discrepancy-service": "Uyuşmazlık",
@@ -756,8 +771,46 @@
       "broken": "Zincir bozuk ({{at}}); ilk bozuk kayıt: {{id}}."
     }
   },
+  "subcontractorPage": {
+    "title": "Fasoncu",
+    "back": "Fasoncu bakiyesine dön",
+    "subtitle": "Bu fasoncuyla ilgili her şey tek ekranda: elindeki iplik, yoldaki sevkiyatlar, beklenen kumaş, faturalanacaklar ve açık uyuşmazlıklar.",
+    "balanceByYarn": "İplik cinsine göre bakiye",
+    "stat": {
+      "balance": "Fasoncudaki iplik",
+      "inTransit": "Yoldaki sevkiyat",
+      "awaitingFabric": "Beklenen kumaş",
+      "toInvoice": "Faturalanacak",
+      "fireRate": "Son 6 ayın firesi",
+      "openDiscrepancies": "Açık uyuşmazlık",
+      "files": "{{count}} dosya"
+    },
+    "inTransit": {
+      "title": "Yoldaki sevkiyatlar",
+      "empty": "Yolda sevkiyat yok."
+    },
+    "awaitingFabric": {
+      "title": "Kumaşı beklenenler",
+      "empty": "Kumaşı beklenen sevkiyat yok.",
+      "row": "Beklenen kumaş: {{kg}}"
+    },
+    "toInvoice": {
+      "title": "Faturalanacaklar",
+      "empty": "Faturalanacak dosya yok.",
+      "row": "Faturalanacak: {{kg}}"
+    },
+    "discrepancies": {
+      "title": "Açık uyuşmazlıklar",
+      "empty": "Açık uyuşmazlık yok."
+    }
+  },
   "discrepancy": {
     "back": "Uyuşmazlık listesi",
+    "export": {
+      "no": "Uyuşmazlık no",
+      "differenceKg": "Fark (kg)",
+      "createdAt": "Oluşturma"
+    },
     "openShipment": "Sevkiyat dosyasını aç",
     "due": "Vade",
     "status": {
@@ -1226,6 +1279,19 @@
       "value": "Değeri",
       "empty": "Fasoncuda kalan iplik yok."
     },
+    "monthClose": {
+      "month": "Kapanış ayı",
+      "download": "Ay sonu kapanışı (PDF)",
+      "hint": "Seçilen ayın fasoncu bakiyesi, fire durumu ve faturalanacaklar tek belgede, imza yerleriyle iner.",
+      "pdfTitle": "Ay sonu kapanışı: {{month}}",
+      "pdfNote": "Bakiye ve fire seçilen ayın tamamını gösterir. Faturalanacaklar, ay sonundan geriye bir yıl içinde açılıp hâlâ faturalanmamış dosyalardır. Hazırlayan: {{by}}"
+    },
+    "compare": {
+      "previous": "Önceki dönem: {{value}}",
+      "up": "%{{percent}} arttı",
+      "down": "%{{percent}} azaldı",
+      "same": "değişmedi"
+    },
     "dashboard": {
       "title": "Özet",
       "stock": "Stok durumu",
@@ -1263,6 +1329,8 @@
       "excel": "Excel indir (.xlsx)",
       "pdf": "PDF indir",
       "failed": "Rapor hazırlanamadı. Lütfen tekrar deneyin.",
+      "listExcel": "Excel'e al",
+      "listFailed": "Excel dosyası hazırlanamadı. Biraz sonra tekrar deneyin.",
       "onlyDiscrepant": "Yalnızca uyuşmazlıklı olanlar",
       "allRows": "Tüm satırlar",
       "total": "Toplam",

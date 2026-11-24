@@ -21,6 +21,18 @@ describe('Denetim kaydı ekranı', () => {
     expect(router.state.location.search).toBe('?varlik=Evidence');
   });
 
+  it('giriş kayıtlarını süzer: giriş yapıldı, hesaba yanlış şifre denendi, hesap kilitlendi', async () => {
+    server.use(...createHandlers('ADMIN'));
+    const { router } = renderApp('/panel/denetim');
+    await userEvent.click(await screen.findByRole('combobox', { name: 'Kayıt türü' }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Giriş' }));
+    expect(router.state.location.search).toBe('?varlik=LoginAccount');
+    expect(await screen.findAllByText('Hesap kilitlendi')).not.toHaveLength(0);
+    expect(screen.getAllByText('Hesaba yanlış şifre denendi')).not.toHaveLength(0);
+    expect(screen.getAllByText('Giriş yapıldı')).not.toHaveLength(0);
+    expect(screen.queryByText('shipment.dispatched')).not.toBeInTheDocument();
+  });
+
   it('yapan kişiyi UUID yerine ad soyadıyla yazar', async () => {
     server.use(...createHandlers('ADMIN'));
     renderApp('/panel/denetim');

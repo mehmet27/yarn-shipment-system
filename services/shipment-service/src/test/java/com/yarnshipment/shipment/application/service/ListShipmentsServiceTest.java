@@ -14,7 +14,6 @@ import com.yarnshipment.shipment.domain.model.ShipmentParties;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.time.Clock;
 import java.time.ZoneOffset;
-import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,7 +48,8 @@ class ListShipmentsServiceTest {
         Actor actor = TestTokens.CONVERTER.toActor(TestTokens.token("warehouse").build());
 
         // when
-        ShipmentPage page = listService.listShipments(new ListShipmentsQuery(actor, Set.of(), 0, PAGE_SIZE));
+        ShipmentPage page =
+                listService.listShipments(new ListShipmentsQuery(actor, ListShipmentsQuery.Filter.NONE, 0, PAGE_SIZE));
 
         // then
         assertThat(port.lastScope().siteIds()).containsExactly(TestTokens.SITE_ID);
@@ -66,9 +66,10 @@ class ListShipmentsServiceTest {
         Actor actor = TestTokens.CONVERTER.toActor(TestTokens.token("warehouse").build());
 
         // when / then
-        assertThatThrownBy(() -> new ListShipmentsQuery(actor, Set.of(), 0, ListShipmentsQuery.MAX_PAGE_SIZE + 1))
+        assertThatThrownBy(() -> new ListShipmentsQuery(
+                        actor, ListShipmentsQuery.Filter.NONE, 0, ListShipmentsQuery.MAX_PAGE_SIZE + 1))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new ListShipmentsQuery(actor, Set.of(), -1, PAGE_SIZE))
+        assertThatThrownBy(() -> new ListShipmentsQuery(actor, ListShipmentsQuery.Filter.NONE, -1, PAGE_SIZE))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

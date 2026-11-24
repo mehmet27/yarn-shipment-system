@@ -25,7 +25,7 @@ export function PendingDiscrepancies() {
           <PendingRow key={item.id} item={item} isFirst={index === 0} />
         ))}
         <Box px="md" py="xs" style={{ borderTop: '1px solid var(--app-line-soft)' }}>
-          <Anchor component={Link} to="/panel/uyusmazliklar" size="sm">
+          <Anchor component={Link} to="/panel/uyusmazliklar?sayfa=1" size="sm">
             {t('discrepancy.pending.all')}
           </Anchor>
         </Box>

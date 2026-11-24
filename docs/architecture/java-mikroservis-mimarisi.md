@@ -377,6 +377,9 @@ Proje sahibi, başlangıçtaki açık konularda büyümeye uygun ve sonradan gel
 | PartiKalitesiKilitlendi | `LotQualityLocked` | `com.yarnshipment.masterdata.lot-quality-locked.v1` | master-data |
 | FasoncuGuncellendi | `SubcontractorUpdated` | `com.yarnshipment.masterdata.subcontractor-updated.v1` | master-data |
 | SoforGuncellendi | `DriverUpdated` | `com.yarnshipment.masterdata.driver-updated.v1` | master-data |
+| GirisYapildi | `LoginSucceeded` | `com.yarnshipment.auth.login-succeeded.v1` | giriş (shipment-service içinde); yalnızca denetim kaydı dinler |
+| HataliGirisDenemesi | `LoginFailed` | `com.yarnshipment.auth.login-failed.v1` | giriş; yalnızca var olan hesap için, şifre içermez |
+| HesapKilitlendi | `AccountLocked` | `com.yarnshipment.auth.account-locked.v1` | giriş |
 | CuvalOlusturuldu | `BagCreated` | `com.yarnshipment.bag.bag-created.v1` | bag |
 | CuvalSevkiyataBaglandi | `BagAssignedToShipment` | `com.yarnshipment.bag.bag-assigned-to-shipment.v1` | bag |
 | CuvalRezervasyonuBirakildi | `BagReservationReleased` | `com.yarnshipment.bag.bag-reservation-released.v1` | bag |

@@ -2,12 +2,11 @@ import { useTranslation } from '@iplik/i18n';
 import { AppShell, Box, Group, Stack, Text, useDisclosure } from '@iplik/ui';
 import { HelpAssistant } from '@/modules/assistant';
 import { BrandMark } from '@/modules/branding';
+import { QuickSearch } from '@/modules/shipment';
 import { Outlet } from 'react-router';
 import { NavBackdrop } from './NavBackdrop';
-import { NavToggles } from './NavToggles';
-import { NotificationBell } from './NotificationBell';
+import { PanelHeader, SEARCH_IN_HEADER_FROM } from './PanelHeader';
 import { PanelNav } from './PanelNav';
-import { UserMenu } from './UserMenu';
 
 /** Bu genişliğin altı telefon düzenidir. */
 const MOBILE_ONLY = 'sm';
@@ -47,23 +46,12 @@ export function PanelLayout() {
         padding={{ base: 'md', sm: 'lg' }}
       >
         <AppShell.Header style={HEADER_STYLE}>
-          <Group h="100%" px="md" justify="space-between" wrap="nowrap">
-            <Group wrap="nowrap" miw={0}>
-              <NavToggles
-                isMobileOpen={isMobileNavOpen}
-                isDesktopOpen={isDesktopNavOpen}
-                onToggleMobile={toggleMobileNav}
-                onToggleDesktop={toggleDesktopNav}
-              />
-              <Box hiddenFrom={MOBILE_ONLY} miw={0}>
-                <BrandMark />
-              </Box>
-            </Group>
-            <Group gap="xs" wrap="nowrap">
-              <NotificationBell />
-              <UserMenu />
-            </Group>
-          </Group>
+          <PanelHeader
+            isMobileNavOpen={isMobileNavOpen}
+            isDesktopNavOpen={isDesktopNavOpen}
+            onToggleMobileNav={toggleMobileNav}
+            onToggleDesktopNav={toggleDesktopNav}
+          />
         </AppShell.Header>
         <AppShell.Navbar p="sm" style={NAVBAR_STYLE} className="panel-navbar">
           <Group h={NAV_BRAND_HEIGHT_PX} px="xs" wrap="nowrap" visibleFrom={MOBILE_ONLY}>
@@ -71,6 +59,9 @@ export function PanelLayout() {
               <BrandMark />
             </Box>
           </Group>
+          <Box hiddenFrom={SEARCH_IN_HEADER_FROM} px="xs">
+            <QuickSearch onNavigate={closeMobileNav} isFullWidth />
+          </Box>
           <Stack gap={2} mt="xs">
             <Text size="xs" fw={500} c="dimmed" px="sm" py="xs">
               {t('nav.panel')}

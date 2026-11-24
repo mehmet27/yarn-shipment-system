@@ -44,7 +44,7 @@ export function NotificationBell() {
           </Text>
         )}
         <Menu.Divider />
-        <Menu.Item component={Link} to="/panel/uyusmazliklar">
+        <Menu.Item component={Link} to="/panel/uyusmazliklar?sayfa=1">
           {t('notifications.all')}
         </Menu.Item>
       </Menu.Dropdown>

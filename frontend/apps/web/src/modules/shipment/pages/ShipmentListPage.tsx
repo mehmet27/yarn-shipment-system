@@ -1,26 +1,20 @@
-import { SHIPMENT_STATUSES } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Button, PageHero, Select, Stack } from '@iplik/ui';
+import { Button, PageHero, Stack } from '@iplik/ui';
 import { Can } from '@/modules/auth';
 import { Link } from 'react-router';
+import { ListExportButton } from '@/modules/report';
 import { ListPagination, QueryState } from '@/modules/shared';
 import { ShipmentListEmpty } from '../components/ShipmentListEmpty';
+import { ShipmentListFilters } from '../components/ShipmentListFilters';
+import { fetchAllShipments, shipmentListTable } from '../components/shipmentListTable';
 import { ShipmentTable } from '../components/ShipmentTable';
-import { useShipmentListFilter, PAGE_SIZE } from '../hooks/useShipmentListFilter';
+import { PAGE_SIZE, toListParams, useShipmentListFilter } from '../hooks/useShipmentListFilter';
 import { useShipments } from '../hooks/useShipments';
 
 export function ShipmentListPage() {
   const { t } = useTranslation();
   const filter = useShipmentListFilter();
-  const query = useShipments({
-    page: filter.page - 1,
-    size: PAGE_SIZE,
-    ...statusParam(filter.status),
-  });
-  const statusOptions = SHIPMENT_STATUSES.map((status) => ({
-    value: status,
-    label: t(`shipment.status.${status}`),
-  }));
+  const query = useShipments({ page: filter.page - 1, size: PAGE_SIZE, ...toListParams(filter) });
 
   return (
     <Stack>
@@ -34,25 +28,22 @@ export function ShipmentListPage() {
           </Can>
         }
       />
-      <Select
-        aria-label={t('shipment.list.statusFilter')}
-        placeholder={t('shipment.list.allStatuses')}
-        data={statusOptions}
-        value={filter.status ?? null}
-        onChange={(value) => {
-          filter.setStatus(SHIPMENT_STATUSES.find((status) => status === value));
-        }}
-        clearable
-        maw={280}
-      />
+      <ShipmentListFilters filter={filter}>
+        <ListExportButton
+          fileName="sevkiyatlar.xlsx"
+          isDisabled={filter.hasRangeError}
+          loadTable={async () =>
+            shipmentListTable(await fetchAllShipments(toListParams(filter)), t)
+          }
+        />
+      </ShipmentListFilters>
       <QueryState query={query}>
         {(page) =>
           page.items.length === 0 ? (
             <ShipmentListEmpty
-              isFiltered={filter.status !== undefined}
-              onShowAll={() => {
-                filter.setStatus(undefined);
-              }}
+              isFiltered={filter.isFiltered}
+              isOnlyStatus={filter.search === '' && filter.from === '' && filter.to === ''}
+              onShowAll={filter.clear}
             />
           ) : (
             <Stack>
@@ -68,9 +59,4 @@ export function ShipmentListPage() {
       </QueryState>
     </Stack>
   );
-}
-
-/** exactOptionalPropertyTypes: filtre yoksa alan hiç gönderilmez. */
-function statusParam(status: ReturnType<typeof useShipmentListFilter>['status']) {
-  return status === undefined ? {} : { status: [status] };
 }

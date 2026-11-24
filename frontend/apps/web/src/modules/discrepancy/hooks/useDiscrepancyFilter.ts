@@ -1,8 +1,12 @@
 import type { DiscrepancyStatus as Status, Severity as Level } from '@iplik/api-client';
 import { DiscrepancyStatus, Severity } from '@iplik/api-client';
 import { useSearchParams } from 'react-router';
+import { useRememberedView } from '@/modules/shared';
 
 export const PAGE_SIZE = 20;
+
+/** Kişinin son seçtiği süzgeç hatırlanır; sayfa numarası hatırlanmaz. */
+const REMEMBERED_KEYS = ['durum', 'onem', 'gecikmis'] as const;
 
 export type DiscrepancyFilter = {
   page: number;
@@ -18,6 +22,7 @@ export type DiscrepancyFilter = {
 /** FE-API-08: filtre ve sayfa URL'de tutulur; sayfa URL'de 1'den başlar. */
 export function useDiscrepancyFilter(): DiscrepancyFilter {
   const [searchParams, setSearchParams] = useSearchParams();
+  useRememberedView('uyusmazliklar', REMEMBERED_KEYS);
   const page = Math.max(Number(searchParams.get('sayfa') ?? '1'), 1);
   const status = Object.values(DiscrepancyStatus).find((s) => s === searchParams.get('durum'));
   const severity = Object.values(Severity).find((s) => s === searchParams.get('onem'));

@@ -95,6 +95,9 @@ yarnshipment:
       - type-prefix: com.yarnshipment.stock.
         topic: stock.events.v1
         source: /yarn-shipment/shipment-service
+      - type-prefix: com.yarnshipment.auth.
+        topic: auth.events.v1
+        source: /yarn-shipment/auth
       - type-prefix: com.yarnshipment.evidence.
         topic: evidence.events.v1
         source: /yarn-shipment/evidence-service

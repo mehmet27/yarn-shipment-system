@@ -24,6 +24,22 @@ const RECORDS: AuditRecordView[] = Array.from({ length: 25 }, (_, index) => ({
   },
 }));
 
+const LOGIN_ACTIONS = ['login-succeeded', 'login-failed', 'account-locked'] as const;
+
+/** Giriş kayıtları: aktör hesabın kendisidir, rol taşımaz. */
+const LOGIN_RECORDS: AuditRecordView[] = LOGIN_ACTIONS.map((slug, index) => ({
+  id: 100 + index,
+  occurredAt: new Date(BASE_TIME + (index + 1) * 60_000).toISOString(),
+  recordedAt: new Date(BASE_TIME + (index + 1) * 60_000).toISOString(),
+  sourceService: 'auth',
+  eventId: `00000000-0000-7000-8000-${String(100 + index).padStart(12, '0')}`,
+  actor: { userId: MOCK_ACTOR_ID },
+  action: `com.yarnshipment.auth.${slug}.v1`,
+  entity: { type: 'LoginAccount', id: MOCK_ACTOR_ID },
+}));
+
+const ALL_RECORDS = [...LOGIN_RECORDS.toReversed(), ...RECORDS];
+
 /** Denetim servisinin sahte uçları; yalnızca AUDIT_VIEW izni olan rol okuyabilir. */
 export function createAuditHandlers(permissions: readonly Permission[]) {
   const canView = permissions.includes('AUDIT_VIEW');
@@ -40,7 +56,7 @@ export function createAuditHandlers(permissions: readonly Permission[]) {
       const size = Number(params.get('size') ?? '20');
       const entityType = params.get('entityType');
       const action = params.get('action');
-      const matching = RECORDS.filter(
+      const matching = ALL_RECORDS.filter(
         (record) =>
           (entityType === null || record.entity?.type === entityType) &&
           (action === null || record.action.includes(action)),

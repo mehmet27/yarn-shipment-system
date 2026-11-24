@@ -19,7 +19,8 @@ final class AuditEntryMapper {
             "shipment.events.v1", "Shipment",
             "evidence.events.v1", "Evidence",
             "discrepancy.events.v1", "Discrepancy",
-            "stock.events.v1", "CentralStock");
+            "stock.events.v1", "CentralStock",
+            "auth.events.v1", "LoginAccount");
 
     private AuditEntryMapper() {}
 

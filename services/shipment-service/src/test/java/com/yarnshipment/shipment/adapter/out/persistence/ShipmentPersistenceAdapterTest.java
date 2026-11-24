@@ -3,12 +3,15 @@ package com.yarnshipment.shipment.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yarnshipment.common.security.scope.AccessScope;
+import com.yarnshipment.shipment.application.port.in.ListShipmentsQuery.Filter;
 import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort.PageRequest;
 import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort.ShipmentSlice;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.model.Weighing;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,7 +96,7 @@ class ShipmentPersistenceAdapterTest {
     @Test
     @DisplayName("Liste lokasyon kapsamına göre süzülür, en yeni önce gelir")
     void shouldFilterBySitesNewestFirst() {
-        ShipmentSlice slice = adapter.findShipments(AccessScope.restrictedTo(Set.of(SITE_A)), Set.of(), FIRST_PAGE);
+        ShipmentSlice slice = adapter.findShipments(AccessScope.restrictedTo(Set.of(SITE_A)), Filter.NONE, FIRST_PAGE);
 
         assertThat(slice.shipments()).extracting(Shipment::id).containsExactly(SECOND, FIRST);
         assertThat(slice.totalElements()).isEqualTo(2);
@@ -103,15 +106,61 @@ class ShipmentPersistenceAdapterTest {
     @DisplayName("İstenen durumdaki sevkiyatlar lokasyon kapsamında gelir")
     void shouldFilterByStatusWithinSites() {
         ShipmentSlice slice = adapter.findShipments(
-                AccessScope.restrictedTo(Set.of(SITE_A, SITE_B)), Set.of(ShipmentStatus.DRAFT), FIRST_PAGE);
+                AccessScope.restrictedTo(Set.of(SITE_A, SITE_B)),
+                Filter.byStatus(Set.of(ShipmentStatus.DRAFT)),
+                FIRST_PAGE);
 
         assertThat(slice.shipments()).extracting(Shipment::id).containsExactly(THIRD, SECOND);
     }
 
     @Test
+    @DisplayName("Arama metni sevkiyat numarasında büyük-küçük harf ayırmadan aranır")
+    void shouldSearchByShipmentNoIgnoringCase() {
+        Filter filter = new Filter(Set.of(), "sv-" + SECOND.toString().toUpperCase(Locale.ROOT), null, null);
+
+        ShipmentSlice slice = adapter.findShipments(AccessScope.UNRESTRICTED, filter, FIRST_PAGE);
+
+        assertThat(slice.shipments()).extracting(Shipment::id).containsExactly(SECOND);
+        assertThat(slice.totalElements()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Arama metni fasoncu adında da aranır ve kapsamı genişletmez")
+    void shouldSearchBySubcontractorTitleWithinScope() {
+        Filter filter = new Filter(Set.of(), "tekstil", null, null);
+
+        ShipmentSlice slice = adapter.findShipments(AccessScope.restrictedTo(Set.of(SITE_B)), filter, FIRST_PAGE);
+
+        assertThat(slice.shipments()).extracting(Shipment::id).containsExactly(THIRD);
+    }
+
+    @Test
+    @DisplayName("Arama metnindeki yüzde işareti desen sayılmaz")
+    void shouldTreatWildcardAsPlainText() {
+        Filter filter = new Filter(Set.of(), "%", null, null);
+
+        ShipmentSlice slice = adapter.findShipments(AccessScope.UNRESTRICTED, filter, FIRST_PAGE);
+
+        assertThat(slice.shipments()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Sevkiyat tarihi aralığı iki ucu da kapsar")
+    void shouldFilterByShipmentDateRange() {
+        jdbc.update("UPDATE shipment SET shipment_date = ?::date WHERE id = ?", "2026-10-10", FIRST);
+        jdbc.update("UPDATE shipment SET shipment_date = ?::date WHERE id = ?", "2026-10-15", SECOND);
+        jdbc.update("UPDATE shipment SET shipment_date = ?::date WHERE id = ?", "2026-10-20", THIRD);
+        Filter filter = new Filter(Set.of(), null, LocalDate.parse("2026-10-10"), LocalDate.parse("2026-10-15"));
+
+        ShipmentSlice slice = adapter.findShipments(AccessScope.UNRESTRICTED, filter, FIRST_PAGE);
+
+        assertThat(slice.shipments()).extracting(Shipment::id).containsExactly(SECOND, FIRST);
+    }
+
+    @Test
     @DisplayName("Lokasyonu olmayan kapsam hiçbir kayıt görmez")
     void shouldReturnNothingForScopeWithoutSites() {
-        ShipmentSlice slice = adapter.findShipments(AccessScope.restrictedTo(Set.of()), Set.of(), FIRST_PAGE);
+        ShipmentSlice slice = adapter.findShipments(AccessScope.restrictedTo(Set.of()), Filter.NONE, FIRST_PAGE);
 
         assertThat(slice.shipments()).isEmpty();
         assertThat(slice.totalElements()).isZero();
@@ -120,7 +169,7 @@ class ShipmentPersistenceAdapterTest {
     @Test
     @DisplayName("Kısıtsız kapsam tüm kayıtları görür")
     void shouldReturnEverythingForUnrestrictedScope() {
-        ShipmentSlice slice = adapter.findShipments(AccessScope.UNRESTRICTED, Set.of(), FIRST_PAGE);
+        ShipmentSlice slice = adapter.findShipments(AccessScope.UNRESTRICTED, Filter.NONE, FIRST_PAGE);
 
         assertThat(slice.totalElements()).isEqualTo(ALL_SHIPMENTS);
     }

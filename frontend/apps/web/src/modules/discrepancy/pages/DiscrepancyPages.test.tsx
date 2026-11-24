@@ -103,7 +103,7 @@ describe('Uyuşmazlık ekranları', () => {
     expect(within(block).getAllByRole('link', { name: /^UY-2026-/ }).length).toBeLessThanOrEqual(5);
     expect(within(block).getByRole('link', { name: 'Tümünü gör' })).toHaveAttribute(
       'href',
-      '/panel/uyusmazliklar',
+      '/panel/uyusmazliklar?sayfa=1',
     );
   });
 

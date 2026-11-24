@@ -7,13 +7,13 @@ import { DateRangeInputs } from '../components/DateRangeInputs';
 import { ExportToolbar } from '../components/ExportToolbar';
 import { PeriodSelect } from '../components/PeriodSelect';
 import { ReportTabs } from '../components/ReportTabs';
-import { useReportPeriod } from '../hooks/useReportPeriod';
+import { useReportView } from '../hooks/useReportView';
 
 /** Özet, şoför, fasoncu ve eşleşme raporları; Excel ve PDF çıktısı (ön analiz Bölüm 13). */
 export function ReportsPage() {
   const { t } = useTranslation();
-  const { days, setDays, range, setRange, hasRangeError, params } = useReportPeriod();
-  const [isOnlyDiscrepant, setIsOnlyDiscrepant] = useState(false);
+  const view = useReportView();
+  const { days, setDays, range, setRange, hasRangeError, params } = view;
   const [logo, setLogo] = useState<string | null>(loadLogo);
   return (
     <Stack>
@@ -26,8 +26,8 @@ export function ReportsPage() {
           </Group>
           <ExportToolbar
             params={params}
-            isOnlyDiscrepant={isOnlyDiscrepant}
-            onIsOnlyDiscrepantChange={setIsOnlyDiscrepant}
+            isOnlyDiscrepant={view.isOnlyDiscrepant}
+            onIsOnlyDiscrepantChange={view.setIsOnlyDiscrepant}
             isDisabled={hasRangeError}
             logo={logo}
           >
@@ -41,7 +41,12 @@ export function ReportsPage() {
           </ExportToolbar>
         </Stack>
       </Paper>
-      <ReportTabs params={params} isOnlyDiscrepant={isOnlyDiscrepant} />
+      <ReportTabs
+        params={params}
+        isOnlyDiscrepant={view.isOnlyDiscrepant}
+        kind={view.kind}
+        onKindChange={view.setKind}
+      />
     </Stack>
   );
 }

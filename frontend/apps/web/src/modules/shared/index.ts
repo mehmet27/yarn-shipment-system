@@ -6,3 +6,4 @@ export type { QueryStateProps } from './components/QueryState';
 export { useWideLayout } from './hooks/useWideLayout';
 export { BackLink } from './components/BackLink';
 export type { BackLinkProps } from './components/BackLink';
+export { useRememberedView } from './hooks/useRememberedView';

@@ -1,8 +1,12 @@
 import type { ShipmentStatus } from '@iplik/api-client';
 import { SHIPMENT_STATUSES } from '@iplik/api-client';
 import { useSearchParams } from 'react-router';
+import { useRememberedView } from '@/modules/shared';
 
 export const PAGE_SIZE = 20;
+
+/** Kişinin son seçtiği süzgeç hatırlanır; sayfa numarası hatırlanmaz. */
+const REMEMBERED_KEYS = ['durum'] as const;
 
 export type ShipmentListFilter = {
   page: number;
@@ -18,6 +22,7 @@ function parseStatus(value: string | null): ShipmentStatus | undefined {
 /** FE-API-08: filtre ve sayfa URL'de tutulur; link paylaşılabilir. Sayfa URL'de 1'den başlar. */
 export function useShipmentListFilter(): ShipmentListFilter {
   const [searchParams, setSearchParams] = useSearchParams();
+  useRememberedView('sevkiyatlar', REMEMBERED_KEYS);
   const page = Math.max(Number(searchParams.get('sayfa') ?? '1'), 1);
   const status = parseStatus(searchParams.get('durum'));
 

@@ -1,6 +1,5 @@
 import { useTranslation } from '@iplik/i18n';
 import { Tabs } from '@iplik/ui';
-import { useState } from 'react';
 import type { ReportKind } from '../hooks/usePartyReport';
 import { REPORT_KINDS } from '../hooks/usePartyReport';
 import { BalanceMatrixPanel } from './BalanceMatrixPanel';
@@ -13,18 +12,21 @@ import { SummaryPanel } from './SummaryPanel';
 import { ToInvoicePanel } from './ToInvoicePanel';
 import { YarnVsFabricPanel } from './YarnVsFabricPanel';
 
-type ReportTabsProps = Pick<ReportPanelProps, 'params'> & { isOnlyDiscrepant: boolean };
+export type ReportTabsProps = Pick<ReportPanelProps, 'params'> & {
+  isOnlyDiscrepant: boolean;
+  kind: ReportKind;
+  onKindChange: (kind: ReportKind) => void;
+};
 
 /** Özet, fasoncu, sevkiyat dökümü ve bakiye sekmeleri; yalnızca açık sekme veri çeker. */
-export function ReportTabs({ params, isOnlyDiscrepant }: ReportTabsProps) {
+export function ReportTabs({ params, isOnlyDiscrepant, kind, onKindChange }: ReportTabsProps) {
   const { t } = useTranslation();
-  const [kind, setKind] = useState<ReportKind>('summary');
   return (
     <Tabs
       value={kind}
       onChange={(next) => {
         const known = REPORT_KINDS.find((item) => item === next);
-        if (known !== undefined) setKind(known);
+        if (known !== undefined) onKindChange(known);
       }}
     >
       <Tabs.List>

@@ -36,6 +36,8 @@ afterEach(() => {
   cleanup();
   server.resetHandlers();
   resetMockStore();
+  // Hatırlanan görünüm (son sekme, süzgeç) bir testten ötekine taşmasın.
+  window.localStorage.clear();
 });
 afterAll(() => {
   server.close();

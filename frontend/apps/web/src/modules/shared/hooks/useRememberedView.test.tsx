@@ -7,12 +7,14 @@ import { renderApp } from '@/test/renderApp';
 
 const REPORTS_KEY = 'iplik.view.user-manager.raporlar';
 const SHIPMENTS_KEY = 'iplik.view.user-manager.sevkiyatlar';
+/** Raporlar ekranı ağırdır; yavaş CI koşucusunda ilk çizim varsayılan 1 saniyeyi aşabilir. */
+const SLOW = { timeout: 10_000 };
 
 describe('useRememberedView', () => {
   it('raporlarda seçilen sekme ve dönem adrese yazılır ve saklanır', async () => {
     server.use(...createHandlers('MANAGER'));
     const { router } = renderApp('/panel/raporlar');
-    await userEvent.click(await screen.findByRole('tab', { name: 'Fire raporu' }));
+    await userEvent.click(await screen.findByRole('tab', { name: 'Fire raporu' }, SLOW));
     await userEvent.click(screen.getByText('90 gün'));
     await waitFor(() => {
       expect(router.state.location.search).toBe('?sekme=fire&gun=90');
@@ -26,7 +28,9 @@ describe('useRememberedView', () => {
     window.localStorage.setItem(REPORTS_KEY, 'sekme=fire&gun=90');
     server.use(...createHandlers('MANAGER'));
     const { router } = renderApp('/panel/raporlar');
-    expect(await screen.findByRole('tab', { name: 'Fire raporu', selected: true })).toBeVisible();
+    expect(
+      await screen.findByRole('tab', { name: 'Fire raporu', selected: true }, SLOW),
+    ).toBeVisible();
     expect(router.state.location.search).toBe('?sekme=fire&gun=90');
   });
 
@@ -34,7 +38,7 @@ describe('useRememberedView', () => {
     window.localStorage.setItem('iplik.view.user-quality.raporlar', 'sekme=fire');
     server.use(...createHandlers('MANAGER'));
     const { router } = renderApp('/panel/raporlar');
-    expect(await screen.findByRole('tab', { name: 'Özet', selected: true })).toBeVisible();
+    expect(await screen.findByRole('tab', { name: 'Özet', selected: true }, SLOW)).toBeVisible();
     expect(router.state.location.search).toBe('');
   });
 
@@ -42,7 +46,7 @@ describe('useRememberedView', () => {
     window.localStorage.setItem(SHIPMENTS_KEY, 'durum=DRAFT');
     server.use(...createHandlers('MANAGER'));
     const { router } = renderApp('/panel/sevkiyat?durum=COMPLETED');
-    await screen.findByRole('heading', { name: 'Sevkiyatlar' });
+    await screen.findByRole('heading', { name: 'Sevkiyatlar' }, SLOW);
     await waitFor(() => {
       expect(window.localStorage.getItem(SHIPMENTS_KEY)).toBe('durum=COMPLETED');
     });
@@ -53,7 +57,7 @@ describe('useRememberedView', () => {
     window.localStorage.setItem(SHIPMENTS_KEY, 'durum=DRAFT');
     server.use(...createHandlers('MANAGER'));
     const { router } = renderApp('/panel/sevkiyat?sayfa=1');
-    await screen.findByRole('heading', { name: 'Sevkiyatlar' });
+    await screen.findByRole('heading', { name: 'Sevkiyatlar' }, SLOW);
     expect(router.state.location.search).toBe('?sayfa=1');
     expect(window.localStorage.getItem(SHIPMENTS_KEY)).toBe('durum=DRAFT');
   });
@@ -64,6 +68,6 @@ describe('useRememberedView', () => {
     const { router } = renderApp('/panel/sevkiyat');
     await waitFor(() => {
       expect(router.state.location.search).toBe('?durum=DRAFT');
-    });
+    }, SLOW);
   });
 });

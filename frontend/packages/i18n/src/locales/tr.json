@@ -1241,6 +1241,13 @@
       "value": "Değeri",
       "empty": "Fasoncuda kalan iplik yok."
     },
+    "monthClose": {
+      "month": "Kapanış ayı",
+      "download": "Ay sonu kapanışı (PDF)",
+      "hint": "Seçilen ayın fasoncu bakiyesi, fire durumu ve faturalanacaklar tek belgede, imza yerleriyle iner.",
+      "pdfTitle": "Ay sonu kapanışı: {{month}}",
+      "pdfNote": "Bakiye ve fire seçilen ayın tamamını gösterir. Faturalanacaklar, ay sonundan geriye bir yıl içinde açılıp hâlâ faturalanmamış dosyalardır. Hazırlayan: {{by}}"
+    },
     "compare": {
       "previous": "Önceki dönem: {{value}}",
       "up": "%{{percent}} arttı",

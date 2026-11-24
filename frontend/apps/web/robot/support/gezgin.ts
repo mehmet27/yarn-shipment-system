@@ -6,7 +6,7 @@ import type { Robot } from './robot';
  * "sıradaki adım" kutusunun sekme açan ya da forma kaydıran düğmeleri…).
  */
 const GUVENLI_DUGME =
-  /^(\d+|Önceki sayfa|Sonraki sayfa|PDF indir|Excel indir \(\.xlsx\)|Excel'e al|Sipariş formu PDF|.*fotoğrafını büyüt|Satır ekle|İplik ekle|İplik satırı ekle|Sil|\d+\. satırı sil|Varsayılana dön|Yeni kullanıcı|Ekle|Bildirimler|Yan menü|Yenile|Çuval eklemeye başla|İrsaliyeyi yükle|Karar seçeneklerine git|Kumaş girişi yap|Fire dosyasını aç|Tüm adımlar|Adımları gizle|Tüm durumları göster|Süzgeçleri temizle|Ara)$/;
+  /^(\d+|Önceki sayfa|Sonraki sayfa|PDF indir|Excel indir \(\.xlsx\)|Excel'e al|Ay sonu kapanışı \(PDF\)|Sipariş formu PDF|.*fotoğrafını büyüt|Satır ekle|İplik ekle|İplik satırı ekle|Sil|\d+\. satırı sil|Varsayılana dön|Yeni kullanıcı|Ekle|Bildirimler|Yan menü|Yenile|Çuval eklemeye başla|İrsaliyeyi yükle|Karar seçeneklerine git|Kumaş girişi yap|Fire dosyasını aç|Tüm adımlar|Adımları gizle|Tüm durumları göster|Süzgeçleri temizle|Ara)$/;
 
 /** Dosya seçtirdiği ya da kamera açtığı için gezginin dokunmadığı düğmeler; dosya yükleme senaryolarında denenir. */
 const DOSYA_DUGME =
@@ -156,7 +156,7 @@ export async function sayfayiGez(
         }
         if (!(await ilk.isVisible())) return;
       }
-      if (/PDF indir|Excel indir|Excel'e al|Sipariş formu PDF/.test(oge.ad)) {
+      if (/PDF indir|Excel indir|Excel'e al|Ay sonu kapanışı|Sipariş formu PDF/.test(oge.ad)) {
         const [indirme] = await Promise.all([
           sayfa.waitForEvent('download', { timeout: 15_000 }),
           ilk.click(),

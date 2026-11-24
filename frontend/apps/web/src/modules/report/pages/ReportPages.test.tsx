@@ -32,6 +32,33 @@ describe('Panel ana sayfası ve raporlar', () => {
     expect(screen.getByTestId('stat-open')).not.toHaveTextContent('Önceki dönem');
   });
 
+  it('ay sonu kapanışı seçilen ayın bakiye, fire ve faturalanacak tablolarını tek PDF olarak indirir', async () => {
+    const seen: string[] = [];
+    server.use(...createHandlers('MANAGER'));
+    server.use(
+      http.get('/api/v1/reports/fire', ({ request }) => {
+        seen.push(new URL(request.url).search);
+        return undefined;
+      }),
+    );
+    renderApp('/panel/raporlar');
+    expect(await screen.findAllByLabelText('Kapanış ayı')).not.toHaveLength(0);
+    await userEvent.click(screen.getByRole('button', { name: 'Ay sonu kapanışı (PDF)' }));
+    await waitFor(() => {
+      expect(downloadPdf).toHaveBeenCalled();
+    });
+    const [tables, options, fileName] = vi.mocked(downloadPdf).mock.lastCall ?? [];
+    expect(tables?.map((table) => table.title)).toEqual([
+      'Fasoncu bakiye',
+      'Fire raporu',
+      'Faturalanacaklar',
+    ]);
+    expect(options?.title).toMatch(/^Ay sonu kapanışı: \S+ \d{4}$/);
+    expect(options?.signatures).toEqual(['Hazırlayan', 'Kontrol eden', 'Onaylayan']);
+    expect(fileName).toMatch(/^ay-sonu-kapanis-\d{4}-\d{2}\.pdf$/);
+    expect(seen.at(-1)).toMatch(/from=\d{4}-\d{2}-01&to=\d{4}-\d{2}-(28|29|30|31)/);
+  });
+
   it('rapor yetkisi olmayan kullanıcıya dashboard göstermez ve çağırmaz', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel');

@@ -5,6 +5,7 @@ import { LogoControl } from '../components/LogoControl';
 import { loadLogo, saveLogo } from '../logo';
 import { DateRangeInputs } from '../components/DateRangeInputs';
 import { ExportToolbar } from '../components/ExportToolbar';
+import { MonthCloseExport } from '../components/MonthCloseExport';
 import { PeriodSelect } from '../components/PeriodSelect';
 import { ReportTabs } from '../components/ReportTabs';
 import { useReportView } from '../hooks/useReportView';
@@ -39,6 +40,7 @@ export function ReportsPage() {
               }}
             />
           </ExportToolbar>
+          <MonthCloseExport logo={logo} />
         </Stack>
       </Paper>
       <ReportTabs

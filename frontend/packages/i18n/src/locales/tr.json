@@ -1241,6 +1241,12 @@
       "value": "Değeri",
       "empty": "Fasoncuda kalan iplik yok."
     },
+    "compare": {
+      "previous": "Önceki dönem: {{value}}",
+      "up": "%{{percent}} arttı",
+      "down": "%{{percent}} azaldı",
+      "same": "değişmedi"
+    },
     "dashboard": {
       "title": "Özet",
       "stock": "Stok durumu",

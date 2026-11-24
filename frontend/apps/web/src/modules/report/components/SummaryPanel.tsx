@@ -1,6 +1,7 @@
 import { Stack } from '@iplik/ui';
 import { QueryState } from '@/modules/shared';
 import { useDashboard } from '../hooks/useDashboard';
+import { usePreviousDashboard } from '../hooks/usePreviousDashboard';
 import type { ReportPanelProps } from './reportPanelProps';
 import { AttentionLists } from './AttentionLists';
 import { CentralStockSection } from './CentralStockSection';
@@ -17,6 +18,7 @@ import { TrendSection } from './TrendSection';
  */
 export function SummaryPanel({ params, isEnabled }: ReportPanelProps) {
   const query = useDashboard(params);
+  const previous = usePreviousDashboard(params);
   if (!isEnabled) return null;
   return (
     <QueryState query={query}>
@@ -29,7 +31,7 @@ export function SummaryPanel({ params, isEnabled }: ReportPanelProps) {
             <FireBySubcontractorSection params={params} />
             <InvoicingSection params={params} />
           </StockOverview>
-          <DashboardSummary dashboard={dashboard} />
+          <DashboardSummary dashboard={dashboard} previous={previous} />
           <CentralStockSection />
         </Stack>
       )}

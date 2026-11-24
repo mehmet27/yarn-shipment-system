@@ -20,6 +20,18 @@ describe('Panel ana sayfası ve raporlar', () => {
     expect(link).toHaveAttribute('href', '/panel/uyusmazliklar/disc-0');
   });
 
+  it('döneme bağlı kartlarda önceki dönemi ve değişim yüzdesini yazar', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/raporlar');
+    const total = await screen.findByTestId('stat-total');
+    await waitFor(() => {
+      expect(total).toHaveTextContent('Önceki dönem: 10 · %20 arttı');
+    });
+    expect(screen.getByText('Önceki dönem: 30.000 kg · %20 azaldı')).toBeInTheDocument();
+    expect(screen.getByText('Önceki dönem: 23.820,5 kg · değişmedi')).toBeInTheDocument();
+    expect(screen.getByTestId('stat-open')).not.toHaveTextContent('Önceki dönem');
+  });
+
   it('rapor yetkisi olmayan kullanıcıya dashboard göstermez ve çağırmaz', async () => {
     server.use(...createHandlers('WAREHOUSE'));
     renderApp('/panel');

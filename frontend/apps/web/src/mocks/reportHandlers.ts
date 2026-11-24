@@ -11,6 +11,7 @@ import type {
   YarnVsFabricRowView,
 } from '@iplik/api-client';
 import { REPORTS_PATH } from '@iplik/api-client';
+import { todayIsoDate } from '@iplik/i18n';
 import { http, HttpResponse } from 'msw';
 
 const MOCK_DASHBOARD: DashboardView = {
@@ -31,6 +32,13 @@ const MOCK_DASHBOARD: DashboardView = {
       dueAt: '2026-11-01T09:00:00Z',
     },
   ],
+};
+
+/** Bugünden önce biten dönem "önceki dönem" sayılır; kıyas satırları mock'ta da anlamlı görünür. */
+const MOCK_PREVIOUS_DASHBOARD: DashboardView = {
+  ...MOCK_DASHBOARD,
+  shipments: { total: 10, inProgress: 0, inReview: 1, completed: 8, cancelled: 1 },
+  quantity: { dispatchNetKg: '30000.000', deliveryNetKg: '23820.500' },
 };
 
 const MOCK_AMOUNTS: AmountSummaryView = {
@@ -206,9 +214,12 @@ export function createReportHandlers(permissions: readonly Permission[]) {
       { status: 403 },
     );
   return [
-    http.get(`${REPORTS_PATH}/dashboard`, () =>
-      canView ? HttpResponse.json(MOCK_DASHBOARD) : denied(),
-    ),
+    http.get(`${REPORTS_PATH}/dashboard`, ({ request }) => {
+      if (!canView) return denied();
+      const to = new URL(request.url).searchParams.get('to');
+      const isPast = to !== null && to < todayIsoDate();
+      return HttpResponse.json(isPast ? MOCK_PREVIOUS_DASHBOARD : MOCK_DASHBOARD);
+    }),
     http.get(`${REPORTS_PATH}/subcontractors`, () =>
       canView ? HttpResponse.json(MOCK_SUBCONTRACTORS) : denied(),
     ),

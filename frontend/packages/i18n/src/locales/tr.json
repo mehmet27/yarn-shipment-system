@@ -729,6 +729,9 @@
       "evidence-reuse-detected": "Kanıt tekrar kullanımı tespit edildi",
       "evidence-uploaded": "Kanıt yüklendi",
       "lot-quality-locked": "Parti kalitesi kilitlendi",
+      "login-succeeded": "Giriş yapıldı",
+      "login-failed": "Hesaba yanlış şifre denendi",
+      "account-locked": "Hesap kilitlendi",
       "delivery-received": "Teslim alındı",
       "shipment-arrived": "Sevkiyat vardı",
       "shipment-cancelled": "Sevkiyat iptal edildi",
@@ -742,9 +745,11 @@
       "Shipment": "Sevkiyat",
       "Evidence": "Kanıt",
       "Discrepancy": "Uyuşmazlık",
-      "CentralStock": "Merkez stok"
+      "CentralStock": "Merkez stok",
+      "LoginAccount": "Giriş"
     },
     "service": {
+      "auth": "Giriş",
       "shipment-service": "Sevkiyat",
       "bag-service": "Çuval",
       "discrepancy-service": "Uyuşmazlık",

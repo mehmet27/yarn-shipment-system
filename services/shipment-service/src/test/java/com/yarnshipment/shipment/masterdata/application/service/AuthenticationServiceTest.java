@@ -23,7 +23,43 @@ class AuthenticationServiceTest {
     private final FakeAuthUsers users = new FakeAuthUsers();
     private final FakePasswordHasher hasher = new FakePasswordHasher();
     private final MutableClock clock = new MutableClock(NOW);
-    private final AuthenticationService service = new AuthenticationService(users, hasher, clock);
+    private final RecordingLoginEvents loginEvents = new RecordingLoginEvents();
+    private final AuthenticationService service = new AuthenticationService(users, hasher, clock, loginEvents);
+
+    @Test
+    @DisplayName("Başarılı giriş ve var olan hesaba yanlış şifre denetime yazılır; olmayan ad ve kapalı hesap yazılmaz")
+    void shouldPublishLoginEvents() {
+        users.add("depo");
+        users.add("kapali", false, null);
+
+        service.authenticate("depo", PASSWORD);
+        assertThatThrownBy(() -> service.authenticate("depo", "yanlis"))
+                .isInstanceOf(AuthenticationFailedException.class);
+        assertThatThrownBy(() -> service.authenticate("yok", PASSWORD))
+                .isInstanceOf(AuthenticationFailedException.class);
+        assertThatThrownBy(() -> service.authenticate("kapali", PASSWORD))
+                .isInstanceOf(AuthenticationFailedException.class);
+
+        assertThat(loginEvents.events()).containsExactly("succeeded:depo", "failed:depo");
+    }
+
+    @Test
+    @DisplayName("Hesabı kilitleyen deneme kilidi de yazar; kilitliyken yapılan denemeler kaydı şişirmez")
+    void shouldPublishLockOnceAndSkipAttemptsWhileLocked() {
+        users.add("depo");
+
+        for (int attempt = 0; attempt < AuthenticationService.MAX_FAILED_ATTEMPTS; attempt++) {
+            assertThatThrownBy(() -> service.authenticate("depo", "yanlis"))
+                    .isInstanceOf(AuthenticationFailedException.class);
+        }
+        assertThatThrownBy(() -> service.authenticate("depo", PASSWORD)).isInstanceOf(AccountLockedException.class);
+
+        assertThat(loginEvents.events())
+                .hasSize(AuthenticationService.MAX_FAILED_ATTEMPTS + 1)
+                .endsWith("failed:depo", "locked:depo:" + NOW.plus(LOCK))
+                .filteredOn(event -> event.startsWith("locked:"))
+                .hasSize(1);
+    }
 
     @Test
     @DisplayName("Şifre talebi en az 3 hatalı girişten sonra ya da kilitliyken kaydedilir; yoksa sessizce yok sayılır")

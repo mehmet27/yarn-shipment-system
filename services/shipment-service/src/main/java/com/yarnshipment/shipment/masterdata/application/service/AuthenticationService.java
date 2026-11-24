@@ -4,6 +4,7 @@ import com.yarnshipment.shipment.masterdata.application.port.in.auth.Authenticat
 import com.yarnshipment.shipment.masterdata.application.port.in.auth.ChangeOwnPasswordUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.in.auth.RequestPasswordUseCase;
 import com.yarnshipment.shipment.masterdata.application.port.out.AuthUserPort;
+import com.yarnshipment.shipment.masterdata.application.port.out.LoginEventPort;
 import com.yarnshipment.shipment.masterdata.application.port.out.PasswordHasherPort;
 import com.yarnshipment.shipment.masterdata.domain.model.AccountLockedException;
 import com.yarnshipment.shipment.masterdata.domain.model.AuthUser;
@@ -23,6 +24,10 @@ import org.springframework.stereotype.Service;
  * Giriş ve kendi şifresini değiştirme. Kullanıcı adı ya da şifre yanlışsa, hesap kapalıysa ya da kullanıcı yoksa aynı
  * hata döner ve aynı süre harcanır (hesap varlığı sızmaz). Art arda {@value #MAX_FAILED_ATTEMPTS} yanlış denemede
  * hesap {@value #LOCK_MINUTES} dakika kilitlenir. Sayaç tek SQL ifadesiyle güncellendiği için transaction açılmaz.
+ *
+ * <p>Başarılı giriş, var olan hesaba yanlış şifre denemesi ve hesabın kilitlenmesi denetim kaydına yazılır. Olmayan
+ * giriş adı, kapalı hesap ve kilitliyken yapılan denemeler yazılmaz (yazılan metin şifre olabilir; kilitli hesaba
+ * yapılan her deneme kaydı şişirir).
  */
 @Service
 public final class AuthenticationService
@@ -36,11 +41,14 @@ public final class AuthenticationService
     private final AuthUserPort users;
     private final PasswordHasherPort hasher;
     private final Clock clock;
+    private final LoginEventPort loginEvents;
 
-    public AuthenticationService(AuthUserPort users, PasswordHasherPort hasher, Clock clock) {
+    public AuthenticationService(
+            AuthUserPort users, PasswordHasherPort hasher, Clock clock, LoginEventPort loginEvents) {
         this.users = users;
         this.hasher = hasher;
         this.clock = clock;
+        this.loginEvents = loginEvents;
     }
 
     @Override
@@ -55,13 +63,24 @@ public final class AuthenticationService
         requireNotLocked(user, now);
         if (!hasher.matches(password, user.passwordHash())) {
             users.recordFailedAttempt(user.id(), MAX_FAILED_ATTEMPTS, LOCK_DURATION, now);
+            recordFailedLogin(user, now);
             throw new AuthenticationFailedException();
         }
         if (!user.enabled()) {
             throw new AuthenticationFailedException();
         }
         users.recordSuccessfulLogin(user.id(), now);
+        loginEvents.publishSucceeded(user, now);
         return SessionUser.of(user);
+    }
+
+    /** Hatalı denemeyi, bu deneme hesabı kilitlediyse kilidi de denetim kaydına yazar. */
+    private void recordFailedLogin(AuthUser user, Instant now) {
+        loginEvents.publishFailed(user, now);
+        users.findById(user.id())
+                .map(AuthUser::lockedUntil)
+                .filter(lockedUntil -> lockedUntil.isAfter(now))
+                .ifPresent(lockedUntil -> loginEvents.publishLocked(user, lockedUntil, now));
     }
 
     @Override

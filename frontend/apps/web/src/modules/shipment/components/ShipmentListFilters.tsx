@@ -1,15 +1,18 @@
 import { SHIPMENT_STATUSES } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
 import { Group, Paper, Select, TextInput } from '@iplik/ui';
+import type { ReactNode } from 'react';
 import type { ShipmentListFilter } from '../hooks/useShipmentListFilter';
 import { ShipmentSearchBox } from './ShipmentSearchBox';
 
 export type ShipmentListFiltersProps = {
   filter: ShipmentListFilter;
+  /** Süzgeçlerin yanına konan düğme (Excel'e al). */
+  children?: ReactNode;
 };
 
 /** Sevkiyat listesi süzgeçleri: arama metni, durum ve sevkiyat tarihi aralığı. Hepsi adrese yazılır. */
-export function ShipmentListFilters({ filter }: ShipmentListFiltersProps) {
+export function ShipmentListFilters({ filter, children }: ShipmentListFiltersProps) {
   const { t } = useTranslation();
   const statusOptions = SHIPMENT_STATUSES.map((status) => ({
     value: status,
@@ -54,6 +57,7 @@ export function ShipmentListFilters({ filter }: ShipmentListFiltersProps) {
             filter.setRange({ from: filter.from, to: event.currentTarget.value });
           }}
         />
+        {children}
       </Group>
     </Paper>
   );

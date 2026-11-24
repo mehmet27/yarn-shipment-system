@@ -2,9 +2,11 @@ import { useTranslation } from '@iplik/i18n';
 import { Button, PageHero, Stack } from '@iplik/ui';
 import { Can } from '@/modules/auth';
 import { Link } from 'react-router';
+import { ListExportButton } from '@/modules/report';
 import { ListPagination, QueryState } from '@/modules/shared';
 import { ShipmentListEmpty } from '../components/ShipmentListEmpty';
 import { ShipmentListFilters } from '../components/ShipmentListFilters';
+import { fetchAllShipments, shipmentListTable } from '../components/shipmentListTable';
 import { ShipmentTable } from '../components/ShipmentTable';
 import { PAGE_SIZE, toListParams, useShipmentListFilter } from '../hooks/useShipmentListFilter';
 import { useShipments } from '../hooks/useShipments';
@@ -26,7 +28,15 @@ export function ShipmentListPage() {
           </Can>
         }
       />
-      <ShipmentListFilters filter={filter} />
+      <ShipmentListFilters filter={filter}>
+        <ListExportButton
+          fileName="sevkiyatlar.xlsx"
+          isDisabled={filter.hasRangeError}
+          loadTable={async () =>
+            shipmentListTable(await fetchAllShipments(toListParams(filter)), t)
+          }
+        />
+      </ShipmentListFilters>
       <QueryState query={query}>
         {(page) =>
           page.items.length === 0 ? (

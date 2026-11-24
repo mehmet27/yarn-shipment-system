@@ -768,6 +768,11 @@
   },
   "discrepancy": {
     "back": "Uyuşmazlık listesi",
+    "export": {
+      "no": "Uyuşmazlık no",
+      "differenceKg": "Fark (kg)",
+      "createdAt": "Oluşturma"
+    },
     "openShipment": "Sevkiyat dosyasını aç",
     "due": "Vade",
     "status": {
@@ -1273,6 +1278,8 @@
       "excel": "Excel indir (.xlsx)",
       "pdf": "PDF indir",
       "failed": "Rapor hazırlanamadı. Lütfen tekrar deneyin.",
+      "listExcel": "Excel'e al",
+      "listFailed": "Excel dosyası hazırlanamadı. Biraz sonra tekrar deneyin.",
       "onlyDiscrepant": "Yalnızca uyuşmazlıklı olanlar",
       "allRows": "Tüm satırlar",
       "total": "Toplam",

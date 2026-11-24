@@ -8,3 +8,5 @@ export { StatGrid } from './components/StatGrid';
 export { StatCard as StatCell } from './components/StatCard';
 export { SupplierReceipts } from './components/SupplierReceipts';
 export { downloadWorkbook } from './export/writeWorkbook';
+export { ListExportButton } from './components/ListExportButton';
+export type { ListExportButtonProps } from './components/ListExportButton';

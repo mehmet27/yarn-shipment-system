@@ -15,4 +15,6 @@ export { usePendingWeightDecisions } from './hooks/usePendingWeightDecisions';
 export { PendingDispatches } from './components/PendingDispatches';
 export { PendingDeliveries } from './components/PendingDeliveries';
 export { PendingRow } from './components/PendingRow';
+export type { PendingRowProps } from './components/PendingRow';
+export { fetchAllShipments } from './components/shipmentListTable';
 export { usePendingDeliveries, usePendingDispatches } from './hooks/usePendingShipments';

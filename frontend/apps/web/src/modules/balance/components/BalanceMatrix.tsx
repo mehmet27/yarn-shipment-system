@@ -4,6 +4,8 @@ import { Paper, Table, Text } from '@iplik/ui';
 import { sumKg } from '@iplik/units';
 import { formatSignedKg, useYarnLabel } from '@/modules/shipment';
 
+import { SubcontractorLink } from './SubcontractorLink';
+
 type Cells = Map<string, string>;
 
 type Parties = Map<string, { title: string; cells: Cells }>;
@@ -22,8 +24,14 @@ function pivotBalances(view: BalancesView): { yarns: string[]; parties: Parties 
   return { yarns, parties };
 }
 
+export type BalanceMatrixProps = {
+  view: BalancesView;
+  /** Fasoncu adı, fasoncu sayfasına bağlantı olur; fasoncu sayfasının kendi tablosunda kapatılır. */
+  isLinked?: boolean;
+};
+
 /** Satır: fasoncu, sütun: iplik cinsi; hücre bakiye kilosu. Toplamlar `sumKg` ile (Big). */
-export function BalanceMatrix({ view }: { view: BalancesView }) {
+export function BalanceMatrix({ view, isLinked = true }: BalanceMatrixProps) {
   const { t } = useTranslation();
   const yarnLabel = useYarnLabel();
   if (view.items.length === 0) return <Text c="dimmed">{t('settlement.balances.empty')}</Text>;
@@ -46,7 +54,9 @@ export function BalanceMatrix({ view }: { view: BalancesView }) {
           <Table.Tbody>
             {[...parties.entries()].map(([id, party]) => (
               <Table.Tr key={id}>
-                <Table.Td>{party.title}</Table.Td>
+                <Table.Td>
+                  {isLinked ? <SubcontractorLink id={id} title={party.title} /> : party.title}
+                </Table.Td>
                 {yarns.map((yarn) => (
                   <Table.Td key={yarn} ta="right">
                     {formatSignedKg(party.cells.get(yarn) ?? '0.000')}

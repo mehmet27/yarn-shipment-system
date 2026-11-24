@@ -771,6 +771,39 @@
       "broken": "Zincir bozuk ({{at}}); ilk bozuk kayıt: {{id}}."
     }
   },
+  "subcontractorPage": {
+    "title": "Fasoncu",
+    "back": "Fasoncu bakiyesine dön",
+    "subtitle": "Bu fasoncuyla ilgili her şey tek ekranda: elindeki iplik, yoldaki sevkiyatlar, beklenen kumaş, faturalanacaklar ve açık uyuşmazlıklar.",
+    "balanceByYarn": "İplik cinsine göre bakiye",
+    "stat": {
+      "balance": "Fasoncudaki iplik",
+      "inTransit": "Yoldaki sevkiyat",
+      "awaitingFabric": "Beklenen kumaş",
+      "toInvoice": "Faturalanacak",
+      "fireRate": "Son 6 ayın firesi",
+      "openDiscrepancies": "Açık uyuşmazlık",
+      "files": "{{count}} dosya"
+    },
+    "inTransit": {
+      "title": "Yoldaki sevkiyatlar",
+      "empty": "Yolda sevkiyat yok."
+    },
+    "awaitingFabric": {
+      "title": "Kumaşı beklenenler",
+      "empty": "Kumaşı beklenen sevkiyat yok.",
+      "row": "Beklenen kumaş: {{kg}}"
+    },
+    "toInvoice": {
+      "title": "Faturalanacaklar",
+      "empty": "Faturalanacak dosya yok.",
+      "row": "Faturalanacak: {{kg}}"
+    },
+    "discrepancies": {
+      "title": "Açık uyuşmazlıklar",
+      "empty": "Açık uyuşmazlık yok."
+    }
+  },
   "discrepancy": {
     "back": "Uyuşmazlık listesi",
     "export": {

@@ -5,7 +5,7 @@ import { BrandMark } from '@/modules/branding';
 import { QuickSearch } from '@/modules/shipment';
 import { Outlet } from 'react-router';
 import { NavBackdrop } from './NavBackdrop';
-import { PanelHeader } from './PanelHeader';
+import { PanelHeader, SEARCH_IN_HEADER_FROM } from './PanelHeader';
 import { PanelNav } from './PanelNav';
 
 /** Bu genişliğin altı telefon düzenidir. */
@@ -59,8 +59,8 @@ export function PanelLayout() {
               <BrandMark />
             </Box>
           </Group>
-          <Box hiddenFrom={MOBILE_ONLY} px="xs">
-            <QuickSearch onNavigate={closeMobileNav} />
+          <Box hiddenFrom={SEARCH_IN_HEADER_FROM} px="xs">
+            <QuickSearch onNavigate={closeMobileNav} isFullWidth />
           </Box>
           <Stack gap={2} mt="xs">
             <Text size="xs" fw={500} c="dimmed" px="sm" py="xs">

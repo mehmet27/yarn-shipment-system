@@ -7,6 +7,8 @@ import { UserMenu } from './UserMenu';
 
 /** Bu genişliğin altı telefon düzenidir. */
 const MOBILE_ONLY = 'sm';
+/** Hızlı arama üst çubuğa bu genişlikten itibaren sığar; altında (telefon, dar tablet) yan menüdedir. */
+export const SEARCH_IN_HEADER_FROM = 'md';
 
 export type PanelHeaderProps = {
   isMobileNavOpen: boolean;
@@ -17,7 +19,7 @@ export type PanelHeaderProps = {
 
 /**
  * Üst çubuk: solda yan menü düğmesi (telefonda firma adıyla), sağda hızlı arama, bekleyen işler zili ve kullanıcı
- * menüsü. Telefonda hızlı arama yer kaplamasın diye yan menünün içindedir.
+ * menüsü. Telefonda ve dar tablette hızlı arama yer kaplamasın diye yan menünün içindedir.
  */
 export function PanelHeader({
   isMobileNavOpen,
@@ -39,7 +41,7 @@ export function PanelHeader({
         </Box>
       </Group>
       <Group gap="xs" wrap="nowrap">
-        <Box visibleFrom={MOBILE_ONLY}>
+        <Box visibleFrom={SEARCH_IN_HEADER_FROM}>
           <QuickSearch />
         </Box>
         <NotificationBell />

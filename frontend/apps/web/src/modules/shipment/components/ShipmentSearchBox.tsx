@@ -4,6 +4,9 @@ import { useState } from 'react';
 
 const MAX_SEARCH_LENGTH = 100;
 const SEARCH_WIDTH_PX = 320;
+/** Telefon ve tablette dokunma hedefi en az 44 px olmalı; geniş ekranda düğme kutunun içine sığar. */
+const SUBMIT_SIZE = { base: 44, md: 28 };
+const SUBMIT_SECTION_WIDTH_PX = 48;
 
 export type ShipmentSearchBoxProps = {
   label: string;
@@ -11,6 +14,8 @@ export type ShipmentSearchBoxProps = {
   isLabelHidden?: boolean;
   placeholder: string;
   initialValue?: string;
+  /** Yan menüde kutu menünün genişliğine yayılır. */
+  isFullWidth?: boolean;
   onSearch: (text: string) => void;
 };
 
@@ -20,6 +25,7 @@ export function ShipmentSearchBox({
   isLabelHidden = false,
   placeholder,
   initialValue = '',
+  isFullWidth = false,
   onSearch,
 }: ShipmentSearchBoxProps) {
   const { t } = useTranslation();
@@ -39,12 +45,19 @@ export function ShipmentSearchBox({
         placeholder={placeholder}
         value={text}
         maxLength={MAX_SEARCH_LENGTH}
-        w={{ base: '100%', sm: SEARCH_WIDTH_PX }}
+        w={isFullWidth ? '100%' : { base: '100%', sm: SEARCH_WIDTH_PX }}
+        rightSectionWidth={SUBMIT_SECTION_WIDTH_PX}
         onChange={(event) => {
           setText(event.currentTarget.value);
         }}
         rightSection={
-          <ActionIcon type="submit" variant="subtle" aria-label={t('shipment.list.searchSubmit')}>
+          <ActionIcon
+            type="submit"
+            variant="subtle"
+            w={SUBMIT_SIZE}
+            h={SUBMIT_SIZE}
+            aria-label={t('shipment.list.searchSubmit')}
+          >
             <Icon name="search" />
           </ActionIcon>
         }

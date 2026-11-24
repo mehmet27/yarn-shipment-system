@@ -8,13 +8,15 @@ import { ShipmentSearchBox } from './ShipmentSearchBox';
 export type QuickSearchProps = {
   /** Telefonda yan menü içindeyken aramadan sonra menüyü kapatır. */
   onNavigate?: () => void;
+  /** Yan menüde kutu menünün genişliğine yayılır. */
+  isFullWidth?: boolean;
 };
 
 /**
  * Her ekrandan hızlı arama: sevkiyat numarası, fasoncu adı, şoför ya da plaka yazılır. Tek sevkiyat bulunursa doğrudan
  * dosyası açılır; birden çok ya da hiç bulunmazsa sevkiyat listesi o aramayla açılır. Sevkiyat göremeyen role görünmez.
  */
-export function QuickSearch({ onNavigate }: QuickSearchProps) {
+export function QuickSearch({ onNavigate, isFullWidth = false }: QuickSearchProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const canView = usePermission('SHIPMENT_VIEW');
@@ -27,6 +29,7 @@ export function QuickSearch({ onNavigate }: QuickSearchProps) {
       key={searchCount}
       label={t('nav.quickSearch')}
       isLabelHidden
+      isFullWidth={isFullWidth}
       placeholder={t('nav.quickSearchPlaceholder')}
       onSearch={(text) => {
         if (text === '') return;

@@ -63,4 +63,10 @@ export const SCREENS: readonly Screen[] = [
     path: '/panel/kullanicilar',
     ready: /Sisteme giriş hesabı olan kişiler/,
   },
+  {
+    name: 'Fasoncu sayfası',
+    role: 'MANAGER',
+    path: '/panel/bakiye/fasoncu/sub-0',
+    ready: 'Aydın Örme',
+  },
 ];

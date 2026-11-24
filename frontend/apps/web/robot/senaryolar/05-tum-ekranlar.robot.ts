@@ -37,6 +37,12 @@ for (const [rol, rotalar] of Object.entries(IZINLI)) {
       if (tas !== undefined && rol === 'depo')
         yollar.push(`/panel/sevkiyat/${tas.shipmentId}/cikis`);
     }
+    // Fasoncu sayfası: bakiyesi olan ilk fasoncu (bakiye görebilen rollerde).
+    if (rotalar.includes('/panel/bakiye')) {
+      const bakiye = await robot.api<{ items: { subcontractorId: string }[] }>('/api/v1/balances');
+      const fasoncu = bakiye.items[0]?.subcontractorId;
+      if (fasoncu !== undefined) yollar.push(`/panel/bakiye/fasoncu/${fasoncu}`);
+    }
     const kapsanan = new Set(Object.keys(KAPSANAN));
     for (const yol of yollar)
       tumKapsam.push(...(await sayfayiGez(robot, yol, kapsanan)).map((k) => ({ ...k, rol })));

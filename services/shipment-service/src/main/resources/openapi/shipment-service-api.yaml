@@ -182,8 +182,8 @@ paths:
       tags: [Shipments]
       operationId: listShipments
       summary: Kapsamdaki sevkiyatlar, en yeni önce
-      description: Fasoncu yalnızca kendi, iç kullanıcılar yalnızca yetkili oldukları lokasyonlardaki
-        sevkiyatları görür. Filtre sorguya eklenir (SEC-03).
+      description: Kullanıcılar yalnızca yetkili oldukları lokasyonlardaki sevkiyatları görür. Kapsam ve süzgeçler
+        (durum, arama metni, sevkiyat tarihi aralığı) sorguya eklenir (SEC-03).
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
@@ -197,6 +197,28 @@ paths:
               $ref: '#/components/schemas/ShipmentStatus'
           style: form
           explode: true
+        - name: search
+          in: query
+          required: false
+          description: Sevkiyat numarası, fasoncu adı, şoför adı ya da plakada aranan metin (büyük-küçük harf ayırmaz)
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+        - name: from
+          in: query
+          required: false
+          description: Sevkiyat tarihi bu günden önce olmayanlar
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          description: Sevkiyat tarihi bu günden sonra olmayanlar
+          schema:
+            type: string
+            format: date
       responses:
         '200':
           description: Sayfa

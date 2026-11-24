@@ -2,12 +2,14 @@ package com.yarnshipment.shipment.adapter.in.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.CompleteShipmentUseCase;
 import com.yarnshipment.shipment.application.port.in.GetShipmentUseCase;
+import com.yarnshipment.shipment.application.port.in.ListShipmentsQuery;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsUseCase;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
 import com.yarnshipment.shipment.application.port.in.ShipmentAction;
@@ -19,12 +21,14 @@ import com.yarnshipment.shipment.application.port.in.ShipmentPage.ShipmentListIt
 import com.yarnshipment.shipment.application.port.in.stock.GetWorkAreaUseCase;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import com.yarnshipment.shipment.domain.stock.WorkArea;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
@@ -116,6 +120,37 @@ class ShipmentControllerTest {
                 .extractingPath("$.items[0].allowedActions[0]")
                 .isEqualTo("RECORD_DISPATCH");
         assertThat(result).bodyJson().doesNotHavePath("$.items[0].plannedNetKg");
+    }
+
+    @Test
+    @DisplayName("Arama metni ve tarih aralığı süzgeç olarak use case'e iletilir")
+    void shouldPassSearchAndDateRangeToUseCase() {
+        // given
+        when(listShipmentsUseCase.listShipments(any())).thenReturn(new ShipmentPage(List.of(), 0, PAGE_SIZE, 0));
+
+        // when
+        MvcTestResult result = get(
+                "/api/v1/shipments?search=ABC&from=2026-10-01&to=2026-10-31",
+                TestTokens.token("warehouse").build());
+
+        // then
+        assertThat(result).hasStatusOk();
+        ArgumentCaptor<ListShipmentsQuery> query = ArgumentCaptor.forClass(ListShipmentsQuery.class);
+        verify(listShipmentsUseCase).listShipments(query.capture());
+        assertThat(query.getValue().filter())
+                .isEqualTo(new ListShipmentsQuery.Filter(
+                        Set.of(), "ABC", LocalDate.parse("2026-10-01"), LocalDate.parse("2026-10-31")));
+    }
+
+    @Test
+    @DisplayName("Geçersiz tarih 400 döner")
+    void shouldRejectInvalidDate() {
+        // when
+        MvcTestResult result = get(
+                "/api/v1/shipments?from=10.2026", TestTokens.token("warehouse").build());
+
+        // then
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
     }
 
     @Test

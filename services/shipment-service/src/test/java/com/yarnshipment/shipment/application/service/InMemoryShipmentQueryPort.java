@@ -1,6 +1,7 @@
 package com.yarnshipment.shipment.application.service;
 
 import com.yarnshipment.common.security.scope.AccessScope;
+import com.yarnshipment.shipment.application.port.in.ListShipmentsQuery;
 import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort;
 import com.yarnshipment.shipment.domain.model.Shipment;
 import com.yarnshipment.shipment.domain.model.ShipmentStatus;
@@ -15,6 +16,7 @@ final class InMemoryShipmentQueryPort implements ShipmentQueryPort {
 
     private final List<Shipment> shipments = new ArrayList<>();
     private AccessScope lastScope = AccessScope.UNRESTRICTED;
+    private ListShipmentsQuery.Filter lastFilter = ListShipmentsQuery.Filter.NONE;
 
     void add(Shipment shipment) {
         shipments.add(shipment);
@@ -22,6 +24,10 @@ final class InMemoryShipmentQueryPort implements ShipmentQueryPort {
 
     AccessScope lastScope() {
         return lastScope;
+    }
+
+    ListShipmentsQuery.Filter lastFilter() {
+        return lastFilter;
     }
 
     @Override
@@ -37,8 +43,10 @@ final class InMemoryShipmentQueryPort implements ShipmentQueryPort {
     }
 
     @Override
-    public ShipmentSlice findShipments(AccessScope scope, Set<ShipmentStatus> statuses, PageRequest page) {
+    public ShipmentSlice findShipments(AccessScope scope, ListShipmentsQuery.Filter filter, PageRequest page) {
         lastScope = scope;
+        lastFilter = filter;
+        Set<ShipmentStatus> statuses = filter.statuses();
         List<Shipment> matching = shipments.stream()
                 .filter(shipment -> statuses.isEmpty() || statuses.contains(shipment.status()))
                 .filter(shipment -> scope.isUnrestricted() || scope.siteIds().contains(shipment.siteId()))

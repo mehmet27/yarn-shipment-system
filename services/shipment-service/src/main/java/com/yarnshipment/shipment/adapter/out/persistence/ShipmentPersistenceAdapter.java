@@ -1,12 +1,11 @@
 package com.yarnshipment.shipment.adapter.out.persistence;
 
 import com.yarnshipment.common.security.scope.AccessScope;
+import com.yarnshipment.shipment.application.port.in.ListShipmentsQuery;
 import com.yarnshipment.shipment.application.port.out.ShipmentQueryPort;
 import com.yarnshipment.shipment.domain.model.Shipment;
-import com.yarnshipment.shipment.domain.model.ShipmentStatus;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -47,9 +46,9 @@ final class ShipmentPersistenceAdapter implements ShipmentQueryPort {
     }
 
     @Override
-    public ShipmentSlice findShipments(AccessScope scope, Set<ShipmentStatus> statuses, PageRequest page) {
+    public ShipmentSlice findShipments(AccessScope scope, ListShipmentsQuery.Filter filter, PageRequest page) {
         Page<ShipmentJpaEntity> result = shipments.findAll(
-                ShipmentSpecifications.inScopeWithStatus(scope, statuses),
+                ShipmentSpecifications.inScopeMatching(scope, filter),
                 org.springframework.data.domain.PageRequest.of(page.number(), page.size(), NEWEST_FIRST));
         return new ShipmentSlice(toDomain(result.getContent()), result.getTotalElements());
     }

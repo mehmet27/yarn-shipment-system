@@ -15,6 +15,7 @@ import com.yarnshipment.shipment.application.port.in.ListShipmentsQuery;
 import com.yarnshipment.shipment.application.port.in.ListShipmentsUseCase;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchCommand;
 import com.yarnshipment.shipment.application.port.in.RecordDispatchUseCase;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -50,9 +51,14 @@ public class ShipmentController implements ShipmentsApi {
     @Override
     @PreAuthorize("hasAuthority('SHIPMENT_VIEW')")
     public ResponseEntity<ShipmentPageResponse> listShipments(
-            Integer page, Integer size, @Nullable List<ShipmentStatus> status) {
-        ListShipmentsQuery query =
-                new ListShipmentsQuery(currentActorProvider.getCurrentActor(), statuses(status), page, size);
+            Integer page,
+            Integer size,
+            @Nullable List<ShipmentStatus> status,
+            @Nullable String search,
+            @Nullable LocalDate from,
+            @Nullable LocalDate to) {
+        ListShipmentsQuery.Filter filter = new ListShipmentsQuery.Filter(statuses(status), search, from, to);
+        ListShipmentsQuery query = new ListShipmentsQuery(currentActorProvider.getCurrentActor(), filter, page, size);
         return ResponseEntity.ok(ShipmentPages.toResponse(listShipmentsUseCase.listShipments(query)));
     }
 

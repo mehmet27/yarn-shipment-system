@@ -4,25 +4,27 @@ import { Link } from 'react-router';
 import { usePermission } from '@/modules/auth';
 
 export type ShipmentListEmptyProps = {
-  /** Durum süzgeci seçiliyse liste o yüzden boştur. */
+  /** Süzgeç seçiliyse liste o yüzden boştur. */
   isFiltered: boolean;
+  /** Yalnızca durum süzgeci seçili (arama metni ya da tarih yok). */
+  isOnlyStatus: boolean;
   onShowAll: () => void;
 };
 
 /**
- * Boş sevkiyat listesi ne yapılacağını söyler: süzgeç seçiliyse "tüm durumları göster", hiç sevkiyat yoksa
+ * Boş sevkiyat listesi ne yapılacağını söyler: süzgeç seçiliyse süzgeci kaldıran düğme, hiç sevkiyat yoksa
  * açabilen kullanıcıya "Yeni sevkiyat" düğmesi, açamayana sevkiyatın kimden geleceği.
  */
-export function ShipmentListEmpty({ isFiltered, onShowAll }: ShipmentListEmptyProps) {
+export function ShipmentListEmpty({ isFiltered, isOnlyStatus, onShowAll }: ShipmentListEmptyProps) {
   const { t } = useTranslation();
   const canCreate = usePermission('SHIPMENT_CREATE');
   if (isFiltered) {
     return (
       <EmptyState
-        title={t('shipment.list.empty')}
+        title={t(isOnlyStatus ? 'shipment.list.empty' : 'shipment.list.emptyFiltered')}
         action={
           <Button variant="default" onClick={onShowAll}>
-            {t('shipment.list.showAll')}
+            {t(isOnlyStatus ? 'shipment.list.showAll' : 'shipment.list.clearFilters')}
           </Button>
         }
       />

@@ -33,7 +33,7 @@ public class ListShipmentsService implements ListShipmentsUseCase {
     public ShipmentPage listShipments(ListShipmentsQuery query) {
         Actor actor = query.actor();
         ShipmentSlice slice = shipmentQueryPort.findShipments(
-                scopeGuard.scopeOf(actor), query.statuses(), new PageRequest(query.page(), query.size()));
+                scopeGuard.scopeOf(actor), query.filter(), new PageRequest(query.page(), query.size()));
         List<ShipmentListItem> items = slice.shipments().stream()
                 .map(shipment -> new ShipmentListItem(shipment, accessPolicy.allowedActions(shipment, actor)))
                 .toList();

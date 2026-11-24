@@ -1,4 +1,6 @@
 export { shipmentPanelRoutes } from './routes';
+export { QuickSearch } from './components/QuickSearch';
+export type { QuickSearchProps } from './components/QuickSearch';
 export { useActorLabel } from './components/useActorLabel';
 export { useYarnLabel } from './components/useYarnLabel';
 export { formatKgText, formatPercentText, formatSignedKg } from './settlement/format';

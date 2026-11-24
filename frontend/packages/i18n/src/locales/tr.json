@@ -85,6 +85,8 @@
       "setup": "Tanımlar ve ayarlar"
     },
     "toggle": "Yan menü",
+    "quickSearch": "Hızlı arama",
+    "quickSearchPlaceholder": "Sevkiyat no, fasoncu ya da plaka ara",
     "shipments": "Sevkiyatlar",
     "masterData": "Tanımlar",
     "discrepancies": "Uyuşmazlıklar",
@@ -141,6 +143,14 @@
       "statusFilter": "Durum",
       "allStatuses": "Tüm durumlar",
       "showAll": "Tüm durumları göster",
+      "clearFilters": "Süzgeçleri temizle",
+      "emptyFiltered": "Bu aramaya uyan sevkiyat yok.",
+      "search": "Sevkiyat ara",
+      "searchPlaceholder": "Sevkiyat no, fasoncu, şoför ya da plaka",
+      "searchSubmit": "Ara",
+      "dateFrom": "Başlangıç tarihi",
+      "dateTo": "Bitiş tarihi",
+      "dateRangeInvalid": "Başlangıç tarihi bitiş tarihinden sonra olamaz.",
       "none": "Henüz sevkiyat yok",
       "noneHint": "Müdür yeni sevkiyat açınca burada görünür.",
       "noneHintCreate": "İlk sevkiyatı açmak için \"Yeni sevkiyat\" düğmesine basın."

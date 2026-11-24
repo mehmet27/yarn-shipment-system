@@ -1117,6 +1117,20 @@ size?: SizeParameter;
  * Yalnızca bu durumlardaki sevkiyatlar
  */
 status?: ShipmentStatus[];
+/**
+ * Sevkiyat numarası, fasoncu adı, şoför adı ya da plakada aranan metin (büyük-küçük harf ayırmaz)
+ * @minLength 1
+ * @maxLength 100
+ */
+search?: string;
+/**
+ * Sevkiyat tarihi bu günden önce olmayanlar
+ */
+from?: string;
+/**
+ * Sevkiyat tarihi bu günden sonra olmayanlar
+ */
+to?: string;
 };
 
 export type ListSubcontractorsParams = {
@@ -1420,7 +1434,7 @@ export const createShipment = (
     }
 
 /**
- * Fasoncu yalnızca kendi, iç kullanıcılar yalnızca yetkili oldukları lokasyonlardaki sevkiyatları görür. Filtre sorguya eklenir (SEC-03).
+ * Kullanıcılar yalnızca yetkili oldukları lokasyonlardaki sevkiyatları görür. Kapsam ve süzgeçler (durum, arama metni, sevkiyat tarihi aralığı) sorguya eklenir (SEC-03).
  * @summary Kapsamdaki sevkiyatlar, en yeni önce
  */
 export const listShipments = (

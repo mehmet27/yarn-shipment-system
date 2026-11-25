@@ -52,24 +52,6 @@ export type ListMovementsParams = {
 };
 
 export type YarnShare = { yarnType: string; netKg: string };
-export type FabricReceipt = {
-  id: string;
-  fabricType: string;
-  netKg: string;
-  rollCount?: number;
-  waybillNo: string;
-  receivedAt: string;
-  yarns: YarnShare[];
-};
-export type FabricReceiptRequest = {
-  fabricType: string;
-  netKg: string;
-  rollCount?: number;
-  waybillNo: string;
-  receivedAt?: string;
-  yarns?: YarnShare[];
-};
-
 /** FROM_SUBCONTRACTOR artık yeni kayıt açılmaz; yalnızca eski kayıtlar listede görünür. */
 export type YarnReturnDirection = 'RETURN' | 'FROM_SUBCONTRACTOR';
 export type YarnReturn = {
@@ -192,18 +174,6 @@ export const listBalanceMovements = (params: ListMovementsParams) =>
   });
 
 const shipmentUrl = (shipmentId: string, path: string) => `/api/v1/shipments/${shipmentId}/${path}`;
-
-export const listFabricReceipts = (shipmentId: string) =>
-  customInstance<FabricReceipt[]>({
-    url: shipmentUrl(shipmentId, 'fabric-receipts'),
-    method: 'GET',
-  });
-export const recordFabricReceipt = (shipmentId: string, data: FabricReceiptRequest) =>
-  customInstance<FabricReceipt>({
-    url: shipmentUrl(shipmentId, 'fabric-receipts'),
-    method: 'POST',
-    data,
-  });
 
 export const listYarnReturns = (shipmentId: string) =>
   customInstance<YarnReturn[]>({ url: shipmentUrl(shipmentId, 'yarn-returns'), method: 'GET' });

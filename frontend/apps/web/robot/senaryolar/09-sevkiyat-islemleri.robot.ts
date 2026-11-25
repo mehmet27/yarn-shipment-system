@@ -214,11 +214,6 @@ test('Fire dosyası: oran değiştirme, fatura edildi ve kapatma, Faturalama ekr
         Number(fire.actualFirePercent) < Number(once.actualFirePercent),
         `${once.actualFirePercent} → ${fire.actualFirePercent}`,
       );
-      await fasonKalite.sayfa.goto(`/panel/sevkiyat/${faturali}`);
-      await fasonKalite.sayfa.getByRole('tab', { name: 'Kumaş girişi', exact: true }).click();
-      await expect(fasonKalite.sayfa.getByTestId('fabric-limit-note')).toContainText(
-        '1 kg için fatura kesildi',
-      );
     },
   );
 

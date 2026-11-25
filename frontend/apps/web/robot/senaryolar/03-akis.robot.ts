@@ -6,6 +6,7 @@ import {
   tedarikciTanimla,
   kumasFormuDoldur,
   kumasGir,
+  oranYaz,
   sevkiyatIpligiSec,
   tartiyiOnayla,
 } from '../support/akis';
@@ -262,43 +263,25 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
   });
 
   await fasonKalite.adim(
-    'fasoncu kalite: formun üstünde gönderilen, gelen ve kalan kilo tek cümleyle yazar',
-    async () => {
-      await kumasFormuDoldur(fasonKalite, sevkiyatId, '50', `${iplik}-K0`);
-      await expect(fasonKalite.sayfa.getByTestId('fabric-limit-note')).toHaveText(
-        'Fasoncuya 100 kg iplik gönderildi, şimdiye kadar 0 kg kumaş geldi; en çok 100 kg daha girebilirsiniz.',
-      );
-    },
-  );
-
-  await fasonKalite.adim(
-    'fasoncu kalite: iplik cinsi serbest metin değil, sevkiyattaki ipliklerden seçilir; seçilen bir daha sunulmaz',
+    'fasoncu kalite: fasoncudaki iplik için oran kutusu çıkar, canlı toplam yazar',
     async () => {
       const sayfa = fasonKalite.sayfa;
-      await sayfa.getByRole('button', { name: 'İplik satırı ekle' }).click();
-      await sayfa.getByRole('button', { name: 'İplik satırı ekle' }).click();
-      const secimler = sayfa.getByRole('combobox', { name: 'İplik cinsi' });
-      await secimler.nth(0).click();
-      await sayfa.locator('[role=option]:visible').filter({ hasText: iplik }).first().click();
-      await secimler.nth(1).click();
-      fasonKalite.kontrol(
-        'ilk satırda seçilen iplik ikinci satırda sunulmamalı',
-        (await sayfa.locator('[role=option]:visible').filter({ hasText: iplik }).count()) === 0,
+      await kumasFormuDoldur(fasonKalite, sevkiyatId, '50', `${iplik}-K0`);
+      await expect(sayfa.getByLabel(/^Oran: /).first()).toBeVisible();
+      await expect(sayfa.getByTestId('fabric-ratio-total')).toHaveText(
+        'Toplam: %0 (tam %100 olmalı)',
       );
-      await sayfa.keyboard.press('Escape');
+      await oranYaz(fasonKalite);
+      await expect(sayfa.getByTestId('fabric-ratio-total')).toHaveText('Toplam: %100');
     },
   );
 
   await fasonKalite.adim(
-    'fasoncu kalite: gönderilen ipliği aşan kumaş girişi satırda uyarılır, onay sorusu çıkmaz, sunucuya gitmez',
+    'fasoncu kalite: fasoncudaki ipliği aşan kumaş girişi kontrolde uyarılır, onay sorusu çıkmaz, kayıt yazılmaz',
     async () => {
       await kumasGir(fasonKalite, sevkiyatId, '150', `${iplik}-K1`, false);
-      const mesajlar = await fasonKalite.mesajlar();
-      fasonKalite.kontrol(
-        'iplikten fazla kumaş nedeniyle alan altında uyarılmalı',
-        mesajlar.some((m) => /ipli[kğ]/i.test(m) && !GENEL_MESAJ.test(m)),
-        mesajlar.join(' | '),
-      );
+      await expect(fasonKalite.sayfa.getByText('Fasoncuda yeterli iplik yok')).toBeVisible();
+      await expect(fasonKalite.sayfa.getByText(/50 kg eksik/)).toBeVisible();
       fasonKalite.kontrol(
         'aşan kiloda "Evet, kaydet" sorusu çıkmamalı',
         (await fasonKalite.sayfa.getByRole('button', { name: 'Evet, kaydet' }).count()) === 0,
@@ -315,12 +298,14 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     async () => {
       const sayfa = fasonKalite.sayfa;
       await kumasFormuDoldur(fasonKalite, sevkiyatId, '90', `${iplik}-K2`);
-      await sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
+      await oranYaz(fasonKalite);
+      await sayfa.getByRole('button', { name: 'Kontrol et' }).click();
+      await expect(sayfa.getByText('Kumaş için şu iplikler düşülecek')).toBeVisible();
       await expect(
         sayfa.getByText(/90 kg Süprem kumaş kaydedilecek\. Kayıt sonradan değiştirilemez\./),
       ).toBeVisible();
       await sayfa.getByRole('button', { name: 'Vazgeç' }).click();
-      await expect(sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' })).toBeVisible();
+      await expect(sayfa.getByRole('button', { name: 'Kontrol et' })).toBeVisible();
       const once = await fasonKalite.api<FireDosyasi>(
         `/api/v1/shipments/${sevkiyatId}/fire-settlement`,
       );
@@ -329,18 +314,16 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
         Number(once.fabricKg) === 0,
         once.fabricKg,
       );
-      await sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
+      await sayfa.getByRole('button', { name: 'Kontrol et' }).click();
       await sayfa.getByRole('button', { name: 'Evet, kaydet' }).click();
       await expect(sayfa.getByText('Kumaş girişi kaydedildi.')).toBeVisible();
     },
   );
 
   await fasonKalite.adim(
-    'fasoncu kalite: kayıttan sonra kalan kilo cümlesi güncellenir, fire dosyası sayıları tutar',
+    'fasoncu kalite: kayıttan sonra kumaş kartı iplik payını yazar, fire dosyası sayıları tutar',
     async () => {
-      await expect(fasonKalite.sayfa.getByTestId('fabric-limit-note')).toHaveText(
-        'Fasoncuya 100 kg iplik gönderildi, şimdiye kadar 90 kg kumaş geldi; en çok 10 kg daha girebilirsiniz.',
-      );
+      await expect(fasonKalite.sayfa.getByText(/%100/).first()).toBeVisible();
       const fire = await fasonKalite.api<FireDosyasi>(
         `/api/v1/shipments/${sevkiyatId}/fire-settlement`,
       );
@@ -358,7 +341,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     await sekme(mudur, 'Kumaş girişi');
     mudur.kontrol(
       'müdürde kumaş girişi formu yok',
-      (await mudur.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).count()) === 0,
+      (await mudur.sayfa.getByRole('button', { name: 'Kontrol et' }).count()) === 0,
     );
   });
 

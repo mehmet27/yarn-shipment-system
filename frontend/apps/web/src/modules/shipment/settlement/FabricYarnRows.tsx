@@ -1,86 +1,49 @@
+import type { FabricYarnOption } from '@iplik/api-client/fabric';
 import { useTranslation } from '@iplik/i18n';
-import { Button, Select, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
-import type { YarnOption } from './fabricLimits';
-import type { YarnRowDraft } from './settlementDraft';
+import { Stack, Text } from '@iplik/ui';
+import { ratioKey, ratioTotal } from './fabricRatios';
+import { FabricYarnRow } from './FabricYarnRow';
 
 export type FabricYarnRowsProps = {
-  rows: readonly YarnRowDraft[];
-  /** Bu sevkiyattaki iplikler; satırlarda bunlardan biri seçilir. */
-  yarnNames: readonly YarnOption[];
-  onChange: (index: number, patch: Partial<YarnRowDraft>) => void;
-  onAdd: () => void;
-  onRemove: (index: number) => void;
+  /** Fasoncudaki tüm iplikler; her biri için bir oran satırı. */
+  options: readonly FabricYarnOption[];
+  ratios: Record<string, string>;
+  onChange: (key: string, value: string) => void;
 };
 
-const NUMBER_STYLES = { input: { textAlign: 'right' } } as const;
-const ROW_STYLE = { border: '1px solid var(--app-line)', borderRadius: 'var(--mantine-radius-md)' };
+const FULL = 100;
 
-/** Başka satırda seçilmiş iplik tekrar sunulmaz. */
-function optionsFor(names: readonly YarnOption[], rows: readonly YarnRowDraft[], index: number) {
-  const taken = new Set(rows.filter((_, i) => i !== index).map((row) => row.yarnType));
-  return names.filter((name) => !taken.has(name.value));
-}
-
-/** İplik dağılımı satırları; boş bırakılırsa sunucu reçeteyle dağıtır. */
-export function FabricYarnRows({
-  rows,
-  yarnNames,
-  onChange,
-  onAdd,
-  onRemove,
-}: FabricYarnRowsProps) {
+/** Fasoncudaki her iplik için bir oran kutusu ve canlı toplam; toplam tam 100 olmalı. */
+export function FabricYarnRows({ options, ratios, onChange }: FabricYarnRowsProps) {
   const { t } = useTranslation();
+  const total = ratioTotal(ratios);
+  const isFull = total === FULL;
   return (
     <Stack gap="xs">
       <Text fw={500}>{t('settlement.fabric.distribution')}</Text>
       <Text size="sm" c="dimmed">
         {t('settlement.fabric.distributionHint')}
       </Text>
-      {rows.map((row, index) => (
-        // Satırın kimliği yok; yalnız sondan eklenir ve sırayla silinir.
-        <SimpleGrid
-          // eslint-disable-next-line react/no-array-index-key -- kimliksiz taslak satırı
-          key={index}
-          cols={{ base: 1, sm: 3 }}
-          p="sm"
-          bg="var(--app-inset)"
-          style={ROW_STYLE}
-        >
-          <Select
-            label={t('settlement.fabric.yarnType')}
-            placeholder={t('settlement.fabric.yarnPlaceholder')}
-            data={optionsFor(yarnNames, rows, index)}
-            value={row.yarnType === '' ? null : row.yarnType}
-            onChange={(value) => {
-              onChange(index, { yarnType: value ?? '' });
-            }}
-            allowDeselect={false}
-            nothingFoundMessage={t('settlement.fabric.noYarnFound')}
-          />
-          <TextInput
-            label={t('settlement.fabric.yarnKg')}
-            inputMode="decimal"
-            styles={NUMBER_STYLES}
-            value={row.netKg}
-            onChange={(event) => {
-              onChange(index, { netKg: event.currentTarget.value });
-            }}
-          />
-          <Button
-            variant="default"
-            style={{ alignSelf: 'end' }}
-            fullWidth
-            onClick={() => {
-              onRemove(index);
-            }}
-          >
-            {t('settlement.fabric.removeYarn')}
-          </Button>
-        </SimpleGrid>
+      {options.length === 0 && (
+        <Text size="sm" c="dimmed">
+          {t('settlement.fabric.noYarnHeld')}
+        </Text>
+      )}
+      {options.map((option) => (
+        <FabricYarnRow
+          key={ratioKey(option)}
+          option={option}
+          value={ratios[ratioKey(option)] ?? ''}
+          onChange={(value) => {
+            onChange(ratioKey(option), value);
+          }}
+        />
       ))}
-      <Button variant="default" w="fit-content" onClick={onAdd}>
-        {t('settlement.fabric.addYarn')}
-      </Button>
+      <Text size="sm" fw={600} c={isFull ? 'green' : 'red'} data-testid="fabric-ratio-total">
+        {t(isFull ? 'settlement.fabric.ratioTotalOk' : 'settlement.fabric.ratioTotal', {
+          total: String(total).replace('.', ','),
+        })}
+      </Text>
     </Stack>
   );
 }

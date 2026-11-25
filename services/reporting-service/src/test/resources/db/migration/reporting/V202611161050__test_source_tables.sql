@@ -90,6 +90,13 @@ CREATE TABLE shipment.fabric_lot (
     net_kg      numeric(12, 3) NOT NULL
 );
 
+CREATE TABLE shipment.fabric_yarn_draw (
+    id                 uuid           PRIMARY KEY,
+    fabric_lot_id      uuid           NOT NULL REFERENCES shipment.fabric_lot (id),
+    source_shipment_id uuid           NOT NULL REFERENCES shipment.shipment (id),
+    net_kg             numeric(12, 3) NOT NULL
+);
+
 -- shipment modülünün geçici uyumluluk görünümü (gerçek şemada V202611161120 oluşturur, reporting V202611171000 düşürür).
 CREATE VIEW shipment.fabric_receipt AS
 SELECT id, shipment_id, net_kg FROM shipment.fabric_lot WHERE source = 'SUBCONTRACTOR';

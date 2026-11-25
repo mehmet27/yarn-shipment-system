@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { PageHero, Stack, Tabs } from '@iplik/ui';
+import { RecipesPanel } from '../components/RecipesPanel';
 import { RecordList } from '../components/RecordList';
 import { MANAGED_KINDS } from '../kinds';
 
@@ -16,12 +17,18 @@ export function MasterDataPage() {
               {t(`masterData.kinds.${kind}.tab`)}
             </Tabs.Tab>
           ))}
+          <Tabs.Tab value="recipes" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+            {t('masterData.recipes.tab')}
+          </Tabs.Tab>
         </Tabs.List>
         {MANAGED_KINDS.map((kind) => (
           <Tabs.Panel key={kind} value={kind} pt="md">
             <RecordList kind={kind} />
           </Tabs.Panel>
         ))}
+        <Tabs.Panel value="recipes" pt="md">
+          <RecipesPanel />
+        </Tabs.Panel>
       </Tabs>
     </Stack>
   );

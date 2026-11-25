@@ -2,17 +2,25 @@ import type {
   BalanceMovement,
   FireInvoiceRow,
   BalanceRow,
-  FabricReceipt,
-  FabricReceiptRequest,
   FireSettlement,
   MovementKind,
   YarnReturn,
   YarnReturnRequest,
   YarnShare,
 } from '@iplik/api-client/settlements';
+import type {
+  FabricDraw,
+  FabricPreview,
+  FabricReceipt,
+  FabricReceiptRequest,
+  FabricRecipe,
+  FabricRecipeRequest,
+  FabricYarn,
+  FabricYarnOption,
+} from '@iplik/api-client/fabric';
 import type { Kilogram } from '@iplik/units';
 import { calculateFire, sumKg } from '@iplik/units';
-import { listMockShipments } from './mockStore';
+import { findMockShipment, listMockShipments } from './mockStore';
 
 /** Sahte API'nin bakiye, kumaş, iplik dönüşü ve fire dosyası durumu; testler arasında sıfırlanır. */
 type Invoice = { invoiceNo: string; invoicedAt: string; invoiceNote?: string; kg: string };
@@ -27,6 +35,7 @@ let rates = new Map<string, string>();
 let invoices = new Map<string, Invoice[]>();
 let closed = new Set<string>();
 let movements: BalanceMovement[] = [];
+let recipes: FabricRecipe[] = [];
 let counter = 0;
 
 export function resetMockSettlements(): void {
@@ -36,6 +45,7 @@ export function resetMockSettlements(): void {
   invoices = new Map();
   closed = new Set();
   movements = [];
+  recipes = [];
   counter = 0;
 }
 
@@ -74,12 +84,66 @@ function addMovement(entry: NewMovement, createdBy: string): void {
   ];
 }
 
+/** Sevkiyatın iplikleri (tek sevkiyatlık sahte dünya): her iplik için sevkiyattaki kilo eksi kumaşa düşülen. */
+export function listMockYarnOptions(shipmentId: string): FabricYarnOption[] {
+  const shipment = findMockShipment(shipmentId);
+  const lines = shipment !== undefined && 'lines' in shipment ? (shipment.lines ?? []) : [];
+  const drawn = new Map<string, number>();
+  for (const receipt of listMockReceipts(shipmentId)) {
+    for (const yarn of receipt.yarns) {
+      drawn.set(yarn.yarnType, (drawn.get(yarn.yarnType) ?? 0) + Number(yarn.netKg));
+    }
+  }
+  return lines.flatMap((line) => {
+    const name = (line.yarnTypeName ?? line.yarnTypeText ?? '').trim();
+    if (name === '') return [];
+    const left = Math.max(0, Number(line.netKg) - (drawn.get(name) ?? 0)).toFixed(3);
+    return [{ yarnType: name, totalKg: left, ownKg: left }];
+  });
+}
+
+/** Oranlardan kilo ve düşüm hesaplar; yetmeyen iplik eksik listesine girer. */
+export function previewMockFabric(
+  shipmentId: string,
+  request: Pick<FabricReceiptRequest, 'netKg' | 'yarns'>,
+): FabricPreview {
+  const options = listMockYarnOptions(shipmentId);
+  const yarns: FabricYarn[] = [];
+  const shortages: FabricPreview['shortages'] = [];
+  let given = 0;
+  request.yarns.forEach((ratio, index) => {
+    const isLast = index === request.yarns.length - 1;
+    const kg = isLast
+      ? Number(request.netKg) - given
+      : Number(((Number(request.netKg) * Number(ratio.ratioPct)) / 100).toFixed(3));
+    given += kg;
+    const held = Number(options.find((o) => o.yarnType === ratio.yarnType)?.totalKg ?? '0');
+    if (kg > held + 0.0005) {
+      shortages.push({
+        yarnType: ratio.yarnType,
+        requiredKg: kg.toFixed(3),
+        missingKg: (kg - held).toFixed(3),
+      });
+    }
+    yarns.push({
+      yarnType: ratio.yarnType,
+      ratioPct: ratio.ratioPct,
+      netKg: kg.toFixed(3),
+      draws: [{ shipmentId, shipmentNo: shipmentId.toUpperCase(), netKg: kg.toFixed(3) }],
+    });
+  });
+  return { feasible: shortages.length === 0, yarns, shortages };
+}
+
 export function addMockReceipt(
   shipmentId: string,
-  request: FabricReceiptRequest,
+  request: Omit<FabricReceiptRequest, 'yarns'> & { yarns?: FabricReceiptRequest['yarns'] },
   userId: string,
 ): FabricReceipt {
-  const yarns = request.yarns ?? [{ yarnType: DEFAULT_YARN, netKg: request.netKg }];
+  const yarns = previewMockFabric(shipmentId, {
+    netKg: request.netKg,
+    yarns: request.yarns ?? [{ yarnType: DEFAULT_YARN, ratioPct: '100' }],
+  }).yarns;
   const receipt: FabricReceipt = {
     id: nextId('fab'),
     fabricType: request.fabricType,
@@ -97,6 +161,41 @@ export function addMockReceipt(
     );
   }
   return receipt;
+}
+
+export function listMockDraws(shipmentId: string): FabricDraw[] {
+  return listMockReceipts(shipmentId).flatMap((receipt) =>
+    receipt.yarns.map((yarn) => ({
+      fabricId: receipt.id,
+      fabricType: receipt.fabricType,
+      entryShipmentId: shipmentId,
+      entryShipmentNo: shipmentId.toUpperCase(),
+      yarnType: yarn.yarnType,
+      netKg: yarn.netKg,
+      receivedAt: receipt.receivedAt,
+    })),
+  );
+}
+
+export const listMockRecipes = (includeInactive: boolean) =>
+  recipes.filter((recipe) => includeInactive || recipe.active);
+
+/** Aynı kumaş cinsi (büyük/küçük harf fark etmez) varsa undefined. */
+export function saveMockRecipe(
+  id: string | undefined,
+  request: FabricRecipeRequest,
+): FabricRecipe | undefined {
+  const same = (r: FabricRecipe) =>
+    r.fabricType.toLowerCase() === request.fabricType.trim().toLowerCase();
+  if (recipes.some((r) => same(r) && r.id !== id)) return undefined;
+  const saved: FabricRecipe = {
+    id: id ?? nextId('rec'),
+    fabricType: request.fabricType.trim(),
+    yarns: request.yarns,
+    active: request.active ?? true,
+  };
+  recipes = id === undefined ? [...recipes, saved] : recipes.map((r) => (r.id === id ? saved : r));
+  return saved;
 }
 
 export function addMockReturn(

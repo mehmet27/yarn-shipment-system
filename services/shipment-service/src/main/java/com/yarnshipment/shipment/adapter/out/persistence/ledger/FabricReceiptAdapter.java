@@ -1,27 +1,27 @@
 package com.yarnshipment.shipment.adapter.out.persistence.ledger;
 
+import com.yarnshipment.shipment.application.port.in.fabric.FabricDrawEntry;
 import com.yarnshipment.shipment.application.port.out.ledger.FabricReceiptPort;
 import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement.Consumption;
 import com.yarnshipment.shipment.domain.balance.MovementKind;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
-import com.yarnshipment.shipment.domain.fabric.YarnShare;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import com.yarnshipment.shipment.domain.fabric.FabricYarn;
+import com.yarnshipment.shipment.domain.fabric.YarnDraw;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
-/** Kumaş girişinin JDBC uygulaması: kayıt, iplik dağılımı ve bakiyeden düşen hareketler tek transaction'da yazılır. */
+/**
+ * Kumaş girişinin JDBC uygulaması: kayıt, iplik oranları, sevkiyatlardan iplik düşümleri ve bakiyeden düşen hareketler
+ * tek transaction'da yazılır; okuma {@link FabricReceiptReader}'dadır.
+ */
 @Component
 final class FabricReceiptAdapter implements FabricReceiptPort {
 
@@ -30,64 +30,44 @@ final class FabricReceiptAdapter implements FabricReceiptPort {
                                     created_by, yarns)
             VALUES (:id, 'SUBCONTRACTOR', :shipmentId, :fabricType, :netKg, :rollCount, :waybillNo, :receivedAt,
                     :createdBy, :yarns::jsonb)""";
-    private static final String SELECT_RECEIPTS = """
-            SELECT r.id, r.shipment_id, f.subcontractor_id, r.fabric_type, r.net_kg, r.roll_count, r.waybill_no,
-                   r.occurred_at AS received_at, r.created_by, r.yarns
-            FROM fabric_lot r JOIN fire_settlement f ON f.shipment_id = r.shipment_id
-            WHERE r.shipment_id = ? AND r.source = 'SUBCONTRACTOR'
-            ORDER BY r.occurred_at, r.created_at, r.id""";
+    private static final String INSERT_DRAW = """
+            INSERT INTO fabric_yarn_draw (id, fabric_lot_id, source_shipment_id, yarn_type, lot_id, net_kg, position)
+            VALUES (:id, :fabricId, :shipmentId, :yarnType, :lotId, :netKg, :position)""";
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
     private final JdbcClient jdbc;
     private final BalanceMovementWriter movements;
     private final LedgerEventPort events;
+    private final FabricReceiptReader reader;
 
-    FabricReceiptAdapter(JdbcClient jdbc, BalanceMovementWriter movements, LedgerEventPort events) {
+    FabricReceiptAdapter(
+            JdbcClient jdbc, BalanceMovementWriter movements, LedgerEventPort events, FabricReceiptReader reader) {
         this.jdbc = jdbc;
         this.movements = movements;
         this.events = events;
+        this.reader = reader;
     }
 
     @Override
     public List<FabricReceipt> findByShipment(UUID shipmentId) {
-        return jdbc.sql(SELECT_RECEIPTS)
-                .param(shipmentId)
-                .query((rs, i) -> toReceipt(rs))
-                .list();
+        return reader.findByShipment(shipmentId);
     }
 
-    private static FabricReceipt toReceipt(ResultSet rs) throws SQLException {
-        return new FabricReceipt(
-                rs.getObject("id", UUID.class),
-                rs.getObject("shipment_id", UUID.class),
-                rs.getObject("subcontractor_id", UUID.class),
-                rs.getString("fabric_type"),
-                rs.getBigDecimal("net_kg"),
-                (Integer) rs.getObject("roll_count"),
-                rs.getString("waybill_no"),
-                rs.getTimestamp("received_at").toInstant(),
-                readYarns(rs.getString("yarns")),
-                rs.getObject("created_by", UUID.class));
+    @Override
+    public List<FabricDrawEntry> findDrawsFrom(UUID sourceShipmentId) {
+        return reader.findDrawsFrom(sourceShipmentId);
     }
 
-    private static List<YarnShare> readYarns(String json) {
-        try {
-            List<YarnShare> shares = new ArrayList<>();
-            for (JsonNode node : JSON.readTree(json)) {
-                shares.add(new YarnShare(
-                        node.get("yarnType").asString(), node.get("netKg").decimalValue()));
-            }
-            shares.sort(Comparator.comparing(YarnShare::yarnType));
-            return shares;
-        } catch (JacksonException e) {
-            throw new IllegalStateException("fabric_lot.yarns is not valid JSON", e);
-        }
-    }
-
-    private static String writeYarns(List<YarnShare> yarns) {
+    private static String writeYarns(List<FabricYarn> yarns) {
         ArrayNode array = JSON.createArrayNode();
-        for (YarnShare share : yarns) {
-            array.addObject().put("yarnType", share.yarnType()).put("netKg", share.netKg());
+        for (FabricYarn yarn : yarns) {
+            ObjectNode node = array.addObject();
+            node.put("yarnType", yarn.yarnType());
+            if (yarn.lotId() != null) {
+                node.put("lotId", yarn.lotId().toString());
+            }
+            node.put("ratioPct", yarn.ratioPct());
+            node.put("netKg", yarn.netKg());
         }
         return array.toString();
     }
@@ -105,18 +85,36 @@ final class FabricReceiptAdapter implements FabricReceiptPort {
                 .param("createdBy", receipt.createdBy())
                 .param("yarns", writeYarns(receipt.yarns()))
                 .update();
-        for (YarnShare share : receipt.yarns()) {
-            movements.append(BalanceMovement.consumption(new Consumption(
-                    MovementKind.FABRIC_RECEIPT,
-                    receipt.subcontractorId(),
-                    receipt.shipmentId(),
-                    share.yarnType(),
-                    null,
-                    share.netKg(),
-                    receipt.receivedAt(),
-                    receipt.createdBy(),
-                    "FABRIC:" + receipt.id() + ":" + share.yarnType())));
+        int position = 0;
+        for (FabricYarn yarn : receipt.yarns()) {
+            for (YarnDraw draw : yarn.draws()) {
+                writeDraw(receipt, draw, position++);
+            }
         }
         events.fabricReceived(receipt);
+    }
+
+    /** Düşüm satırı ve bakiye hareketi; hareket iplikin düşüldüğü sevkiyata yazılır. */
+    private void writeDraw(FabricReceipt receipt, YarnDraw draw, int position) {
+        UUID drawId = UUID.randomUUID();
+        jdbc.sql(INSERT_DRAW)
+                .param("id", drawId)
+                .param("fabricId", receipt.id())
+                .param("shipmentId", draw.shipmentId())
+                .param("yarnType", draw.rawYarnType())
+                .param("lotId", draw.lotId())
+                .param("netKg", draw.netKg())
+                .param("position", position)
+                .update();
+        movements.append(BalanceMovement.consumption(new Consumption(
+                MovementKind.FABRIC_RECEIPT,
+                receipt.subcontractorId(),
+                draw.shipmentId(),
+                draw.rawYarnType(),
+                draw.lotId(),
+                draw.netKg(),
+                receipt.receivedAt(),
+                receipt.createdBy(),
+                "FABRIC:" + receipt.id() + ":" + drawId)));
     }
 }

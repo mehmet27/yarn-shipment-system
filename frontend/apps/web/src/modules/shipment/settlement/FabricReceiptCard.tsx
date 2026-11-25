@@ -1,7 +1,8 @@
-import type { FabricReceipt } from '@iplik/api-client/settlements';
+import type { FabricReceipt } from '@iplik/api-client/fabric';
 import { formatDateTime, useTranslation } from '@iplik/i18n';
 import { Group, Paper, Stack, Text } from '@iplik/ui';
 import { formatKgText } from './format';
+import { yarnLineText } from './yarnLine';
 
 export function FabricReceiptCard({ receipt }: { receipt: FabricReceipt }) {
   const { t } = useTranslation();
@@ -21,12 +22,22 @@ export function FabricReceiptCard({ receipt }: { receipt: FabricReceipt }) {
           {rolls}
         </Text>
         {receipt.yarns.map((yarn) => (
-          <Group key={yarn.yarnType} justify="space-between" wrap="nowrap">
-            <Text size="sm">{yarn.yarnType}:</Text>
-            <Text size="sm" ta="right" style={{ whiteSpace: 'nowrap' }}>
-              {formatKgText(yarn.netKg)}
-            </Text>
-          </Group>
+          <Stack key={`${yarn.yarnType}|${yarn.lotId ?? ''}`} gap={2}>
+            <Group justify="space-between" wrap="nowrap">
+              <Text size="sm">{yarnLineText(t, yarn)}</Text>
+              <Text size="sm" ta="right" style={{ whiteSpace: 'nowrap' }}>
+                {formatKgText(yarn.netKg)}
+              </Text>
+            </Group>
+            {yarn.draws.map((draw) => (
+              <Text key={draw.shipmentId} size="xs" c="dimmed" pl="sm">
+                {t('settlement.fabric.drawLine', {
+                  shipment: draw.shipmentNo ?? '',
+                  kg: formatKgText(draw.netKg),
+                })}
+              </Text>
+            ))}
+          </Stack>
         ))}
       </Stack>
     </Paper>

@@ -1,9 +1,4 @@
 import type { RecipeLineView } from '@iplik/api-client';
-import type { Kilogram } from '@iplik/units';
-import { isKilogram, parseKg, subtractKg } from '@iplik/units';
-
-const KG_SCALE = 3;
-
 export type YarnOption = { value: string; label: string };
 
 /**
@@ -19,25 +14,4 @@ export function yarnOptionsOf(lines: readonly RecipeLineView[]): YarnOption[] {
     if (value !== '' && label !== '' && !options.has(value)) options.set(value, label);
   }
   return [...options].map(([value, label]) => ({ value, label }));
-}
-
-/**
- * Gönderilen iplikten gelen kumaş ve faturası kesilen kilo çıkınca girilebilecek kalan kilo; 0'ın altına inmez, sayı
- * geçersizse undefined. Faturalanan iplik tüketilmiş sayılır.
- */
-export function remainingFabricKg(
-  sentKg: string,
-  receivedKg: string,
-  invoicedKg = '0.000',
-): Kilogram | undefined {
-  if (!isKilogram(sentKg) || !isKilogram(receivedKg) || !isKilogram(invoicedKg)) return undefined;
-  const rest = subtractKg(sentKg, receivedKg).minus(invoicedKg);
-  const text = rest.lt(0) ? '0.000' : rest.toFixed(KG_SCALE);
-  return isKilogram(text) ? text : undefined;
-}
-
-/** Girilen net kilo kalan kilodan büyük mü? Kilo okunamıyorsa ya da sınır yoksa false. */
-export function exceedsRemaining(netKgInput: string, remainingKg: Kilogram | undefined): boolean {
-  const netKg = parseKg(netKgInput);
-  return remainingKg !== undefined && netKg !== undefined && subtractKg(netKg, remainingKg).gt(0);
 }

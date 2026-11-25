@@ -70,20 +70,17 @@ class ShipmentLifecycleNumbersTest {
         Yarn likra = lines.get(2).yarn();
         UUID shipmentId = factory.sendStockedYarn(party, "0.0400", lines);
 
-        // when: ilk kumaş 100 kg, dağılım uygulamaya bırakılır
-        // 100.000 g x 333.333/500.001 = 66.666,47; x 166.667/500.001 = 33.333,33; x 1/500.001 = 0,2
-        // tabanlar 66.666 + 33.333 + 0 = 99.999 g; artan 1 g en büyük kesirli paya (A) gider
-        JsonNode first =
-                factory.receiveFabric(shipmentId, "100.000", Map.of()).ok().body();
+        // when: ilk kumaş 100 kg; kalite %66,67 A ve %33,33 B yazar (C kullanılmaz)
+        JsonNode first = factory.receiveFabric(
+                        shipmentId, "100.000", Map.of(penye.name(), "66.67", poly.name(), "33.33"))
+                .ok()
+                .body();
 
-        // then: dağılımın toplamı kumaş kilosuna gram hassasiyetinde eşittir
-        assertThat(shares(first))
-                .containsOnly(
-                        Map.entry(penye.id().toString(), "66.667"),
-                        Map.entry(poly.id().toString(), "33.333"));
+        // then: kilolar orandan çıkar ve toplamı kumaş kilosuna gram hassasiyetinde eşittir
+        assertThat(shares(first)).containsOnly(Map.entry(penye.name(), "66.670"), Map.entry(poly.name(), "33.330"));
         assertThat(factory.balanceOf(party))
-                .containsEntry(penye.name(), "266.666")
-                .containsEntry(poly.name(), "133.334")
+                .containsEntry(penye.name(), "266.663")
+                .containsEntry(poly.name(), "133.337")
                 .containsEntry("TOPLAM", "400.001");
         // E = 480,00096 - 100 = 380,001; fire = (500,001 - 100) / 500,001 = %80,00
         Factory.assertFireFile(factory.fireFile(shipmentId), "TO_INVOICE", "500.001", "480.001", "380.001", "80.00");
@@ -94,23 +91,23 @@ class ShipmentLifecycleNumbersTest {
         // then: T = 500,001 - 16,667 = 483,334; B = 483,334 x 0,96 = 464,00064 -> 464,001; E = 364,001
         // fire = (483,334 - 100) / 483,334 = %79,31
         assertThat(factory.balanceOf(party))
-                .containsEntry(poly.name(), "116.667")
+                .containsEntry(poly.name(), "116.670")
                 .containsEntry("TOPLAM", "383.334");
         Factory.assertFireFile(factory.fireFile(shipmentId), "TO_INVOICE", "483.334", "464.001", "364.001", "79.31");
         // Bugünkü davranış: dönen iplik fasoncu bakiyesinden düşer ama merkez stoğa kendiliğinden eklenmez
         // (200 - 166,667 = 33,333 kalır); depo ayrıca iplik girişi yapmazsa 16,667 kg hiçbir ekranda görünmez.
         assertThat(factory.centralStockOf(poly)).isEqualTo("33.333");
 
-        // when: ikinci kumaş 300 kg, dağılımı kalite elle yazar
-        factory.receiveFabric(shipmentId, "300.000", explicitShares(penye, poly, likra))
+        // when: ikinci kumaş 300 kg, oranlar %66,67 ve %33,33 (200,01 + 99,99 kg)
+        factory.receiveFabric(shipmentId, "300.000", Map.of(penye.name(), "66.67", poly.name(), "33.33"))
                 .ok();
 
-        // then: A 266,666 - 200 = 66,666; B 116,667 - 99,999 = 16,668; C 0; toplam 83,334 = T - K = 483,334 - 400
+        // then: A 266,663 - 200,01 = 66,653; B 116,670 - 99,99 = 16,680; C 0,001; toplam 83,334 = T - K = 483,334 - 400
         Map<String, String> balance = factory.balanceOf(party);
         assertThat(balance)
-                .containsEntry(penye.name(), "66.666")
-                .containsEntry(poly.name(), "16.668")
-                .containsEntry(likra.name(), "0.000")
+                .containsEntry(penye.name(), "66.653")
+                .containsEntry(poly.name(), "16.680")
+                .containsEntry(likra.name(), "0.001")
                 .containsEntry("TOPLAM", "83.334");
         // E = 464,00064 - 400 = 64,001; fire = 83,334 / 483,334 = %17,24
         JsonNode file = factory.fireFile(shipmentId);
@@ -131,14 +128,6 @@ class ShipmentLifecycleNumbersTest {
         factory.receiveYarnAtCentre(poly, "200.000");
         factory.receiveYarnAtCentre(likra, "1.000");
         return List.of(penye.kg("333.333"), poly.kg("166.667"), likra.kg("0.001"));
-    }
-
-    private static Map<String, String> explicitShares(Yarn penye, Yarn poly, Yarn likra) {
-        Map<String, String> explicit = new LinkedHashMap<>();
-        explicit.put(penye.id().toString(), "200.000");
-        explicit.put(poly.id().toString(), "99.999");
-        explicit.put(likra.id().toString(), "0.001");
-        return explicit;
     }
 
     /** Aynı sayılar bakiye matrisinde, fire raporunda, Faturalanacaklar'da ve fire dosyaları listesinde de yazar. */

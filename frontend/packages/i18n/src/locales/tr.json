@@ -212,7 +212,7 @@
       },
       "tabHints": {
         "claims": "Teslim alınan kumaşta kalite sorunu varsa buradan itiraz açılır.",
-        "fabric": "Fasoncudan kumaş gelince kilosunu buraya girin.",
+        "fabric": "Fasoncudan kumaş gelince kilosunu ve hangi iplikten yüzde kaç yapıldığını buraya girin.",
         "fire": "Gönderilen iplik ile gelen kumaşın farkı ve faturalanacak kilo burada hesaplanır."
       },
       "dispatch": "Çıkış",
@@ -705,7 +705,25 @@
     },
     "code": "Kod",
     "codeHint": "Ör. PES-30/1. Harf, rakam ve + . _ / - kullanılır; eklendikten sonra değişmez.",
-    "codeFixed": "Kod partilere ve sevkiyat kayıtlarına yazıldığı için değiştirilemez."
+    "codeFixed": "Kod partilere ve sevkiyat kayıtlarına yazıldığı için değiştirilemez.",
+    "recipes": {
+      "tab": "Kumaş karışımı",
+      "intro": "Kumaş cinsi için her zaman kullanılan iplik karışımını tanımlayın. Kumaş girişinde oranlar buradan hazır gelir; kalite isterse düzeltir.",
+      "fabricType": "Kumaş cinsi",
+      "yarn": "İplik",
+      "yarnPlaceholder": "İplik seçin",
+      "ratio": "Oran (%)",
+      "addYarn": "İplik ekle",
+      "removeYarn": "Satırı sil",
+      "total": "Toplam: %{{total}} (tam %100 olmalı)",
+      "totalOk": "Toplam: %{{total}}",
+      "add": "Karışım ekle",
+      "empty": "Henüz tanımlı karışım yok.",
+      "saved": "Karışım kaydedildi.",
+      "invalid": "Kumaş cinsini ve iplik oranlarını kontrol edin; toplam tam %100 olmalı.",
+      "cancel": "Vazgeç",
+      "exists": "Bu kumaş cinsi için zaten bir karışım tanımlı. Mevcut olanı düzenleyin."
+    }
   },
   "audit": {
     "title": "Denetim kaydı",
@@ -1504,7 +1522,9 @@
       "FIRE_INVOICE_NOT_APPLICABLE": "Bu dosyada faturalanacak hatalı kilo yok ya da dosya kapandı.",
       "FIRE_CLOSE_NOT_APPLICABLE": "Faturalanacak kilosu olan dosya kapatılamaz; fatura bilgisi girin.",
       "ACCESS_DENIED": "Bu işlem için yetkiniz yok.",
-      "FABRIC_EXCEEDS_SENT_YARN": "Gelen kumaşın toplamı fasoncuya gönderilen iplikten fazla olamaz.",
+      "FABRIC_YARN_SHORT": "Fasoncuda bu kumaş için yeterli iplik yok. Oranları kontrol edin.",
+      "FABRIC_RECIPE_EXISTS": "Bu kumaş cinsi için zaten bir karışım tanımlı. Mevcut olanı düzenleyin.",
+      "FABRIC_RECIPE_NOT_FOUND": "Bu karışım bulunamadı. Sayfayı yenileyip tekrar deneyin.",
       "FABRIC_YARN_NOT_IN_SHIPMENT": "Bu iplik bu sevkiyatta yok. Listeden seçin.",
       "INVALID_LEDGER_INPUT": "Girilen kilo ya da değer geçersiz: kilo sıfırdan büyük olmalı, dönen iplik gönderilen ipliği aşmamalı.",
       "unknown": "İşlem tamamlanamadı. Lütfen tekrar deneyin.",
@@ -1520,9 +1540,11 @@
       "distributionMismatch": "İplik dağılımının toplamı kumaş kilosuna eşit olmalı.",
       "invalidRate": "Fire oranı %0 ile %20 arasında olmalı.",
       "invalidRollCount": "Top sayısı pozitif tam sayı olmalı.",
-      "exceedsRemaining": "Kumaş kilosu fasoncuya gönderilen ipliğin kalanını aşamaz.",
       "invoiceExceeds": "Fatura kilosu, faturası kesilmemiş kilodan fazla olamaz.",
-      "invoiceKgMissing": "Faturanın kaç kilo için kesildiğini yazın."
+      "invoiceKgMissing": "Faturanın kaç kilo için kesildiğini yazın.",
+      "invalidRatio": "Oranı 0 ile 100 arasında, en çok iki ondalıklı yazın (ör. 33,5).",
+      "ratioMissing": "En az bir iplik için oran yazın.",
+      "ratioTotal": "Oranların toplamı tam %100 olmalı."
     },
     "fabric": {
       "title": "Kumaş girişi",
@@ -1531,25 +1553,32 @@
       "netKg": "Kumaş net kilosu",
       "rollCount": "Top sayısı",
       "waybillNo": "İrsaliye no",
-      "distribution": "İplik dağılımı",
-      "distributionHint": "Boş bırakırsanız kilo sevkiyattaki iplik oranına göre dağıtılır.",
-      "addYarn": "İplik satırı ekle",
-      "removeYarn": "Satırı sil",
-      "yarnType": "İplik cinsi",
-      "yarnPlaceholder": "İplik seçin",
-      "noYarnFound": "Seçilebilecek iplik kalmadı",
-      "yarnKg": "Kilo",
-      "limitNote": "Fasoncuya {{sent}} iplik gönderildi, şimdiye kadar {{received}} kumaş geldi; en çok {{remaining}} daha girebilirsiniz.",
-      "limitNoteInvoiced": "Fasoncuya {{sent}} iplik gönderildi, {{received}} kumaş geldi, {{invoiced}} için fatura kesildi; en çok {{remaining}} daha girebilirsiniz.",
-      "exceedsRemaining": "Gönderilen ipliğin kalanından fazla kumaş yazamazsınız.",
-      "submit": "Kumaş girişini kaydet",
+      "distribution": "Kumaşın iplik karışımı",
+      "distributionHint": "Fasoncudaki her iplik için kumaşın yüzde kaçı o iplikten yapıldığını yazın. Toplam tam %100 olmalı; boş bıraktığınız iplik kullanılmamış sayılır.",
+      "submit": "Kontrol et",
       "saved": "Kumaş girişi kaydedildi.",
       "confirmTitle": "Kumaş girişini onayla",
       "confirmText": "{{kg}} {{type}} kumaş kaydedilecek. Kayıt sonradan değiştirilemez.",
       "confirmYes": "Evet, kaydet",
       "confirmNo": "Vazgeç",
       "receivedAt": "Teslim",
-      "rolls": "{{count}} top"
+      "rolls": "{{count}} top",
+      "noYarnHeld": "Fasoncuda kumaş için kullanılabilecek iplik görünmüyor.",
+      "ratio": "Oran",
+      "lotNo": "Parti {{lot}}",
+      "heldHere": "Bu sevkiyatta {{kg}}",
+      "heldTotal": "Fasoncuda toplam {{kg}}",
+      "ratioTotal": "Toplam: %{{total}} (tam %100 olmalı)",
+      "ratioTotalOk": "Toplam: %{{total}}",
+      "fillRecipe": "Tanımlı karışımı yaz",
+      "previewTitle": "Kumaş için şu iplikler düşülecek",
+      "drawLine": "{{shipment}} sevkiyatından {{kg}}",
+      "shortTitle": "Fasoncuda yeterli iplik yok",
+      "shortLine": "{{yarn}}: {{kg}} eksik",
+      "shortBack": "Oranları düzelt",
+      "yarnLine": "{{yarn}} · %{{ratio}}",
+      "yarnLineLot": "{{yarn}} · Parti {{lot}} · %{{ratio}}",
+      "previewLine": "{{line}} · {{kg}}"
     },
     "yarn": {
       "title": "İplik dönüşü (fasoncudan depoya)",
@@ -1689,6 +1718,11 @@
       "pendingTitle": "Faturası beklenen dosya: {{count}}",
       "pendingHint": "Fatura bilgisini Faturalama ekranından girin.",
       "pendingOpen": "Faturalama ekranına git"
+    },
+    "fabricDraws": {
+      "title": "Bu sevkiyatın ipliğinden üretilen kumaş",
+      "empty": "Bu sevkiyatın ipliğinden henüz kumaş üretilmedi.",
+      "line": "{{yarn}} → {{fabric}} kumaşı ({{shipment}} sevkiyatından girildi)"
     }
   },
   "stock": {

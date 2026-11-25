@@ -15,8 +15,11 @@ import com.yarnshipment.shipment.application.port.in.fire.GetFireSettlementUseCa
 import com.yarnshipment.shipment.application.port.in.fire.ListFireSettlementsUseCase;
 import com.yarnshipment.shipment.application.port.in.stock.RequireWorkAreaUseCase;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
-import com.yarnshipment.shipment.domain.fabric.FabricYarnNotInShipmentException;
-import com.yarnshipment.shipment.domain.fabric.YarnShare;
+import com.yarnshipment.shipment.domain.fabric.FabricYarn;
+import com.yarnshipment.shipment.domain.fabric.FabricYarnShortageException;
+import com.yarnshipment.shipment.domain.fabric.YarnDraw;
+import com.yarnshipment.shipment.domain.fabric.YarnRatio;
+import com.yarnshipment.shipment.domain.fabric.YarnShortage;
 import com.yarnshipment.shipment.domain.fire.FireCalculation;
 import com.yarnshipment.shipment.domain.fire.FireCalculation.Inputs;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
@@ -40,14 +43,16 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 /** Kumaş girişi ve fire dosyası uçlarının sözleşmesi: izin, istek doğrulama, düz JSON biçimi ve hata eşlemesi. */
 @WebMvcTest(controllers = {FabricReceiptController.class, FireSettlementController.class})
 // İstisna: CPLX-09/CPLX-10, senaryo testi alanın tüm port sahtelerini ve domain tiplerini birlikte kurar (GIT-10)
-@SuppressWarnings("checkstyle:ClassFanOutComplexity")
+@SuppressWarnings({"checkstyle:ClassFanOutComplexity", "checkstyle:ClassDataAbstractionCoupling"})
 class LedgerControllersTest {
 
     private static final UUID SHIPMENT = UUID.fromString("0192f0a0-0000-7000-8000-000000000801");
     private static final String RECEIPTS = "/api/v1/shipments/" + SHIPMENT + "/fabric-receipts";
     private static final String FIRE = "/api/v1/shipments/" + SHIPMENT + "/fire-settlement";
     private static final String BODY = """
-            {"fabricType": "Süprem", "netKg": "32660.000", "rollCount": 12, "waybillNo": "KIR-1"}""";
+            {"fabricType": "Süprem", "netKg": "32660.000", "rollCount": 12, "waybillNo": "KIR-1",
+             "yarns": [{"yarnType": "30/1 penye", "ratioPct": "60.50"},
+                       {"yarnType": "20/1 open end", "ratioPct": "39.5"}]}""";
 
     private final MockMvcTester mvc;
 
@@ -103,7 +108,13 @@ class LedgerControllersTest {
                 null,
                 "KIR-1",
                 Instant.parse("2026-11-12T09:00:00Z"),
-                List.of(new YarnShare("30/1 penye", new BigDecimal("32660"))),
+                List.of(new FabricYarn(
+                        "30/1 penye",
+                        null,
+                        null,
+                        new BigDecimal("100.00"),
+                        new BigDecimal("32660"),
+                        List.of(new YarnDraw(SHIPMENT, "SV-1", "30/1 penye", null, new BigDecimal("32660"))))),
                 UUID.randomUUID());
         when(recordFabricReceiptUseCase.recordFabricReceipt(any())).thenReturn(receipt);
 
@@ -114,10 +125,19 @@ class LedgerControllersTest {
         assertThat(result).hasStatus(HttpStatus.CREATED);
         assertThat(result).bodyJson().extractingPath("$.netKg").isEqualTo("32660.000");
         assertThat(result).bodyJson().extractingPath("$.yarns[0].yarnType").isEqualTo("30/1 penye");
+        assertThat(result).bodyJson().extractingPath("$.yarns[0].ratioPct").isEqualTo("100.00");
+        assertThat(result)
+                .bodyJson()
+                .extractingPath("$.yarns[0].draws[0].shipmentNo")
+                .isEqualTo("SV-1");
         ArgumentCaptor<RecordFabricReceiptCommand> command = ArgumentCaptor.forClass(RecordFabricReceiptCommand.class);
         verify(recordFabricReceiptUseCase).recordFabricReceipt(command.capture());
         assertThat(command.getValue().netKg()).isEqualByComparingTo("32660");
-        assertThat(command.getValue().yarns()).isNull();
+        assertThat(command.getValue().yarns())
+                .extracting(YarnRatio::yarnType, ratio -> ratio.ratioPct().toPlainString())
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple("30/1 penye", "60.50"),
+                        org.assertj.core.groups.Tuple.tuple("20/1 open end", "39.50"));
     }
 
     @Test
@@ -134,15 +154,35 @@ class LedgerControllersTest {
     }
 
     @Test
-    @DisplayName("Sevkiyatta olmayan iplik cinsi FABRIC_YARN_NOT_IN_SHIPMENT koduyla 409 alır")
-    void shouldMapYarnNotInShipment() {
+    @DisplayName("Yetmeyen iplik FABRIC_YARN_SHORT koduyla 409 alır ve hangi iplikten kaç kg eksik olduğunu söyler")
+    void shouldMapYarnShortage() {
         when(recordFabricReceiptUseCase.recordFabricReceipt(any()))
-                .thenThrow(new FabricYarnNotInShipmentException(SHIPMENT, "x"));
+                .thenThrow(new FabricYarnShortageException(List.of(new YarnShortage(
+                        "30/1 penye", null, "L-7", new BigDecimal("600.000"), new BigDecimal("125.500")))));
 
         MvcTestResult result = post("quality", RECEIPTS, BODY);
 
         assertThat(result).hasStatus(HttpStatus.CONFLICT);
-        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("FABRIC_YARN_NOT_IN_SHIPMENT");
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("FABRIC_YARN_SHORT");
+        assertThat(result).bodyJson().extractingPath("$.shortfalls[0].yarnType").isEqualTo("30/1 penye");
+        assertThat(result)
+                .bodyJson()
+                .extractingPath("$.shortfalls[0].missingKg")
+                .isEqualTo("125.500");
+    }
+
+    @Test
+    @DisplayName("Oransız kumaş girişi 400 alır; oranların toplamı 100 olmayan istek alana göre bildirilir")
+    void shouldRejectRequestWithoutRatios() {
+        MvcTestResult noYarns = post("quality", RECEIPTS, """
+                        {"fabricType": "Süprem", "netKg": "10", "waybillNo": "KIR-1"}""");
+        MvcTestResult badRatio = post("quality", RECEIPTS, """
+                        {"fabricType": "Süprem", "netKg": "10", "waybillNo": "KIR-1",
+                         "yarns": [{"yarnType": "A", "ratioPct": "abc"}]}""");
+
+        assertThat(noYarns).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(badRatio).hasStatus(HttpStatus.BAD_REQUEST);
+        verifyNoInteractions(recordFabricReceiptUseCase);
     }
 
     @Test

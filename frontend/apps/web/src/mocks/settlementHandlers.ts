@@ -1,9 +1,7 @@
 import type { CurrentUser } from '@iplik/api-client';
-import type {
-  FabricReceiptRequest,
-  FireSettlementRow,
-  YarnReturnRequest,
-} from '@iplik/api-client/settlements';
+import type { FireSettlementRow, YarnReturnRequest } from '@iplik/api-client/settlements';
+import type { FabricReceiptRequest } from '@iplik/api-client/fabric';
+import { FABRIC_RECIPES_PATH } from '@iplik/api-client/fabric';
 import { SHIPMENTS_PATH } from '@iplik/api-client';
 import {
   BALANCES_PATH,
@@ -21,11 +19,16 @@ import {
   getMockBalanceRows,
   getMockSettlement,
   isMockClosed,
+  listMockDraws,
+  listMockRecipes,
+  listMockYarnOptions,
   listMockInvoiceRows,
   listMockMovements,
   listMockReceipts,
   listMockReturns,
   markMockInvoiced,
+  previewMockFabric,
+  saveMockRecipe,
   setMockRate,
 } from './settlements';
 
@@ -39,24 +42,32 @@ const text = (value: unknown): value is string => typeof value === 'string' && v
 const positiveKg = (value: unknown): value is string =>
   typeof value === 'string' && isKilogram(value) && Number(value) > 0;
 
+function readRatios(json: unknown): { yarnType: string; ratioPct: string }[] | undefined {
+  if (!Array.isArray(json)) return undefined;
+  const ratios = json.filter(
+    (y): y is { yarnType: string; ratioPct: string } =>
+      isRecord(y) && text(y.yarnType) && text(y.ratioPct) && Number(y.ratioPct) > 0,
+  );
+  return ratios.length === json.length ? ratios : undefined;
+}
+
 function readReceipt(json: unknown): FabricReceiptRequest | undefined {
   if (!isRecord(json) || !text(json.fabricType) || !text(json.waybillNo)) return undefined;
   if (!positiveKg(json.netKg)) return undefined;
-  const yarns = json.yarns;
-  const base = {
+  const yarns = readRatios(json.yarns);
+  if (yarns === undefined) return undefined;
+  return {
     fabricType: json.fabricType,
     netKg: json.netKg,
     waybillNo: json.waybillNo,
     ...(typeof json.rollCount === 'number' ? { rollCount: json.rollCount } : {}),
+    yarns,
   };
-  if (yarns === undefined) return base;
-  if (!Array.isArray(yarns)) return undefined;
-  const shares = yarns.filter(
-    (y): y is { yarnType: string; netKg: string } =>
-      isRecord(y) && text(y.yarnType) && positiveKg(y.netKg),
-  );
-  return shares.length === yarns.length ? { ...base, yarns: shares } : undefined;
 }
+
+/** Oranların toplamı tam 100 mü (yüzde birlik cinsinden)? */
+const isFullRatio = (yarns: readonly { ratioPct: string }[]) =>
+  yarns.reduce((sum, y) => sum + Math.round(Number(y.ratioPct) * 100), 0) === 10_000;
 
 /** Fatura satırları; yoksa boş liste (kalan kilo tümüyle faturalanır), bozuksa undefined. */
 function readInvoiceLines(json: unknown): { yarnType: string; netKg: string }[] | undefined {
@@ -78,6 +89,22 @@ function readReturn(json: unknown): YarnReturnRequest | undefined {
     ...(text(json.lotId) ? { lotId: json.lotId } : {}),
     ...(text(json.waybillNo) ? { waybillNo: json.waybillNo } : {}),
   };
+}
+
+/** Karışım ekleme/değiştirme: yetki, oran toplamı ve aynı kumaş cinsi denetlenir. */
+function recipeResponse(id: string | undefined, json: unknown, isAllowed: boolean) {
+  if (!isAllowed) return problem(403, 'ACCESS_DENIED');
+  const yarns = isRecord(json) ? readRatios(json.yarns) : undefined;
+  if (!isRecord(json) || !text(json.fabricType) || yarns === undefined || !isFullRatio(yarns)) {
+    return problem(400, 'VALIDATION_FAILED');
+  }
+  const saved = saveMockRecipe(id, {
+    fabricType: json.fabricType,
+    yarns,
+    ...(typeof json.active === 'boolean' ? { active: json.active } : {}),
+  });
+  if (saved === undefined) return problem(409, 'FABRIC_RECIPE_EXISTS');
+  return HttpResponse.json(saved, { status: id === undefined ? 201 : 200 });
 }
 
 /** "Fatura edildi" isteğini işler; kilo kalandan fazlaysa ya da dosya kapalıysa 409 döner. */
@@ -154,14 +181,53 @@ export function createSettlementHandlers(user: CurrentUser) {
       const body = readReceipt(await request.json());
       if (body === undefined) return problem(400, 'VALIDATION_FAILED');
       if (isMockClosed(id)) return problem(409, 'FIRE_FILE_CLOSED');
-      if (
-        body.yarns !== undefined &&
-        sumKg(body.yarns.map((y) => y.netKg)) !== sumKg([body.netKg])
-      ) {
-        return problem(400, 'YARN_DISTRIBUTION_MISMATCH');
-      }
+      if (!isFullRatio(body.yarns)) return problem(400, 'VALIDATION_FAILED');
+      if (!previewMockFabric(id, body).feasible) return problem(409, 'FABRIC_YARN_SHORT');
       return HttpResponse.json(addMockReceipt(id, body, user.userId), { status: 201 });
     }),
+    http.get(url('fabric-receipts/yarn-options'), ({ params }) => {
+      if (!has('FABRIC_RECEIPT_RECORD')) return problem(403, 'ACCESS_DENIED');
+      return (
+        completed(params.shipmentId) ??
+        HttpResponse.json(listMockYarnOptions(String(params.shipmentId)))
+      );
+    }),
+    http.post(url('fabric-receipts/preview'), async ({ params, request }) => {
+      if (!has('FABRIC_RECEIPT_RECORD')) return problem(403, 'ACCESS_DENIED');
+      const failure = completed(params.shipmentId);
+      if (failure !== undefined) return failure;
+      const json: unknown = await request.json();
+      const yarns = isRecord(json) ? readRatios(json.yarns) : undefined;
+      if (
+        !isRecord(json) ||
+        !positiveKg(json.netKg) ||
+        yarns === undefined ||
+        !isFullRatio(yarns)
+      ) {
+        return problem(400, 'VALIDATION_FAILED');
+      }
+      return HttpResponse.json(
+        previewMockFabric(String(params.shipmentId), { netKg: json.netKg, yarns }),
+      );
+    }),
+    http.get(url('fabric-receipts/drawn-from-yarn'), ({ params }) => {
+      return (
+        completed(params.shipmentId) ?? HttpResponse.json(listMockDraws(String(params.shipmentId)))
+      );
+    }),
+    http.get(FABRIC_RECIPES_PATH, ({ request }) => {
+      if (!has('MASTER_DATA_MANAGE') && !has('FABRIC_RECEIPT_RECORD')) {
+        return problem(403, 'ACCESS_DENIED');
+      }
+      const isAll = new URL(request.url).searchParams.get('scope') === 'ALL';
+      return HttpResponse.json(listMockRecipes(isAll));
+    }),
+    http.post(FABRIC_RECIPES_PATH, async ({ request }) =>
+      recipeResponse(undefined, await request.json(), has('MASTER_DATA_MANAGE')),
+    ),
+    http.put(`${FABRIC_RECIPES_PATH}/:id`, async ({ params, request }) =>
+      recipeResponse(String(params.id), await request.json(), has('MASTER_DATA_MANAGE')),
+    ),
     http.get(
       url('yarn-returns'),
       ({ params }) =>

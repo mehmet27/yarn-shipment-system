@@ -16,7 +16,7 @@ class FabricReceiptTest {
 
     private static final int ROLLS = 4;
 
-    private static FabricReceipt receipt(String netKg, @Nullable Integer rollCount, List<YarnShare> yarns) {
+    private static FabricReceipt receipt(String netKg, @Nullable Integer rollCount, List<FabricYarn> yarns) {
         return new FabricReceipt(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
@@ -30,14 +30,15 @@ class FabricReceiptTest {
                 UUID.randomUUID());
     }
 
+    private static FabricYarn yarn(String name, String ratioPct, String kg) {
+        return new FabricYarn(name, null, null, new BigDecimal(ratioPct), new BigDecimal(kg), List.of());
+    }
+
     @Test
     @DisplayName("İplik toplamı kumaş net kg'sine eşitse kayıt kabul edilir ve metinler kırpılır")
     void shouldAcceptWhenYarnsSumToNetKg() {
         // when
-        FabricReceipt result = receipt(
-                "100",
-                ROLLS,
-                List.of(new YarnShare("A", new BigDecimal("60")), new YarnShare("B", new BigDecimal("40"))));
+        FabricReceipt result = receipt("100", ROLLS, List.of(yarn("A", "60", "60"), yarn("B", "40", "40")));
 
         // then
         assertThat(result.fabricType()).isEqualTo("Süprem");
@@ -48,7 +49,7 @@ class FabricReceiptTest {
     @Test
     @DisplayName("İplik toplamı kumaş kilosuna eşit değilse reddedilir")
     void shouldRejectWhenYarnsDoNotSumToNetKg() {
-        List<YarnShare> yarns = List.of(new YarnShare("A", new BigDecimal("60")));
+        List<FabricYarn> yarns = List.of(yarn("A", "60", "60"));
 
         assertThatThrownBy(() -> receipt("100", null, yarns)).isInstanceOf(InvalidLedgerInputException.class);
     }
@@ -56,7 +57,7 @@ class FabricReceiptTest {
     @Test
     @DisplayName("Sıfır kilo, sıfır top sayısı ve iplik içermeyen kayıt reddedilir")
     void shouldRejectInvalidFields() {
-        List<YarnShare> yarns = List.of(new YarnShare("A", new BigDecimal("10")));
+        List<FabricYarn> yarns = List.of(yarn("A", "100", "10"));
 
         assertThatThrownBy(() -> receipt("0", null, yarns)).isInstanceOf(InvalidLedgerInputException.class);
         assertThatThrownBy(() -> receipt("10", 0, yarns)).isInstanceOf(InvalidLedgerInputException.class);

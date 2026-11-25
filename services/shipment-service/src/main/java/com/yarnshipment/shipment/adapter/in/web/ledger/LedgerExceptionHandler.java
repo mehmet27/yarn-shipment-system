@@ -2,8 +2,11 @@ package com.yarnshipment.shipment.adapter.in.web.ledger;
 
 import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
-import com.yarnshipment.shipment.domain.fabric.FabricExceedsSentYarnException;
+import com.yarnshipment.shipment.domain.fabric.FabricRecipeConflictException;
+import com.yarnshipment.shipment.domain.fabric.FabricRecipeNotFoundException;
 import com.yarnshipment.shipment.domain.fabric.FabricYarnNotInShipmentException;
+import com.yarnshipment.shipment.domain.fabric.FabricYarnShortageException;
+import com.yarnshipment.shipment.domain.fabric.YarnShortage;
 import com.yarnshipment.shipment.domain.fire.FireSettlementClosedException;
 import com.yarnshipment.shipment.domain.fire.FireSettlementNotFoundException;
 import com.yarnshipment.shipment.domain.fire.InvalidFireSettlementActionException;
@@ -93,9 +96,35 @@ public final class LedgerExceptionHandler {
         return problem;
     }
 
-    @ExceptionHandler(FabricExceedsSentYarnException.class)
-    public ProblemDetail handleFabricExceedsYarn(HttpServletRequest request) {
-        return problems.create(request, HttpStatus.CONFLICT, "FABRIC_EXCEEDS_SENT_YARN");
+    @ExceptionHandler(FabricYarnShortageException.class)
+    public ProblemDetail handleFabricYarnShort(FabricYarnShortageException exception, HttpServletRequest request) {
+        ProblemDetail problem = problems.create(request, HttpStatus.CONFLICT, "FABRIC_YARN_SHORT");
+        problem.setProperty(
+                "shortfalls",
+                exception.shortages().stream().map(this::shortfall).toList());
+        return problem;
+    }
+
+    private Map<String, String> shortfall(YarnShortage item) {
+        return Map.of(
+                "yarnType",
+                item.yarnType(),
+                "lotNo",
+                item.lotNo() == null ? "" : item.lotNo(),
+                "requiredKg",
+                item.requiredKg().toPlainString(),
+                "missingKg",
+                item.missingKg().toPlainString());
+    }
+
+    @ExceptionHandler(FabricRecipeConflictException.class)
+    public ProblemDetail handleRecipeConflict(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.CONFLICT, "FABRIC_RECIPE_EXISTS");
+    }
+
+    @ExceptionHandler(FabricRecipeNotFoundException.class)
+    public ProblemDetail handleRecipeNotFound(HttpServletRequest request) {
+        return problems.create(request, HttpStatus.NOT_FOUND, "FABRIC_RECIPE_NOT_FOUND");
     }
 
     @ExceptionHandler(FabricYarnNotInShipmentException.class)

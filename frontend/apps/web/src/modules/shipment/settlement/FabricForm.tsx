@@ -1,22 +1,23 @@
 import { useTranslation } from '@iplik/i18n';
 import { Button, SectionCard, SimpleGrid, Stack, TextInput } from '@iplik/ui';
-import { FabricConfirm } from './FabricConfirm';
-import { FabricLimitNote } from './FabricLimitNote';
 import { FabricMessages } from './FabricMessages';
+import { FabricPreview } from './FabricPreview';
 import { FabricYarnRows } from './FabricYarnRows';
 import { useFabricSubmit } from './useFabricSubmit';
 
 const NUMBER_STYLES = { input: { textAlign: 'right' } } as const;
 
-/** Kumaş girişi formu; iplik dağılımı sevkiyattaki ipliklerden seçilir, toplamı kumaş kilosuna eşit olmalı. */
+/**
+ * Kumaş girişi formu: fasoncudaki her iplik için kumaşın yüzde kaçı olduğu yazılır (toplam 100). Kaydetmeden önce
+ * hangi sevkiyattan kaç kilo düşeceği gösterilir.
+ */
 export function FabricForm({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
   const form = useFabricSubmit(shipmentId);
-  const { draft, field, mutation, request } = form;
+  const { draft, field, mutation, request, checked } = form;
   return (
     <SectionCard title={t('settlement.fabric.title')}>
       <Stack>
-        <FabricLimitNote limits={form.limits} />
         <SimpleGrid cols={{ base: 1, sm: 2 }}>
           <TextInput
             label={t('settlement.fabric.fabricType')}
@@ -33,7 +34,6 @@ export function FabricForm({ shipmentId }: { shipmentId: string }) {
             inputMode="decimal"
             styles={NUMBER_STYLES}
             withAsterisk
-            error={form.isOverLimit ? t('settlement.fabric.exceedsRemaining') : undefined}
             {...field('netKg')}
           />
           <TextInput
@@ -43,24 +43,24 @@ export function FabricForm({ shipmentId }: { shipmentId: string }) {
             {...field('rollCount')}
           />
         </SimpleGrid>
-        <FabricYarnRows
-          rows={draft.yarns}
-          yarnNames={form.limits.yarnNames}
-          onChange={form.setYarn}
-          onAdd={form.addYarn}
-          onRemove={form.removeYarn}
-        />
+        {form.recipe !== undefined && (
+          <Button variant="light" w="fit-content" onClick={form.fillFromRecipe}>
+            {t('settlement.fabric.fillRecipe')}
+          </Button>
+        )}
+        <FabricYarnRows options={form.options} ratios={draft.ratios} onChange={form.setRatio} />
         <FabricMessages form={form} />
-        {form.isConfirming && typeof request !== 'string' ? (
-          <FabricConfirm
+        {checked !== undefined && typeof request !== 'string' ? (
+          <FabricPreview
+            preview={checked}
             fabricType={request.fabricType}
             netKg={request.netKg}
-            loading={mutation.isPending}
+            isLoading={mutation.isPending}
             onConfirm={form.confirm}
             onCancel={form.cancel}
           />
         ) : (
-          <Button w="fit-content" onClick={form.ask}>
+          <Button w="fit-content" loading={form.isChecking} onClick={form.ask}>
             {t('settlement.fabric.submit')}
           </Button>
         )}

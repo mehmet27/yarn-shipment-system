@@ -1,10 +1,10 @@
-import type { FabricDraft, YarnRowDraft } from './settlementDraft';
-import { EMPTY_FABRIC_DRAFT } from './settlementDraft';
 import { useState } from 'react';
+import type { FabricDraft } from './settlementDraft';
+import { EMPTY_FABRIC_DRAFT } from './settlementDraft';
 
 export type FabricField = 'fabricType' | 'netKg' | 'rollCount' | 'waybillNo';
 
-/** Kumaş girişi taslağı: alan ve iplik satırı düzenleme işlemleri. */
+/** Kumaş girişi taslağı: alanlar ve iplik satırlarına yazılan oranlar. */
 export function useFabricDraft() {
   const [draft, setDraft] = useState<FabricDraft>(EMPTY_FABRIC_DRAFT);
   const field = (name: FabricField) => ({
@@ -14,20 +14,14 @@ export function useFabricDraft() {
       setDraft((current) => ({ ...current, [name]: value }));
     },
   });
-  const setYarn = (index: number, patch: Partial<YarnRowDraft>) => {
-    setDraft((current) => ({
-      ...current,
-      yarns: current.yarns.map((row, i) => (i === index ? { ...row, ...patch } : row)),
-    }));
+  const setRatio = (key: string, value: string) => {
+    setDraft((current) => ({ ...current, ratios: { ...current.ratios, [key]: value } }));
   };
-  const addYarn = () => {
-    setDraft((current) => ({ ...current, yarns: [...current.yarns, { yarnType: '', netKg: '' }] }));
-  };
-  const removeYarn = (index: number) => {
-    setDraft((current) => ({ ...current, yarns: current.yarns.filter((_, i) => i !== index) }));
+  const setRatios = (ratios: Record<string, string>) => {
+    setDraft((current) => ({ ...current, ratios }));
   };
   const reset = () => {
     setDraft(EMPTY_FABRIC_DRAFT);
   };
-  return { draft, field, setYarn, addYarn, removeYarn, reset };
+  return { draft, field, setRatio, setRatios, reset };
 }

@@ -3,16 +3,18 @@ package com.yarnshipment.shipment.adapter.in.web.ledger;
 import com.yarnshipment.common.security.CurrentActorProvider;
 import com.yarnshipment.shipment.adapter.in.web.ledger.FabricViews.FabricReceiptView;
 import com.yarnshipment.shipment.adapter.in.web.ledger.LedgerRequests.FabricReceiptRequest;
-import com.yarnshipment.shipment.adapter.in.web.ledger.LedgerRequests.YarnShareRequest;
+import com.yarnshipment.shipment.adapter.in.web.ledger.LedgerRequests.YarnRatioRequest;
 import com.yarnshipment.shipment.application.port.in.fabric.ListFabricReceiptsUseCase;
 import com.yarnshipment.shipment.application.port.in.fabric.RecordFabricReceiptCommand;
 import com.yarnshipment.shipment.application.port.in.fabric.RecordFabricReceiptUseCase;
 import com.yarnshipment.shipment.application.port.in.fabric.ShipmentRecordsQuery;
 import com.yarnshipment.shipment.application.port.in.stock.RequireWorkAreaUseCase;
-import com.yarnshipment.shipment.domain.fabric.YarnShare;
+import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
+import com.yarnshipment.shipment.domain.fabric.YarnRatio;
 import com.yarnshipment.shipment.domain.stock.WorkArea;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -59,9 +61,6 @@ public class FabricReceiptController {
     public ResponseEntity<FabricReceiptView> recordFabricReceipt(
             @PathVariable UUID shipmentId, @RequestBody FabricReceiptRequest request) {
         workAreas.requireAccess(currentActorProvider.getCurrentActor(), WorkArea.SUBCONTRACTOR);
-        List<YarnShare> yarns = request.yarns() == null
-                ? null
-                : request.yarns().stream().map(FabricReceiptController::toShare).toList();
         RecordFabricReceiptCommand command = new RecordFabricReceiptCommand(
                 currentActorProvider.getCurrentActor(),
                 shipmentId,
@@ -70,14 +69,22 @@ public class FabricReceiptController {
                 request.rollCount(),
                 LedgerRequests.required(request.waybillNo(), "waybillNo"),
                 request.receivedAt(),
-                yarns);
+                ratios(request.yarns()));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(FabricViews.fabricReceipt(recordFabricReceiptUseCase.recordFabricReceipt(command)));
     }
 
-    private static YarnShare toShare(YarnShareRequest request) {
-        return new YarnShare(
+    static List<YarnRatio> ratios(@Nullable List<YarnRatioRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            throw new InvalidLedgerInputException("yarns");
+        }
+        return requests.stream().map(FabricReceiptController::toRatio).toList();
+    }
+
+    private static YarnRatio toRatio(YarnRatioRequest request) {
+        return new YarnRatio(
                 LedgerRequests.required(request.yarnType(), "yarns.yarnType"),
-                LedgerRequests.kg(request.netKg(), "yarns.netKg"));
+                request.lotId(),
+                LedgerRequests.ratioPct(request.ratioPct(), "yarns.ratioPct"));
     }
 }

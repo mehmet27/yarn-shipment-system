@@ -19,6 +19,9 @@ public interface FireSettlementPort {
     /** Satırı yazma kilidiyle okur; eşzamanlı kumaş girişleri sırayla işlenir. */
     Optional<FireSettlement> lock(UUID shipmentId);
 
+    /** Fasoncunun kapanmamış dosyalarını yazma kilidiyle, sevkiyat kimliği sırasıyla okur (kilitler çakışmaz). */
+    List<FireSettlement> lockOpenOf(UUID subcontractorId);
+
     /** Durum, oran ve fatura alanlarını yazar. */
     void save(FireSettlement settlement, Instant at);
 

@@ -141,16 +141,21 @@ final class Factory {
         return shipmentId;
     }
 
-    /** Fasoncu kalite gelen kumaşı girer; iplik dağılımı verilmezse uygulama sevkiyat oranıyla dağıtır. */
-    Reply receiveFabric(UUID shipmentId, String kg, Map<String, String> yarnShares) {
+    /** Fasoncu kalite gelen kumaşı girer; her iplik için kumaştaki yüzde payı (iplik adı → oran) yazılır. */
+    Reply receiveFabric(UUID shipmentId, String kg, Map<String, String> ratioByYarnName) {
         Map<String, Object> request = new LinkedHashMap<>();
         request.put("fabricType", "Süprem");
         request.put("netKg", kg);
         request.put("waybillNo", FactoryHttp.unique("KMS"));
-        if (!yarnShares.isEmpty()) {
-            request.put("yarns", shares(yarnShares));
-        }
+        List<Map<String, String>> ratios = new ArrayList<>();
+        ratioByYarnName.forEach((yarn, ratio) -> ratios.add(Map.of("yarnType", yarn, "ratioPct", ratio)));
+        request.put("yarns", ratios);
         return http.send(Staff.QUALITY, HttpMethod.POST, SHIPMENT + shipmentId + "/fabric-receipts", request);
+    }
+
+    /** İki iplikli kumaş karışımı: iplik adı → yüzde. */
+    static Map<String, String> ratios(Yarn first, String firstPct, Yarn second, String secondPct) {
+        return Map.of(first.name(), firstPct, second.name(), secondPct);
     }
 
     /** Depo fasoncudan dönen ipliği girer. */

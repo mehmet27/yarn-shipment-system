@@ -1,7 +1,7 @@
 package com.yarnshipment.shipment.application.port.in.fabric;
 
 import com.yarnshipment.common.security.Actor;
-import com.yarnshipment.shipment.domain.fabric.YarnShare;
+import com.yarnshipment.shipment.domain.fabric.YarnRatio;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -19,7 +19,7 @@ import org.jspecify.annotations.Nullable;
  * @param rollCount top/rulo sayısı
  * @param waybillNo kumaş irsaliye numarası
  * @param receivedAt geliş zamanı; boşsa sunucu zamanı
- * @param yarns tükettiği iplikler; boşsa sevkiyatın reçete oranlarıyla dağıtılır
+ * @param yarns kumaşın iplik oranları; toplamı 100 olmalı, iplikler fasoncunun sevkiyatlarından düşer
  */
 public record RecordFabricReceiptCommand(
         Actor actor,
@@ -29,7 +29,7 @@ public record RecordFabricReceiptCommand(
         @Nullable Integer rollCount,
         String waybillNo,
         @Nullable Instant receivedAt,
-        @Nullable List<YarnShare> yarns) {
+        List<YarnRatio> yarns) {
 
     public RecordFabricReceiptCommand {
         Objects.requireNonNull(actor, "actor");
@@ -37,6 +37,7 @@ public record RecordFabricReceiptCommand(
         Objects.requireNonNull(fabricType, "fabricType");
         Objects.requireNonNull(netKg, "netKg");
         Objects.requireNonNull(waybillNo, "waybillNo");
-        yarns = yarns == null || yarns.isEmpty() ? null : List.copyOf(yarns);
+        Objects.requireNonNull(yarns, "yarns");
+        yarns = List.copyOf(yarns);
     }
 }

@@ -324,14 +324,18 @@ Birim her yerde **net kg**'dir (S7).
    dosyasında **"Kumaş girişi"** sekmesinden kaydeder. Müdür kumaş girişi yapamaz; merkez kalite de sevkiyata kumaş
    giremez. Alanlar: kumaş cinsi, kumaş net kg, top sayısı (isteğe bağlı), irsaliye no. Kumaş, fire sevkiyat üzerinden
    izlendiği için hep bir sevkiyata girilir (S2).
-2. Formun üstünde tek cümle durur: "Fasoncuya … kg iplik gönderildi, şimdiye kadar … kg kumaş geldi; en çok … kg daha
-   girebilirsiniz." Kumaş kilosu bu kalanı aşamaz; faturası kesilen kilo da gönderilen iplikten tüketilmiş sayılır.
-3. Kumaşın hangi iplik cinslerinden ne kadar tükettiği yazılır; iplik cinsi **sevkiyattaki ipliklerden seçilir** (sevkiyatta
-   olmayan iplik seçilemez, bir satırda seçilen iplik diğer satırda sunulmaz). Dağılımın toplamı kumaş kilosuna eşit
-   olmalıdır. Boş bırakılırsa kilo sevkiyattaki iplik oranına göre dağıtılır (S3).
-4. "Kumaş girişini kaydet" önce özet ve "Kayıt sonradan değiştirilemez." uyarısını gösterir; yalnızca **"Evet, kaydet"**
-   kaydeder, "Vazgeç" hiçbir şey yazmaz. Kayıt "Kumaş girişi kaydedildi." der.
-5. Kayıt fasoncu bakiyesinden `FABRIC_RECEIPT` hareketi düşer ve sevkiyatın fire hesabını günceller; ilk kumaş girişinden
+2. Kumaş tek iplikten yapılmaz. Form, fasoncunun **tüm sevkiyatlardaki** elindeki her ipliği (parti ve tedarikçisiyle) listeler;
+   kaliteci her iplik için kumaşın yüzde kaçının o iplikten yapıldığını yazar. **Oranların toplamı tam %100 olmalıdır**; boş
+   bırakılan iplik kullanılmamış sayılır. Kumaş cinsi için Tanımlar > "Kumaş karışımı"nda varsayılan karışım tanımlıysa
+   "Tanımlı karışımı yaz" oranları doldurur (aynı iplik birden çok partideyse oran eldeki kiloya göre bölünür); kaliteci
+   düzeltebilir.
+3. Her iplikten düşülecek kilo = kumaş kilosu × oran. Düşüm önce **kumaşın girildiği sevkiyattan** yapılır; o sevkiyatta
+   yoksa ya da yetmiyorsa **en eski sevkiyattan** devam eder. Fasoncudaki toplam iplik yetmiyorsa kayıt **engellenir** ve iplik
+   başına eksik kilo yazılır (`409 FABRIC_YARN_SHORT`).
+4. "Kontrol et" kaydetmeden önce önizleme gösterir: her iplik için kaç kg hangi sevkiyattan düşülecek. Önizlemeden sonra
+   "Kayıt sonradan değiştirilemez." uyarısıyla **"Evet, kaydet"** kaydeder, "Vazgeç" hiçbir şey yazmaz. Kayıt "Kumaş girişi
+   kaydedildi." der.
+5. Kayıt, ipliğin düşüldüğü her sevkiyat için fasoncu bakiyesinden `FABRIC_RECEIPT` hareketi düşer (`fabric_yarn_draw`) ve o sevkiyatların fire hesabını günceller (gelen kumaş = o sevkiyattan düşülen kilo); sevkiyat dosyasında "Bu sevkiyatın ipliğinden üretilen kumaş" bölümü kumaşı gösterir. Kayıtlar yalnız eklenir; kumaş silme/düzeltme yoktur, bu yüzden iplik geri yükleme de yoktur; ilk kumaş girişinden
    sonra fire dosyası "Faturalanacak" durumuna geçer.
 6. Bir sevkiyata birden çok kumaş girişi yapılabilir (kumaş parça parça gelir). Kapanmış fire dosyasına kumaş girişi yapılamaz.
 

@@ -39,7 +39,9 @@ export const KAPSANAN: Record<string, string> = {
     '15-sevkiyat-tarihi, 18-sadelestirme (çuval yokken pasif düğme)',
   '/panel/sevkiyat/<id>|Çuvalları ekle': '03-akis, 09',
   '/panel/sevkiyat/<id>|Sevkiyattan çıkar': '09-sevkiyat-islemleri',
-  '/panel/sevkiyat/<id>|Kumaş girişini kaydet': '02-formlar, 03-akis, 09',
+  '/panel/sevkiyat/<id>|Kontrol et':
+    '02-formlar, 03-akis, 26-kumas-karisimi (kumaş girişi önizlemesi)',
+  '/panel/tanimlar|Karışım ekle': '26-kumas-karisimi',
   '/panel/sevkiyat/<id>|Evet, kaydet': '03-akis (kumaş girişi onayı), 09',
   '/panel/sevkiyat/<id>|Hareketi kaydet': '09-sevkiyat-islemleri',
   '/panel/sevkiyat/<id>|Oranı kaydet': '09-sevkiyat-islemleri',

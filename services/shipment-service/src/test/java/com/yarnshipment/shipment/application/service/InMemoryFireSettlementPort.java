@@ -72,6 +72,15 @@ final class InMemoryFireSettlementPort implements FireSettlementPort, FireInvoic
     }
 
     @Override
+    public List<FireSettlement> lockOpenOf(UUID subcontractorId) {
+        return byShipment.values().stream()
+                .filter(item -> item.subcontractorId().equals(subcontractorId)
+                        && !item.status().isFinal())
+                .sorted(java.util.Comparator.comparing(FireSettlement::shipmentId))
+                .toList();
+    }
+
+    @Override
     public void save(FireSettlement settlement, Instant at) {
         byShipment.put(settlement.shipmentId(), settlement);
     }

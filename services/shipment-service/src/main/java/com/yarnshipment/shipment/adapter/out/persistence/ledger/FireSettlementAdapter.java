@@ -42,13 +42,17 @@ final class FireSettlementAdapter implements FireSettlementPort {
                                   WHERE m.shipment_id = f.shipment_id AND m.kind = 'CLAIM_ADJUSTMENT'), 0))
                 + coalesce((SELECT sum(c.claimed_kg) FROM fire_claim c WHERE c.shipment_id = f.shipment_id), 0)
                 AS claim_kg,
-            coalesce((SELECT sum(fr.net_kg) FROM fabric_lot fr
-                      WHERE fr.shipment_id = f.shipment_id AND fr.source = 'SUBCONTRACTOR'), 0) AS fabric_kg,
+            coalesce((SELECT sum(d.net_kg) FROM fabric_yarn_draw d
+                      WHERE d.source_shipment_id = f.shipment_id), 0) AS fabric_kg,
             coalesce((SELECT sum(i.kg) FROM fire_invoice i WHERE i.shipment_id = f.shipment_id), 0) AS invoiced_kg,
             coalesce((SELECT sum(c.claimed_kg) FROM fire_claim c WHERE c.shipment_id = f.shipment_id), 0)
                 AS pending_claim_kg,
             coalesce((SELECT sum(i.claim_kg) FROM fire_invoice i WHERE i.shipment_id = f.shipment_id), 0)
                 AS claim_invoiced_kg""";
+    private static final String LOCK_OPEN = "SELECT " + COLUMNS + """
+             FROM fire_settlement f
+            WHERE f.subcontractor_id = :subcontractorId AND f.status IN ('AWAITING_FABRIC', 'TO_INVOICE')
+            ORDER BY f.shipment_id FOR UPDATE""";
     private static final String INSERT_RATE_CHANGE = """
             INSERT INTO fire_rate_change (id, shipment_id, old_rate, new_rate, reason, changed_by, changed_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)""";
@@ -79,6 +83,14 @@ final class FireSettlementAdapter implements FireSettlementPort {
     @Override
     public Optional<FireSettlement> lock(UUID shipmentId) {
         return select(shipmentId, " FOR UPDATE");
+    }
+
+    @Override
+    public List<FireSettlement> lockOpenOf(UUID subcontractorId) {
+        return jdbc.sql(LOCK_OPEN)
+                .param("subcontractorId", subcontractorId)
+                .query((rs, i) -> toSettlement(rs))
+                .list();
     }
 
     @Override

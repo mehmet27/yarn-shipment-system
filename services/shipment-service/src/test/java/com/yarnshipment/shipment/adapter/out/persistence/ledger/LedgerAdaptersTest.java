@@ -16,9 +16,10 @@ import com.yarnshipment.shipment.application.port.out.ledger.FireSettlementPort.
 import com.yarnshipment.shipment.application.port.out.ledger.LedgerEventPort;
 import com.yarnshipment.shipment.domain.balance.BalanceMovement;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
+import com.yarnshipment.shipment.domain.fabric.FabricYarn;
 import com.yarnshipment.shipment.domain.fabric.ReturnDirection;
+import com.yarnshipment.shipment.domain.fabric.YarnDraw;
 import com.yarnshipment.shipment.domain.fabric.YarnReturn;
-import com.yarnshipment.shipment.domain.fabric.YarnShare;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
 import com.yarnshipment.shipment.domain.fire.FireSettlementStatus;
 import java.math.BigDecimal;
@@ -46,6 +47,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
     BalanceMovementWriter.class,
     BalanceLedgerAdapter.class,
     FabricReceiptAdapter.class,
+    FabricReceiptReader.class,
+    YarnStockAdapter.class,
     YarnReturnAdapter.class,
     FireSettlementAdapter.class,
     FireInvoiceAdapter.class,
@@ -186,7 +189,13 @@ class LedgerAdaptersTest {
                 ROLLS,
                 "KIR-1",
                 AT,
-                List.of(new YarnShare("(reçetesiz)", new BigDecimal("32660"))),
+                List.of(new FabricYarn(
+                        "(reçetesiz)",
+                        null,
+                        null,
+                        new BigDecimal("100.00"),
+                        new BigDecimal("32660"),
+                        List.of(new YarnDraw(SHIPMENT, null, "(reçetesiz)", null, new BigDecimal("32660"))))),
                 USER);
         fireSettlements.open(FireSettlement.open(SHIPMENT, SUBCONTRACTOR, new BigDecimal("34032")), AT);
 
@@ -198,9 +207,17 @@ class LedgerAdaptersTest {
         assertThat(fabricReceipts.findByShipment(SHIPMENT)).singleElement().satisfies(found -> {
             assertThat(found.id()).isEqualTo(receipt.id());
             assertThat(found.rollCount()).isEqualTo(ROLLS);
-            assertThat(found.yarns()).containsExactlyElementsOf(receipt.yarns());
+            assertThat(found.yarns()).singleElement().satisfies(this::assertSingleDrawYarn);
         });
         assertThat(fireSettlements.totals(SHIPMENT).fabricKg()).isEqualByComparingTo("32660");
+    }
+
+    private void assertSingleDrawYarn(FabricYarn yarn) {
+        assertThat(yarn.yarnType()).isEqualTo("(reçetesiz)");
+        assertThat(yarn.ratioPct()).isEqualByComparingTo("100");
+        assertThat(yarn.draws())
+                .singleElement()
+                .satisfies(draw -> assertThat(draw.shipmentId()).isEqualTo(SHIPMENT));
     }
 
     @Test

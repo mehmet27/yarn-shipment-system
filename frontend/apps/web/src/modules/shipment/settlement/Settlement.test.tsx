@@ -3,19 +3,13 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
-import { addMockReceipt } from '@/mocks/settlements';
+import { addMockReceipt, saveMockRecipe } from '@/mocks/settlements';
 import { renderApp } from '@/test/renderApp';
 
 const COMPLETED = '/panel/sevkiyat/shp-0003';
 
 async function openTab(name: string) {
   await userEvent.click(await screen.findByRole('tab', { name }));
-}
-
-function pick<T>(items: readonly T[], index: number): T {
-  const item = items[index];
-  expect(item).toBeDefined();
-  return item as T;
 }
 
 async function recordFabric(kg: string) {
@@ -27,12 +21,21 @@ async function recordFabric(kg: string) {
   return form;
 }
 
+async function writeRatios(form: HTMLElement, viskon: string, likra: string) {
+  await userEvent.type(await within(form).findByLabelText('Oran: 36/1 Viskon'), viskon);
+  await userEvent.type(within(form).getByLabelText('Oran: 20 denye likra'), likra);
+}
+
 describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
-  it('kalite kumaş girişi kaydeder, liste ve fire dosyası güncellenir', async () => {
+  it('kalite iplik oranlarını yazar, önizlemeyi görür, kaydeder; liste ve fire dosyası güncellenir', async () => {
     server.use(...createHandlers('QUALITY'));
     renderApp(COMPLETED);
     const form = await recordFabric('1.900');
-    await userEvent.click(within(form).getByRole('button', { name: 'Kumaş girişini kaydet' }));
+    await writeRatios(form, '78', '22');
+    expect(within(form).getByTestId('fabric-ratio-total')).toHaveTextContent('Toplam: %100');
+    await userEvent.click(within(form).getByRole('button', { name: 'Kontrol et' }));
+    expect(await within(form).findByText('Kumaş için şu iplikler düşülecek')).toBeVisible();
+    expect(within(form).getAllByText(/sevkiyatından (1\.482|418) kg/)).toHaveLength(2);
     expect(
       within(form).getByText(/1\.900 kg Süprem kumaş kaydedilecek\. Kayıt sonradan/),
     ).toBeVisible();
@@ -42,50 +45,51 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     await openTab('Fire dosyası');
     expect(await screen.findByTestId('fire-status')).toHaveTextContent('Faturalanacak');
     expect(screen.getByText('3,2 kg')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Fatura edildi' })).not.toBeInTheDocument();
+    expect(await screen.findByTestId('fabric-draws')).toHaveTextContent(/36\/1 Viskon → Süprem/);
   });
 
-  it('iplik dağılımı toplamı kumaş kilosuna eşit değilse uyarır', async () => {
+  it('oranların toplamı 100 değilse canlı toplam kırmızı kalır ve kontrol uyarır', async () => {
     server.use(...createHandlers('QUALITY'));
     renderApp(COMPLETED);
     const form = await recordFabric('100');
-    await userEvent.click(within(form).getByRole('button', { name: 'İplik satırı ekle' }));
-    await userEvent.click(within(form).getByRole('combobox', { name: 'İplik cinsi' }));
-    await userEvent.click(await screen.findByRole('option', { name: '36/1 Viskon' }));
-    await userEvent.type(within(form).getByLabelText('Kilo'), '60');
-    await userEvent.click(within(form).getByRole('button', { name: 'Kumaş girişini kaydet' }));
-    expect(await within(form).findByText(/toplamı kumaş kilosuna eşit/)).toBeInTheDocument();
-  });
-
-  it('kumaş formu gönderilen ve gelen kiloyu yazar, kalanı aşan kiloyu göndermez', async () => {
-    server.use(...createHandlers('QUALITY'));
-    renderApp(COMPLETED);
-    const form = await recordFabric('2.500');
-    expect(await within(form).findByTestId('fabric-limit-note')).toHaveTextContent(
-      'Fasoncuya 1.982,5 kg iplik gönderildi, şimdiye kadar 0 kg kumaş geldi; en çok 1.982,5 kg daha girebilirsiniz.',
+    await writeRatios(form, '60', '30');
+    expect(within(form).getByTestId('fabric-ratio-total')).toHaveTextContent(
+      'Toplam: %90 (tam %100 olmalı)',
     );
-    expect(
-      within(form).getByText(/ipliğin kalanından fazla kumaş yazamazsınız/),
-    ).toBeInTheDocument();
-    await userEvent.click(within(form).getByRole('button', { name: 'Kumaş girişini kaydet' }));
+    await userEvent.click(within(form).getByRole('button', { name: 'Kontrol et' }));
+    expect(await within(form).findByText('Oranların toplamı tam %100 olmalı.')).toBeInTheDocument();
     expect(within(form).queryByRole('button', { name: 'Evet, kaydet' })).not.toBeInTheDocument();
   });
 
-  it('iplik satırında yalnız sevkiyattaki iplikler sunulur, seçilen bir daha sunulmaz', async () => {
+  it('fasoncuda yetmeyen iplik için eksik kiloyu yazar ve kaydettirmez', async () => {
     server.use(...createHandlers('QUALITY'));
     renderApp(COMPLETED);
-    await openTab('Kumaş girişi');
-    const form = await screen.findByRole('region', { name: 'Kumaş girişi' });
-    await userEvent.click(within(form).getByRole('button', { name: 'İplik satırı ekle' }));
-    await userEvent.click(within(form).getByRole('button', { name: 'İplik satırı ekle' }));
-    const combos = within(form).getAllByRole('combobox', { name: 'İplik cinsi' });
-    const [first, second] = [pick(combos, 0), pick(combos, 1)];
-    await userEvent.click(first);
-    expect(await screen.findByRole('option', { name: '20 denye likra' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('option', { name: '36/1 Viskon' }));
-    await userEvent.click(second);
-    expect(await screen.findByRole('option', { name: '20 denye likra' })).toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: '36/1 Viskon' })).not.toBeInTheDocument();
+    // %40 likra = 800 kg; fasoncuda yalnız 482,5 kg likra var
+    const form = await recordFabric('2.000');
+    await writeRatios(form, '60', '40');
+    await userEvent.click(within(form).getByRole('button', { name: 'Kontrol et' }));
+    expect(await within(form).findByText('Fasoncuda yeterli iplik yok')).toBeVisible();
+    expect(within(form).getByText(/20 denye likra: 317,5 kg eksik/)).toBeInTheDocument();
+    expect(within(form).queryByRole('button', { name: 'Evet, kaydet' })).not.toBeInTheDocument();
+  });
+
+  it('tanımlı karışım kumaş cinsine göre oranları doldurur; kalite düzeltebilir', async () => {
+    saveMockRecipe(undefined, {
+      fabricType: 'süprem',
+      yarns: [
+        { yarnType: '36/1 Viskon', ratioPct: '70' },
+        { yarnType: '20 denye likra', ratioPct: '30' },
+      ],
+    });
+    server.use(...createHandlers('QUALITY'));
+    renderApp(COMPLETED);
+    const form = await recordFabric('100');
+    await userEvent.click(
+      await within(form).findByRole('button', { name: 'Tanımlı karışımı yaz' }),
+    );
+    expect(within(form).getByLabelText('Oran: 36/1 Viskon')).toHaveValue('70');
+    expect(within(form).getByLabelText('Oran: 20 denye likra')).toHaveValue('30');
+    expect(within(form).getByTestId('fabric-ratio-total')).toHaveTextContent('Toplam: %100');
   });
 
   it('müdür iplik dönüşü kaydedemez; sekmede form görünmez ve Yön seçimi yoktur', async () => {

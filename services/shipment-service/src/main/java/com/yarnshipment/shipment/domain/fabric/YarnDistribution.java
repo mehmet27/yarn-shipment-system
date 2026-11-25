@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,8 +17,6 @@ import java.util.UUID;
  * verilir.
  */
 public final class YarnDistribution {
-
-    private static final Locale TURKISH = Locale.forLanguageTag("tr-TR");
 
     private YarnDistribution() {}
 
@@ -85,11 +82,7 @@ public final class YarnDistribution {
     }
 
     private static boolean sameName(String dispatchedName, String given) {
-        String left = dispatchedName.strip();
-        String right = given.strip();
-        return left.equalsIgnoreCase(right)
-                || left.toLowerCase(Locale.ROOT).equals(right.toLowerCase(Locale.ROOT))
-                || left.toLowerCase(TURKISH).equals(right.toLowerCase(TURKISH));
+        return YarnNames.same(dispatchedName, given);
     }
 
     private static BigInteger grams(BigDecimal kg) {

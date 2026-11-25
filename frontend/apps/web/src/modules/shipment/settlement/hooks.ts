@@ -1,5 +1,14 @@
+import type { FabricPreviewRequest, FabricReceiptRequest } from '@iplik/api-client/fabric';
+import {
+  FABRIC_RECIPES_PATH,
+  listFabricDraws,
+  listFabricRecipes,
+  listFabricReceipts,
+  listFabricYarnOptions,
+  previewFabricReceipt,
+  recordFabricReceipt,
+} from '@iplik/api-client/fabric';
 import type {
-  FabricReceiptRequest,
   FireRateRequest,
   InvoiceRequest,
   YarnReturnRequest,
@@ -11,10 +20,8 @@ import {
   FIRE_INVOICES_PATH,
   FIRE_SETTLEMENTS_PATH,
   getFireSettlement,
-  listFabricReceipts,
   listYarnReturns,
   markInvoiced,
-  recordFabricReceipt,
   recordYarnReturn,
   updateFireRate,
 } from '@iplik/api-client/settlements';
@@ -27,6 +34,33 @@ export const useFabricReceipts = (shipmentId: string) =>
     queryKey: key(shipmentId, 'fabric-receipts'),
     queryFn: () => listFabricReceipts(shipmentId),
   });
+
+/** Fasoncunun elindeki iplikler (partisi ve tedarikçisiyle); kumaş oranları bu satırlara yazılır. */
+export const useFabricYarnOptions = (shipmentId: string) =>
+  useQuery({
+    queryKey: key(shipmentId, 'fabric-yarn-options'),
+    queryFn: () => listFabricYarnOptions(shipmentId),
+  });
+
+/** Bu sevkiyatın ipliğinden üretilen kumaşlar. */
+export const useFabricDraws = (shipmentId: string) =>
+  useQuery({
+    queryKey: key(shipmentId, 'fabric-draws'),
+    queryFn: () => listFabricDraws(shipmentId),
+  });
+
+/** Kumaş cinsi başına tanımlı karışımlar (yalnız aktifler). */
+export const useActiveFabricRecipes = () =>
+  useQuery({
+    queryKey: [FABRIC_RECIPES_PATH, 'active'],
+    queryFn: () => listFabricRecipes(false),
+  });
+
+export function usePreviewFabricReceipt(shipmentId: string) {
+  return useMutation({
+    mutationFn: (request: FabricPreviewRequest) => previewFabricReceipt(shipmentId, request),
+  });
+}
 
 export const useYarnReturns = (shipmentId: string) =>
   useQuery({

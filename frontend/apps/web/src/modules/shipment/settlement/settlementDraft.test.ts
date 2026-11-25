@@ -1,7 +1,6 @@
 import type { RecipeLineView } from '@iplik/api-client';
-import type { Kilogram } from '@iplik/units';
 import { describe, expect, it } from 'vitest';
-import { remainingFabricKg, yarnOptionsOf } from './fabricLimits';
+import { yarnOptionsOf } from './fabricLimits';
 import type { FabricDraft } from './settlementDraft';
 import {
   EMPTY_FABRIC_DRAFT,
@@ -12,68 +11,60 @@ import {
   toReturnRequest,
 } from './settlementDraft';
 
+const penye = { yarnType: '30/1 Penye', lotId: 'lot-1', totalKg: '100.000', ownKg: '100.000' };
+const likra = { yarnType: '20 denye likra', totalKg: '50.000', ownKg: '0.000' };
+const options = [penye, likra];
 const fabric: FabricDraft = {
   ...EMPTY_FABRIC_DRAFT,
   fabricType: 'Süprem',
   netKg: '32.660',
   waybillNo: 'IRS-1',
+  ratios: { '30/1 Penye|lot-1': '60,5', '20 denye likra|': '39.5' },
 };
 
 describe('toFabricRequest', () => {
-  it('iplik satırı yoksa yalnız kumaş bilgisini gönderir', () => {
-    expect(toFabricRequest({ ...fabric, rollCount: '12' })).toEqual({
+  it('oranlar toplamı 100 ise iplik, parti ve oranlarıyla gönderir', () => {
+    expect(toFabricRequest({ ...fabric, rollCount: '12' }, options)).toEqual({
       fabricType: 'Süprem',
       netKg: '32660.000',
       waybillNo: 'IRS-1',
       rollCount: 12,
+      yarns: [
+        { yarnType: '30/1 Penye', lotId: 'lot-1', ratioPct: '60.5' },
+        { yarnType: '20 denye likra', ratioPct: '39.5' },
+      ],
     });
+  });
+
+  it('boş bırakılan iplik kullanılmamış sayılır', () => {
+    expect(
+      toFabricRequest({ ...fabric, ratios: { '30/1 Penye|lot-1': '100' } }, options),
+    ).toMatchObject({ yarns: [{ yarnType: '30/1 Penye', lotId: 'lot-1', ratioPct: '100' }] });
   });
 
   it('eksik alan, geçersiz kilo ve top sayısını reddeder', () => {
-    expect(toFabricRequest(EMPTY_FABRIC_DRAFT)).toBe('required');
-    expect(toFabricRequest({ ...fabric, netKg: 'abc' })).toBe('invalidKg');
-    expect(toFabricRequest({ ...fabric, rollCount: '0' })).toBe('invalidRollCount');
+    expect(toFabricRequest(EMPTY_FABRIC_DRAFT, options)).toBe('required');
+    expect(toFabricRequest({ ...fabric, netKg: 'abc' }, options)).toBe('invalidKg');
+    expect(toFabricRequest({ ...fabric, rollCount: '0' }, options)).toBe('invalidRollCount');
   });
 
-  it('iplik dağılımı toplamı kumaş kilosuna eşit olmalı', () => {
-    const rows = [
-      { yarnType: 'A', netKg: '20.000' },
-      { yarnType: 'B', netKg: '12.660' },
-    ];
-    expect(toFabricRequest({ ...fabric, yarns: rows })).toMatchObject({
-      yarns: [
-        { yarnType: 'A', netKg: '20000.000' },
-        { yarnType: 'B', netKg: '12660.000' },
-      ],
-    });
-    expect(toFabricRequest({ ...fabric, netKg: '32,660', yarns: rows })).toBe(
-      'distributionMismatch',
+  it('oran yoksa, bozuksa ya da toplam 100 değilse reddeder', () => {
+    expect(toFabricRequest({ ...fabric, ratios: {} }, options)).toBe('ratioMissing');
+    expect(toFabricRequest({ ...fabric, ratios: { '30/1 Penye|lot-1': 'x' } }, options)).toBe(
+      'invalidRatio',
     );
-    expect(toFabricRequest({ ...fabric, yarns: [{ yarnType: '', netKg: '1' }] })).toBe('required');
-    expect(toFabricRequest({ ...fabric, yarns: [{ yarnType: 'A', netKg: 'x' }] })).toBe(
-      'invalidKg',
+    expect(toFabricRequest({ ...fabric, ratios: { '30/1 Penye|lot-1': '101' } }, options)).toBe(
+      'invalidRatio',
     );
-  });
-});
-
-describe('toFabricRequest: kalan kilo', () => {
-  it('kumaş kilosu kalan kiloyu aşarsa göndermez, eşitse gönderir', () => {
-    expect(toFabricRequest({ ...fabric, netKg: '1.900' }, '1800.000' as Kilogram)).toBe(
-      'exceedsRemaining',
+    expect(toFabricRequest({ ...fabric, ratios: { '30/1 Penye|lot-1': '99,99' } }, options)).toBe(
+      'ratioTotal',
     );
-    expect(toFabricRequest({ ...fabric, netKg: '1.900' }, '1900.000' as Kilogram)).toMatchObject({
-      netKg: '1900.000',
-    });
-  });
-});
-
-describe('remainingFabricKg', () => {
-  it('gönderilenden gelen çıkar, 0 altına inmez', () => {
-    expect(remainingFabricKg('2000.000', '1900.500')).toBe('99.500');
-    expect(remainingFabricKg('2000.000', '2100.000')).toBe('0.000');
-    expect(remainingFabricKg('abc', '1')).toBeUndefined();
-    // faturalanan kilo kumaş gibi düşer: 200 − 25 − 67
-    expect(remainingFabricKg('200.000', '25.000', '67.000')).toBe('108.000');
+    expect(
+      toFabricRequest(
+        { ...fabric, ratios: { '30/1 Penye|lot-1': '33,33', '20 denye likra|': '66,66' } },
+        options,
+      ),
+    ).toBe('ratioTotal');
   });
 });
 

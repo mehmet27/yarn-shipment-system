@@ -9,10 +9,10 @@ import com.yarnshipment.shipment.TestShipments;
 import com.yarnshipment.shipment.TestTokens;
 import com.yarnshipment.shipment.application.port.in.fabric.RecordFabricReceiptCommand;
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
-import com.yarnshipment.shipment.domain.fabric.FabricExceedsSentYarnException;
 import com.yarnshipment.shipment.domain.fabric.FabricReceipt;
-import com.yarnshipment.shipment.domain.fabric.FabricYarnNotInShipmentException;
-import com.yarnshipment.shipment.domain.fabric.YarnShare;
+import com.yarnshipment.shipment.domain.fabric.FabricYarnShortageException;
+import com.yarnshipment.shipment.domain.fabric.YarnDraw;
+import com.yarnshipment.shipment.domain.fabric.YarnRatio;
 import com.yarnshipment.shipment.domain.fire.FireCalculation;
 import com.yarnshipment.shipment.domain.fire.FireCalculation.Inputs;
 import com.yarnshipment.shipment.domain.fire.FireSettlement;
@@ -27,7 +27,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
-import org.jspecify.annotations.Nullable;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,109 +39,142 @@ class FabricReceiptServiceTest {
     private static final int ROLLS = 5;
     private static final Duration TOLERANCE = Duration.ofMinutes(5);
     private static final Instant NOW = Instant.parse("2026-11-12T09:00:00Z");
+    private static final UUID OLDER = UUID.fromString("0192f0a0-0000-7000-8000-0000000000a1");
+    private static final UUID NEWER = UUID.fromString("0192f0a0-0000-7000-8000-0000000000a2");
+    private static final String PENYE = "30/1 penye";
+    private static final String OPEN_END = "20/1 open end";
 
     private final InMemoryShipmentQueryPort queryPort = new InMemoryShipmentQueryPort();
     private final InMemoryFireSettlementPort settlements = new InMemoryFireSettlementPort();
     private final RecordingLedgerPorts ledger = new RecordingLedgerPorts();
+    private final InMemoryYarnStock stock = new InMemoryYarnStock();
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
     private final Actor quality = TestTokens.actor("quality");
     private final FabricReceiptService service = new FabricReceiptService(
-            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
-            ledger,
-            settlements,
-            ledger,
-            clock);
+            new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)), ledger, settlements, stock, clock);
 
     @BeforeEach
     void givenCompletedShipmentWithOpenFile() {
         queryPort.add(TestShipments.shipment(ShipmentStatus.COMPLETED));
-        settlements.put(FireSettlement.open(
-                TestShipments.SHIPMENT_ID, TestShipments.SUBCONTRACTOR_ID, new BigDecimal("1000.000")));
-        ledger.givenRecipe("30/1 penye", "600");
-        ledger.givenRecipe("20/1 open end", "400");
+        open(TestShipments.SHIPMENT_ID);
+        open(OLDER);
+        open(NEWER);
+        stock.givenYarn(TestShipments.SHIPMENT_ID, "SV-3", "2026-11-03T08:00:00Z", PENYE, "600");
+        stock.givenYarn(TestShipments.SHIPMENT_ID, "SV-3", "2026-11-03T08:00:00Z", OPEN_END, "400");
+        stock.givenYarn(OLDER, "SV-1", "2026-11-01T08:00:00Z", PENYE, "300");
+        stock.givenYarn(NEWER, "SV-2", "2026-11-02T08:00:00Z", PENYE, "200");
     }
 
-    private RecordFabricReceiptCommand command(String netKg, @Nullable List<YarnShare> yarns) {
+    private void open(UUID shipmentId) {
+        settlements.put(FireSettlement.open(shipmentId, TestShipments.SUBCONTRACTOR_ID, new BigDecimal("1000.000")));
+    }
+
+    private static YarnRatio ratio(String yarn, String pct) {
+        return new YarnRatio(yarn, null, new BigDecimal(pct));
+    }
+
+    private RecordFabricReceiptCommand command(String netKg, YarnRatio... yarns) {
         return new RecordFabricReceiptCommand(
-                quality, TestShipments.SHIPMENT_ID, "Süprem", new BigDecimal(netKg), ROLLS, "KIR-1", null, yarns);
+                quality,
+                TestShipments.SHIPMENT_ID,
+                "Süprem",
+                new BigDecimal(netKg),
+                ROLLS,
+                "KIR-1",
+                null,
+                List.of(yarns));
+    }
+
+    private FireSettlementStatus statusOf(UUID shipmentId) {
+        return settlements.find(shipmentId).orElseThrow().status();
     }
 
     @Test
-    @DisplayName("İplik verilmezse kumaş reçete oranıyla dağıtılır, kayıt yazılır ve dosya faturalanmaya hazır olur")
-    void shouldDistributeByRecipeAndAdvanceFile() {
+    @DisplayName("Oranlara göre kilo bölünür; iplik önce kumaşın girildiği sevkiyattan düşer ve yalnız o dosya ilerler")
+    void shouldDrawFromEntryShipmentFirst() {
         // when
-        FabricReceipt receipt = service.recordFabricReceipt(command("960", null));
+        FabricReceipt receipt = service.recordFabricReceipt(command("960", ratio(PENYE, "60"), ratio(OPEN_END, "40")));
 
         // then
-        assertThat(receipt.yarns()).extracting(YarnShare::yarnType).containsExactly("30/1 penye", "20/1 open end");
+        assertThat(receipt.yarns()).hasSize(2);
         assertThat(receipt.yarns().getFirst().netKg()).isEqualByComparingTo("576");
         assertThat(receipt.yarns().get(1).netKg()).isEqualByComparingTo("384");
+        assertThat(receipt.yarns().getFirst().draws())
+                .singleElement()
+                .satisfies(draw -> assertThat(draw.shipmentId()).isEqualTo(TestShipments.SHIPMENT_ID));
         assertThat(receipt.receivedAt()).isEqualTo(NOW);
         assertThat(ledger.receipts()).containsExactly(receipt);
-        assertThat(settlements.find(TestShipments.SHIPMENT_ID))
-                .get()
-                .extracting(FireSettlement::status)
-                .isEqualTo(FireSettlementStatus.TO_INVOICE);
+        assertThat(statusOf(TestShipments.SHIPMENT_ID)).isEqualTo(FireSettlementStatus.TO_INVOICE);
+        assertThat(statusOf(OLDER)).isEqualTo(FireSettlementStatus.AWAITING_FABRIC);
+        assertThat(statusOf(NEWER)).isEqualTo(FireSettlementStatus.AWAITING_FABRIC);
     }
 
     @Test
-    @DisplayName("Açıkça verilen iplikler kumaş kilosuna eşit olmalıdır; tekrarlanan cins birleştirilir")
-    void shouldRequireExplicitYarnsToSumToNetKg() {
-        // when
-        FabricReceipt receipt = service.recordFabricReceipt(command(
-                "100",
-                List.of(
-                        new YarnShare("30/1 penye", new BigDecimal("70")),
-                        new YarnShare("30/1 PENYE ", new BigDecimal("30")))));
+    @DisplayName("Girildiği sevkiyatta iplik yetmezse kalan kısım en eski sevkiyattan başlayarak düşer; hepsi ilerler")
+    void shouldSpillOverToOldestShipments() {
+        // when: 800 kg penye gerekir; girildiği sevkiyatta 600, eski sevkiyatta 300, yeni sevkiyatta 200 var
+        FabricReceipt receipt = service.recordFabricReceipt(command("800", ratio(PENYE, "100")));
 
         // then
-        assertThat(receipt.yarns()).singleElement().satisfies(share -> {
-            assertThat(share.netKg()).isEqualByComparingTo("100");
-            assertThat(share.yarnType()).isEqualTo("30/1 penye");
-        });
-        assertThatThrownBy(() -> service.recordFabricReceipt(
-                        command("100", List.of(new YarnShare("30/1 penye", new BigDecimal("90"))))))
-                .isInstanceOf(InvalidLedgerInputException.class);
-        assertThat(ledger.receipts()).hasSize(1);
+        List<YarnDraw> draws = receipt.yarns().getFirst().draws();
+        assertThat(draws).extracting(YarnDraw::shipmentId).containsExactly(TestShipments.SHIPMENT_ID, OLDER);
+        assertThat(draws.get(0).netKg()).isEqualByComparingTo("600");
+        assertThat(draws.get(1).netKg()).isEqualByComparingTo("200");
+        assertThat(statusOf(TestShipments.SHIPMENT_ID)).isEqualTo(FireSettlementStatus.TO_INVOICE);
+        assertThat(statusOf(OLDER)).isEqualTo(FireSettlementStatus.TO_INVOICE);
+        assertThat(statusOf(NEWER)).isEqualTo(FireSettlementStatus.AWAITING_FABRIC);
     }
 
     @Test
-    @DisplayName("Sevkiyatta gönderilmemiş iplik cinsi reddedilir; kayıt yazılmaz")
-    void shouldRejectYarnNotInShipment() {
-        assertThatThrownBy(() -> service.recordFabricReceipt(
-                        command("100", List.of(new YarnShare("30/1 penyee", new BigDecimal("100"))))))
-                .isInstanceOf(FabricYarnNotInShipmentException.class);
+    @DisplayName("Fasoncunun toplamında iplik yetmezse kayıt engellenir ve hangi iplikten kaç kg eksik olduğu söylenir")
+    void shouldBlockWhenYarnIsShort() {
+        // when / then: penye toplamı 1100; 1200 kg kumaşın %100'ü penye
+        assertThatThrownBy(() -> service.recordFabricReceipt(command("1200", ratio(PENYE, "100"))))
+                .isInstanceOfSatisfying(
+                        FabricYarnShortageException.class,
+                        e -> assertThat(e.shortages()).singleElement().satisfies(shortage -> {
+                            assertThat(shortage.yarnType()).isEqualTo(PENYE);
+                            assertThat(shortage.missingKg()).isEqualByComparingTo("100");
+                        }));
+        assertThat(ledger.receipts()).isEmpty();
+        assertThat(statusOf(OLDER)).isEqualTo(FireSettlementStatus.AWAITING_FABRIC);
+    }
+
+    @Test
+    @DisplayName("Fasoncuda hiç olmayan iplik de eksik sayılır")
+    void shouldBlockUnknownYarn() {
+        assertThatThrownBy(() -> service.recordFabricReceipt(command("10", ratio("yok", "100"))))
+                .isInstanceOfSatisfying(
+                        FabricYarnShortageException.class,
+                        e -> assertThat(e.shortages())
+                                .singleElement()
+                                .satisfies(shortage ->
+                                        assertThat(shortage.missingKg()).isEqualByComparingTo("10")));
+    }
+
+    @Test
+    @DisplayName("Oranların toplamı tam 100 olmalı; aynı iplik iki kez yazılamaz; oran yazılmadan kayıt olmaz")
+    void shouldRequireRatiosToSumToHundred() {
+        assertThatThrownBy(() -> service.recordFabricReceipt(command("100", ratio(PENYE, "99.99"))))
+                .isInstanceOf(InvalidLedgerInputException.class);
+        assertThatThrownBy(() ->
+                        service.recordFabricReceipt(command("100", ratio(PENYE, "60"), ratio(" 30/1 PENYE", "40"))))
+                .isInstanceOf(InvalidLedgerInputException.class);
+        assertThatThrownBy(() -> service.recordFabricReceipt(command("100")))
+                .isInstanceOf(InvalidLedgerInputException.class);
         assertThat(ledger.receipts()).isEmpty();
     }
 
     @Test
-    @DisplayName("Büyük harfle ya da boşluklu yazılan Türkçe cins gönderilen cinsin yazılışına çevrilir")
-    void shouldCanonicaliseTurkishYarnName() {
-        ledger.givenRecipe("İpek ıslak", "100");
+    @DisplayName("Büyük harfle ya da boşluklu yazılan Türkçe iplik adı eşleşir")
+    void shouldMatchTurkishYarnName() {
+        stock.givenYarn(TestShipments.SHIPMENT_ID, "SV-3", "2026-11-03T08:00:00Z", "İpek ıslak", "100");
 
-        FabricReceipt receipt = service.recordFabricReceipt(
-                command("10", List.of(new YarnShare(" İPEK ISLAK ", new BigDecimal("10")))));
+        FabricReceipt receipt = service.recordFabricReceipt(command("10", ratio(" İPEK ISLAK ", "100")));
 
         assertThat(receipt.yarns())
                 .singleElement()
-                .satisfies(share -> assertThat(share.yarnType()).isEqualTo("İpek ıslak"));
-    }
-
-    @Test
-    @DisplayName("Cins bilgisi olmayan eski sevkiyatta iplik adı denetlenmez")
-    void shouldSkipYarnCheckWithoutDispatchData() {
-        RecordingLedgerPorts empty = new RecordingLedgerPorts();
-        FabricReceiptService legacy = new FabricReceiptService(
-                new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
-                empty,
-                settlements,
-                empty,
-                clock);
-
-        FabricReceipt receipt =
-                legacy.recordFabricReceipt(command("10", List.of(new YarnShare("serbest", new BigDecimal("10")))));
-
-        assertThat(receipt.yarns()).extracting(YarnShare::yarnType).containsExactly("serbest");
+                .satisfies(yarn -> assertThat(yarn.yarnType()).isEqualTo("İpek ıslak"));
     }
 
     @Test
@@ -163,29 +196,14 @@ class FabricReceiptServiceTest {
 
     private RecordFabricReceiptCommand commandAt(Instant receivedAt) {
         return new RecordFabricReceiptCommand(
-                quality, TestShipments.SHIPMENT_ID, "Süprem", BigDecimal.TEN, ROLLS, "KIR-1", receivedAt, null);
-    }
-
-    @Test
-    @DisplayName("Gelen kumaşın toplamı gönderilen iplikten fazla olamaz")
-    void shouldRejectFabricExceedingSentYarn() {
-        assertThatThrownBy(() -> service.recordFabricReceipt(command("1000.001", null)))
-                .isInstanceOf(FabricExceedsSentYarnException.class);
-        service.recordFabricReceipt(command("600", null));
-        assertThatThrownBy(() -> service.recordFabricReceipt(command("500", null)))
-                .isInstanceOf(FabricExceedsSentYarnException.class);
-        assertThat(ledger.receipts()).hasSize(1);
-    }
-
-    @Test
-    @DisplayName("Faturası kesilen iplik tüketilmiş sayılır: gelen kumaş ve faturalanan kilo gönderilen ipliği aşamaz")
-    void shouldCountInvoicedKgAsConsumedYarn() {
-        settlements.givenInvoiced("300");
-
-        assertThatThrownBy(() -> service.recordFabricReceipt(command("700.001", null)))
-                .isInstanceOf(FabricExceedsSentYarnException.class);
-        assertThat(ledger.receipts()).isEmpty();
-        assertThat(service.recordFabricReceipt(command("700", null)).netKg()).isEqualByComparingTo("700");
+                quality,
+                TestShipments.SHIPMENT_ID,
+                "Süprem",
+                BigDecimal.TEN,
+                ROLLS,
+                "KIR-1",
+                receivedAt,
+                List.of(ratio(PENYE, "100")));
     }
 
     @Test
@@ -195,20 +213,16 @@ class FabricReceiptServiceTest {
         InMemoryShipmentQueryPort other = new InMemoryShipmentQueryPort();
         other.add(TestShipments.shipment(ShipmentStatus.AWAITING_DELIVERY));
         FabricReceiptService awaiting = new FabricReceiptService(
-                new ScopedShipmentLoader(other, new ScopeGuard(event -> {}, clock)),
-                ledger,
-                settlements,
-                ledger,
-                clock);
+                new ScopedShipmentLoader(other, new ScopeGuard(event -> {}, clock)), ledger, settlements, stock, clock);
 
         // when / then
-        assertThatThrownBy(() -> awaiting.recordFabricReceipt(command("10", null)))
+        assertThatThrownBy(() -> awaiting.recordFabricReceipt(command("10", ratio(PENYE, "100"))))
                 .isInstanceOf(InvalidShipmentStatusException.class);
         assertThat(ledger.receipts()).isEmpty();
     }
 
     @Test
-    @DisplayName("Kapanmış fire dosyasına kumaş girişi yapılamaz")
+    @DisplayName("Kapanmış fire dosyası olan sevkiyat üzerinden kumaş girilemez")
     void shouldRejectReceiptOnClosedFile() {
         // given
         FireSettlement open = settlements.find(TestShipments.SHIPMENT_ID).orElseThrow();
@@ -217,7 +231,7 @@ class FabricReceiptServiceTest {
         settlements.put(open.afterFabricReceipt().close(withinFire));
 
         // when / then
-        assertThatThrownBy(() -> service.recordFabricReceipt(command("10", null)))
+        assertThatThrownBy(() -> service.recordFabricReceipt(command("10", ratio(PENYE, "100"))))
                 .isInstanceOf(FireSettlementClosedException.class);
         assertThat(ledger.receipts()).isEmpty();
     }
@@ -230,11 +244,11 @@ class FabricReceiptServiceTest {
                 new ScopedShipmentLoader(queryPort, new ScopeGuard(event -> {}, clock)),
                 ledger,
                 new InMemoryFireSettlementPort(),
-                ledger,
+                stock,
                 clock);
 
         // when / then
-        assertThatThrownBy(() -> withoutFile.recordFabricReceipt(command("10", null)))
+        assertThatThrownBy(() -> withoutFile.recordFabricReceipt(command("10", ratio(PENYE, "100"))))
                 .isInstanceOf(FireSettlementNotFoundException.class);
     }
 }

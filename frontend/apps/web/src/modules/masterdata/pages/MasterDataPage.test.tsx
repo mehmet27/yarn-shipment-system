@@ -216,4 +216,23 @@ describe('MasterDataPage', () => {
     expect(await screen.findByText(/yetki/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ekle' })).not.toBeInTheDocument();
   });
+
+  it('yönetici kumaş karışımı ekler; toplam 100 olunca kaydedilir ve listede görünür', async () => {
+    server.use(...createHandlers('MANAGER'));
+    renderApp('/panel/tanimlar');
+    await userEvent.click(await screen.findByRole('tab', { name: 'Kumaş karışımı' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Karışım ekle' }));
+    await userEvent.type(screen.getByLabelText(/Kumaş cinsi/), 'Süprem');
+    await userEvent.click(screen.getByRole('combobox', { name: 'İplik' }));
+    const [firstOption] = await screen.findAllByRole('option');
+    expect(firstOption).toBeDefined();
+    if (firstOption !== undefined) await userEvent.click(firstOption);
+    await userEvent.type(screen.getByLabelText('Oran (%)'), '60');
+    expect(screen.getByTestId('recipe-total')).toHaveTextContent('Toplam: %60 (tam %100 olmalı)');
+    expect(screen.getByRole('button', { name: 'Kaydet' })).toBeDisabled();
+    await userEvent.clear(screen.getByLabelText('Oran (%)'));
+    await userEvent.type(screen.getByLabelText('Oran (%)'), '100');
+    await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(await screen.findByText('Süprem')).toBeInTheDocument();
+  });
 });

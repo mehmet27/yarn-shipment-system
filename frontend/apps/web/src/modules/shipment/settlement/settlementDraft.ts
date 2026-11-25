@@ -1,13 +1,19 @@
 import type {
-  FabricReceiptRequest,
   InvoiceRequest,
   FireRateRequest,
   YarnReturnRequest,
   YarnShare,
 } from '@iplik/api-client/settlements';
-import type { Kilogram } from '@iplik/units';
-import { parseKg, pctInputToRate, sumKg } from '@iplik/units';
-import { exceedsRemaining } from './fabricLimits';
+import type { FabricReceiptRequest, FabricYarnOption, YarnRatio } from '@iplik/api-client/fabric';
+import {
+  FULL_HUNDREDTHS,
+  parseKg,
+  parseRatio,
+  pctInputToRate,
+  ratioHundredths,
+  sumKg,
+} from '@iplik/units';
+import { ratioKey } from './fabricRatios';
 
 export const MAX_FIRE_PCT = 20;
 
@@ -18,72 +24,84 @@ export type DraftError =
   | 'distributionMismatch'
   | 'invalidRate'
   | 'invalidRollCount'
-  | 'exceedsRemaining'
+  | 'invalidRatio'
+  | 'ratioMissing'
+  | 'ratioTotal'
   | 'invoiceExceeds'
   | 'invoiceKgMissing';
 
-export type YarnRowDraft = { yarnType: string; netKg: string };
+/** Kumaş girişi taslağı; oranlar iplik satırının anahtarıyla (`ratioKey`) tutulur, boş oran "yok" demektir. */
 export type FabricDraft = {
   fabricType: string;
   netKg: string;
   rollCount: string;
   waybillNo: string;
-  yarns: YarnRowDraft[];
+  ratios: Record<string, string>;
 };
 export const EMPTY_FABRIC_DRAFT: FabricDraft = {
   fabricType: '',
   netKg: '',
   rollCount: '',
   waybillNo: '',
-  yarns: [],
+  ratios: {},
 };
 
 const ROLL_PATTERN = /^[1-9]\d*$/;
 
-function toShares(rows: readonly YarnRowDraft[]): YarnShare[] | DraftError {
-  const shares: YarnShare[] = [];
-  for (const row of rows) {
-    const netKg = parseKg(row.netKg);
-    if (row.yarnType.trim() === '') return 'required';
-    if (netKg === undefined) return 'invalidKg';
-    shares.push({ yarnType: row.yarnType.trim(), netKg });
-  }
-  return shares;
-}
-
-function checkFabricFields(draft: FabricDraft, remainingKg?: Kilogram): DraftError | undefined {
+function checkFabricFields(draft: FabricDraft): DraftError | undefined {
   if (draft.fabricType.trim() === '' || draft.waybillNo.trim() === '') return 'required';
   if (parseKg(draft.netKg) === undefined) return 'invalidKg';
-  if (exceedsRemaining(draft.netKg, remainingKg)) return 'exceedsRemaining';
   const roll = draft.rollCount.trim();
   return roll !== '' && !ROLL_PATTERN.test(roll) ? 'invalidRollCount' : undefined;
 }
 
+/** Dolu oran satırlarını isteğe çevirir; bozuk oran `invalidRatio`, toplamı 100 olmayan karışım `ratioTotal`. */
+function toRatios(
+  draft: FabricDraft,
+  options: readonly FabricYarnOption[],
+): YarnRatio[] | DraftError {
+  const ratios: YarnRatio[] = [];
+  const hundredths: number[] = [];
+  for (const option of options) {
+    const text = (draft.ratios[ratioKey(option)] ?? '').trim();
+    if (text === '') continue;
+    const ratio = parseRatio(text);
+    if (ratio === undefined) return 'invalidRatio';
+    hundredths.push(ratioHundredths(ratio));
+    ratios.push({
+      yarnType: option.yarnType,
+      ...(option.lotId === undefined ? {} : { lotId: option.lotId }),
+      ratioPct: ratio,
+    });
+  }
+  if (ratios.length === 0) return 'ratioMissing';
+  return hundredths.reduce((sum, value) => sum + value, 0) === FULL_HUNDREDTHS
+    ? ratios
+    : 'ratioTotal';
+}
+
 /**
- * Kumaş girişi isteği; iplik satırı yoksa sunucu reçeteyle dağıtır, varsa toplamı kumaş kilosuna eşit olmalı.
- * `remainingKg` bilinirse kumaş kilosu onu aşamaz (sunucu da `FABRIC_EXCEEDS_SENT_YARN` ile reddeder).
+ * Kumaş girişi isteği: kumaş bilgisi ve fasoncudaki iplikler üzerinden yazılan oranlar; oranların toplamı tam 100
+ * olmalıdır. Yeterli iplik olup olmadığını sunucu (önizleme ve kayıt) denetler.
  */
 export function toFabricRequest(
   draft: FabricDraft,
-  remainingKg?: Kilogram,
+  options: readonly FabricYarnOption[],
 ): FabricReceiptRequest | DraftError {
-  const failure = checkFabricFields(draft, remainingKg);
+  const failure = checkFabricFields(draft);
   const netKg = parseKg(draft.netKg);
   if (failure !== undefined) return failure;
   if (netKg === undefined) return 'invalidKg';
+  const yarns = toRatios(draft, options);
+  if (typeof yarns === 'string') return yarns;
   const roll = draft.rollCount.trim();
-  const base: FabricReceiptRequest = {
+  return {
     fabricType: draft.fabricType.trim(),
     netKg,
     waybillNo: draft.waybillNo.trim(),
     ...(roll === '' ? {} : { rollCount: Number(roll) }),
+    yarns,
   };
-  if (draft.yarns.length === 0) return base;
-  const shares = toShares(draft.yarns);
-  if (typeof shares === 'string') return shares;
-  return sumKg(shares.map((s) => s.netKg)) === sumKg([netKg])
-    ? { ...base, yarns: shares }
-    : 'distributionMismatch';
 }
 
 export type YarnReturnDraft = {

@@ -71,12 +71,12 @@ class YarnShipmentApplicationTest {
     }
 
     @Test
-    @DisplayName("Fire dosyası görünümü kumaş girişini fabric_lot'tan okur")
-    void shouldReadFireFileFromFabricLot() {
+    @DisplayName("Fire dosyası görünümü gelen kumaşı fabric_yarn_draw düşümlerinden okur")
+    void shouldReadFireFileFromFabricYarnDraw() {
         String definition =
                 jdbc.queryForObject("SELECT pg_get_viewdef('reporting.fire_file_view'::regclass)", String.class);
 
-        assertThat(definition).contains("fabric_lot").doesNotContain("fabric_receipt");
+        assertThat(definition).contains("fabric_yarn_draw").doesNotContain("fabric_receipt");
     }
 
     @Test

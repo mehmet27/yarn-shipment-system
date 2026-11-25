@@ -287,9 +287,7 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
     'doğrula: 90 kg kumaş → fire hesabı (beklenen 97, hatalı 7, fire %10)',
     async () => {
       await kumasGir(fasonKalite, id, '90', `${iplik}-K`);
-      await expect(fasonKalite.sayfa.getByTestId('fabric-limit-note')).toContainText(
-        'şimdiye kadar 90 kg kumaş geldi; en çok 10 kg daha girebilirsiniz',
-      );
+      await expect(fasonKalite.sayfa.getByText(/Süprem · 90 kg/)).toBeVisible();
       const fire = await mudur.api<Fire>(`/api/v1/shipments/${id}/fire-settlement`);
       const h = fireHesapla({ gonderilen: 100, donen: 0, itiraz: 0, kumas: 90, oran: 0.03 });
       mudur.kontrol(

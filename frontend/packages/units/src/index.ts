@@ -24,3 +24,4 @@ export { calculateFire } from './fire';
 export type { FireInput, FireResult } from './fire';
 export { compareWeighing } from './weighing';
 export type { WeighingComparison } from './weighing';
+export { FULL_HUNDREDTHS, parseRatio, ratioHundredths } from './ratio';

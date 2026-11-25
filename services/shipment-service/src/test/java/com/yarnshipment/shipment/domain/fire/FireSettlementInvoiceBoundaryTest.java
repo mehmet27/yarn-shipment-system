@@ -1,11 +1,9 @@
 package com.yarnshipment.shipment.domain.fire;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
-import com.yarnshipment.shipment.domain.fabric.FabricExceedsSentYarnException;
 import com.yarnshipment.shipment.domain.fire.FireCalculation.Inputs;
 import com.yarnshipment.shipment.domain.fire.FireSettlement.Invoice;
 import java.math.BigDecimal;
@@ -78,19 +76,6 @@ class FireSettlementInvoiceBoundaryTest {
                 .isInstanceOf(InvalidLedgerInputException.class);
         assertThatThrownBy(() -> toInvoice.markInvoiced(sixtyKgShort, wholeInvoice("   "), MANAGER))
                 .isInstanceOf(InvalidLedgerInputException.class);
-    }
-
-    @Test
-    @DisplayName("Gelen kumaş gönderilen ipliğe tam eşit olabilir; 1 gram fazlası reddedilir")
-    void shouldAllowFabricUpToSentKgExactly() {
-        // given: 900 kg kumaş girilmiş
-        BigDecimal received = new BigDecimal("900.000");
-
-        // when / then
-        assertThatCode(() -> toInvoice.requireFabricWithinSent(received, new BigDecimal("100.000")))
-                .doesNotThrowAnyException();
-        assertThatThrownBy(() -> toInvoice.requireFabricWithinSent(received, new BigDecimal("100.001")))
-                .isInstanceOf(FabricExceedsSentYarnException.class);
     }
 
     @Test

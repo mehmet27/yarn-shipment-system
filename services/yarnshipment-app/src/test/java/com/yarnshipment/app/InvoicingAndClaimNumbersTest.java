@@ -51,10 +51,9 @@ class InvoicingAndClaimNumbersTest {
         Yarn viskon = factory.newYarn("36/1 Viskon");
         Yarn poly = factory.newYarn("75 Denye Poly");
         UUID shipmentId = factory.sendYarn(party, "0.0400", List.of(viskon.kg("600.000"), poly.kg("400.000")));
-        factory.receiveFabric(shipmentId, "900.000", Map.of()).ok();
-        assertThat(factory.balanceOf(party))
-                .containsEntry(viskon.name(), "60.000")
-                .containsEntry(poly.name(), "40.000");
+        Map<String, String> mix = Factory.ratios(viskon, "60", poly, "40");
+        factory.receiveFabric(shipmentId, "900.000", mix).ok();
+        assertThat(factory.balanceOf(party)).containsEntry(poly.name(), "40.000");
 
         // when: ilk fatura yalnız P ipliğinden 20 kg; aynı fatura numarası bir kez daha gönderilir
         String firstNo = FactoryHttp.unique("FTR");
@@ -74,14 +73,12 @@ class InvoicingAndClaimNumbersTest {
         assertThat(factory.toInvoiceRow(shipmentId))
                 .hasValueSatisfying(
                         row -> assertThat(row.required("shortageKg").asString()).isEqualTo("40.000"));
-
         // when: ikinci fatura Q 15,5 + P 4,5 = 20 kg
         Map<String, String> second =
                 Map.of(poly.id().toString(), "15.500", viskon.id().toString(), "4.500");
         JsonNode afterSecond = factory.invoice(shipmentId, FactoryHttp.unique("FTR"), second)
                 .ok()
                 .body();
-
         // then: kalan 20; P 35,5, Q 24,5; fire = (1000 - 900 - 40) / 1000 = %6
         assertInvoicing(afterSecond, "TO_INVOICE", "40.000", "20.000", "6.00");
         assertThat(factory.balanceOf(party))
@@ -100,18 +97,18 @@ class InvoicingAndClaimNumbersTest {
         assertInvoicedReadSides(party, closed, Map.of(viskon.name(), "23.500", poly.name(), "16.500"));
     }
 
-    /** Kalandan fazla fatura ve gönderilen ipliği aşan kumaş reddedilir; fire dosyasında hiçbir sayı değişmez. */
+    /** Kalandan fazla fatura ve fasoncudaki ipliği aşan kumaş reddedilir; fire dosyasında hiçbir sayı değişmez. */
     private void assertOverInvoicingAndExcessFabricRejected(UUID shipmentId, Yarn viskon) {
         // when: kalandan fazla fatura ve gönderilen ipliği aşan kumaş reddedilir (900 + 40 + 60,001 > 1000)
         Reply tooMuch = factory.invoice(
                 shipmentId, FactoryHttp.unique("FTR"), Map.of(viskon.id().toString(), "20.001"));
-        Reply tooMuchFabric = factory.receiveFabric(shipmentId, "60.001", Map.of());
+        Reply tooMuchFabric = factory.receiveFabric(shipmentId, "60.001", Map.of(viskon.name(), "100"));
 
         // then: hiçbir sayı değişmez
         assertThat(tooMuch.status()).isEqualTo(HttpStatus.CONFLICT.value());
         assertThat(tooMuch.text("reason")).isEqualTo("INVOICE_EXCEEDS_REMAINING");
         assertThat(tooMuchFabric.status()).isEqualTo(HttpStatus.CONFLICT.value());
-        assertThat(tooMuchFabric.text("code")).isEqualTo("FABRIC_EXCEEDS_SENT_YARN");
+        assertThat(tooMuchFabric.text("code")).isEqualTo("FABRIC_YARN_SHORT");
         assertInvoicing(factory.fireFile(shipmentId), "TO_INVOICE", "40.000", "20.000", "6.00");
     }
 
@@ -122,7 +119,7 @@ class InvoicingAndClaimNumbersTest {
         Party party = factory.newSubcontractor("Dokuma");
         Yarn yarn = factory.newYarn("30/1 Karde");
         UUID shipmentId = factory.sendYarn(party, "0.0400", List.of(yarn.kg("1000.000")));
-        factory.receiveFabric(shipmentId, "964.000", Map.of()).ok();
+        factory.receiveFabric(shipmentId, "964.000", Map.of(yarn.name(), "100")).ok();
         Factory.assertFireFile(factory.fireFile(shipmentId), "TO_INVOICE", "1000.000", "960.000", "0.000", "3.60");
 
         // when: 50 kg'lık itiraz haksız bulunur
@@ -181,7 +178,7 @@ class InvoicingAndClaimNumbersTest {
         Party party = factory.newSubcontractor("Dokuma");
         Yarn yarn = factory.newYarn("30/1 Karde");
         UUID shipmentId = factory.sendYarn(party, "0.0400", List.of(yarn.kg("1000.000")));
-        factory.receiveFabric(shipmentId, "964.000", Map.of()).ok();
+        factory.receiveFabric(shipmentId, "964.000", Map.of(yarn.name(), "100")).ok();
         factory.decideClaim(factory.openQualityClaim(shipmentId, "100.000"), JUSTIFIED)
                 .ok();
         factory.invoice(shipmentId, FactoryHttp.unique("FTR"), Map.of()).ok();

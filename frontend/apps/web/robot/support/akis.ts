@@ -246,7 +246,7 @@ export async function tamamlanmisSevkiyat(
   return id;
 }
 
-/** Fasoncu kalite kumaş formunu açıp doldurur (iplik satırı eklemez); kaydetmez. */
+/** Fasoncu kalite kumaş formunu açıp doldurur (iplik oranı yazmaz, `oranYaz` ayrı); kaydetmez. */
 export async function kumasFormuDoldur(
   fasonKalite: Robot,
   id: string,
@@ -262,9 +262,29 @@ export async function kumasFormuDoldur(
 }
 
 /**
- * Fasoncu kalite, fasoncudan gelen kumaşı girer (müdür kumaş giremez). Kayıt sonradan değiştirilemediği için
- * "Kumaş girişini kaydet" önce özet ve "Evet, kaydet" sorar; `onayla` false ise onay verilmez (ör. kilo kalanı aşıyorsa
- * onay sorusu hiç çıkmaz).
+ * Kumaşın iplik karışımını yazar: `oranlar` iplik adı → yüzde (ör. `{ [iplik]: '60', [baskaIplik]: '40' }`); verilmezse
+ * fasoncudaki ilk ipliğe %100 yazılır. Oran kutusunun etiketi "Oran: <iplik adı>"dır (partisi varsa adın yanında).
+ */
+export async function oranYaz(fasonKalite: Robot, oranlar?: Record<string, string>) {
+  const sayfa = fasonKalite.sayfa;
+  if (oranlar === undefined) {
+    await sayfa
+      .getByLabel(/^Oran: /)
+      .first()
+      .fill('100');
+    return;
+  }
+  for (const [iplik, oran] of Object.entries(oranlar)) {
+    await sayfa
+      .getByLabel(new RegExp(`^Oran: ${iplik.replace(/[/\\^$*+?.()|[\]{}]/g, '\\$&')}`))
+      .fill(oran);
+  }
+}
+
+/**
+ * Fasoncu kalite, fasoncudan gelen kumaşı girer (müdür kumaş giremez). Önce iplik oranları yazılır, "Kontrol et"
+ * hangi sevkiyattan kaç kilo düşeceğini gösterir; kayıt sonradan değiştirilemediği için "Evet, kaydet" sorulur.
+ * `onayla` false ise kontrol yapılır ama onay verilmez (ör. fasoncuda iplik yetmiyorsa onay sorusu hiç çıkmaz).
  */
 export async function kumasGir(
   fasonKalite: Robot,
@@ -272,9 +292,11 @@ export async function kumasGir(
   kg: string,
   irsaliyeNo: string,
   onayla = true,
+  oranlar?: Record<string, string>,
 ) {
   await kumasFormuDoldur(fasonKalite, id, kg, irsaliyeNo);
-  await fasonKalite.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
+  await oranYaz(fasonKalite, oranlar);
+  await fasonKalite.sayfa.getByRole('button', { name: 'Kontrol et' }).click();
   if (!onayla) {
     await fasonKalite.sayfa.waitForTimeout(1000);
     return;

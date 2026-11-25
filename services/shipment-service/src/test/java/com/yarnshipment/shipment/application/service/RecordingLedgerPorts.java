@@ -3,6 +3,7 @@ package com.yarnshipment.shipment.application.service;
 import com.yarnshipment.shipment.application.port.in.balance.BalanceRow;
 import com.yarnshipment.shipment.application.port.in.balance.ListMovementsQuery;
 import com.yarnshipment.shipment.application.port.in.balance.MovementPage;
+import com.yarnshipment.shipment.application.port.in.fabric.FabricDrawEntry;
 import com.yarnshipment.shipment.application.port.out.ledger.BalanceQueryPort;
 import com.yarnshipment.shipment.application.port.out.ledger.DispatchLedgerPort;
 import com.yarnshipment.shipment.application.port.out.ledger.FabricReceiptPort;
@@ -69,5 +70,10 @@ final class RecordingLedgerPorts implements BalanceQueryPort, DispatchLedgerPort
     @Override
     public void save(FabricReceipt receipt) {
         receipts.add(receipt);
+    }
+
+    @Override
+    public List<FabricDrawEntry> findDrawsFrom(UUID sourceShipmentId) {
+        return List.of();
     }
 }

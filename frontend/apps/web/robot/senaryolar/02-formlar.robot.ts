@@ -6,6 +6,7 @@ import {
   kaliteSinifiTanimla,
   kumasFormuDoldur,
   kumasGir,
+  oranYaz,
   sevkiyatIpligiSec,
   tamamlanmisSevkiyat,
   tedarikciTanimla,
@@ -139,7 +140,7 @@ test('Formlar: kalite kumaş girişi stokta olmayan iplikle üretimi reddeder', 
   }
 });
 
-test('Formlar: kumaş girişi ve kalite itirazı kilo sınırını aşınca satırda uyarır', async ({
+test('Formlar: kumaş girişi oran ve iplik yetersizliğinde, kalite itirazı kilo sınırını aşınca uyarır', async ({
   giris,
 }) => {
   const depo = await giris('depo');
@@ -149,26 +150,42 @@ test('Formlar: kumaş girişi ve kalite itirazı kilo sınırını aşınca sat�
   for (const r of [depo, mudur, kalite, fasonKalite]) r.beklenen(/4\d\d (POST|GET) /);
   const id = await tamamlanmisSevkiyat({ depo, mudur }, damga(), '100', '3');
 
-  await fasonKalite.adim('kumaş girişi: iplik satırı seçilmeden kaydedilemez', async () => {
+  await fasonKalite.adim('kumaş girişi: oran yazılmadan kontrol edilemez', async () => {
     await kumasFormuDoldur(fasonKalite, id, '50', `${damga()}-K`);
-    await fasonKalite.sayfa.getByRole('button', { name: 'İplik satırı ekle' }).click();
-    await fasonKalite.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
-    await nedenliMesajVar(fasonKalite, 'kumaş girişi boş iplik satırı');
+    await fasonKalite.sayfa.getByRole('button', { name: 'Kontrol et' }).click();
+    await nedenliMesajVar(fasonKalite, 'kumaş girişi oransız');
     fasonKalite.kontrol(
-      'boş iplik satırında onay sorusu çıkmamalı',
+      'oransız kontrolde onay sorusu çıkmamalı',
+      (await fasonKalite.sayfa.getByRole('button', { name: 'Evet, kaydet' }).count()) === 0,
+    );
+  });
+
+  await fasonKalite.adim('kumaş girişi: oranların toplamı 100 değilse uyarılır', async () => {
+    await fasonKalite.sayfa
+      .getByLabel(/^Oran: /)
+      .first()
+      .fill('60');
+    await expect(fasonKalite.sayfa.getByTestId('fabric-ratio-total')).toHaveText(
+      'Toplam: %60 (tam %100 olmalı)',
+    );
+    await fasonKalite.sayfa.getByRole('button', { name: 'Kontrol et' }).click();
+    await expect(fasonKalite.sayfa.getByText('Oranların toplamı tam %100 olmalı.')).toBeVisible();
+    fasonKalite.kontrol(
+      'toplamı 100 olmayan oranda onay sorusu çıkmamalı',
       (await fasonKalite.sayfa.getByRole('button', { name: 'Evet, kaydet' }).count()) === 0,
     );
   });
 
   await fasonKalite.adim(
-    'kumaş girişi: gönderilen iplikten fazla kilo satırda uyarılır',
+    'kumaş girişi: fasoncudaki ipliği aşan kilo için eksik kilo yazılır, kaydedilemez',
     async () => {
       await kumasFormuDoldur(fasonKalite, id, '101', `${damga()}-K`);
-      await fasonKalite.sayfa.getByRole('button', { name: 'Kumaş girişini kaydet' }).click();
-      await nedenliMesajVar(fasonKalite, 'kumaş girişi 101 kg');
-      await expect(fasonKalite.sayfa.getByText(/ipliğin kalanından fazla kumaş/)).toBeVisible();
+      await oranYaz(fasonKalite);
+      await fasonKalite.sayfa.getByRole('button', { name: 'Kontrol et' }).click();
+      await expect(fasonKalite.sayfa.getByText('Fasoncuda yeterli iplik yok')).toBeVisible();
+      await expect(fasonKalite.sayfa.getByText(/1 kg eksik/)).toBeVisible();
       fasonKalite.kontrol(
-        'aşan kiloda onay sorusu çıkmamalı',
+        'iplik yetmeyince onay sorusu çıkmamalı',
         (await fasonKalite.sayfa.getByRole('button', { name: 'Evet, kaydet' }).count()) === 0,
       );
     },

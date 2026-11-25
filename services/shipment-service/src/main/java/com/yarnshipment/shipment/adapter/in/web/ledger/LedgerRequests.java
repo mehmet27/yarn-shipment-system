@@ -2,6 +2,7 @@ package com.yarnshipment.shipment.adapter.in.web.ledger;
 
 import com.yarnshipment.shipment.domain.balance.InvalidLedgerInputException;
 import com.yarnshipment.shipment.domain.balance.Kilograms;
+import com.yarnshipment.shipment.domain.fabric.FabricRecipe;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -21,9 +22,25 @@ final class LedgerRequests {
             @Nullable Integer rollCount,
             @Nullable String waybillNo,
             @Nullable Instant receivedAt,
-            @Nullable List<YarnShareRequest> yarns) {}
+            @Nullable List<YarnRatioRequest> yarns) {}
 
-    /** Kumaşın tükettiği iplik. */
+    /** Kumaş girişinin düşüm önizlemesi gövdesi. */
+    record FabricPreviewRequest(
+            @Nullable String netKg, @Nullable List<YarnRatioRequest> yarns) {}
+
+    /** Kumaşın bir ipliğe yazılan oranı; oran yüzdedir ("33.5"), en çok iki ondalık. */
+    record YarnRatioRequest(
+            @Nullable String yarnType,
+            @Nullable UUID lotId,
+            @Nullable String ratioPct) {}
+
+    /** Kumaş reçetesi gövdesi; {@code active} yalnız değiştirirken okunur. */
+    record FabricRecipeRequest(
+            @Nullable String fabricType,
+            @Nullable List<YarnRatioRequest> yarns,
+            @Nullable Boolean active) {}
+
+    /** Fatura satırındaki iplik ve kilosu. */
     record YarnShareRequest(
             @Nullable String yarnType, @Nullable String netKg) {}
 
@@ -68,6 +85,17 @@ final class LedgerRequests {
             @Nullable String note,
             @Nullable List<YarnShareRequest> lines) {}
 
+    /** Karışım satırları; oran toplamı ve tekrar denetimi {@code FabricRecipe} kurulurken yapılır. */
+    static List<FabricRecipe.Line> recipeLines(@Nullable List<YarnRatioRequest> requests) {
+        if (requests == null) {
+            throw new InvalidLedgerInputException("yarns");
+        }
+        return requests.stream()
+                .map(request -> new FabricRecipe.Line(
+                        required(request.yarnType(), "yarns.yarnType"), ratioPct(request.ratioPct(), "yarns.ratioPct")))
+                .toList();
+    }
+
     static String required(@Nullable String value, String field) {
         if (value == null || value.isBlank()) {
             throw new InvalidLedgerInputException(field);
@@ -91,6 +119,14 @@ final class LedgerRequests {
 
     static BigDecimal kg(@Nullable String value, String field) {
         return Kilograms.parsePositive(required(value, field), field);
+    }
+
+    static BigDecimal ratioPct(@Nullable String value, String field) {
+        try {
+            return new BigDecimal(required(value, field).strip());
+        } catch (NumberFormatException e) {
+            throw new InvalidLedgerInputException(field, e);
+        }
     }
 
     static BigDecimal rate(@Nullable String value) {

@@ -11,18 +11,19 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Sevkiyata gelen kumaş (analiz 5.8). Tükettiği iplik cinslerinin toplamı kumaş net kg'sine eşittir; kayıt yalnız
- * eklenir.
+ * Bir sevkiyat üzerinden girilen kumaş (analiz 5.8). Kumaş tek iplikten ve tek sevkiyattan olmaz: tükettiği iplikler
+ * oranlarıyla yazılır, oranların toplamı 100'dür ve iplikler fasoncunun sevkiyatlarından düşer. Tükettiği iplik
+ * kilolarının toplamı kumaş net kg'sine eşittir; kayıt yalnız eklenir.
  *
  * @param id kayıt
- * @param shipmentId sevkiyat
+ * @param shipmentId kumaşın girildiği sevkiyat
  * @param subcontractorId fasoncu
  * @param fabricType kumaş cinsi
  * @param netKg kumaş net kg
  * @param rollCount top/rulo sayısı, isteğe bağlı
  * @param waybillNo kumaş irsaliye numarası
  * @param receivedAt kumaşın geldiği zaman
- * @param yarns tükettiği iplikler
+ * @param yarns tükettiği iplikler, oranı ve düşüldüğü sevkiyatlarla
  * @param createdBy kaydeden kullanıcı
  */
 public record FabricReceipt(
@@ -34,7 +35,7 @@ public record FabricReceipt(
         @Nullable Integer rollCount,
         String waybillNo,
         Instant receivedAt,
-        List<YarnShare> yarns,
+        List<FabricYarn> yarns,
         UUID createdBy) {
 
     public static final int MAX_TEXT_LENGTH = 128;
@@ -56,7 +57,7 @@ public record FabricReceipt(
             throw new InvalidLedgerInputException("rollCount");
         }
         yarns = List.copyOf(yarns);
-        BigDecimal yarnTotal = yarns.stream().map(YarnShare::netKg).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal yarnTotal = yarns.stream().map(FabricYarn::netKg).reduce(BigDecimal.ZERO, BigDecimal::add);
         if (yarns.isEmpty() || yarnTotal.compareTo(netKg) != 0) {
             throw new InvalidLedgerInputException("yarns");
         }

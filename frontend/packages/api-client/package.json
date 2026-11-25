@@ -9,6 +9,7 @@
     "./audit": "./src/audit.ts",
     "./branding": "./src/branding.ts",
     "./central-stock": "./src/centralStock.ts",
+    "./fabric": "./src/fabric.ts",
     "./role-permissions": "./src/rolePermissions.ts",
     "./settlements": "./src/settlements.ts"
   },

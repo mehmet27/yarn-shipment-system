@@ -16,7 +16,7 @@ PostgreSQL 17, tek veritabanı `yarnshipment`, tek uygulama kullanıcısı `yarn
 
 | Şema | Tablolar |
 | --- | --- |
-| `shipment` (26) | `shipment`, `shipment_line`, `shipment_bag`, `shipment_status_history`, `weighing`, `weight_check`, `md_site`, `md_subcontractor`, `md_driver`, `md_vehicle`, `md_product`, `md_quality_grade`, `md_production_lot`, `md_yarn_supplier`, `balance_movement`, `fire_settlement`, `fire_rate_change`, `fire_invoice`, `fire_claim`, `fabric_lot`, `yarn_return`, `central_stock_movement`, `staff_work_area`, `app_setting`, `app_user`, `role_permission` |
+| `shipment` (28) | `shipment`, `shipment_line`, `shipment_bag`, `shipment_status_history`, `weighing`, `weight_check`, `md_site`, `md_subcontractor`, `md_driver`, `md_vehicle`, `md_product`, `md_quality_grade`, `md_production_lot`, `md_yarn_supplier`, `balance_movement`, `fire_settlement`, `fire_rate_change`, `fire_invoice`, `fire_claim`, `fabric_lot`, `fabric_yarn_draw`, `md_fabric_recipe`, `yarn_return`, `central_stock_movement`, `staff_work_area`, `app_setting`, `app_user`, `role_permission` |
 | `discrepancy` (6) | `discrepancy`, `discrepancy_activity`, `inspection`, `quality_claim`, `shipment_watch`, `fabric_receipt_watch` |
 | `evidence` (3) | `evidence_file`, `evidence_duplicate`, `upload_intent` |
 | `audit` (3) | `audit_log`, `audit_chain_head`, `audit_chain_check` |
@@ -349,6 +349,7 @@ Servisleri yeniden başlatın. (`reporting_db` Kafka olaylarından yeniden üret
 | Kullanılmayan ortak tablolar düştü | `*/V202611161000__drop_unused_common_tables.sql` | `reporting.audit_local`, `reporting.outbox_event`, `shipment|evidence|discrepancy.processed_event` |
 | Okuma modelleri canlı görünüme döndü | `reporting/V202611161100__read_models_as_live_views.sql`, `V202611171000`, `V202611171010` | `shipment_view`, `discrepancy_view`, `balance_movement_view`, `fire_file_view` tablodan görünüme; `processed_event` düştü |
 | Marka ayarı birleşti, kumaş/üretim birleşti | `shipment/V202611161100`, `V202611161110`, `V202611161120` | `md_branding` → `app_setting`; `fabric_receipt_yarn` → jsonb; `central_production` → `fabric_lot` |
+| Kumaş iplik karışımı | `shipment/V202611251000__fabric_yarn_draw.sql`, `shipment/V202611251010__fabric_recipe.sql`, `reporting/V202611251020__fire_file_view_from_yarn_draw.sql` | Kumaş tek iplikten yapılmaz: kumaşa yazılan iplik oranları `fabric_lot.yarns` içindedir; her iplikten hangi sevkiyattan kaç kg düşüldüğü yalnız-ekleme `fabric_yarn_draw` tablosundadır (`source_shipment_id` = ipliğin düşüldüğü sevkiyat; `position` düşüm sırası). Fire dosyasındaki gelen kumaş (K) bu düşümlerin sevkiyat başına toplamıdır (`fire_file_view` bu tablodan okur). `md_fabric_recipe`: kumaş cinsi başına varsayılan karışım (cins büyük/küçük harf fark etmeden tekil; pasife alınır, silinmez). Eski kayıt dönüştürülmedi (test verisi); göç yalnız eski `fabric_lot` satırlarını düşüm tablosuna yazar |
 | Outbox düştü | `*/V202611171000__drop_outbox_event.sql` | Yayımlanmamış satır varsa düşürme durur (eski sürümle boşaltılmalı) |
 | Ortak tablolar `platform` şemasına | `platform/V202611181000`, `shipment|discrepancy|evidence/V202611181000__use_platform_schema.sql` | `idempotency_record` 3 → 1, `audit_local` 3 → 1 |
 | Audit rolleri | `audit/V202611181000__audit_roles.sql` | `audit_writer`, `audit_reader` |

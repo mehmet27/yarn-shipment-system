@@ -555,6 +555,7 @@
       "lot": "Parti no (isteğe bağlı)",
       "netKg": "Net kg",
       "fabricType": "Kumaş cinsi",
+      "yarnOutsideRecipe": "Seçili iplik bu kumaşın tanımlı karışımında yok.",
       "lycra": "LYC (ör. 30 denye)",
       "widthType": "Tüp / May / Açık en",
       "widthTypes": {

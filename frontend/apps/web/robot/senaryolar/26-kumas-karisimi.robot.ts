@@ -1,4 +1,9 @@
-import { iplikTanimla, kumasFormuDoldur, tamamlanmisSevkiyat } from '../support/akis';
+import {
+  sevkiyatIpligiSec,
+  iplikTanimla,
+  kumasFormuDoldur,
+  tamamlanmisSevkiyat,
+} from '../support/akis';
 import { expect, test } from '../support/robot';
 import { damga } from '../support/yardimci';
 
@@ -72,6 +77,18 @@ test('Kumaş karışımı: tanımla, kumaş girişinde oranları doldur, sevkiya
       await expect(kalite.sayfa.getByLabel('Oran (%) 1')).toHaveValue('');
     },
   );
+
+  await mudur.adim('yeni sevkiyat: kumaş cinsi tanımlı karışımlardan seçilir', async () => {
+    await mudur.sayfa.goto('/panel/sevkiyat/yeni');
+    await sevkiyatIpligiSec(mudur.sayfa, iplik);
+    await mudur.sayfa.getByRole('tab', { name: /Sipariş bilgileri/ }).click();
+    await mudur.sayfa.getByRole('combobox', { name: 'Kumaş cinsi' }).click();
+    await mudur.sayfa.getByRole('option', { name: kumas, exact: true }).click();
+    await expect(mudur.sayfa.getByRole('combobox', { name: 'Kumaş cinsi' })).toHaveValue(kumas);
+    await expect(
+      mudur.sayfa.getByText('Seçili iplik bu kumaşın tanımlı karışımında yok.'),
+    ).toHaveCount(0);
+  });
 
   await mudur.adim('sevkiyat dosyası: üretilen kumaş iplikten görünür', async () => {
     await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);

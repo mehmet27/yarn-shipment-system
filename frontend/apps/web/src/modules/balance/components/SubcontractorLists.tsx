@@ -8,17 +8,19 @@ export function SubcontractorLists({ overview }: { overview: SubcontractorOvervi
   const { t } = useTranslation();
   return (
     <>
-      <ListCard
-        title={t('subcontractorPage.inTransit.title')}
-        icon="shipments"
-        empty={t('subcontractorPage.inTransit.empty')}
-        rows={overview.inTransit.map((shipment) => ({
-          to: `/panel/sevkiyat/${shipment.shipmentId}`,
-          shipmentNo: shipment.shipmentNo,
-          description: [shipment.driverName, shipment.plateNo].filter(Boolean).join(' · '),
-          color: 'yellow',
-        }))}
-      />
+      {overview.canSeeShipments && (
+        <ListCard
+          title={t('subcontractorPage.inTransit.title')}
+          icon="shipments"
+          empty={t('subcontractorPage.inTransit.empty')}
+          rows={overview.inTransit.map((shipment) => ({
+            to: `/panel/sevkiyat/${shipment.shipmentId}`,
+            shipmentNo: shipment.shipmentNo,
+            description: [shipment.driverName, shipment.plateNo].filter(Boolean).join(' · '),
+            color: 'yellow',
+          }))}
+        />
+      )}
       <ListCard
         title={t('subcontractorPage.awaitingFabric.title')}
         icon="lots"

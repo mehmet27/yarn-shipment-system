@@ -57,6 +57,25 @@ describe('Fasoncu sayfası', () => {
     expect(within(table).queryByRole('link')).not.toBeInTheDocument();
   });
 
+  it('sevkiyat göremeyen genel müdür için sevkiyat listesi sorulmaz ve o bölümler görünmez', async () => {
+    server.use(...createHandlers('GENERAL_MANAGER'));
+    let shipmentRequests = 0;
+    server.use(
+      http.get('/api/v1/shipments', () => {
+        shipmentRequests += 1;
+        return new HttpResponse(null, { status: 403 });
+      }),
+    );
+    renderApp('/panel/bakiye/fasoncu/sub-0');
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Aydın Örme' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByRole('table', { name: 'Fasoncu bakiyesi' })).toBeInTheDocument();
+    expect(screen.queryByTestId('sub-in-transit')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sub-open-discrepancies')).not.toBeInTheDocument();
+    expect(shipmentRequests).toBe(0);
+  });
+
   it('bakiye yetkisi olmayan rol sayfayı göremez', async () => {
     server.use(...createHandlers('ADMIN'));
     renderApp('/panel/bakiye/fasoncu/sub-0');

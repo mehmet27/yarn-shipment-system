@@ -6,12 +6,14 @@ import { FireClosedNote } from './FireClosedNote';
 import { FireFigures } from './FireFigures';
 import { FireOpenActions } from './FireOpenActions';
 import { useFireSettlement } from './hooks';
+import { useSettlementAccess } from './useSettlementAccess';
 import { YarnUsedForFabric } from './YarnUsedForFabric';
 
 /** Fire dosyası kartı; işlemler izinle açılır, kapanmış dosya salt okunurdur. */
 export function FireFileTab({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
   const query = useFireSettlement(shipmentId);
+  const { hasFabricDraws } = useSettlementAccess();
   if (query.isError && toProblem(query.error).code === 'FIRE_SETTLEMENT_NOT_FOUND') {
     return <Text c="dimmed">{t('settlement.fire.notOpened')}</Text>;
   }
@@ -36,7 +38,7 @@ export function FireFileTab({ shipmentId }: { shipmentId: string }) {
               )}
             </Stack>
           </SectionCard>
-          <YarnUsedForFabric shipmentId={shipmentId} />
+          {hasFabricDraws && <YarnUsedForFabric shipmentId={shipmentId} />}
         </Stack>
       )}
     </QueryState>

@@ -419,7 +419,8 @@ test('Uyuşmazlık: itiraz ve karar', async ({ giris }) => {
       );
       await expect(kart.getByRole('link', { name: 'Tümünü gör' })).toHaveAttribute(
         'href',
-        '/panel/uyusmazliklar',
+        // Sayfa numarası, hatırlanan süzgeç yerine tüm listenin açılmasını sağlar.
+        '/panel/uyusmazliklar?sayfa=1',
       );
       await kart.locator('a[href*="/panel/uyusmazliklar/"]').first().click();
       await expect(mudur.sayfa.getByRole('heading', { name: 'Karar ver' })).toBeVisible();

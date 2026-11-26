@@ -50,6 +50,14 @@ export async function sayfayiGez(
   const sonuc: Kapsam[] = [];
   const rota = rotaTipi(yol);
   const ac = async () => {
+    // Hatırlanan sekme ve süzgeçler silinir: bir listede seçilen süzgeç sonraki açılışta geri gelip sayfa
+    // düğmelerini ortadan kaldırmasın.
+    await sayfa
+      .evaluate(() => {
+        for (const anahtar of Object.keys(localStorage))
+          if (anahtar.startsWith('iplik.view.')) localStorage.removeItem(anahtar);
+      })
+      .catch(() => undefined);
     // Gezgin tek sekmede yüzlerce kez sayfa açar; veri çoğaldıkça (tam koşu) tarayıcı kaynak sınırına takılıp
     // ERR_INSUFFICIENT_RESOURCES verebilir. Sekme boşaltılıp kısa bir aradan sonra yeniden denenir.
     for (let deneme = 0; ; deneme += 1) {

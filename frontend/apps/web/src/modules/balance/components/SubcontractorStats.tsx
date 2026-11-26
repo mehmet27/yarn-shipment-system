@@ -25,11 +25,13 @@ export function SubcontractorStats({ overview }: { overview: SubcontractorOvervi
           value={balances.data === undefined ? '—' : formatSignedKg(balances.data.totalKg)}
           testId="sub-balance"
         />
-        <StatCell
-          label={t('subcontractorPage.stat.inTransit')}
-          value={inTransit.length}
-          testId="sub-in-transit"
-        />
+        {overview.canSeeShipments && (
+          <StatCell
+            label={t('subcontractorPage.stat.inTransit')}
+            value={inTransit.length}
+            testId="sub-in-transit"
+          />
+        )}
         <StatCell
           label={t('subcontractorPage.stat.awaitingFabric')}
           value={formatKgText(sumKg(awaitingFabric.map((row) => row.expectedFabricKg)))}

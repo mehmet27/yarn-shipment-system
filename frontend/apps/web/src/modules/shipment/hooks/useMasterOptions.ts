@@ -11,6 +11,8 @@ import { useQuery } from '@tanstack/react-query';
 
 export const MASTER_DATA_PATH = '/api/v1/master-data';
 const OPTION_PAGE_SIZE = 20;
+/** Partiler ipliğe göre ekranda süzülür; süzmeden önce daha geniş bir sayfa istenir. */
+const LOT_FILTER_PAGE_SIZE = 100;
 /** Merkez şoförlerinin grup başlığı anahtarı; seçici bunu çevirip gösterir. */
 export const CENTRAL_GROUP = '__central__';
 
@@ -20,11 +22,21 @@ export type MasterKind =
 export type MasterOption = { value: string; label: string; group?: string };
 
 type Search = { q?: string; size: number };
+/** Listeyi daraltan seçim: şoförde fasoncu, partide iplik. */
+export type MasterScope = { subcontractorId?: string | undefined; productId?: string | undefined };
+
+/** İplik verildiyse yalnızca o ipliğin partileri. */
+async function lotOptions(search: Search, productId: string | undefined): Promise<MasterOption[]> {
+  const query = productId === undefined ? search : { ...search, size: LOT_FILTER_PAGE_SIZE };
+  return (await listLots(query)).items
+    .filter((row) => productId === undefined || row.productId === productId)
+    .map((row) => ({ value: row.id, label: row.lotNo }));
+}
 
 async function fetchOptions(
   kind: MasterKind,
   search: Search,
-  subcontractorId: string | undefined,
+  { subcontractorId, productId }: MasterScope,
 ): Promise<MasterOption[]> {
   switch (kind) {
     case 'subcontractor':
@@ -57,7 +69,7 @@ async function fetchOptions(
     case 'product':
       return (await listProducts(search)).items.map((row) => ({ value: row.id, label: row.name }));
     case 'lot':
-      return (await listLots(search)).items.map((row) => ({ value: row.id, label: row.lotNo }));
+      return lotOptions(search, productId);
     case 'supplier':
       return (await listYarnSuppliers(search)).items.map((row) => ({
         value: row.id,
@@ -72,11 +84,11 @@ async function fetchOptions(
 }
 
 /** Seçici listeleri sunucuda aranır (`q`); mobilde tüm listeyi indirmek yerine ilk sayfa gelir. */
-export function useMasterOptions(kind: MasterKind, q: string, subcontractorId?: string) {
+export function useMasterOptions(kind: MasterKind, q: string, scope: MasterScope = {}) {
   return useQuery({
-    queryKey: [MASTER_DATA_PATH, kind, q, subcontractorId],
+    queryKey: [MASTER_DATA_PATH, kind, q, scope.subcontractorId, scope.productId],
     queryFn: () =>
-      fetchOptions(kind, { size: OPTION_PAGE_SIZE, ...(q === '' ? {} : { q }) }, subcontractorId),
+      fetchOptions(kind, { size: OPTION_PAGE_SIZE, ...(q === '' ? {} : { q }) }, scope),
     staleTime: Infinity,
   });
 }

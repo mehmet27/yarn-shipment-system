@@ -14,6 +14,8 @@ export type MasterSelectProps = {
   isRequired?: boolean;
   error?: string;
   subcontractorId?: string;
+  /** Parti seçicisinde yalnızca bu ipliğin partileri listelenir. */
+  productId?: string;
 };
 
 type Item = { value: string; label: string };
@@ -59,11 +61,12 @@ export function MasterSelect({
   isRequired = false,
   error,
   subcontractorId,
+  productId,
 }: MasterSelectProps) {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [q] = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
-  const query = useMasterOptions(kind, q, subcontractorId);
+  const query = useMasterOptions(kind, q, { subcontractorId, productId });
   const fetched = query.data ?? [];
   const options =
     value === undefined || fetched.some((option) => option.value === value.value)

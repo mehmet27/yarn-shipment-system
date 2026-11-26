@@ -1,6 +1,11 @@
-import { iplikTanimla, kumasFormuDoldur, tamamlanmisSevkiyat } from '../support/akis';
+import {
+  sevkiyatIpligiSec,
+  iplikTanimla,
+  kumasFormuDoldur,
+  tamamlanmisSevkiyat,
+} from '../support/akis';
 import { expect, test } from '../support/robot';
-import { damga, sec } from '../support/yardimci';
+import { damga } from '../support/yardimci';
 
 /**
  * Kumaş karışımı: müdür Tanımlar'da kumaş cinsi için iplik karışımı tanımlar; kalite kumaş girerken cinsi yazınca
@@ -13,6 +18,7 @@ test('Kumaş karışımı: tanımla, kumaş girişinde oranları doldur, sevkiya
   const depo = await giris('depo');
   const mudur = await giris('mudur');
   const fasonKalite = await giris('fason-kalite');
+  const kalite = await giris('kalite');
   const iplik = damga();
   const kumas = `Karışım-${iplik}`;
 
@@ -26,7 +32,8 @@ test('Kumaş karışımı: tanımla, kumaş girişinde oranları doldur, sevkiya
     await mudur.sayfa.getByRole('tab', { name: 'Kumaş karışımı', exact: true }).click();
     await mudur.sayfa.getByRole('button', { name: 'Karışım ekle' }).click();
     await mudur.sayfa.getByLabel(/Kumaş cinsi/).fill(kumas);
-    await sec(mudur.sayfa, 'İplik', iplik);
+    await mudur.sayfa.getByRole('combobox', { name: 'İplik', exact: true }).click();
+    await mudur.sayfa.getByRole('option', { name: iplik, exact: true }).click();
     await mudur.sayfa.getByLabel('Oran (%)').fill('60');
     await expect(mudur.sayfa.getByTestId('recipe-total')).toHaveText(
       'Toplam: %60 (tam %100 olmalı)',
@@ -53,6 +60,35 @@ test('Kumaş karışımı: tanımla, kumaş girişinde oranları doldur, sevkiya
       await expect(fasonKalite.sayfa.getByText('Kumaş girişi kaydedildi.')).toBeVisible();
     },
   );
+
+  await kalite.adim(
+    'merkez kumaş girişi: cins seçilince iplik ve oran kendiliğinden gelir, cins değişince boşalır',
+    async () => {
+      await kalite.sayfa.goto('/panel/merkez-stok');
+      await kalite.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
+      await kalite.sayfa.getByRole('combobox', { name: /^Kumaş cinsi/ }).fill(kumas);
+      await kalite.sayfa.getByLabel(/Toplam kumaş kg/).fill('10');
+      await expect(kalite.sayfa.getByLabel('Oran (%) 1')).toHaveValue('100');
+      await expect(kalite.sayfa.getByTestId('central-ratio-total')).toHaveText(
+        'Oran toplamı: %100',
+      );
+      await expect(kalite.sayfa.getByText(/stoktan .* \(fire dahil\) · stokta/)).toBeVisible();
+      await kalite.sayfa.getByRole('combobox', { name: /^Kumaş cinsi/ }).fill('Tanımsız kumaş');
+      await expect(kalite.sayfa.getByLabel('Oran (%) 1')).toHaveValue('');
+    },
+  );
+
+  await mudur.adim('yeni sevkiyat: kumaş cinsi tanımlı karışımlardan seçilir', async () => {
+    await mudur.sayfa.goto('/panel/sevkiyat/yeni');
+    await sevkiyatIpligiSec(mudur.sayfa, iplik);
+    await mudur.sayfa.getByRole('tab', { name: /Sipariş bilgileri/ }).click();
+    await mudur.sayfa.getByRole('combobox', { name: 'Kumaş cinsi' }).click();
+    await mudur.sayfa.getByRole('option', { name: kumas, exact: true }).click();
+    await expect(mudur.sayfa.getByRole('combobox', { name: 'Kumaş cinsi' })).toHaveValue(kumas);
+    await expect(
+      mudur.sayfa.getByText('Seçili iplik bu kumaşın tanımlı karışımında yok.'),
+    ).toHaveCount(0);
+  });
 
   await mudur.adim('sevkiyat dosyası: üretilen kumaş iplikten görünür', async () => {
     await mudur.sayfa.goto(`/panel/sevkiyat/${id}`);

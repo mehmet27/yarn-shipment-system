@@ -1,10 +1,11 @@
 import { todayIsoDate } from '@iplik/i18n';
-import { act, screen } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
+import { saveMockRecipe } from '@/mocks/settlements';
 import { renderApp } from '@/test/renderApp';
 
 async function pick(label: string, option: string) {
@@ -94,6 +95,46 @@ describe('CreateShipmentPage', () => {
     },
     LONG_FLOW_TIMEOUT_MS,
   );
+
+  it('kumaş cinsi tanımlı karışımdan seçilir; LYC elastandan dolar, karışımda olmayan iplik uyarılır', async () => {
+    saveMockRecipe(undefined, {
+      fabricType: 'Likralı Süprem',
+      yarns: [
+        { yarnType: 'Pamuk 20/1', ratioPct: '95.00' },
+        { yarnType: '30 Denye Elastan', ratioPct: '5.00' },
+      ],
+    });
+    server.use(
+      http.get('/api/v1/master-data/products', ({ request }) => {
+        const q = new URL(request.url).searchParams.get('q') ?? '';
+        const all = [
+          { id: 'prd-ea', code: 'EA-30D', name: '30 Denye Elastan', yarnCount: '30 denye' },
+          { id: 'prd-0', code: 'PES-30-1', name: 'Polyester 30/1' },
+        ];
+        const items = all.filter((p) => p.name.includes(q)).map((p) => ({ ...p, active: true }));
+        return HttpResponse.json({
+          items,
+          page: { number: 0, size: 100, totalElements: items.length, totalPages: 1 },
+        });
+      }),
+      ...createHandlers('MANAGER'),
+    );
+    renderApp('/panel/sevkiyat/yeni');
+    await pick('İplik cinsi 1', 'Polyester 30/1');
+    await userEvent.click(screen.getByRole('tab', { name: /Sipariş bilgileri/ }));
+    await userEvent.click(screen.getByRole('combobox', { name: 'Kumaş cinsi' }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Likralı Süprem' }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^LYC/)).toHaveValue('30 denye');
+    });
+    expect(
+      screen.getByText('Seçili iplik bu kumaşın tanımlı karışımında yok.'),
+    ).toBeInTheDocument();
+
+    await userEvent.clear(screen.getByRole('combobox', { name: 'Kumaş cinsi' }));
+    expect(screen.getByLabelText(/^LYC/)).toHaveValue('');
+  });
 
   it('fasoncu seçilmeden göndermeyi engeller', async () => {
     server.use(...createHandlers('MANAGER'));

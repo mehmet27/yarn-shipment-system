@@ -2,6 +2,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Select, SimpleGrid, TextInput } from '@iplik/ui';
 import type { RecipeLineDraft } from './createDraft';
 import { priceValid } from './createDraft';
+import { FabricTypeField } from './FabricTypeField';
 
 type OrderFieldGridProps = {
   line: RecipeLineDraft;
@@ -9,7 +10,7 @@ type OrderFieldGridProps = {
   onPatch: (patch: Partial<RecipeLineDraft>) => void;
 };
 
-type TextField = 'fabricType' | 'lycra' | 'yarnLength' | 'pussFine';
+type TextField = 'lycra' | 'yarnLength' | 'pussFine';
 
 /** Sipariş formu alanları: kumaş cinsi, LYC, en türü, iplik uzunluğu, puss-fine, birim fiyat. */
 export function OrderFieldGrid({ line, showErrors, onPatch }: OrderFieldGridProps) {
@@ -26,7 +27,7 @@ export function OrderFieldGrid({ line, showErrors, onPatch }: OrderFieldGridProp
   );
   return (
     <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
-      {text('fabricType')}
+      <FabricTypeField line={line} onPatch={onPatch} />
       {text('lycra')}
       <Select
         label={t('create.recipe.widthType')}

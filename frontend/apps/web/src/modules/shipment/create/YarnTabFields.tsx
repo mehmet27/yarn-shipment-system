@@ -11,7 +11,7 @@ type YarnTabFieldsProps = {
   onPatch: (patch: Partial<RecipeLineDraft>) => void;
 };
 
-/** Satırın İplik sekmesi: cins (Tanımlar'dan seçilir), lot ve net kg. */
+/** Satırın İplik sekmesi: cins (Tanımlar'dan seçilir), o ipliğin partisi ve net kg. */
 export function YarnTabFields({ line, index, error, onPatch }: YarnTabFieldsProps) {
   const { t } = useTranslation();
   return (
@@ -21,6 +21,7 @@ export function YarnTabFields({ line, index, error, onPatch }: YarnTabFieldsProp
         kind="lot"
         label={t('create.recipe.lot')}
         value={line.lot}
+        {...(line.yarn === undefined ? {} : { productId: line.yarn.value })}
         onChange={(lot) => {
           onPatch({ lot });
         }}

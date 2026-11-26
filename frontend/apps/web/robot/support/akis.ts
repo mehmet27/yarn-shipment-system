@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { expect } from './robot';
 import type { Robot } from './robot';
-import { resim, sec, tedarikciSec } from './yardimci';
+import { iplikSec, resim, sec, tedarikciSec } from './yardimci';
 
 /**
  * Müdür Tanımlar > İplikler'e yeni iplik ekler. Merkez stok girişi ve kumaş girişi yalnızca Tanımlar'daki aktif iplikle
@@ -22,6 +22,23 @@ export async function iplikTanimla(mudur: Robot, ad: string) {
   await pencere.getByLabel('İplik adı *', { exact: true }).fill(ad);
   await pencere.getByRole('button', { name: 'Kaydet' }).click();
   await pencere.waitFor({ state: 'hidden' });
+}
+
+/**
+ * Merkez stok > Kumaş girişi formunu doldurur (kaydetmez): cins, toplam kumaş kg, tek satırda iplik ve oranı, fire.
+ * `iplik` boşsa iplik seçilmez ve oran yazılmaz.
+ */
+export async function merkezKumasDoldur(
+  sayfa: Page,
+  k: { kumas: string; iplik: string; kg: string; fire: string; oran?: string },
+) {
+  await sayfa.getByRole('combobox', { name: /^Kumaş cinsi/ }).fill(k.kumas);
+  await sayfa.getByLabel(/Toplam kumaş kg/).fill(k.kg);
+  if (k.iplik !== '') {
+    await iplikSec(sayfa, /İplik cinsi 1/, k.iplik);
+    await sayfa.getByLabel('Oran (%) 1').fill(k.oran ?? '100');
+  }
+  await sayfa.getByLabel(/Fire \(%\)/).fill(k.fire);
 }
 
 /** Müdür Tanımlar > Kalite sınıfları'na yeni sınıf ekler (merkeze girişte yeni parti açarken seçilir). */

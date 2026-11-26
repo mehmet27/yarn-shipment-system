@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { ProductionDraft, YarnLineDraft } from './stockDraft';
 import { emptyProductionDraft } from './stockDraft';
 
-export type ProductionTextField = 'fabricType' | 'firePct' | 'rollCount' | 'waybillNo';
+export type ProductionTextField = 'netKg' | 'firePct' | 'rollCount' | 'waybillNo';
 
 /** Merkez kumaş girişi taslağı: alan ve iplik satırı düzenleme işlemleri. */
 export function useProductionDraft(defaultFirePct: string) {
@@ -23,14 +23,20 @@ export function useProductionDraft(defaultFirePct: string) {
   const addYarn = () => {
     setDraft((current) => ({
       ...current,
-      yarns: [...current.yarns, { product: undefined, netKg: '' }],
+      yarns: [...current.yarns, { product: undefined, ratio: '' }],
     }));
   };
   const removeYarn = (index: number) => {
     setDraft((current) => ({ ...current, yarns: current.yarns.filter((_, i) => i !== index) }));
   };
+  const setFabricType = (fabricType: string) => {
+    setDraft((current) => ({ ...current, fabricType }));
+  };
+  const setYarns = (yarns: YarnLineDraft[]) => {
+    setDraft((current) => ({ ...current, yarns }));
+  };
   const reset = () => {
     setDraft(emptyProductionDraft(defaultFirePct));
   };
-  return { draft, field, setYarn, addYarn, removeYarn, reset };
+  return { draft, field, setFabricType, setYarns, setYarn, addYarn, removeYarn, reset };
 }

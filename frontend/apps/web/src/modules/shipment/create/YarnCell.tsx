@@ -17,7 +17,8 @@ export function YarnCell({ line, index, onPatch }: YarnCellProps) {
       label={`${t('create.recipe.yarnType')} ${String(index + 1)}`}
       value={line.yarn}
       onChange={(yarn) => {
-        onPatch({ yarn });
+        // Parti ipliğe aittir; iplik değişince önceki partinin seçimi kalmaz.
+        onPatch(yarn?.value === line.yarn?.value ? { yarn } : { yarn, lot: undefined });
       }}
     />
   );

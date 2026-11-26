@@ -9,24 +9,34 @@ export type BalanceWarningModalProps = {
   onClose: () => void;
 };
 
+type Translate = ReturnType<typeof useTranslation>['t'];
+
+const titleOf = (warning: PendingWarning | undefined) =>
+  warning?.fabricTypes === undefined
+    ? 'masterData.balanceWarning.title'
+    : 'masterData.recipeWarning.title';
+
+function messageOf(t: Translate, warning: PendingWarning | undefined): string {
+  const title = warning?.record.label ?? '';
+  if (warning?.fabricTypes !== undefined) {
+    const fabricTypes = warning.fabricTypes.join(', ');
+    return t('masterData.recipeWarning.message', { title, fabricTypes });
+  }
+  const key =
+    warning?.rows === undefined
+      ? 'masterData.balanceWarning.unknown'
+      : 'masterData.balanceWarning.message';
+  return t(key, { title });
+}
+
 /** KR-18: bakiyesi olan fasoncu pasife alınırken uyarır; karar yöneticidedir. */
 export function BalanceWarningModal({ warning, onConfirm, onClose }: BalanceWarningModalProps) {
   const { t } = useTranslation();
-  const title = warning?.record.label ?? '';
   return (
-    <Modal
-      opened={warning !== undefined}
-      onClose={onClose}
-      title={t('masterData.balanceWarning.title')}
-    >
+    <Modal opened={warning !== undefined} onClose={onClose} title={t(titleOf(warning))}>
       <Stack>
         <Alert color="orange" role="alert">
-          {t(
-            warning?.rows === undefined
-              ? 'masterData.balanceWarning.unknown'
-              : 'masterData.balanceWarning.message',
-            { title },
-          )}
+          {messageOf(t, warning)}
         </Alert>
         {warning?.rows?.map((row) => (
           <Text key={row.yarnType} size="sm">

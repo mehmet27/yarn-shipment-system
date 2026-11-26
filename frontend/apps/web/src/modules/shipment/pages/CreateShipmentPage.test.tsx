@@ -17,7 +17,6 @@ async function fillRecipe(netKg: string, withPrice = true) {
   await pick('İplik cinsi 1', 'Pamuk 20/1');
   await userEvent.type(screen.getByLabelText(/Net kg 1/), netKg);
   if (!withPrice) return;
-  await userEvent.click(screen.getByRole('tab', { name: /Sipariş bilgileri/ }));
   await userEvent.type(screen.getByLabelText(/Birim fiyat/), '21,5');
 }
 
@@ -126,14 +125,11 @@ describe('CreateShipmentPage', () => {
     await userEvent.click(await screen.findByRole('option', { name: 'Likralı Süprem' }));
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/^LYC/)).toHaveValue('30 denye');
+      expect(screen.getByRole('combobox', { name: /^LYC/ })).toHaveValue('30 denye');
     });
     expect(
       screen.getByText('Seçili iplik bu kumaşın tanımlı karışımında yok.'),
     ).toBeInTheDocument();
-
-    await userEvent.clear(screen.getByRole('combobox', { name: 'Kumaş cinsi' }));
-    expect(screen.getByLabelText(/^LYC/)).toHaveValue('');
   });
 
   it('fasoncu seçilmeden göndermeyi engeller', async () => {

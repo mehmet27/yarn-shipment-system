@@ -1,10 +1,10 @@
+import { CancelReasonField } from './CancelReasonField';
 import { toProblem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, Group, Icon, SectionCard, Stack, TextInput } from '@iplik/ui';
+import { Alert, Button, Group, Icon, SectionCard, Stack } from '@iplik/ui';
 import { useState } from 'react';
 import { useCancelShipment } from '../hooks/useCancelShipment';
 
-const MAX_REASON_LENGTH = 500;
 const KNOWN_CODES = ['INVALID_SHIPMENT_STATUS', 'INVALID_CANCELLATION'] as const;
 
 function cancelErrorKey(code: string): string {
@@ -37,14 +37,7 @@ export function CancelShipmentForm({ shipmentId }: { shipmentId: string }) {
     <SectionCard title={t('shipment.cancel.title')} icon="stop" tone="danger">
       <Stack maw={560}>
         <Alert color="orange">{t('shipment.cancel.warning')}</Alert>
-        <TextInput
-          label={t('shipment.cancel.reason')}
-          maxLength={MAX_REASON_LENGTH}
-          value={reason}
-          onChange={(event) => {
-            setReason(event.currentTarget.value);
-          }}
-        />
+        <CancelReasonField value={reason} onChange={setReason} />
         {mutation.isError && (
           <Alert color="red">{t(cancelErrorKey(toProblem(mutation.error).code))}</Alert>
         )}

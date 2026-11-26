@@ -1,3 +1,4 @@
+import { MAX_WAYBILL_NO_LENGTH } from '../waybill';
 import { useTranslation } from '@iplik/i18n';
 import { SegmentedControl, Stack, Text, TextInput } from '@iplik/ui';
 import type { CreateDraft, CreateFieldErrors, SourceKind } from './createDraft';
@@ -8,6 +9,12 @@ type SourceFieldsProps = {
   onChange: (draft: CreateDraft) => void;
   errors: CreateFieldErrors;
 };
+
+/** Kaynak ya da tedarikçi değişince önceki seçime göre listelenmiş partiler kalmaz. */
+const withoutLots = (draft: CreateDraft): CreateDraft => ({
+  ...draft,
+  lines: draft.lines.map((line) => ({ ...line, lot: undefined })),
+});
 
 const SOURCE_KINDS: readonly SourceKind[] = ['CENTRAL', 'SUBCONTRACTOR', 'DIRECT'];
 
@@ -26,7 +33,7 @@ export function SourceFields({ draft, onChange, errors }: SourceFieldsProps) {
         value={draft.sourceKind}
         onChange={(value) => {
           const sourceKind = SOURCE_KINDS.find((kind) => kind === value);
-          if (sourceKind !== undefined) onChange({ ...draft, sourceKind });
+          if (sourceKind !== undefined) onChange({ ...withoutLots(draft), sourceKind });
         }}
       />
       {draft.sourceKind === 'SUBCONTRACTOR' && (
@@ -50,7 +57,7 @@ export function SourceFields({ draft, onChange, errors }: SourceFieldsProps) {
             isRequired
             {...(directError === undefined ? {} : { error: t(`create.errors.${directError}`) })}
             onChange={(directTransferSupplier) => {
-              onChange({ ...draft, directTransferSupplier });
+              onChange({ ...withoutLots(draft), directTransferSupplier });
             }}
           />
           <Text size="sm" c="dimmed">
@@ -59,7 +66,7 @@ export function SourceFields({ draft, onChange, errors }: SourceFieldsProps) {
           <TextInput
             label={t('create.directTransferWaybillNo')}
             value={draft.directTransferWaybillNo}
-            maxLength={100}
+            maxLength={MAX_WAYBILL_NO_LENGTH}
             onChange={(event) => {
               onChange({ ...draft, directTransferWaybillNo: event.currentTarget.value });
             }}

@@ -108,8 +108,8 @@ test('Partiler: müdür parti ekler, düzenler, kalitesini kilitler, pasife alı
   });
   await mudur.adim('parti: ekle', async () => {
     const pencere = mudur.sayfa.getByRole('dialog');
-    await pencere.getByLabel('Parti numarası *', { exact: true }).fill(no);
-    await sec(mudur.sayfa, /^İplik \*/, '', pencere);
+    await pencere.getByLabel('Parti no *', { exact: true }).fill(no);
+    await sec(mudur.sayfa, /^İplik cinsi/, '', pencere);
     await sec(mudur.sayfa, /^Kalite sınıfı/, '', pencere);
     await sec(mudur.sayfa, /^İplik tedarikçisi/, tedarikci, pencere);
     await pencere.getByLabel(/Üretim tarihi/).fill('2026-11-01');
@@ -132,10 +132,7 @@ test('Partiler: müdür parti ekler, düzenler, kalitesini kilitler, pasife alı
   );
   await mudur.adim('parti: düzenle', async () => {
     await satir(mudur.sayfa, no, 'Düzenle').getByRole('button', { name: 'Düzenle' }).click();
-    await mudur.sayfa
-      .getByRole('dialog')
-      .getByLabel('Parti numarası *', { exact: true })
-      .fill(`${no}-d`);
+    await mudur.sayfa.getByRole('dialog').getByLabel('Parti no *', { exact: true }).fill(`${no}-d`);
     await mudur.sayfa.getByRole('dialog').getByRole('button', { name: 'Kaydet' }).click();
     await expect(mudur.sayfa.getByText(`${no}-d`).first()).toBeVisible();
   });

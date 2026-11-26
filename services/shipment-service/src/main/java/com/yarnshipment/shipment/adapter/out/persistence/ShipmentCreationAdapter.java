@@ -98,6 +98,7 @@ final class ShipmentCreationAdapter implements ShipmentCreationPort {
 
     private void insertLines(NewShipment shipment, UUID id, Timestamp at, UUID actorUserId) {
         for (RecipeLine line : shipment.lines()) {
+            RecipeLotGuard.require(jdbc, line);
             jdbc.sql(INSERT_LINE)
                     .param("id", transitions.nextId())
                     .param("shipmentId", id)

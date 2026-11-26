@@ -1,5 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, SectionCard, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
+import { Alert, SectionCard, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
+import { SaveConfirm } from '@/modules/shared';
 import { MasterSelect } from '@/modules/shipment';
 import { stockErrorKey } from '../stockErrors';
 import { useReceiptSubmit } from '../useReceiptSubmit';
@@ -8,7 +9,7 @@ import { ReceiptLotFields } from './ReceiptLotFields';
 /** Merkeze gelen ipliği stoğa yazar. */
 export function YarnReceiptForm() {
   const { t } = useTranslation();
-  const { draft, setDraft, field, error, submit, mutation } = useReceiptSubmit();
+  const { draft, setDraft, field, error, submit, confirm, step, mutation } = useReceiptSubmit();
   return (
     <SectionCard title={t('stock.receipt.title')} icon="download">
       <Stack>
@@ -51,9 +52,14 @@ export function YarnReceiptForm() {
           <Alert color="green">{t('stock.receipt.saved')}</Alert>
         )}
         {mutation.isError && <Alert color="red">{t(stockErrorKey(mutation.error))}</Alert>}
-        <Button w="fit-content" loading={mutation.isPending} onClick={submit}>
-          {t('stock.receipt.submit')}
-        </Button>
+        <SaveConfirm
+          isOpen={step.isOpen}
+          isLoading={mutation.isPending}
+          submitLabel={t('stock.receipt.submit')}
+          onSubmit={submit}
+          onConfirm={confirm}
+          onCancel={step.close}
+        />
       </Stack>
     </SectionCard>
   );

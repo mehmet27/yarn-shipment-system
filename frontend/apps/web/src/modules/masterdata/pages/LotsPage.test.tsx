@@ -15,8 +15,8 @@ describe('LotsPage', () => {
     server.use(...createHandlers('QUALITY'));
     renderApp('/panel/partiler');
     await userEvent.click(await screen.findByRole('button', { name: 'Ekle' }));
-    await userEvent.type(screen.getByLabelText(/Parti numarası/), 'p-2026-0009');
-    await choose(/İplik(?! ted)/, 'PES-30-1 · Polyester 30/1');
+    await userEvent.type(screen.getByLabelText(/Parti no/), 'p-2026-0009');
+    await choose(/İplik cinsi/, 'Polyester 30/1');
     await choose(/Kalite sınıfı/, 'A · Birinci kalite');
     await choose(/İplik tedarikçisi/, 'Şireci');
     await userEvent.type(screen.getByLabelText(/Üretim tarihi/), '2026-10-20');

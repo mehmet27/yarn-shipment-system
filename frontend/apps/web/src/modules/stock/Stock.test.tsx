@@ -11,6 +11,13 @@ import { createMockUser } from '@/mocks/users';
 import { renderApp } from '@/test/renderApp';
 
 /** Tanımlar'daki iplik listesinden seçim; serbest metin yoktur. */
+/** Kaydet düğmesine basar; onay sorulduysa "Evet, kaydet" der. */
+async function save(user: ReturnType<typeof userEvent.setup>, button: HTMLElement) {
+  await user.click(button);
+  const yes = screen.queryByRole('button', { name: 'Evet, kaydet' });
+  if (yes !== null) await user.click(yes);
+}
+
 async function pickYarn(
   user: ReturnType<typeof userEvent.setup>,
   label: string | RegExp,
@@ -39,7 +46,7 @@ describe('Merkez iplik stoku', () => {
     await pickYarn(user, SUPPLIER, 'Şireci');
     await user.type(within(form).getByLabelText(/Gelen net kg/), '20000');
     await user.type(within(form).getByLabelText(/Tedarikçi irsaliye no/), 'IRS-7');
-    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    await save(user, within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
 
     expect(await screen.findByText('İplik girişi kaydedildi.')).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'Eldeki iplik' }));
@@ -57,6 +64,10 @@ describe('Merkez iplik stoku', () => {
   });
 
   it('kalite kumaş girer; iplik fire ile stoktan düşer', async () => {
+    saveMockRecipe(undefined, {
+      fabricType: 'Süprem',
+      yarns: [{ yarnType: 'Pamuk 20/1', ratioPct: '100.00' }],
+    });
     // İplik girişi (depo) ile kumaş girişi (kalite) farklı rollerdedir; akışı tek ekranda denemek için iki izni de taşıyan sahte kullanıcı.
     const quality = createMockUser('QUALITY');
     const both = {
@@ -75,16 +86,17 @@ describe('Merkez iplik stoku', () => {
     await pickYarn(user, /İplik cinsi/, 'Pamuk 20/1');
     await pickYarn(user, SUPPLIER, 'Karesi');
     await user.type(within(receipt).getByLabelText(/Gelen net kg/), '1000');
-    await user.click(within(receipt).getByRole('button', { name: 'İplik girişini kaydet' }));
+    await save(user, within(receipt).getByRole('button', { name: 'İplik girişini kaydet' }));
     await screen.findByText('İplik girişi kaydedildi.');
     await user.click(screen.getByRole('tab', { name: 'Kumaş girişi' }));
 
     const form = screen.getByRole('region', { name: 'Merkez kumaş girişi' });
-    await user.type(within(form).getByRole('combobox', { name: /Kumaş cinsi/ }), 'Süprem');
+    await pickYarn(user, /Kumaş cinsi/, 'Süprem');
     await user.type(within(form).getByLabelText(/Toplam kumaş kg/), '480');
-    await pickYarn(user, 'İplik cinsi 1', 'Pamuk 20/1');
-    await user.type(within(form).getByLabelText('Oran (%) 1'), '100');
-    await user.click(within(form).getByRole('button', { name: 'Kumaşı kaydet' }));
+    await waitFor(() => {
+      expect(within(form).getByLabelText('Oran (%) 1')).toHaveValue('100');
+    });
+    await save(user, within(form).getByRole('button', { name: 'Kumaşı kaydet' }));
 
     await screen.findByText('Kumaş girişi kaydedildi.');
     await user.click(screen.getByRole('tab', { name: 'Eldeki iplik' }));
@@ -110,24 +122,17 @@ describe('Merkez iplik stoku', () => {
     renderApp('/panel/merkez-stok');
     await user.click(await screen.findByRole('tab', { name: 'Kumaş girişi' }));
     const form = screen.getByRole('region', { name: 'Merkez kumaş girişi' });
-    const fabric = within(form).getByRole('combobox', { name: /Kumaş cinsi/ });
 
     await pickYarn(user, /Kumaş cinsi/, 'Süprem');
     await waitFor(() => {
       expect(within(form).getByLabelText('Oran (%) 1')).toHaveValue('100');
     });
 
-    await user.clear(fabric);
     await pickYarn(user, /Kumaş cinsi/, 'İnterlok');
     await waitFor(() => {
       expect(within(form).getByLabelText('Oran (%) 2')).toHaveValue('40');
     });
     expect(within(form).getByLabelText('Oran (%) 1')).toHaveValue('60');
-
-    await user.clear(fabric);
-    await user.type(fabric, 'Başka');
-    expect(within(form).getByLabelText('Oran (%) 1')).toHaveValue('');
-    expect(within(form).queryByLabelText('Oran (%) 2')).not.toBeInTheDocument();
   });
 
   it('iplik seçilmeden giriş kaydedilmez; serbest metin alanı yoktur', async () => {
@@ -138,7 +143,7 @@ describe('Merkez iplik stoku', () => {
     const form = screen.getByRole('region', { name: 'Merkeze iplik girişi' });
     expect(within(form).getByText(/listede yoksa müdür Tanımlar/)).toBeInTheDocument();
     await user.type(within(form).getByLabelText(/Gelen net kg/), '100');
-    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    await save(user, within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
 
     expect(await screen.findByText('Zorunlu alanları doldurun.')).toBeInTheDocument();
     expect(screen.queryByText('İplik girişi kaydedildi.')).not.toBeInTheDocument();
@@ -170,7 +175,8 @@ describe('Merkez iplik stoku', () => {
     await pickYarn(user, /İplik cinsi/, 'Polyester 30/1');
     await pickYarn(user, SUPPLIER, 'Şireci');
     await user.type(within(form).getByLabelText(/Gelen net kg/), '10');
-    await user.dblClick(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    await user.dblClick(screen.getByRole('button', { name: 'Evet, kaydet' }));
     // Yanıt çok hızlı gelirse ikinci tıklama boşalmış forma düşer; önemli olan tek kayıt yazılmasıdır.
     await waitFor(() => {
       expect(posts).toBe(1);
@@ -188,7 +194,7 @@ describe('Merkez iplik stoku', () => {
     const form = screen.getByRole('region', { name: 'Merkeze iplik girişi' });
     await pickYarn(user, /İplik cinsi/, 'Polyester 30/1');
     await user.type(within(form).getByLabelText(/Gelen net kg/), '100');
-    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    await save(user, within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
 
     expect(await screen.findByText('Zorunlu alanları doldurun.')).toBeInTheDocument();
     expect(screen.queryByText('İplik girişi kaydedildi.')).not.toBeInTheDocument();
@@ -207,18 +213,18 @@ describe('Merkez iplik stoku', () => {
 
     await user.type(within(form).getByRole('combobox', { name: /Parti no/ }), 'ğ*');
     expect(within(form).getAllByLabelText(/Kalite sınıfı/).length).toBeGreaterThan(0);
-    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    await save(user, within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
     expect(await screen.findByText(/Parti no harf veya rakamla başlamalı/)).toBeInTheDocument();
 
     await user.clear(within(form).getByRole('combobox', { name: /Parti no/ }));
     await user.type(within(form).getByRole('combobox', { name: /Parti no/ }), 'p-1');
-    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    await save(user, within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
     expect(
       await screen.findByText(/ilk kez giriliyor; partinin kalite sınıfını seçin/),
     ).toBeInTheDocument();
 
     await pickYarn(user, /Kalite sınıfı/, 'A · Birinci kalite');
-    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    await save(user, within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
     expect(await screen.findByText('İplik girişi kaydedildi.')).toBeInTheDocument();
   });
 
@@ -235,7 +241,7 @@ describe('Merkez iplik stoku', () => {
 
     expect(await within(form).findByText('Kayıtlı parti.')).toBeInTheDocument();
     expect(within(form).queryAllByLabelText(/Kalite sınıfı/)).toHaveLength(0);
-    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    await save(user, within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
     expect(await screen.findByText('İplik girişi kaydedildi.')).toBeInTheDocument();
   });
 

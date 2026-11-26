@@ -1,3 +1,4 @@
+import { MAX_WAYBILL_NO_LENGTH } from '../waybill';
 import { toProblem } from '@iplik/api-client';
 import type { Problem } from '@iplik/api-client';
 import { useTranslation } from '@iplik/i18n';
@@ -8,7 +9,6 @@ import { useCompleteShipment } from '../hooks/useCompleteShipment';
 
 type Translate = ReturnType<typeof useTranslation>['t'];
 
-const MAX_WAYBILL_NO_LENGTH = 64;
 const KNOWN_CODES = [
   'INVALID_SHIPMENT_STATUS',
   'INVALID_COMPLETION',

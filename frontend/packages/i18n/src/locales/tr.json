@@ -127,6 +127,12 @@
       "previous": "Önceki sayfa",
       "next": "Sonraki sayfa",
       "last": "Son sayfa"
+    },
+    "saveConfirm": {
+      "title": "Kayıt onayı",
+      "text": "Kayıt sonradan değiştirilemez.",
+      "yes": "Evet, kaydet",
+      "no": "Vazgeç"
     }
   },
   "shipment": {
@@ -551,12 +557,12 @@
       "yarnTypePlaceholder": "Listeden seçin",
       "lineTitle": "{{index}}. satır",
       "tabYarn": "İplik",
-      "tabOrder": "Sipariş bilgileri (fiyat zorunlu)",
+      "tabOrder": "Sipariş bilgileri",
       "lot": "Parti no (isteğe bağlı)",
       "netKg": "Net kg",
       "fabricType": "Kumaş cinsi",
       "yarnOutsideRecipe": "Seçili iplik bu kumaşın tanımlı karışımında yok.",
-      "lycra": "LYC (ör. 30 denye)",
+      "lycra": "LYC (elastan numarası)",
       "widthType": "Tüp / May / Açık en",
       "widthTypes": {
         "TUBE": "Tüp",
@@ -617,7 +623,9 @@
     "orderNo": "Sipariş no",
     "contactPerson": "İlgili kişi",
     "shipmentDate": "Sevkiyat tarihi",
-    "shipmentDateHint": "Depo bu tarihten önce çuval atayamaz ve çıkış tartısı giremez."
+    "shipmentDateHint": "Depo bu tarihten önce çuval atayamaz ve çıkış tartısı giremez.",
+    "moreOptions": "Listenin devamı için yazarak arayın.",
+    "fabricTypeHint": "Listede yoksa müdür Tanımlar > Kumaş karışımı'ndan ekler."
   },
   "masterData": {
     "title": "Tanımlar",
@@ -724,6 +732,10 @@
       "invalid": "Kumaş cinsini ve iplik oranlarını kontrol edin; toplam tam %100 olmalı.",
       "cancel": "Vazgeç",
       "exists": "Bu kumaş cinsi için zaten bir karışım tanımlı. Mevcut olanı düzenleyin."
+    },
+    "recipeWarning": {
+      "title": "İplik karışımda kullanılıyor",
+      "message": "{{title}} şu kumaş karışımlarında kullanılıyor: {{fabricTypes}}. Pasife alınırsa bu karışımlarda iplik elle seçilir."
     }
   },
   "audit": {
@@ -1044,8 +1056,8 @@
     "deactivateQuestion": "{{lotNo}} partisi pasife alınsın mı? Parti silinmez, yalnızca yeni işlerde seçilemez.",
     "deactivateConfirm": "Evet, pasife al",
     "fields": {
-      "lotNo": "Parti numarası",
-      "productId": "İplik",
+      "lotNo": "Parti no",
+      "productId": "İplik cinsi",
       "qualityGradeId": "Kalite sınıfı",
       "yarnSupplierId": "İplik tedarikçisi",
       "productionDate": "Üretim tarihi"
@@ -1265,7 +1277,7 @@
     },
     "opening": {
       "title": "Açılış bakiyesi yükle",
-      "hint": "Her satır: fasoncu;iplik;kg (noktalı virgül ya da sekmeyle). Fasoncu adı tanımlarla aynı olmalıdır.",
+      "hint": "Her satır: fasoncu;iplik;kg (noktalı virgül ya da sekmeyle). Fasoncu ve iplik adı tanımlarla aynı olmalıdır.",
       "asOf": "Bakiye tarihi",
       "data": "Satırlar",
       "netKg": "Net kg",
@@ -1274,7 +1286,8 @@
       "error": {
         "format": "fasoncu;iplik;kg biçiminde olmalı",
         "unknown": "fasoncu bulunamadı",
-        "kg": "kilo geçersiz"
+        "kg": "kilo geçersiz",
+        "unknownYarn": "iplik Tanımlar'da yok"
       },
       "failed": "Açılış bakiyesi yüklenemedi.",
       "result": "{{imported}} satır yüklendi, {{skipped}} satır atlandı."
@@ -1571,7 +1584,6 @@
       "heldTotal": "Fasoncuda toplam {{kg}}",
       "ratioTotal": "Toplam: %{{total}} (tam %100 olmalı)",
       "ratioTotalOk": "Toplam: %{{total}}",
-      "fillRecipe": "Tanımlı karışımı yaz",
       "previewTitle": "Kumaş için şu iplikler düşülecek",
       "drawLine": "{{shipment}} sevkiyatından {{kg}}",
       "shortTitle": "Fasoncuda yeterli iplik yok",
@@ -1579,7 +1591,8 @@
       "shortBack": "Oranları düzelt",
       "yarnLine": "{{yarn}} · %{{ratio}}",
       "yarnLineLot": "{{yarn}} · Parti {{lot}} · %{{ratio}}",
-      "previewLine": "{{line}} · {{kg}}"
+      "previewLine": "{{line}} · {{kg}}",
+      "recipeMissing": "Karışımdaki şu iplikler fasoncuda yok: {{yarns}}"
     },
     "yarn": {
       "title": "İplik dönüşü (fasoncudan depoya)",
@@ -1796,7 +1809,7 @@
       "ratioTotal": "İplik oranlarının toplamı tam %100 olmalı.",
       "duplicateYarn": "Aynı iplik iki satırda seçilemez.",
       "invalidLotNo": "Parti no harf veya rakamla başlamalı; yalnızca harf, rakam ve + . _ / - içerebilir (en çok 40 karakter).",
-      "invalidWaybill": "İrsaliye no en çok 128 karakter olabilir.",
+      "invalidWaybill": "İrsaliye no en çok 64 karakter olabilir.",
       "invalidRollCount": "Top sayısı pozitif tam sayı olmalı."
     },
     "errors": {

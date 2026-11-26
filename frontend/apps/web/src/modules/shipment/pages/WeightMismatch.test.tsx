@@ -58,7 +58,7 @@ describe('Kantar uyuşmazlığı', () => {
       expect(status).toHaveTextContent('Kilolar henüz tutmuyor');
       const submit = screen.getByRole('button', { name: 'Kaydet ve yola çıkar' });
       await userEvent.type(screen.getByLabelText(/Gerekçe/), 'Reçete düzeltildi');
-      const secondKg = screen.getByLabelText('Net kg 2');
+      const secondKg = screen.getByLabelText(/^Net kg 2/);
       await userEvent.clear(secondKg);
       await userEvent.type(secondKg, '470');
       expect(await screen.findByTestId('recipe-weight-status')).toHaveTextContent(
@@ -77,7 +77,7 @@ describe('Kantar uyuşmazlığı', () => {
     renderApp(`${MISMATCH}/recete`);
     await screen.findByTestId('recipe-weight-status');
     await userEvent.type(screen.getByLabelText(/Gerekçe/), 'Deneme');
-    const secondKg = screen.getByLabelText('Net kg 2');
+    const secondKg = screen.getByLabelText(/^Net kg 2/);
     await userEvent.clear(secondKg);
     await userEvent.type(secondKg, '470');
     await userEvent.clear(secondKg);

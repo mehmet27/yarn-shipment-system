@@ -1,11 +1,9 @@
+import { MAX_WAYBILL_NO_LENGTH } from '../waybill';
+import { ReturnActions } from './ReturnActions';
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, SectionCard, Select, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
-import { useState } from 'react';
-import { useRecordYarnReturn } from './hooks';
-import type { DraftError } from './settlementDraft';
-import { toReturnRequest } from './settlementDraft';
-import { settlementErrorKey } from './settlementErrors';
+import { SectionCard, Select, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
 import { useReturnDraft } from './useReturnDraft';
+import { useReturnSubmit } from './useReturnSubmit';
 import { useReturnOptions } from './useReturnOptions';
 
 const NUMBER_STYLES = { input: { textAlign: 'right' } } as const;
@@ -13,14 +11,8 @@ const NUMBER_STYLES = { input: { textAlign: 'right' } } as const;
 export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
   const { t } = useTranslation();
   const { draft, field, setYarnType, setLotId, reset } = useReturnDraft();
-  const [error, setError] = useState<DraftError>();
-  const mutation = useRecordYarnReturn(shipmentId);
   const { yarns, lots, yarnType, lotId } = useReturnOptions(shipmentId, draft);
-  const submit = () => {
-    const request = toReturnRequest({ ...draft, yarnType, lotId });
-    setError(typeof request === 'string' ? request : undefined);
-    if (typeof request !== 'string') mutation.mutate(request, { onSuccess: reset });
-  };
+  const actions = useReturnSubmit(shipmentId, { ...draft, yarnType, lotId }, reset);
   return (
     <SectionCard title={t('settlement.yarn.title')}>
       <Stack>
@@ -55,16 +47,16 @@ export function YarnReturnForm({ shipmentId }: { shipmentId: string }) {
             withAsterisk
             {...field('netKg')}
           />
-          <TextInput label={t('settlement.yarn.waybillNo')} {...field('waybillNo')} />
+          <TextInput
+            label={t('settlement.yarn.waybillNo')}
+            maxLength={MAX_WAYBILL_NO_LENGTH}
+            {...field('waybillNo')}
+          />
         </SimpleGrid>
         <Text size="sm" c="dimmed">
           {t('settlement.yarn.returnNote')}
         </Text>
-        {error !== undefined && <Alert color="red">{t(`settlement.draftErrors.${error}`)}</Alert>}
-        {mutation.isError && <Alert color="red">{t(settlementErrorKey(mutation.error))}</Alert>}
-        <Button w="fit-content" loading={mutation.isPending} onClick={submit}>
-          {t('settlement.yarn.submit')}
-        </Button>
+        <ReturnActions {...actions} />
       </Stack>
     </SectionCard>
   );

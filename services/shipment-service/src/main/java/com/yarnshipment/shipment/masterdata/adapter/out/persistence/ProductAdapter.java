@@ -8,6 +8,7 @@ import com.yarnshipment.shipment.masterdata.domain.catalog.ProductDetails;
 import com.yarnshipment.shipment.masterdata.domain.model.MasterDataStatus;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,16 +32,33 @@ final class ProductAdapter implements ProductPort {
     private static final String UPDATE =
             "UPDATE md_product SET name = :name, yarn_count = :extra WHERE id = :id RETURNING " + COLUMNS;
     private static final String STATUS = "UPDATE md_product SET active = :active WHERE id = :id";
+    /** Karışımlar ipliği adıyla tutar; ad değişince aynı işlemde karışım satırları da yeni ada geçer. */
+    private static final String RENAME_IN_RECIPES = """
+            UPDATE md_fabric_recipe r
+            SET lines = (SELECT jsonb_agg(CASE WHEN lower(btrim(e.line ->> 'yarnType')) = lower(btrim(p.name))
+                                              THEN jsonb_set(e.line, '{yarnType}', to_jsonb(CAST(:name AS text)))
+                                              ELSE e.line END ORDER BY e.position)
+                         FROM jsonb_array_elements(r.lines) WITH ORDINALITY AS e(line, position)),
+                updated_at = :at
+            FROM md_product p
+            WHERE p.id = :id AND p.name <> :name
+              AND EXISTS (SELECT 1 FROM jsonb_array_elements(r.lines) AS x(line)
+                          WHERE lower(btrim(x.line ->> 'yarnType')) = lower(btrim(p.name)))""";
+
     private static final String NAME_TAKEN = """
             SELECT EXISTS (SELECT 1 FROM md_product
                            WHERE lower(btrim(name)) = lower(btrim(:name)) AND id IS DISTINCT FROM :id)""";
 
     private final PagedQuery paged;
     private final CatalogWriter writer;
+    private final JdbcClient jdbc;
+    private final Clock clock;
 
     ProductAdapter(JdbcClient jdbc, Clock clock) {
         this.paged = new PagedQuery(jdbc);
         this.writer = new CatalogWriter(jdbc, clock);
+        this.jdbc = jdbc;
+        this.clock = clock;
     }
 
     @Override
@@ -62,6 +80,11 @@ final class ProductAdapter implements ProductPort {
     @Override
     public Optional<Product> updateProduct(UUID actorId, UUID id, ProductDetails details) {
         writer.requireFreeName(NAME_TAKEN, details.name(), id);
+        jdbc.sql(RENAME_IN_RECIPES)
+                .param("id", id)
+                .param("name", details.name())
+                .param("at", Timestamp.from(clock.instant()))
+                .update();
         return writer.rewrite(UPDATE, actorId, id, row("", details))
                 .query((rs, rowNumber) -> product(rs))
                 .optional();

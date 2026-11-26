@@ -1,24 +1,10 @@
-import type { FabricYarnOption } from '@iplik/api-client/fabric';
 import { useState } from 'react';
-import { findRecipe, recipeToRatios } from './fabricRatios';
-import { useActiveFabricRecipes, useFabricYarnOptions } from './hooks';
+import { useFabricYarnOptions } from './hooks';
 import { usePreviewFabricReceipt, useRecordFabricReceipt } from './hooks';
 import type { DraftError } from './settlementDraft';
 import { toFabricRequest } from './settlementDraft';
 import { useFabricDraft } from './useFabricDraft';
-
-/** Kumaş cinsine uyan tanımlı karışım ve onu oran kutularına yazan işlem. */
-function useRecipeFill(
-  fabricType: string,
-  options: readonly FabricYarnOption[],
-  setRatios: (ratios: Record<string, string>) => void,
-) {
-  const recipe = findRecipe(useActiveFabricRecipes().data ?? [], fabricType);
-  const fillFromRecipe = () => {
-    if (recipe !== undefined) setRatios(recipeToRatios(recipe, options));
-  };
-  return { recipe, fillFromRecipe };
-}
+import { useFabricRecipeFill } from './useFabricRecipeFill';
 
 /**
  * Kumaş girişi: taslak, fasoncudaki iplikler ve üç adım: kontrol (önizleme: hangi sevkiyattan kaç kilo düşecek),
@@ -26,9 +12,14 @@ function useRecipeFill(
  */
 export function useFabricSubmit(shipmentId: string) {
   const draftState = useFabricDraft();
-  const { draft, reset, setRatios } = draftState;
+  const { draft, reset, setRatios, setFabricType } = draftState;
   const options = useFabricYarnOptions(shipmentId).data ?? [];
-  const { recipe, fillFromRecipe } = useRecipeFill(draft.fabricType, options, setRatios);
+  const recipe = useFabricRecipeFill(shipmentId, {
+    fabricType: draft.fabricType,
+    options,
+    setFabricType,
+    setRatios,
+  });
   const [error, setError] = useState<DraftError>();
   const [checkedKey, setCheckedKey] = useState<string>();
   const preview = usePreviewFabricReceipt(shipmentId);
@@ -67,7 +58,8 @@ export function useFabricSubmit(shipmentId: string) {
   return {
     ...draftState,
     options,
-    recipe,
+    changeFabricType: recipe.change,
+    missingYarns: recipe.missingYarns,
     error,
     checked,
     isChecking: preview.isPending,
@@ -77,6 +69,5 @@ export function useFabricSubmit(shipmentId: string) {
     ask,
     confirm,
     cancel,
-    fillFromRecipe,
   };
 }

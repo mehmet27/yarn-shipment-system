@@ -13,9 +13,16 @@ async function openTab(name: string) {
 }
 
 async function recordFabric(kg: string) {
+  // Kumaş cinsi tanımlı karışımlardan seçilir; bu karışımın ipliği fasoncuda olmadığından oranlar boş kalır.
+  // (Aynı cins testte önceden tanımlandıysa o karışım geçerli kalır.)
+  saveMockRecipe(undefined, {
+    fabricType: 'Süprem',
+    yarns: [{ yarnType: 'Tanımsız', ratioPct: '100' }],
+  });
   await openTab('Kumaş girişi');
   const form = await screen.findByRole('region', { name: 'Kumaş girişi' });
-  await userEvent.type(within(form).getByLabelText(/Kumaş cinsi/), 'Süprem');
+  await userEvent.click(within(form).getByRole('combobox', { name: /Kumaş cinsi/ }));
+  await userEvent.click(await screen.findByRole('option', { name: /^süprem$/i }));
   await userEvent.type(within(form).getByLabelText(/Kumaş net kilosu/), kg);
   await userEvent.type(within(form).getByLabelText(/İrsaliye no/), 'KUM-1');
   return form;
@@ -84,9 +91,6 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     server.use(...createHandlers('QUALITY'));
     renderApp(COMPLETED);
     const form = await recordFabric('100');
-    await userEvent.click(
-      await within(form).findByRole('button', { name: 'Tanımlı karışımı yaz' }),
-    );
     expect(within(form).getByLabelText('Oran: 36/1 Viskon')).toHaveValue('70');
     expect(within(form).getByLabelText('Oran: 20 denye likra')).toHaveValue('30');
     expect(within(form).getByTestId('fabric-ratio-total')).toHaveTextContent('Toplam: %100');
@@ -157,6 +161,7 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     await userEvent.click(await screen.findByRole('option', { name: '36/1 Viskon' }));
     await userEvent.type(within(form).getByLabelText(/Net kilo/), '25');
     await userEvent.click(within(form).getByRole('button', { name: 'Hareketi kaydet' }));
+    await userEvent.click(within(form).getByRole('button', { name: 'Evet, kaydet' }));
     expect(await screen.findByText(/Dönüş · 36\/1 Viskon · 25 kg/)).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Kumaş girişi' })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Fire dosyası' })).not.toBeInTheDocument();

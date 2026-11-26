@@ -5,7 +5,6 @@ import { expect, test } from '../support/test';
 async function fillRecipe(page: Page) {
   await pick(page, 'İplik cinsi 1', 'Pamuk 20/1');
   await page.getByLabel(/Net kg 1/).fill('2.036');
-  await page.getByRole('tab', { name: /Sipariş bilgileri/ }).click();
   await page.getByLabel(/Birim fiyat/).fill('21,5');
 }
 

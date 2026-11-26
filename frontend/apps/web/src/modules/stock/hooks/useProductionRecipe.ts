@@ -23,7 +23,7 @@ type Setters = {
 };
 
 /**
- * Kumaş cinsi önerileri ve cins değişince iplik satırlarını değiştiren işlem: tanımlı cinse geçilince karışımı yazılır,
+ * Cins değişince iplik satırlarını değiştiren işlem: tanımlı cinse geçilince karışımı yazılır,
  * tanımlı cinsten çıkılınca satırlar boşalır. Karışımı olmayan cinste elle seçilen iplikler korunur.
  */
 export function useProductionRecipe(fabricType: string, { setFabricType, setYarns }: Setters) {
@@ -50,5 +50,5 @@ export function useProductionRecipe(fabricType: string, { setFabricType, setYarn
       },
     );
   };
-  return { fabricTypes: recipes.map((r) => r.fabricType), hasFailed, change };
+  return { hasFailed, change };
 }

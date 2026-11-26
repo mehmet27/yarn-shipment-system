@@ -52,6 +52,7 @@ final class WeightRecipeAdapter implements WeightRecipePort {
         Timestamp when = Timestamp.from(audit.at());
         transitions.actAs(actorUserId);
         for (RecipeLine line : replacement.lines()) {
+            RecipeLotGuard.require(jdbc, line);
             writeLine(line, new Write(shipmentId, when, actorUserId));
         }
         jdbc.sql(UPDATE_PLANNED)

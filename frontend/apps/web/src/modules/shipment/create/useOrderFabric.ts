@@ -19,7 +19,7 @@ async function lycraOf(recipe: FabricRecipe): Promise<string> {
 }
 
 /**
- * Sipariş satırının kumaş cinsi: tanımlı karışımlar önerilir (yeni ad da yazılabilir). Tanımlı cinse geçilince LYC
+ * Sipariş satırının kumaş cinsi (tanımlı karışımlardan seçilir). Tanımlı cinse geçilince LYC
  * karışımdaki elastandan dolar, tanımlı cinsten çıkılınca boşalır; seçili iplik karışımda yoksa uyarılır.
  */
 export function useOrderFabric(
@@ -51,7 +51,6 @@ export function useOrderFabric(
   const yarn = line.yarn?.label;
   const recipe = findRecipe(recipes, line.fabricType);
   return {
-    fabricTypes: recipes.map((r) => r.fabricType),
     change,
     isYarnOutsideRecipe:
       yarn !== undefined &&

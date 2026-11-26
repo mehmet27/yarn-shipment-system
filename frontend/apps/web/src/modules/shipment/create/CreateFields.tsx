@@ -29,6 +29,9 @@ export function CreateFields({ draft, onChange, errors = {}, defaultFirePct }: C
       <Section title={t('create.recipe.title')} icon="list" step={3}>
         <Stack gap="md">
           <RecipeLines
+            {...(draft.sourceKind === 'DIRECT' && draft.directTransferSupplier !== undefined
+              ? { supplierId: draft.directTransferSupplier.value }
+              : {})}
             lines={draft.lines}
             showErrors={errors.lines !== undefined}
             onChange={(lines) => {

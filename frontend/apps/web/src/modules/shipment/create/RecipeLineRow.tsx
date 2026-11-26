@@ -20,24 +20,26 @@ type RecipeLineRowProps = {
   index: number;
   removable: boolean;
   showErrors: boolean;
+  supplierId?: string;
   onPatch: (patch: Partial<RecipeLineDraft>) => void;
   onRemove: () => void;
 };
 
-/** Bir reçete satırı iki sekmedir: İplik (cins, lot, net kg) ve Sipariş (Excel formundaki kumaş/LYC/en/fiyat). */
+/** Bir reçete satırı iki sekmedir: İplik (cins, lot, net kg, fiyat) ve Sipariş (Excel formundaki kumaş/LYC/en). */
 export function RecipeLineRow({
   line,
   index,
   removable,
   showErrors,
+  supplierId,
   onPatch,
   onRemove,
 }: RecipeLineRowProps) {
   const { t } = useTranslation();
   const error = showErrors ? lineError(line) : undefined;
   const [tab, setTab] = useState<string>('yarn');
-  // Sipariş sekmesi yalnızca tek eksik fiyat olduğunda öne alınır; iplik/kilo hatası varsa İplik sekmesi görünür kalır.
-  const active = error === 'linePriceInvalid' ? 'order' : tab;
+  // Zorunlu alanların hepsi İplik sekmesindedir; eksik varsa o sekme öne gelir.
+  const active = error === undefined ? tab : 'yarn';
   return (
     <Box data-testid="recipe-line">
       <Stack gap="xs">
@@ -60,10 +62,16 @@ export function RecipeLineRow({
             <Tabs.Tab value="order">{t('create.recipe.tabOrder')}</Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value="yarn" style={PANEL_STYLE}>
-            <YarnTabFields line={line} index={index} error={error} onPatch={onPatch} />
+            <YarnTabFields
+              line={line}
+              index={index}
+              error={error}
+              onPatch={onPatch}
+              {...(supplierId === undefined ? {} : { supplierId })}
+            />
           </Tabs.Panel>
           <Tabs.Panel value="order" style={PANEL_STYLE}>
-            <OrderFieldGrid line={line} showErrors={showErrors} onPatch={onPatch} />
+            <OrderFieldGrid line={line} onPatch={onPatch} />
           </Tabs.Panel>
         </Tabs>
       </Stack>

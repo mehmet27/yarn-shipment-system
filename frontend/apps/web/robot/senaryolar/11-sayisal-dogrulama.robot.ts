@@ -1,5 +1,7 @@
 import { fireHesapla, kiloEsit } from '../kurallar/hesap';
 import {
+  iplikTanimla,
+  kaydetOnayla,
   cuvalEkle,
   kararVer,
   kumasGir,
@@ -68,6 +70,8 @@ test('Sayısal doğrulama: başka fasoncudan ve kapıdan aktarma sevkiyatı baki
   const kapiTedarikci = `Kapı ${iplik}`;
 
   await mudur.adim('açılış bakiyesi: Örnek Tekstil elinde 200 kg iplik tutar', async () => {
+    // Açılış bakiyesi yalnızca Tanımlar'daki iplikle yüklenir.
+    await iplikTanimla(mudur, iplik);
     const once = await anlik(mudur);
     await acilisBakiyesi(mudur, ORNEK, iplik, 200);
     const sonra = await anlik(mudur);
@@ -206,7 +210,7 @@ test('Sayısal doğrulama: iplik dönüşü, fire oranı ve itiraz fire tabanın
     await depo.sayfa.getByRole('tab', { name: 'İplik dönüşü', exact: true }).click();
     // Sevkiyatta tek iplik gönderildiği için iplik cinsi kendiliğinden seçili gelir.
     await depo.sayfa.getByLabel(/Net kilo/).fill('10');
-    await depo.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
+    await kaydetOnayla(depo.sayfa, 'Hareketi kaydet');
     await depo.sayfa.waitForTimeout(1500);
     mudur.kontrol(
       'Başka Dokuma bakiyesi 90 kg',

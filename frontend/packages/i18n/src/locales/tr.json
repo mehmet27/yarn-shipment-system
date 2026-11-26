@@ -1752,7 +1752,10 @@
       "lotNo": "Parti no (isteğe bağlı)",
       "waybillNo": "Tedarikçi irsaliye no (isteğe bağlı)",
       "qualityGrade": "Kalite sınıfı (yeni parti için)",
-      "lotHint": "Parti no yazarsanız parti kaydedilir ve sevkiyatta, iplik dönüşünde bu partiyi seçebilirsiniz. Parti ilk kez yazılıyorsa kalite sınıfını da seçin.",
+      "lotHint": "Kayıtlı bir partiyi listeden seçin ya da yeni numarayı yazın; liste, seçtiğiniz iplik cinsi ve tedarikçinin partilerini gösterir. Parti ilk kez yazılıyorsa kalite sınıfını da seçin.",
+      "lotExisting": "Kayıtlı parti.",
+      "lotNew": "Yeni parti: girişle birlikte açılacak.",
+      "lotConflict": "Bu numara başka bir iplik cinsine ya da tedarikçiye ait bir partide kayıtlı.",
       "note": "Not",
       "submit": "İplik girişini kaydet",
       "saved": "İplik girişi kaydedildi."

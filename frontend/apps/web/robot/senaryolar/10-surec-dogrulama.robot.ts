@@ -99,7 +99,7 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
     await depo.sayfa.goto('/panel/merkez-stok');
     await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
     await iplikGirisiDoldur(depo.sayfa, { iplik, tedarikci, kg: '200' });
-    await depo.sayfa.getByLabel(/^Parti no/).fill(parti);
+    await depo.sayfa.getByRole('combobox', { name: /^Parti no/ }).fill(parti);
     await sec(depo.sayfa, /^Kalite sınıfı/, sinif);
     await depo.sayfa.getByLabel(/Tedarikçi irsaliye no/).fill(irsaliye);
     await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();

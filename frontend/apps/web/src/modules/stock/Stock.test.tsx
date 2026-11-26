@@ -166,19 +166,36 @@ describe('Merkez iplik stoku', () => {
     await pickYarn(user, SUPPLIER, 'Şireci');
     await user.type(within(form).getByLabelText(/Gelen net kg/), '100');
 
-    await user.type(within(form).getByLabelText(/Parti no/), 'ğ*');
+    await user.type(within(form).getByRole('combobox', { name: /Parti no/ }), 'ğ*');
     expect(within(form).getAllByLabelText(/Kalite sınıfı/).length).toBeGreaterThan(0);
     await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
     expect(await screen.findByText(/Parti no harf veya rakamla başlamalı/)).toBeInTheDocument();
 
-    await user.clear(within(form).getByLabelText(/Parti no/));
-    await user.type(within(form).getByLabelText(/Parti no/), 'p-1');
+    await user.clear(within(form).getByRole('combobox', { name: /Parti no/ }));
+    await user.type(within(form).getByRole('combobox', { name: /Parti no/ }), 'p-1');
     await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
     expect(
       await screen.findByText(/ilk kez giriliyor; partinin kalite sınıfını seçin/),
     ).toBeInTheDocument();
 
     await pickYarn(user, /Kalite sınıfı/, 'A · Birinci kalite');
+    await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
+    expect(await screen.findByText('İplik girişi kaydedildi.')).toBeInTheDocument();
+  });
+
+  it('kayıtlı parti listeden seçilir; kalite sınıfı sorulmaz', async () => {
+    server.use(...createHandlers('WAREHOUSE'));
+    const user = userEvent.setup();
+    renderApp('/panel/merkez-stok');
+    await user.click(await screen.findByRole('tab', { name: 'İplik girişi' }));
+    const form = screen.getByRole('region', { name: 'Merkeze iplik girişi' });
+    await pickYarn(user, /İplik cinsi/, 'Polyester 30/1');
+    await pickYarn(user, SUPPLIER, 'Şireci');
+    await user.type(within(form).getByLabelText(/Gelen net kg/), '100');
+    await pickYarn(user, /Parti no/, 'P-2026-0001');
+
+    expect(await within(form).findByText('Kayıtlı parti.')).toBeInTheDocument();
+    expect(within(form).queryAllByLabelText(/Kalite sınıfı/)).toHaveLength(0);
     await user.click(within(form).getByRole('button', { name: 'İplik girişini kaydet' }));
     expect(await screen.findByText('İplik girişi kaydedildi.')).toBeInTheDocument();
   });

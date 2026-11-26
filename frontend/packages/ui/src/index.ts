@@ -4,6 +4,7 @@ export {
   Alert,
   Anchor,
   AppShell,
+  Autocomplete,
   Avatar,
   Badge,
   Burger,

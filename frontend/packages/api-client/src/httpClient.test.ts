@@ -1,5 +1,5 @@
 import type { InternalAxiosRequestConfig } from 'axios';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { httpClient, READ_TIMEOUT_MS } from './httpClient';
 
 /** İsteği ağa göndermeden, interceptor'lardan geçmiş ayarı döndürür. */
@@ -31,5 +31,16 @@ describe('httpClient', () => {
     const config = await sentConfig('post');
     expect(config.timeout ?? 0).toBe(0);
     expect(config.headers.get('Idempotency-Key')).toBeTruthy();
+  });
+
+  it('güvenli olmayan bağlamda (düz http, IP adresi) crypto.randomUUID olmadan da istek gider', async () => {
+    vi.spyOn(crypto, 'randomUUID').mockImplementation(() => {
+      throw new TypeError('crypto.randomUUID is not a function');
+    });
+    const config = await sentConfig('post');
+    expect(config.headers.get('Idempotency-Key')).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
+    vi.restoreAllMocks();
   });
 });

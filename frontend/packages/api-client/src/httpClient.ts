@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
+import { randomId } from './randomId';
 
 const MUTATING_METHODS = new Set(['post', 'put', 'patch', 'delete']);
 
@@ -24,14 +25,14 @@ export const httpClient = axios.create({
 });
 
 function addTraceHeaders(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
-  config.headers.set('X-Request-Id', crypto.randomUUID());
+  config.headers.set('X-Request-Id', randomId());
   const method = (config.method ?? 'get').toLowerCase();
   if (method === 'get' && (config.timeout ?? 0) === 0) {
     config.timeout = READ_TIMEOUT_MS;
   }
   // FE-API-07: offline yeniden denemede aynı anahtar korunur; çağıran verdiyse ona dokunulmaz.
   if (MUTATING_METHODS.has(method) && !config.headers.has('Idempotency-Key')) {
-    config.headers.set('Idempotency-Key', crypto.randomUUID());
+    config.headers.set('Idempotency-Key', randomId());
   }
   return config;
 }

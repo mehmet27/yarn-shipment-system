@@ -5,6 +5,12 @@ import { generatePassword } from '../generatePassword';
 
 export type PasswordToolsProps = { password: string; onGenerate: (password: string) => void };
 
+/** Pano yalnızca güvenli bağlamda (https ya da bu bilgisayar) vardır; IP ile düz http'de kopyalama düğmesi kapalı kalır. */
+function canCopy(): boolean {
+  const { protocol, hostname } = window.location;
+  return protocol === 'https:' || hostname === 'localhost' || hostname === '127.0.0.1';
+}
+
 /** Yazılan geçici şifreyi rastgele üretir ya da panoya kopyalar; şifre değişince "Kopyalandı" sıfırlanır. */
 export function PasswordTools({ password, onGenerate }: PasswordToolsProps) {
   const { t } = useTranslation();
@@ -24,7 +30,7 @@ export function PasswordTools({ password, onGenerate }: PasswordToolsProps) {
       </Button>
       <Button
         variant="default"
-        disabled={password === ''}
+        disabled={password === '' || !canCopy()}
         onClick={() => {
           void navigator.clipboard.writeText(password).then(() => {
             setIsCopied(true);

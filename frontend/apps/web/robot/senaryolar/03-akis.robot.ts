@@ -1,6 +1,7 @@
 import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import {
+  merkezKumasDoldur,
   fiyatYaz,
   iplikTanimla,
   tedarikciTanimla,
@@ -10,7 +11,7 @@ import {
   sevkiyatIpligiSec,
   tartiyiOnayla,
 } from '../support/akis';
-import { damga, iplikGirisiDoldur, iplikSec, resim, sec } from '../support/yardimci';
+import { damga, iplikGirisiDoldur, resim, sec } from '../support/yardimci';
 
 type FireDosyasi = { fireRate: string; sentKg: string; fabricKg: string; status: string };
 type Sevkiyat = { fireRate: string; status: string };
@@ -55,13 +56,10 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
   await kalite.adim('kalite: stoktaki iplikle merkez kumaş üretimi', async () => {
     await kalite.sayfa.goto('/panel/merkez-stok');
     await kalite.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
-    await kalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
-    await iplikSec(kalite.sayfa, /İplik cinsi 1/, iplik);
-    await kalite.sayfa.getByLabel(/Kumaş kg 1/).fill('50');
-    await kalite.sayfa.getByLabel(/Fire \(%\)/).fill('3');
+    await merkezKumasDoldur(kalite.sayfa, { kumas: 'Süprem', iplik, kg: '50', fire: '3' });
     await kalite.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();
     await kalite.sayfa.getByText('Kumaş girişi kaydedildi.').waitFor();
-    await expect(kalite.sayfa.getByLabel(/Kumaş cinsi/)).toHaveValue('');
+    await expect(kalite.sayfa.getByRole('combobox', { name: /^Kumaş cinsi/ })).toHaveValue('');
     await kalite.sayfa.getByRole('tab', { name: 'Eldeki iplik' }).click();
     await kalite.sayfa.getByText('Merkez kumaş üretimi').first().waitFor();
     const hareketler = await kalite.sayfa.innerText('main');
@@ -74,10 +72,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
   await kalite.adim('kalite: stoktan fazla üretim reddedilmeli ve nedeni söylenmeli', async () => {
     // Önceki adım "Eldeki iplik" sekmesinde bitti; form sekmesine dönülür, başarılı kayıttan sonra form boşalmıştır.
     await kalite.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
-    await kalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
-    await iplikSec(kalite.sayfa, /İplik cinsi 1/, iplik);
-    await kalite.sayfa.getByLabel(/Fire \(%\)/).fill('3');
-    await kalite.sayfa.getByLabel(/Kumaş kg 1/).fill('5000');
+    await merkezKumasDoldur(kalite.sayfa, { kumas: 'Süprem', iplik, kg: '5000', fire: '3' });
     await kalite.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();
     const mesajlar = await kalite.mesajlar();
     kalite.kontrol(

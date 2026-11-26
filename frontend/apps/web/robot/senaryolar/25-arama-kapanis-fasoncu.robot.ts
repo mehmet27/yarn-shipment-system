@@ -142,11 +142,16 @@ test('Yedi öneri: son görünüm hatırlanır, dönem kıyası yazar, ay sonu k
   await mudur.adim(
     'sekme ve dönem seçilir; ekrana yeniden girince aynı görünüm açılır',
     async () => {
-      await mudur.sayfa.getByRole('tab', { name: 'Fire raporu', exact: true }).click();
-      await expect(mudur.sayfa).toHaveURL(/sekme=fire/);
+      const fire = mudur.sayfa.getByRole('tab', { name: 'Fire raporu', exact: true });
+      await fire.click();
+      // Adres ekrandan önce değişir; dönem, sekme ekranda seçili görününce tıklanır.
+      await expect(fire).toHaveAttribute('aria-selected', 'true');
+      await mudur.sayfa.waitForLoadState('networkidle');
       await mudur.sayfa.getByText('7 gün', { exact: true }).click();
       await expect(mudur.sayfa).toHaveURL(/sekme=fire/);
       await expect(mudur.sayfa).toHaveURL(/gun=7/);
+      // Seçim ekranda görününce saklanır; adres değişir değişmez ayrılmak eski görünümü bırakır.
+      await expect(mudur.sayfa.getByRole('radio', { name: '7 gün' })).toBeChecked();
       await mudur.sayfa.goto('/panel/bakiye');
       await mudur.sayfa.goto('/panel/raporlar');
       await expect(mudur.sayfa).toHaveURL(/sekme=fire/);
@@ -155,10 +160,12 @@ test('Yedi öneri: son görünüm hatırlanır, dönem kıyası yazar, ay sonu k
         mudur.sayfa.getByRole('tab', { name: 'Fire raporu', exact: true }),
       ).toHaveAttribute('aria-selected', 'true');
       // Sonraki senaryolar varsayılan görünümle başlasın.
-      await mudur.sayfa.getByRole('tab', { name: 'Özet', exact: true }).click();
-      await expect(mudur.sayfa).not.toHaveURL(/sekme=/);
+      const ozet = mudur.sayfa.getByRole('tab', { name: 'Özet', exact: true });
+      await ozet.click();
+      await expect(ozet).toHaveAttribute('aria-selected', 'true');
+      await mudur.sayfa.waitForLoadState('networkidle');
       await mudur.sayfa.getByText('30 gün', { exact: true }).click();
-      await expect(mudur.sayfa).not.toHaveURL(/gun=/);
+      await expect(mudur.sayfa.getByRole('radio', { name: '30 gün' })).toBeChecked();
     },
   );
 

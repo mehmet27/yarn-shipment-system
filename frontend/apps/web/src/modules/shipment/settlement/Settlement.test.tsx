@@ -1,9 +1,11 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { createHandlers } from '@/mocks/handlers';
 import { server } from '@/mocks/server';
 import { addMockReceipt, saveMockRecipe } from '@/mocks/settlements';
+import { createMockUser } from '@/mocks/users';
 import { renderApp } from '@/test/renderApp';
 
 const COMPLETED = '/panel/sevkiyat/shp-0003';
@@ -165,6 +167,25 @@ describe('Sevkiyat dosyası: fasoncu sekmeleri', () => {
     expect(await screen.findByText(/Dönüş · 36\/1 Viskon · 25 kg/)).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Kumaş girişi' })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Fire dosyası' })).not.toBeInTheDocument();
+  });
+
+  it('merkez kalite fire dosyasında üretilen kumaş listesini görmez ve sormaz', async () => {
+    server.use(...createHandlers('QUALITY'));
+    let drawRequests = 0;
+    server.use(
+      http.get('/api/v1/me', () =>
+        HttpResponse.json({ ...createMockUser('QUALITY'), workArea: 'CENTRAL' }),
+      ),
+      http.get('/api/v1/shipments/:id/fabric-receipts/drawn-from-yarn', () => {
+        drawRequests += 1;
+        return new HttpResponse(null, { status: 403 });
+      }),
+    );
+    renderApp(COMPLETED);
+    await openTab('Fire dosyası');
+    expect(await screen.findByTestId('fire-status')).toBeInTheDocument();
+    expect(screen.queryByTestId('fabric-draws')).not.toBeInTheDocument();
+    expect(drawRequests).toBe(0);
   });
 
   it('tamamlanmamış sevkiyatta fasoncu sekmeleri görünmez', async () => {

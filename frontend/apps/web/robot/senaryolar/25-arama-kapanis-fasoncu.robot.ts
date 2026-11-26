@@ -50,8 +50,8 @@ test('Yedi öneri: sevkiyat listesinde arama, tarih süzgeci, Excel ve her ekran
       await kutu.press('Enter');
       await expect(mudur.sayfa).toHaveURL(/[?&]ara=/);
       await expect(mudur.sayfa.getByRole('link', { name: sevkiyat.shipmentNo })).toBeVisible();
-      const satirlar = await mudur.sayfa.getByRole('table').getByRole('row').count();
-      mudur.kontrol('başlık dışında tek satır kalmalı', satirlar === 2, String(satirlar));
+      // Süzülen liste sunucudan gelene kadar beklenir: başlık dışında tek satır kalmalı.
+      await expect(mudur.sayfa.getByRole('table').getByRole('row')).toHaveCount(2);
     },
   );
 
@@ -143,6 +143,7 @@ test('Yedi öneri: son görünüm hatırlanır, dönem kıyası yazar, ay sonu k
     'sekme ve dönem seçilir; ekrana yeniden girince aynı görünüm açılır',
     async () => {
       await mudur.sayfa.getByRole('tab', { name: 'Fire raporu', exact: true }).click();
+      await expect(mudur.sayfa).toHaveURL(/sekme=fire/);
       await mudur.sayfa.getByText('7 gün', { exact: true }).click();
       await expect(mudur.sayfa).toHaveURL(/sekme=fire/);
       await expect(mudur.sayfa).toHaveURL(/gun=7/);
@@ -155,7 +156,9 @@ test('Yedi öneri: son görünüm hatırlanır, dönem kıyası yazar, ay sonu k
       ).toHaveAttribute('aria-selected', 'true');
       // Sonraki senaryolar varsayılan görünümle başlasın.
       await mudur.sayfa.getByRole('tab', { name: 'Özet', exact: true }).click();
+      await expect(mudur.sayfa).not.toHaveURL(/sekme=/);
       await mudur.sayfa.getByText('30 gün', { exact: true }).click();
+      await expect(mudur.sayfa).not.toHaveURL(/gun=/);
     },
   );
 
@@ -245,6 +248,17 @@ test('Yedi öneri: fasoncu sayfası bakiye ile tutarlıdır, depo açamaz', asyn
     await mudur.sayfa.getByRole('link', { name: 'Fasoncu bakiyesine dön' }).click();
     await mudur.sayfa.waitForURL(/\/panel\/bakiye$/);
   });
+
+  if (rolTanimli('genel-mudur')) {
+    const genel = await giris('genel-mudur');
+    await genel.adim('genel müdür: sevkiyat bölümleri görünmez, yetki hatası alınmaz', async () => {
+      await genel.sayfa.goto(yol);
+      await expect(genel.sayfa.getByText('Kumaşı beklenenler', { exact: true })).toBeVisible();
+      await genel.sayfa.waitForLoadState('networkidle');
+      await expect(genel.sayfa.getByTestId('sub-in-transit')).toHaveCount(0);
+      await expect(genel.sayfa.getByText('Yoldaki sevkiyatlar', { exact: true })).toHaveCount(0);
+    });
+  }
 
   await depo.adim('depo fasoncu sayfasını açamaz (403)', async () => {
     depo.beklenen(/403 GET/);

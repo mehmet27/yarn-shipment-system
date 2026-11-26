@@ -12,6 +12,8 @@ export function useSettlementAccess() {
   const isFabricHidden = user?.workArea === 'CENTRAL';
   return {
     fabric: !isFabricHidden && (canRecordFabric || canBalance),
+    /** Üretilen kumaş listesi de fasoncu kumaşıdır; sunucu merkez kaliteye vermez. */
+    hasFabricDraws: !isFabricHidden,
     yarn: canRecordYarn || canBalance,
     fire: canBalance || canEditRate || canMarkInvoice,
   };

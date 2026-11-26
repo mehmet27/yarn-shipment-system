@@ -69,11 +69,17 @@ test('Raporlar: müdür her sekmeyi, dönemi, tarihleri, logoyu ve açılış ba
   await mudur.sayfa.goto('/panel/raporlar');
   await mudur.adim('dönem ve tarih aralığı', async () => {
     await mudur.sayfa.getByLabel(/Başlangıç tarihi/).fill('2026-11-10');
+    // Seçim adrese yazılıp ekran yenilenmeden ikinci tarih girilirse ilki kaybolur.
+    await expect(mudur.sayfa.getByLabel(/Başlangıç tarihi/)).toHaveValue('2026-11-10');
     await mudur.sayfa.getByLabel(/Bitiş tarihi/).fill('2026-11-01');
-    mudur.kontrol(
-      'başlangıç bitişten sonraysa uyarı çıkmalı',
-      /Başlangıç, bitişten sonra olamaz/.test(await mudur.sayfa.innerText('main')),
-    );
+    const uyariVar = await mudur.sayfa
+      .getByText('Başlangıç, bitişten sonra olamaz.')
+      .waitFor({ timeout: 8_000 })
+      .then(
+        () => true,
+        () => false,
+      );
+    mudur.kontrol('başlangıç bitişten sonraysa uyarı çıkmalı', uyariVar);
     await mudur.sayfa.getByLabel(/Bitiş tarihi/).fill('2026-11-13');
     await mudur.sayfa.waitForTimeout(800);
   });

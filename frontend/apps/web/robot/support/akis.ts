@@ -318,23 +318,31 @@ export async function kumasFormuDoldur(
   await fasonKalite.sayfa.getByLabel(/İrsaliye no/).fill(irsaliyeNo);
 }
 
+/** Metni düzenli ifade içinde olduğu gibi aratır. */
+const kacisli = (metin: string) => metin.replace(/[/\\^$*+?.()|[\]{}]/g, '\\$&');
+
 /**
  * Kumaşın iplik karışımını yazar: `oranlar` iplik adı → yüzde (ör. `{ [iplik]: '60', [baskaIplik]: '40' }`); verilmezse
- * fasoncudaki ilk ipliğe %100 yazılır. Oran kutusunun etiketi "Oran: <iplik adı>"dır (partisi varsa adın yanında).
+ * bu sevkiyatın ipliğine %100 yazılır. Oran kutusunun etiketi "Oran: <iplik adı>"dır (partisi varsa adın yanında).
  */
 export async function oranYaz(fasonKalite: Robot, oranlar?: Record<string, string>) {
   const sayfa = fasonKalite.sayfa;
   if (oranlar === undefined) {
-    await sayfa
-      .getByLabel(/^Oran: /)
-      .first()
-      .fill('100');
+    // Listede fasoncuda başka sevkiyatlardan kalan iplikler de durur; oran bu sevkiyatın ipliğine yazılır.
+    const id = /\/sevkiyat\/([^/?]+)/.exec(sayfa.url())?.[1] ?? '';
+    const secenekler = await fasonKalite.api<{ yarnType: string; ownKg: string }[]>(
+      `/api/v1/shipments/${id}/fabric-receipts/yarn-options`,
+    );
+    const kendi = secenekler.find((s) => Number(s.ownKg) > 0)?.yarnType;
+    const kutu =
+      kendi === undefined
+        ? sayfa.getByLabel(/^Oran: /)
+        : sayfa.getByLabel(new RegExp(`^Oran: ${kacisli(kendi)}(?![-\\w])`));
+    await kutu.first().fill('100');
     return;
   }
   for (const [iplik, oran] of Object.entries(oranlar)) {
-    await sayfa
-      .getByLabel(new RegExp(`^Oran: ${iplik.replace(/[/\\^$*+?.()|[\]{}]/g, '\\$&')}`))
-      .fill(oran);
+    await sayfa.getByLabel(new RegExp(`^Oran: ${kacisli(iplik)}`)).fill(oran);
   }
 }
 

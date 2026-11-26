@@ -25,14 +25,16 @@ function useSettlements(subcontractorId: string, status: FireStatus) {
 
 /** Fasoncunun sevkiyatları: liste fasoncu adına göre aranır, aynı adı taşıyan başka fasoncu kimlikle elenir. */
 function useSubcontractorShipments(subcontractorId: string, title: string | undefined) {
-  return useQuery({
+  const canSee = usePermission('SHIPMENT_VIEW');
+  const query = useQuery({
     queryKey: ['subcontractor-shipments', subcontractorId, title],
     queryFn: async (): Promise<ShipmentSummary[]> =>
       (await fetchAllShipments({ search: title ?? '' })).filter(
         (shipment) => shipment.subcontractorId === subcontractorId,
       ),
-    enabled: title !== undefined,
+    enabled: canSee && title !== undefined,
   });
+  return { canSee, items: query.data ?? [] };
 }
 
 function useOpenDiscrepancies(isEnabled: boolean) {
@@ -66,8 +68,10 @@ function useSubcontractorTitle(subcontractorId: string, fallback: string | undef
 }
 
 /** Açık uyuşmazlıklar fasoncuya göre süzülemez; fasoncunun sevkiyatlarına ait olanlar ayıklanır. */
-function useSubcontractorDiscrepancies(shipments: readonly ShipmentSummary[]) {
-  const canSee = usePermission('DISCREPANCY_VIEW');
+function useSubcontractorDiscrepancies(shipments: readonly ShipmentSummary[], hasList: boolean) {
+  const canSeeDiscrepancies = usePermission('DISCREPANCY_VIEW');
+  // Sevkiyat listesi görülemiyorsa hangi uyuşmazlığın bu fasoncuya ait olduğu bilinemez; bölüm gösterilmez.
+  const canSee = canSeeDiscrepancies && hasList;
   const discrepancies = useOpenDiscrepancies(canSee);
   const shipmentIds = new Set(shipments.map((shipment) => shipment.shipmentId));
   return {
@@ -84,12 +88,13 @@ export function useSubcontractorOverview(subcontractorId: string) {
   const canSeeReports = usePermission('REPORT_VIEW');
   const balances = useBalances(subcontractorId);
   const title = useSubcontractorTitle(subcontractorId, balances.data?.items[0]?.subcontractorTitle);
-  const shipments = useSubcontractorShipments(subcontractorId, title).data ?? [];
-  const discrepancies = useSubcontractorDiscrepancies(shipments);
+  const shipments = useSubcontractorShipments(subcontractorId, title);
+  const discrepancies = useSubcontractorDiscrepancies(shipments.items, shipments.canSee);
   return {
     title,
     balances,
-    inTransit: shipments.filter((shipment) => shipment.status === 'AWAITING_DELIVERY'),
+    canSeeShipments: shipments.canSee,
+    inTransit: shipments.items.filter((shipment) => shipment.status === 'AWAITING_DELIVERY'),
     awaitingFabric: useSettlements(subcontractorId, 'AWAITING_FABRIC').data ?? [],
     toInvoice: useSettlements(subcontractorId, 'TO_INVOICE').data ?? [],
     fireRate: useFireRate(subcontractorId, canSeeReports).data,

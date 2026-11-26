@@ -79,9 +79,10 @@ describe('Merkez iplik stoku', () => {
     await user.click(screen.getByRole('tab', { name: 'Kumaş girişi' }));
 
     const form = screen.getByRole('region', { name: 'Merkez kumaş girişi' });
-    await user.type(within(form).getByLabelText(/Kumaş cinsi/), 'Süprem');
+    await user.type(within(form).getByRole('combobox', { name: /Kumaş cinsi/ }), 'Süprem');
+    await user.type(within(form).getByLabelText(/Toplam kumaş kg/), '480');
     await pickYarn(user, 'İplik cinsi 1', 'Pamuk 20/1');
-    await user.type(within(form).getByLabelText('Kumaş kg 1'), '480');
+    await user.type(within(form).getByLabelText('Oran (%) 1'), '100');
     await user.click(within(form).getByRole('button', { name: 'Kumaşı kaydet' }));
 
     await screen.findByText('Kumaş girişi kaydedildi.');

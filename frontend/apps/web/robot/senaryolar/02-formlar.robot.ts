@@ -1,6 +1,7 @@
 import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import {
+  merkezKumasDoldur,
   fiyatYaz,
   iplikTanimla,
   kaliteSinifiTanimla,
@@ -143,13 +144,11 @@ test('Formlar: kalite kumaş girişi stokta olmayan iplikle üretimi reddeder', 
   for (const [ad, k] of [
     ['boş', { kumas: '', iplik: '', kg: '', fire: '' }],
     ['fire 150', { kumas: 'Süprem', iplik: stoksuz, kg: '5', fire: '150' }],
+    ['oran toplamı 90', { kumas: 'Süprem', iplik: stoksuz, kg: '5', fire: '3', oran: '90' }],
     ['stokta olmayan iplik', { kumas: 'Süprem', iplik: stoksuz, kg: '5', fire: '3' }],
   ] as const) {
     await robot.adim(`kumaş girişi: ${ad}`, async () => {
-      await robot.sayfa.getByLabel(/Kumaş cinsi/).fill(k.kumas);
-      if (k.iplik !== '') await iplikSec(robot.sayfa, /İplik cinsi 1/, k.iplik);
-      await robot.sayfa.getByLabel(/Kumaş kg 1/).fill(k.kg);
-      await robot.sayfa.getByLabel(/Fire \(%\)/).fill(k.fire);
+      await merkezKumasDoldur(robot.sayfa, k);
       await robot.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();
       await nedenliMesajVar(robot, `kumaş girişi ${ad}`);
     });

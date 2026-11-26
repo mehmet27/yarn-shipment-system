@@ -5,6 +5,8 @@ export { useActorLabel } from './components/useActorLabel';
 export { useYarnLabel } from './components/useYarnLabel';
 export { formatKgText, formatPercentText, formatSignedKg } from './settlement/format';
 export { InvoiceForm } from './settlement/InvoiceForm';
+export { findRecipe } from './settlement/fabricRatios';
+export { useActiveFabricRecipes } from './settlement/hooks';
 export { useFireSettlement } from './settlement/hooks';
 export { MasterSelect } from './create/MasterSelect';
 export type { MasterOption } from './hooks/useMasterOptions';

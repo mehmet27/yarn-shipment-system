@@ -429,7 +429,8 @@ genel müdür, depo ve kalite (merkez kalite) görür. Sekmeler:
   tedarikçi irsaliye no ve not isteğe bağlıdır. İplik cinsi ve tedarikçi Tanımlar'daki aktif kayıtlardan seçilir. Parti no yazılırsa
   Partiler'deki partiye bağlanır, yoksa açılır; ilk kez yazılan parti için kalite sınıfı seçilir.
   Alan yazılabilen bir listedir: seçili iplik cinsi ve tedarikçinin partilerini önerir; kayıtlı partide kalite sınıfı sorulmaz.
-- **Kumaş girişi** (merkez kalite yazar): merkez fabrikada üretilen kumaş; kullanılan iplikler fire eklenerek merkez
+- **Kumaş girişi** (merkez kalite yazar): merkez fabrikada üretilen kumaş. Kumaş cinsi, toplam kumaş kg ve ipliklerin yüzdesi
+  (toplam %100) girilir; tanımlı cinste "Tanımlı karışımı yaz" oranları doldurur. İplik başına kilo fire eklenerek merkez
   stoktan düşer.
 - **Tedarikçi raporu:** Stok ekranında ve ana sayfada "Tedarikçiden gelen iplik" tablosu, tedarikçi başına toplam gelen kg'yi
   ve altında iplik cinslerini gösterir; Excel'de ayrı sayfadır.

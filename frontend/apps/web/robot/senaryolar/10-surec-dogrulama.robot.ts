@@ -5,6 +5,7 @@ import {
   uretimIplikDusumu,
 } from '../kurallar/hesap';
 import {
+  merkezKumasDoldur,
   iplikTanimla,
   kaliteSinifiTanimla,
   tedarikciTanimla,
@@ -12,7 +13,7 @@ import {
   tamamlanmisSevkiyat,
 } from '../support/akis';
 import { expect, test } from '../support/robot';
-import { damga, iplikGirisiDoldur, iplikSec, sec } from '../support/yardimci';
+import { damga, iplikGirisiDoldur, sec } from '../support/yardimci';
 
 type Dashboard = {
   shipments: Record<string, number>;
@@ -152,12 +153,9 @@ test('Süreç doğrulama: 200 kg iplik → 50 kg kumaş → 100 kg sevkiyat → 
     async () => {
       await kalite.sayfa.goto('/panel/merkez-stok');
       await kalite.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
-      await kalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
-      await iplikSec(kalite.sayfa, /İplik cinsi 1/, iplik);
-      await kalite.sayfa.getByLabel(/Kumaş kg 1/).fill('50');
-      await kalite.sayfa.getByLabel(/Fire \(%\)/).fill('3');
+      await merkezKumasDoldur(kalite.sayfa, { kumas: 'Süprem', iplik, kg: '50', fire: '3' });
       await kalite.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();
-      await expect(kalite.sayfa.getByLabel(/Kumaş cinsi/)).toHaveValue('');
+      await expect(kalite.sayfa.getByRole('combobox', { name: /^Kumaş cinsi/ })).toHaveValue('');
       const stok = await kalite.api<Stok>('/api/v1/central-stock');
       const beklenen = 200 - uretimIplikDusumu(50, 0.03);
       kalite.kontrol(

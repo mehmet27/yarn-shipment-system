@@ -1,15 +1,29 @@
 import type { CentralProductionRequest, YarnReceiptRequest } from '@iplik/api-client/central-stock';
 import type { MasterOption } from '@/modules/shipment';
-import { parseKg, pctInputToRate, sumKg } from '@iplik/units';
+import {
+  FULL_HUNDREDTHS,
+  parseKg,
+  parseRatio,
+  pctInputToRate,
+  ratioHundredths,
+} from '@iplik/units';
 
 export const MAX_FIRE_PCT = 20;
 
 /** i18n anahtarı (`stock.draftErrors.*`). */
 export type StockDraftError =
-  'required' | 'invalidKg' | 'invalidRate' | 'invalidRollCount' | 'invalidLotNo' | 'invalidWaybill';
+  | 'required'
+  | 'invalidKg'
+  | 'invalidRate'
+  | 'invalidRollCount'
+  | 'invalidLotNo'
+  | 'invalidWaybill'
+  | 'invalidRatio'
+  | 'ratioTotal'
+  | 'duplicateYarn';
 
-/** İplik, Tanımlar'daki aktif iplik listesinden seçilir; serbest metin yoktur. */
-export type YarnLineDraft = { product: MasterOption | undefined; netKg: string };
+/** İplik, Tanımlar'daki aktif iplik listesinden seçilir; `ratio` kumaşın yüzde kaçının bu iplik olduğudur. */
+export type YarnLineDraft = { product: MasterOption | undefined; ratio: string };
 /** Parti numarası yazılırsa partiye bağlanır; parti ilk kez yazılıyorsa kalite sınıfı da seçilir. */
 export type ReceiptDraft = {
   product: MasterOption | undefined;
@@ -64,6 +78,7 @@ export function toReceiptRequest(draft: ReceiptDraft): YarnReceiptRequest | Stoc
 
 export type ProductionDraft = {
   fabricType: string;
+  netKg: string;
   firePct: string;
   rollCount: string;
   waybillNo: string;
@@ -71,37 +86,63 @@ export type ProductionDraft = {
 };
 export const emptyProductionDraft = (firePct: string): ProductionDraft => ({
   fabricType: '',
+  netKg: '',
   firePct,
   rollCount: '',
   waybillNo: '',
-  yarns: [{ product: undefined, netKg: '' }],
+  yarns: [{ product: undefined, ratio: '' }],
 });
 
 const ROLL_PATTERN = /^[1-9]\d*$/;
 
-function toYarnLines(
-  rows: readonly YarnLineDraft[],
-): CentralProductionRequest['yarns'] | StockDraftError {
-  const lines: CentralProductionRequest['yarns'] = [];
-  for (const row of rows) {
-    const netKg = parseKg(row.netKg);
-    if (row.product === undefined) return 'required';
-    if (netKg === undefined) return 'invalidKg';
-    lines.push({ productId: row.product.value, netKg });
-  }
-  return lines.length === 0 ? 'required' : lines;
+const GRAMS = 1000;
+const KG_DECIMALS = 3;
+const HUNDRED = 100;
+
+/**
+ * Toplam kumaş kilosunu oranlara göre gram gram böler; yuvarlama farkı en büyük orana eklenir, böylece satırların
+ * toplamı yazılan kiloya tam eşit olur. `hundredths` toplamı 10.000 olmalıdır.
+ */
+export function splitKg(netKg: string, hundredths: readonly number[]): string[] {
+  const total = Math.round(Number(netKg) * GRAMS);
+  const grams = hundredths.map((h) => Math.floor((total * h) / FULL_HUNDREDTHS));
+  const largest = hundredths.indexOf(Math.max(...hundredths));
+  grams[largest] = (grams[largest] ?? 0) + total - grams.reduce((a, b) => a + b, 0);
+  return grams.map((g) => (g / GRAMS).toFixed(KG_DECIMALS));
 }
 
-/** Kumaş kilosu iplik satırlarının toplamıdır; fire sunucuda stoktan düşülürken eklenir. */
+function toYarnLines(
+  netKg: string,
+  rows: readonly YarnLineDraft[],
+): CentralProductionRequest['yarns'] | StockDraftError {
+  const ids: string[] = [];
+  const hundredths: number[] = [];
+  for (const row of rows) {
+    if (row.product === undefined || row.ratio.trim() === '') return 'required';
+    const ratio = parseRatio(row.ratio);
+    if (ratio === undefined) return 'invalidRatio';
+    if (ids.includes(row.product.value)) return 'duplicateYarn';
+    ids.push(row.product.value);
+    hundredths.push(ratioHundredths(ratio));
+  }
+  if (hundredths.reduce((a, b) => a + b, 0) !== FULL_HUNDREDTHS) return 'ratioTotal';
+  const shares = splitKg(netKg, hundredths);
+  if (shares.some((kg) => Number(kg) <= 0)) return 'invalidKg';
+  return ids.map((productId, i) => ({ productId, netKg: shares[i] ?? '' }));
+}
+
+/** İplik başına kumaş kilosu = toplam kumaş × oran; fire sunucuda stoktan düşülürken eklenir. */
 export function toProductionRequest(
   draft: ProductionDraft,
 ): CentralProductionRequest | StockDraftError {
   const fireRate = pctInputToRate(draft.firePct, MAX_FIRE_PCT);
-  if (draft.fabricType.trim() === '') return 'required';
+  if (draft.fabricType.trim() === '' || draft.netKg.trim() === '') return 'required';
+  const netKg = parseKg(draft.netKg);
+  if (netKg === undefined) return 'invalidKg';
   if (fireRate === undefined) return 'invalidRate';
   const roll = draft.rollCount.trim();
   if (roll !== '' && !ROLL_PATTERN.test(roll)) return 'invalidRollCount';
-  const yarns = toYarnLines(draft.yarns);
+  const yarns = toYarnLines(netKg, draft.yarns);
   if (typeof yarns === 'string') return yarns;
   const waybillNo = draft.waybillNo.trim();
   return {
@@ -113,5 +154,28 @@ export function toProductionRequest(
   };
 }
 
-export const productionTotalKg = (draft: ProductionDraft): string =>
-  sumKg(draft.yarns.map((row) => parseKg(row.netKg) ?? '0.000'));
+/** Yazılan oranların toplamı (yüzde); okunamayan satır sayılmaz. */
+export function productionRatioTotal(draft: ProductionDraft): number {
+  let total = 0;
+  for (const row of draft.yarns) {
+    const ratio = parseRatio(row.ratio);
+    if (ratio !== undefined) total += ratioHundredths(ratio);
+  }
+  return total / HUNDRED;
+}
+
+/** Satırın kumaş kilosu ve fire dahil stoktan düşecek iplik (yalnızca ekranda bilgi; hesabı sunucu yapar). */
+export function productionShare(
+  draft: ProductionDraft,
+  row: YarnLineDraft,
+): { fabricKg: string; yarnKg: string } | undefined {
+  const netKg = parseKg(draft.netKg);
+  const ratio = parseRatio(row.ratio);
+  const fireRate = pctInputToRate(draft.firePct, MAX_FIRE_PCT);
+  if (netKg === undefined || ratio === undefined || fireRate === undefined) return undefined;
+  const fabric = (Number(netKg) * Number(ratio)) / HUNDRED;
+  return {
+    fabricKg: fabric.toFixed(KG_DECIMALS),
+    yarnKg: (fabric / (1 - Number(fireRate))).toFixed(KG_DECIMALS),
+  };
+}

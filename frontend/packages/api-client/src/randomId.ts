@@ -20,4 +20,4 @@ export function randomId(): string {
     return (HYPHEN_BEFORE.has(index) ? '-' : '') + hex;
   }).join('');
 }
-/* eslint-enable @typescript-eslint/no-magic-numbers */
+/* eslint-enable @typescript-eslint/no-magic-numbers -- RFC 4122 bölümü bitti */

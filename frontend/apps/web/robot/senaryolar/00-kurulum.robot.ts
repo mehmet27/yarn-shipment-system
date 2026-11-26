@@ -1,3 +1,4 @@
+import { supremKarisimiTanimla } from '../support/akis';
 import { rolSifresi, rolTanimli, test } from '../support/robot';
 import {
   adminSifreVer,
@@ -92,4 +93,9 @@ test('Kurulum: yönetici eksik kullanıcıları açar, her biri ilk girişi yapa
       await baglam.close();
     });
   }
+});
+
+test('Kurulum: senaryoların kullandığı kumaş karışımı tanımlanır', async ({ giris }) => {
+  test.skip(!rolTanimli('mudur'), 'mudur yok');
+  await supremKarisimiTanimla(await giris('mudur'));
 });

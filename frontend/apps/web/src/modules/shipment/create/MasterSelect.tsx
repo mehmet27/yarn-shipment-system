@@ -2,7 +2,7 @@ import { useTranslation } from '@iplik/i18n';
 import { Select, useDebouncedValue } from '@iplik/ui';
 import { useState } from 'react';
 import type { MasterKind, MasterOption } from '../hooks/useMasterOptions';
-import { CENTRAL_GROUP, useMasterOptions } from '../hooks/useMasterOptions';
+import { CENTRAL_GROUP, OPTION_PAGE_SIZE, useMasterOptions } from '../hooks/useMasterOptions';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -16,6 +16,8 @@ export type MasterSelectProps = {
   subcontractorId?: string;
   /** Parti seçicisinde yalnızca bu ipliğin partileri listelenir. */
   productId?: string;
+  /** Parti seçicisinde yalnızca bu tedarikçinin partileri listelenir. */
+  supplierId?: string;
 };
 
 type Item = { value: string; label: string };
@@ -62,11 +64,12 @@ export function MasterSelect({
   error,
   subcontractorId,
   productId,
+  supplierId,
 }: MasterSelectProps) {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [q] = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
-  const query = useMasterOptions(kind, q, { subcontractorId, productId });
+  const query = useMasterOptions(kind, q, { subcontractorId, productId, supplierId });
   const fetched = query.data ?? [];
   const options =
     value === undefined || fetched.some((option) => option.value === value.value)
@@ -88,6 +91,7 @@ export function MasterSelect({
       withAsterisk={isRequired}
       onSearchChange={setSearch}
       nothingFoundMessage="—"
+      {...(fetched.length >= OPTION_PAGE_SIZE ? { description: t('create.moreOptions') } : {})}
       comboboxProps={{ withinPortal: true, hideDetached: false }}
     />
   );

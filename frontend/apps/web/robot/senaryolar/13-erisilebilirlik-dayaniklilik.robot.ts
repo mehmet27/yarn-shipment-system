@@ -110,7 +110,8 @@ test('Dayanıklılık: yenileme, geri/ileri ve çift tıklama veri tekrarlamaz',
     await depo.sayfa.goto('/panel/merkez-stok');
     await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
     await iplikGirisiDoldur(depo.sayfa, { iplik, tedarikci, kg: '10' });
-    await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).dblclick();
+    await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+    await depo.sayfa.getByRole('button', { name: 'Evet, kaydet' }).dblclick();
     await depo.sayfa.waitForTimeout(2000);
     const sonra = await depo.api<Stok>('/api/v1/central-stock');
     const fark =

@@ -2,6 +2,7 @@ package com.yarnshipment.reporting.adapter.in.web;
 
 import com.yarnshipment.common.web.problem.ProblemFactory;
 import com.yarnshipment.reporting.domain.model.InvalidReportPeriodException;
+import com.yarnshipment.reporting.domain.model.UnknownOpeningYarnException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -25,5 +26,12 @@ public final class ReportExceptionHandler {
     @ExceptionHandler(InvalidReportPeriodException.class)
     public ProblemDetail handleInvalidPeriod(HttpServletRequest request) {
         return problems.create(request, HttpStatus.BAD_REQUEST, "REPORT_PERIOD_INVALID");
+    }
+
+    @ExceptionHandler(UnknownOpeningYarnException.class)
+    public ProblemDetail handleUnknownYarn(UnknownOpeningYarnException exception, HttpServletRequest request) {
+        ProblemDetail problem = problems.create(request, HttpStatus.BAD_REQUEST, "OPENING_UNKNOWN_YARN");
+        problem.setProperty("yarnTypes", exception.yarnTypes());
+        return problem;
     }
 }

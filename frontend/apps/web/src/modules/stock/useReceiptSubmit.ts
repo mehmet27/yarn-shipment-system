@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useConfirmStep } from '@/modules/shared';
 import { useRecordYarnReceipt } from './hooks/useCentralStock';
 import type { ReceiptDraft, StockDraftError } from './stockDraft';
 import { EMPTY_RECEIPT_DRAFT, toReceiptRequest } from './stockDraft';
@@ -17,13 +18,19 @@ export function useReceiptSubmit() {
       setDraft((current) => ({ ...current, [name]: value }));
     },
   });
+  const step = useConfirmStep(toReceiptRequest(draft));
+  /** İlk adım yalnız denetler ve onay sorar. */
   const submit = () => {
     // reset() uçuştaki isteğin onSuccess/onSettled geri çağrılarını düşürür; bu yüzden meşgulken hiçbir şey yapılmaz.
     if (busy.current) return;
     mutation.reset();
     const request = toReceiptRequest(draft);
     setError(typeof request === 'string' ? request : undefined);
-    if (typeof request === 'string') return;
+    if (typeof request !== 'string') step.ask();
+  };
+  const confirm = () => {
+    const request = toReceiptRequest(draft);
+    if (busy.current || typeof request === 'string') return;
     busy.current = true;
     mutation.mutate(request, {
       onSuccess: () => {
@@ -31,8 +38,9 @@ export function useReceiptSubmit() {
       },
       onSettled: () => {
         busy.current = false;
+        step.close();
       },
     });
   };
-  return { draft, setDraft, field, error, submit, mutation };
+  return { draft, setDraft, field, error, submit, confirm, step, mutation };
 }

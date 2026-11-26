@@ -1,5 +1,7 @@
 import { useTranslation } from '@iplik/i18n';
-import { Button, SectionCard, SimpleGrid, Stack, TextInput } from '@iplik/ui';
+import { Button, SectionCard, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
+import { FabricTypeSelect } from '../create/FabricTypeSelect';
+import { MAX_WAYBILL_NO_LENGTH } from '../waybill';
 import { FabricMessages } from './FabricMessages';
 import { FabricPreview } from './FabricPreview';
 import { FabricYarnRows } from './FabricYarnRows';
@@ -19,14 +21,16 @@ export function FabricForm({ shipmentId }: { shipmentId: string }) {
     <SectionCard title={t('settlement.fabric.title')}>
       <Stack>
         <SimpleGrid cols={{ base: 1, sm: 2 }}>
-          <TextInput
+          <FabricTypeSelect
             label={t('settlement.fabric.fabricType')}
-            withAsterisk
-            {...field('fabricType')}
+            value={draft.fabricType}
+            onChange={form.changeFabricType}
+            isRequired
           />
           <TextInput
             label={t('settlement.fabric.waybillNo')}
             withAsterisk
+            maxLength={MAX_WAYBILL_NO_LENGTH}
             {...field('waybillNo')}
           />
           <TextInput
@@ -43,10 +47,10 @@ export function FabricForm({ shipmentId }: { shipmentId: string }) {
             {...field('rollCount')}
           />
         </SimpleGrid>
-        {form.recipe !== undefined && (
-          <Button variant="light" w="fit-content" onClick={form.fillFromRecipe}>
-            {t('settlement.fabric.fillRecipe')}
-          </Button>
+        {form.missingYarns.length > 0 && (
+          <Text size="sm" c="orange">
+            {t('settlement.fabric.recipeMissing', { yarns: form.missingYarns.join(', ') })}
+          </Text>
         )}
         <FabricYarnRows options={form.options} ratios={draft.ratios} onChange={form.setRatio} />
         <FabricMessages form={form} />

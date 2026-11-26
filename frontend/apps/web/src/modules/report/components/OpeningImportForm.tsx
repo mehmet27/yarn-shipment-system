@@ -6,6 +6,7 @@ import { useOpeningImport } from '../hooks/useFaconReports';
 import { usePartyNames } from '../hooks/usePartyNames';
 import { OpeningMessages } from './OpeningMessages';
 import { OpeningPreview } from './OpeningPreview';
+import { useKnownYarns } from '../hooks/useKnownYarns';
 import { parseOpeningLines } from '../openingImport';
 
 const today = () => todayIsoDate();
@@ -16,12 +17,13 @@ export function OpeningImportForm() {
   const { data: me } = useCurrentUser();
   const { idOf } = usePartyNames();
   const mutation = useOpeningImport();
+  const isKnownYarn = useKnownYarns();
   const [input, setInput] = useState('');
   const [asOf, setAsOf] = useState(today);
   // Açılış yükleme izni backend'de Müdür rolüne bağlıdır; bunun için ayrı bir izin anahtarı yok.
   const isAllowed = me?.roles.includes('MANAGER') ?? false;
   if (!isAllowed) return null;
-  const lines = parseOpeningLines(input, idOf);
+  const lines = parseOpeningLines(input, idOf, isKnownYarn);
   const valid = lines.flatMap((line) => (line.row === undefined ? [] : [line.row]));
   const errors = lines.filter((line) => line.error !== undefined);
   return (

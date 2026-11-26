@@ -1,8 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Select } from '@iplik/ui';
-import { useRecords } from '../hooks/useRecords';
-
-const OWNER_PAGE_SIZE = 100;
+import { useOwnerChoices } from '../hooks/useAllChoices';
 
 export type OwnerSelectProps = {
   value: string | undefined;
@@ -12,13 +10,7 @@ export type OwnerSelectProps = {
 /** Şoförün bağlı olduğu fasoncu; boş bırakılırsa şoför kendi şoförüdür. */
 export function OwnerSelect({ value, onChange }: OwnerSelectProps) {
   const { t } = useTranslation();
-  const query = useRecords('subcontractor', {
-    q: '',
-    page: 0,
-    size: OWNER_PAGE_SIZE,
-    isShowingInactive: false,
-  });
-  const data = (query.data?.rows ?? []).map((row) => ({ value: row.id, label: row.label }));
+  const data = useOwnerChoices().data ?? [];
   return (
     <Select
       label={t('masterData.owner')}

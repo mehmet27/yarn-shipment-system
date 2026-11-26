@@ -14,6 +14,7 @@ export function YarnCell({ line, index, onPatch }: YarnCellProps) {
   return (
     <MasterSelect
       kind="product"
+      isRequired
       label={`${t('create.recipe.yarnType')} ${String(index + 1)}`}
       value={line.yarn}
       onChange={(yarn) => {

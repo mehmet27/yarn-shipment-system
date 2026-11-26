@@ -1,6 +1,6 @@
 import { useTranslation } from '@iplik/i18n';
 import { Autocomplete, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
-import { MasterSelect } from '@/modules/shipment';
+import { MasterSelect, MAX_WAYBILL_NO_LENGTH } from '@/modules/shipment';
 import { useLotChoice } from '../hooks/useLotChoice';
 import type { useReceiptSubmit } from '../useReceiptSubmit';
 
@@ -40,7 +40,11 @@ export function ReceiptLotFields({
             </Text>
           )}
         </Stack>
-        <TextInput label={t('stock.receipt.waybillNo')} {...field('waybillNo')} />
+        <TextInput
+          label={t('stock.receipt.waybillNo')}
+          maxLength={MAX_WAYBILL_NO_LENGTH}
+          {...field('waybillNo')}
+        />
       </SimpleGrid>
       {(state === 'new' || state === 'unknown') && (
         <MasterSelect

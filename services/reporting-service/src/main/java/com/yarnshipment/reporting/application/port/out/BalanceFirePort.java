@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
@@ -41,6 +42,9 @@ public interface BalanceFirePort {
 
     /** Fasoncudaki iplik kiloları ve son girilen fiyatları (fasoncu × iplik cinsi). */
     List<PricedBalance> findPricedBalances(ReportScope scope);
+
+    /** Tanımlar'daki etkin ipliğin defter anahtarı (kimliği); sevkiyat hareketleri de bu anahtarla yazılır. */
+    Optional<String> findYarnKey(String yarnName);
 
     /** Satır defterine yazıldıysa true; (fasoncu, iplik) için OPENING varsa ya da kilo sıfırsa false. */
     boolean insertOpeningIfAbsent(OpeningBalanceRow row, Instant occurredAt, UUID actorId);

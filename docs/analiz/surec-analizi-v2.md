@@ -429,6 +429,9 @@ genel müdür, depo ve kalite (merkez kalite) görür. Sekmeler:
   tedarikçi irsaliye no ve not isteğe bağlıdır. İplik cinsi ve tedarikçi Tanımlar'daki aktif kayıtlardan seçilir. Parti no yazılırsa
   Partiler'deki partiye bağlanır, yoksa açılır; ilk kez yazılan parti için kalite sınıfı seçilir.
   Alan yazılabilen bir listedir: seçili iplik cinsi ve tedarikçinin partilerini önerir; kayıtlı partide kalite sınıfı sorulmaz.
+- **Tutarlılık kuralları:** kumaş cinsi her ekranda tanımlı karışımlardan seçilir. Merkez iplik ve kumaş girişi ile iplik dönüşü
+  kaydetmeden önce onay ister. Sevkiyat satırının partisi o ipliğe ait olmalıdır (sunucu denetler). Açılış bakiyesi yalnızca
+  tanımlı iplikle yüklenir. İplik adı değişince karışımlardaki ad da değişir; karışımda kullanılan iplik pasife alınırken uyarılır.
 - **Sevkiyat formunda iplik ve kumaş:** parti listesi satırdaki ipliğe göre süzülür. Sipariş bilgilerindeki kumaş cinsi tanımlı
   karışımlardan seçilir (yeni ad da yazılabilir); LYC elastandan dolar, karışımda olmayan iplik uyarılır.
 - **Kumaş girişi** (merkez kalite yazar): merkez fabrikada üretilen kumaş. Kumaş cinsi, toplam kumaş kg ve ipliklerin yüzdesi

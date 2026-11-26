@@ -1,3 +1,4 @@
+import { allPages } from '../allPages';
 import { listLots, listProducts, listQualityGrades, listYarnSuppliers } from '@iplik/api-client';
 import type { LotView } from '@iplik/api-client';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
@@ -8,8 +9,6 @@ import { MASTER_ADMIN_PATH } from '../kinds';
 export const LOTS_KEY = [MASTER_ADMIN_PATH, 'lots'] as const;
 /** Sevkiyat formundaki lot seçicisinin önbellek anahtarı (`useMasterOptions`, kind = 'lot'). */
 export const LOT_OPTIONS_KEY = [MASTER_ADMIN_PATH, 'lot'] as const;
-
-const CHOICE_PAGE_SIZE = 100;
 
 export type LotPage = { rows: LotView[]; totalPages: number };
 
@@ -31,20 +30,19 @@ export function useCatalogChoices() {
   return useQuery({
     queryKey: [MASTER_ADMIN_PATH, 'catalog-choices'],
     queryFn: async () => {
-      const query = { page: 0, size: CHOICE_PAGE_SIZE };
       const [products, grades, suppliers] = await Promise.all([
-        listProducts(query),
-        listQualityGrades(query),
-        listYarnSuppliers(query),
+        allPages(listProducts),
+        allPages(listQualityGrades),
+        allPages(listYarnSuppliers),
       ]);
       const toChoice = (row: { id: string; code: string; name: string }): Choice => ({
         value: row.id,
         label: `${row.code} · ${row.name}`,
       });
       return {
-        products: products.items.map(toChoice),
-        grades: grades.items.map(toChoice),
-        suppliers: suppliers.items.map((row) => ({ value: row.id, label: row.name })),
+        products: products.map((row) => ({ value: row.id, label: row.name })),
+        grades: grades.map(toChoice),
+        suppliers: suppliers.map((row) => ({ value: row.id, label: row.name })),
       };
     },
   });

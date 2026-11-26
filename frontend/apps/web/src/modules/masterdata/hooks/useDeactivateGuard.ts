@@ -1,3 +1,4 @@
+import { listFabricRecipes } from '@iplik/api-client/fabric';
 import { getBalances } from '@iplik/api-client/settlements';
 import type { BalanceRow } from '@iplik/api-client/settlements';
 import { isZeroKg } from '@iplik/units';
@@ -10,7 +11,20 @@ export function openBalanceRows(items: readonly BalanceRow[]): BalanceRow[] {
   return items.filter((row) => !isZeroKg(row.balanceKg) || !isZeroKg(row.inTransitKg));
 }
 
-export type PendingWarning = { record: RecordRow; rows: BalanceRow[] | undefined };
+export type PendingWarning = {
+  record: RecordRow;
+  rows: BalanceRow[] | undefined;
+  /** İplikte: bu ipliği kullanan kumaş karışımları. */
+  fabricTypes?: string[];
+};
+
+/** İpliği kullanan etkin karışımların kumaş cinsleri. */
+async function recipesUsing(yarnName: string): Promise<string[]> {
+  const wanted = yarnName.trim().toLowerCase();
+  return (await listFabricRecipes())
+    .filter((recipe) => recipe.yarns.some((y) => y.yarnType.trim().toLowerCase() === wanted))
+    .map((recipe) => recipe.fabricType);
+}
 
 /**
  * Pasife alma düğmesinin arkasındaki kontrol. Fasoncuda önce bakiye sorulur; bakiye varsa ya da
@@ -21,7 +35,13 @@ export function useDeactivateGuard(kind: ManagedKind) {
   const [warning, setWarning] = useState<PendingWarning | undefined>();
   const [isChecking, setChecking] = useState(false);
 
+  const warnIfInRecipe = async (record: RecordRow) => {
+    const fabricTypes = await recipesUsing(record.label).catch(() => []);
+    if (fabricTypes.length > 0) setWarning({ record, rows: [], fabricTypes });
+    return fabricTypes.length > 0;
+  };
   const request = async (record: RecordRow) => {
+    if (kind === 'product' && record.isActive && (await warnIfInRecipe(record))) return;
     if (kind !== 'subcontractor' || !record.isActive) {
       mutation.mutate({ id: record.id, isActive: !record.isActive });
       return;

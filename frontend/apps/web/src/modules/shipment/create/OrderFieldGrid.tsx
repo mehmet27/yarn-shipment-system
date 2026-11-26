@@ -1,19 +1,18 @@
 import { useTranslation } from '@iplik/i18n';
 import { Select, SimpleGrid, TextInput } from '@iplik/ui';
 import type { RecipeLineDraft } from './createDraft';
-import { priceValid } from './createDraft';
 import { FabricTypeField } from './FabricTypeField';
+import { LycraSelect } from './LycraSelect';
 
 type OrderFieldGridProps = {
   line: RecipeLineDraft;
-  showErrors: boolean;
   onPatch: (patch: Partial<RecipeLineDraft>) => void;
 };
 
-type TextField = 'lycra' | 'yarnLength' | 'pussFine';
+type TextField = 'yarnLength' | 'pussFine';
 
-/** Sipariş formu alanları: kumaş cinsi, LYC, en türü, iplik uzunluğu, puss-fine, birim fiyat. */
-export function OrderFieldGrid({ line, showErrors, onPatch }: OrderFieldGridProps) {
+/** Sipariş formu alanları: kumaş cinsi, LYC, en türü, iplik uzunluğu, puss-fine. */
+export function OrderFieldGrid({ line, onPatch }: OrderFieldGridProps) {
   const { t } = useTranslation();
   const text = (field: TextField) => (
     <TextInput
@@ -28,7 +27,12 @@ export function OrderFieldGrid({ line, showErrors, onPatch }: OrderFieldGridProp
   return (
     <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
       <FabricTypeField line={line} onPatch={onPatch} />
-      {text('lycra')}
+      <LycraSelect
+        value={line.lycra}
+        onChange={(lycra) => {
+          onPatch({ lycra });
+        }}
+      />
       <Select
         label={t('create.recipe.widthType')}
         clearable
@@ -44,18 +48,6 @@ export function OrderFieldGrid({ line, showErrors, onPatch }: OrderFieldGridProp
       />
       {text('yarnLength')}
       {text('pussFine')}
-      <TextInput
-        label={t('create.recipe.unitPrice')}
-        withAsterisk
-        inputMode="decimal"
-        value={line.unitPrice}
-        {...(showErrors && !priceValid(line.unitPrice)
-          ? { error: t('create.errors.linePriceInvalid') }
-          : {})}
-        onChange={(event) => {
-          onPatch({ unitPrice: event.currentTarget.value });
-        }}
-      />
     </SimpleGrid>
   );
 }

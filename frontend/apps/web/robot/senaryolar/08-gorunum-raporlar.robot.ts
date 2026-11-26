@@ -125,7 +125,15 @@ test('Raporlar: müdür her sekmeyi, dönemi, tarihleri, logoyu ve açılış ba
         'bilinmeyen fasoncu için yükleme düğmesi pasif',
         await mudur.sayfa.getByRole('button', { name: /satırı yükle/ }).isDisabled(),
       );
-      await alan.fill('Örnek Tekstil A.Ş.;ROBOT-açılış;5');
+      await alan.fill('Örnek Tekstil A.Ş.;Tanımsız iplik;5');
+      mudur.kontrol(
+        "Tanımlar'da olmayan iplik için yükleme düğmesi pasif",
+        await mudur.sayfa.getByRole('button', { name: /satırı yükle/ }).isDisabled(),
+      );
+      const iplikler = await mudur.api<{ items: { name: string }[] }>(
+        '/api/v1/master-data/products?size=1',
+      );
+      await alan.fill(`Örnek Tekstil A.Ş.;${iplikler.items[0]?.name ?? ''};5`);
       await mudur.sayfa.getByRole('button', { name: /satırı yükle/ }).click();
       await expect(mudur.sayfa.getByText(/satır yüklendi/).first()).toBeVisible();
     },

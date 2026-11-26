@@ -7,7 +7,7 @@ export type ParsedLine = {
   line: number;
   raw: string;
   row?: OpeningImportRow;
-  error?: 'format' | 'unknown' | 'kg';
+  error?: 'format' | 'unknown' | 'unknownYarn' | 'kg';
 };
 
 /** Türkçe kilo kuralı (`1.982,5`, `1982,5`, `1.500` = 1500, `1,5`); nokta yalnızca binlik ayırıcıdır. Geçersizse undefined. */
@@ -22,6 +22,7 @@ export function parseNetKg(input: string): string | undefined {
 export function parseOpeningLines(
   input: string,
   idByName: (name: string) => string | undefined,
+  isKnownYarn: (name: string) => boolean,
 ): ParsedLine[] {
   return input
     .split(/\r?\n/)
@@ -37,6 +38,7 @@ export function parseOpeningLines(
       if (netKg === undefined) return { line, raw, error: 'kg' };
       const subcontractorId = idByName(name);
       if (subcontractorId === undefined) return { line, raw, error: 'unknown' };
+      if (!isKnownYarn(yarnType)) return { line, raw, error: 'unknownYarn' };
       return { line, raw, row: { subcontractorId, subcontractorName: name, yarnType, netKg } };
     });
 }

@@ -1,5 +1,11 @@
 import type { Page } from '@playwright/test';
-import { fiyatYaz, iplikTanimla, sevkiyatIpligiSec, tedarikciTanimla } from '../support/akis';
+import {
+  kaydetOnayla,
+  fiyatYaz,
+  iplikTanimla,
+  sevkiyatIpligiSec,
+  tedarikciTanimla,
+} from '../support/akis';
 import { rolTanimli, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import { damga, iplikGirisiDoldur } from '../support/yardimci';
@@ -89,7 +95,7 @@ test('Rastgele girdi: depo iplik girişi alanları', async ({ giris }) => {
       { etiket: /Not/, tur: 'metin' },
     ],
     async () => {
-      await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+      await kaydetOnayla(depo.sayfa, 'İplik girişini kaydet');
     },
     async () => {
       await depo.sayfa.goto('/panel/merkez-stok');

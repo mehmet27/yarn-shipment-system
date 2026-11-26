@@ -109,10 +109,18 @@ describe('açılış bakiyesi ayrıştırma', () => {
     expect(parseNetKg('abc')).toBeUndefined();
   });
   it('satırları eşler, hataları işaretler', () => {
-    const lines = parseOpeningLines('Aksu;30/1;1.000,5\nYok;30/1;5\nbozuk\nAksu;20/1;x\n\n', (n) =>
-      n === 'Aksu' ? 'id-a' : undefined,
+    const lines = parseOpeningLines(
+      'Aksu;30/1;1.000,5\nYok;30/1;5\nbozuk\nAksu;20/1;x\nAksu;yok iplik;5\n\n',
+      (n) => (n === 'Aksu' ? 'id-a' : undefined),
+      (yarn) => yarn !== 'yok iplik',
     );
     expect(lines[0]?.row?.netKg).toBe('1000.500');
-    expect(lines.map((l) => l.error)).toEqual([undefined, 'unknown', 'format', 'kg']);
+    expect(lines.map((l) => l.error)).toEqual([
+      undefined,
+      'unknown',
+      'format',
+      'kg',
+      'unknownYarn',
+    ]);
   });
 });

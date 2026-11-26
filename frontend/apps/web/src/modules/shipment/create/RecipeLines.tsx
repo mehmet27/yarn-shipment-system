@@ -12,10 +12,18 @@ export type RecipeLinesProps = {
   showErrors: boolean;
   /** İlk bu kadar satır silinemez (kayıtlı satırlar yalnız düzeltilir); varsayılan 0. */
   lockedCount?: number;
+  /** Kapıdan aktarmada seçili tedarikçi; parti listesi ona göre süzülür. */
+  supplierId?: string;
 };
 
 /** Reçete satırları: iplik cinsi (liste ya da serbest metin), isteğe bağlı lot, net kg; en az bir satır. */
-export function RecipeLines({ lines, onChange, showErrors, lockedCount = 0 }: RecipeLinesProps) {
+export function RecipeLines({
+  lines,
+  onChange,
+  showErrors,
+  lockedCount = 0,
+  supplierId,
+}: RecipeLinesProps) {
   const { t } = useTranslation();
   const update = (key: string, patch: Partial<RecipeLineDraft>) => {
     onChange(lines.map((line) => (line.key === key ? { ...line, ...patch } : line)));
@@ -26,6 +34,7 @@ export function RecipeLines({ lines, onChange, showErrors, lockedCount = 0 }: Re
         <Fragment key={line.key}>
           {index > 0 && <Divider color="var(--app-line)" />}
           <RecipeLineRow
+            {...(supplierId === undefined ? {} : { supplierId })}
             line={line}
             index={index}
             removable={lines.length > 1 && index >= lockedCount}

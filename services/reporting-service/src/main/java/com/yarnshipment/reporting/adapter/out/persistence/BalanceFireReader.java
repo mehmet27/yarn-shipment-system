@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -155,6 +156,17 @@ final class BalanceFireReader implements BalanceFirePort {
      * (fasoncu, iplik) başına tek açılış sağlar; defter sıfır kiloyu kabul etmez.
      */
     @Override
+    public Optional<String> findYarnKey(String yarnName) {
+        return jdbc.sql("""
+                        SELECT id::text FROM shipment.md_product
+                        WHERE active AND lower(btrim(name)) = lower(btrim(:name))
+                        ORDER BY id LIMIT 1""")
+                .param("name", yarnName)
+                .query((rs, rowNumber) -> rs.getString(1))
+                .optional();
+    }
+
+    @Override
     public boolean insertOpeningIfAbsent(OpeningBalanceRow row, Instant occurredAt, UUID actorId) {
         if (row.netKg().signum() == 0) {
             return false;
@@ -162,8 +174,14 @@ final class BalanceFireReader implements BalanceFirePort {
         int rows = jdbc.sql("""
                         INSERT INTO shipment.balance_movement (id, subcontractor_id, yarn_type, kind, net_kg,
                                                                occurred_at, created_by, source_ref)
-                        VALUES (gen_random_uuid(), :sub, :yarn, 'OPENING', :kg, :at, :actor,
-                                'OPENING:' || :sub || ':' || :yarn)
+                        SELECT gen_random_uuid(), :sub, :yarn, 'OPENING', :kg, :at, :actor,
+                               'OPENING:' || :sub || ':' || :yarn
+                        -- Eskiden iplik adıyla yazılmış açılış da sayılır; aynı iplik iki kez açılmaz.
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM shipment.balance_movement b
+                            JOIN shipment.md_product p ON p.id::text = :yarn
+                            WHERE b.subcontractor_id = :sub AND b.kind = 'OPENING'
+                              AND lower(btrim(b.yarn_type)) = lower(btrim(p.name)))
                         ON CONFLICT DO NOTHING""")
                 .param("sub", row.subcontractorId())
                 .param("yarn", row.yarnType())

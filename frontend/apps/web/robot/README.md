@@ -116,6 +116,8 @@ yalnızca `admin` şifresi (`kullanicilar.local.json` ya da `ROBOT_SIFRE`) doğr
 
 ## Kural tablosu (`robot/kurallar`)
 
+**Tutarlı veri girişi:** "Kumaş cinsi" üç ekranda da (yeni sevkiyat, fasoncu ve merkez kumaş girişi) yalnızca Tanımlar > Kumaş karışımı'ndan seçilir (`kumasCinsiSec`); senaryoların "Süprem" karışımını `00-kurulum` açar. Fasoncu girişinde cins seçilince oranlar kendiliğinden dolar ("Tanımlı karışımı yaz" düğmesi yoktur), sevkiyatta sipariş edilen cins hazır gelir. Merkez iplik girişi, merkez kumaş girişi ve iplik dönüşü iki adımlıdır: "Evet, kaydet" (`kaydetOnayla`). Birim fiyat satırın İplik sekmesindedir (`fiyatYaz`). LYC elastan numaralarından seçilir. İrsaliye no her ekranda en çok 64 karakterdir.
+
 **Yeni sevkiyat, iplik ve kumaş:** "Parti no" seçicisi yalnızca satırda seçili ipliğin partilerini listeler (iplik değişince parti seçimi silinir). "Sipariş bilgileri" sekmesindeki "Kumaş cinsi" yazılabilen listedir (`getByRole('combobox', { name: 'Kumaş cinsi' })`, Tanımlar > Kumaş karışımı adları); tanımlı cins seçilince LYC karışımdaki elastanın numarasıyla dolar, seçili iplik karışımda yoksa uyarı yazar (engellemez).
 
 **Merkez kumaş girişi:** "Kumaş cinsi" yazılabilen listedir (Tanımlar > Kumaş karışımı adları önerilir; `getByRole('combobox', { name: /^Kumaş cinsi/ })`), "Toplam kumaş kg" zorunludur, her satırda "İplik cinsi N" ve "Oran (%) N" vardır, toplam tam %100 olmalıdır ("Oran toplamı: %…"). Tanımlı cins seçilince iplik ve oran satırları kendiliğinden dolar; cins değişince satırlar da değişir (tanımsız cinse geçilince boşalır). Bu formda "Tanımlı karışımı yaz" düğmesi yoktur. Satır altında iplikten düşecek kg (fire dahil) ve stok yazar. Formu `merkezKumasDoldur` yardımcısı doldurur.

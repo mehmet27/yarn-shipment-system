@@ -12,10 +12,14 @@ import com.yarnshipment.reporting.domain.model.FireFile;
 import com.yarnshipment.reporting.domain.model.OpeningBalanceRow;
 import com.yarnshipment.reporting.domain.model.OpeningImportResult;
 import com.yarnshipment.reporting.domain.model.ReportPeriod;
+import com.yarnshipment.reporting.domain.model.UnknownOpeningYarnException;
 import com.yarnshipment.reporting.domain.model.YarnVsFabricRow;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -74,12 +78,29 @@ public class BalanceFireService
     public OpeningImportResult importOpening(UUID actorId, LocalDate asOf, List<OpeningBalanceRow> rows) {
         var occurredAt = asOf.atStartOfDay(ReportPeriod.ZONE).toInstant();
         int imported = 0;
-        for (OpeningBalanceRow row : rows) {
+        for (OpeningBalanceRow row : withYarnKeys(rows)) {
             if (port.insertOpeningIfAbsent(row, occurredAt, actorId)) {
                 imported++;
             }
         }
         return new OpeningImportResult(imported, rows.size() - imported);
+    }
+
+    /** İplik adları defter anahtarına çevrilir; tanımsız ad varsa dosyanın tamamı reddedilir. */
+    private List<OpeningBalanceRow> withYarnKeys(List<OpeningBalanceRow> rows) {
+        List<OpeningBalanceRow> resolved = new ArrayList<>();
+        Set<String> unknown = new LinkedHashSet<>();
+        for (OpeningBalanceRow row : rows) {
+            port.findYarnKey(row.yarnType())
+                    .ifPresentOrElse(
+                            key -> resolved.add(new OpeningBalanceRow(
+                                    row.subcontractorId(), row.subcontractorName(), key, row.netKg())),
+                            () -> unknown.add(row.yarnType()));
+        }
+        if (!unknown.isEmpty()) {
+            throw new UnknownOpeningYarnException(List.copyOf(unknown));
+        }
+        return resolved;
     }
 
     private ReportPeriod periodOf(ReportQuery query) {

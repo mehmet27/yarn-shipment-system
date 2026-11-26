@@ -32,7 +32,12 @@ export async function merkezKumasDoldur(
   sayfa: Page,
   k: { kumas: string; iplik: string; kg: string; fire: string; oran?: string },
 ) {
-  await sayfa.getByRole('combobox', { name: /^Kumaş cinsi/ }).fill(k.kumas);
+  const cins = sayfa.getByRole('combobox', { name: /^Kumaş cinsi/ });
+  if (k.kumas !== '' && (await cins.inputValue()) !== k.kumas) {
+    await kumasCinsiSec(sayfa, k.kumas);
+    // Cins seçilince satırlar tanımlı karışımla dolar; iplik ondan sonra değiştirilir.
+    await expect(sayfa.getByLabel('Oran (%) 1')).toHaveValue('100');
+  }
   await sayfa.getByLabel(/Toplam kumaş kg/).fill(k.kg);
   if (k.iplik !== '') {
     await iplikSec(sayfa, /İplik cinsi 1/, k.iplik);
@@ -89,18 +94,53 @@ export async function soforAracTanimla(mudur: Robot, ad: string): Promise<string
   return plaka;
 }
 
-/** Yeni sevkiyat formunda reçete satırının birim fiyatını (zorunlu) "Sipariş bilgileri" sekmesinden yazar. */
+/** Yeni sevkiyat formunda reçete satırının birim fiyatını (zorunlu, İplik sekmesinde) yazar. */
 export async function fiyatYaz(sayfa: Page, fiyat = '21,5') {
-  await sayfa
-    .getByRole('tab', { name: /Sipariş bilgileri/ })
-    .first()
-    .click();
   await sayfa
     .getByLabel(/Birim fiyat/)
     .first()
     .fill(fiyat);
-  // Sekme seçimi formda kalır; sonraki adımlar iplik/kilo alanlarını arayacağı için İplik sekmesine dön.
-  await sayfa.getByRole('tab', { name: 'İplik', exact: true }).first().click();
+}
+
+/** Kumaş cinsini tanımlı karışımlar listesinden seçer. */
+export async function kumasCinsiSec(sayfa: Page, ad: string) {
+  await sayfa
+    .getByRole('combobox', { name: /^Kumaş cinsi/ })
+    .first()
+    .click();
+  await sayfa.getByRole('option', { name: ad, exact: true }).click();
+}
+
+/**
+ * Sonradan değiştirilemeyen kayıtlar iki adımlıdır: kaydet düğmesine basar, onay sorulduysa "Evet, kaydet" der.
+ * Eksik ya da hatalı formda onay sorulmaz.
+ */
+export async function kaydetOnayla(sayfa: Page, dugme: string) {
+  await sayfa.getByRole('button', { name: dugme }).click();
+  await sayfa
+    .getByRole('button', { name: 'Evet, kaydet' })
+    .click({ timeout: 2_000 })
+    .catch(() => undefined);
+}
+
+/**
+ * Kumaş cinsi yalnızca tanımlı karışımlardan seçilir; senaryoların kullandığı "Süprem" karışımı yoksa açılır. İpliği
+ * hiçbir stokta olmayan ayrı bir ipliktir: fasoncu kumaş girişinde oranlar boş gelir, senaryo kendisi yazar.
+ */
+export async function supremKarisimiTanimla(mudur: Robot) {
+  const iplik = 'Robot Süprem ipliği';
+  const karisimlar = await mudur.api<{ fabricType: string }[]>('/api/v1/fabric-recipes');
+  if (karisimlar.some((k) => k.fabricType === 'Süprem')) return;
+  await iplikTanimla(mudur, iplik);
+  await mudur.sayfa.goto('/panel/tanimlar');
+  await mudur.sayfa.getByRole('tab', { name: 'Kumaş karışımı', exact: true }).click();
+  await mudur.sayfa.getByRole('button', { name: 'Karışım ekle' }).click();
+  await mudur.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
+  await mudur.sayfa.getByRole('combobox', { name: 'İplik', exact: true }).click();
+  await mudur.sayfa.getByRole('option', { name: iplik, exact: true }).click();
+  await mudur.sayfa.getByLabel('Oran (%)').fill('100');
+  await mudur.sayfa.getByRole('button', { name: 'Kaydet' }).click();
+  await expect(mudur.sayfa.getByText('Süprem').first()).toBeVisible();
 }
 
 /** Yeni sevkiyat formunda ilk satırın ipliğini listeden seçer; iplik Tanımlar'da olmalıdır (serbest metin yoktur). */
@@ -273,7 +313,7 @@ export async function kumasFormuDoldur(
   await fasonKalite.sayfa.goto(`/panel/sevkiyat/${id}`);
   await fasonKalite.sayfa.getByRole('tab', { name: 'Kumaş girişi', exact: true }).click();
   await fasonKalite.sayfa.waitForTimeout(600);
-  await fasonKalite.sayfa.getByLabel(/Kumaş cinsi/).fill('Süprem');
+  await kumasCinsiSec(fasonKalite.sayfa, 'Süprem');
   await fasonKalite.sayfa.getByLabel(/Kumaş net kilosu/).fill(kg);
   await fasonKalite.sayfa.getByLabel(/İrsaliye no/).fill(irsaliyeNo);
 }

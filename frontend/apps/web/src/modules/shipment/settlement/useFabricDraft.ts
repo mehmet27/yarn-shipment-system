@@ -20,8 +20,11 @@ export function useFabricDraft() {
   const setRatios = (ratios: Record<string, string>) => {
     setDraft((current) => ({ ...current, ratios }));
   };
+  const setFabricType = (fabricType: string) => {
+    setDraft((current) => ({ ...current, fabricType }));
+  };
   const reset = () => {
     setDraft(EMPTY_FABRIC_DRAFT);
   };
-  return { draft, field, setRatio, setRatios, reset };
+  return { draft, field, setFabricType, setRatio, setRatios, reset };
 }

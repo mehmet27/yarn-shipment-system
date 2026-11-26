@@ -1,6 +1,7 @@
 import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import {
+  kaydetOnayla,
   merkezKumasDoldur,
   fiyatYaz,
   iplikTanimla,
@@ -49,7 +50,7 @@ test('Formlar: depo iplik girişi geçersiz değerleri reddeder', async ({ giris
       (await robot.sayfa.locator('[role=option]:visible').count()) === 0,
     );
     await robot.sayfa.getByLabel(/Gelen net kg/).fill('5');
-    await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+    await kaydetOnayla(robot.sayfa, 'İplik girişini kaydet');
     await nedenliMesajVar(robot, 'iplik girişi tanımsız iplik');
   });
   for (const [ad, iplik, kg] of [
@@ -66,7 +67,7 @@ test('Formlar: depo iplik girişi geçersiz değerleri reddeder', async ({ giris
         await tedarikciSec(robot.sayfa, tedarikci);
       }
       await robot.sayfa.getByLabel(/Gelen net kg/).fill(kg);
-      await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+      await kaydetOnayla(robot.sayfa, 'İplik girişini kaydet');
       await nedenliMesajVar(robot, `iplik girişi ${ad}`);
     });
   }
@@ -75,7 +76,7 @@ test('Formlar: depo iplik girişi geçersiz değerleri reddeder', async ({ giris
     await robot.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
     await iplikSec(robot.sayfa, /İplik cinsi/, tanimli);
     await robot.sayfa.getByLabel(/Gelen net kg/).fill('5');
-    await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+    await kaydetOnayla(robot.sayfa, 'İplik girişini kaydet');
     await nedenliMesajVar(robot, 'iplik girişi tedarikçisiz');
   });
   for (const [ad, parti, irsaliye] of [
@@ -89,7 +90,7 @@ test('Formlar: depo iplik girişi geçersiz değerleri reddeder', async ({ giris
       await iplikGirisiDoldur(robot.sayfa, { iplik: tanimli, tedarikci, kg: '5' });
       if (parti !== '') await robot.sayfa.getByRole('combobox', { name: /^Parti no/ }).fill(parti);
       if (irsaliye !== '') await robot.sayfa.getByLabel(/Tedarikçi irsaliye no/).fill(irsaliye);
-      await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+      await kaydetOnayla(robot.sayfa, 'İplik girişini kaydet');
       await nedenliMesajVar(robot, `iplik girişi ${ad}`);
     });
   }
@@ -99,10 +100,10 @@ test('Formlar: depo iplik girişi geçersiz değerleri reddeder', async ({ giris
     await robot.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
     await iplikGirisiDoldur(robot.sayfa, { iplik: tanimli, tedarikci, kg: '5' });
     await robot.sayfa.getByRole('combobox', { name: /^Parti no/ }).fill(parti);
-    await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+    await kaydetOnayla(robot.sayfa, 'İplik girişini kaydet');
     await expect(robot.sayfa.getByText(/kalite sınıfını seçin/)).toBeVisible();
     await sec(robot.sayfa, /^Kalite sınıfı/, sinif);
-    await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+    await kaydetOnayla(robot.sayfa, 'İplik girişini kaydet');
     await robot.sayfa.getByText('İplik girişi kaydedildi.').waitFor();
   });
   await robot.adim(
@@ -115,7 +116,7 @@ test('Formlar: depo iplik girişi geçersiz değerleri reddeder', async ({ giris
       await robot.sayfa.getByRole('option', { name: parti.toUpperCase(), exact: true }).click();
       await expect(robot.sayfa.getByText('Kayıtlı parti.')).toBeVisible();
       await expect(robot.sayfa.getByLabel(/^Kalite sınıfı/)).toHaveCount(0);
-      await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+      await kaydetOnayla(robot.sayfa, 'İplik girişini kaydet');
       await robot.sayfa.getByText('İplik girişi kaydedildi.').waitFor();
     },
   );
@@ -127,7 +128,7 @@ test('Formlar: depo iplik girişi geçersiz değerleri reddeder', async ({ giris
     await expect(
       robot.sayfa.getByText(/başka bir iplik cinsine ya da tedarikçiye ait/),
     ).toBeVisible();
-    await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+    await kaydetOnayla(robot.sayfa, 'İplik girişini kaydet');
     await expect(robot.sayfa.getByText('Bu parti no başka bir tedarikçiye ait.')).toBeVisible();
   });
 });
@@ -149,7 +150,7 @@ test('Formlar: kalite kumaş girişi stokta olmayan iplikle üretimi reddeder', 
   ] as const) {
     await robot.adim(`kumaş girişi: ${ad}`, async () => {
       await merkezKumasDoldur(robot.sayfa, k);
-      await robot.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();
+      await kaydetOnayla(robot.sayfa, 'Kumaşı kaydet');
       await nedenliMesajVar(robot, `kumaş girişi ${ad}`);
     });
   }

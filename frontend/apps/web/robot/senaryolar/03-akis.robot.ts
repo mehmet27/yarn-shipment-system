@@ -1,6 +1,7 @@
 import { expect, GENEL_MESAJ, test } from '../support/robot';
 import type { Robot } from '../support/robot';
 import {
+  kaydetOnayla,
   merkezKumasDoldur,
   fiyatYaz,
   iplikTanimla,
@@ -47,7 +48,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     await depo.sayfa.goto('/panel/merkez-stok');
     await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
     await iplikGirisiDoldur(depo.sayfa, { iplik, tedarikci, kg: '200' });
-    await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+    await kaydetOnayla(depo.sayfa, 'İplik girişini kaydet');
     await depo.sayfa.getByText('İplik girişi kaydedildi.').waitFor();
     await depo.sayfa.getByRole('tab', { name: 'Eldeki iplik' }).click();
     await depo.sayfa.getByText(iplik).first().waitFor();
@@ -57,7 +58,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     await kalite.sayfa.goto('/panel/merkez-stok');
     await kalite.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
     await merkezKumasDoldur(kalite.sayfa, { kumas: 'Süprem', iplik, kg: '50', fire: '3' });
-    await kalite.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();
+    await kaydetOnayla(kalite.sayfa, 'Kumaşı kaydet');
     await kalite.sayfa.getByText('Kumaş girişi kaydedildi.').waitFor();
     await expect(kalite.sayfa.getByRole('combobox', { name: /^Kumaş cinsi/ })).toHaveValue('');
     await kalite.sayfa.getByRole('tab', { name: 'Eldeki iplik' }).click();
@@ -73,7 +74,7 @@ test('Akış: iplik girişinden kumaş, fire ve kalite itirazına tüm sevkiyat 
     // Önceki adım "Eldeki iplik" sekmesinde bitti; form sekmesine dönülür, başarılı kayıttan sonra form boşalmıştır.
     await kalite.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
     await merkezKumasDoldur(kalite.sayfa, { kumas: 'Süprem', iplik, kg: '5000', fire: '3' });
-    await kalite.sayfa.getByRole('button', { name: 'Kumaşı kaydet' }).click();
+    await kaydetOnayla(kalite.sayfa, 'Kumaşı kaydet');
     const mesajlar = await kalite.mesajlar();
     kalite.kontrol(
       'stok yetersizliği mesajı',

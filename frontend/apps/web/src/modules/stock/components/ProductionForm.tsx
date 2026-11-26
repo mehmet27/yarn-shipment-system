@@ -1,16 +1,17 @@
 import { useTranslation } from '@iplik/i18n';
-import { Alert, Button, SectionCard, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
+import { SectionCard, SimpleGrid, Stack, Text, TextInput } from '@iplik/ui';
+import { MAX_WAYBILL_NO_LENGTH } from '@/modules/shipment';
+import { ProductionActions } from './ProductionActions';
 import { ProductionFabricType } from './ProductionFabricType';
 import { ProductionYarnRows } from './ProductionYarnRows';
 import { productionRatioTotal } from '../stockDraft';
-import { stockErrorKey } from '../stockErrors';
 import { useProductionSubmit } from '../useProductionSubmit';
 
 /** Merkez fabrikanın ürettiği kumaş: hangi iplikten kaç kg kumaş çıktığı girilir, iplik fire ile stoktan düşer. */
 export function ProductionForm() {
   const { t } = useTranslation();
   const form = useProductionSubmit();
-  const { draft, field, setYarn, addYarn, removeYarn, error, submit, mutation } = form;
+  const { draft, field, setYarn, addYarn, removeYarn } = form;
   const total = productionRatioTotal(draft);
   return (
     <SectionCard title={t('stock.production.title')} icon="lots">
@@ -52,16 +53,13 @@ export function ProductionForm() {
             inputMode="numeric"
             {...field('rollCount')}
           />
-          <TextInput label={t('stock.production.waybillNo')} {...field('waybillNo')} />
+          <TextInput
+            label={t('stock.production.waybillNo')}
+            maxLength={MAX_WAYBILL_NO_LENGTH}
+            {...field('waybillNo')}
+          />
         </SimpleGrid>
-        {error !== undefined && <Alert color="red">{t(`stock.draftErrors.${error}`)}</Alert>}
-        {mutation.isSuccess && error === undefined && (
-          <Alert color="green">{t('stock.production.saved')}</Alert>
-        )}
-        {mutation.isError && <Alert color="red">{t(stockErrorKey(mutation.error))}</Alert>}
-        <Button w="fit-content" loading={mutation.isPending} onClick={submit}>
-          {t('stock.production.submit')}
-        </Button>
+        <ProductionActions {...form} />
       </Stack>
     </SectionCard>
   );

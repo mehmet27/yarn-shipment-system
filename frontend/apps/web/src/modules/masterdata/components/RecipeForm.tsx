@@ -4,12 +4,11 @@ import { useTranslation } from '@iplik/i18n';
 import { Alert, Button, Group, SectionCard, Stack, Text, TextInput } from '@iplik/ui';
 import { useState } from 'react';
 import { useSaveFabricRecipe } from '../hooks/useRecipes';
-import { useRecords } from '../hooks/useRecords';
+import { useYarnNames } from '../hooks/useAllChoices';
 import type { RecipeDraft } from '../recipeDraft';
 import { EMPTY_RECIPE_DRAFT, recipeTotal, toRecipeRequest } from '../recipeDraft';
 import { RecipeLines } from './RecipeLines';
 
-const PRODUCT_PAGE_SIZE = 100;
 const FULL = 100;
 
 function draftOf(recipe: FabricRecipe | undefined): RecipeDraft {
@@ -29,13 +28,7 @@ export type RecipeFormProps = {
 export function RecipeForm({ recipe, onClose }: RecipeFormProps) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState(() => draftOf(recipe));
-  const products = useRecords('product', {
-    q: '',
-    page: 0,
-    size: PRODUCT_PAGE_SIZE,
-    isShowingInactive: false,
-  });
-  const names = [...new Set((products.data?.rows ?? []).map((row) => row.label))];
+  const names = useYarnNames().data ?? [];
   const save = useSaveFabricRecipe();
   const request = toRecipeRequest(draft);
   const total = recipeTotal(draft);

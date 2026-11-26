@@ -6,6 +6,8 @@ export { useYarnLabel } from './components/useYarnLabel';
 export { formatKgText, formatPercentText, formatSignedKg } from './settlement/format';
 export { InvoiceForm } from './settlement/InvoiceForm';
 export { findRecipe } from './settlement/fabricRatios';
+export { FabricTypeSelect } from './create/FabricTypeSelect';
+export { MAX_WAYBILL_NO_LENGTH } from './waybill';
 export { useActiveFabricRecipes } from './settlement/hooks';
 export { useFireSettlement } from './settlement/hooks';
 export { MasterSelect } from './create/MasterSelect';

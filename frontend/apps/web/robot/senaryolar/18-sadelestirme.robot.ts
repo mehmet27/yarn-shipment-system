@@ -1,4 +1,5 @@
 import {
+  kaydetOnayla,
   cuvalEkle,
   iplikTanimla,
   tedarikciTanimla,
@@ -74,7 +75,7 @@ test('Sadeleştirme: menü, depo iş listesi, çuval-önce, tartı sırası, fir
     await depo.sayfa.goto('/panel/merkez-stok');
     await depo.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
     await iplikGirisiDoldur(depo.sayfa, { iplik, tedarikci, kg: '300' });
-    await depo.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+    await kaydetOnayla(depo.sayfa, 'İplik girişini kaydet');
     await depo.sayfa.getByText('İplik girişi kaydedildi.').waitFor();
   });
 

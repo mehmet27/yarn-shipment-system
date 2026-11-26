@@ -1,4 +1,5 @@
 import {
+  kaydetOnayla,
   cuvalEkle,
   iplikTanimla,
   kumasGir,
@@ -310,7 +311,7 @@ test('İplik dönüşü ve kanıt geçersiz kılma', async ({ giris }) => {
       // İplik serbest metin değil, sevkiyatta gönderilenlerden seçilir; tek iplik varsa kendiliğinden seçili gelir.
       await expect(depo.sayfa.getByLabel(/İplik cinsi/).first()).not.toHaveValue('');
       await depo.sayfa.getByLabel(/Net kilo/).fill('5000');
-      await depo.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
+      await kaydetOnayla(depo.sayfa, 'Hareketi kaydet');
       const mesajlar = await depo.mesajlar();
       depo.kontrol(
         'fazla dönüş nedenini söylemeli',
@@ -318,7 +319,7 @@ test('İplik dönüşü ve kanıt geçersiz kılma', async ({ giris }) => {
         mesajlar.join(' | '),
       );
       await depo.sayfa.getByLabel(/Net kilo/).fill('5');
-      await depo.sayfa.getByRole('button', { name: 'Hareketi kaydet' }).click();
+      await kaydetOnayla(depo.sayfa, 'Hareketi kaydet');
       await expect(depo.sayfa.locator('main')).toContainText(/Dönüş/);
     },
   );

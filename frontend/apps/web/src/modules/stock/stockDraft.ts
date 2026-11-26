@@ -31,7 +31,7 @@ export const EMPTY_RECEIPT_DRAFT: ReceiptDraft = {
 };
 
 /** Sunucudaki parti numarası kuralının aynısı: harf/rakamla başlar, en çok 40 karakter, yalnızca A-Z 0-9 + . _ / -. */
-const LOT_NO_PATTERN = /^[A-Z0-9][A-Z0-9+._/-]{0,39}$/;
+export const LOT_NO_PATTERN = /^[A-Z0-9][A-Z0-9+._/-]{0,39}$/;
 const MAX_WAYBILL_LENGTH = 128;
 
 /** Parti, irsaliye ve not: boş olanlar isteğe yazılmaz; geçersizse hata anahtarı. */

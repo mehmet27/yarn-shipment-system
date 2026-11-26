@@ -7,6 +7,7 @@ import type {
 import { CENTRAL_STOCK_PATH } from '@iplik/api-client/central-stock';
 import { isKilogram, sumKg } from '@iplik/units';
 import { http, HttpResponse } from 'msw';
+import { listMockLots } from './lots';
 import { listMasterRecords } from './masterData';
 
 const problem = (status: number, code: string) =>
@@ -135,7 +136,9 @@ export function createStockHandlers(user: CurrentUser) {
       if (!has('CENTRAL_STOCK_RECORD')) return problem(403, 'ACCESS_DENIED');
       const input = readReceipt(await request.json());
       if (input === undefined) return problem(400, 'INVALID_LEDGER_INPUT');
-      if (input.receipt.lotNo !== undefined && !input.hasGrade) {
+      const lotNo = input.receipt.lotNo;
+      const isNewLot = lotNo !== undefined && !listMockLots().some((lot) => lot.lotNo === lotNo);
+      if (isNewLot && !input.hasGrade) {
         return problem(409, 'YARN_LOT_GRADE_REQUIRED');
       }
       const movement = add(input.product, 'YARN_RECEIPT', input.netKg);

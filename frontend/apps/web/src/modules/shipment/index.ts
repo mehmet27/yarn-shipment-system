@@ -8,7 +8,7 @@ export { InvoiceForm } from './settlement/InvoiceForm';
 export { useFireSettlement } from './settlement/hooks';
 export { MasterSelect } from './create/MasterSelect';
 export type { MasterOption } from './hooks/useMasterOptions';
-export { useMasterOptions } from './hooks/useMasterOptions';
+export { MASTER_DATA_PATH, useMasterOptions } from './hooks/useMasterOptions';
 export { useFireRateDefault } from './hooks/useFireRateDefault';
 export { PendingWeightDecisions } from './components/PendingWeightDecisions';
 export { usePendingWeightDecisions } from './hooks/usePendingWeightDecisions';

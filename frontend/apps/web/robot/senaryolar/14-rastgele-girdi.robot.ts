@@ -84,7 +84,7 @@ test('Rastgele girdi: depo iplik girişi alanları', async ({ giris }) => {
     'iplik girişi',
     [
       { etiket: /Gelen net kg/, tur: 'sayi' },
-      { etiket: /^Parti no/, tur: 'metin' },
+      { etiket: /^Parti no/, tur: 'metin', ilk: true },
       { etiket: /Tedarikçi irsaliye no/, tur: 'metin' },
       { etiket: /Not/, tur: 'metin' },
     ],

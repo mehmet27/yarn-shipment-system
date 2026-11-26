@@ -86,7 +86,7 @@ test('Formlar: depo iplik girişi geçersiz değerleri reddeder', async ({ giris
       await robot.sayfa.reload();
       await robot.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
       await iplikGirisiDoldur(robot.sayfa, { iplik: tanimli, tedarikci, kg: '5' });
-      if (parti !== '') await robot.sayfa.getByLabel(/^Parti no/).fill(parti);
+      if (parti !== '') await robot.sayfa.getByRole('combobox', { name: /^Parti no/ }).fill(parti);
       if (irsaliye !== '') await robot.sayfa.getByLabel(/Tedarikçi irsaliye no/).fill(irsaliye);
       await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
       await nedenliMesajVar(robot, `iplik girişi ${ad}`);
@@ -97,19 +97,35 @@ test('Formlar: depo iplik girişi geçersiz değerleri reddeder', async ({ giris
     await robot.sayfa.reload();
     await robot.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
     await iplikGirisiDoldur(robot.sayfa, { iplik: tanimli, tedarikci, kg: '5' });
-    await robot.sayfa.getByLabel(/^Parti no/).fill(parti);
+    await robot.sayfa.getByRole('combobox', { name: /^Parti no/ }).fill(parti);
     await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
     await expect(robot.sayfa.getByText(/kalite sınıfını seçin/)).toBeVisible();
     await sec(robot.sayfa, /^Kalite sınıfı/, sinif);
     await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
     await robot.sayfa.getByText('İplik girişi kaydedildi.').waitFor();
   });
+  await robot.adim(
+    'iplik girişi: kayıtlı parti listeden seçilir, kalite sınıfı sorulmaz',
+    async () => {
+      await robot.sayfa.reload();
+      await robot.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
+      await iplikGirisiDoldur(robot.sayfa, { iplik: tanimli, tedarikci, kg: '5' });
+      await robot.sayfa.getByRole('combobox', { name: /^Parti no/ }).click();
+      await robot.sayfa.getByRole('option', { name: parti.toUpperCase(), exact: true }).click();
+      await expect(robot.sayfa.getByText('Kayıtlı parti.')).toBeVisible();
+      await expect(robot.sayfa.getByLabel(/^Kalite sınıfı/)).toHaveCount(0);
+      await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
+      await robot.sayfa.getByText('İplik girişi kaydedildi.').waitFor();
+    },
+  );
   await robot.adim('iplik girişi: parti başka tedarikçiye aitse kaydedilmez', async () => {
     await robot.sayfa.reload();
     await robot.sayfa.getByRole('tab', { name: 'İplik girişi' }).click();
     await iplikGirisiDoldur(robot.sayfa, { iplik: tanimli, tedarikci: digerTedarikci, kg: '5' });
-    await robot.sayfa.getByLabel(/^Parti no/).fill(parti);
-    await sec(robot.sayfa, /^Kalite sınıfı/, sinif);
+    await robot.sayfa.getByRole('combobox', { name: /^Parti no/ }).fill(parti);
+    await expect(
+      robot.sayfa.getByText(/başka bir iplik cinsine ya da tedarikçiye ait/),
+    ).toBeVisible();
     await robot.sayfa.getByRole('button', { name: 'İplik girişini kaydet' }).click();
     await expect(robot.sayfa.getByText('Bu parti no başka bir tedarikçiye ait.')).toBeVisible();
   });

@@ -10,7 +10,7 @@ export function useReceiptSubmit() {
   const mutation = useRecordYarnReceipt();
   // İkinci tıklama, düğme yüklenme durumuna geçmeden gelir; bu yüzden durum bir ref'te tutulur.
   const busy = useRef(false);
-  const field = (name: 'netKg' | 'lotNo' | 'waybillNo' | 'note') => ({
+  const field = (name: 'netKg' | 'waybillNo' | 'note') => ({
     value: draft[name],
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
       const { value } = event.currentTarget;

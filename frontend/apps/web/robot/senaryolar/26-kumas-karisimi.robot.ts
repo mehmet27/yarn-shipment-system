@@ -57,18 +57,19 @@ test('Kumaş karışımı: tanımla, kumaş girişinde oranları doldur, sevkiya
   );
 
   await kalite.adim(
-    'merkez kumaş girişi: tanımlı karışım iplik ve oranı doldurur, stok kontrol edilir',
+    'merkez kumaş girişi: cins seçilince iplik ve oran kendiliğinden gelir, cins değişince boşalır',
     async () => {
       await kalite.sayfa.goto('/panel/merkez-stok');
       await kalite.sayfa.getByRole('tab', { name: 'Kumaş girişi' }).click();
       await kalite.sayfa.getByRole('combobox', { name: /^Kumaş cinsi/ }).fill(kumas);
       await kalite.sayfa.getByLabel(/Toplam kumaş kg/).fill('10');
-      await kalite.sayfa.getByRole('button', { name: 'Tanımlı karışımı yaz' }).click();
       await expect(kalite.sayfa.getByLabel('Oran (%) 1')).toHaveValue('100');
       await expect(kalite.sayfa.getByTestId('central-ratio-total')).toHaveText(
         'Oran toplamı: %100',
       );
       await expect(kalite.sayfa.getByText(/stoktan .* \(fire dahil\) · stokta/)).toBeVisible();
+      await kalite.sayfa.getByRole('combobox', { name: /^Kumaş cinsi/ }).fill('Tanımsız kumaş');
+      await expect(kalite.sayfa.getByLabel('Oran (%) 1')).toHaveValue('');
     },
   );
 

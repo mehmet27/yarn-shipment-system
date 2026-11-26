@@ -1,5 +1,5 @@
 import { listProducts } from '@iplik/api-client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { findRecipe, useActiveFabricRecipes } from '@/modules/shipment';
 import type { YarnLineDraft } from '../stockDraft';
 
@@ -17,22 +17,38 @@ async function toRow(line: { yarnType: string; ratioPct: string }): Promise<Yarn
   };
 }
 
-/** Kumaş cinsi önerileri ve cinse tanımlı karışımı iplik satırlarına yazan işlem. */
-export function useProductionRecipe(fabricType: string, setYarns: (rows: YarnLineDraft[]) => void) {
+type Setters = {
+  setFabricType: (fabricType: string) => void;
+  setYarns: (rows: YarnLineDraft[]) => void;
+};
+
+/**
+ * Kumaş cinsi önerileri ve cins değişince iplik satırlarını değiştiren işlem: tanımlı cinse geçilince karışımı yazılır,
+ * tanımlı cinsten çıkılınca satırlar boşalır. Karışımı olmayan cinste elle seçilen iplikler korunur.
+ */
+export function useProductionRecipe(fabricType: string, { setFabricType, setYarns }: Setters) {
   const recipes = useActiveFabricRecipes().data ?? [];
-  const recipe = findRecipe(recipes, fabricType);
   const [hasFailed, setHasFailed] = useState(false);
-  const fill = () => {
-    if (recipe === undefined) return;
+  // Geç gelen iplik araması, sonradan seçilen cinsin satırlarını ezmesin.
+  const latest = useRef(0);
+  const change = (next: string) => {
+    setFabricType(next);
+    const before = findRecipe(recipes, fabricType);
+    const recipe = findRecipe(recipes, next);
+    if (before?.id === recipe?.id) return;
+    latest.current += 1;
+    const request = latest.current;
     setHasFailed(false);
-    Promise.all(recipe.yarns.map(toRow)).then(setYarns, () => {
-      setHasFailed(true);
-    });
+    setYarns([{ product: undefined, ratio: '' }]);
+    if (recipe === undefined) return;
+    Promise.all(recipe.yarns.map(toRow)).then(
+      (rows) => {
+        if (request === latest.current) setYarns(rows);
+      },
+      () => {
+        if (request === latest.current) setHasFailed(true);
+      },
+    );
   };
-  return {
-    fabricTypes: recipes.map((r) => r.fabricType),
-    hasRecipe: recipe !== undefined,
-    hasFailed,
-    fill,
-  };
+  return { fabricTypes: recipes.map((r) => r.fabricType), hasFailed, change };
 }

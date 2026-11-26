@@ -1,3 +1,4 @@
+import { saveMockRecipe } from '@/mocks/settlements';
 import { ME_PATH } from '@iplik/api-client';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -90,6 +91,43 @@ describe('Merkez iplik stoku', () => {
     const table = await screen.findByRole('table', { name: 'Son hareketler' });
     expect(within(table).getByText('Merkez kumaş üretimi')).toBeInTheDocument();
     expect(within(table).getByText(/−500/)).toBeInTheDocument();
+  });
+
+  it('kumaş cinsi değişince iplikler ve oranlar tanımlı karışıma göre değişir', async () => {
+    saveMockRecipe(undefined, {
+      fabricType: 'Süprem',
+      yarns: [{ yarnType: 'Pamuk 20/1', ratioPct: '100.00' }],
+    });
+    saveMockRecipe(undefined, {
+      fabricType: 'İnterlok',
+      yarns: [
+        { yarnType: 'Polyester 30/1', ratioPct: '60.00' },
+        { yarnType: 'Pamuk 20/1', ratioPct: '40.00' },
+      ],
+    });
+    server.use(...createHandlers('QUALITY'));
+    const user = userEvent.setup();
+    renderApp('/panel/merkez-stok');
+    await user.click(await screen.findByRole('tab', { name: 'Kumaş girişi' }));
+    const form = screen.getByRole('region', { name: 'Merkez kumaş girişi' });
+    const fabric = within(form).getByRole('combobox', { name: /Kumaş cinsi/ });
+
+    await pickYarn(user, /Kumaş cinsi/, 'Süprem');
+    await waitFor(() => {
+      expect(within(form).getByLabelText('Oran (%) 1')).toHaveValue('100');
+    });
+
+    await user.clear(fabric);
+    await pickYarn(user, /Kumaş cinsi/, 'İnterlok');
+    await waitFor(() => {
+      expect(within(form).getByLabelText('Oran (%) 2')).toHaveValue('40');
+    });
+    expect(within(form).getByLabelText('Oran (%) 1')).toHaveValue('60');
+
+    await user.clear(fabric);
+    await user.type(fabric, 'Başka');
+    expect(within(form).getByLabelText('Oran (%) 1')).toHaveValue('');
+    expect(within(form).queryByLabelText('Oran (%) 2')).not.toBeInTheDocument();
   });
 
   it('iplik seçilmeden giriş kaydedilmez; serbest metin alanı yoktur', async () => {
